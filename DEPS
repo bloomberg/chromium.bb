@@ -133,6 +133,11 @@ deps = {
   'src/buildtools':
     Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
 
+  'src/chrome/installer/mac/third_party/xz/xz': {
+      'url': Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
+      'condition': 'checkout_mac',
+  },
+
   'src/chrome/test/data/perf/canvas_bench':
     Var('chromium_git') + '/chromium/canvas_bench.git' + '@' + 'a7b40ea5ae0239517d78845a5fc9b12976bfc732',
 
@@ -141,6 +146,51 @@ deps = {
 
   'src/chrome/test/data/vr/webvr_info':
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + '932fd58075e564727b5525681d6b9293b41a90f7',
+
+  'src/ios/third_party/earl_grey/src': {
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'b8f1ed850b3b8c059d2912ac4c25a2480ddba826',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/fishhook/src': {
+      'url': Var('chromium_git') + '/external/github.com/facebook/fishhook.git' + '@' + 'd172d5247aa590c25d0b1885448bae76036ea22c',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/gcdwebserver/src': {
+      'url': Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '43555c66627f6ed44817855a0f6d465f559d30e0',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/material_components_ios/src': {
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '74e87aa83f93ef27347b91c33a6d54af34b90977',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/material_font_disk_loader_ios/src': {
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '8e30188777b016182658fbaa0a4a020a48183224',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/material_roboto_font_loader_ios/src': {
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + '4aa51e906e5671c71d24e991f1f10d782a58409f',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/material_sprited_animation_view_ios/src': {
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'c6e16d06bdafd95540c62b3402d9414692fbca81',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/material_text_accessibility_ios/src': {
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-text-accessibility-ios.git' + '@' + '7340b22cc589101ba0b11516afe4f3a733041951',
+      'condition': 'checkout_ios',
+  },
+
+  'src/ios/third_party/ochamcrest/src': {
+      'url': Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + 'd7ee4ecfb6bd13c3c8d364682b6228ccd86e1e1a',
+      'condition': 'checkout_ios',
+  },
 
   'src/media/cdm/api':
     Var('chromium_git') + '/chromium/cdm.git' + '@' + '1f49c55d3151a4e1eec088befee5f578fea81f4b',
@@ -172,6 +222,11 @@ deps = {
   'src/third_party/bidichecker':
     Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
 
+  'src/third_party/bison': {
+      'url': Var('chromium_git') + '/chromium/deps/bison.git' + '@' + '083c9a45e4affdd5464ee2b224c2df649c6e26c3',
+      'condition': 'checkout_win',
+  },
+
   'src/third_party/boringssl/src':
     Var('boringssl_git') + '/boringssl.git' + '@' +  Var('boringssl_revision'),
 
@@ -183,6 +238,12 @@ deps = {
 
   'src/third_party/ced/src':
     Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + '94c367a1fe3a13207f4b22604fcfd1d9f9ddf6d9',
+
+  # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
+  'src/third_party/chromite': {
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '5704204e2f302317e202fd7ccb24593f64425ea9',
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/cld_2/src':
     Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '84b58a5d7690ebf05a91406f371ce00c3daf31c0',
@@ -196,6 +257,12 @@ deps = {
   'src/third_party/crc32c/src':
     Var('chromium_git') + '/external/github.com/google/crc32c.git' + '@' + '9bc7a0cada31f3224779b7ba7f56cc7382758e54',
 
+  # For Linux and Chromium OS.
+  'src/third_party/cros_system_api': {
+      'url': Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '72120182b44dcaf936241c8a9b3695c13bc6b589',
+      'condition': 'checkout_linux',
+  },
+
   'src/third_party/custom_tabs_client/src': {
       'url': Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + 'cff061038b852d647f7044d828a9df78aa135f38',
       'condition': 'checkout_android',
@@ -203,6 +270,12 @@ deps = {
 
   'src/third_party/depot_tools':
     Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'b2e961b1171d9f27278461a0a3286ab89161368c',
+
+  # DevTools node modules. Used on Linux buildbots only.
+  'src/third_party/devtools-node-modules': {
+      'url': Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/dom_distiller_js/dist':
     Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '232c293a4d3ebcbc4320f642af017ee054b3be93',
@@ -231,14 +304,37 @@ deps = {
   'src/third_party/flatbuffers/src':
     Var('chromium_git') + '/external/github.com/google/flatbuffers.git' + '@' + '01c50d57a67a52ee3cddd81b54d4647e9123a290',
 
+  # Used for embedded builds. CrOS & Linux use the system version.
+  'src/third_party/fontconfig/src': {
+      'url': Var('chromium_git') + '/external/fontconfig.git' + '@' + 'f16c3118e25546c1b749f9823c51827a60aeb5c1',
+      'condition': 'checkout_linux',
+  },
+
   'src/third_party/freetype/src':
     Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
+
+  # Chrome OS touchpad gestures library.
+  'src/third_party/gestures/gestures': {
+      'url': Var('chromium_git') + '/chromiumos/platform/gestures.git' + '@' + '5a656849c7d2b0d0ddbe0ac6d300c1e2fada0bb4',
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/glslang/src':
     Var('chromium_git') + '/external/github.com/google/glslang.git' + '@' + '210c6bf4d8119dc5f8ac21da2d4c87184f7015e0',
 
   'src/third_party/googletest/src':
     Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '7f8fefabedf2965980585be8c2bff97458f28e0b',
+
+  # GNU binutils assembler for x86-32.
+  'src/third_party/gnu_binutils': {
+      'url': Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
+      'condition': 'checkout_win',
+  },
+
+  'src/third_party/gperf': {
+      'url': Var('chromium_git') + '/chromium/deps/gperf.git' + '@' + 'd892d79f64f9449770443fb06da49b5a1e5d33c1',
+      'condition': 'checkout_win',
+  },
 
   'src/third_party/gvr-android-sdk/src': {
       'url': Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'ee5cb1c6138d0be57e82ddafc1b54d7d3e3e5560',
@@ -278,8 +374,25 @@ deps = {
   'src/third_party/libaddressinput/src':
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '87f69db0b1ca732ba148489d2f75b3af2f236632',
 
+  # Userspace interface to kernel DRM services.
+  'src/third_party/libdrm/src': {
+      'url': Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '0ce18bedd3e62d4784fa755403801934ba171084',
+      'condition': 'checkout_linux',
+  },
+
+  # The libevdev library (Chrome OS version).
+  'src/third_party/libevdev/src': {
+      'url': Var('chromium_git') + '/chromiumos/platform/libevdev.git' + '@' + '9f7a1961eb4726211e18abd147d5a11a4ea86744',
+      'condition': 'checkout_linux',
+  },
+
   'src/third_party/libjpeg_turbo':
     Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'a1750dbc79a8792dde3d3f7d7d8ac28ba01ac9dd',
+
+  'src/third_party/liblouis/src': {
+      'url': Var('chromium_git') + '/external/liblouis-github.git' + '@' + '5f9c03f2a3478561deb6ae4798175094be8a26c2',
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/libphonenumber/dist':
     Var('chromium_git') + '/external/libphonenumber.git' + '@' + 'a4da30df63a097d67e3c429ead6790ad91d36cf4',
@@ -290,6 +403,12 @@ deps = {
   'src/third_party/libsrtp':
     Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '1d45b8e599dc2db6ea3ae22dbc94a8c504652423',
 
+  # Android Explicit Synchronization.
+  'src/third_party/libsync/src': {
+      'url': Var('chromium_git') + '/aosp/platform/system/core/libsync.git' + '@' + 'aa6cda6f638bd57d3a024f0d201f723a5c3bb875',
+      'condition': 'checkout_linux',
+  },
+
   'src/third_party/libvpx/source/libvpx':
     Var('chromium_git') + '/webm/libvpx.git' + '@' +  '10bab1ec2966e0c22e80965b00b2a953a338880b',
 
@@ -299,12 +418,42 @@ deps = {
   'src/third_party/libyuv':
     Var('chromium_git') + '/libyuv/libyuv.git' + '@' + '5b1af9a33545895ea12c52bf007f17914de19173',  # from r1670
 
+  'src/third_party/material_design_icons/src': {
+      'url': Var('chromium_git') + '/external/github.com/google/material-design-icons.git' + '@' +
+          '5ab428852e35dc177a8c37a2df9dc9ccf768c65a',
+      'condition': 'checkout_ios',
+  },
+
   'src/third_party/mesa/src':
     Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'ef811c6bd4de74e13e7035ca882cc77f85793fef',
+
+  # GNU binutils assembler for x86-64.
+  'src/third_party/mingw-w64/mingw/bin': {
+      'url': Var('chromium_git') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git' + '@' + '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
+      'condition': 'checkout_win',
+  },
+
+  # Graphics buffer allocator for Chrome OS.
+  'src/third_party/minigbm/src': {
+      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '27a7e6a24709564e18c3382d0aeda0b40c7ae03b',
+      'condition': 'checkout_linux',
+  },
+
+  # Minizip library. Used on Chrome OS.
+  'src/third_party/minizip/src': {
+      'url': Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + 'e07e141475220196b55294c8172b274cc32d642d',
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/mockito/src': {
       'url': Var('chromium_git') + '/external/mockito/mockito.git' + '@' + 'de83ad4598ad4cf5ea53c69a8a8053780b04b850',
       'condition': 'checkout_android',
+  },
+
+  # Binaries for nacl sdk.
+  'src/third_party/nacl_sdk_binaries': {
+      'url': Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
+      'condition': 'checkout_win',
   },
 
   'src/third_party/netty-tcnative/src': {
@@ -325,6 +474,23 @@ deps = {
 
   'src/third_party/pdfium':
     Var('pdfium_git') + '/pdfium.git' + '@' +  Var('pdfium_revision'),
+
+  # Parses Windows PE/COFF executable format.
+  'src/third_party/pefile': {
+      'url': Var('chromium_git') + '/external/pefile.git' + '@' + '72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
+      'condition': 'checkout_win',
+  },
+
+  'src/third_party/perl': {
+      'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + 'ac0d98b5cee6c024b0cffeb4f8f45b6fc5ccdb78',
+      'condition': 'checkout_win',
+  },
+
+  # Dependency of chromite.git and skia.
+  'src/third_party/pyelftools': {
+      'url': Var('chromium_git') + '/chromiumos/third_party/pyelftools.git' + '@' + '19b3e610c86fcadb837d252c794cb5e8008826ae',
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/pyftpdlib/src':
     Var('chromium_git') + '/external/pyftpdlib.git' + '@' + '2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
@@ -374,6 +540,24 @@ deps = {
   'src/third_party/visualmetrics/src':
     Var('chromium_git') + '/external/github.com/WPO-Foundation/visualmetrics.git' + '@' +  '1edde9d2fe203229c895b648fdec355917200ad6',
 
+  # Display server protocol for Linux.
+  'src/third_party/wayland/src': {
+      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '1361da9cd5a719b32d978485a29920429a31ed25',
+      'condition': 'checkout_linux',
+  },
+
+  # Wayland protocols that add functionality not available in the core protocol.
+  'src/third_party/wayland-protocols/src': {
+      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '26c99346ab5f2273fe5581bc4f6397bbb834f747',
+      'condition': 'checkout_linux',
+  },
+
+  # Wireless Display Software. Used on Chrome OS.
+  'src/third_party/wds/src': {
+      'url': Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'ac3d8210d95f3000bf5c8e16a79dbbbf22d554a5',
+      'condition': 'checkout_linux',
+  },
+
   'src/third_party/webdriver/pylib':
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',
 
@@ -382,6 +566,11 @@ deps = {
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + 'bbceb76f540159e2dba0701ac03c514f01624130', # commit position 20032
+
+  'src/third_party/xdg-utils': {
+      'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
+      'condition': 'checkout_linux',
+  },
 
   'src/third_party/yasm/source/patched-yasm':
     Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + 'b98114e18d8b9b84586b10d24353ab8616d4c5fc',
@@ -407,144 +596,28 @@ deps = {
 
 deps_os = {
   'win': {
-    'src/third_party/bison':
-      Var('chromium_git') + '/chromium/deps/bison.git' + '@' + '083c9a45e4affdd5464ee2b224c2df649c6e26c3',
-
-    'src/third_party/gperf':
-      Var('chromium_git') + '/chromium/deps/gperf.git' + '@' + 'd892d79f64f9449770443fb06da49b5a1e5d33c1',
-
-    'src/third_party/perl':
-      Var('chromium_git') + '/chromium/deps/perl.git' + '@' + 'ac0d98b5cee6c024b0cffeb4f8f45b6fc5ccdb78',
-
+    # TODO(phajdan.jr): move all lighttpd entries to deps behind condition.
     'src/third_party/lighttpd':
       Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
-
-    # Parses Windows PE/COFF executable format.
-    'src/third_party/pefile':
-      Var('chromium_git') + '/external/pefile.git' + '@' + '72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
-
-    # GNU binutils assembler for x86-32.
-    'src/third_party/gnu_binutils':
-      Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
-    # GNU binutils assembler for x86-64.
-    'src/third_party/mingw-w64/mingw/bin':
-      Var('chromium_git') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git' + '@' + '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
-
-    # Binaries for nacl sdk.
-    'src/third_party/nacl_sdk_binaries':
-      Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
   },
   'ios': {
-    'src/ios/third_party/earl_grey/src':
-      Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'b8f1ed850b3b8c059d2912ac4c25a2480ddba826',
-
-    'src/ios/third_party/fishhook/src':
-      Var('chromium_git') + '/external/github.com/facebook/fishhook.git' + '@' + 'd172d5247aa590c25d0b1885448bae76036ea22c',
-
-    'src/ios/third_party/gcdwebserver/src':
-      Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '43555c66627f6ed44817855a0f6d465f559d30e0',
-
-    'src/ios/third_party/material_components_ios/src':
-      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '74e87aa83f93ef27347b91c33a6d54af34b90977',
-
-    'src/ios/third_party/material_font_disk_loader_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '8e30188777b016182658fbaa0a4a020a48183224',
-
-    'src/ios/third_party/material_roboto_font_loader_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + '4aa51e906e5671c71d24e991f1f10d782a58409f',
-
-    'src/ios/third_party/material_sprited_animation_view_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'c6e16d06bdafd95540c62b3402d9414692fbca81',
-
-    'src/ios/third_party/material_text_accessibility_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-text-accessibility-ios.git' + '@' + '7340b22cc589101ba0b11516afe4f3a733041951',
-
-    'src/ios/third_party/ochamcrest/src':
-      Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + 'd7ee4ecfb6bd13c3c8d364682b6228ccd86e1e1a',
-
+    # TODO(phajdan.jr): move all google_toolbox_for_mac entries to deps behind condition.
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
-
-    'src/third_party/material_design_icons/src':
-      Var('chromium_git') + '/external/github.com/google/material-design-icons.git' + '@' +
-      '5ab428852e35dc177a8c37a2df9dc9ccf768c65a',
   },
   'mac': {
-    'src/chrome/installer/mac/third_party/xz/xz':
-      Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
-
+    # TODO(phajdan.jr): move all google_toolbox_for_mac entries to deps behind condition.
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
+    # TODO(phajdan.jr): move all lighttpd entries to deps behind condition.
     'src/third_party/lighttpd':
       Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
   },
   'unix': {
-    # Linux, really.
-    'src/third_party/xdg-utils':
-      Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
-
+    # TODO(phajdan.jr): move all lss entries together to deps behind proper condition.
     'src/third_party/lss':
       Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
-
-    # For Linux and Chromium OS.
-    'src/third_party/cros_system_api':
-      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '72120182b44dcaf936241c8a9b3695c13bc6b589',
-
-    # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
-    'src/third_party/chromite':
-      Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '5704204e2f302317e202fd7ccb24593f64425ea9',
-
-    # Dependency of chromite.git and skia.
-    'src/third_party/pyelftools':
-      Var('chromium_git') + '/chromiumos/third_party/pyelftools.git' + '@' + '19b3e610c86fcadb837d252c794cb5e8008826ae',
-
-    'src/third_party/liblouis/src':
-      Var('chromium_git') + '/external/liblouis-github.git' + '@' + '5f9c03f2a3478561deb6ae4798175094be8a26c2',
-
-    # Used for embedded builds. CrOS & Linux use the system version.
-    'src/third_party/fontconfig/src':
-      Var('chromium_git') + '/external/fontconfig.git' + '@' + 'f16c3118e25546c1b749f9823c51827a60aeb5c1',
-
-    # Graphics buffer allocator for Chrome OS.
-    'src/third_party/minigbm/src':
-      Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '27a7e6a24709564e18c3382d0aeda0b40c7ae03b',
-
-    # Userspace interface to kernel DRM services.
-    'src/third_party/libdrm/src':
-      Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '0ce18bedd3e62d4784fa755403801934ba171084',
-
-    # Display server protocol for Linux.
-    'src/third_party/wayland/src':
-      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '1361da9cd5a719b32d978485a29920429a31ed25',
-
-    # Wayland protocols that add functionality not available in the core protocol.
-    'src/third_party/wayland-protocols/src':
-      Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '26c99346ab5f2273fe5581bc4f6397bbb834f747',
-
-    # The libevdev library (Chrome OS version).
-    'src/third_party/libevdev/src':
-      Var('chromium_git') + '/chromiumos/platform/libevdev.git' + '@' + '9f7a1961eb4726211e18abd147d5a11a4ea86744',
-
-    # Chrome OS touchpad gestures library.
-    'src/third_party/gestures/gestures':
-      Var('chromium_git') + '/chromiumos/platform/gestures.git' + '@' + '5a656849c7d2b0d0ddbe0ac6d300c1e2fada0bb4',
-
-    # Wireless Display Software. Used on Chrome OS.
-    'src/third_party/wds/src':
-      Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'ac3d8210d95f3000bf5c8e16a79dbbbf22d554a5',
-
-    # DevTools node modules. Used on Linux buildbots only.
-    'src/third_party/devtools-node-modules':
-      Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
-
-    # Minizip library. Used on Chrome OS.
-    'src/third_party/minizip/src':
-      Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + 'e07e141475220196b55294c8172b274cc32d642d',
-
-    # Android Explicit Synchronization.
-    'src/third_party/libsync/src':
-      Var('chromium_git') + '/aosp/platform/system/core/libsync.git' + '@' + 'aa6cda6f638bd57d3a024f0d201f723a5c3bb875',
   },
   'android': {
     # TODO(phajdan.jr): move all lss entries together to deps behind proper condition.
