@@ -934,6 +934,12 @@ void AutofillMetrics::LogNumberOfAddressesSuppressedForDisuse(
 }
 
 // static
+void AutofillMetrics::LogNumberOfAddressesDeletedForDisuse(
+    size_t num_profiles) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.AddressesDeletedForDisuse", num_profiles);
+}
+
+// static
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }

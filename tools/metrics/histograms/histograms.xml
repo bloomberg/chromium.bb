@@ -4532,7 +4532,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Autofill.AddressesSuppressedForDisuse">
+<histogram name="Autofill.AddressesDeletedForDisuse" units="addresses">
+  <owner>wuandy@chromium.org</owner>
+  <summary>
+    The number of unverified autofill addresses deleted because they have not
+    been used for a long time, and are not used as billing addresses of valid
+    credit cards. Note the deletion only happens once per major version upgrade.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.AddressesSuppressedForDisuse" units="addresses">
   <owner>rogerm@chromium.org</owner>
   <summary>
     The number of address suggestions not shown in the Autofill popup because

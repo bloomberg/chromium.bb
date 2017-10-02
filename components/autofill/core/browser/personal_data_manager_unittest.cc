@@ -259,6 +259,18 @@ class PersonalDataManagerTestBase {
     EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
   }
 
+  // Helper method to create a profile that was last used 400 days ago.
+  // This profile is supposed to be deleted during a major version upgrade.
+  void CreateDeletableDisusedProfile() {
+    AutofillProfile profile0(test::GetFullProfile());
+    profile0.set_use_date(AutofillClock::Now() -
+                          base::TimeDelta::FromDays(400));
+    personal_data_->AddProfile(profile0);
+
+    WaitForOnPersonalDataChanged();
+    EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+  }
+
   // Helper methods that simply forward the call to the private member (to avoid
   // having to friend every test that needs to access the private
   // PersonalDataManager::ImportAddressProfile or ImportCreditCard).
@@ -6283,6 +6295,132 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
 }
 
+// Tests that DeleteDisusedAddresses is not run if the feature is disabled.
+TEST_F(PersonalDataManagerTest, DeleteDisusedAddresses_DoNothingWhenDisabled) {
+  // Make sure feature is disabled by default.
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kAutofillDeleteDisusedAddresses));
+
+  CreateDeletableDisusedProfile();
+
+  // DeleteDisusedCreditCards should return false to indicate it was not run.
+  EXPECT_FALSE(personal_data_->DeleteDisusedAddresses());
+
+  personal_data_->Refresh();
+
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+}
+
+// Tests that DeleteDisusedAddresses is not run a second time on the same
+// major version.
+TEST_F(PersonalDataManagerTest, DeleteDisusedAddresses_OncePerVersion) {
+  // Enable the feature.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kAutofillDeleteDisusedAddresses);
+
+  CreateDeletableDisusedProfile();
+
+  EXPECT_TRUE(personal_data_->DeleteDisusedAddresses());
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
+
+  // Add the profile back.
+  CreateDeletableDisusedProfile();
+
+  // DeleteDisusedAddresses should return false to indicate it was not run.
+  EXPECT_FALSE(personal_data_->DeleteDisusedAddresses());
+
+  personal_data_->Refresh();
+
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+}
+
+// Tests that DeleteDisusedAddresses only deletes the addresses that are
+// supposed to be deleted.
+TEST_F(PersonalDataManagerTest,
+       DeleteDisusedAddresses_DeleteDesiredAddressesOnly) {
+  // Enable the feature.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kAutofillDeleteDisusedAddresses);
+
+  auto now = AutofillClock::Now();
+
+  // Create unverified/disused/not-used-by-valid-credit-card
+  // address(deletable).
+  AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile0, "Alice", "", "Delete", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 6", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+  profile0.set_use_date(now - base::TimeDelta::FromDays(400));
+  personal_data_->AddProfile(profile0);
+
+  // Create unverified/disused/used-by-expired-credit-card address(deletable).
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile1, "Bob", "", "Delete", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 7", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+  profile1.set_use_date(now - base::TimeDelta::FromDays(400));
+  CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Bob",
+                          "5105105105105100" /* Mastercard */, "04", "1999",
+                          "1");
+  credit_card0.set_use_date(now - base::TimeDelta::FromDays(400));
+  credit_card0.set_billing_address_id(profile1.guid());
+  personal_data_->AddProfile(profile1);
+  personal_data_->AddCreditCard(credit_card0);
+
+  // Create verified/disused/not-used-by-valid-credit-card address(not
+  // deletable).
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile2, "Charlie", "", "Keep", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 8", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+  profile2.set_origin(kSettingsOrigin);
+  profile2.set_use_date(now - base::TimeDelta::FromDays(400));
+  personal_data_->AddProfile(profile2);
+
+  // Create unverified/recently-used/not-used-by-valid-credit-card address(not
+  // deletable).
+  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile3, "Dave", "", "Keep", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 9", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+  profile3.set_use_date(now - base::TimeDelta::FromDays(4));
+  personal_data_->AddProfile(profile3);
+
+  // Create unverified/disused/used-by-valid-credit-card address(not deletable).
+  AutofillProfile profile4(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile4, "Emma", "", "Keep", "", "ACME",
+                       "1234 Evergreen Terrace", "Bld. 10", "Springfield", "IL",
+                       "32801", "US", "15151231234");
+  profile4.set_use_date(now - base::TimeDelta::FromDays(400));
+  CreditCard credit_card1(CreditCard::MASKED_SERVER_CARD, "c987");
+  test::SetCreditCardInfo(&credit_card1, "Emma", "6543", "01", "2999", "1");
+  credit_card1.SetNetworkForMaskedCard(kVisaCard);
+  credit_card1.set_billing_address_id(profile4.guid());
+  credit_card1.set_use_date(now - base::TimeDelta::FromDays(1));
+  personal_data_->AddProfile(profile4);
+  personal_data_->AddCreditCard(credit_card1);
+
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(5U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+
+  // DeleteDisusedAddresses should return true.
+  EXPECT_TRUE(personal_data_->DeleteDisusedAddresses());
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(3U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(base::UTF8ToUTF16("Keep"),
+            personal_data_->GetProfiles()[0]->GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::UTF8ToUTF16("Keep"),
+            personal_data_->GetProfiles()[1]->GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::UTF8ToUTF16("Keep"),
+            personal_data_->GetProfiles()[2]->GetRawInfo(NAME_LAST));
+}
+
 // Tests that DeleteDisusedCreditCards is not run if the feature is disabled.
 TEST_F(PersonalDataManagerTest,
        DeleteDisusedCreditCards_DoNothingWhenDisabled) {
@@ -7431,7 +7569,7 @@ TEST_F(PersonalDataManagerTest, CreateDataForTest) {
   const std::vector<AutofillProfile*> addresses = personal_data_->GetProfiles();
   const std::vector<CreditCard*> credit_cards =
       personal_data_->GetCreditCards();
-  ASSERT_EQ(2U, addresses.size());
+  ASSERT_EQ(3U, addresses.size());
   ASSERT_EQ(3U, credit_cards.size());
 
   const base::Time disused_threshold =
@@ -7459,6 +7597,18 @@ TEST_F(PersonalDataManagerTest, CreateDataForTest) {
         });
     ASSERT_TRUE(it != addresses.end());
     EXPECT_LT((*it)->use_date(), disused_threshold);
+  }
+
+  // Verify that there was a disused deletable address created.
+  {
+    auto it = std::find_if(
+        addresses.begin(), addresses.end(), [this](const AutofillProfile* p) {
+          return p->GetInfo(NAME_FULL, this->personal_data_->app_locale()) ==
+                 base::UTF8ToUTF16("Polly Deletable");
+        });
+    ASSERT_TRUE(it != addresses.end());
+    EXPECT_LT((*it)->use_date(), deletion_threshold);
+    EXPECT_FALSE((*it)->IsVerified());
   }
 
   // Verify that there was a valid credit card created.
