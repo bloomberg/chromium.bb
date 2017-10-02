@@ -4271,16 +4271,16 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   const auto* const arc_session_manager = arc::ArcSessionManager::Get();
 
   // ARC is switched off by default.
-  EXPECT_TRUE(arc_session_manager->IsSessionStopped());
   EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcEnabled));
+  EXPECT_FALSE(arc_session_manager->enable_requested());
 
   // Enable ARC.
   SetArcEnabledByPolicy(true);
-  EXPECT_TRUE(arc_session_manager->IsSessionRunning());
+  EXPECT_TRUE(arc_session_manager->enable_requested());
 
   // Disable ARC.
   SetArcEnabledByPolicy(false);
-  EXPECT_TRUE(arc_session_manager->IsSessionStopped());
+  EXPECT_FALSE(arc_session_manager->enable_requested());
 }
 
 // Test ArcBackupRestoreEnabled policy.

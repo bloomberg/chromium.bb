@@ -102,13 +102,10 @@ void ArcAppTest::SetUp(Profile* profile) {
     WaitForDefaultApps();
 
   // Check initial conditions.
-  if (arc::ShouldArcAlwaysStart()) {
-    // When ARC first starts, it runs in opt-out mode of Play Store.
-    EXPECT_TRUE(arc_session_manager_->IsSessionRunning());
-  } else {
+  if (!arc::ShouldArcAlwaysStart())
     arc::SetArcPlayStoreEnabledForProfile(profile_, true);
-    EXPECT_FALSE(arc_session_manager_->IsSessionRunning());
-  }
+  if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
+    EXPECT_TRUE(arc_session_manager_->enable_requested());
 
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
