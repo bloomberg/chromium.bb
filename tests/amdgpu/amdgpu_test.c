@@ -97,6 +97,12 @@ static CU_SuiteInfo suites[] = {
 		.pCleanupFunc = suite_uvd_enc_tests_clean,
 		.pTests = uvd_enc_tests,
 	},
+	{
+		.pName = "Deadlock Tests",
+		.pInitFunc = suite_deadlock_tests_init,
+		.pCleanupFunc = suite_deadlock_tests_clean,
+		.pTests = deadlock_tests,
+	},
 	CU_SUITE_INFO_NULL,
 };
 

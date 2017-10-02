@@ -135,6 +135,21 @@ int suite_uvd_enc_tests_clean();
 extern CU_TestInfo uvd_enc_tests[];
 
 /**
+ * Initialize deadlock test suite
+ */
+int suite_deadlock_tests_init();
+
+/**
+ * Deinitialize deadlock test suite
+ */
+int suite_deadlock_tests_clean();
+
+/**
+ * Tests in uvd enc test suite
+ */
+extern CU_TestInfo deadlock_tests[];
+
+/**
  * Helper functions
  */
 static inline amdgpu_bo_handle gpu_mem_alloc(
