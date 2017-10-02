@@ -93,6 +93,10 @@ extern const base::Feature kDisplayPersistenceToggleInPermissionPrompts;
 extern const base::Feature kDoodlesOnLocalNtp;
 #endif
 
+#if defined(OS_ANDROID)
+extern const base::Feature kDownloadsForeground;
+#endif
+
 extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalAppBanners;

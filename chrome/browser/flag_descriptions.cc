@@ -1664,6 +1664,10 @@ const char kDontPrefetchLibrariesName[] = "Don't Prefetch Libraries";
 const char kDontPrefetchLibrariesDescription[] =
     "Don't prefetch libraries after loading.";
 
+const char kDownloadsForegroundName[] = "Enable downloads foreground";
+const char kDownloadsForegroundDescription[] =
+    "Enable downloads as a foreground service for all versions of Android.";
+
 const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
 const char kEnableAndroidPayIntegrationV1Description[] =
     "Enable integration with Android Pay using the first version of the API";

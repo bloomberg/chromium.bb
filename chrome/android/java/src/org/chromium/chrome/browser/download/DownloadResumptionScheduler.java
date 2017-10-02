@@ -12,12 +12,11 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.Task;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeBackgroundService;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * Class for scheduing download resumption tasks.
@@ -87,7 +86,7 @@ public class DownloadResumptionScheduler {
      * Start browser process and resumes all interrupted downloads.
      */
     public void handleDownloadResumption() {
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_DOWNLOADS_FOREGROUND)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND)) {
             DownloadNotificationService2 downloadNotificationService2 =
                     DownloadNotificationService2.getInstance();
             downloadNotificationService2.resumeAllPendingDownloads();

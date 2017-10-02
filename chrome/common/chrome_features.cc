@@ -175,6 +175,12 @@ const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_ANDROID)
+// Enables downloads as a foreground service for all versions of Android.
+const base::Feature kDownloadsForeground{"DownloadsForeground",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",
