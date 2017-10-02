@@ -207,7 +207,6 @@ test("libaddressinput_unittests") {
     "src/cpp/test/testdata_source_test.cc",
     "src/cpp/test/util/json_test.cc",
     "src/cpp/test/util/md5_unittest.cc",
-    "src/cpp/test/util/scoped_ptr_unittest.cc",
     "src/cpp/test/util/string_compare_test.cc",
     "src/cpp/test/util/string_split_unittest.cc",
     "src/cpp/test/util/string_util_test.cc",

@@ -7,15 +7,14 @@
 
 #include "components/autofill/core/browser/region_data_loader.h"
 
+#include <memory>
 #include <string>
 
 #include "base/timer/timer.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/preload_supplier.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/util/scoped_ptr.h"
 
 namespace i18n {
 namespace addressinput {
-class PreloadSupplier;
 class Source;
 class Storage;
 }  // namespace addressinput
@@ -51,8 +50,7 @@ class RegionDataLoaderImpl : public RegionDataLoader {
   void DeleteThis();
 
   // The callback to give to |region_data_supplier_| for async operations.
-  ::i18n::addressinput::scoped_ptr<
-      ::i18n::addressinput::PreloadSupplier::Callback>
+  std::unique_ptr<::i18n::addressinput::PreloadSupplier::Callback>
       region_data_supplier_callback_;
 
   // A supplier of region data.
