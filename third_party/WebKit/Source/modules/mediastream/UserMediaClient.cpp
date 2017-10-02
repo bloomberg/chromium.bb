@@ -30,8 +30,10 @@
 
 #include "modules/mediastream/UserMediaClient.h"
 
+#include "modules/mediastream/ApplyConstraintsRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/web/WebApplyConstraintsRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDeviceChangeObserver.h"
 #include "public/web/WebMediaDevicesRequest.h"
@@ -64,6 +66,12 @@ void UserMediaClient::SetMediaDeviceChangeObserver(MediaDevices* observer) {
   if (client_) {
     client_->SetMediaDeviceChangeObserver(
         WebMediaDeviceChangeObserver(observer));
+  }
+}
+
+void UserMediaClient::ApplyConstraints(ApplyConstraintsRequest* request) {
+  if (client_) {
+    client_->ApplyConstraints(WebApplyConstraintsRequest(request));
   }
 }
 

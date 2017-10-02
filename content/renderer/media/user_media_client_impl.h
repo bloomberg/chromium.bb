@@ -65,6 +65,8 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
       const blink::WebMediaDevicesRequest& media_devices_request) override;
   void SetMediaDeviceChangeObserver(
       const blink::WebMediaDeviceChangeObserver& observer) override;
+  void ApplyConstraints(
+      const blink::WebApplyConstraintsRequest& web_request) override;
 
   // RenderFrameObserver override
   void WillCommitProvisionalLoad() override;

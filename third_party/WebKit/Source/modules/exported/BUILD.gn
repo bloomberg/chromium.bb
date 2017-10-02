@@ -6,6 +6,7 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 blink_modules_sources("exported") {
   sources = [
     "WebAXObject.cpp",
+    "WebApplyConstraintsRequest.cpp",
     "WebCryptoNormalize.cpp",
     "WebDOMFileSystem.cpp",
     "WebDOMMediaStreamTrack.cpp",

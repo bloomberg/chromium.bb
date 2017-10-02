@@ -33,6 +33,7 @@
 
 namespace blink {
 
+class WebApplyConstraintsRequest;
 class WebMediaDevicesRequest;
 class WebUserMediaRequest;
 class WebMediaDeviceChangeObserver;
@@ -46,6 +47,7 @@ class WebUserMediaClient {
   virtual void RequestMediaDevices(const WebMediaDevicesRequest&) = 0;
   virtual void SetMediaDeviceChangeObserver(
       const WebMediaDeviceChangeObserver&) = 0;
+  virtual void ApplyConstraints(const WebApplyConstraintsRequest&) = 0;
 };
 
 }  // namespace blink

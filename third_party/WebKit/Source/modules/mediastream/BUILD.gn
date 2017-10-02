@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("mediastream") {
   sources = [
+    "ApplyConstraintsRequest.cpp",
+    "ApplyConstraintsRequest.h",
     "DOMWindowMediaStream.h",
     "MediaConstraintsImpl.cpp",
     "MediaConstraintsImpl.h",
@@ -36,6 +38,8 @@ blink_modules_sources("mediastream") {
     "NavigatorUserMediaError.h",
     "NavigatorUserMediaErrorCallback.h",
     "NavigatorUserMediaSuccessCallback.h",
+    "OverconstrainedError.cpp",
+    "OverconstrainedError.h",
     "URLMediaStream.cpp",
     "URLMediaStream.h",
     "UserMediaClient.cpp",

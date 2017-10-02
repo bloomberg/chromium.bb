@@ -71,11 +71,8 @@ class MODULES_EXPORT ImageCapture final
   void SetMediaTrackConstraints(ScriptPromiseResolver*,
                                 const HeapVector<MediaTrackConstraintSet>&);
   const MediaTrackConstraintSet& GetMediaTrackConstraints() const;
-  void ClearMediaTrackConstraints(ScriptPromiseResolver*);
+  void ClearMediaTrackConstraints();
   void GetMediaTrackSettings(MediaTrackSettings&) const;
-
-  // TODO(mcasas): Remove this service method, https://crbug.com/338503.
-  bool HasNonImageCaptureConstraints(const MediaTrackConstraints&) const;
 
   DECLARE_VIRTUAL_TRACE();
 

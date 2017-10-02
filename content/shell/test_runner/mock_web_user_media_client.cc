@@ -16,11 +16,14 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
+using blink::WebApplyConstraintsRequest;
 using blink::WebMediaConstraints;
 using blink::WebMediaDeviceInfo;
 using blink::WebMediaDevicesRequest;
@@ -133,6 +136,18 @@ void MockWebUserMediaClient::RequestMediaDevices(
 void MockWebUserMediaClient::SetMediaDeviceChangeObserver(
     const blink::WebMediaDeviceChangeObserver& observer) {
   media_device_change_observer_ = observer;
+}
+
+void MockWebUserMediaClient::ApplyConstraints(
+    const WebApplyConstraintsRequest& web_request) {
+  WebApplyConstraintsRequest request = web_request;
+  if (request.Constraints().Basic().device_id.HasExact()) {
+    request.RequestFailed(
+        WebString::FromASCII(request.Constraints().Basic().device_id.GetName()),
+        "deviceId cannot be set with applyConstraints");
+    return;
+  }
+  request.RequestSucceeded();
 }
 
 }  // namespace test_runner
