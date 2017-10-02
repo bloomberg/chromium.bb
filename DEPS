@@ -255,7 +255,7 @@ deps = {
     Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/crc32c/src':
-    Var('chromium_git') + '/external/github.com/google/crc32c.git' + '@' + '9bc7a0cada31f3224779b7ba7f56cc7382758e54',
+    Var('chromium_git') + '/external/github.com/google/crc32c.git' + '@' + '0f771ed5ef83556451e1736f22b1a11054dc81c3',
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
