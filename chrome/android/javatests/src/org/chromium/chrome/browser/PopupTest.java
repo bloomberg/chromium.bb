@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -81,7 +80,6 @@ public class PopupTest {
     @Test
     @MediumTest
     @Feature({"Popup"})
-    @FlakyTest(message = "crbug.com/733365")
     public void testPopupWindowsAppearWhenAllowed() throws Exception {
         final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
 
@@ -108,11 +106,11 @@ public class PopupTest {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
-                return TextUtils.equals("Three", selector.getCurrentTab().getTitle());
+                return TextUtils.equals("Two", selector.getCurrentTab().getTitle());
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
-        Assert.assertEquals(4, selector.getTotalTabCount());
+        Assert.assertEquals(3, selector.getTotalTabCount());
         int currentTabId = selector.getCurrentTab().getId();
 
         // Test that revisiting the original page makes popup windows immediately.
@@ -121,8 +119,8 @@ public class PopupTest {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
-                if (selector.getTotalTabCount() != 7) return false;
-                return TextUtils.equals("Three", selector.getCurrentTab().getTitle());
+                if (selector.getTotalTabCount() != 5) return false;
+                return TextUtils.equals("Two", selector.getCurrentTab().getTitle());
             }
         }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertNotSame(currentTabId, selector.getCurrentTab().getId());
