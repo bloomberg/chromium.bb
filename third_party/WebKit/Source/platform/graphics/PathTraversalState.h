@@ -26,6 +26,7 @@
 #ifndef PathTraversalState_h
 #define PathTraversalState_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/wtf/Allocator.h"
@@ -34,7 +35,7 @@ namespace blink {
 
 class PLATFORM_EXPORT PathTraversalState final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(PathTraversalState);
+  DISALLOW_COPY_AND_ASSIGN(PathTraversalState);
 
  public:
   enum PathTraversalAction {

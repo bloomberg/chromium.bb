@@ -31,6 +31,7 @@
 #ifndef CoreInitializer_h
 #define CoreInitializer_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 
@@ -60,7 +61,7 @@ class WorkerClients;
 
 class CORE_EXPORT CoreInitializer {
   USING_FAST_MALLOC(CoreInitializer);
-  WTF_MAKE_NONCOPYABLE(CoreInitializer);
+  DISALLOW_COPY_AND_ASSIGN(CoreInitializer);
 
  public:
   // Initialize must be called before GetInstance.

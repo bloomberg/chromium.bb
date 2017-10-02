@@ -5,6 +5,7 @@
 #ifndef ScriptForbiddenScope_h
 #define ScriptForbiddenScope_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
@@ -16,7 +17,7 @@ namespace blink {
 // and only to be used by the main thread.
 class PLATFORM_EXPORT ScriptForbiddenScope final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ScriptForbiddenScope);
+  DISALLOW_COPY_AND_ASSIGN(ScriptForbiddenScope);
 
  public:
   ScriptForbiddenScope() { Enter(); }
@@ -24,7 +25,7 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
 
   class PLATFORM_EXPORT AllowUserAgentScript final {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(AllowUserAgentScript);
+    DISALLOW_COPY_AND_ASSIGN(AllowUserAgentScript);
 
    public:
     AllowUserAgentScript() {
@@ -64,7 +65,7 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
 // its behalf.
 class PLATFORM_EXPORT ScriptForbiddenIfMainThreadScope final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ScriptForbiddenIfMainThreadScope);
+  DISALLOW_COPY_AND_ASSIGN(ScriptForbiddenIfMainThreadScope);
 
  public:
   ScriptForbiddenIfMainThreadScope() {

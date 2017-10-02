@@ -5,6 +5,7 @@
 #ifndef EventDispatchForbiddenScope_h
 #define EventDispatchForbiddenScope_h
 
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -16,7 +17,7 @@ namespace blink {
 
 class EventDispatchForbiddenScope {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(EventDispatchForbiddenScope);
+  DISALLOW_COPY_AND_ASSIGN(EventDispatchForbiddenScope);
 
  public:
   EventDispatchForbiddenScope() {
@@ -55,7 +56,7 @@ class EventDispatchForbiddenScope {
 
 class EventDispatchForbiddenScope {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(EventDispatchForbiddenScope);
+  DISALLOW_COPY_AND_ASSIGN(EventDispatchForbiddenScope);
 
  public:
   EventDispatchForbiddenScope() {}

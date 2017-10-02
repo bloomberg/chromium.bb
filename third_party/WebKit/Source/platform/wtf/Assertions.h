@@ -31,7 +31,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
 
 // New code shouldn't use this function. This function will be deprecated.
@@ -74,25 +73,13 @@ WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
 // Allow equality comparisons of Objects by reference or pointer,
 // interchangeably.  This can be only used on types whose equality makes no
 // other sense than pointer equality.
-#define DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(thisType)    \
-  inline bool operator==(const thisType& a, const thisType& b) { \
-    return &a == &b;                                             \
-  }                                                              \
-  inline bool operator==(const thisType& a, const thisType* b) { \
-    return &a == b;                                              \
-  }                                                              \
-  inline bool operator==(const thisType* a, const thisType& b) { \
-    return a == &b;                                              \
-  }                                                              \
-  inline bool operator!=(const thisType& a, const thisType& b) { \
-    return !(a == b);                                            \
-  }                                                              \
-  inline bool operator!=(const thisType& a, const thisType* b) { \
-    return !(a == b);                                            \
-  }                                                              \
-  inline bool operator!=(const thisType* a, const thisType& b) { \
-    return !(a == b);                                            \
-  }
+#define DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Type)                    \
+  inline bool operator==(const Type& a, const Type& b) { return &a == &b; }  \
+  inline bool operator==(const Type& a, const Type* b) { return &a == b; }   \
+  inline bool operator==(const Type* a, const Type& b) { return a == &b; }   \
+  inline bool operator!=(const Type& a, const Type& b) { return !(a == b); } \
+  inline bool operator!=(const Type& a, const Type* b) { return !(a == b); } \
+  inline bool operator!=(const Type* a, const Type& b) { return !(a == b); }
 
 // DEFINE_TYPE_CASTS
 //
@@ -108,68 +95,68 @@ WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
 // * it's hard to prevent from passing unexpected objects,
 // * proceeding with the following code doesn't make sense, and
 // * cost of runtime type check is acceptable.
-#define DEFINE_TYPE_CASTS(thisType, argumentType, argument, pointerPredicate, \
-                          referencePredicate)                                 \
-  inline thisType* To##thisType(argumentType* argument) {                     \
-    SECURITY_DCHECK(!argument || (pointerPredicate));                         \
-    return static_cast<thisType*>(argument);                                  \
-  }                                                                           \
-  inline const thisType* To##thisType(const argumentType* argument) {         \
-    SECURITY_DCHECK(!argument || (pointerPredicate));                         \
-    return static_cast<const thisType*>(argument);                            \
-  }                                                                           \
-  inline thisType& To##thisType(argumentType& argument) {                     \
-    SECURITY_DCHECK(referencePredicate);                                      \
-    return static_cast<thisType&>(argument);                                  \
-  }                                                                           \
-  inline const thisType& To##thisType(const argumentType& argument) {         \
-    SECURITY_DCHECK(referencePredicate);                                      \
-    return static_cast<const thisType&>(argument);                            \
-  }                                                                           \
-  void To##thisType(const thisType*);                                         \
-  void To##thisType(const thisType&);                                         \
-                                                                              \
-  inline thisType* To##thisType##OrNull(argumentType* argument) {             \
-    if (!(argument) || !(pointerPredicate))                                   \
-      return nullptr;                                                         \
-    return static_cast<thisType*>(argument);                                  \
-  }                                                                           \
-  inline const thisType* To##thisType##OrNull(const argumentType* argument) { \
-    if (!(argument) || !(pointerPredicate))                                   \
-      return nullptr;                                                         \
-    return static_cast<const thisType*>(argument);                            \
-  }                                                                           \
-  inline thisType* To##thisType##OrNull(argumentType& argument) {             \
-    if (!(referencePredicate))                                                \
-      return nullptr;                                                         \
-    return static_cast<thisType*>(&argument);                                 \
-  }                                                                           \
-  inline const thisType* To##thisType##OrNull(const argumentType& argument) { \
-    if (!(referencePredicate))                                                \
-      return nullptr;                                                         \
-    return static_cast<const thisType*>(&argument);                           \
-  }                                                                           \
-  void To##thisType##OrNull(const thisType*);                                 \
-  void To##thisType##OrNull(const thisType&);                                 \
-                                                                              \
-  inline thisType* To##thisType##OrDie(argumentType* argument) {              \
-    CHECK(!argument || (pointerPredicate));                                   \
-    return static_cast<thisType*>(argument);                                  \
-  }                                                                           \
-  inline const thisType* To##thisType##OrDie(const argumentType* argument) {  \
-    CHECK(!argument || (pointerPredicate));                                   \
-    return static_cast<const thisType*>(argument);                            \
-  }                                                                           \
-  inline thisType& To##thisType##OrDie(argumentType& argument) {              \
-    CHECK(referencePredicate);                                                \
-    return static_cast<thisType&>(argument);                                  \
-  }                                                                           \
-  inline const thisType& To##thisType##OrDie(const argumentType& argument) {  \
-    CHECK(referencePredicate);                                                \
-    return static_cast<const thisType&>(argument);                            \
-  }                                                                           \
-  void To##thisType##OrDie(const thisType*);                                  \
-  void To##thisType##OrDie(const thisType&)
+#define DEFINE_TYPE_CASTS(Type, ArgType, argument, pointerPredicate, \
+                          referencePredicate)                        \
+  inline Type* To##Type(ArgType* argument) {                         \
+    SECURITY_DCHECK(!argument || (pointerPredicate));                \
+    return static_cast<Type*>(argument);                             \
+  }                                                                  \
+  inline const Type* To##Type(const ArgType* argument) {             \
+    SECURITY_DCHECK(!argument || (pointerPredicate));                \
+    return static_cast<const Type*>(argument);                       \
+  }                                                                  \
+  inline Type& To##Type(ArgType& argument) {                         \
+    SECURITY_DCHECK(referencePredicate);                             \
+    return static_cast<Type&>(argument);                             \
+  }                                                                  \
+  inline const Type& To##Type(const ArgType& argument) {             \
+    SECURITY_DCHECK(referencePredicate);                             \
+    return static_cast<const Type&>(argument);                       \
+  }                                                                  \
+  void To##Type(const Type*);                                        \
+  void To##Type(const Type&);                                        \
+                                                                     \
+  inline Type* To##Type##OrNull(ArgType* argument) {                 \
+    if (!(argument) || !(pointerPredicate))                          \
+      return nullptr;                                                \
+    return static_cast<Type*>(argument);                             \
+  }                                                                  \
+  inline const Type* To##Type##OrNull(const ArgType* argument) {     \
+    if (!(argument) || !(pointerPredicate))                          \
+      return nullptr;                                                \
+    return static_cast<const Type*>(argument);                       \
+  }                                                                  \
+  inline Type* To##Type##OrNull(ArgType& argument) {                 \
+    if (!(referencePredicate))                                       \
+      return nullptr;                                                \
+    return static_cast<Type*>(&argument);                            \
+  }                                                                  \
+  inline const Type* To##Type##OrNull(const ArgType& argument) {     \
+    if (!(referencePredicate))                                       \
+      return nullptr;                                                \
+    return static_cast<const Type*>(&argument);                      \
+  }                                                                  \
+  void To##Type##OrNull(const Type*);                                \
+  void To##Type##OrNull(const Type&);                                \
+                                                                     \
+  inline Type* To##Type##OrDie(ArgType* argument) {                  \
+    CHECK(!argument || (pointerPredicate));                          \
+    return static_cast<Type*>(argument);                             \
+  }                                                                  \
+  inline const Type* To##Type##OrDie(const ArgType* argument) {      \
+    CHECK(!argument || (pointerPredicate));                          \
+    return static_cast<const Type*>(argument);                       \
+  }                                                                  \
+  inline Type& To##Type##OrDie(ArgType& argument) {                  \
+    CHECK(referencePredicate);                                       \
+    return static_cast<Type&>(argument);                             \
+  }                                                                  \
+  inline const Type& To##Type##OrDie(const ArgType& argument) {      \
+    CHECK(referencePredicate);                                       \
+    return static_cast<const Type&>(argument);                       \
+  }                                                                  \
+  void To##Type##OrDie(const Type*);                                 \
+  void To##Type##OrDie(const Type&)
 
 // Check at compile time that related enums stay in sync.
 #define STATIC_ASSERT_ENUM(a, b)                            \
