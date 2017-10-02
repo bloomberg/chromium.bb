@@ -45,6 +45,7 @@ class MediaTrackCapabilities;
 class MediaTrackConstraints;
 class MediaStream;
 class MediaTrackSettings;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class MODULES_EXPORT MediaStreamTrack
@@ -118,6 +119,8 @@ class MODULES_EXPORT MediaStreamTrack
   void SourceChangedState() override;
 
   void PropagateTrackEnded();
+  void applyConstraintsImageCapture(ScriptPromiseResolver*,
+                                    const MediaTrackConstraints&);
 
   MediaStreamSource::ReadyState ready_state_;
   HeapHashSet<Member<MediaStream>> registered_media_streams_;

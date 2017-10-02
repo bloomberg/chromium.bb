@@ -35,11 +35,13 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "modules/imagecapture/ImageCapture.h"
+#include "modules/mediastream/ApplyConstraintsRequest.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
 #include "modules/mediastream/MediaTrackConstraints.h"
 #include "modules/mediastream/MediaTrackSettings.h"
+#include "modules/mediastream/OverconstrainedError.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
@@ -49,11 +51,85 @@
 namespace blink {
 
 namespace {
+
 static const char kContentHintStringNone[] = "";
 static const char kContentHintStringAudioSpeech[] = "speech";
 static const char kContentHintStringAudioMusic[] = "music";
 static const char kContentHintStringVideoMotion[] = "motion";
 static const char kContentHintStringVideoDetail[] = "detail";
+
+// The set of constrainable properties for image capture is available at
+// https://w3c.github.io/mediacapture-image/#constrainable-properties
+// TODO(guidou): Integrate image-capture constraints processing with the
+// spec-compliant main implementation and remove these support functions.
+// http://crbug.com/708723
+bool ConstraintSetHasImageCapture(
+    const MediaTrackConstraintSet& constraint_set) {
+  return constraint_set.hasWhiteBalanceMode() ||
+         constraint_set.hasExposureMode() || constraint_set.hasFocusMode() ||
+         constraint_set.hasPointsOfInterest() ||
+         constraint_set.hasExposureCompensation() ||
+         constraint_set.hasColorTemperature() || constraint_set.hasIso() ||
+         constraint_set.hasBrightness() || constraint_set.hasContrast() ||
+         constraint_set.hasSaturation() || constraint_set.hasSharpness() ||
+         constraint_set.hasZoom() || constraint_set.hasTorch();
+}
+
+bool ConstraintSetHasNonImageCapture(
+    const MediaTrackConstraintSet& constraint_set) {
+  return constraint_set.hasAspectRatio() || constraint_set.hasChannelCount() ||
+         constraint_set.hasDepthFar() || constraint_set.hasDepthNear() ||
+         constraint_set.hasDeviceId() || constraint_set.hasEchoCancellation() ||
+         constraint_set.hasFacingMode() || constraint_set.hasFocalLengthX() ||
+         constraint_set.hasFocalLengthY() || constraint_set.hasFrameRate() ||
+         constraint_set.hasGroupId() || constraint_set.hasHeight() ||
+         constraint_set.hasLatency() || constraint_set.hasSampleRate() ||
+         constraint_set.hasSampleSize() || constraint_set.hasVideoKind() ||
+         constraint_set.hasVolume() || constraint_set.hasWidth();
+}
+
+bool ConstraintSetHasImageAndNonImageCapture(
+    const MediaTrackConstraintSet& constraint_set) {
+  return ConstraintSetHasImageCapture(constraint_set) &&
+         ConstraintSetHasNonImageCapture(constraint_set);
+}
+
+bool ConstraintSetIsNonEmpty(const MediaTrackConstraintSet& constraint_set) {
+  return ConstraintSetHasImageCapture(constraint_set) ||
+         ConstraintSetHasNonImageCapture(constraint_set);
+}
+
+template <typename ConstraintSetCondition>
+bool ConstraintsSatisfyCondition(ConstraintSetCondition condition,
+                                 const MediaTrackConstraints& constraints) {
+  if (condition(constraints))
+    return true;
+
+  if (!constraints.hasAdvanced())
+    return false;
+
+  for (const auto& advanced_set : constraints.advanced()) {
+    if (condition(advanced_set))
+      return true;
+  }
+
+  return false;
+}
+
+bool ConstraintsHaveImageAndNonImageCapture(
+    const MediaTrackConstraints& constraints) {
+  return ConstraintsSatisfyCondition(ConstraintSetHasImageAndNonImageCapture,
+                                     constraints);
+}
+
+bool ConstraintsAreEmpty(const MediaTrackConstraints& constraints) {
+  return !ConstraintsSatisfyCondition(ConstraintSetIsNonEmpty, constraints);
+}
+
+bool ConstraintsHaveImageCapture(const MediaTrackConstraints& constraints) {
+  return ConstraintsSatisfyCondition(ConstraintSetHasImageCapture, constraints);
+}
+
 }  // namespace
 
 MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
@@ -319,23 +395,72 @@ ScriptPromise MediaStreamTrack::applyConstraints(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // TODO(mcasas): Until https://crbug.com/338503 is landed, we only support
-  // ImageCapture-related constraints.
-  if (!image_capture_ ||
-      image_capture_->HasNonImageCaptureConstraints(constraints)) {
-    resolver->Reject(DOMException::Create(
-        kNotSupportedError,
-        "Only Image-Capture constraints supported (https://crbug.com/338503)"));
+  MediaErrorState error_state;
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebMediaConstraints web_constraints =
+      MediaConstraintsImpl::Create(execution_context, constraints, error_state);
+  if (error_state.HadException()) {
+    resolver->Reject(
+        OverconstrainedError::Create(String(), "Cannot parse constraints"));
     return promise;
   }
 
-  // |constraints| empty means "remove/clear all current constraints".
-  if (!constraints.hasAdvanced() || constraints.advanced().IsEmpty())
-    image_capture_->ClearMediaTrackConstraints(resolver);
-  else
-    image_capture_->SetMediaTrackConstraints(resolver, constraints.advanced());
+  if (image_capture_) {
+    // TODO(guidou): Integrate image-capture constraints processing with the
+    // spec-compliant main implementation. http://crbug.com/708723
+    if (ConstraintsHaveImageAndNonImageCapture(constraints)) {
+      resolver->Reject(OverconstrainedError::Create(
+          String(),
+          "Mixing ImageCapture and non-ImageCapture "
+          "constraints is not currently supported"));
+      return promise;
+    }
 
+    if (ConstraintsAreEmpty(constraints)) {
+      // Do not resolve the promise. Instead, just clear the ImageCapture
+      // constraints and then pass the empty constraints to the general
+      // implementation.
+      image_capture_->ClearMediaTrackConstraints();
+    } else if (ConstraintsHaveImageCapture(constraints)) {
+      applyConstraintsImageCapture(resolver, constraints);
+      return promise;
+    }
+  }
+
+  // Resolve empty constraints here instead of relying on UserMediaController
+  // because the empty constraints have already been applied to image capture
+  // and the promise must resolve. Empty constraints do not change any setting,
+  // so resolving here is OK.
+  if (ConstraintsAreEmpty(constraints)) {
+    SetConstraints(web_constraints);
+    resolver->Resolve();
+    return promise;
+  }
+
+  Document* document = ToDocument(execution_context);
+  UserMediaController* user_media =
+      UserMediaController::From(document->GetFrame());
+  if (!user_media) {
+    resolver->Reject(OverconstrainedError::Create(
+        String(), "Cannot apply constraints due to unexpected error"));
+    return promise;
+  }
+
+  user_media->ApplyConstraints(
+      ApplyConstraintsRequest::Create(Component(), web_constraints, resolver));
   return promise;
+}
+
+void MediaStreamTrack::applyConstraintsImageCapture(
+    ScriptPromiseResolver* resolver,
+    const MediaTrackConstraints& constraints) {
+  // |constraints| empty means "remove/clear all current constraints".
+  if (!constraints.hasAdvanced() || constraints.advanced().IsEmpty()) {
+    image_capture_->ClearMediaTrackConstraints();
+    resolver->Resolve();
+  } else {
+    image_capture_->SetMediaTrackConstraints(resolver, constraints.advanced());
+  }
 }
 
 bool MediaStreamTrack::Ended() const {

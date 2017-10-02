@@ -24,6 +24,7 @@ class MockWebUserMediaClient : public blink::WebUserMediaClient {
   void RequestMediaDevices(const blink::WebMediaDevicesRequest&) override;
   void SetMediaDeviceChangeObserver(
       const blink::WebMediaDeviceChangeObserver&) override;
+  void ApplyConstraints(const blink::WebApplyConstraintsRequest&) override;
 
  private:
   WebTestDelegate* delegate_;

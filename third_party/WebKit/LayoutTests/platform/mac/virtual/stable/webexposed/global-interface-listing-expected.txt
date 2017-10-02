@@ -3971,6 +3971,12 @@ interface OscillatorNode : AudioScheduledSourceNode
     method constructor
     method setPeriodicWave
     setter type
+interface OverconstrainedError
+    attribute @@toStringTag
+    getter constraint
+    getter message
+    getter name
+    method constructor
 interface PageTransitionEvent : Event
     attribute @@toStringTag
     getter persisted

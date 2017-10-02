@@ -4,6 +4,8 @@
 
 #include "modules/imagecapture/ImageCapture.h"
 
+#include <utility>
+
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -554,9 +556,8 @@ const MediaTrackConstraintSet& ImageCapture::GetMediaTrackConstraints() const {
   return current_constraints_;
 }
 
-void ImageCapture::ClearMediaTrackConstraints(ScriptPromiseResolver* resolver) {
+void ImageCapture::ClearMediaTrackConstraints() {
   current_constraints_ = MediaTrackConstraintSet();
-  resolver->Resolve();
 
   // TODO(mcasas): Clear also any PhotoSettings that the device might have got
   // configured, for that we need to know a "default" state of the device; take
@@ -598,26 +599,6 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings& settings) const {
     settings.setZoom(settings_.zoom());
   if (settings_.hasTorch())
     settings.setTorch(settings_.torch());
-}
-
-bool ImageCapture::HasNonImageCaptureConstraints(
-    const MediaTrackConstraints& constraints) const {
-  if (!constraints.hasAdvanced())
-    return false;
-
-  const auto& advanced_constraints = constraints.advanced();
-  for (const auto& constraint : advanced_constraints) {
-    if (!constraint.hasWhiteBalanceMode() && !constraint.hasExposureMode() &&
-        !constraint.hasFocusMode() && !constraint.hasPointsOfInterest() &&
-        !constraint.hasExposureCompensation() &&
-        !constraint.hasColorTemperature() && !constraint.hasIso() &&
-        !constraint.hasBrightness() && !constraint.hasContrast() &&
-        !constraint.hasSaturation() && !constraint.hasSharpness() &&
-        !constraint.hasZoom() && !constraint.hasTorch()) {
-      return true;
-    }
-  }
-  return false;
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)

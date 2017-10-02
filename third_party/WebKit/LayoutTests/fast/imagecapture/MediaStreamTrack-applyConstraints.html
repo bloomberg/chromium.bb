@@ -52,18 +52,18 @@ promise_test(function(t) {
   var stream = canvas.captureStream();
   var videoTrack = stream.getVideoTracks()[0];
 
-  var expectedException =
+  var expectedError =
       new DOMException('Unsupported constraint(s)', 'NotSupportedError');
 
   // Use e.g. |torch| as an example of unsupported constraint.
   assert_false("torch" in videoTrack.getCapabilities());
   return promise_rejects(
-      t, expectedException,
+      t, expectedError,
       videoTrack.applyConstraints({advanced : [ {torch : true} ]}));
 }, 'MediaStreamTrack.applyConstraints() with unsupported constraint');
 
 // This test verifies that applyConstraints() rejects the returned Promise if
-// passed a non-supported constraint.
+// passed mixed ImageCapture and non-ImageCapture constraints.
 // TODO(mcasas): remove entirely after https://crbug.com/338503.
 promise_test(function(t) {
   var canvas = document.getElementById('canvas');
@@ -74,13 +74,12 @@ promise_test(function(t) {
   var stream = canvas.captureStream();
   var videoTrack = stream.getVideoTracks()[0];
 
-  var expectedException = new DOMException(
-      'Only Image-Capture constraints supported (https://crbug.com/338503)',
-      'NotSupportedError');
+  var expectedError = new OverconstrainedError(
+      '', 'Mixing ImageCapture and non-ImageCapture constraints is not currently supported');
 
   return promise_rejects(
-      t, expectedException,
-      videoTrack.applyConstraints({advanced : [ {width : 640} ]}));
+      t, expectedError,
+      videoTrack.applyConstraints({advanced : [ {width : 640, torch: true} ]}));
 }, 'MediaStreamTrack.applyConstraints() with non Image-Capture constraint');
 
 </script>

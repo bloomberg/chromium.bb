@@ -24,9 +24,11 @@
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
 namespace content {
 namespace {
@@ -126,6 +128,15 @@ void UserMediaClientImpl::RequestUserMedia(
         base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+void UserMediaClientImpl::ApplyConstraints(
+    const blink::WebApplyConstraintsRequest& web_request) {
+  // TODO(guidou): Implement applyConstraints(). http://crbug.com/338503
+  blink::WebApplyConstraintsRequest request = web_request;
+  request.RequestFailed(
+      blink::WebString(),
+      "applyConstraints not supported for this type of track");
 }
 
 void UserMediaClientImpl::MaybeProcessNextRequestInfo() {

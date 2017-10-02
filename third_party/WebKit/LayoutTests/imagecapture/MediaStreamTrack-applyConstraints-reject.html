@@ -72,8 +72,6 @@ const constraintGenerators = [
   capabilities => ({ zoom: capabilities.zoom.max + 1 }),
   capabilities => ({ zoom: capabilities.zoom.min - 1 }),
   capabilities => ({ torch: true }),
-
-  capabilities => ({ nonSenseConstraint: 3.141592 }),
 ];
 
 for (key in constraintGenerators) {

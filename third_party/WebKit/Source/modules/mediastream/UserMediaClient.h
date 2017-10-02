@@ -31,6 +31,8 @@
 #ifndef UserMediaClient_h
 #define UserMediaClient_h
 
+#include <memory>
+
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/UserMediaClient.h"
 #include "platform/wtf/PtrUtil.h"
@@ -38,6 +40,7 @@
 
 namespace blink {
 
+class ApplyConstraintsRequest;
 class LocalFrame;
 class MediaDevices;
 class MediaDevicesRequest;
@@ -54,6 +57,7 @@ class MODULES_EXPORT UserMediaClient {
   void CancelUserMediaRequest(UserMediaRequest*);
   void RequestMediaDevices(MediaDevicesRequest*);
   void SetMediaDeviceChangeObserver(MediaDevices*);
+  void ApplyConstraints(ApplyConstraintsRequest*);
 
  private:
   explicit UserMediaClient(WebUserMediaClient*);

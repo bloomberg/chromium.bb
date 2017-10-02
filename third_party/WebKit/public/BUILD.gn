@@ -470,6 +470,7 @@ source_set("blink_headers") {
     "web/WebAXEnums.h",
     "web/WebAXObject.h",
     "web/WebActiveWheelFlingParameters.h",
+    "web/WebApplyConstraintsRequest.h",
     "web/WebArrayBuffer.h",
     "web/WebArrayBufferConverter.h",
     "web/WebArrayBufferView.h",
