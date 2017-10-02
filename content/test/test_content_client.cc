@@ -12,25 +12,21 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
+#include "base/android/locale_utils.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #endif
 
 namespace content {
 
-TestContentClient::TestContentClient()
-    : data_pack_(ui::SCALE_FACTOR_100P) {
+TestContentClient::TestContentClient() {
   // content_shell.pak is not built on iOS as it is not required.
   base::FilePath content_shell_pack_path;
-  base::File pak_file;
-  base::MemoryMappedFile::Region pak_region;
 
 #if defined(OS_ANDROID)
-  // Tests that don't yet use .isolate files require loading from within .apk.
-  pak_file = base::File(
-      base::android::OpenApkAsset("assets/content_shell.pak", &pak_region));
-
   // on Android all pak files are inside the paks folder.
   PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path);
   content_shell_pack_path = content_shell_pack_path.Append(
@@ -39,12 +35,21 @@ TestContentClient::TestContentClient()
   PathService::Get(base::DIR_MODULE, &content_shell_pack_path);
 #endif  // defined(OS_ANDROID)
 
-  if (pak_file.IsValid()) {
-    data_pack_.LoadFromFileRegion(std::move(pak_file), pak_region);
-  } else {
-    content_shell_pack_path = content_shell_pack_path.Append(
-        FILE_PATH_LITERAL("content_shell.pak"));
-    data_pack_.LoadFromPath(content_shell_pack_path);
+  // Add the content_shell main pak file.
+  content_shell_pack_path =
+      content_shell_pack_path.Append(FILE_PATH_LITERAL("content_shell.pak"));
+
+  if (!ui::ResourceBundle::HasSharedInstance()) {
+#if defined(OS_ANDROID)
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        base::android::GetDefaultLocaleString(), NULL,
+        ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
+    ui::LoadMainAndroidPackFile("assets/content_shell.pak",
+                                content_shell_pack_path);
+#else
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(content_shell_pack_path);
+#endif
   }
 }
 
@@ -58,9 +63,8 @@ std::string TestContentClient::GetUserAgent() const {
 base::StringPiece TestContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  base::StringPiece resource;
-  data_pack_.GetStringPiece(resource_id, &resource);
-  return resource;
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+      resource_id, scale_factor);
 }
 
 }  // namespace content

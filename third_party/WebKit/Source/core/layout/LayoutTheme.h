@@ -87,11 +87,9 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // portion of the theme, e.g., LayoutThemeMac.cpp for Mac OS X.
 
   // These methods return the theme's extra style sheets rules, to let each
-  // platform adjust the default CSS rules in html.css, quirks.css or
-  // mediaControls.css.
+  // platform adjust the default CSS rules in html.css or quirks.css
   virtual String ExtraDefaultStyleSheet();
   virtual String ExtraQuirksStyleSheet();
-  virtual String ExtraMediaControlsStyleSheet();
   virtual String ExtraFullscreenStyleSheet();
 
   // A method to obtain the baseline position for a "leaf" control. This will

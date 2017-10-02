@@ -52,6 +52,7 @@
 #include "core/resize_observer/ResizeObserverEntry.h"
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
+#include "modules/media_controls/MediaControlsResourceLoader.h"
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
 #include "modules/media_controls/MediaDownloadInProductHelpManager.h"
@@ -342,6 +343,8 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
     controls->download_iph_manager_ =
         new MediaDownloadInProductHelpManager(*controls);
   }
+
+  MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
 
   shadow_root.AppendChild(controls);
   return controls;
