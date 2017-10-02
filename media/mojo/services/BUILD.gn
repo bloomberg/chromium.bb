@@ -112,6 +112,8 @@ component("services") {
     sources += [
       "mojo_cdm_allocator.cc",
       "mojo_cdm_allocator.h",
+      "mojo_cdm_helper.cc",
+      "mojo_cdm_helper.h",
     ]
     deps += [ "//media/cdm:cdm_api" ]
   }
