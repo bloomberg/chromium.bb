@@ -161,8 +161,7 @@ bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
   if (!extension)
     return false;
 
-  if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST)
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id))
     return extension_items_->IsCommandIdChecked(command_id);
 
   if (command_id == PAGE_ACCESS_RUN_ON_CLICK ||
@@ -180,8 +179,7 @@ bool ExtensionContextMenuModel::IsCommandIdVisible(int command_id) const {
   const Extension* extension = GetExtension();
   if (!extension)
     return false;
-  if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id)) {
     return extension_items_->IsCommandIdVisible(command_id);
   }
 
@@ -194,10 +192,8 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
   if (!extension)
     return false;
 
-  if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id))
     return extension_items_->IsCommandIdEnabled(command_id);
-  }
 
   switch (command_id) {
     case NAME:
@@ -237,8 +233,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
   if (!extension)
     return;
 
-  if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+  if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id)) {
     DCHECK(extension_items_);
     extension_items_->ExecuteCommand(command_id, GetActiveWebContents(),
                                      nullptr, content::ContextMenuParams());

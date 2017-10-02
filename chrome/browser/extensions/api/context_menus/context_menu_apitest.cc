@@ -74,8 +74,7 @@ class ExtensionContextMenuApiTest : public ExtensionApiTest {
     int num_found = 0;
     for (int i = 0; i < top_level_model_->GetItemCount(); i++) {
       int command_id = top_level_model_->GetCommandIdAt(i);
-      if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-          command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST &&
+      if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id) &&
           top_level_model_->GetTypeAt(i) == type) {
         num_found++;
       }
