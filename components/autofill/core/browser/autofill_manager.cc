@@ -431,6 +431,15 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
     return false;
   }
 
+  CreditCard credit_card =
+      personal_data_->ExtractCreditCardFromForm(*submitted_form);
+  if (IsValidCreditCardNumber(credit_card.number())) {
+    credit_card_form_event_logger_->DetectedCardInSubmittedForm();
+    if (personal_data_->IsKnownCard(credit_card)) {
+      credit_card_form_event_logger_->SubmittedKnownCard();
+    }
+  }
+
   address_form_event_logger_->OnFormSubmitted();
   credit_card_form_event_logger_->OnFormSubmitted();
 

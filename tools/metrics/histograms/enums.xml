@@ -2192,6 +2192,12 @@ uploading your change for review.  These are checked by presubmit scripts.
              (once)"/>
   <int value="19" label="Submitted with suggestion shown (once)"/>
   <int value="20" label="About to be submitted with suggestion shown (once)"/>
+  <int value="21"
+      label="Submitted with known card without selecting suggestions (once)"/>
+  <int value="22"
+      label="Submitted with unknown card without selecting suggestions (once)"/>
+  <int value="23"
+      label="Submitted with no card without selecting suggestions (once)"/>
 </enum>
 
 <enum name="AutofillFormSubmittedState">
