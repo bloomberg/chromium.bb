@@ -34,6 +34,7 @@ struct GPUInfo;
 }
 
 namespace media {
+struct CdmHostFilePath;
 class MediaDrmBridgeClient;
 }
 
@@ -46,7 +47,6 @@ class ContentRendererClient;
 class ContentUtilityClient;
 class OriginTrialPolicy;
 class ServiceManagerConnection;
-struct CdmHostFilePath;
 struct CdmInfo;
 struct PepperPluginInfo;
 
@@ -95,7 +95,7 @@ class CONTENT_EXPORT ContentClient {
   // is not needed.
   virtual void AddContentDecryptionModules(
       std::vector<content::CdmInfo>* cdms,
-      std::vector<content::CdmHostFilePath>* cdm_host_file_paths) {}
+      std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {}
 
   // Gives the embedder a chance to register its own schemes early in the
   // startup sequence.

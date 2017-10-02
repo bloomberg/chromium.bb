@@ -24,8 +24,6 @@ namespace chrome {
 
 namespace {
 
-using content::CdmHostFilePath;
-
 // TODO(xhwang): Move this to a common place if needed.
 const base::FilePath::CharType kSignatureFileExtension[] =
     FILE_PATH_LITERAL(".sig");
@@ -40,7 +38,7 @@ base::FilePath GetSigFilePath(const base::FilePath& file_path) {
 }  // namespace
 
 void AddCdmHostFilePaths(
-    std::vector<content::CdmHostFilePath>* cdm_host_file_paths) {
+    std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {
   DVLOG(1) << __func__;
   DCHECK(cdm_host_file_paths);
   DCHECK(cdm_host_file_paths->empty());
@@ -68,15 +66,14 @@ void AddCdmHostFilePaths(
         GetSigFilePath(version_dir.Append(kUnversionedFiles[i]));
     DVLOG(2) << __func__ << ": unversioned file " << i << " at "
              << file_path.value() << ", signature file " << sig_path.value();
-    cdm_host_file_paths->push_back(CdmHostFilePath(file_path, sig_path));
+    cdm_host_file_paths->emplace_back(file_path, sig_path);
   }
 
   for (size_t i = 0; i < arraysize(kVersionedFiles); ++i) {
     base::FilePath file_path = version_dir.Append(kVersionedFiles[i]);
     DVLOG(2) << __func__ << ": versioned file " << i << " at "
              << file_path.value();
-    cdm_host_file_paths->push_back(
-        CdmHostFilePath(file_path, GetSigFilePath(file_path)));
+    cdm_host_file_paths->emplace_back(file_path, GetSigFilePath(file_path));
   }
 
 #elif defined(OS_MACOSX)
@@ -96,8 +93,8 @@ void AddCdmHostFilePaths(
   DVLOG(2) << __func__
            << ": chrome_framework_path=" << chrome_framework_path.value()
            << ", signature_path=" << chrome_framework_sig_path.value();
-  cdm_host_file_paths->push_back(
-      CdmHostFilePath(chrome_framework_path, chrome_framework_sig_path));
+  cdm_host_file_paths->emplace_back(chrome_framework_path,
+                                    chrome_framework_sig_path);
 
 #elif defined(OS_LINUX)
 
@@ -108,8 +105,7 @@ void AddCdmHostFilePaths(
   base::FilePath chrome_path =
       chrome_exe_dir.Append(FILE_PATH_LITERAL("chrome"));
   DVLOG(2) << __func__ << ": chrome_path=" << chrome_path.value();
-  cdm_host_file_paths->push_back(
-      CdmHostFilePath(chrome_path, GetSigFilePath(chrome_path)));
+  cdm_host_file_paths->emplace_back(chrome_path, GetSigFilePath(chrome_path));
 
 #endif  // defined(OS_WIN)
 }
@@ -117,7 +113,7 @@ void AddCdmHostFilePaths(
 #else  // defined(GOOGLE_CHROME_BUILD)
 
 void AddCdmHostFilePaths(
-    std::vector<content::CdmHostFilePath>* cdm_host_file_paths) {
+    std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {
   NOTIMPLEMENTED() << "CDM host file paths need to be provided for the CDM to "
                       "verify the host.";
 }

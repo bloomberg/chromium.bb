@@ -60,10 +60,6 @@ source_set("cdm") {
     deps += [
       ":cdm_api",
       ":cdm_paths",
-
-      # TODO(xhwang): Remove this after Widevine specific logic is removed in
-      # CdmAdapterFactory. See http://crbug.com/510604
-      "//third_party/widevine/cdm:headers",
     ]
     sources += [
       "cdm_adapter.cc",
@@ -88,6 +84,21 @@ source_set("cdm") {
       "supported_cdm_versions.cc",
       "supported_cdm_versions.h",
     ]
+
+    if (enable_cdm_host_verification) {
+      sources += [
+        "cdm_host_file.cc",
+        "cdm_host_file.h",
+        "cdm_host_files.cc",
+        "cdm_host_files.h",
+      ]
+      deps += [
+        # Needed for finding CDM path from CDM adapter path.
+        # TODO(xhwang): Remove this dependency when CDM adapter is deprecated.
+        # See http://crbug.com/403462
+        "//third_party/widevine/cdm:headers",
+      ]
+    }
   }
 }
 

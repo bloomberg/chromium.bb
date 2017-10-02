@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MEDIA_CDM_HOST_FILES_H_
-#define CONTENT_COMMON_MEDIA_CDM_HOST_FILES_H_
+#ifndef MEDIA_CDM_CDM_HOST_FILES_H_
+#define MEDIA_CDM_CDM_HOST_FILES_H_
 
 #include <map>
 #include <memory>
@@ -17,18 +17,19 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "content/common/media/cdm_host_file.h"
+#include "media/base/media_export.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
+#include "media/cdm/cdm_host_file.h"
 #include "media/cdm/cdm_paths.h"
 
 namespace base {
 class FilePath;
 }
 
-namespace content {
+namespace media {
 
 // Manages all CDM host files.
-class CdmHostFiles {
+class MEDIA_EXPORT CdmHostFiles {
  public:
   CdmHostFiles();
   ~CdmHostFiles();
@@ -37,7 +38,8 @@ class CdmHostFiles {
   // the created CdmHostFiles instance. Returns nullptr if any of the files
   // cannot be opened, in which case no file will be left open.
   static std::unique_ptr<CdmHostFiles> Create(
-      const base::FilePath& cdm_adapter_path);
+      const base::FilePath& cdm_adapter_path,
+      const std::vector<CdmHostFilePath>& host_files);
 
   // Status of CDM host verification.
   // Note: Reported to UMA. Do not change the values.
@@ -60,10 +62,11 @@ class CdmHostFiles {
  private:
   // Opens all common files and CDM specific files for the CDM adapter
   // registered at |cdm_adapter_path|.
-  void OpenFiles(const base::FilePath& cdm_adapter_path);
+  void OpenFiles(const base::FilePath& cdm_adapter_path,
+                 const std::vector<CdmHostFilePath>& cdm_host_file_paths);
 
   // Opens common CDM host files shared by all CDMs.
-  void OpenCommonFiles();
+  void OpenCommonFiles(const std::vector<CdmHostFilePath>& cdm_host_file_paths);
 
   // Opens CDM specific files for the CDM adapter registered at
   // |cdm_adapter_path|.
@@ -82,8 +85,8 @@ class CdmHostFiles {
 };
 
 // Returns whether the |cdm_adapter_path| corresponds to a known CDM.
-bool IsCdm(const base::FilePath& cdm_adapter_path);
+bool MEDIA_EXPORT IsCdm(const base::FilePath& cdm_adapter_path);
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_MEDIA_CDM_HOST_FILES_H_
+#endif  // MEDIA_CDM_CDM_HOST_FILES_H_
