@@ -1528,6 +1528,8 @@ component("net") {
       "spdy/chromium/header_coalescer.h",
       "spdy/chromium/http2_priority_dependencies.cc",
       "spdy/chromium/http2_priority_dependencies.h",
+      "spdy/chromium/http2_push_promise_index.cc",
+      "spdy/chromium/http2_push_promise_index.h",
       "spdy/chromium/multiplexed_http_stream.cc",
       "spdy/chromium/multiplexed_http_stream.h",
       "spdy/chromium/multiplexed_session.cc",

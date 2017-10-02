@@ -640,8 +640,8 @@ SpdySession::UnclaimedPushedStreamContainer::erase(const_iterator it) {
   DCHECK(it != end());
   // Only allow cross-origin push for secure resources.
   if (it->first.SchemeIsCryptographic()) {
-    spdy_session_->pool_->UnregisterUnclaimedPushedStream(it->first,
-                                                          spdy_session_);
+    spdy_session_->pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
+        it->first, spdy_session_);
   }
   return streams_.erase(it);
 }
@@ -655,7 +655,7 @@ SpdySession::UnclaimedPushedStreamContainer::insert(
   DCHECK(spdy_session_->pool_);
   // Only allow cross-origin push for https resources.
   if (url.SchemeIsCryptographic()) {
-    spdy_session_->pool_->RegisterUnclaimedPushedStream(
+    spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
         url, spdy_session_->GetWeakPtr());
   }
   return streams_.insert(
