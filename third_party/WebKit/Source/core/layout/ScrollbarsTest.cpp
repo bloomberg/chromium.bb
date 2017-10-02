@@ -1105,11 +1105,7 @@ TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
 
 // Ensure thumb position is correctly calculated even at ridiculously large
 // scales.
-#if defined(OS_ANDROID)
-TEST_P(ScrollbarAppearanceTest, DISABLED_HugeScrollingThumbPosition) {
-#else
 TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
-#endif
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
@@ -1127,11 +1123,35 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 10000000),
                                    kProgrammaticScroll);
 
+  Compositor().BeginFrame();
+
   int scroll_y = scrollable_area->GetScrollOffset().Height();
   ASSERT_EQ(9999000, scroll_y);
 
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);
+
+  // TODO(bokan): Added a bunch of asserting here to fish out a flake. I
+  // suspect we're sometimes either keeping a horizontal scrollbar around a bit
+  // too long or the mock theme hasn't yet taken effect. Not sure how that might
+  // be happening but these should help decide where to look next (or the newly
+  // added BeginFrame after setting the ScrollOffset will help. In any case,
+  // remove once this bug is closed: crbug.com/769350.
+  {
+    ASSERT_FALSE(scrollable_area->HorizontalScrollbar());
+    WebThemeEngine* engine = Platform::Current()->ThemeEngine();
+    ASSERT_EQ(
+        engine->GetSize(StubWebThemeEngine::kPartScrollbarVerticalThumb).width,
+        15);
+    ASSERT_EQ(
+        engine->GetSize(StubWebThemeEngine::kPartScrollbarVerticalThumb).height,
+        StubWebThemeEngine::kMinimumVerticalLength);
+
+    StubWebThemeEngine::ScrollbarStyle style;
+    engine->GetOverlayScrollbarStyle(&style);
+    ASSERT_EQ(style.thumb_thickness, 3);
+    ASSERT_EQ(style.scrollbar_margin, 0);
+  }
 
   int maximumThumbPosition =
       WebView().Size().height - StubWebThemeEngine::kMinimumVerticalLength;
