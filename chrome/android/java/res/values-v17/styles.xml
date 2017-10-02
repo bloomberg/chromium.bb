@@ -697,17 +697,6 @@
         <item name="android:singleLine">true</item>
         <item name="android:textAppearance">@style/BlackDenseListText2</item>
     </style>
-    <style name="DownloadFileSizeStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_alignParentBottom">true</item>
-        <item name="android:layout_alignParentEnd">true</item>
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="android:paddingEnd">16dp</item>
-        <item name="android:textAlignment">viewEnd</item>
-        <item name="android:textColor">@color/google_grey_600</item>
-        <item name="android:singleLine">true</item>
-    </style>
     <style name="DownloadIconView" parent="@style/ListItemStartIcon">
         <item name="android:background">@color/light_active_color</item>
     </style>
