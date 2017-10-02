@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/dice_response_handler.h"
+#include "chrome/browser/signin/process_dice_header_observer_impl.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
@@ -243,7 +244,9 @@ void ProcessDiceHeaderUIThread(
 
   DiceResponseHandler* dice_response_handler =
       DiceResponseHandler::GetForProfile(profile);
-  dice_response_handler->ProcessDiceHeader(dice_params);
+  dice_response_handler->ProcessDiceHeader(
+      dice_params,
+      base::MakeUnique<ProcessDiceHeaderObserverImpl>(web_contents));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

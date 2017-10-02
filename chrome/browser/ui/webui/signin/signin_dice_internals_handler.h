@@ -28,6 +28,10 @@ class SigninDiceInternalsHandler : public content::WebUIMessageHandler {
   // Handler for disable sync event.
   void HandleDisableSync(const base::ListValue* args);
 
+  // Start a Gaia web-sign in and once done automatically start syncing with the
+  // account that was signed in.
+  void StartWebGaiaSigninAndStartSyncWhenDone();
+
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninDiceInternalsHandler);
