@@ -4,25 +4,17 @@
 
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 
+#include "base/macros.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
+#include "third_party/WebKit/common/client_hints/client_hints.h"
 
 namespace blink {
 
 namespace {
-
-// Mapping from WebClientHintsType to the header value for enabling the
-// corresponding client hint. The ordering should match the ordering of enums in
-// WebClientHintsType.
-static constexpr const char* kHeaderMapping[] = {"device-memory", "dpr",
-                                                 "width", "viewport-width"};
-
-static_assert(static_cast<int>(mojom::WebClientHintsType::kLast) + 1 ==
-                  arraysize(kHeaderMapping),
-              "unhandled client hint type");
 
 void ParseAcceptChHeader(const String& header_value,
                          WebEnabledClientHints& enabled_hints) {
@@ -33,7 +25,7 @@ void ParseAcceptChHeader(const String& header_value,
        ++i) {
     enabled_hints.SetIsEnabled(
         static_cast<mojom::WebClientHintsType>(i),
-        accept_client_hints_header.Contains(kHeaderMapping[i]));
+        accept_client_hints_header.Contains(kClientHintsHeaderMapping[i]));
   }
 
   enabled_hints.SetIsEnabled(
@@ -44,7 +36,10 @@ void ParseAcceptChHeader(const String& header_value,
 
 }  // namespace
 
-ClientHintsPreferences::ClientHintsPreferences() {}
+ClientHintsPreferences::ClientHintsPreferences() {
+  DCHECK_EQ(static_cast<size_t>(mojom::WebClientHintsType::kLast) + 1,
+            kClientHintsHeaderMappingCount);
+}
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {

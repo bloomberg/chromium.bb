@@ -99,6 +99,7 @@ jumbo_source_set("loader") {
     "//mojo/public/cpp/system:system",
     "//storage/public/interfaces:interfaces_blink",
     "//third_party/WebKit/Source/platform:make_platform_generated",
+    "//third_party/WebKit/common:blink_common",
     "//third_party/WebKit/public:mojo_bindings_blink",
   ]
 

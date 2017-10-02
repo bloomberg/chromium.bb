@@ -155,6 +155,13 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context))
     headers->SetHeaderIfMissing("Save-Data", "on");
 
+  // Attach additional request headers specified by embedder.
+  std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers =
+      GetContentClient()->browser()->GetAdditionalNavigationRequestHeaders(
+          browser_context, url);
+  if (embedder_additional_headers)
+    headers->MergeFrom(*(embedder_additional_headers.get()));
+
   headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
                               user_agent_override.empty()
                                   ? GetContentClient()->GetUserAgent()

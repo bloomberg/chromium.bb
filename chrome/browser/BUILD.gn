@@ -245,6 +245,8 @@ split_static_library("browser") {
     "chrome_quota_permission_context.h",
     "chrome_service.cc",
     "chrome_service.h",
+    "client_hints/client_hints.cc",
+    "client_hints/client_hints.h",
     "client_hints/client_hints_observer.cc",
     "client_hints/client_hints_observer.h",
     "command_observer.h",

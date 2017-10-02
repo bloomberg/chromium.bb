@@ -194,6 +194,13 @@ bool ContentBrowserClient::IsDataSaverEnabled(BrowserContext* context) {
   return false;
 }
 
+std::unique_ptr<net::HttpRequestHeaders>
+ContentBrowserClient::GetAdditionalNavigationRequestHeaders(
+    BrowserContext* context,
+    const GURL& url) const {
+  return nullptr;
+}
+
 bool ContentBrowserClient::AllowGetCookie(const GURL& url,
                                           const GURL& first_party,
                                           const net::CookieList& cookie_list,

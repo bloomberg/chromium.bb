@@ -42,6 +42,7 @@
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/chrome_service.h"
+#include "chrome/browser/client_hints/client_hints.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -1886,6 +1887,14 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
     return false;
   PrefService* prefs = profile->GetPrefs();
   return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
+}
+
+std::unique_ptr<net::HttpRequestHeaders>
+ChromeContentBrowserClient::GetAdditionalNavigationRequestHeaders(
+    content::BrowserContext* context,
+    const GURL& url) const {
+  return client_hints::GetAdditionalNavigationRequestClientHintsHeaders(context,
+                                                                        url);
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(
