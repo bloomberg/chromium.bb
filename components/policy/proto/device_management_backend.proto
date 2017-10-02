@@ -270,6 +270,10 @@ message PolicyFetchRequest {
   // have the key which matches this hash string, that could indicate malicious
   // or out-of-date Chrome client.
   optional string verification_key_hash = 9;
+
+  // Encoded information from a policy invalidation notification. This is opaque
+  // to the client and should be forwarded from the invalidation notification.
+  optional string policy_invalidation_info = 10;
 }
 
 // This message customizes how the device behaves when it is disabled by its
@@ -445,6 +449,15 @@ message PolicyData {
   // Used as the display domain when the primary domain gets renamed. This field
   // is present only for device policies.
   optional string display_domain = 25;
+
+  // Invalidation key for devices. Clients register for messages using this key
+  // in order to receive notifications for device policy changes.
+  optional string policy_invalidation_key = 26;
+
+  // Invalidation key for commands. Clients register for messages using this key
+  // in order to receive notifications that one or more commands are available
+  // for execution.
+  optional string command_invalidation_key = 27;
 }
 
 message PolicyFetchResponse {
