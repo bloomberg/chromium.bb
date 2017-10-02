@@ -13,6 +13,7 @@ namespace blink {
 class CrossThreadAudioParamInfo;
 class CrossThreadAudioWorkletProcessorInfo;
 class ExecutionContext;
+class WebThread;
 class WorkerThread;
 
 // AudioWorkletMessagingProxy is a main thread interface for
@@ -36,6 +37,8 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
 
   const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
       const String& name) const;
+
+  WebThread* GetWorkletBackingThread();
 
  private:
   ~AudioWorkletMessagingProxy() override;

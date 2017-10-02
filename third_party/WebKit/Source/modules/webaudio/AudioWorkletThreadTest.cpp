@@ -37,8 +37,6 @@ class AudioWorkletThreadTest : public ::testing::Test {
         SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
   }
 
-  void TearDown() override { AudioWorkletThread::ClearSharedBackingThread(); }
-
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
         AudioWorkletThread::Create(nullptr, *reporting_proxy_);

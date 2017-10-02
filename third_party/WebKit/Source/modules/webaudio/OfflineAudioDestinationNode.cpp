@@ -29,6 +29,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/AudioWorkletMessagingProxy.h"
 #include "modules/webaudio/AudioWorkletThread.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
@@ -141,9 +142,13 @@ void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
     AudioBuffer* render_target) {
   DCHECK(IsMainThread());
 
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
-    AudioWorkletThread::EnsureSharedBackingThread();
-    worklet_backing_thread_ = AudioWorkletThread::GetSharedBackingThread();
+  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
+  // there is an active AudioWorkletGlobalScope.
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
+      Context()->WorkletMessagingProxy()) {
+    DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
+    worklet_backing_thread_ =
+        Context()->WorkletMessagingProxy()->GetWorkletBackingThread();
   } else {
     render_thread_ =
         Platform::Current()->CreateThread("offline audio renderer");
@@ -364,7 +369,10 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
 WebThread* OfflineAudioDestinationHandler::GetRenderingThread() {
   DCHECK(IsInitialized());
 
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
+  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
+  // there is an active AudioWorkletGlobalScope.
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
+      Context()->WorkletMessagingProxy()) {
     DCHECK(!render_thread_ && worklet_backing_thread_);
     return worklet_backing_thread_;
   }
