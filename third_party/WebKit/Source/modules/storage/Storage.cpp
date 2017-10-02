@@ -41,37 +41,6 @@ Storage::Storage(LocalFrame* frame, StorageArea* storage_area)
   DCHECK(storage_area_);
 }
 
-String Storage::AnonymousNamedGetter(const AtomicString& name,
-                                     ExceptionState& exception_state) {
-  bool found = Contains(name, exception_state);
-  if (exception_state.HadException() || !found)
-    return String();
-  String result = getItem(name, exception_state);
-  if (exception_state.HadException())
-    return String();
-  return result;
-}
-
-bool Storage::AnonymousNamedSetter(const AtomicString& name,
-                                   const AtomicString& value,
-                                   ExceptionState& exception_state) {
-  setItem(name, value, exception_state);
-  return true;
-}
-
-DeleteResult Storage::AnonymousNamedDeleter(const AtomicString& name,
-                                            ExceptionState& exception_state) {
-  bool found = Contains(name, exception_state);
-  if (!found)
-    return kDeleteUnknownProperty;
-  if (exception_state.HadException())
-    return kDeleteReject;
-  removeItem(name, exception_state);
-  if (exception_state.HadException())
-    return kDeleteReject;
-  return kDeleteSuccess;
-}
-
 void Storage::NamedPropertyEnumerator(Vector<String>& names,
                                       ExceptionState& exception_state) {
   unsigned length = this->length(exception_state);
