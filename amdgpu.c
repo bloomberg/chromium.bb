@@ -44,7 +44,8 @@ enum {
 const static uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
-const static uint32_t texture_source_formats[] = { DRM_FORMAT_NV21, DRM_FORMAT_NV12 };
+const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
+						   DRM_FORMAT_NV21, DRM_FORMAT_NV12 };
 
 static int amdgpu_set_metadata(int fd, uint32_t handle, struct amdgpu_bo_metadata *info)
 {
