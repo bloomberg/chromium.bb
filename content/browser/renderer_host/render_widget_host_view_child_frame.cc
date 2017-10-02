@@ -860,12 +860,9 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
   // in case the root needs to prevent the child from scrolling. For example,
   // if the root has started an overscroll gesture, it needs to process the
   // scroll events that would normally be processed by the child.
-  // TODO(mcnee): Once BrowserPlugin is removed, investigate routing these
-  // GestureScrollUpdates directly to the root RWHV during an overscroll
-  // gesture. The way resending of scroll events from a plugin works would cause
-  // issues with this approach in terms of valid input streams.
-  // See crbug.com/751782
-  if (frame_connector_ &&
+  // TODO(mcnee): With scroll-latching enabled, the child would not scroll
+  // in this case. Remove this once scroll-latching lands. crbug.com/751782
+  if (!wheel_scroll_latching_enabled() && frame_connector_ &&
       input_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
