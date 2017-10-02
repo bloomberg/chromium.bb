@@ -63,6 +63,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewImpl.h"
+#include "core/frame/BrowserControls.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -8971,6 +8972,42 @@ TEST_P(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
                    ->GetPage();
   EXPECT_EQ(size.width, page->GetVisualViewport().Size().Width());
   EXPECT_EQ(size.height, page->GetVisualViewport().Size().Height());
+}
+
+// Verify that size changes to browser controls while the main frame is remote
+// are preserved when the main frame swaps to a local frame.  See
+// https://crbug.com/769321.
+TEST_P(WebFrameSwapTest,
+       ValidateBrowserControlsSizeOnRemoteToLocalMainFrameSwap) {
+  WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
+  MainFrame()->Swap(remote_frame);
+
+  // Create a provisional main frame frame but don't swap it in yet.
+  WebLocalFrame* local_frame =
+      FrameTestHelpers::CreateProvisional(*remote_frame);
+
+  WebViewImpl* web_view = static_cast<WebViewImpl*>(local_frame->View());
+  EXPECT_TRUE(web_view->MainFrame() &&
+              web_view->MainFrame()->IsWebRemoteFrame());
+
+  // Resize the browser controls.
+  float top_browser_controls_height = 40;
+  float bottom_browser_controls_height = 60;
+  web_view->ResizeWithBrowserControls(WebSize(100, 100),
+                                      top_browser_controls_height,
+                                      bottom_browser_controls_height, false);
+
+  // Swap the provisional frame in and verify that the browser controls size is
+  // correct.
+  remote_frame->Swap(local_frame);
+  Page* page = static_cast<WebViewImpl*>(local_frame->View())
+                   ->GetPage()
+                   ->MainFrame()
+                   ->GetPage();
+  EXPECT_EQ(top_browser_controls_height,
+            page->GetBrowserControls().TopHeight());
+  EXPECT_EQ(bottom_browser_controls_height,
+            page->GetBrowserControls().BottomHeight());
 }
 
 namespace {

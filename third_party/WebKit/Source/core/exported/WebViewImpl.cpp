@@ -1763,6 +1763,9 @@ void WebViewImpl::ResizeWithBrowserControls(
     size_ = new_size;
     GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(size_);
     GetPage()->GetVisualViewport().SetSize(size_);
+    GetPage()->GetBrowserControls().SetHeight(top_controls_height,
+                                              bottom_controls_height,
+                                              browser_controls_shrink_layout);
     return;
   }
 
