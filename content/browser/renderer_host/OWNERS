@@ -1,3 +1,6 @@
+# General renderer_host owners
+kenrb@chromium.org
+
 # for *aura*
 per-file *aura*=sadrul@chromium.org
 
