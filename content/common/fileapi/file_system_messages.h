@@ -32,7 +32,8 @@ IPC_STRUCT_TRAITS_BEGIN(storage::FileSystemInfo)
   IPC_STRUCT_TRAITS_MEMBER(mount_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(storage::FileSystemType)
+IPC_ENUM_TRAITS_MAX_VALUE(storage::FileSystemType,
+                          storage::FileSystemType::kFileSystemTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(storage::QuotaLimitType, storage::kQuotaLimitTypeLast)
 
 // File system messages sent from the browser to the child process.
