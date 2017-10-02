@@ -60,19 +60,14 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
   AndroidVideoSurfaceChooser() {}
   virtual ~AndroidVideoSurfaceChooser() {}
 
-  // Notify us that our client is ready for overlays.  We will send it a
-  // callback telling it whether to start with a SurfaceTexture or overlay,
-  // either synchronously or post one very soon.  |initial_factory| can be
-  // an empty callback to indicate "no factory".
-  virtual void Initialize(UseOverlayCB use_overlay_cb,
-                          UseSurfaceTextureCB use_surface_texture_cb,
-                          AndroidOverlayFactoryCB initial_factory,
-                          const State& initial_state) = 0;
+  // Sets the client callbacks to be called when a new surface choice is made.
+  // Must be called before UpdateState();
+  virtual void SetClientCallbacks(UseOverlayCB use_overlay_cb,
+                                  UseSurfaceTextureCB use_surface_texture_cb);
 
-  // Notify us that a new factory has arrived and / or other state is available.
-  // |*new_factory| may be an is_null() callback to indicate that the most
-  // recent factory has been revoked.  |!new_factory.has_value()| results in no
-  // change to the factory.
+  // Updates the current state and makes a new surface choice with the new
+  // state. If |new_factory| is empty, the factory is left as-is. Otherwise,
+  // the factory is updated to |*new_factory|.
   virtual void UpdateState(base::Optional<AndroidOverlayFactoryCB> new_factory,
                            const State& new_state) = 0;
 

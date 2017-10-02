@@ -118,6 +118,11 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       weak_factory_(this),
       codec_allocator_weak_factory_(this) {
   DVLOG(2) << __func__;
+  surface_chooser_->SetClientCallbacks(
+      base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
+                 weak_factory_.GetWeakPtr(), nullptr));
 }
 
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
@@ -222,12 +227,7 @@ void MediaCodecVideoDecoder::InitializeSurfaceChooser() {
   DCHECK_EQ(state_, State::kInitializing);
   // Initialize |surface_chooser_| and wait for its decision. Note: the
   // callback may be reentrant.
-  surface_chooser_->Initialize(
-      base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
-                 weak_factory_.GetWeakPtr(), nullptr),
-      CreateOverlayFactoryCb(), chooser_state_);
+  surface_chooser_->UpdateState(CreateOverlayFactoryCb(), chooser_state_);
 }
 
 void MediaCodecVideoDecoder::OnSurfaceChosen(

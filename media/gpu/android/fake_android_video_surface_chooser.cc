@@ -9,15 +9,12 @@ namespace media {
 FakeSurfaceChooser::FakeSurfaceChooser() = default;
 FakeSurfaceChooser::~FakeSurfaceChooser() = default;
 
-void FakeSurfaceChooser::Initialize(UseOverlayCB use_overlay_cb,
-                                    UseSurfaceTextureCB use_surface_texture_cb,
-                                    AndroidOverlayFactoryCB initial_factory,
-                                    const State& initial_state) {
-  MockInitialize();
+void FakeSurfaceChooser::SetClientCallbacks(
+    UseOverlayCB use_overlay_cb,
+    UseSurfaceTextureCB use_surface_texture_cb) {
+  MockSetClientCallbacks();
   use_overlay_cb_ = std::move(use_overlay_cb);
   use_surface_texture_cb_ = std::move(use_surface_texture_cb);
-  factory_ = std::move(initial_factory);
-  current_state_ = initial_state;
 }
 
 void FakeSurfaceChooser::UpdateState(
