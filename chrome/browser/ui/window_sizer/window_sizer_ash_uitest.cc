@@ -75,20 +75,9 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
 
 }  // namespace
 
-#if !defined(OS_CHROMEOS)
-#define MAYBE_OpenBrowserUsingShelfOnOtherDisplay \
-  DISABLED_OpenBrowserUsingShelfOnOtherDisplay
-#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay \
-  DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay
-#else
-#define MAYBE_OpenBrowserUsingShelfOnOtherDisplay \
-  OpenBrowserUsingShelfOnOtherDisplay
-#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay \
-  OpenBrowserUsingContextMenuOnOtherDisplay
-#endif
-
+// Disabled due to flaky failures on ChromeOS: https://crbug.com/770138
 IN_PROC_BROWSER_TEST_F(WindowSizerTest,
-                       MAYBE_OpenBrowserUsingShelfOnOtherDisplay) {
+                       DISABLED_OpenBrowserUsingShelfOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);
@@ -172,8 +161,9 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
 
 }  // namespace
 
+// Disabled due to flaky failures on ChromeOS: https://crbug.com/770138
 IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
-                       MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay) {
+                       DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);
