@@ -2352,7 +2352,7 @@ STDMETHODIMP AXPlatformNodeWin::get_text(LONG start_offset,
     start_offset = static_cast<LONG>(sel_end);
   }
   if (end_offset == IA2_TEXT_OFFSET_LENGTH) {
-    end_offset = static_cast<LONG>(text_str.size());
+    end_offset = len;
   } else if (end_offset == IA2_TEXT_OFFSET_CARET) {
     end_offset = static_cast<LONG>(sel_end);
   }
