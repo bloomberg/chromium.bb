@@ -23,11 +23,13 @@ namespace display {
 
 namespace {
 
-ui::TouchscreenDevice FindTouchscreenById(int id) {
+ui::TouchscreenDevice FindTouchscreenByIdentifier(uint32_t identifier) {
   const std::vector<ui::TouchscreenDevice>& touchscreens =
       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices();
   for (const auto& touchscreen : touchscreens) {
-    if (touchscreen.id == id)
+    uint32_t touch_device_identifier =
+        TouchCalibrationData::GenerateTouchDeviceIdentifier(touchscreen);
+    if (touch_device_identifier == identifier)
       return touchscreen;
   }
 
@@ -220,8 +222,7 @@ gfx::Transform TouchTransformController::GetTouchTransform(
   if (is_calibrating_)
     return ctm;
   uint32_t touch_device_identifier =
-      TouchCalibrationData::GenerateTouchDeviceIdentifier(
-          touchscreen.name, touchscreen.vendor_id, touchscreen.product_id);
+      TouchCalibrationData::GenerateTouchDeviceIdentifier(touchscreen);
   // If touch calibration data is unavailable, use naive approach.
   if (!touch_display.HasTouchCalibrationData(touch_device_identifier)) {
     return GetUncalibratedTransform(ctm, display, touch_display, touch_area,
@@ -301,10 +302,11 @@ void TouchTransformController::UpdateTouchTransforms() const {
 void TouchTransformController::UpdateTouchRadius(
     const ManagedDisplayInfo& display,
     UpdateData* update_data) const {
-  for (const auto& device_id : display.input_devices()) {
-    DCHECK_EQ(0u, update_data->device_to_scale.count(device_id));
-    update_data->device_to_scale[device_id] =
-        GetTouchResolutionScale(display, FindTouchscreenById(device_id));
+  for (const auto& identifier : display.touch_device_identifiers()) {
+    DCHECK_EQ(0u, update_data->device_to_scale.count(identifier));
+    update_data->device_to_scale.emplace(
+        identifier, GetTouchResolutionScale(
+                        display, FindTouchscreenByIdentifier(identifier)));
   }
 }
 
@@ -315,11 +317,12 @@ void TouchTransformController::UpdateTouchTransform(
     UpdateData* update_data) const {
   ui::TouchDeviceTransform touch_device_transform;
   touch_device_transform.display_id = target_display_id;
-  for (const auto& device_id : touch_display.input_devices()) {
-    touch_device_transform.device_id = device_id;
-    touch_device_transform.transform = GetTouchTransform(
-        target_display, touch_display, FindTouchscreenById(device_id));
-    auto device_to_scale_iter = update_data->device_to_scale.find(device_id);
+  for (const auto& identifier : touch_display.touch_device_identifiers()) {
+    ui::TouchscreenDevice device = FindTouchscreenByIdentifier(identifier);
+    touch_device_transform.device_id = device.id;
+    touch_device_transform.transform =
+        GetTouchTransform(target_display, touch_display, device);
+    auto device_to_scale_iter = update_data->device_to_scale.find(identifier);
     if (device_to_scale_iter != update_data->device_to_scale.end())
       touch_device_transform.radius_scale = device_to_scale_iter->second;
     update_data->touch_device_transforms.push_back(touch_device_transform);

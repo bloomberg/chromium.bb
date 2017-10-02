@@ -230,8 +230,7 @@ TEST_F(TouchCalibratorControllerTest, CustomCalibration) {
       display_manager()->GetDisplayInfo(touch_display.id());
 
   uint32_t touch_device_identifier =
-      display::TouchCalibrationData::GenerateTouchDeviceIdentifier(
-          touchdevice.name, touchdevice.vendor_id, touchdevice.product_id);
+      display::TouchCalibrationData::GenerateTouchDeviceIdentifier(touchdevice);
   EXPECT_TRUE(info.HasTouchCalibrationData(touch_device_identifier));
   EXPECT_EQ(calibration_data,
             info.GetTouchCalibrationData(touch_device_identifier));
