@@ -6,6 +6,7 @@
 
 #include "base/i18n/icu_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/toolbar_state.h"
@@ -28,16 +29,24 @@ namespace vr {
 
 namespace {
 
-constexpr float kDefaultViewScale = 1.4f;
-constexpr float kMousePaneWidth = 5.0f;
-constexpr float kMousePaneDepth = 2.0f;
+// Constants related to scaling of the UI for zooming, to let us look at
+// elements up close. The adjustment factor determines how much the zoom changes
+// at each adjustment step.
+constexpr float kDefaultViewScaleFactor = 1.2f;
+constexpr float kMinViewScaleFactor = 0.5f;
+constexpr float kMaxViewScaleFactor = 5.0f;
+constexpr float kViewScaleAdjustmentFactor = 0.2f;
+
+constexpr gfx::Point3F kLaserOrigin = {0.5f, -0.5f, 0.f};
 
 }  // namespace
 
 VrTestContext::VrTestContext()
     : ui_(base::MakeUnique<Ui>(this, this, UiInitialState())),
-      controller_info_(base::MakeUnique<ControllerInfo>()) {
+      controller_info_(base::MakeUnique<ControllerInfo>()),
+      view_scale_factor_(kDefaultViewScaleFactor) {
   controller_info_->reticle_render_target = nullptr;
+  controller_info_->laser_origin = kLaserOrigin;
 
   base::FilePath pak_path;
   PathService::Get(base::DIR_MODULE, &pak_path);
@@ -66,20 +75,19 @@ VrTestContext::~VrTestContext() = default;
 void VrTestContext::DrawFrame() {
   base::TimeTicks current_time = base::TimeTicks::Now();
 
-  const gfx::Transform proj_matrix(kDefaultViewScale, 0, 0, 0, 0,
-                                   kDefaultViewScale, 0, 0, 0, 0, -1, 0, 0, 0,
+  const gfx::Transform proj_matrix(view_scale_factor_, 0, 0, 0, 0,
+                                   view_scale_factor_, 0, 0, 0, 0, -1, 0, 0, 0,
                                    -1, 0);
-  const gfx::Transform head_pose;
   RenderInfo render_info;
-  render_info.head_pose = head_pose;
+  render_info.head_pose = head_pose_;
   render_info.surface_texture_size = window_size_;
   render_info.left_eye_info.viewport = gfx::Rect(window_size_);
-  render_info.left_eye_info.view_matrix = head_pose;
+  render_info.left_eye_info.view_matrix = head_pose_;
   render_info.left_eye_info.proj_matrix = proj_matrix;
-  render_info.left_eye_info.view_proj_matrix = proj_matrix * head_pose;
+  render_info.left_eye_info.view_proj_matrix = proj_matrix * head_pose_;
 
   // Update the render position of all UI elements (including desktop).
-  ui_->scene()->OnBeginFrame(current_time, gfx::Vector3dF(0.f, 0.f, -1.0f));
+  ui_->scene()->OnBeginFrame(current_time, gfx::Vector3dF(0.f, 0.f, -1.f));
   ui_->scene()->PrepareToDraw();
   ui_->OnProjMatrixChanged(render_info.left_eye_info.proj_matrix);
   ui_->ui_renderer()->Draw(render_info, *controller_info_);
@@ -89,10 +97,36 @@ void VrTestContext::DrawFrame() {
 
 void VrTestContext::HandleInput(ui::Event* event) {
   if (event->IsKeyEvent()) {
-    const ui::KeyEvent* key_event = event->AsKeyEvent();
-    if (key_event->code() == ui::DomCode::US_F) {
-      ui_->SetFullscreen(true);
+    if (event->type() != ui::ET_KEY_PRESSED) {
+      return;
     }
+    switch (event->AsKeyEvent()->code()) {
+      case ui::DomCode::ESCAPE:
+        view_scale_factor_ = kDefaultViewScaleFactor;
+        head_angle_x_degrees_ = 0;
+        head_angle_y_degrees_ = 0;
+        head_pose_ = gfx::Transform();
+        break;
+      case ui::DomCode::US_F:
+        fullscreen_ = !fullscreen_;
+        ui_->SetFullscreen(fullscreen_);
+        break;
+      case ui::DomCode::US_I:
+        incognito_ = !incognito_;
+        ui_->SetIncognito(incognito_);
+        break;
+      default:
+        break;
+    }
+    return;
+  }
+
+  if (event->IsMouseWheelEvent()) {
+    int direction =
+        base::ClampToRange(event->AsMouseWheelEvent()->y_offset(), -1, 1);
+    view_scale_factor_ *= (1 + direction * kViewScaleAdjustmentFactor);
+    view_scale_factor_ = base::ClampToRange(
+        view_scale_factor_, kMinViewScaleFactor, kMaxViewScaleFactor);
     return;
   }
 
@@ -100,17 +134,42 @@ void VrTestContext::HandleInput(ui::Event* event) {
     return;
   }
 
-  // Synthesize a controller direction based on mouse position in the window.
   const ui::MouseEvent* mouse_event = event->AsMouseEvent();
-  gfx::Point3F laser_origin{0.5, -0.5, 0};
-  gfx::Point3F target_point = {
-      kMousePaneWidth * (mouse_event->x() / window_size_.width() - 0.5),
-      kMousePaneWidth * window_size_.height() / window_size_.width() *
-          (-mouse_event->y() / window_size_.height() + 0.5),
-      -kMousePaneDepth};
-  gfx::Vector3dF controller_direction = target_point - laser_origin;
-  controller_info_->laser_origin = laser_origin;
-  controller_info_->reticle_render_target = nullptr;
+
+  // Move the head pose if needed.
+  if (mouse_event->IsRightMouseButton()) {
+    if (last_drag_x_pixels_ != 0 || last_drag_y_pixels_ != 0) {
+      float angle_y = 180.f *
+                      ((mouse_event->x() - last_drag_x_pixels_) - 0.5f) /
+                      window_size_.width();
+      float angle_x = 180.f *
+                      ((mouse_event->y() - last_drag_y_pixels_) - 0.5f) /
+                      window_size_.height();
+      head_angle_x_degrees_ += angle_x;
+      head_angle_y_degrees_ += angle_y;
+      head_angle_x_degrees_ =
+          base::ClampToRange(head_angle_x_degrees_, -90.f, 90.f);
+    }
+    last_drag_x_pixels_ = mouse_event->x();
+    last_drag_y_pixels_ = mouse_event->y();
+  } else {
+    last_drag_x_pixels_ = 0;
+    last_drag_y_pixels_ = 0;
+  }
+
+  head_pose_ = gfx::Transform();
+  head_pose_.RotateAboutXAxis(-head_angle_x_degrees_);
+  head_pose_.RotateAboutYAxis(-head_angle_y_degrees_);
+
+  // Determine a controller beam angle. Compute the beam angle relative to the
+  // head pose so it's easier to hit something you're looking at.
+  float delta_x = -180.f * ((mouse_event->y() / window_size_.height()) - 0.5f);
+  float delta_y = -180.f * ((mouse_event->x() / window_size_.width()) - 0.5f);
+  gfx::Transform beam_transform;
+  beam_transform.RotateAboutYAxis(head_angle_y_degrees_ + delta_y);
+  beam_transform.RotateAboutXAxis(head_angle_x_degrees_ + delta_x);
+  gfx::Vector3dF controller_direction = {0, 0, -1.f};
+  beam_transform.TransformVector(&controller_direction);
 
   GestureList gesture_list;
   ui_->input_manager()->HandleInput(
