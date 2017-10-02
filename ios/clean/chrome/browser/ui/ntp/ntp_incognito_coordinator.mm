@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
 #import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
