@@ -182,6 +182,7 @@ enum {
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
                               OmniboxFocuser,
+                              SnackbarCommands,
                               UrlLoader>
     dispatcher;
 
@@ -220,6 +221,7 @@ enum {
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
                              OmniboxFocuser,
+                             SnackbarCommands,
                              UrlLoader>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset {
   self = [super initWithNibName:nil url:url];

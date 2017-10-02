@@ -17,6 +17,7 @@
 @protocol ContentSuggestionsMetricsRecording;
 @protocol ContentSuggestionsViewControllerAudience;
 @protocol OverscrollActionsControllerDelegate;
+@protocol SnackbarCommands;
 @protocol SuggestedContent;
 
 // CollectionViewController to display the suggestions items.
@@ -51,6 +52,7 @@
 @property(nonatomic, assign) BOOL containsToolbar;
 
 - (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource;
+- (void)setDispatcher:(id<SnackbarCommands>)dispatcher;
 
 // Removes the entry at |indexPath|, from the collection and its model.
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;

@@ -146,6 +146,7 @@
   self.suggestionsViewController.overscrollDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
   self.suggestionsViewController.containsToolbar = YES;
+  self.suggestionsViewController.dispatcher = self.dispatcher;
 
   self.NTPMediator.webState = self.webStateList->GetActiveWebState();
   self.NTPMediator.dispatcher = self.dispatcher;

@@ -195,6 +195,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer_util.h"
@@ -296,6 +297,10 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   // Most URLs are allowed in incognito; the following is an exception.
   return !(url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIHistoryHost);
 }
+
+// Snackbar category for browser view controller.
+NSString* const kBrowserViewControllerSnackbarCategory =
+    @"BrowserViewControllerSnackbarCategory";
 
 }  // namespace
 
@@ -762,6 +767,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
 // Evaluates Javascript asynchronously using the current page context.
 - (void)openJavascript:(NSString*)javascript;
+// Shows a self-dismissing snackbar displaying |message|.
+- (void)showSnackbar:(NSString*)message;
 // Induces an intentional crash in the browser process.
 - (void)induceBrowserCrash;
 // Saves the image or display error message, based on privacy settings.
@@ -3672,9 +3679,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
                          reading_list::ADDED_VIA_CURRENT_APP);
 
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  [self.dispatcher
-      showSnackbarWithMessage:l10n_util::GetNSString(
-                                  IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
+  [self showSnackbar:l10n_util::GetNSString(
+                         IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
 }
 
 #pragma mark - Keyboard commands management
@@ -4210,9 +4216,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // the UI.
   if (![currentTab viewForPrinting]) {
     TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
-    [self.dispatcher
-        showSnackbarWithMessage:l10n_util::GetNSString(
-                                    IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
+    [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
     return;
   }
   DCHECK(_browserState);
@@ -4939,6 +4943,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                                             message:message
                                                      viewController:self];
   [_alertCoordinator start];
+}
+
+- (void)showSnackbar:(NSString*)text {
+  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
+  message.accessibilityLabel = text;
+  message.duration = 2.0;
+  message.category = kBrowserViewControllerSnackbarCategory;
+  [self.dispatcher showSnackbarMessage:message];
 }
 
 #pragma mark - Show Mail Composer methods
