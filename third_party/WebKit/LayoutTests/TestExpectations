@@ -1728,7 +1728,6 @@ crbug.com/626703 http/tests/devtools/network/network-columns-visible.html [ Pass
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
-crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
@@ -3651,9 +3650,6 @@ crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/ti
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint.html [ Pass Timeout ]
 
 crbug.com/761891 [ Win7 Linux Debug ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure Timeout ]
-crbug.com/769879 [ Linux Debug ] virtual/threaded/transitions/transition-end-event-multiple-02.html [ Pass Failure ]
-crbug.com/769879 [ Linux Debug ] virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
-crbug.com/769879 [ Linux Debug ] virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
 # Paint-timing tests timeout without threaded-compositing, so skip them.

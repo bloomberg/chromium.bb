@@ -1,3 +1,4 @@
+'use strict';
 var _recordedEvents = new Array();
 // Number of events we're supposed to receive.
 var _expectedEventCount = 0;
@@ -53,7 +54,7 @@ function runTransitionTest(expected, callback)
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
   }
-  
+
   function processEndEvents(expected)
   {
     if (_processedEvents)
@@ -139,7 +140,7 @@ function runTransitionTest(expected, callback)
     document.body.offsetHeight; // Force style recalc
     if (callback)
       callback();
-    
+
     if (!maxTime)
         maxTime = 0;
 
@@ -153,12 +154,12 @@ function runTransitionTest(expected, callback)
       if (time > maxTime)
           maxTime = time;
     }
-    
+
     _endFunction = function() { processEndEvents(expected); };
-    // Add one second of fudge. We don't just use the run-webkit-tests timeout
+    // Add three seconds of fudge. We don't just use the run-webkit-tests timeout
     // because processEndEvents gives more information on what failed.
-    window.setTimeout(_endFunction, maxTime * 1000 + 1000);
+    window.setTimeout(_endFunction, maxTime * 1000 + 3000);
   }
-  
+
   window.addEventListener('load', function() { startTest(expected, callback) }, false);
 }
