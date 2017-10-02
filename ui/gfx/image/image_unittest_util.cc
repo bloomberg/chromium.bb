@@ -254,13 +254,13 @@ PlatformImage ToPlatformType(const gfx::Image& image) {
 #endif
 }
 
-PlatformImage CopyPlatformType(const gfx::Image& image) {
+gfx::Image CopyViaPlatformType(const gfx::Image& image) {
 #if defined(OS_IOS)
-  return image.CopyUIImage();
+  return gfx::Image(image.ToUIImage());
 #elif defined(OS_MACOSX)
-  return image.CopyNSImage();
+  return gfx::Image(image.CopyNSImage());
 #else
-  return image.AsImageSkia();
+  return gfx::Image(image.AsImageSkia());
 #endif
 }
 

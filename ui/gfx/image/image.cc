@@ -607,13 +607,7 @@ SkBitmap* Image::CopySkBitmap() const {
   return new SkBitmap(*ToSkBitmap());
 }
 
-#if defined(OS_IOS)
-UIImage* Image::CopyUIImage() const {
-  UIImage* image = ToUIImage();
-  base::mac::NSObjectRetain(image);
-  return image;
-}
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 NSImage* Image::CopyNSImage() const {
   NSImage* image = ToNSImage();
   base::mac::NSObjectRetain(image);

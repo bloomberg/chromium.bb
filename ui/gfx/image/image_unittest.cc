@@ -268,7 +268,7 @@ TEST_F(ImageTest, MAYBE_MultiResolutionPNGToPlatform) {
   image_png_reps.push_back(gfx::ImagePNGRep(bytes2x, 2.0f));
 
   gfx::Image from_png(image_png_reps);
-  gfx::Image from_platform(gt::CopyPlatformType(from_png));
+  gfx::Image from_platform(gt::CopyViaPlatformType(from_png));
 #if defined(OS_IOS)
   // On iOS the platform type (UIImage) only supports one resolution.
   std::vector<float> scales = gfx::ImageSkia::GetSupportedScales();
@@ -326,7 +326,7 @@ TEST_F(ImageTest, MAYBE_PNGEncodeFromSkiaDecodeToPlatform) {
   image_png_reps.push_back(gfx::ImagePNGRep(png_bytes, 1.0f));
   gfx::Image from_png(image_png_reps);
 
-  gfx::Image from_platform(gt::CopyPlatformType(from_png));
+  gfx::Image from_platform(gt::CopyViaPlatformType(from_png));
 
   EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(from_platform)));
   EXPECT_TRUE(
@@ -367,7 +367,7 @@ TEST_F(ImageTest, PNGDecodeToPlatformFailure) {
   image_png_reps.push_back(gfx::ImagePNGRep(
       invalid_bytes, 1.0f));
   gfx::Image from_png(image_png_reps);
-  gfx::Image from_platform(gt::CopyPlatformType(from_png));
+  gfx::Image from_platform(gt::CopyViaPlatformType(from_png));
   gt::CheckImageIndicatesPNGDecodeFailure(from_platform);
 }
 
@@ -456,19 +456,7 @@ TEST_F(ImageTest, PlatformToSkiaToCopy) {
   delete bitmap;
 }
 
-#if defined(OS_IOS)
-TEST_F(ImageTest, SkiaToCocoaTouchCopy) {
-  UIImage* ui_image;
-
-  {
-    gfx::Image image(gt::CreateImageSkia(25, 25));
-    ui_image = image.CopyUIImage();
-  }
-
-  EXPECT_TRUE(ui_image);
-  base::mac::NSObjectRelease(ui_image);
-}
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(ImageTest, SkiaToCocoaCopy) {
   NSImage* ns_image;
 
@@ -521,7 +509,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   }
 
   // Force a conversion back to SkBitmap and check that the upper half is red.
-  gfx::Image from_platform(gt::CopyPlatformType(from_skbitmap));
+  gfx::Image from_platform(gt::CopyViaPlatformType(from_skbitmap));
   const SkBitmap* bitmap2 = from_platform.ToSkBitmap();
   {
     SCOPED_TRACE("Checking color after conversion back to SkBitmap");
@@ -561,7 +549,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   }
 
   // Force a conversion back to SkBitmap and check that the upper half is red.
-  gfx::Image from_platform(gt::CopyPlatformType(from_skbitmap));
+  gfx::Image from_platform(gt::CopyViaPlatformType(from_skbitmap));
   const SkBitmap* bitmap2 = from_platform.ToSkBitmap();
   {
     SCOPED_TRACE("Checking color after conversion back to SkBitmap");
