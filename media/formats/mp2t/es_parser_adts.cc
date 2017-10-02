@@ -268,6 +268,12 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header,
       kCodecAAC, kSampleFormatS16, channel_layout, extended_samples_per_second,
       extra_data, scheme);
 
+  if (!audio_decoder_config.IsValidConfig()) {
+    DVLOG(1) << "Invalid config: "
+             << audio_decoder_config.AsHumanReadableString();
+    return false;
+  }
+
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: "
              << audio_decoder_config.samples_per_second()

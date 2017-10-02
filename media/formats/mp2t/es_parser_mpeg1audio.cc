@@ -171,6 +171,12 @@ bool EsParserMpeg1Audio::UpdateAudioConfiguration(
       kCodecMP3, kSampleFormatS16, header.channel_layout, header.sample_rate,
       EmptyExtraData(), Unencrypted());
 
+  if (!audio_decoder_config.IsValidConfig()) {
+    DVLOG(1) << "Invalid config: "
+             << audio_decoder_config.AsHumanReadableString();
+    return false;
+  }
+
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: " << header.sample_rate;
     DVLOG(1) << "Channel layout: " << header.channel_layout;
