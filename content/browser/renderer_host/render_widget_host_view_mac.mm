@@ -1552,9 +1552,22 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
   // TODO(wjmaclean): Update this function if RenderWidgetHostViewMac implements
   // OnTouchEvent(), to match what we are doing in RenderWidgetHostViewAura.
   DCHECK(WebInputEvent::IsMouseEventType(event.GetType()) ||
-         event.GetType() == WebInputEvent::kMouseWheel);
+         event.GetType() == WebInputEvent::kMouseWheel ||
+         WebInputEvent::IsPinchGestureEventType(event.GetType()));
   return render_widget_host_->delegate() &&
          render_widget_host_->delegate()->GetInputEventRouter();
+}
+
+void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
+  DCHECK(WebInputEvent::IsPinchGestureEventType(event->GetType()));
+  if (ShouldRouteEvent(*event)) {
+    DCHECK(event->source_device ==
+           blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+    render_widget_host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
+        this, event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
+    return;
+  }
+  render_widget_host_->ForwardGestureEvent(*event);
 }
 
 void RenderWidgetHostViewMac::ProcessMouseEvent(
@@ -2413,7 +2426,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (gestureBeginPinchSent_) {
     WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
     endEvent.SetType(WebInputEvent::kGesturePinchEnd);
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(endEvent);
+    endEvent.source_device = blink::WebGestureDevice::kWebGestureDeviceTouchpad;
+    renderWidgetHostView_->SendGesturePinchEvent(&endEvent);
     gestureBeginPinchSent_ = NO;
   }
 }
@@ -2731,14 +2745,16 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     }
     WebGestureEvent beginEvent(*gestureBeginEvent_);
     beginEvent.SetType(WebInputEvent::kGesturePinchBegin);
-    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(beginEvent);
+    beginEvent.source_device =
+        blink::WebGestureDevice::kWebGestureDeviceTouchpad;
+    renderWidgetHostView_->SendGesturePinchEvent(&beginEvent);
     gestureBeginPinchSent_ = YES;
   }
 
   // Send a GesturePinchUpdate event.
   WebGestureEvent updateEvent = WebGestureEventBuilder::Build(event, self);
   updateEvent.data.pinch_update.zoom_disabled = !pinchHasReachedZoomThreshold_;
-  renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(updateEvent);
+  renderWidgetHostView_->SendGesturePinchEvent(&updateEvent);
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {

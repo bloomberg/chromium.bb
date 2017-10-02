@@ -976,7 +976,10 @@ test("content_browsertests") {
 
   if (is_mac) {
     sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
-    deps += [ "//content/shell:content_shell" ]
+    deps += [
+      "//content/shell:content_shell",
+      "//third_party/ocmock",
+    ]
     data += [ "$root_out_dir/Content Shell.app/" ]
   }
 

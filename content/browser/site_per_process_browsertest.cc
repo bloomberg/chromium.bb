@@ -108,7 +108,6 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/overscroll_controller.h"
-#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/test/mock_overscroll_controller_delegate_aura.h"
 #endif

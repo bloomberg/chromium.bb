@@ -194,6 +194,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                            InputEventRouterTouchpadGestureTargetTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessMouseWheelBrowserTest,
                            InputEventRouterWheelTargetTest);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessMacBrowserTest,
+                           InputEventRouterTouchpadGestureTargetTest);
 };
 
 }  // namespace content
