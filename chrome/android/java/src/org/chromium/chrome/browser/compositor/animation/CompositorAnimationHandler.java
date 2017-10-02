@@ -69,10 +69,11 @@ public class CompositorAnimationHandler {
     /**
      * Push an update to all the currently running animators.
      * @param deltaTimeMs The time since the previous update in ms.
+     * @return True if all animations controlled by this handler have completed.
      */
-    public final void pushUpdate(long deltaTimeMs) {
+    public final boolean pushUpdate(long deltaTimeMs) {
         mWasUpdateRequestedForAnimationStart = false;
-        if (mAnimators.isEmpty()) return;
+        if (mAnimators.isEmpty()) return true;
 
         // Do updates to the animators. Use a cloned list so the original list can be modified in
         // the update loop.
@@ -88,6 +89,8 @@ public class CompositorAnimationHandler {
         mCachedList.clear();
 
         mUpdateHost.requestUpdate();
+
+        return mAnimators.isEmpty();
     }
 
     /**

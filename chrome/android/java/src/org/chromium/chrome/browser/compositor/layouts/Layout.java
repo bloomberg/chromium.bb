@@ -904,13 +904,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @return whether or not the animation is currently being run.
-     */
-    protected boolean animationIsRunning() {
-        return mLayoutAnimations != null && !mLayoutAnimations.finished();
-    }
-
-    /**
      * Cancels any animation for the given object and property.
      * @param object The object being animated.
      * @param prop   The property to search for.
