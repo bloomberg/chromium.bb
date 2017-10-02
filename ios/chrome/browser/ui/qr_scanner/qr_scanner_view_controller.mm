@@ -312,6 +312,7 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
     case qr_scanner::CAMERA_IN_USE_BY_ANOTHER_APPLICATION:
     case qr_scanner::MULTIPLE_FOREGROUND_APPS:
     case qr_scanner::CAMERA_PERMISSION_DENIED:
+    case qr_scanner::CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE:
     case qr_scanner::CAMERA_UNAVAILABLE: {
       // Dismiss any presented alerts.
       if ([self presentedViewController]) {

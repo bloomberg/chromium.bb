@@ -30,7 +30,9 @@ enum CameraState {
   MULTIPLE_FOREGROUND_APPS,
   // The application does not have the permission to use the camera.
   CAMERA_PERMISSION_DENIED,
-  // The camera is unavailable.
+  // Camera unavailable due to "system pressure".
+  CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE,
+  // The camera is unavailable for an unspecified reason.
   CAMERA_UNAVAILABLE,
   // The camera was not yet loaded.
   CAMERA_NOT_LOADED,

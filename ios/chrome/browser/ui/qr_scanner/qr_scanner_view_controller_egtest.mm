@@ -380,6 +380,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     case CAMERA_PERMISSION_DENIED:
       return l10n_util::GetNSString(
           IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS);
+    case CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE:
     case CAMERA_UNAVAILABLE:
       return l10n_util::GetNSString(
           IDS_IOS_QR_SCANNER_CAMERA_UNAVAILABLE_ALERT_TITLE);
