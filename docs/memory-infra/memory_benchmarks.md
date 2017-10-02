@@ -117,16 +117,14 @@ $SRC/tools/perf/run_benchmark run system_health.memory_mobile \
 
 This will run the story with a default of 3 repetitions and produce a
 `results.html` file comparing results from this and any previous benchmark
-runs.
+runs. In addition, you'll also get individual [trace files][memory-infra]
+for each story run by the benchmark.
 
 ![Example results.html file](https://storage.googleapis.com/chromium-docs.appspot.com/ea60207d9bb4809178fe75923d6d1a2b241170ef.png)
 
 Other useful options for this command are:
 
 *   `--pageset-repeat [n]` - override the default number of repetitions
-*   `--output-format html --output-format json` - select *both* output formats
-     to get individual [trace files][memory-infra] in addition to the
-     `results.html` file.
 *   `--reset-results` - clear results from any previous benchmark runs in the
     `results.html` file.
 *   `--results-label [label]` - give meaningful names to your benchmark runs,
