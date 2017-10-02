@@ -17,6 +17,15 @@ namespace blink {
 class ExceptionState;
 class WorkerClients;
 
+// Represents the animation worklet global scope and implements all methods that
+// the global scope exposes to user script (See
+// |AnimationWorkletGlobalScope.idl|). The instances of this class live on the
+// worklet thread but have a corresponding proxy on the main thread which is
+// accessed by the animation worklet instance. User scripts can register
+// animator definitions with the global scope (via |registerAnimator| method).
+// The scope keeps a map of these animator definitions and can look them up
+// based on their name. The scope also owns a list of active animators that it
+// animates.
 class MODULES_EXPORT AnimationWorkletGlobalScope
     : public ThreadedWorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
@@ -35,8 +44,11 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 
   Animator* CreateInstance(const String& name);
+
+  // Invokes the |animate| function of all of its active animators.
   void Mutate();
 
+  // Registers a animator definition with the given name and constructor.
   void registerAnimator(const String& name,
                         const ScriptValue& ctorValue,
                         ExceptionState&);

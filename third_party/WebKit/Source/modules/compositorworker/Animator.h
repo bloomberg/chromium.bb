@@ -16,6 +16,9 @@ namespace blink {
 class AnimatorDefinition;
 class ScriptState;
 
+// Represents an animator instance. It owns the underlying |v8::Object| for the
+// instance and knows how to invoke the |animate| function on it.
+// See also |AnimationWorkletGlobalScope::CreateInstance|.
 class Animator final : public GarbageCollectedFinalized<Animator>,
                        public TraceWrapperBase {
  public:

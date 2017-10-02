@@ -13,6 +13,11 @@ namespace blink {
 
 class LocalFrame;
 
+// Represents the animation worklet on the main thread. All the logic for
+// loading a new source module is implemented in its parent class |Worklet|. The
+// sole responsibility of this class it to create the appropriate
+// |WorkletGlobalScopeProxy| instances that are responsible to proxy a
+// corresponding |AnimationWorkletGlobalScope| on the worklet thread.
 class MODULES_EXPORT AnimationWorklet final : public Worklet {
   WTF_MAKE_NONCOPYABLE(AnimationWorklet);
 
