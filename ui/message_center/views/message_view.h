@@ -80,8 +80,8 @@ class MESSAGE_CENTER_EXPORT MessageView
   bool GetPinned() const;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
-  std::string notification_id() { return notification_id_; }
-  NotifierId notifier_id() { return notifier_id_; }
+  std::string notification_id() const { return notification_id_; }
+  NotifierId notifier_id() const { return notifier_id_; }
   const base::string16& display_source() const { return display_source_; }
   void set_controller(MessageCenterController* controller) {
     controller_ = controller;

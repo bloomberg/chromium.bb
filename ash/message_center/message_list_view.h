@@ -48,6 +48,12 @@ class ASH_EXPORT MessageListView : public views::View,
   void RemoveNotification(message_center::MessageView* view);
   void UpdateNotification(message_center::MessageView* view,
                           const message_center::Notification& notification);
+  std::pair<int, message_center::MessageView*> GetNotificationById(
+      const std::string& id);
+  message_center::MessageView* GetNotificationAt(int index);
+  // Return the number of the valid notification. This traverse the items so it
+  // costs O(n) time, where n is the number of total notifications.
+  size_t GetNotificationCount() const;
   void SetRepositionTarget(const gfx::Rect& target_rect);
   void ResetRepositionSession();
   void ClearAllClosableNotifications(const gfx::Rect& visible_scroll_rect);

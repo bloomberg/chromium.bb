@@ -320,7 +320,7 @@ FakeMessageCenterImpl* MessageCenterViewTest::GetMessageCenter() const {
 }
 
 MessageView* MessageCenterViewTest::GetNotificationView(const std::string& id) {
-  return message_center_view_->notification_views_[id];
+  return GetMessageListView()->GetNotificationById(id).second;
 }
 
 int MessageCenterViewTest::GetCalculatedMessageListViewHeight() {
