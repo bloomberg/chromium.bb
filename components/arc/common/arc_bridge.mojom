@@ -11,6 +11,7 @@ import "auth.mojom";
 import "bluetooth.mojom";
 import "boot_phase_monitor.mojom";
 import "cast_receiver.mojom";
+import "cert_store.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
 import "enterprise_reporting.mojom";
@@ -38,9 +39,9 @@ import "voice_interaction_framework.mojom";
 import "volume_mounter.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 31
+// Next MinVersion: 32
 // Deprecated method IDs: 101, 105
-// Next method ID: 136
+// Next method ID: 137
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -69,6 +70,10 @@ interface ArcBridgeHost {
   // Notifies Chrome that the CastReceiverInstance interface is ready.
   [MinVersion=27] OnCastReceiverInstanceReady@132(
       CastReceiverInstance instance_ptr);
+
+  // Notifies Chrome that the CertStoreInstance interface is ready.
+  [MinVersion=31] OnCertStoreInstanceReady@136(
+      CertStoreInstance instance_ptr);
 
   // Notifies Chrome that the ClipboardInstance interface is ready.
   [MinVersion=2] OnClipboardInstanceReady@109(ClipboardInstance instance_ptr);
