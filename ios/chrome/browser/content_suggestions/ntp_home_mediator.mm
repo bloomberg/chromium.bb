@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
@@ -373,7 +374,7 @@ const char kRateThisAppCommand[] = "ratethisapp";
                           IDS_IOS_NEW_TAB_MOST_VISITED_ITEM_REMOVED)];
   message.action = action;
   message.category = @"MostVisitedUndo";
-  [MDCSnackbarManager showMessage:message];
+  [self.dispatcher showSnackbarMessage:message];
 }
 
 @end

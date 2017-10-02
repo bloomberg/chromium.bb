@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -159,8 +160,8 @@
   return self.parentViewController.view;
 }
 
-- (void)showSnackbarWithMessage:(NSString*)message {
-  _latestSnackbarMessage = [message copy];
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
+  _latestSnackbarMessage = [message.text copy];
 }
 
 - (void)resetState {

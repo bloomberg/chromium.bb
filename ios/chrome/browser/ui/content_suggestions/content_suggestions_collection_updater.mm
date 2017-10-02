@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
@@ -162,6 +163,7 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 @synthesize promoAdded = _promoAdded;
 @synthesize sectionIdentifiersFromContentSuggestions =
     _sectionIdentifiersFromContentSuggestions;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)init {
   self = [super init];
@@ -778,7 +780,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
     message.accessibilityLabel = text;
     message.category = kContentSuggestionsCollectionUpdaterSnackbarCategory;
-    [MDCSnackbarManager showMessage:message];
+    [self.dispatcher showSnackbarMessage:message];
   }
 }
 

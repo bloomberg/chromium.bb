@@ -11,6 +11,7 @@
 @class ContentSuggestionsSectionInformation;
 @class ContentSuggestionsViewController;
 @protocol ContentSuggestionsDataSource;
+@protocol SnackbarCommands;
 @protocol SuggestedContent;
 
 // Enum defining the type of a ContentSuggestions.
@@ -37,6 +38,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
 // adding items.
 @property(nonatomic, weak)
     ContentSuggestionsViewController* collectionViewController;
+
+@property(nonatomic, weak) id<SnackbarCommands> dispatcher;
 
 // Returns whether the section should use the default, non-card style.
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section;

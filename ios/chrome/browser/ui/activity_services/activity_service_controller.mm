@@ -23,11 +23,18 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Snackbar category for activity services.
+NSString* const kActivityServicesSnackbarCategory =
+    @"ActivityServicesSnackbarCategory";
+}  // namespace
 
 @interface ActivityServiceController () {
   BOOL active_;
@@ -319,6 +326,7 @@
              completionMessage:(NSString*)message {
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS: {
+      __weak ActivityServiceController* weakSelf = self;
       // Flag to limit user feedback after form filled to just once.
       __block BOOL shown = NO;
       id<PasswordFormFiller> passwordFormFiller =
@@ -330,8 +338,7 @@
                                      return;
                                    TriggerHapticFeedbackForNotification(
                                        UINotificationFeedbackTypeSuccess);
-                                   [dispatcher_
-                                       showSnackbarWithMessage:message];
+                                   [weakSelf showSnackbar:message];
                                    shown = YES;
                                  }];
       break;
@@ -352,7 +359,7 @@
     case ShareTo::SHARE_SUCCESS:
       if ([message length]) {
         TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-        [dispatcher_ showSnackbarWithMessage:message];
+        [self showSnackbar:message];
       }
       break;
     case ShareTo::SHARE_ERROR:
@@ -377,6 +384,14 @@
   NSString* title = l10n_util::GetNSString(titleMessageId);
   NSString* message = l10n_util::GetNSString(messageId);
   [presentationProvider_ showErrorAlertWithStringTitle:title message:message];
+}
+
+- (void)showSnackbar:(NSString*)text {
+  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
+  message.accessibilityLabel = text;
+  message.duration = 2.0;
+  message.category = kActivityServicesSnackbarCategory;
+  [dispatcher_ showSnackbarMessage:message];
 }
 
 #pragma mark - For Testing

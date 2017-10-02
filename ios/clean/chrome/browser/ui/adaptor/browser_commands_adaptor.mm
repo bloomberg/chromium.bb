@@ -150,6 +150,10 @@
   [self showAlert:@"requestMobileSite"];
 }
 
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
+  [self showAlert:@"showSnackbarMessage:"];
+}
+
 #pragma mark - Private
 
 // TODO(crbug.com/740793): Remove this method once no method is using it.

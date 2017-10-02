@@ -41,6 +41,9 @@ source_set("activity_services") {
     "//ui/base",
     "//url",
   ]
+  public_deps = [
+    "//ios/third_party/material_components_ios",
+  ]
   libs = [
     "MobileCoreServices.framework",
     "UIKit.framework",

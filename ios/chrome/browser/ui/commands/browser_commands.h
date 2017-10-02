@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 
 @class OpenNewTabCommand;
 @class ReadingListAddCommand;
@@ -21,6 +22,7 @@
                           ActivityServiceCommands,
                           PageInfoCommands,
                           QRScannerCommands,
+                          SnackbarCommands,
                           TabHistoryPopupCommands>
 
 // Closes the current tab.

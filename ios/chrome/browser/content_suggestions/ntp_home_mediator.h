@@ -27,6 +27,7 @@ class WebState;
 @class ContentSuggestionsViewController;
 @protocol OmniboxFocuser;
 @class NTPHomeMetrics;
+@protocol SnackbarCommands;
 @protocol UrlLoader;
 
 // Mediator for the NTP Home panel, handling the interactions with the
@@ -39,7 +40,8 @@ class WebState;
 // The web state associated with this NTP.
 @property(nonatomic, assign) web::WebState* webState;
 // Dispatcher.
-@property(nonatomic, weak) id<BrowserCommands, UrlLoader> dispatcher;
+@property(nonatomic, weak) id<BrowserCommands, SnackbarCommands, UrlLoader>
+    dispatcher;
 // Suggestions service used to get the suggestions.
 @property(nonatomic, assign)
     ntp_snippets::ContentSuggestionsService* suggestionsService;

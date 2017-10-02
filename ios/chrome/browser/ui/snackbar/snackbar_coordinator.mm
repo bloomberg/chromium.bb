@@ -12,11 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The default category for all messages.
-NSString* const kDefaultSnackbarCategory = @"DefaultSnackbarCategory";
-}  // namespace
-
 @implementation SnackbarCoordinator
 @synthesize dispatcher = _dispatcher;
 
@@ -31,13 +26,8 @@ NSString* const kDefaultSnackbarCategory = @"DefaultSnackbarCategory";
 
 #pragma mark - SnackbarCommands
 
-- (void)showSnackbarWithMessage:(NSString*)message {
-  MDCSnackbarMessage* snackbarMessage =
-      [MDCSnackbarMessage messageWithText:message];
-  snackbarMessage.accessibilityLabel = message;
-  snackbarMessage.duration = 2.0;
-  snackbarMessage.category = kDefaultSnackbarCategory;
-  [MDCSnackbarManager showMessage:snackbarMessage];
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
+  [MDCSnackbarManager showMessage:message];
 }
 
 @end

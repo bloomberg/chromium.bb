@@ -23,6 +23,5 @@ TEST(SnackbarCoordinatorTest, RegistersDispatching) {
                                     forProtocol:@protocol(SnackbarCommands)];
   [coordinator start];
   EXPECT_OCMOCK_VERIFY(dispatcher);
-  EXPECT_TRUE(
-      [coordinator respondsToSelector:@selector(showSnackbarWithMessage:)]);
+  EXPECT_TRUE([coordinator respondsToSelector:@selector(showSnackbarMessage:)]);
 }
