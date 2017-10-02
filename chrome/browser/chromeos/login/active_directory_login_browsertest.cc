@@ -257,7 +257,8 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginSuccess) {
 }
 
 // Test successful Active Directory login.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
+// Fails on MSAN: https://crbug.com/770738.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, DISABLED_LoginSuccess) {
   TestNoError();
   TestDomainVisible();
 
@@ -274,7 +275,8 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginErrors) {
 }
 
 // Test different UI errors for Active Directory login.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
+// Fails on MSAN: https://crbug.com/770738.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, DISABLED_LoginErrors) {
   SetupActiveDirectoryJSNotifications();
   TestNoError();
   TestDomainVisible();
