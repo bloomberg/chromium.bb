@@ -646,7 +646,7 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
     }))
     .then(() => populateHealthThermometerFakes(fake_peripheral))
     .then(_ => fakes = _)
-    .then(() => new Promise(resolve => {
+    .then(() => new Promise((resolve, reject) => {
       let iframe = document.createElement('iframe');
       function messageHandler(messageEvent) {
         if (messageEvent.data === 'Ready') {
@@ -658,8 +658,7 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
           window.removeEventListener('message', messageHandler);
           resolve();
         } else {
-          console.log(messageEvent.data);
-          resolve();
+          reject(new Error(`Unexpected message: {messageEvent.data}`));
         }
       }
       window.addEventListener('message', messageHandler);
