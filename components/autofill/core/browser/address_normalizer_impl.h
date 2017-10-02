@@ -46,7 +46,8 @@ class AddressNormalizerImpl : public AddressNormalizer {
                                       bool success) override;
 
   // Map associating a region code to pending normalizations.
-  std::map<std::string, std::vector<std::unique_ptr<Request>>>
+  class NormalizationRequest;
+  std::map<std::string, std::vector<std::unique_ptr<NormalizationRequest>>>
       pending_normalization_;
 
   // The address validator used to normalize addresses.

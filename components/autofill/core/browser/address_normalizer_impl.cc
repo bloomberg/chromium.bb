@@ -12,7 +12,6 @@
 #include "base/cancelable_callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -25,25 +24,28 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 namespace autofill {
+
 namespace {
 
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 
-class AddressNormalizationRequest : public AddressNormalizer::Request {
+}  // namespace
+
+class AddressNormalizerImpl::NormalizationRequest {
  public:
   // The |delegate| and |address_validator| need to outlive this Request.
-  AddressNormalizationRequest(const AutofillProfile& profile,
-                              const std::string& region_code,
-                              int timeout_seconds,
-                              AddressNormalizer::Delegate* delegate,
-                              AddressValidator* address_validator)
+  NormalizationRequest(const AutofillProfile& profile,
+                       const std::string& region_code,
+                       int timeout_seconds,
+                       AddressNormalizer::Delegate* delegate,
+                       AddressValidator* address_validator)
       : profile_(profile),
         region_code_(region_code),
         delegate_(delegate),
         address_validator_(address_validator),
         has_responded_(false),
-        on_timeout_(base::Bind(&AddressNormalizationRequest::OnRulesLoaded,
+        on_timeout_(base::Bind(&NormalizationRequest::OnRulesLoaded,
                                base::Unretained(this),
                                false)) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -51,9 +53,9 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
         base::TimeDelta::FromSeconds(timeout_seconds));
   }
 
-  ~AddressNormalizationRequest() override {}
+  ~NormalizationRequest() {}
 
-  void OnRulesLoaded(bool success) override {
+  void OnRulesLoaded(bool success) {
     on_timeout_.Cancel();
 
     // Check if the timeout happened before the rules were loaded.
@@ -115,10 +117,8 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
   bool has_responded_;
   base::CancelableCallback<void()> on_timeout_;
 
-  DISALLOW_COPY_AND_ASSIGN(AddressNormalizationRequest);
+  DISALLOW_COPY_AND_ASSIGN(NormalizationRequest);
 };
-
-}  // namespace
 
 AddressNormalizerImpl::AddressNormalizerImpl(std::unique_ptr<Source> source,
                                              std::unique_ptr<Storage> storage)
@@ -142,32 +142,35 @@ void AddressNormalizerImpl::StartAddressNormalization(
     AddressNormalizer::Delegate* requester) {
   DCHECK_GE(timeout_seconds, 0);
 
-  std::unique_ptr<AddressNormalizationRequest> request(
-      base::MakeUnique<AddressNormalizationRequest>(profile, region_code,
-                                                    timeout_seconds, requester,
-                                                    &address_validator_));
+  std::unique_ptr<NormalizationRequest> request =
+      std::make_unique<NormalizationRequest>(profile, region_code,
+                                             timeout_seconds, requester,
+                                             &address_validator_);
 
-  // Check if the rules are already loaded.
+  // If the rules are already loaded for |region_code|, the |request| will call
+  // back to the delegate (|requester|) synchronously.
   if (AreRulesLoadedForRegion(region_code)) {
     request->OnRulesLoaded(true);
-  } else {
-    // Setup the variables so the profile gets normalized when the rules have
-    // finished loading.
-    auto it = pending_normalization_.find(region_code);
-    if (it == pending_normalization_.end()) {
-      // If no entry exists yet, create the entry and assign it to |it|.
-      it = pending_normalization_
-               .insert(std::make_pair(region_code,
-                                      std::vector<std::unique_ptr<Request>>()))
-               .first;
-    }
-
-    it->second.push_back(std::move(request));
-
-    // Start loading the rules for that region. If the rules were already in the
-    // process of being loaded, this call will do nothing.
-    LoadRulesForRegion(region_code);
+    return;
   }
+
+  // Setup the variables so the profile gets normalized when the rules have
+  // finished loading.
+  auto it = pending_normalization_.find(region_code);
+  if (it == pending_normalization_.end()) {
+    // If no entry exists yet, create the entry and assign it to |it|.
+    it = pending_normalization_
+             .insert(std::make_pair(
+                 region_code,
+                 std::vector<std::unique_ptr<NormalizationRequest>>()))
+             .first;
+  }
+
+  it->second.push_back(std::move(request));
+
+  // Start loading the rules for that region. If the rules were already in the
+  // process of being loaded, this call will do nothing.
+  LoadRulesForRegion(region_code);
 }
 
 void AddressNormalizerImpl::OnAddressValidationRulesLoaded(
