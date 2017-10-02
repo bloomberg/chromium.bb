@@ -223,7 +223,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidEmail) {
   AutofillProfile profile(autofill::test::GetFullValidProfile());
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
 
-  set_expected_status(AutofillProfile::VALID);
+  set_expected_status(AutofillProfile::INVALID);
   validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
 }
 

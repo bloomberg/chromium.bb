@@ -23,10 +23,9 @@ namespace phone_email_validation_util {
 
 AutofillProfile::ValidityState ValidateEmailAddress(
     const base::string16& email) {
-  if (email.empty()) {
-    // Not every profile needs an email address.
-    return AutofillProfile::VALID;
-  }
+  if (email.empty())
+    return AutofillProfile::EMPTY;
+
   return (autofill::IsValidEmailAddress(email) ? AutofillProfile::VALID
                                                : AutofillProfile::INVALID);
 }
@@ -34,10 +33,9 @@ AutofillProfile::ValidityState ValidateEmailAddress(
 AutofillProfile::ValidityState ValidatePhoneNumber(
     const std::string& phone_number,
     const std::string& country_code) {
-  if (phone_number.empty()) {
-    // Every profile needs a phone number.
-    return AutofillProfile::INVALID;
-  }
+  if (phone_number.empty())
+    return AutofillProfile::EMPTY;
+
   if (!base::ContainsValue(CountryDataMap::GetInstance()->country_codes(),
                            country_code)) {
     // If the country code is not in the database, the phone number cannot be
@@ -51,19 +49,22 @@ AutofillProfile::ValidityState ValidatePhoneNumber(
 }
 
 AutofillProfile::ValidityState ValidatePhoneAndEmail(AutofillProfile* profile) {
-  if (!profile)
-    return AutofillProfile::UNVALIDATED;
+  DCHECK(profile);
 
   AutofillProfile::ValidityState phone_validity = ValidatePhoneNumber(
       base::UTF16ToUTF8(profile->GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
       base::UTF16ToUTF8(profile->GetRawInfo(ADDRESS_HOME_COUNTRY)));
-
   profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER, phone_validity);
 
-  profile->SetValidityState(
-      EMAIL_ADDRESS, ValidateEmailAddress(profile->GetRawInfo(EMAIL_ADDRESS)));
+  AutofillProfile::ValidityState email_validity =
+      ValidateEmailAddress(profile->GetRawInfo(EMAIL_ADDRESS));
+  profile->SetValidityState(EMAIL_ADDRESS, email_validity);
 
-  return phone_validity;  // payment request doesn't care about email1 validity.
+  if (phone_validity == AutofillProfile::VALID &&
+      email_validity == AutofillProfile::VALID) {
+    return AutofillProfile::VALID;
+  }
+  return AutofillProfile::INVALID;
 }
 
 }  // namespace phone_email_validation_util
