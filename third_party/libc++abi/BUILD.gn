@@ -43,6 +43,7 @@ source_set("libc++abi") {
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_rtti",
     "//build/config/gcc:no_exceptions",
+    "//build/config/coverage:default_coverage",
   ]
   configs += [
     "//build/config/compiler:no_chromium_code",

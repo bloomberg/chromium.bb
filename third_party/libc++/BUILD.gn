@@ -75,6 +75,7 @@ target(link_target_type, "libc++") {
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_rtti",
     "//build/config/gcc:no_exceptions",
+    "//build/config/coverage:default_coverage",
   ]
   configs += [
     ":config",
