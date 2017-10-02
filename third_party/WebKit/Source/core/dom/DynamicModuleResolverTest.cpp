@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/Document.h"
 #include "core/dom/ModuleScript.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/testing/DummyModulator.h"
@@ -304,6 +305,44 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
   EXPECT_TRUE(capture->WasCalled());
   EXPECT_EQ("Error", capture->Name());
   EXPECT_EQ("bar", capture->Message());
+}
+
+TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
+  V8TestingScope scope;
+  scope.GetDocument().SetURL(KURL(kParsedURLString, "https://example.com"));
+
+  auto modulator =
+      new DynamicModuleResolverTestModulator(scope.GetScriptState());
+
+  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  ScriptPromise promise = promise_resolver->Promise();
+
+  auto capture =
+      new CaptureExportedStringFunction(scope.GetScriptState(), "foo");
+  promise.Then(capture->Bind(),
+               NotReached::CreateFunction(scope.GetScriptState()));
+
+  auto resolver = DynamicModuleResolver::Create(modulator);
+  resolver->ResolveDynamically("./dependency.js", /* null referrer */ KURL(),
+                               ReferrerScriptInfo(), promise_resolver);
+
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_FALSE(capture->WasCalled());
+
+  ScriptModule record = ScriptModule::Compile(
+      scope.GetIsolate(), "export const foo = 'hello';", TestDependencyURL(),
+      kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
+      kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+  ModuleScript* module_script = ModuleScript::CreateForTest(
+      modulator, record, TestDependencyURL(), "nonce", kNotParserInserted,
+      WebURLRequest::kFetchCredentialsModeOmit);
+  record.Instantiate(scope.GetScriptState());
+  EXPECT_FALSE(module_script->IsErrored());
+  modulator->ResolveTreeFetch(module_script);
+
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_TRUE(capture->WasCalled());
+  EXPECT_EQ("hello", capture->CapturedValue());
 }
 
 }  // namespace blink
