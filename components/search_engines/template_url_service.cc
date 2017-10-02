@@ -2200,7 +2200,9 @@ void TemplateURLService::MergeInSyncTemplateURL(
       // Remove the entry from the local data so it isn't pushed up to Sync.
       local_data->erase(guid);
     }
-  } else {
+    // prepopulate_id 0 effectively means unspecified; i.e. that the turl isn't
+    // a pre-populated one, so we want to ignore that case.
+  } else if (sync_turl->prepopulate_id() != 0) {
     // Check for a turl with a conflicting prepopulate_id. This detects the case
     // where the user changes a prepopulated engine's keyword on one client,
     // then begins syncing on another client.  We want to reflect this keyword
@@ -2315,6 +2317,7 @@ void TemplateURLService::AddMatchingKeywordsHelper(
 
 TemplateURL* TemplateURLService::FindPrepopulatedTemplateURL(
     int prepopulated_id) {
+  DCHECK(prepopulated_id);
   for (const auto& turl : template_urls_) {
     if (turl->prepopulate_id() == prepopulated_id)
       return turl.get();

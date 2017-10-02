@@ -2457,6 +2457,25 @@ TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {
   EXPECT_EQ(default_turl->url(), result_turl->url());
 }
 
+TEST_F(TemplateURLServiceSyncTest, MergePrepopulatedEngineIgnoresId0) {
+  // The newly registered keyword will have prepulate_id 0 since that is the
+  // default value.
+  model()->RegisterOmniboxKeyword("extension1", "unittest", "keyword1",
+                                  "http://extension1", Time());
+
+  // Try to merge in a turl with preopulate_id also set to 0. This should work.
+  syncer::SyncDataList initial_data;
+  std::unique_ptr<TemplateURL> turl(CreateTestTemplateURL(
+      ASCIIToUTF16("what"), "http://thewhat.com/{searchTerms}", "normal_guid",
+      10, true, false, 0));
+  initial_data.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+
+  syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, initial_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+}
+
 TEST_F(TemplateURLServiceSyncTest, GUIDUpdatedOnDefaultSearchChange) {
   const char kGUID[] = "initdefault";
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
