@@ -16,17 +16,6 @@
 
 namespace content {
 
-namespace {
-
-// TODO(gogerald): Choose appropriate icon size dynamically on different
-// platforms.
-// Here we choose a large ideal icon size to be big enough for all platforms.
-// Note that we only scale down for this icon size but not scale up.
-const int kPaymentAppIdealIconSize = 0xFFFF;
-const int kPaymentAppMinimumIconSize = 0;
-
-}  // namespace
-
 PaymentAppInfoFetcher::PaymentAppInfo::PaymentAppInfo() {}
 PaymentAppInfoFetcher::PaymentAppInfo::~PaymentAppInfo() {}
 
@@ -124,6 +113,13 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
     PostPaymentAppInfoFetchResultToIOThread();
     return;
   }
+
+  // TODO(gogerald): Choose appropriate icon size dynamically on different
+  // platforms.
+  // Here we choose a large ideal icon size to be big enough for all platforms.
+  // Note that we only scale down for this icon size but not scale up.
+  const int kPaymentAppIdealIconSize = 0xFFFF;
+  const int kPaymentAppMinimumIconSize = 0;
 
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
