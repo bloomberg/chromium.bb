@@ -355,6 +355,10 @@ class VIZ_COMMON_EXPORT GLHelper {
   // matching config. This doesnt check for cross format readbacks.
   bool IsReadbackConfigSupported(SkColorType texture_format);
 
+  // Returns a GLHelperReadbackSupport instance, for querying platform readback
+  // capabilities and to determine the more-performant configurations.
+  GLHelperReadbackSupport* GetReadbackSupport();
+
  protected:
   class CopyTextureToImpl;
 

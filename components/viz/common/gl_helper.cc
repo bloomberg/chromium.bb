@@ -1067,6 +1067,11 @@ bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
   return (support == GLHelperReadbackSupport::SUPPORTED);
 }
 
+GLHelperReadbackSupport* GLHelper::GetReadbackSupport() {
+  LazyInitReadbackSupportImpl();
+  return readback_support_.get();
+}
+
 std::unique_ptr<ReadbackYUVInterface>
 GLHelper::CopyTextureToImpl::CreateReadbackPipelineYUV(bool flip_vertically,
                                                        bool use_mrt) {
