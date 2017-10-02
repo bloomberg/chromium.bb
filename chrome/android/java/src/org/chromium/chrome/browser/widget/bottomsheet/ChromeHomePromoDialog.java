@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
@@ -62,25 +61,17 @@ public class ChromeHomePromoDialog extends PromoDialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final String onString = getContext().getString(R.string.text_on);
-        final String offString = getContext().getString(R.string.text_off);
-
         View toggleLayout = getLayoutInflater().inflate(R.layout.chrome_home_promo_toggle, null);
 
-        final TextView toggleText =
-                (TextView) toggleLayout.findViewById(R.id.chrome_home_promo_state_text);
         Switch toggle = (Switch) toggleLayout.findViewById(R.id.chrome_home_toggle);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean enabled) {
                 mSwitchStateShouldEnable = enabled;
-                toggleText.setText(mSwitchStateShouldEnable ? onString : offString);
             }
         });
 
         toggle.setChecked(FeatureUtilities.isChromeHomeEnabled());
-        toggleText.setText(FeatureUtilities.isChromeHomeEnabled() ? onString : offString);
-
         addControl(toggleLayout);
     }
 

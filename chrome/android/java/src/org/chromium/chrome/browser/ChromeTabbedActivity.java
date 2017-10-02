@@ -1519,6 +1519,11 @@ public class ChromeTabbedActivity
 
             @Override
             public int getHeaderResourceId() {
+                if (getBottomSheet() != null
+                        && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
+                    return R.layout.chrome_home_promo_header;
+                }
+
                 if (getBottomSheet() != null && getAppMenuPropertiesDelegate().shouldShowPageMenu()
                         && !getBottomSheet().isSheetOpen()) {
                     return R.layout.chrome_home_iph_header;
@@ -1532,6 +1537,15 @@ public class ChromeTabbedActivity
                 return new OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (getBottomSheet() != null
+                                && ChromeFeatureList.isEnabled(
+                                           ChromeFeatureList.CHROME_HOME_PROMO)) {
+                            ChromeHomePromoDialog chDialog =
+                                    new ChromeHomePromoDialog(ChromeTabbedActivity.this);
+                            chDialog.show();
+                            return;
+                        }
+
                         getBottomSheet()
                                 .getBottomSheetMetrics()
                                 .recordInProductHelpMenuItemClicked();

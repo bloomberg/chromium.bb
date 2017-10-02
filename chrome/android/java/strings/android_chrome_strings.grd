@@ -2394,8 +2394,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_NTP_OFFLINE_BADGE" desc="Content description for the badge that indicates offline availability of a most visited item or content suggestion on the new tab page.">
         Available offline
       </message>
-      <message name="IDS_NTP_CHROME_HOME_PROMO" desc="Text below the search box on the New Tab Page that encourages the user to try Chrome Home. Part of the text is a link to open the promo dialog.">
-        Be the first to <ph name="BEGIN_LINK">&lt;link&gt;</ph>try the new Chrome<ph name="END_LINK">&lt;/link&gt;</ph>
+      <message name="IDS_NTP_CHROME_HOME_PROMO" desc="Tappable line of text that appears when a user opens a new tab in Chrome. This text is promotional and is intended to suggest that users try a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). When tapped, a dialog explaining the feature opens. “Try” is imperative. “To browse” (infinitive) means to browse the web.">
+        Try an <ph name="BEGIN_LINK">&lt;link&gt;</ph>easier way to browse<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_NTP_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph> about suggested content
@@ -3211,14 +3211,17 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_APP_MENU_IPH" desc="Label for in-product help that appears in the Chrome three-dot menu (navigation menu). In previous versions of Chrome, the menu contained Bookmarks, Downloads, and History. In this version of Chrome, these three items have been moved out of the menu. Tapping this help text will show the user where they can find these three items. 'Bookmarks', 'Downloads', and 'History' should use the same translations as in Chrome settings and menu items. The tone of this string is that of the user asking Chrome, 'where are these 3 things?'">
         Where are bookmarks, downloads, and history?
       </message>
-      <message name="IDS_CHROME_HOME_PROMO_DIALOG_TITLE" desc="The title for the dialog promoting the Chrome Home feature.">
-        Try the new Chrome
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_TITLE" desc="Dialog title text. Dialog describes a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). Object is omitted; intended meaning is that we wish to introduce you, the user, to Chrome Home. Infinitive or other verb form may be used if the gerund is not appropriate in your language. ">
+        Introducing Chrome Home
       </message>
-      <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE" desc="The message for the dialog promoting the Chrome Home feature. The message emphasizes the fact that both appearance and functionality have been updated.">
-        One swipe access to your shortcuts and bookmarks with a fresh new look.
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE" desc="Dialog body text. Dialog describes a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). “Swipe up” (imperative) refers to the gesture on a mobile phone. “access” is a noun. “Popular” modifies both “sites and articles.” “Downloads” refers to items the user has downloaded in Chrome.">
+        Swipe up for easy access to popular sites and articles, downloads, and more
       </message>
-      <message name="IDS_CHROME_HOME_PROMO_DIALOG_CHANGE_LATER" desc="The message beside the toggle that would enable or disable the Chrome Home feature. This string is used to indicate that the user may change the setting later.">
-        (You can change this later)
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_CHANGE_LATER" desc="Dialog toggle/switch label. Dialog describes a new feature called “Chrome Home” ( which is a placeholder name; official naming is underway; for now, do not translate the feature name). Toggle is ON by default.">
+        Use Chrome Home
+      </message>
+      <message name="IDS_CHROME_HOME_OPT_OUT_MENU_ITEM" desc="Item that appears at the top Chrome options menu on mobile. Describes a new feature called “Chrome Home” (which is a placeholder name; official naming is underway; for now, do not translate the feature name). Gerund is used to indicate the current state, e.g. you are now using Chrome Home. Tapping this item opens a dialog that allows the user to turn off the Chrome Home feature.">
+        You're using Chrome Home
       </message>
 
       <!-- Photo picker -->

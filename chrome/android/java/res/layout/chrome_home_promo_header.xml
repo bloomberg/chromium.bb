@@ -8,7 +8,7 @@
 
     <TextView
         style="@style/OverflowMenuHeaderText"
-        android:text="@string/bottom_sheet_app_menu_iph" />
+        android:text="@string/chrome_home_opt_out_menu_item" />
 
     <include layout="@layout/chrome_home_menu_header_icon" />
 
