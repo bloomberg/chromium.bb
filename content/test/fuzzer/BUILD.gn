@@ -54,6 +54,7 @@ fuzzer_test("renderer_tree_fuzzer") {
   deps = [
     ":fuzzer_support",
   ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("clear_site_data_fuzzer") {
@@ -77,6 +78,7 @@ fuzzer_test("renderer_proto_tree_fuzzer") {
     ":html_tree_proto",
     "//third_party/libprotobuf-mutator",
   ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 proto_library("html_tree_proto") {
