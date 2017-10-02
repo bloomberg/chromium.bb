@@ -53,13 +53,12 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
     return worker_object_proxy_;
   }
 
- protected:
+ private:
+  friend class DedicatedWorkerThreadForTest;
+
   DedicatedWorkerThread(ThreadableLoadingContext*, InProcessWorkerObjectProxy&);
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
-
- private:
-  friend class DedicatedWorkerThreadForTest;
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   InProcessWorkerObjectProxy& worker_object_proxy_;

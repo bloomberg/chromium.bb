@@ -43,14 +43,13 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   // the customers.
   static WebThread* GetSharedBackingThread();
 
- protected:
+ private:
+  AudioWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
+
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) final;
 
   bool IsOwningBackingThread() const override { return false; }
-
- private:
-  AudioWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 
   // This raw pointer gets assigned in EnsureSharedBackingThread() and manually
   // released by ClearSharedBackingThread().

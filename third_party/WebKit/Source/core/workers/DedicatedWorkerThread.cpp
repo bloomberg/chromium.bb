@@ -57,14 +57,14 @@ DedicatedWorkerThread::DedicatedWorkerThread(
 
 DedicatedWorkerThread::~DedicatedWorkerThread() {}
 
+void DedicatedWorkerThread::ClearWorkerBackingThread() {
+  worker_backing_thread_ = nullptr;
+}
+
 WorkerOrWorkletGlobalScope* DedicatedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return DedicatedWorkerGlobalScope::Create(this, std::move(creation_params),
                                             time_origin_);
-}
-
-void DedicatedWorkerThread::ClearWorkerBackingThread() {
-  worker_backing_thread_ = nullptr;
 }
 
 }  // namespace blink

@@ -184,18 +184,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
  protected:
   WorkerThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 
-  // Factory method for creating a new worker context for the thread.
-  // Called on the worker thread.
-  virtual WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
-      std::unique_ptr<GlobalScopeCreationParams>) = 0;
-
-  // Returns true when this WorkerThread owns the associated
-  // WorkerBackingThread exclusively. If this function returns true, the
-  // WorkerThread initializes / shutdowns the backing thread. Otherwise
-  // workerBackingThread() should be initialized / shutdown properly
-  // out of this class.
-  virtual bool IsOwningBackingThread() const { return true; }
-
   // Official moment of creation of worker: when the worker thread is created.
   // (https://w3c.github.io/hr-time/#time-origin)
   const double time_origin_;
@@ -219,6 +207,18 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     kRunning,
     kReadyToShutdown,
   };
+
+  // Factory method for creating a new worker context for the thread.
+  // Called on the worker thread.
+  virtual WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
+      std::unique_ptr<GlobalScopeCreationParams>) = 0;
+
+  // Returns true when this WorkerThread owns the associated
+  // WorkerBackingThread exclusively. If this function returns true, the
+  // WorkerThread initializes / shutdowns the backing thread. Otherwise
+  // the backing thread should be initialized / shutdown properly out of this
+  // class.
+  virtual bool IsOwningBackingThread() const { return true; }
 
   // Posts a delayed task to forcibly terminate script execution in case the
   // normal shutdown sequence does not start within a certain time period.
