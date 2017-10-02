@@ -11,10 +11,6 @@
 #include "base/sys_byteorder.h"
 #include "base/third_party/icu/icu_utf.h"
 
-#if !defined(OS_NACL)
-#include "net/base/net_string_util.h"
-#endif
-
 namespace net {
 
 namespace {
@@ -194,15 +190,26 @@ der::Input TypeDomainComponentOid() {
 
 bool X509NameAttribute::ValueAsString(std::string* out) const {
   switch (value_tag) {
-    case der::kTeletexString:
-#if !defined(OS_NACL)
-      return ConvertToUtf8(value.AsString(), kCharsetLatin1, out);
-#else
-// For nacl, just fall through to treating like IA5String (ascii).
-// (The nacl build does not include net_string_util and its deps, and a test of
-// adding them increased nacl build size by 100KB.)
-// TODO(mattm): Remove this behavioral difference.
-#endif
+    case der::kTeletexString: {
+      // Convert from Latin-1 to UTF-8.
+      size_t utf8_length = value.Length();
+      for (size_t i = 0; i < value.Length(); i++) {
+        if (value.UnsafeData()[i] > 0x7f)
+          utf8_length++;
+      }
+      out->reserve(utf8_length);
+      for (size_t i = 0; i < value.Length(); i++) {
+        uint8_t u = value.UnsafeData()[i];
+        if (u <= 0x7f) {
+          out->push_back(u);
+        } else {
+          out->push_back(0xc0 | (u >> 6));
+          out->push_back(0x80 | (u & 0x3f));
+        }
+      }
+      DCHECK_EQ(utf8_length, out->size());
+      return true;
+    }
     case der::kIA5String:
       for (char c : value.AsStringPiece()) {
         if (static_cast<uint8_t>(c) > 127)
