@@ -1516,10 +1516,24 @@ public class ChromeTabbedActivity
     @Override
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegate(this) {
+            private boolean mDismissChromeHomeIPHOnMenuDismissed;
+
             private boolean showDataSaverFooter() {
                 return getBottomSheet() == null
                         && DataReductionProxySettings.getInstance()
                                    .shouldUseDataReductionMainMenuItem();
+            }
+
+            @Override
+            public void onMenuDismissed() {
+                super.onMenuDismissed();
+
+                if (mDismissChromeHomeIPHOnMenuDismissed) {
+                    Tracker tracker =
+                            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                    tracker.dismissed(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE);
+                    mDismissChromeHomeIPHOnMenuDismissed = false;
+                }
             }
 
             @Override
@@ -1539,9 +1553,16 @@ public class ChromeTabbedActivity
                     return R.layout.chrome_home_promo_header;
                 }
 
-                if (getBottomSheet() != null && getAppMenuPropertiesDelegate().shouldShowPageMenu()
+                if (getBottomSheet() != null && mControlContainer.getVisibility() == View.VISIBLE
+                        && getAppMenuPropertiesDelegate().shouldShowPageMenu()
                         && !getBottomSheet().isSheetOpen()) {
-                    return R.layout.chrome_home_iph_header;
+                    Tracker tracker =
+                            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                    if (tracker.shouldTriggerHelpUI(
+                                FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
+                        mDismissChromeHomeIPHOnMenuDismissed = true;
+                        return R.layout.chrome_home_iph_header;
+                    }
                 }
 
                 return 0;
@@ -1560,6 +1581,12 @@ public class ChromeTabbedActivity
                             chDialog.show();
                             return;
                         }
+
+                        mDismissChromeHomeIPHOnMenuDismissed = false;
+
+                        Tracker tracker =
+                                TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                        tracker.notifyEvent(EventConstants.CHROME_HOME_MENU_HEADER_CLICKED);
 
                         getBottomSheet()
                                 .getBottomSheetMetrics()

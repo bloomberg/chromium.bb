@@ -34,6 +34,11 @@ public final class EventConstants {
     public static final String BOTTOM_SHEET_EXPANDED = "bottom_sheet_expanded";
 
     /**
+     * The user clicked the Chrome Home menu header.
+     */
+    public static final String CHROME_HOME_MENU_HEADER_CLICKED = "chrome_home_menu_header_clicked";
+
+    /**
      * Screenshot is taken with Chrome in the foreground.
      */
     public static final String SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND =

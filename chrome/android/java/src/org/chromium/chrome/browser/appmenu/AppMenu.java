@@ -585,8 +585,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 // go to the first menu item.
                 if (headerOnClickListener == null) return;
 
-                dismiss();
                 headerOnClickListener.onClick(v);
+                dismiss();
             }
         });
 
