@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include <memory>
-#include <stack>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/containers/stack.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -1908,7 +1908,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // Data members --------------------------------------------------
 
   std::unique_ptr<base::WaitableEvent> test_finished_event_;
-  std::stack<base::OnceClosure> task_stack_;
+  base::stack<base::OnceClosure> task_stack_;
   std::unique_ptr<AppCacheServiceImpl> service_;
   std::unique_ptr<MockStorageDelegate> delegate_;
   scoped_refptr<MockQuotaManagerProxy> mock_quota_manager_proxy_;

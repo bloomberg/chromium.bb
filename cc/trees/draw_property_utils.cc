@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer.h"
@@ -221,7 +222,7 @@ static ConditionalClip ComputeAccumulatedClip(PropertyTrees* property_trees,
   ConditionalClip unclipped = ConditionalClip{false, gfx::RectF()};
 
   // Collect all the clips that need to be accumulated.
-  std::stack<const ClipNode*, std::vector<const ClipNode*>> parent_chain;
+  base::stack<const ClipNode*, std::vector<const ClipNode*>> parent_chain;
 
   // If target is not direct ancestor of clip, this will find least common
   // ancestor between the target and the clip. Or, if the target has a

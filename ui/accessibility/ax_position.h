@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <stack>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -333,12 +333,12 @@ class AXPosition {
     if (GetAnchor() == second.GetAnchor())
       return Clone();
 
-    std::stack<AXPositionInstance> ancestors1;
+    base::stack<AXPositionInstance> ancestors1;
     ancestors1.push(std::move(Clone()));
     while (!ancestors1.top()->IsNullPosition())
       ancestors1.push(std::move(ancestors1.top()->CreateParentPosition()));
 
-    std::stack<AXPositionInstance> ancestors2;
+    base::stack<AXPositionInstance> ancestors2;
     ancestors2.push(std::move(second.Clone()));
     while (!ancestors2.top()->IsNullPosition())
       ancestors2.push(std::move(ancestors2.top()->CreateParentPosition()));

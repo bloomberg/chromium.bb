@@ -11,12 +11,12 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <stack>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/stack.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -115,7 +115,7 @@ class BookmarkModelAssociator : public syncer::AssociatorInterface {
       std::map<int64_t, const bookmarks::BookmarkNode*>;
   using DirtyAssociationsSyncIds = std::set<int64_t>;
   using BookmarkList = std::vector<const bookmarks::BookmarkNode*>;
-  using BookmarkStack = std::stack<const bookmarks::BookmarkNode*>;
+  using BookmarkStack = base::stack<const bookmarks::BookmarkNode*>;
 
   // Add association between native node and sync node to the maps.
   void AddAssociation(const bookmarks::BookmarkNode* node, int64_t sync_id);
@@ -196,7 +196,7 @@ class BookmarkModelAssociator : public syncer::AssociatorInterface {
 
    private:
     // DFS stack of sync nodes traversed during association.
-    std::stack<int64_t> dfs_stack_;
+    base::stack<int64_t> dfs_stack_;
     // Local and merge results are not owned.
     syncer::SyncMergeResult* local_merge_result_;
     syncer::SyncMergeResult* syncer_merge_result_;

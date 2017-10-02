@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/containers/stack.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -460,7 +461,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   std::unordered_map<int, std::string> thread_names_;
 
   // The following two maps are used only when ECHO_TO_CONSOLE.
-  std::unordered_map<int, std::stack<TimeTicks>> thread_event_start_times_;
+  std::unordered_map<int, base::stack<TimeTicks>> thread_event_start_times_;
   std::unordered_map<std::string, int> thread_colors_;
 
   TimeTicks buffer_limit_reached_timestamp_;

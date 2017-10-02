@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "base/files/file_util.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
@@ -469,7 +470,7 @@ bool URLIndexPrivateData::Empty() const {
 void URLIndexPrivateData::Clear() {
   last_time_rebuilt_from_history_ = base::Time();
   word_list_.clear();
-  available_words_ = std::stack<WordID>();
+  available_words_ = base::stack<WordID>();
   word_map_.clear();
   char_word_map_.clear();
   word_id_history_map_.clear();

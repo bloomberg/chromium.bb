@@ -9,11 +9,12 @@
 
 #include <map>
 #include <memory>
-#include <stack>
 #include <string>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/stack.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -319,32 +320,32 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
   VarHandleMap visited_ids;
   ParentVarSet parent_ids;
 
-  std::stack<StackEntry<PP_Var> > stack;
-  stack.push(StackEntry<PP_Var>(var));
+  // The code below needs to reference stack nodes across updates. base::stack
+  // is not stable, so we use a circular_deque indexed by integer indices. The
+  // back of the deque is the top of the stack.
+  base::circular_deque<StackEntry<PP_Var>> stack;
+  stack.push_back(StackEntry<PP_Var>(var));
   v8::Local<v8::Value> root;
   bool is_root = true;
 
   while (!stack.empty()) {
-    const PP_Var& current_var = stack.top().val;
+    // This index is stable across updates at the back.
+    size_t current_var_index = stack.size() - 1;
     v8::Local<v8::Value> current_v8;
 
-    if (stack.top().sentinel) {
-      stack.pop();
-      if (CanHaveChildren(current_var))
-        parent_ids.erase(current_var.value.as_id);
+    if (stack.back().sentinel) {
+      if (CanHaveChildren(stack[current_var_index].val))
+        parent_ids.erase(stack[current_var_index].val.value.as_id);
+      stack.pop_back();
       continue;
     } else {
-      stack.top().sentinel = true;
+      stack.back().sentinel = true;
     }
 
     bool did_create = false;
-    if (!GetOrCreateV8Value(context,
-                            current_var,
-                            object_vars_allowed_,
-                            &current_v8,
-                            &did_create,
-                            &visited_ids,
-                            &parent_ids,
+    if (!GetOrCreateV8Value(context, stack[current_var_index].val,
+                            object_vars_allowed_, &current_v8, &did_create,
+                            &visited_ids, &parent_ids,
                             resource_converter_.get())) {
       return false;
     }
@@ -355,9 +356,9 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
     }
 
     // Add child nodes to the stack.
-    if (current_var.type == PP_VARTYPE_ARRAY) {
-      parent_ids.insert(current_var.value.as_id);
-      ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
+    if (stack[current_var_index].val.type == PP_VARTYPE_ARRAY) {
+      parent_ids.insert(stack[current_var_index].val.value.as_id);
+      ArrayVar* array_var = ArrayVar::FromPPVar(stack[current_var_index].val);
       if (!array_var) {
         NOTREACHED();
         return false;
@@ -379,7 +380,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
           return false;
         }
         if (did_create && CanHaveChildren(child_var))
-          stack.push(child_var);
+          stack.push_back(child_var);
         v8::TryCatch try_catch(isolate);
         v8_array->Set(static_cast<uint32_t>(i), child_v8);
         if (try_catch.HasCaught()) {
@@ -387,9 +388,10 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
           return false;
         }
       }
-    } else if (current_var.type == PP_VARTYPE_DICTIONARY) {
-      parent_ids.insert(current_var.value.as_id);
-      DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
+    } else if (stack[current_var_index].val.type == PP_VARTYPE_DICTIONARY) {
+      parent_ids.insert(stack[current_var_index].val.value.as_id);
+      DictionaryVar* dict_var =
+          DictionaryVar::FromPPVar(stack[current_var_index].val);
       if (!dict_var) {
         NOTREACHED();
         return false;
@@ -415,7 +417,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
           return false;
         }
         if (did_create && CanHaveChildren(child_var))
-          stack.push(child_var);
+          stack.push_back(child_var);
         v8::TryCatch try_catch(isolate);
         v8_object->Set(
             v8::String::NewFromUtf8(
@@ -471,7 +473,7 @@ bool V8VarConverter::FromV8ValueInternal(
   HandleVarMap visited_handles;
   ParentHandleSet parent_handles;
 
-  std::stack<StackEntry<v8::Local<v8::Value> > > stack;
+  base::stack<StackEntry<v8::Local<v8::Value>>> stack;
   stack.push(StackEntry<v8::Local<v8::Value> >(val));
   ScopedPPVar root;
   *result_var = PP_MakeUndefined();

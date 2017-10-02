@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
-#include <stack>
 #include <vector>
+
+#include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -255,7 +256,7 @@ class StrictIdHandler : public IdHandlerInterface {
 
   base::Lock lock_;
   std::vector<uint8_t> id_states_;
-  std::stack<uint32_t> free_ids_;
+  base::stack<uint32_t> free_ids_;
 };
 
 // An id handler for ids that are never reused.

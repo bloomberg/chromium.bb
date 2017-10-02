@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -70,7 +71,7 @@ std::string FrameTreeVisualizer::DepictFrameTree(FrameTreeNode* root) {
   // Traversal 1: Assign names to current frames. This ensures that the first
   // call to the pretty-printer will result in a naming of the site instances
   // that feels natural and stable.
-  std::stack<FrameTreeNode*> to_explore;
+  base::stack<FrameTreeNode*> to_explore;
   for (to_explore.push(root); !to_explore.empty();) {
     FrameTreeNode* node = to_explore.top();
     to_explore.pop();

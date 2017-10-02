@@ -21,6 +21,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/containers/stack.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -260,7 +261,7 @@ bool DeleteFile(const FilePath& path, bool recursive) {
     return (rmdir(path_str) == 0);
 
   bool success = true;
-  std::stack<std::string> directories;
+  base::stack<std::string> directories;
   directories.push(path.value());
   FileEnumerator traversal(path, true,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES |

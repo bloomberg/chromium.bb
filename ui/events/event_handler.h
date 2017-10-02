@@ -5,9 +5,9 @@
 #ifndef UI_EVENTS_EVENT_HANDLER_H_
 #define UI_EVENTS_EVENT_HANDLER_H_
 
-#include <stack>
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "base/macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
@@ -53,7 +53,7 @@ class EVENTS_EXPORT EventHandler {
 
   // EventDispatcher pushes itself on the top of this stack while dispatching
   // events to this then pops itself off when done.
-  std::stack<EventDispatcher*> dispatchers_;
+  base::stack<EventDispatcher*> dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };

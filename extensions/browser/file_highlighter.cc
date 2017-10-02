@@ -4,8 +4,7 @@
 
 #include "extensions/browser/file_highlighter.h"
 
-#include <stack>
-
+#include "base/containers/stack.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
@@ -59,7 +58,7 @@ void CommentSafeIncrement(const std::string& str, size_t* index) {
 // |index| currently points to a chunk's starting character ('{', '[', or '"').
 void ChunkIncrement(const std::string& str, size_t* index, size_t end) {
   char c = str[*index];
-  std::stack<char> stack;
+  base::stack<char> stack;
   do {
     if (c == '"')
       QuoteIncrement(str, index);

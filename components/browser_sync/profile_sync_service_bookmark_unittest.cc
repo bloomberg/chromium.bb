@@ -11,12 +11,12 @@
 
 #include <map>
 #include <memory>
-#include <stack>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/queue.h"
+#include "base/containers/stack.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -744,7 +744,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     EXPECT_EQ(root->GetIndexOf(model_->other_node()), 1);
     EXPECT_EQ(root->GetIndexOf(model_->mobile_node()), 2);
 
-    std::stack<int64_t> stack;
+    base::stack<int64_t> stack;
     stack.push(bookmark_bar_id());
     while (!stack.empty()) {
       int64_t id = stack.top();

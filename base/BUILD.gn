@@ -245,6 +245,7 @@ component("base") {
     "containers/mru_cache.h",
     "containers/small_map.h",
     "containers/span.h",
+    "containers/stack.h",
     "containers/stack_container.h",
     "containers/vector_buffer.h",
     "cpu.cc",

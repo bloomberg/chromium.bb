@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <set>
-#include <stack>
 #include <string>
 
+#include "base/containers/stack.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -347,7 +347,7 @@ class URLIndexPrivateData
   // modified or deleted old words may be removed from the index, in which
   // case the slots for those words are added to available_words_ for reuse
   // by future URL updates.
-  std::stack<WordID> available_words_;
+  base::stack<WordID> available_words_;
 
   // A one-to-one mapping from the a word string to its slot number (i.e.
   // WordID) in the |word_list_|.

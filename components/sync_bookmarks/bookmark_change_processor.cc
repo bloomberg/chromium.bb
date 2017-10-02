@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include <map>
-#include <stack>
 #include <string>
 #include <utility>
 
+#include "base/containers/stack.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -195,7 +195,7 @@ int BookmarkChangeProcessor::RemoveAllChildNodes(
   //      delete node
 
   int num_removed = 0;
-  std::stack<int64_t> dfs_sync_id_stack;
+  base::stack<int64_t> dfs_sync_id_stack;
   // Push the topmost node.
   dfs_sync_id_stack.push(topmost_sync_id);
   while (!dfs_sync_id_stack.empty()) {

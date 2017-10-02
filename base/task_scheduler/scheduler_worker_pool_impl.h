@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <memory>
-#include <stack>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -245,7 +245,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Stack that contains the timestamps of when workers get cleaned up.
   // Timestamps get popped off the stack as new workers are added.
-  std::stack<TimeTicks, std::vector<TimeTicks>> cleanup_timestamps_;
+  base::stack<TimeTicks, std::vector<TimeTicks>> cleanup_timestamps_;
 
   // Whether we are currently polling for necessary adjustments to
   // |worker_capacity_|.
