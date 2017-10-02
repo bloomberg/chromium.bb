@@ -112,8 +112,6 @@ VariationsSeedStore::~VariationsSeedStore() {
 }
 
 bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
-  invalid_base64_signature_.clear();
-
 #if defined(OS_ANDROID)
   if (!local_state_->HasPrefPath(prefs::kVariationsSeedSignature))
     ImportFirstRunJavaSeed();
@@ -135,8 +133,6 @@ bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
     UMA_HISTOGRAM_ENUMERATION("Variations.LoadSeedSignature", result,
                               VerifySignatureResult::ENUM_SIZE);
     if (result != VerifySignatureResult::VALID_SIGNATURE) {
-      // Record the invalid signature.
-      invalid_base64_signature_ = base64_signature;
       ClearPrefs();
       RecordLoadSeedResult(LoadSeedResult::INVALID_SIGNATURE);
       return false;
@@ -199,7 +195,6 @@ bool VariationsSeedStore::StoreSeedData(
   }
 
   // If the data is delta compressed, first decode it.
-  DCHECK(invalid_base64_signature_.empty());
   RecordStoreSeedResult(StoreSeedResult::DELTA_COUNT);
 
   std::string existing_seed_data;
@@ -250,10 +245,6 @@ void VariationsSeedStore::UpdateSeedDateAndLogDayChange(
 
   local_state_->SetInt64(prefs::kVariationsSeedDate,
                          server_date_fetched.ToInternalValue());
-}
-
-std::string VariationsSeedStore::GetInvalidSignature() const {
-  return invalid_base64_signature_;
 }
 
 // static

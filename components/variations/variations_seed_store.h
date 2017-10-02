@@ -64,10 +64,6 @@ class VariationsSeedStore {
     return variations_serial_number_;
   }
 
-  // Returns the invalid signature in base64 format, or an empty string if the
-  // signature was valid, missing, or if signature verification is disabled.
-  std::string GetInvalidSignature() const;
-
   // Registers Local State prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -117,9 +113,6 @@ class VariationsSeedStore {
 
   // Cached serial number from the most recently fetched variations seed.
   std::string variations_serial_number_;
-
-  // Keeps track of an invalid signature.
-  std::string invalid_base64_signature_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedStore);
 };
