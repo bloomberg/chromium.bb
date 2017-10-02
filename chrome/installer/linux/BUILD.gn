@@ -36,6 +36,8 @@ if (enable_nacl) {
     packaging_files_executables += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
   } else if (current_cpu == "arm") {
     packaging_files_executables += [ "$root_out_dir/nacl_irt_arm.nexe" ]
+  } else if (current_cpu == "mipsel") {
+    packaging_files_executables += [ "$root_out_dir/nacl_irt_mips32.nexe" ]
   }
 }
 
@@ -377,6 +379,8 @@ template("linux_package") {
       deb_arch = "amd64"
     } else if (current_cpu == "arm") {
       deb_arch = "arm"
+    } else if (current_cpu == "mipsel") {
+      deb_arch = "mipsel"
     } else {
       assert(false, "Linux installer not configured for this architecture.")
     }
@@ -427,6 +431,8 @@ template("linux_package") {
         rpm_arch = "x86_64"
       } else if (current_cpu == "arm") {
         rpm_arch = "arm"
+      } else if (current_cpu == "mipsel") {
+        rpm_arch = "mipsel"
       } else {
         assert(false, "Linux installer not configured for this architecture.")
       }
