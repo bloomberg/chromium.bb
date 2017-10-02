@@ -483,8 +483,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool can_activate,
                            BubbleCreationType creation_type,
                            bool persistent) {
-  // No system tray bubbles in kiosk mode.
-  if (Shell::Get()->session_controller()->IsKioskSession())
+  // No system tray bubbles in kiosk app mode.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return;
 
   // Destroy any existing bubble and create a new one.

@@ -53,8 +53,8 @@ bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
     return false;
   }
 
-  // Do not exit fullscreen in kiosk mode.
-  if (Shell::Get()->session_controller()->IsKioskSession())
+  // Do not exit fullscreen in kiosk app mode.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return false;
 
   WMEvent toggle_fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);

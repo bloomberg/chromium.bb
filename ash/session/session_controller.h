@@ -121,10 +121,6 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // device (i.e. first time login on the device).
   bool IsUserFirstLogin() const;
 
-  // Returns true if the current user session is a kiosk session (either
-  // chrome app kiosk or ARC kiosk).
-  bool IsKioskSession() const;
-
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();
 

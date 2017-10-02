@@ -141,11 +141,9 @@ void OverviewButtonTray::UpdateIconVisibility() {
   Shell* shell = Shell::Get();
   SetVisible(
       shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled() &&
-      session_controller->IsActiveUserSessionStarted() &&
-      !session_controller->IsScreenLocked() &&
       session_controller->GetSessionState() ==
           session_manager::SessionState::ACTIVE &&
-      !session_controller->IsKioskSession());
+      !session_controller->IsRunningInAppMode());
 }
 
 }  // namespace ash

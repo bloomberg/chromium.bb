@@ -90,7 +90,7 @@ bool IsInUserSession() {
   return !session_controller->IsUserSessionBlocked() &&
          session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
-         !session_controller->IsKioskSession();
+         !session_controller->IsRunningInAppMode();
 }
 
 }  // namespace palette_utils
