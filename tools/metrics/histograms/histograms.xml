@@ -40092,6 +40092,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ExpectCTHeader.ParseSuccess" enum="BooleanSuccess">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Sites can send an Expect-CT header to Chrome to indicate that they intend
+    their sites to comply with Chrome's Certificate Transparency policy. This
+    histogram is recorded whenever an Expect-CT header is processed on a
+    connection. True indicates that the header parsed successfully, and false
+    indicates that there was a parse failure.
+  </summary>
+</histogram>
+
 <histogram name="Net.ExpectCTHeaderResult" enum="ExpectCTHeaderResult">
   <obsolete>
     Deprecated 04/2017.
