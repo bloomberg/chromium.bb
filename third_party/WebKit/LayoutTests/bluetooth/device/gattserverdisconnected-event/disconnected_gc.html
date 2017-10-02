@@ -20,5 +20,5 @@ promise_test(() => getHealthThermometerDevice()
   })
   // 3. Wait 50ms after the GC runs for the disconnection event to come back.
   // There's nothing to assert other than that only valid memory is used.
-  .then(() => new Promise(resolve => setTimeout(resolve, 50))), test_desc);
+  .then(() => new Promise(resolve => step_timeout(resolve, 50))), test_desc);
 </script>
