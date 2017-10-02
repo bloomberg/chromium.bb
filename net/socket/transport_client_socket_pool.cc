@@ -517,7 +517,8 @@ void TransportClientSocketPool::RequestSockets(
     const std::string& group_name,
     const void* params,
     int num_sockets,
-    const NetLogWithSource& net_log) {
+    const NetLogWithSource& net_log,
+    HttpRequestInfo::RequestMotivation motivation) {
   const scoped_refptr<TransportSocketParams>* casted_params =
       static_cast<const scoped_refptr<TransportSocketParams>*>(params);
 
@@ -529,7 +530,8 @@ void TransportClientSocketPool::RequestSockets(
             &casted_params->get()->destination().host_port_pair()));
   }
 
-  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
+  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log,
+                       motivation);
 }
 
 void TransportClientSocketPool::SetPriority(const std::string& group_name,

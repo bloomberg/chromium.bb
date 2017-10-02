@@ -226,14 +226,17 @@ int SOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                              respect_limits, handle, callback, net_log);
 }
 
-void SOCKSClientSocketPool::RequestSockets(const std::string& group_name,
-                                           const void* params,
-                                           int num_sockets,
-                                           const NetLogWithSource& net_log) {
+void SOCKSClientSocketPool::RequestSockets(
+    const std::string& group_name,
+    const void* params,
+    int num_sockets,
+    const NetLogWithSource& net_log,
+    HttpRequestInfo::RequestMotivation motivation) {
   const scoped_refptr<SOCKSSocketParams>* casted_params =
       static_cast<const scoped_refptr<SOCKSSocketParams>*>(params);
 
-  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
+  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log,
+                       motivation);
 }
 
 void SOCKSClientSocketPool::SetPriority(const std::string& group_name,
