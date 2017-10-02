@@ -5195,8 +5195,8 @@ TEST_F(HttpNetworkTransactionTest,
 
   // CONNECT to mail.example.org:443 via SPDY.
   SpdyHeaderBlock connect2_block;
-  connect2_block[spdy_util_.GetMethodKey()] = "CONNECT";
-  connect2_block[spdy_util_.GetHostKey()] = "mail.example.org:443";
+  connect2_block[kHttp2MethodHeader] = "CONNECT";
+  connect2_block[kHttp2AuthorityHeader] = "mail.example.org:443";
   SpdySerializedFrame connect2(spdy_util_.ConstructSpdyHeaders(
       3, std::move(connect2_block), LOWEST, false));
 
@@ -6345,7 +6345,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
       1, std::move(request_headers0), LOWEST, true));
 
   SpdyHeaderBlock response_headers0;
-  response_headers0[spdy_util_.GetStatusKey()] = "401";
+  response_headers0[kHttp2StatusHeader] = "401";
   response_headers0["www-authenticate"] = "NTLM";
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyResponseHeaders(
       1, std::move(response_headers0), true));
@@ -14001,7 +14001,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdyHeaderBlock response_headers;
-  response_headers[SpdyTestUtil::GetStatusKey()] = "421";
+  response_headers[kHttp2StatusHeader] = "421";
   SpdySerializedFrame resp2(
       spdy_util_.ConstructSpdyReply(3, std::move(response_headers)));
   MockRead reads1[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
@@ -14129,7 +14129,7 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdyHeaderBlock response_headers;
-  response_headers[SpdyTestUtil::GetStatusKey()] = "421";
+  response_headers[kHttp2StatusHeader] = "421";
   SpdySerializedFrame resp2(
       spdy_util_.ConstructSpdyReply(3, response_headers.Clone()));
   MockRead reads1[] = {CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
@@ -14685,10 +14685,10 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
 
   // SPDY GET for HTTP URL (through the proxy, but not the tunnel).
   SpdyHeaderBlock req2_block;
-  req2_block[spdy_util_.GetMethodKey()] = "GET";
-  req2_block[spdy_util_.GetHostKey()] = "www.example.org:8080";
-  req2_block[spdy_util_.GetSchemeKey()] = "http";
-  req2_block[spdy_util_.GetPathKey()] = "/";
+  req2_block[kHttp2MethodHeader] = "GET";
+  req2_block[kHttp2AuthorityHeader] = "www.example.org:8080";
+  req2_block[kHttp2SchemeHeader] = "http";
+  req2_block[kHttp2PathHeader] = "/";
   SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyHeaders(3, std::move(req2_block), MEDIUM, true));
 

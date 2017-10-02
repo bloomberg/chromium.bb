@@ -297,14 +297,14 @@ void SpdyProxyClientSocketTest::AssertWriteLength(int len) {
 
 void SpdyProxyClientSocketTest::PopulateConnectRequestIR(
     SpdyHeaderBlock* block) {
-  (*block)[spdy_util_.GetMethodKey()] = "CONNECT";
-  (*block)[spdy_util_.GetHostKey()] = kOriginHostPort;
+  (*block)[kHttp2MethodHeader] = "CONNECT";
+  (*block)[kHttp2AuthorityHeader] = kOriginHostPort;
   (*block)["user-agent"] = kUserAgent;
 }
 
 void SpdyProxyClientSocketTest::PopulateConnectReplyIR(SpdyHeaderBlock* block,
                                                        const char* status) {
-  (*block)[spdy_util_.GetStatusKey()] = status;
+  (*block)[kHttp2StatusHeader] = status;
 }
 
 // Constructs a standard SPDY HEADERS frame for a CONNECT request.

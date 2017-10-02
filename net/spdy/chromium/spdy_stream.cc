@@ -379,7 +379,8 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
       DCHECK(response_headers_.empty());
 
       {
-        SpdyHeaderBlock::const_iterator it = response_headers.find(":status");
+        SpdyHeaderBlock::const_iterator it =
+            response_headers.find(kHttp2StatusHeader);
         if (it == response_headers.end()) {
           const SpdyString error("Response headers do not include :status.");
           LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);

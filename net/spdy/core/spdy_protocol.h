@@ -302,13 +302,13 @@ const int32_t kInitialSessionWindowSize = 64 * 1024 - 1;
 extern const char* const kHttp2Npn;
 
 // Names of pseudo-headers defined for HTTP/2 requests.
-extern const char* const kHttp2AuthorityHeader;
-extern const char* const kHttp2MethodHeader;
-extern const char* const kHttp2PathHeader;
-extern const char* const kHttp2SchemeHeader;
+SPDY_EXPORT_PRIVATE extern const char* const kHttp2AuthorityHeader;
+SPDY_EXPORT_PRIVATE extern const char* const kHttp2MethodHeader;
+SPDY_EXPORT_PRIVATE extern const char* const kHttp2PathHeader;
+SPDY_EXPORT_PRIVATE extern const char* const kHttp2SchemeHeader;
 
 // Name of pseudo-header defined for HTTP/2 responses.
-extern const char* const kHttp2StatusHeader;
+SPDY_EXPORT_PRIVATE extern const char* const kHttp2StatusHeader;
 
 // Variant type (i.e. tagged union) that is either a SPDY 3.x priority value,
 // or else an HTTP/2 stream dependency tuple {parent stream ID, weight,

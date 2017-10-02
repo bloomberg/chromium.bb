@@ -2887,9 +2887,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidUrl) {
   // those pieces in.
   SpdyFramer response_spdy_framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyHeaderBlock push_promise_header_block;
-  push_promise_header_block[spdy_util_.GetHostKey()] = "";
-  push_promise_header_block[spdy_util_.GetSchemeKey()] = "";
-  push_promise_header_block[spdy_util_.GetPathKey()] = "/index.html";
+  push_promise_header_block[kHttp2AuthorityHeader] = "";
+  push_promise_header_block[kHttp2SchemeHeader] = "";
+  push_promise_header_block[kHttp2PathHeader] = "/index.html";
 
   SpdyPushPromiseIR push_promise(1, 2, std::move(push_promise_header_block));
   SpdySerializedFrame push_promise_frame(
@@ -2964,7 +2964,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushNoURL) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdyHeaderBlock incomplete_headers;
-  incomplete_headers[spdy_util_.GetStatusKey()] = "200 OK";
+  incomplete_headers[kHttp2StatusHeader] = "200 OK";
   incomplete_headers["hello"] = "bye";
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
       std::move(incomplete_headers), 2, 1));
@@ -3269,26 +3269,26 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeadersVary) {
       {true,
        {1, 3},
        {{"cookie", "val1,val2", nullptr},
-        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", "vary", "cookie", nullptr}}},
+        {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", "vary",
+         "cookie", nullptr}}},
       {// Multiple vary fields.
        true,
        {2, 4},
        {{"friend", "barney", "enemy", "snaggletooth", nullptr},
-        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", "vary", "friend", "vary", "enemy", nullptr}}},
+        {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", "vary",
+         "friend", "vary", "enemy", nullptr}}},
       {// Test a '*' vary field.
        false,
        {1, 3},
        {{"cookie", "val1,val2", nullptr},
-        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", "vary", "*", nullptr}}},
+        {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", "vary", "*",
+         nullptr}}},
       {// Multiple comma-separated vary fields.
        true,
        {2, 3},
        {{"friend", "barney", "enemy", "snaggletooth", nullptr},
-        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", "vary", "friend,enemy", nullptr}}}};
+        {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", "vary",
+         "friend,enemy", nullptr}}}};
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
@@ -3370,12 +3370,12 @@ TEST_F(SpdyNetworkTransactionTest, InvalidResponseHeaders) {
       // Response headers missing status header
       {
           3,
-          {spdy_util_.GetPathKey(), "/index.php", "cookie", "val1", "cookie",
-           "val2", nullptr},
+          {kHttp2PathHeader, "/index.php", "cookie", "val1", "cookie", "val2",
+           nullptr},
       },
       // Response headers missing version header
       {
-          1, {spdy_util_.GetPathKey(), "/index.php", "status", "200", nullptr},
+          1, {kHttp2PathHeader, "/index.php", "status", "200", nullptr},
       },
       // Response headers with no headers
       {
@@ -3607,11 +3607,11 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
   ASSERT_TRUE(entries[pos].params->GetList("headers", &header_list));
 
   std::vector<SpdyString> expected;
-  expected.push_back(SpdyString(spdy_util_.GetHostKey()) + ": www.example.org");
-  expected.push_back(SpdyString(spdy_util_.GetPathKey()) + ": /");
-  expected.push_back(SpdyString(spdy_util_.GetSchemeKey()) + ": " +
+  expected.push_back(SpdyString(kHttp2AuthorityHeader) + ": www.example.org");
+  expected.push_back(SpdyString(kHttp2PathHeader) + ": /");
+  expected.push_back(SpdyString(kHttp2SchemeHeader) + ": " +
                      default_url_.scheme());
-  expected.push_back(SpdyString(spdy_util_.GetMethodKey()) + ": GET");
+  expected.push_back(SpdyString(kHttp2MethodHeader) + ": GET");
   expected.push_back("user-agent: Chrome");
   EXPECT_EQ(expected.size(), header_list->GetSize());
   for (std::vector<SpdyString>::const_iterator it = expected.begin();
@@ -4711,7 +4711,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
       std::move(initial_headers), 2, 1));
 
   SpdyHeaderBlock late_headers;
-  late_headers[spdy_util_.GetStatusKey()] = "200";
+  late_headers[kHttp2StatusHeader] = "200";
   late_headers["hello"] = "bye";
   SpdySerializedFrame stream2_headers(spdy_util_.ConstructSpdyResponseHeaders(
       2, std::move(late_headers), false));
@@ -4770,7 +4770,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
       std::move(initial_headers), 2, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdyHeaderBlock late_headers;
-  late_headers[spdy_util_.GetStatusKey()] = "200";
+  late_headers[kHttp2StatusHeader] = "200";
   late_headers["hello"] = "bye";
   SpdySerializedFrame stream2_headers(spdy_util_.ConstructSpdyResponseHeaders(
       2, std::move(late_headers), false));
@@ -6495,7 +6495,7 @@ TEST_F(SpdyNetworkTransactionTest, 100Continue) {
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   SpdyHeaderBlock informational_headers;
-  informational_headers[spdy_util_.GetStatusKey()] = "100";
+  informational_headers[kHttp2StatusHeader] = "100";
   SpdySerializedFrame informational_response(
       spdy_util_.ConstructSpdyReply(1, std::move(informational_headers)));
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));

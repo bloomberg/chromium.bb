@@ -1632,7 +1632,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   // "Promised requests MUST be cacheable and MUST be safe [...]" (RFC7540
   // Section 8.2).  Only cacheable safe request methods are GET and HEAD.
-  SpdyHeaderBlock::const_iterator it = headers.find(":method");
+  SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
   if (it == headers.end() ||
       (it->second.compare("GET") != 0 && it->second.compare("HEAD") != 0)) {
     EnqueueResetStreamFrame(

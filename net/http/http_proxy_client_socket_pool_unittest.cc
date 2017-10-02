@@ -323,7 +323,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
       CreateMockWrite(req, 0, ASYNC), CreateMockWrite(rst, 2, ASYNC),
   };
   SpdyHeaderBlock resp_block;
-  resp_block[spdy_util_.GetStatusKey()] = "407";
+  resp_block[kHttp2StatusHeader] = "407";
   resp_block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
 
   SpdySerializedFrame resp(
