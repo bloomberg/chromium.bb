@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de área de trabalho unificada.</translation>
+<translation id="2220572644011485463">PIN ou senha</translation>
 <translation id="225680501294068881">Procurando dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Desconectar todos</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
 <translation id="2865888419503095837">Informações de rede</translation>
 <translation id="2872961005593481000">Encerrar</translation>
+<translation id="2911940648265863620">Você está compartilhando sua tela</translation>
 <translation id="2942516765047364088">Posição da estante</translation>
 <translation id="2946119680249604491">Adicionar conexão</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Dados do celular</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Visitante</translation>
+<translation id="332587331255250389">Substitua a bateria</translation>
 <translation id="3364721542077212959">Ferramentas da stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Pressione Ctrl + Alt + Z para desativar o feedback falado.</translation>
 <translation id="5612734644261457353">Não foi possível confirmar sua senha. Nota: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair. Use a senha antiga aqui.</translation>
 <translation id="5648021990716966815">Entrada para microfone</translation>
+<translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas configurações.</translation>
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5777841717266010279">Interromper compartilhamento de tela?</translation>
 <translation id="57838592816432529">Desativar som</translation>
@@ -191,12 +195,14 @@
 <translation id="615957422585914272">Mostrar teclado na tela</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ativando...</translation>
+<translation id="6284232397434400372">Resolução alterada</translation>
 <translation id="6297287540776456956">Use a stylus para selecionar uma região</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi substituída por <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Sobreposição do teclado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
+<translation id="6453179446719226835">O idioma foi alterado</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta da direita)</translation>
 <translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +215,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Senha</translation>
 <translation id="6691659475504239918">Pesquisa+Shift+H</translation>
 <translation id="6700713906295497288">Botão do menu do IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
@@ -230,6 +237,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfone traseiro</translation>
+<translation id="726276584504105859">Arraste aqui para usar a tela dividida</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">O Caps Lock está ativado.</translation>

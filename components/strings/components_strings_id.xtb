@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Paskan dengan lebar</translation>
 <translation id="1088860948719068836">Tambahkan Nama di Kartu</translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Tampilkan semua sandi tersimpan...</translation>
 <translation id="1107591249535594099">Apabila dicentang, Chrome akan menyimpan salinan kartu Anda pada perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="1111153019813902504">Bookmark yang baru dibuka</translation>
 <translation id="1113869188872983271">&amp;Urungkan pengaturan ulang</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
 <translation id="3987940399970879459">Kurang dari 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 laman web di sekitar}other{# laman web di sekitar}}</translation>
-<translation id="4021036232240155012">DNS adalah layanan jaringan yang menerjemahkan nama situs web ke alamat Internet-nya.</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
 <translation id="404928562651467259">PERINGATAN</translation>
 <translation id="4058922952496707368">Kunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Metode pembayaran</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak diinstal dengan benar di komputer atau jaringan Anda. Mintalah administrator IT untuk menyelesaikan masalah ini.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
-<translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Alamat DNS<ph name="END_ABBR" /> server <ph name="HOST_NAME" /> tidak dapat ditemukan.</translation>
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
 <translation id="8150722005171944719">File pada <ph name="URL" /> tidak dapat dibaca.  File mungkin telah dihapus, dipindahkan, atau izin file mungkin mencegah akses.</translation>
 <translation id="8184538546369750125">Gunakan default global (Izinkan)</translation>

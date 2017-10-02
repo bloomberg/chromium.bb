@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, lüliti on väljas</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, nupp</translation>
 <translation id="3466530247399808663">Sobimatu klahvivajutus</translation>
+<translation id="3468959318854349468">Pealkiri puudub</translation>
 <translation id="3473644018603298796">valitud <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> &gt; <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{parem nurksulg}other{# paremat nurksulgu}}</translation>

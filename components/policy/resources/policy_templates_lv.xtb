@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Iespējot ekrāna tastatūru</translation>
 <translation id="1330985749576490863">Tiek atspējota Google diska izmantošana no mobilajiem savienojumiem operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili.</translation>
 <translation id="13356285923490863">Politikas nosaukums</translation>
-<translation id="134402861816424823">Norāda, kurus printerus lietotājs nevar izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram DeviceNativePrintersAccessMode
-      ir izvēlēta vērtība BlacklistRestriction.
-
-      Ja šī politika tiek izmantota, lietotājam tiek nodrošināti visi printeri, izņemot
-      printerus, kas atbilst šajā politikā norādītajiem identifikatoriem.
-      </translation>
 <translation id="1353966721814789986">Sākumlapas</translation>
 <translation id="1359553908012294236">Ja šai politikai ir iestatīta vērtība Patiesa vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējota pieteikšanās viesa režīmā. Piesakoties viesa režīmā, tiek izveidoti <ph name="PRODUCT_NAME" /> profili, kuros visi logi ir inkognito režīmā.
 
@@ -267,33 +259,6 @@
 <translation id="209586405398070749">Stabila versija</translation>
 <translation id="2098658257603918882">Iespējo lietošanas un ar avārijām saistītu datu ziņošanu</translation>
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
-<translation id="2126314858836465216">Nodrošina konfigurāciju uzņēmuma printeriem, kas ir piesaistīti ierīcēm.
-
-      Šī politika ļauj nodrošināt printeru konfigurāciju
-      <ph name="PRODUCT_OS_NAME" /> ierīcēm.
-      Faila lielums nedrīkst pārsniegt 5 MB, un tam ir jābūt kodētam JSON formātā.
-      Formāts ir tāds pats kā NativePrinters vārdnīcā. Paredzams,
-      ka fails ar aptuveni 21 000 printeriem tiks kodēts kā 5 MB
-      fails. Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes
-      integritāti.
-
-      Fails ir lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti
-      lejupielādēts, tiklīdz tiks mainīts URL vai jaucējkods.
-
-      Ja šī politika ir iestatīta,
-      operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks lejupielādēts printeru
-      konfigurācijas fails un printeri tiks padarīti pieejami
-      saskaņā ar politikām DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      un DeviceNativePrintersBlacklist.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus
-      atsevišķās ierīcēs. Tā ir paredzēta kā papildu konfigurācija
-      atsevišķu lietotāju veiktajai printeru konfigurācijai.
-
-      Šī politika ir papildinājums politikai NativePrintersBulkConfiguration.
-
-      Ja šī politika nav iestatīta, nebūs neviena ierīču printera un
-      NativeDevicePrinter* politikas tiks ignorētas.</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="2134437727173969994">Atļaut ekrāna bloķēšanu</translation>
@@ -548,22 +513,6 @@
       Katrs saraksta ieraksts apzīmē identifikatoru, kas tiek izmantots iekšēji, lai atšķirtu dažādus ierīces lokālos kontus.</translation>
 <translation id="2769952903507981510">Attālās piekļuves saimniekdatoru obligātā domēna nosaukuma konfigurēšana</translation>
 <translation id="2787173078141616821">Sniegt informāciju par Android statusu</translation>
-<translation id="2789419769822054691">Norāda printerus, ko lietotāji var izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram DeviceNativePrintersAccessMode
-      ir izvēlēta vērtība WhitelistPrintersOnly.
-
-      Ja šī politika tiek izmantota, lietotājam ir pieejami tikai tie printeri,
-      kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir
-      jāatbilst ierakstiem failā, kas norādīts politikā DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Norāda, kurus printerus lietotājs nevar izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram NativePrintersBulkAccessMode
-      ir izvēlēta vērtība BlacklistRestriction.
-
-      Ja šī politika tiek izmantota, lietotājam tiek nodrošināti visi printeri,
-      izņemot printerus, kas atbilst šajā politikā norādītajiem identifikatoriem.
-      </translation>
 <translation id="2801230735743888564">Ļaujiet lietotājiem spēlēt dinozauru spēli, kad ierīce ir bezsaistē.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevarēs spēlēt dinozauru spēli, kad ierīce būs bezsaistē. Ja iestatījums ir Patiesa, lietotāji varēs spēlēt dinozauru spēli. Ja politika nav iestatīta, lietotāji nevarēs spēlēt dinozauru spēli reģistrētās Chrome OS ierīcēs, taču varēs spēlēt visos citos gadījumos.</translation>
@@ -1057,7 +1006,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4541530620466526913">Ierīces lokālie konti</translation>
 <translation id="4555850956567117258">Iespējo lietotājam attālināto apstiprināšanu.</translation>
 <translation id="4557134566541205630">Jaunas cilnes lapas noklusējuma URL meklēšanas nodrošinātājam</translation>
-<translation id="4558592878156368639">Izslēgšanas stundu intervāli, kad tiek izlaistas ierīces politikas OffHours |ignored_policies|</translation>
 <translation id="4600786265870346112">Lielā kursora iespējošana</translation>
 <translation id="4604931264910482931">Vietējās ziņojumapmaiņas melnā saraksta konfigurēšana</translation>
 <translation id="4617338332148204752">Izlaist metataga pārbaudīšanu spraudnī <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2038,18 +1986,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja politika ir iestatīta kā atspējota vai nav iestatīta, pierakstīšanās tiek veikta parastajos profilos.</translation>
 <translation id="8158758865057576716">Iespējot viesabonēšanas kopiju izveidi <ph name="PRODUCT_NAME" /> profilu datiem.</translation>
-<translation id="8169931650834542988">Kontrolē, kuri printeri no politikas
-      NativePrintersBulkConfiguration ir pieejami lietotājiem.
-
-      Norāda, kura piekļuves politika tiek izmantota printeru lielapjoma konfigurācijai.
-      Ja ir atlasīta vērtība AllowAll, tiek rādīti visi printeri. Ja ir atlasīta vērtība BlacklistRestrction,
-      politika NativePrintersBulkBlacklist tiek izmantota, lai liegtu piekļuvi
-      konkrētiem printeriem. Ja ir atlasīta vērtība WhitelistPrintersOnly,
-      politika NativePrintersWhitelist nosaka piekļuvi tikai tiem printeriem,
-      kurus var atlasīt.
-
-      Ja šī politika nav iestatīta, tiek izmantota vērtība BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Produktā <ph name="PRODUCT_NAME" /> iespējo integrēto Google tulkotāja pakalpojumu.
 
       Ja šis iestatījums ir iespējots, produktā <ph name="PRODUCT_NAME" /> tiks rādīta integrēta rīkjosla, kas piemērotos gadījumos piedāvās lietotājam tulkot lapu.
@@ -2140,14 +2076,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="8465065632133292531">Parametri dinamiskās meklēšanas vietrādim URL, kurā izmantota metode POST</translation>
 <translation id="847472800012384958">Neļaut nevienai vietnei rādīt uznirstošos logus</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Norāda printerus, ko lietotājs var izmantot.
-
-      Šī politika tiek izmantota tikai tad, ja parametram NativePrintersBulkAccessMode
-      ir izvēlēta vērtība WhitelistPrintersOnly.
-
-      Ja šī politika tiek izmantota, lietotājam ir pieejami tikai tie printeri, kuru
-      identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst
-      ierakstiem failā, kas norādīts politikā NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Tiek pielāgots URL šablonu saraksts, kas vienmēr jārenderē saimniekdatora pārlūkam.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantots politikā ChromeFrameRendererSettings norādītais noklusējuma renderētājs.
@@ -2158,30 +2086,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="8519264904050090490">Pārvaldīto lietotāju manuālo izņēmumu vietrāži URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> noklusējuma HTML renderētājs</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
-<translation id="8555589883248082762">Nodrošina konfigurāciju uzņēmuma printeriem.
-
-      Šī politika ļauj nodrošināt printeru konfigurāciju
-      <ph name="PRODUCT_OS_NAME" /> ierīcēm.
-      Faila lielums nedrīkst pārsniegt 5 MB, un tam ir jābūt JSON kodējumā.
-      Formāts ir tāds pats kā NativePrinters vārdnīcā. Paredzams, ka
-      fails ar aptuveni 21 000 printeriem tiks kodēts kā 5 MB fails.
-      Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes
-      integritāti.
-
-      Fails ir lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts,
-      tiklīdz tiks mainīts URL vai jaucējkods.
-
-      Ja šī politika ir iestatīta,
-      operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks lejupielādēts printeru
-      konfigurācijas fails un printeri tiks padarīti pieejami saskaņā ar politikām
-      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      un NativePrintersBulkBlacklist.
-
-      Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt vai ignorēt.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus
-      atsevišķās ierīcēs. Tā ir paredzēta kā papildu
-      konfigurācija atsevišķu lietotāju veiktajai printeru konfigurācijai.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
 <translation id="8614804915612153606">Atspējot automātisko atjaunināšanu</translation>
@@ -2243,18 +2147,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="8864975621965365890">Aizliedz noraidīšanas uzvedni, kas tiek parādīta, ja vietni renderē spraudnis <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Sākumlapa</translation>
 <translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
-<translation id="8887644176044431146">Kontrolē, kuri printeri no politikas
-      DeviceNativePrintersConfiguration ir pieejami lietotājiem.
-
-      Norāda, kura piekļuves politika tiek izmantota printeru lielapjoma konfigurācijai.
-      Ja ir atlasīta vērtība AllowAll, tiek rādīti visi printeri. Ja ir atlasīta vērtība
-      BlacklistRestrction, politika DeviceNativePrintersBlacklist tiek izmantota,
-      lai liegtu piekļuvi konkrētiem printeriem. Ja ir atlasīta vērtība
-      WhitelistPrintersOnly, politika DeviceNativePrintersWhitelist nosaka piekļuvi
-      tikai tiem printeriem, kurus var atlasīt.
-
-      Ja šī politika nav iestatīta, tiek izmantota vērtība BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
 <translation id="8908294717014659003">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi multivides tveršanas ierīcēm. Piekļuve multivides tveršanas ierīcēm var būt atļauta pēc noklusējuma, vai lietotājam var tikt parādīts atbilstošs jautājums katru reizi, kad vietne vēlas iegūt piekļuvi multivides tveršanas ierīcēm.
 

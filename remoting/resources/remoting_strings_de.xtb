@@ -3,6 +3,9 @@
 <translationbundle lang="de">
 <translation id="1002108253973310084">Eine inkompatible Protokollversion wurde erkannt. Überprüfen Sie, ob die neueste Version der Software auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="1050693411695664090">Schlecht</translation>
+<translation id="1059802506829356230">• Umgestaltete Benutzeroberfläche.
+• Bessere Leistung und Reaktionsfähigkeit sowie höhere Zuverlässigkeit.
+• Unterstützt die Wiedergabe von Audioinhalten von Windows- oder Linux-Computern.</translation>
 <translation id="1152528166145813711">Auswählen...</translation>
 <translation id="1199593201721843963">Remote-Verbindungen deaktivieren</translation>
 <translation id="1291443878853470558">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chromoting auf diesen Computer zugreifen möchten.</translation>
@@ -81,6 +84,11 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2841013758207633010">Zeit</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Ein Netzwerkfehler ist aufgetreten. Die App wird neu gestartet, wenn Ihr Gerät wieder online ist.</translation>
+<translation id="289405675947420287">Sicherer Zugriff auf Ihren Computer über Ihr iOS-Gerät. Schnell, einfach und kostenlos.
+
+• Laden Sie die Chrome Remote Desktop App aus dem Chrome Web Store auf den Computer herunter, für den Sie den Remote-Zugriff einrichten möchten.
+• Installieren Sie die Chrome Remote Desktop-Software und folgen Sie der Anleitung, um die Einrichtung abzuschließen.
+• Öffnen Sie die App auf Ihrem iOS-Gerät und tippen Sie auf einen Ihrer Computer mit Onlinestatus, um eine Verbindung herzustellen.</translation>
 <translation id="2894654864775534701">Dieser Computer ist derzeit über ein anderes Konto freigegeben.</translation>
 <translation id="2919669478609886916">Dieser Computer ist zurzeit für einen anderen Nutzer freigegeben. Möchten Sie die Freigabe fortsetzen?</translation>
 <translation id="2921543551052660690">Sie haben sich zuvor als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) angemeldet. Damit Sie auf Ihre Computer in diesem Konto zugreifen können, <ph name="LINK_BEGIN" />melden Sie sich mit diesem Konto in Chromium an<ph name="LINK_END" /> und installieren Sie Chromoting erneut.</translation>
@@ -115,6 +123,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="369442766917958684">Offline</translation>
 <translation id="3695446226812920698">Weitere Informationen</translation>
 <translation id="3718805989288361841">Die Richtlinieneinstellungen für Chrome Remote Desktop sind fehlerhaft. Wenden Sie sich an Ihren Systemadministrator.</translation>
+<translation id="3759645055923345178">Nach der Einrichtung können Sie über diese Seite auf den Computer zugreifen, indem Sie die PIN oder den Zugriffscode eingeben</translation>
 <translation id="3776024066357219166">Ihre Chrome Remote Desktop-Sitzung wurde beendet.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bestätigen Sie unten Ihr Konto und Ihre PIN, um Zugriff über Chrome Remote Desktop zu gewähren.</translation>
@@ -155,6 +164,13 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="4660011489602794167">Tastatur anzeigen</translation>
 <translation id="4703302905453407178">Eine erforderliche Komponente funktioniert nicht mehr. Bitte melden Sie dieses Problem an die Entwickler.</translation>
 <translation id="4703799847237267011">Ihre Chromoting-Sitzung wurde beendet.</translation>
+<translation id="4706355010316049867">chrome
+remote
+desktop
+zugriff
+hilfe
+computer
+pc</translation>
 <translation id="4736223761657662401">Verlauf "Verbindungen"</translation>
 <translation id="4741792197137897469">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome an.</translation>
 <translation id="477305884757156764">Die Anwendung ist zu langsam.</translation>
@@ -198,6 +214,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="5773590752998175013">Datum der Kopplung</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
 <translation id="5810269635982033450">Bildschirm funktioniert wie ein Touchpad</translation>
+<translation id="5823658491130719298">Öffnen Sie Chrome auf dem Computer, für den Sie den Remote-Zugriff einrichten möchten, und rufen Sie <ph name="INSTALLATION_LINK" /> auf</translation>
 <translation id="5841343754884244200">Anzeigeoptionen</translation>
 <translation id="5843054235973879827">Warum ist dieser Vorgang sicher?</translation>
 <translation id="5859141382851488196">Neues Fenster...</translation>
@@ -272,6 +289,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="7782471917492991422">Bitte überprüfen Sie die Energieverwaltungseinstellungen Ihres Computers. Vergewissern Sie sich, dass er nicht so konfiguriert ist, dass er bei Inaktivität in den Energiesparmodus schaltet.</translation>
 <translation id="7810127880729796595">Statistiken anzeigen (Verbindung: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Es fehlen einige erforderliche Komponenten. Überprüfen Sie, ob Sie die neueste Version von Chrome verwenden, und versuchen Sie es erneut.</translation>
+<translation id="7850909060902317210">Installieren Sie die Chrome Remote Desktop-Software und schließen Sie die Einrichtung entsprechend der Anleitung ab</translation>
 <translation id="7868137160098754906">Geben Sie Ihre PIN für den Remote-Computer ein.</translation>
 <translation id="7869445566579231750">Sie sind nicht berechtigt, diese App auszuführen.</translation>
 <translation id="7895403300744144251">Die Sicherheitsrichtlinien auf dem Remote-Computer gestatten keine Verbindungen von Ihrem Konto.</translation>
@@ -307,6 +325,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="8642984861538780905">Ausreichend</translation>
 <translation id="8712909229180978490">Meine online gespeicherten Dateien werden nicht im Google Drive angezeigt.</translation>
 <translation id="8743328882720071828">Möchten Sie zulassen, dass <ph name="CLIENT_USERNAME" /> auf Ihren Computer zugreifen und diesen steuern kann?</translation>
+<translation id="8747048596626351634">Die Sitzung ist abgestürzt oder konnte nicht gestartet werden. Wenn die Datei "~/.chrome-remote-desktop-session" auf dem Remote-Computer vorhanden ist, vergewissern Sie sich, dass ein längerer Vordergrundprozess wie eine Desktopumgebung oder ein Fenstermanager auf dem Computer gestartet wird.</translation>
 <translation id="8759753423332885148">Weitere Informationen</translation>
 <translation id="8791202241915690908">Chromoting Host-Installationsprogramm herunterladen</translation>
 <translation id="894763922177556086">Gut</translation>

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1265739287306757398">Подробнее</translation>
 <translation id="1272079795634619415">Остановить</translation>
-<translation id="129553762522093515">Недавно закрытые</translation>
 <translation id="1323735185997015385">Удалить</translation>
 <translation id="132683371494960526">Чтобы изменить родительскую папку, нажмите дважды.</translation>
 <translation id="1340643665687018190">Закрыть меню</translation>
@@ -66,7 +65,7 @@
 <translation id="209018056901015185">Полная версия</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
-<translation id="213900355088104901">Чтобы просматривать веб-страницы анонимно, откройте вкладки в режиме инкогнито</translation>
+<translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
 <translation id="2149973817440762519">Закладка</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">Принять и выйти</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
-<translation id="7851858861565204677">Другие устройства</translation>
 <translation id="7859704718976024901">История просмотра веб-страниц</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">Недействительный URL</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8840513115188359703">Вы останетесь в аккаунте Google.</translation>
+<translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8881801611828450202">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Синхронизация Chrome</translation>
 <translation id="895541991026785598">Сообщить о проблеме</translation>

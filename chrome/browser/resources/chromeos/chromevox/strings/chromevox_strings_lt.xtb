@@ -296,6 +296,7 @@
 <translation id="3458865416877308321">„<ph name="NAME" />“, išjungti</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, mygtukas</translation>
 <translation id="3466530247399808663">Netinkamas klavišo paspaudimas</translation>
+<translation id="3468959318854349468">Nėra pavadinimo</translation>
 <translation id="3473644018603298796">pas. elem.: <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Nuo <ph name="V1" /> iki <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{uždaromasis laužtinis skliaustas}one{# uždaromasis laužtinis skliaustas}few{# uždaromieji laužtiniai skliaustai}many{# right brackets}other{# uždaromųjų laužtinių skliaustų}}</translation>

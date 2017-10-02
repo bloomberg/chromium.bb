@@ -3,6 +3,9 @@
 <translationbundle lang="et">
 <translation id="1002108253973310084">Leiti protokolli ühildumatu versioon. Veenduge, et mõlemas arvutis oleks installitud tarkvara uusim versioon, ja proovige uuesti.</translation>
 <translation id="1050693411695664090">Halb</translation>
+<translation id="1059802506829356230">• Uus välimus ja tunnetus.
+• Täiustatud toimivus, reageerimine ja usaldusväärsus.
+• Tugi heli esitamiseks Windowsi või Linuxi arvutites.</translation>
 <translation id="1152528166145813711">Valige ...</translation>
 <translation id="1199593201721843963">Keela kaugühendused</translation>
 <translation id="1291443878853470558">Kui soovite rakendusega Chromoting arvuti juurde pääseda, siis lubage kaugühendused.</translation>
@@ -81,6 +84,11 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2841013758207633010">Aeg</translation>
 <translation id="2851754573186462851">Chromiumi rakenduste voogesitus</translation>
 <translation id="2888969873284818612">Ilmnes võrguviga. Rakendus taaskäivitatakse, kui seadmes on taas võrguühendus.</translation>
+<translation id="289405675947420287">Hankige oma iOS-i seadmest turvaliselt juurdepääs oma arvutile. See on kiire, lihtne ja tasuta.
+
+• Laadige rakendus Chrome Remote Desktop Chrome'i veebipoest alla arvutis, millele soovite kaugjuurdepääsu.
+• Installige Chrome Remote Desktopi tarkvara ja järgige juhiseid seadistuse lõpuleviimiseks.
+• Avage oma iOS-seadmes rakendus ja puudutage ühendamiseks mõne võrgus oleva arvuti nime.</translation>
 <translation id="2894654864775534701">Seda arvutit jagatakse praegu teise kontoga.</translation>
 <translation id="2919669478609886916">Jagate seda seadet praegu teise kasutajaga. Kas soovite jagamist jätkata?</translation>
 <translation id="2921543551052660690">Olete varem sisse loginud kasutajana <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN" />logige Chromiumi sisse<ph name="LINK_END" /> selle kontoga ja installige chromootimine uuesti.</translation>
@@ -115,6 +123,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="369442766917958684">Võrguühenduseta.</translation>
 <translation id="3695446226812920698">Lisateave</translation>
 <translation id="3718805989288361841">Chrome Remote Desktopi reegli seadetes on viga. Abi saamiseks võtke ühendust süsteemiadministraatoriga.</translation>
+<translation id="3759645055923345178">Kui seadistus on lõpule viidud, pääsete arvutile juurde sellelt lehelt, kui sisestate PIN- või pääsukoodi</translation>
 <translation id="3776024066357219166">Teie Chrome Remote Desktopi seanss on lõppenud.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome Remote Desktopi abil juurdepääsu lubamiseks kinnitage allpool oma konto ja PIN-kood.</translation>
@@ -155,6 +164,13 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="4660011489602794167">Kuva klaviatuur</translation>
 <translation id="4703302905453407178">Nõutav komponent peatas töö. Teavitage sellest probleemist arendajaid.</translation>
 <translation id="4703799847237267011">Teie rakenduse Chromoting seanss on lõppenud.</translation>
+<translation id="4706355010316049867">Chrome
+Remote
+Desktop
+Juurdepääs
+Tugi
+Arvuti
+Lauaarvuti</translation>
 <translation id="4736223761657662401">Ühenduse ajalugu</translation>
 <translation id="4741792197137897469">Autentimine ebaõnnestus. Logige uuesti Chrome'i sisse.</translation>
 <translation id="477305884757156764">Rakendus on liiga aeglane.</translation>
@@ -198,6 +214,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="5773590752998175013">Sidumise kuupäev</translation>
 <translation id="579702532610384533">Ühenda uuesti</translation>
 <translation id="5810269635982033450">Ekraan toimib puuteplaadina</translation>
+<translation id="5823658491130719298">Avage Chrome arvutis, millele soovite kaugjuurdepääsu, ja külastage saiti <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Kuvavalikud</translation>
 <translation id="5843054235973879827">Miks on see ohutu?</translation>
 <translation id="5859141382851488196">Uus aken ...</translation>
@@ -272,6 +289,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="7782471917492991422">Kontrollige oma arvuti toitehalduse seadeid ja veenduge, et arvuti ei ole seadistatud lülituma jõudeolekul unerežiimile.</translation>
 <translation id="7810127880729796595">Kuva statistika (ühendus: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Mõned vajalikud komponendid on puudu. Veenduge, et käitaksite Chrome'i uusimat versiooni, ja proovige uuesti.</translation>
+<translation id="7850909060902317210">Installige Chrome Remote Desktopi tarkvara ja järgige seadistuse lõpuleviimiseks juhiseid</translation>
 <translation id="7868137160098754906">Sisestage kaugarvuti PIN-kood.</translation>
 <translation id="7869445566579231750">Teil puudub luba selle rakenduse käitamiseks.</translation>
 <translation id="7895403300744144251">Kaugarvuti turvareeglid ei luba teie kontolt pärinevaid ühendusi.</translation>
@@ -307,6 +325,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="8642984861538780905">Rahuldav</translation>
 <translation id="8712909229180978490">Ma ei näe võrgus oma salvestatud faile Google Drive'is.</translation>
 <translation id="8743328882720071828">Kas lubate kasutajal <ph name="CLIENT_USERNAME" /> oma arvutit vaadata ja juhtida?</translation>
+<translation id="8747048596626351634">Seanss jooksis kokku või selle käivitamine ebaõnnestus. Kui seanss ~/.chrome-remote-desktop-session on kaugarvutis olemas, veenduge, et see käivitaks pikaajalise taustaprotsessi (nt töölauakeskkond või aknahaldur).</translation>
 <translation id="8759753423332885148">Lisateave.</translation>
 <translation id="8791202241915690908">Chromootimise hosti installiprogrammi allalaadimine</translation>
 <translation id="894763922177556086">Hea</translation>

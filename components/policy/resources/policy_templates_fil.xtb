@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">I-enable ang on-screen na keyboard</translation>
 <translation id="1330985749576490863">Dini-disable ang Google Drive sa mga mobile na koneksyon sa <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="13356285923490863">Pangalan ng Patakaran</translation>
-<translation id="134402861816424823">Tinutukoy ang mga printer na hindi maaaring gamitin ng user.
-
-      Ginagamit lang ang patakarang ito kung pinili ang BlacklistRestriction para sa
-      DeviceNativePrintersAccessMode.
-
-      Kung ginagamit ang patakarang ito, magagamit ng user ang lahat ng printer maliban
-      sa mga id na nakalista sa patakarang ito.
-      </translation>
 <translation id="1353966721814789986">Mga page sa startup</translation>
 <translation id="1359553908012294236">Kung itatakda ang patakarang ito sa true o kung hindi ito iko-configure, ie-enable ng <ph name="PRODUCT_NAME" /> ang mga pag-log in ng bisita. Ang mga pag-log in ng bisita ay mga profile sa <ph name="PRODUCT_NAME" /> kung saan nasa incognito mode ang lahat ng window.
 
@@ -266,33 +258,6 @@
 <translation id="209586405398070749">Stable na channel</translation>
 <translation id="2098658257603918882">Paganahin ang pag-uulat ng data ng paggamit at kaugnay ng crash</translation>
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
-<translation id="2126314858836465216">Nagbibigay ng mga configuration para sa mga printer ng enterprise na nakaugnay sa mga device.
-
-      Nagbibigay-daan sa iyo ang patakarang itong magbigay ng mga configuration ng printer sa mga
-      <ph name="PRODUCT_OS_NAME" /> device.
-      Hindi dapat lumampas sa 5MB ang laki ng file at naka-encode dapat ito sa JSON.
-      Pareho ang format sa diksyunaryo ng NativePrinters.  Tinatayang
-      ang file na naglalaman ng humigit-kumulang 21,000 printer ay ie-encode bilang 5MB
-      na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng
-      download.
-
-      Dina-download at kina-cache ang file. Muli itong ida-download sa tuwing magbabago
-      ang URL o ang hash.
-
-      Kung nakatakda ang patakarang ito,
-      ida-download ng <ph name="PRODUCT_OS_NAME" /> ang
-      file para sa mga configuration ng printer at gagawing available ang mga printer
-      alinsunod sa DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      at DeviceNativePrintersBlacklist.
-
-      Walang epekto ang patakarang ito sa kung mako-configure o hindi ng mga user ang mga printer sa
-      mga indibidwal na device.  Nilalayon itong maging pansuporta sa
-      configuration ng mga printer ng mga indibidwal na user.
-
-      Dagdag ang patakarang ito sa NativePrintersBulkConfiguration.
-
-      Kung hindi nakatakda ang patakarang ito, hindi magkakaroon ng printer ng device at babalewalain ang iba pang
-      patakaran ng NativeDevicePrinter*.</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2134437727173969994">Payagan ang pagla-lock ng screen</translation>
@@ -543,22 +508,6 @@
       Tumutukoy ng identifier ang bawat entry sa listahan, na panloob na ginagamit upang hiwalay na tukuyin ang iba't ibang mga account na lokal sa device.</translation>
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
 <translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
-<translation id="2789419769822054691">Tinutukoy ang mga printer na maaaring gamitin ng user.
-
-      Ginagamit lang ang patakarang ito kung pinili ang WhitelistPrintersOnly para sa
-      DeviceNativePrintersAccessMode.
-
-      Kung ginagamit ang patakarang ito, tanging ang mga printer na may mga id na tumutugma sa mga value
-      sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa
-      mga entry sa file na tinukoy sa DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Tinutukoy ang mga printer na hindi maaaring gamitin ng user.
-
-      Ginagamit lang ang patakarang ito kung pinili ang BlacklistRestriction para sa
-      NativePrintersBulkAccessMode.
-
-      Kung ginagamit ang patakarang ito, magagamit ng user ang lahat ng printer maliban sa
-      mga id na nakalista sa patakarang ito.
-      </translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
 
       Kung itatakda sa False ang patakarang ito, kapag naka-offline ang device, hindi makakapaglaro ng dinosaur easter egg game ang mga user. Kung itatakda naman sa True ang setting na ito, makakapaglaro ng dinosaur game ang mga user. Kung hindi itatakda ang patakarang ito, hindi makakapaglaro ng dinosaur easter egg game ang mga user na naka-enroll sa Chrome OS, ngunit sa ibang mga pagkakataon, maaari itong malaro ng mga user.</translation>
@@ -711,9 +660,9 @@
 <translation id="3322771899429619102">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang isang pattern ng URL ay nasa 'KeygenBlockedForUrls,' ino-override nito ang mga pagbubukod na ito.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
-<translation id="332771718998993005">Tumutukoy sa pangalang na-advertise bilang patutunguhan ng <ph name="PRODUCT_NAME" />.
+<translation id="332771718998993005">Tinutukoy ang pangalang na-advertise bilang destinasyon ng <ph name="PRODUCT_NAME" />.
 
-          Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng patutunguhan ng <ph name="PRODUCT_NAME" />. Kung hindi naman, ipapangalan ang patutunguhan sa pangalan ng device. Kung hindi nakatakda ang patakarang ito, ipapangalan ang patutunguhan sa pangalan ng device at mababago ito ng may-ari ng device (o ng isang user mula sa domain na namamahala sa device). Limitado ang pangalan sa 24 na character.</translation>
+          Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
@@ -1050,7 +999,6 @@
 <translation id="4541530620466526913">Mga account na lokal sa device</translation>
 <translation id="4555850956567117258">I-enable ang malayuang pagpapatotoo para sa user</translation>
 <translation id="4557134566541205630">URL ng pahina ng bagong tab ng default na search provider</translation>
-<translation id="4558592878156368639">Mga off hour na pagitan kapag na-release ang mga OffHours |ignored_policies| ng device</translation>
 <translation id="4600786265870346112">I-enable ang malaking cursor</translation>
 <translation id="4604931264910482931">I-configure ang blacklist ng native na pagmemensahe</translation>
 <translation id="4617338332148204752">Lalaktawan ang pagsuri sa meta tag sa <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1224,9 +1172,9 @@
           Ang halaga ng patakaran ay dapat tukuyin gamit ang milliseconds. Nililimitahan ang mga halaga upang maging mas mababa sa o katumbas ng delay bago mag-idle.</translation>
 <translation id="5307432759655324440">Availability ng mode na incognito</translation>
 <translation id="5318185076587284965">I-enable ang paggamit ng mga relay server ng host ng malayuang pag-access</translation>
-<translation id="5323128137188992869">Nagpapahintulot ng pag-cast ng content sa device gamit ang <ph name="PRODUCT_NAME" />.
+<translation id="5323128137188992869">Binibigyang-daan ang content na ma-cast sa device gamit ang <ph name="PRODUCT_NAME" />.
 
-          Kung nakatakda ang patakarang ito sa False, hindi makakapag-cast ng content ang mga user sa kanilang device. Kung nakatakda ang patakarang ito sa True, makakapag-cast ng content ang mga user. Kung hindi nakatakda ang patakarang ito, hindi makakapag-cast ng content ang mga user sa mga naka-enroll na Chrome OS device, ngunit maaari silang mag-cast sa mga hindi naka-enroll na device.</translation>
+          Kung nakatakda ang patakarang ito sa False, hindi makakapag-cast ng content ang mga user sa kanilang device. Kung nakatakda ang patakarang ito sa True, pinapayagan ang mga user na mag-cast ng content. Kung hindi nakatakda ang patakarang ito, hindi pinapayagan ang mga user na mag-cast ng content sa mga naka-enroll na Chrome OS device, ngunit makakapag-cast ang mga user sa mga device na hindi naka-enroll.</translation>
 <translation id="5330684698007383292">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga sumusunod na uri ng nilalaman</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="5366977351895725771">Kung nakatakda sa false, idi-disable ang paggawa ng pinapangasiwaang user para sa user na ito. Magiging available pa rin ang sinumang mga umiiral na pinapangasiwaang user.
@@ -1457,7 +1405,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6111936128861357925">Pahintulutan ang Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">hindi na ginagamit</translation>
 <translation id="6133088669883929098">Payagan ang lahat ng site na gumamit ng pagbuo ng key</translation>
-<translation id="6139485614509308022">Kung nakatakda ang patakarang "OffHours," babalewalain ang mga tinukoy na patakaran sa device (gamitin ang mga default na setting ng mga patakarang ito) sa mga tinukoy na agwat ng panahon. Ipapatupad muli ng Chrome ang mga patakaran sa device sa bawat kaganapan kapag nagsimula o natapos ang panahon ng "OffHours." Aabisuhan ang user at sapilitang isa-sign out kapag natapos ang panahon ng "OffHours" at nabago ang mga setting ng patakaran sa device (ibig sabihin, kapag naka-log in ang user sa isang hindi pinapayagang account).</translation>
+<translation id="6139485614509308022">Kung nakatakda ang patakarang "OffHours," mababalewala ang mga tinukoy na patakaran ng device (gagamitin ang default na mga setting ng mga patakarang ito) sa loob ng natukoy na tagal ng panahon. Muling mailalapat ng Chrome ang mga patakaran ng device sa bawat kaganapan kung kailan magsisimula o magwawakas ang yugto ng "OffHours." Maaabisuhan at sapilitang masa-sign out ang user kapag natapos ang panahon ng "OffHours" at kapag nabago ang mga setting ng patakaran ng device (ibig sabihin, kapag naka-log in ang user sa isang hindi pinapayagang account).</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -2031,18 +1979,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung nakatakda ang patakaran sa naka-disable o hinayaang hindi nakatakda, hahantong ang mga pag-sign in sa mga regular na profile.</translation>
 <translation id="8158758865057576716">I-enable ang paggawa ng mga roaming na kopya para sa data ng profile sa <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Nagkokontrol kung aling mga printer mula sa 
-      NativePrintersBulkConfiguration ang available sa mga user.
-
-      Nagtatalaga kung aling patakaran sa pag-access ang gagamitin para sa maramihang configuration ng printer.
-      Kung pinili ang AllowAll, ipapakita ang lahat ng printer. Kung BlacklistRestrction
-      ang pinili, gagamitin ang NativePrintersBulkBlacklist upang paghigpitan ang access sa
-      mga tinukoy na printer.  Kung pinili ang WhitelistPrintersOnly,
-      italalaga lang ng NativePrintersWhitelist ang mga printer na
-      napipili.
-
-      Kung hindi nakatakda ang patakarang ito, ipagpapalagay na pinili ang BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Pinapagana ang integrated na serbisyo ng Google Translate sa <ph name="PRODUCT_NAME" />.
 
       Kung pinagana mo ang setting na ito, ipapakita ng <ph name="PRODUCT_NAME" /> ang isang integrated na toolbar na nag-aalok na i-translate ang pahina para sa user, kapag naaangkop.
@@ -2133,14 +2069,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Tinutukoy ang mga printer na maaaring gamitin ng user.
-
-      Ginagamit lang ang patakarang ito kung pinili ang WhitelistPrintersOnly para sa
-      NativePrintersBulkAccessMode.
-
-      Kung ginagamit ang patakarang ito, tanging ang mga printer na may mga id na tumutugma sa mga value
-      sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa
-      mga entry sa file na tinukoy sa NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">I-customize ang listahan ng mga pattern ng URL na dapat na palaging i-render ng browser ng host.
 
           Kung hindi nakatakda ang patakarang ito, gagamitin ang default na tagapag-render para sa lahat ng site tulad ng tinukoy sa patakarang 'ChromeFrameRendererSettings.'
@@ -2151,30 +2079,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8519264904050090490">Mga pinapamahalaang URL ng manu-manong exception ng user</translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
-<translation id="8555589883248082762">Nagbibigay ng mga configuration para sa mga printer ng enterprise.
-
-      Nagbibigay-daan sa iyo ang patakarang itong magbigay ng mga configuration ng printer sa mga
-      <ph name="PRODUCT_OS_NAME" /> device.
-      Hindi dapat lumampas sa 5MB ang laki ng file at naka-encode dapat ito sa JSON
-      Pareho ang format sa diksyunaryo ng NativePrinters.  Tinatayang
-      ang file na naglalaman ng humigit-kumulang 21,000 printer ay ie-encode bilang 5MB
-      na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng
-      download.
-
-      Dina-download at kina-cache ang file. Muli itong ida-download sa tuwing
-      magbabago ang URL o ang hash.
-
-      Kung nakatakda ang patakarang ito,
-      ida-download ng <ph name="PRODUCT_OS_NAME" />
-      ang file para sa mga configuration ng printer at gagawing available ang mga printer
-      alinsunod sa NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
-      at NativePrintersBulkBlacklist.
-
-      Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
-
-      Walang epekto ang patakarang ito sa kung mako-configure o hindi ng mga user ang mga printer sa
-      mga indibidwal na device.  Nilalayon nitong maging karagdagan sa 
-      configuration ng mga printer ng mga indibidwal na user.</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
@@ -2234,18 +2138,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8864975621965365890">Pinipigilan ang turndown na prompt na lumilitaw kapag na-render ang isang site ng <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Home page</translation>
 <translation id="8882006618241293596">I-block ang plugin na <ph name="FLASH_PLUGIN_NAME" /> sa mga site na ito</translation>
-<translation id="8887644176044431146">Nagkokontrol kung aling mga printer mula sa
-      DeviceNativePrintersConfiguration ang available sa mga user.
-
-      Nagtatalaga kung aling patakaran sa pag-access ang gagamitin para sa maramihang configuration ng printer.
-      Kung pinili ang AllowAll, ipapakita ang lahat ng printer. Kung pinili ang BlacklistRestrction,
-      gagamitin ang DeviceNativePrintersBlacklist upang paghigpitan ang access sa
-      mga tinukoy na printer.  Kung pinili ang WhitelistPrintersOnly,
-      italalaga lang ng DeviceNativePrintersWhitelist ang mga napipiling
-      printer.
-
-      Kung hindi nakatakda ang patakarang ito, ipagpapalagay na pinili ang BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Payagan ang mode ng bisita</translation>
 <translation id="8908294717014659003">Binibigyang-daan kang itakda kung papayagan ang mga website na makakuha ng access sa mga media capture na device. Maaaring payagan bilang default ang access sa mga media capture na device, o maaaring tanungin ang user sa tuwing may website na nagnanais na mag-access sa mga media capture na device.
 

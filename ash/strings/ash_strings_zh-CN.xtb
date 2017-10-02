@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2144487987174258011">请重新启动以更新 Adobe Flash Player</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
+<translation id="2220572644011485463">PIN 码或密码</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="2268130516524549846">蓝牙已停用</translation>
 <translation id="2268813581635650749">全部退出</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">USB-C 设备（左侧前端端口）</translation>
 <translation id="2865888419503095837">网络信息</translation>
 <translation id="2872961005593481000">关机</translation>
+<translation id="2911940648265863620">您正在共享自己的屏幕</translation>
 <translation id="2942516765047364088">任务栏位置</translation>
 <translation id="2946119680249604491">添加连接</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">移动数据</translation>
 <translation id="3236488194889173876">没有可用的移动网络</translation>
 <translation id="3294437725009624529">访客</translation>
+<translation id="332587331255250389">请更换电池</translation>
 <translation id="3364721542077212959">触控笔工具</translation>
 <translation id="3368922792935385530">已连接</translation>
 <translation id="3371140690572404006">USB-C 设备（右侧前端端口）</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
 <translation id="5612734644261457353">抱歉，我们仍然无法验证您的密码。提示：如果您刚刚改了密码，新密码将在您退出后应用。请在此使用您的旧密码。</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
+<translation id="5673434351075758678">当系统同步完您的设置后，“<ph name="FROM_LOCALE" />”即会改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
 <translation id="57838592816432529">静音</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">拒绝</translation>
+<translation id="6453179446719226835">语言已更改</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C 设备（右侧端口）</translation>
 <translation id="6501401484702599040">正在将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
@@ -209,6 +214,7 @@
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING" />后结束。</translation>
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">密码</translation>
 <translation id="6691659475504239918">搜索键+Shift+H</translation>
 <translation id="6700713906295497288">IME 菜单按钮</translation>
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME" />”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>

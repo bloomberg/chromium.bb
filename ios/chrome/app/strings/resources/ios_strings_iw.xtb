@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">בחר תיקייה</translation>
 <translation id="1265739287306757398">איך עושים זאת?</translation>
 <translation id="1272079795634619415">הפסק</translation>
-<translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="1323735185997015385">מחק</translation>
 <translation id="132683371494960526">הקש פעמיים כדי לשנות את תיקיית האב.</translation>
 <translation id="1340643665687018190">סגור את התפריט</translation>
@@ -80,6 +79,7 @@
 <translation id="2381405137052800939">הגדרות בסיסיות</translation>
 <translation id="2386793615875593361">נבחרה תמונה אחת</translation>
 <translation id="2435457462613246316">הצג סיסמה</translation>
+<translation id="2529021024822217800">פתח הכול</translation>
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
 <translation id="2584132361465095047">הוסף חשבון…</translation>
 <translation id="2593774076813182497">לא ניתן להדפיס את הדף הזה.</translation>
@@ -313,6 +313,7 @@
 <translation id="6797885426782475225">חיפוש קולי</translation>
 <translation id="6807889908376551050">הצג הכל...</translation>
 <translation id="681368974849482173">הפריט נוצר</translation>
+<translation id="6871663519944855400">פתח במצב גלישה בסתר</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6945221475159498467">בחר</translation>
@@ -359,7 +360,6 @@
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="780301667611848630">לא תודה</translation>
-<translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7859704718976024901">היסטוריית הגלישה</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
@@ -403,6 +403,7 @@
 <translation id="8775144690796719618">כתובת אתר לא חוקית</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8840513115188359703">‏לא תבוצע יציאה מחשבון Google שלך.</translation>
+<translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8881801611828450202">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">דווח על בעיה</translation>

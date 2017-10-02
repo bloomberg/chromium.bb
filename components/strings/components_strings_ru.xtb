@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Выровнять по ширине окна</translation>
 <translation id="1088860948719068836">Укажите имя владельца карты</translation>
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Показать все сохраненные пароли...</translation>
 <translation id="1107591249535594099">Если флажок установлен, Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="1111153019813902504">Недавние закладки</translation>
 <translation id="1113869188872983271">&amp;Отменить изменение порядка</translation>
@@ -411,7 +410,6 @@
 <translation id="3973234410852337861">Сайт <ph name="HOST_NAME" /> заблокирован</translation>
 <translation id="3987940399970879459">Менее 1 МБ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница поблизости}one{# веб-страница поблизости}few{# веб-страницы поблизости}many{# веб-страниц поблизости}other{# веб-страницы поблизости}}</translation>
-<translation id="4021036232240155012">DNS – это сетевая служба, преобразующая название сайта в IP-адрес.</translation>
 <translation id="4030383055268325496">&amp;Отменить добавление</translation>
 <translation id="404928562651467259">Внимание!</translation>
 <translation id="4058922952496707368">Ключ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -598,7 +596,7 @@
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
 <translation id="5541546772353173584">Добавьте адрес электронной почты</translation>
 <translation id="5544037170328430102">Подтвердите действие на <ph name="SITE" />:</translation>
-<translation id="5545756402275714221">Статьи для вас</translation>
+<translation id="5545756402275714221">Новости для вас</translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5560088892362098740">Дата окончания срока действия</translation>
 <translation id="5565735124758917034">Активен</translation>
@@ -619,7 +617,7 @@
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5669703222995421982">Получение персонализированного контента</translation>
 <translation id="5675650730144413517">Страница недоступна</translation>
-<translation id="5689199277474810259">Экспортировать в формате JSON</translation>
+<translation id="5689199277474810259">Экспортировать как JSON</translation>
 <translation id="5710435578057952990">Идентификационные данные этого сайта не проверены.</translation>
 <translation id="5719499550583120431">Принимаются карты предоплаты.</translation>
 <translation id="5720705177508910913">Текущий пользователь</translation>
@@ -900,7 +898,6 @@
 <translation id="8118489163946903409">Способ оплаты</translation>
 <translation id="8127301229239896662">Программа "<ph name="SOFTWARE_NAME" />" была установлена неправильно. Обратитесь за помощью к системному администратору.</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
-<translation id="8134994873729925007">Не удается найти <ph name="BEGIN_ABBR" />DNS-адрес<ph name="END_ABBR" /> сервера <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Ваш компьютер перешел в спящий режим.</translation>
 <translation id="8150722005171944719">Файл по адресу <ph name="URL" /> недоступен. Возможно, он был удален или перемещен либо права доступа к нему ограничены.</translation>
 <translation id="8184538546369750125">Использовать глобальный параметр по умолчанию (разрешать)</translation>

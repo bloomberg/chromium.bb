@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2144487987174258011">Riavvia per aggiornare Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modalità desktop unificato</translation>
+<translation id="2220572644011485463">PIN o password</translation>
 <translation id="225680501294068881">Ricerca dispositivi in corso...</translation>
 <translation id="2268130516524549846">Bluetooth disattivato</translation>
 <translation id="2268813581635650749">Disconnetti tutti</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2865888419503095837">Informazioni di rete</translation>
 <translation id="2872961005593481000">Spegni</translation>
+<translation id="2911940648265863620">Stai condividendo lo schermo</translation>
 <translation id="2942516765047364088">Posizione shelf</translation>
 <translation id="2946119680249604491">Aggiungi connessione</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Dati mobili</translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
 <translation id="3294437725009624529">Ospite</translation>
+<translation id="332587331255250389">Sostituisci la batteria</translation>
 <translation id="3364721542077212959">Strumenti per stilo</translation>
 <translation id="3368922792935385530">Connessa</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Premi CTRL + ALT + Z per disattivare la funzione di lettura vocale.</translation>
 <translation id="5612734644261457353">Spiacenti, la password non è stata ancora verificata. Nota. Se l'hai modificata di recente, la nuova password verrà applicata quando esci, quindi ti invitiamo a utilizzare la tua vecchia password qui.</translation>
 <translation id="5648021990716966815">Jack per microfono</translation>
+<translation id="5673434351075758678">Da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
 <translation id="57838592816432529">Disattiva audio</translation>
@@ -191,12 +195,14 @@
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: attivazione in corso...</translation>
+<translation id="6284232397434400372">Risoluzione modificata</translation>
 <translation id="6297287540776456956">Utilizza lo stilo per selezionare un'area</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Overlay tastiera</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Rifiuto</translation>
+<translation id="6453179446719226835">La lingua è stata modificata</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
 <translation id="6501401484702599040">Trasmissione dello schermo a <ph name="RECEIVER_NAME" /> in corso</translation>
@@ -209,6 +215,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>
 <translation id="6713285437468012787">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
@@ -230,6 +237,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7165278925115064263">ALT + MAIUSC + K</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfono posteriore</translation>
+<translation id="726276584504105859">Trascina qui per utilizzare la modalità Schermo diviso</translation>
 <translation id="7348093485538360975">Tastiera sullo schermo</translation>
 <translation id="735745346212279324">VPN scollegata</translation>
 <translation id="7377169924702866686">La funzione Bloc maiusc è attiva.</translation>

@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Ota ruutunäppäimistö käyttöön</translation>
 <translation id="1330985749576490863">Poistaa Google Driven käytöstä tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksesta matkapuhelinverkkoyhteyden ollessa käytössä</translation>
 <translation id="13356285923490863">Käytännön nimi</translation>
-<translation id="134402861816424823">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
-
-      Tätä käytäntöä käytetään vain jos DeviceNativePrintersAccessMode-tilaksi
-      on valittu BlacklistRestriction.
-
-      Jos tätä käytäntöä käytetään, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä,
-      joiden tunnukset on lueteltu tässä.
-      </translation>
 <translation id="1353966721814789986">Käynnistyssivut:</translation>
 <translation id="1359553908012294236">Jos tämän käytännön arvoksi asetetaan Tosi tai sitä ei määritetä, <ph name="PRODUCT_NAME" /> sallii vieraskirjautumisen. Vieraskirjautumisessa <ph name="PRODUCT_NAME" /> käyttää profiilia, jonka kaikki ikkunat avataan incognito-tilassa.
 
@@ -259,33 +251,6 @@
 <translation id="209586405398070749">Vakaa versio</translation>
 <translation id="2098658257603918882">Ota käyttö- ja kaatumistietojen raportointi käyttöön</translation>
 <translation id="2113068765175018713">Rajoita laitteen käyttöaikaa automaattisella uudelleenkäynnistyksellä</translation>
-<translation id="2126314858836465216">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
-
-      Tämän käytännön avulla voit tarjota tulostinmäärityksiä
-      laitteille, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />.
-      Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä.
-      Muoto on sama kuin NativePrinters-sanakirjan muoto.
-      Noin 21 000 tulostinta sisältävä tiedosto koodautuu arviolta 5 Mt:n
-      tiedostona. Lataus todennetaan hajautusarvon
-      avulla.
-
-      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun
-      URL-osoite tai hajautusarvo muuttuu.
-
-      Jos tämä käytäntö on määritetty,
-      <ph name="PRODUCT_OS_NAME" /> lataa
-      tiedoston tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien
-      mukaisesti: DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      ja DeviceNativePrintersBlacklist.
-
-      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää tulostimia
-      yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien
-      tulostinmääritysten lisäksi.
-
-      Tämä käytäntö on voimassa NativePrintersBulkConfiguration-arvon lisäksi.
-
-      Jos tätä käytäntöä ei ole määritetty, laitetulostimia ei ole ja muut
-      NativeDevicePrinter*-käytännöt ohitetaan.</translation>
 <translation id="2127599828444728326">Salli ilmoitukset näillä sivustoilla</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="2134437727173969994">Salli näytön lukitseminen</translation>
@@ -521,22 +486,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteeseen lisätyt tilit toisistaan.</translation>
 <translation id="2769952903507981510">Määritä vaadittu verkkotunnuksen nimi etäisännille</translation>
 <translation id="2787173078141616821">Raportoi tietoja Androidin tilasta</translation>
-<translation id="2789419769822054691">Määrittää tulostimet, joita käyttäjä voi käyttää.
-
-      Tätä käytäntöä käytetään vain, jos DeviceNativePrintersAccessMode-tilaksi
-      on valittu WhitelistPrintersOnly.
-
-      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän 
-      käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja.
-      Tunnusten on vastattava DeviceNativePrinters-kohdassa määritetyn tiedoston merkintöjä.</translation>
-<translation id="2794520838025002425">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
-
-      Tätä käytäntöä käytetään vain jos NativePrintersBulkAccessMode-tilaksi on valittu
-      BlacklistRestriction.
-
-      Jos tätä käytäntöä käytetään, käyttäjä voi käyttää kaikkia tulostimia,
-      paitsi niitä, joiden tunnukset on lueteltu tässä.
-      </translation>
 <translation id="2801230735743888564">Anna käyttäjien pelata dinosauruspeliä laitteen ollessa offline-tilassa.
 
       Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi pelata dinosauruspeliä laitteen ollessa offline-tilassa. Jos asetuksen arvo on tosi, käyttäjät voivat pelata peliä. Jos käytännön arvoa ei ole määritetty, käyttäjät eivät voi pelata dinosauruspeliä käyttöön otetulla Chrome-käyttöjärjestelmälaitteella, mutta voivat pelata peliä muissa olosuhteissa.</translation>
@@ -1010,7 +959,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4541530620466526913">Laitteeseen lisätyt tilit</translation>
 <translation id="4555850956567117258">Ota käyttöön etätodennus käyttäjälle</translation>
 <translation id="4557134566541205630">Oletusarvoisen hakujen tarjoajan uusi välilehti -sivun URL-osoite</translation>
-<translation id="4558592878156368639">Käytöstä poiston aikavälit, kun laitteen OffHours |ignored_policies| ‑käytännöt julkaistaan</translation>
 <translation id="4600786265870346112">Ota suuri osoitin käyttöön</translation>
 <translation id="4604931264910482931">Määritä kiellettyjen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="4617338332148204752">Ohita sisällönkuvauskenttien kirjaaminen kohteessa <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1915,17 +1863,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos käytäntö on poistettu käytöstä tai sitä ei ole asetettu, kirjautuminen avaa tavallisen profiilin.</translation>
 <translation id="8158758865057576716">Salli roaming-kopioiden luominen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
-<translation id="8169931650834542988">Hallinnoi, mitkä tulostimet
-      NativePrintersBulkConfiguration-määrityksestä ovat käyttäjien käytettävissä.
-
-      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen.
-      Jos AllowAll on valittu, kaikki tulostimet näytetään. Jos BlacklistRestrction
-      on valittu, NativePrintersBulkBlacklist-arvoa käytetään määritettyjen tulostimien
-      käytön rajoittamiseen. Jos WhitelistPrintersOnly on valittu,
-      NativePrintersWhitelist määrittää valittavissa olevat tulostimet.
-
-      Jos käytäntöä ei ole määritetty, oletuksena käytetään BlacklistRestriction-arvoa.
-      </translation>
 <translation id="8170878842291747619">Ottaa integroidun Googlen käännöspalvelun käyttöön tuotteessa <ph name="PRODUCT_NAME" />. Jos otat tämän asetuksen käyttöön,  <ph name="PRODUCT_NAME" /> näyttää integroidun työkalurivin, joka tarjoaa käyttäjän katseleman sivun käännöstä (jos sovellettavissa). Jos poistat tämän asetuksen käytöstä, käännöspalkkia ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos asetusta ei ole määritetty, käyttäjät voivat käyttää toimintoa halutessaan.</translation>
 <translation id="817455428376641507">Sallii luettelossa olevien URL-osoitteiden käytön poikkeuksina kiellettyjen URL-osoitteiden luettelosta.
 
@@ -2008,14 +1945,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Määrittää tulostimet, joita käyttäjä voi käyttää.
-
-      Tätä käytäntöä käytetään vain, jos NativePrintersBulkAccessMode-tilaksi on valittu 
-      WhitelistPrintersOnly.
-
-      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän 
-      käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja.
-      Tunnusten on vastattava NativePrintersBulkConfiguration-kohdassa määritetyn tiedoston merkintöjä.</translation>
 <translation id="8484458986062090479">Muokkaa niiden URL-mallien luetteloa, jotka isäntäselaimen tulee aina piirtää näytölle.
  
           Jos käytäntöä ei ole määritetty, kaikki sivustot piirretään näytölle ChromeFrameRendererSettings-käytännön näytölle piirtämisen oletusmäärityksien mukaan.
@@ -2026,29 +1955,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8519264904050090490">Hallinnoidun käyttäjän manuaalisten poikkeuksien URL-osoitteet</translation>
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
-<translation id="8555589883248082762">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
-
-      Tämän käytännön avulla voit tarjota tulostinmäärityksiä laitteille, joiden 
-      käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />.
-      Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä.
-      Muoto on sama kuin NativePrinters-sanakirjan muoto. Noin 21 000 tulostinta
-      sisältävä tiedosto koodautuu arviolta 5 Mt:n tiedostona.
-      Lataus todennetaan hajautusarvon avulla.
-
-      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun
-      URL-osoite tai hajautusarvo muuttuu.
-
-      Jos tämä käytäntö on määritetty,
-      <ph name="PRODUCT_OS_NAME" /> lataa tiedoston
-      tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien mukaisesti:
-      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      ja NativePrintersBulkBlacklist.
-
-      Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää
-      tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten
-      käyttäjien tulostinmääritysten lisäksi.</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
 <translation id="8587229956764455752">Salli uusien käyttäjätilien luominen</translation>
 <translation id="8614804915612153606">Poistaa automaattisen päivityksen käytöstä</translation>
@@ -2100,17 +2006,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8864975621965365890">Torjuu hylkäyskehotuksen, joka tulee näkyviin, kun sivu on hahmonnettu tuotteella <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Etusivu</translation>
 <translation id="8882006618241293596">Estä <ph name="FLASH_PLUGIN_NAME" />-laajennus näillä sivustoilla.</translation>
-<translation id="8887644176044431146">Hallinnoi, mitkä tulostimet
-      DeviceNativePrintersConfiguration-määrityksestä ovat käyttäjien käytettävissä.
-
-      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen.
-      Jos AllowAll on valittu, kaikki tulostimet näytetään. Jos BlacklistRestrction
-      on valittu, DeviceNativePrintersBlacklist-arvoa käytetään määritettyjen tulostimien
-      käytön rajoittamiseen. Jos WhitelistPrintersOnly on valittu,
-      DeviceNativePrintersWhitelist määrittää valittavissa olevat tulostimet.
-
-      Jos käytäntöä ei ole määritetty, oletuksena käytetään BlacklistRestriction-arvoa.
-      </translation>
 <translation id="8906768759089290519">Ota vierastila käyttöön</translation>
 <translation id="8908294717014659003">Voit määrittää, mitkä sivut saavat käyttää mediantallennuslaitteita. Mediantallennuslaitteiden käyttö voidaan sallia oletuksena, tai käyttäjältä voidaan kysyä aina, kun sivusto haluaa käyttää tallennuslaitteita.
 

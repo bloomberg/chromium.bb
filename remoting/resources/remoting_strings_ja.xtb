@@ -3,6 +3,9 @@
 <translationbundle lang="ja">
 <translation id="1002108253973310084">互換性のないプロトコル バージョンが検出されました。両方のパソコンにインストールしているソフトウェアのバージョンが最新であることを確認し、もう一度お試しください。</translation>
 <translation id="1050693411695664090">悪い</translation>
+<translation id="1059802506829356230">• デザインを一新しました。
+• パフォーマンス、応答性、信頼性が向上しました。
+• Windows または Linux パソコンからのオーディオ再生に対応しました。</translation>
 <translation id="1152528166145813711">選択してください…</translation>
 <translation id="1199593201721843963">リモート接続を無効にする</translation>
 <translation id="1291443878853470558">Chromoting を使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
@@ -81,6 +84,11 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2841013758207633010">時間</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">ネットワーク エラーが発生しました。デバイスが再度オンラインになったときにアプリを再開します。</translation>
+<translation id="289405675947420287">無料のツールを使って、iOS 端末からお使いのパソコンにすばやく安全にアクセスできます。
+
+• リモート アクセスを行うパソコンで、Chrome ウェブストアから Chrome リモート デスクトップ アプリをダウンロードします。
+• Chrome リモート デスクトップ ソフトウェアをインストールし、案内に従って設定を完了します。
+• iOS 端末でアプリを開き、オンラインになっているパソコンの中から接続先のパソコンを見つけてタップします。</translation>
 <translation id="2894654864775534701">このパソコンは現在、別のアカウントで共有されています。</translation>
 <translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
 <translation id="2921543551052660690">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Chromium にログイン<ph name="LINK_END" />し、Chromoting を再インストールしてください。</translation>
@@ -115,6 +123,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="369442766917958684">オフラインです。</translation>
 <translation id="3695446226812920698">詳細</translation>
 <translation id="3718805989288361841">Chrome リモート デスクトップのポリシー設定にエラーがあります。不明点はシステム管理者にお問い合わせください。</translation>
+<translation id="3759645055923345178">設定が完了したら、このページで PIN またはアクセスコードを入力してパソコンにアクセスできます</translation>
 <translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome リモート デスクトップによるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
@@ -155,6 +164,13 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4660011489602794167">キーボードを表示</translation>
 <translation id="4703302905453407178">必須コンポーネントが停止しました。デベロッパーにこの問題を報告してください。</translation>
 <translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>
+<translation id="4706355010316049867">Chrome
+リモート
+デスクトップ
+アクセス
+対応
+パソコン
+PC</translation>
 <translation id="4736223761657662401">接続履歴</translation>
 <translation id="4741792197137897469">認証できませんでした。Chrome にもう一度ログインしてください。</translation>
 <translation id="477305884757156764">アプリケーションの動作が遅すぎる。</translation>
@@ -198,6 +214,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5773590752998175013">ペア設定された日付</translation>
 <translation id="579702532610384533">再接続</translation>
 <translation id="5810269635982033450">画面がトラックパッドとして機能します</translation>
+<translation id="5823658491130719298">リモート アクセスを行うパソコンで Chrome を開き、<ph name="INSTALLATION_LINK" /> にアクセスします</translation>
 <translation id="5841343754884244200">表示オプション</translation>
 <translation id="5843054235973879827">この操作が安全な理由</translation>
 <translation id="5859141382851488196">新しいウィンドウ...</translation>
@@ -272,6 +289,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7782471917492991422">お使いのパソコンの電源管理設定で、アイドル状態のときにスリープにならないように設定されていることをご確認ください。</translation>
 <translation id="7810127880729796595">統計情報を表示（接続状態: <ph name="QUALITY" />）</translation>
 <translation id="7836926030608666805">必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認し、もう一度お試しください。</translation>
+<translation id="7850909060902317210">Chrome リモート デスクトップ ソフトウェアをインストールし、案内に従って設定を完了します</translation>
 <translation id="7868137160098754906">リモート パソコンの PIN を入力してください。</translation>
 <translation id="7869445566579231750">このアプリケーションを実行する権限がありません。</translation>
 <translation id="7895403300744144251">リモート パソコンのセキュリティ ポリシーで、ご使用のアカウントからの接続が許可されていません。</translation>
@@ -307,6 +325,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="8642984861538780905">中程度</translation>
 <translation id="8712909229180978490">Google ドライブに保存したファイルをオンラインで表示できない。</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> にパソコンの閲覧と制御を許可しますか？</translation>
+<translation id="8747048596626351634">セッションがクラッシュしたか、セッションを開始できませんでした。~/.chrome-remote-desktop-session がリモートのパソコンにある場合は、このスクリプトによって、デスクトップ環境やウィンドウ マネージャのような長時間実行のフォアグラウンド プロセスが開始されることを確認してください。</translation>
 <translation id="8759753423332885148">詳細</translation>
 <translation id="8791202241915690908">Chromoting ホスト インストーラのダウンロード</translation>
 <translation id="894763922177556086">良い</translation>

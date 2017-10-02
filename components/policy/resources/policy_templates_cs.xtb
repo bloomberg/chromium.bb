@@ -73,14 +73,6 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 <translation id="1330145147221172764">Povolit softwarovou klávesnici</translation>
 <translation id="1330985749576490863">Zakáže v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku Google přes mobilní připojení</translation>
 <translation id="13356285923490863">Název zásady</translation>
-<translation id="134402861816424823">Určuje, které tiskárny uživatel nesmí používat.
-
-      Tato zásada se použije, jen pokud je u zásady DeviceNativePrintersAccessMode
-      nastavena možnost BlacklistRestriction.
-
-      Je-li tato zásada použita, uživatel bude mít k dispozici všechny tiskárny
-      kromě těch, jejichž ID jsou uvedena v této zásadě.
-      </translation>
 <translation id="1353966721814789986">Stránky otevírané při spuštění</translation>
 <translation id="1359553908012294236">Pokud je tato zásada nastavena na hodnotu True nebo nastavena není, prohlížeč <ph name="PRODUCT_NAME" /> povolí přihlášení hosta. Přihlášení hosta v prohlížeči <ph name="PRODUCT_NAME" /> jsou profily, ve kterých jsou všechna okna v anonymním režimu.
 
@@ -254,32 +246,6 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="209586405398070749">Stabilní verze</translation>
 <translation id="2098658257603918882">Aktivovat odesílání dat o využití nebo selhání</translation>
 <translation id="2113068765175018713">Omezit provozní dobu zařízení automatickým restartováním</translation>
-<translation id="2126314858836465216">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
-
-      Tato zásada umožňuje poskytnout zařízením <ph name="PRODUCT_OS_NAME" />
-      konfigurace tiskáren.
-      Soubor nesmí být větší než 5 MB a musí být zakódován ve formátu JSON.
-      Formát je stejný jako ve slovníku NativePrinters. Podle odhadů
-      by zakódovaný soubor obsahující asi 21 000 tiskáren měl mít velikost 5MB.
-      Kryptografický hašovací klíč slouží k ověření integrity stahování.
-
-      Soubor bude stažen a uložen do mezipaměti. Při každé změně adresy URL
-      nebo hašovacího klíče se soubor stáhne znovu.
-
-      Je-li tato zásada nastavena,
-      zařízení <ph name="PRODUCT_OS_NAME" /> stáhne
-      soubor s konfiguracemi tiskáren a zpřístupní tiskárny v souladu
-      se zásadami DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      a DeviceNativePrintersBlacklist.
-
-      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny
-      na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci
-      tiskáren ze strany jednotlivých uživatelů.
-
-      Tato zásada doplňuje zásadu NativePrintersBulkConfiguration.
-
-      Pokud tato zásada není nastavena, zařízení nebude mít žádné tiskárny
-      a ostatní zásady NativeDevicePrinter* budou ignorovány.</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
 <translation id="2134437727173969994">Povolit uzamknutí obrazovky</translation>
@@ -525,20 +491,6 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Každá položka v seznamu uvádí identifikátor, který se používá k internímu rozlišení různých místních účtů v zařízení.</translation>
 <translation id="2769952903507981510">Konfigurovat povinný název domény pro hostitele vzdáleného přístupu</translation>
 <translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
-<translation id="2789419769822054691">Určuje, které tiskárny uživatel může používat.
-
-      Tato zásada se použije, jen pokud je u zásady DeviceNativePrintersAccessMode
-      vybrána možnost WhitelistPrintersOnly.
-
-      Je-li tato zásada použita, uživatel bude mít k dispozici pouze tiskárny,
-      jejichž ID se shodují s hodnotami v této zásadě. ID musejí souhlasit
-      s položkami v souboru uvedeném v zásadě DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Určuje, které tiskárny uživatel nesmí používat.
-
-Tato zásada se použije, jen pokud je u zásady NativePrintersBulkAccessMode vybrána možnost BlacklistRestriction.
-
-Je-li tato zásada použita, bude mít uživatel k dispozici všechny tiskárny kromě těch, jejichž ID jsou uvedena v této zásadě.
-      </translation>
 <translation id="2801230735743888564">Povolit uživatelům hrát hru s dinosaurem, když je zařízení offline.
 
       Je-li tato zásada nastavena na hodnotu False, uživatelé nemohou hrát hru s dinosaurem, když je zařízení offline. Pokud je tato zásada nastavena na hodnotu True, uživatelé hru s dinosaurem hrát mohou. Pokud tato zásada není nastavena, v zaregistrovaném systému Chrome OS uživatelé hru s dinosaurem hrát nemohou, ale za všech jiných okolností ji hrát mohou.</translation>
@@ -694,7 +646,7 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="332771718998993005">Určuje název uváděný jako cíl služby <ph name="PRODUCT_NAME" />.
 
-          Je-li tato zásada nastavena na neprázdný řetězec, bude příslušný řetězec použit jako název cíle služby <ph name="PRODUCT_NAME" />. V opačném případě bude jako název cíle použit název zařízení. Pokud tato zásada není nastavena, bude jako název cíle použit název zařízení a vlastník zařízení (nebo uživatel z domény, která zařízení spravuje) jej bude moci změnit. Název smí mít maximálně 24 znaků.</translation>
+          Je-li tato zásada nastavena na neprázdný řetězec, bude jako název cíle služby <ph name="PRODUCT_NAME" /> použit příslušný řetězec. V opačném případě bude jako název cíle použit název zařízení. Pokud tato zásada není nastavena, bude jako název cíle použit název zařízení a vlastník zařízení (nebo uživatel z domény, která zařízení spravuje) jej bude moci změnit. Název smí mít maximálně 24 znaků.</translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3417418267404583991">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, povolí systém <ph name="PRODUCT_OS_NAME" /> přihlášení hosta. Přihlášení hosta jsou anonymní uživatelské relace a nevyžadují heslo.
 
@@ -1030,7 +982,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4541530620466526913">Místní účty v zařízení</translation>
 <translation id="4555850956567117258">Aktivuje vzdálené ověření identity uživatele</translation>
 <translation id="4557134566541205630">Výchozí adresa URL stránky nové karty poskytovatele vyhledávání</translation>
-<translation id="4558592878156368639">Intervaly, ve kterých na zařízení nebudou uplatňovány zásady |ignored_policies|</translation>
 <translation id="4600786265870346112">Aktivovat velký kurzor</translation>
 <translation id="4604931264910482931">Konfigurace seznamu zakázaných položek zasílání nativních zpráv</translation>
 <translation id="4617338332148204752">Přeskočení kontroly metaznaček ve službě <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1207,7 +1158,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 <translation id="5318185076587284965">Povolit použití předávacích serverů hostitelem vzdáleného přístupu</translation>
 <translation id="5323128137188992869">Umožňuje odesílání obsahu do zařízení pomocí služby <ph name="PRODUCT_NAME" />.
 
-          Je-li tato zásada nastavena na hodnotu False, uživatelé nebudou moci odesílat obsah do svého zařízení. Je-li tato zásada nastavena na hodnotu True, uživatelé obsah odesílat mohou. Pokud tato zásada není nastavena, uživatelé nemohou odesílat obsah do zaregistrovaných zařízení se systémem Chrome OS, ale do nezaregistrovaných zařízení jej odesílat mohou.</translation>
+          Je-li tato zásada nastavena na hodnotu False, uživatelé do svého zařízení nebudou moci odesílat obsah. Je-li tato zásada nastavena na hodnotu True, uživatelé obsah odesílat mohou. Pokud tato zásada není nastavena, uživatelé nemohou odesílat obsah do zaregistrovaných zařízení se systémem Chrome OS, ale do nezaregistrovaných zařízení jej odesílat mohou.</translation>
 <translation id="5330684698007383292">Umožnit pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu</translation>
 <translation id="5365946944967967336">Zobrazit na liště tlačítko Domů</translation>
 <translation id="5366977351895725771">Pokud tuto zásadu nastavíte na hodnotu false, vytváření a přihlašování dozorovaných uživatelů bude zakázáno. Všichni existující dozorovaní uživatelé budou stále k dispozici.
@@ -2001,12 +1952,6 @@ Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím 
 
       Je-li tato zásada deaktivována nebo ponechána nenastavená, budou se používat běžné profily.</translation>
 <translation id="8158758865057576716">Povoluje vytvoření cestovních kopií dat profilu <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Určuje, které tiskárny ze zásady NativePrintersBulkConfiguration budou uživatelům dostupné.
-
-Stanovuje, která zásada přístupu se použije pro hromadnou konfiguraci tiskáren. Je-li vybrána možnost AllowAll, budou zobrazeny všechny tiskárny. Je-li vybrána možnost BlacklistRestrction, bude k určitým tiskárnám přístup zakázán pomocí zásady NativePrintersBulkBlacklist. Je-li vybrána možnost WhitelistPrintersOnly, bude možné vybrat pouze tiskárny uvedené v zásadě NativePrintersWhitelist.
-
-Pokud tato zásada není nastavena, předpokládá se použití možnosti BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Aktivuje v aplikaci<ph name="PRODUCT_NAME" /> integrovanou službu Překladač Google.
 
       Pokud toto nastavení aktivujete, zobrazí aplikace <ph name="PRODUCT_NAME" /> integrovanou lištu nástrojů, která uživateli nabídne překlad stránky (pokud je to na místě).
@@ -2088,11 +2033,6 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Určuje, které tiskárny uživatel může používat.
-
-Tato zásada se použije, jen pokud je v zásadě NativePrintersBulkAccessMode vybrána možnost WhitelistPrintersOnly.
-
-Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, jejichž ID se shodují s hodnotami v této zásadě. ID musejí souhlasit s položkami v souboru, který je uveden v zásadě NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
 
           Pokud tato zásada není nastavena, použije se pro všechny weby výchozí modul vykreslení určený zásadou ChromeFrameRendererSettings.
@@ -2103,17 +2043,6 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 <translation id="8519264904050090490">Adresy URL ručních výjimek spravovaného uživatele</translation>
 <translation id="8544375438507658205">Výchozí modul vykreslení HTML pro plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Při návštěvě webů mimo obsahové balíčky zobrazit upozornění</translation>
-<translation id="8555589883248082762">Poskytuje konfigurace pro podnikové tiskárny.
-
-Tato zásada umožňuje poskytnout zařízením se systémem <ph name="PRODUCT_OS_NAME" /> konfigurace tiskáren. Soubor nesmí být větší než 5 MB a musí být zakódován ve formátu JSON. Formát je stejný jako ve slovníku NativePrinters. Podle odhadů by zakódovaný soubor obsahující asi 21 000 tiskáren měl mít velikost 5 MB. Kryptografický hash se používá k ověření integrity staženého souboru.
-
-Soubor se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se soubor stáhne znovu.
-
-Je-li tato zásada nastavena, stáhne <ph name="PRODUCT_OS_NAME" /> soubor s konfiguracemi tiskáren a zpřístupní tiskárny v souladu se zásadami NativePrintersBulkAccessMode, NativePrintersBulkWhitelist a NativePrintersBulkBlacklist.
-
-Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
-
-Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních. Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.</translation>
 <translation id="8566842294717252664">Skrýt internetový obchod z karty Nová stránka a ze spouštěče aplikací</translation>
 <translation id="8587229956764455752">Povolit vytváření nových uživatelských účtů</translation>
 <translation id="8614804915612153606">Zakáže automatické aktualizace</translation>
@@ -2175,18 +2104,6 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 <translation id="8864975621965365890">Potlačuje oznámení o ukončení podpory, která se zobrazuje, když je web vykreslován pomocí pluginu <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8882006618241293596">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
-<translation id="8887644176044431146">Určuje, které tiskárny ze zásady
-      DeviceNativePrintersConfiguration budou uživatelům dostupné.
-
-      Stanovuje, které zásady přístupu budou použity pro hromadnou konfiguraci tiskáren.
-      Je-li vybrána možnost AllowAll, budou zobrazeny všechny tiskárny. Je-li vybrána
-      možnost BlacklistRestrction, k určitým tiskárnám bude zakázán přístup pomocí
-      zásady DeviceNativePrintersBlacklist. Je-li vybrána možnost WhitelistPrintersOnly,
-      zásada DeviceNativePrintersWhitelist určí, které tiskárny lze vybrat.
-
-      Pokud tato zásada není nastavena, předpokládá se použití možnosti
-      BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Aktivovat režim hosta</translation>
 <translation id="8908294717014659003">Umožňuje nastavit, zda webové stránky smějí používat zařízení pro pořizování mediálního obsahu. Přístup k zařízením pro pořizování mediálního obsahu může být povolen ve výchozím nastavení, nebo se uživateli může zobrazit dotaz pokaždé, když nějaké webové stránky budou chtít použít zařízení pro pořízení mediálního obsahu.
 

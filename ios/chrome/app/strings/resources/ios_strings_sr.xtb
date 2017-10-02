@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Избор директоријума</translation>
 <translation id="1265739287306757398">Сазнајте како</translation>
 <translation id="1272079795634619415">Заустави</translation>
-<translation id="129553762522093515">Недавно затворено</translation>
 <translation id="1323735185997015385">Избриши</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
@@ -359,7 +358,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7769602470925380267">Прихватам, одјави ме</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
 <translation id="780301667611848630">Не, хвала</translation>
-<translation id="7851858861565204677">Други уређаји</translation>
 <translation id="7859704718976024901">Историја прегледања</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
@@ -403,6 +401,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8775144690796719618">Неважећи URL</translation>
 <translation id="8820817407110198400">Обележивачи</translation>
 <translation id="8840513115188359703">Нећемо вас одјавити са Google налога.</translation>
+<translation id="8870413625673593573">Недавно затворено</translation>
 <translation id="8881801611828450202">Претражи ову слику у <ph name="SEARCH_ENGINE" />-у</translation>
 <translation id="8904976895050290827">Синхронизација Chrome прегледача</translation>
 <translation id="895541991026785598">Пријавите проблем</translation>

@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, 스위치 사용 중지</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, 버튼</translation>
 <translation id="3466530247399808663">잘못된 키 누름</translation>
+<translation id="3468959318854349468">제목 없음</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" />에서 <ph name="V2" />까지</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{오른쪽 꺾음 괄호}other{오른쪽 꺾음 괄호 #개}}</translation>

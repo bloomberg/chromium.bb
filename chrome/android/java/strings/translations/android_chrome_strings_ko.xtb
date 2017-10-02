@@ -3,7 +3,7 @@
 <translationbundle lang="ko">
 <translation id="1006017844123154345">온라인 열기</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> 추가 중...</translation>
-<translation id="1041308826830691739">웹사이트에서</translation>
+<translation id="1041308826830691739">웹사이트 알림</translation>
 <translation id="1049743911850919806">시크릿</translation>
 <translation id="10614374240317010">저장되지 않음</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />로 된 페이지는 번역하지 않음</translation>
@@ -300,7 +300,7 @@
 <translation id="393697183122708255">사용 가능한 음성 검색이 없습니다.</translation>
 <translation id="3946611741043634542">계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
-<translation id="395206256282351086">검색 및 사이트 제안이 사용 중지됨</translation>
+<translation id="395206256282351086">검색 및 사이트 추천이 사용 중지됨</translation>
 <translation id="395922942268463099">페이지가 정기적으로 업데이트됨</translation>
 <translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="397583555483684758">동기화가 중지되었습니다.</translation>
@@ -311,6 +311,7 @@
 <translation id="3997476611815694295">중요하지 않은 저장공간</translation>
 <translation id="4002066346123236978">제목</translation>
 <translation id="4013356575049925793">전자상거래</translation>
+<translation id="4041402800604793551">계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />, 그리고 <ph name="BEGIN_LINK3" />Family Link에서 만든 Google 계정용 개인정보 보호정책<ph name="END_LINK3" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="4042870126885713738">웹 주소가 확인되지 않거나 연결되지 않는 경우 추천 주소 표시</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
 <translation id="4056223980640387499">세피아</translation>
@@ -389,6 +390,7 @@
 <translation id="4797039098279997504">터치하여 <ph name="URL_OF_THE_CURRENT_TAB" />(으)로 돌아가기</translation>
 <translation id="4807098396393229769">카드 명의</translation>
 <translation id="4807963036345170158">데이터 절약 모드 사용 안함</translation>
+<translation id="4811736444948656478">중간 높이로 탐색 패널이 열림</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
 <translation id="4842092870884894799">비밀번호 생성 팝업 표시</translation>
@@ -544,6 +546,7 @@
 <translation id="6177111841848151710">현재 검색 엔진에는 허용되지 않음</translation>
 <translation id="6177390657002841081">데이터 세이버 사용 설정</translation>
 <translation id="6181444274883918285">사이트 예외 추가</translation>
+<translation id="618555311922999635">전체 높이로 탐색 패널이 열림</translation>
 <translation id="6192792657125177640">예외</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
 <translation id="6232535412751077445">‘추적 안함’을 사용하도록 설정하면 요청이 사용자의 인터넷 사용 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 해석되는 방법에 따라 결과가 결정됩니다.
@@ -757,6 +760,7 @@
 <translation id="8087000398470557479">이 콘텐츠의 출처는 Google에서 제공하는 <ph name="DOMAIN_NAME" />입니다.</translation>
 <translation id="8100932616285851614">탐색 패널이 닫힘</translation>
 <translation id="8103578431304235997">시크릿 탭</translation>
+<translation id="8116925261070264013">음소거됨</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
@@ -773,6 +777,7 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" />에 동기화 중</translation>
 <translation id="8310344678080805313">일반 탭</translation>
+<translation id="8334426458436697004">특정 사이트를 음소거합니다.</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
 <translation id="8372721116225477180">소셜</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
@@ -840,7 +845,6 @@
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
-<translation id="9038649477754266430">빠른 페이지 로드를 위해 예상 검색어 서비스 사용</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9060538597317784206">Play 스토어에서 <ph name="APP_NAME" /> 앱을 봅니다.  등급은 <ph name="APP_RATING" />입니다.</translation>
 <translation id="9063523880881406963">데스크톱 버전으로 보기 사용 중지</translation>

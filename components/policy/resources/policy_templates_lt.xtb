@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Įgalinti ekrano klaviatūrą</translation>
 <translation id="1330985749576490863">Išjungiami „Google“ disko korinio tinklo ryšiai „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“</translation>
 <translation id="13356285923490863">Politikos pavadinimas</translation>
-<translation id="134402861816424823">Nurodomi spausdintuvai, kurių naudotojas negali naudoti.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „DeviceNativePrintersAccessMode“ nustatymas
-      „BlacklistRestriction“.
-
-      Jei ši politika naudojama, naudotojui pateikiami visi spausdintuvai, išskyrus tuos,
-      kurių ID pateikti šioje politikoje.
-      </translation>
 <translation id="1353966721814789986">Paleisties puslapiai</translation>
 <translation id="1359553908012294236">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ įgalins svečių prisijungimą. Svečių prisijungimas yra „<ph name="PRODUCT_NAME" />“ profiliai, kur visi langai naudojami inkognito režimu.
 
@@ -268,33 +260,6 @@
 <translation id="209586405398070749">Stabilus kanalas</translation>
 <translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
 <translation id="2113068765175018713">Apriboti įrenginio veiksenos laiką automatiškai įkeliant operacinę sistemą iš naujo</translation>
-<translation id="2126314858836465216">Teikiama su įrenginiais susietų įmonės spausdintuvų konfigūracija.
-
-      Taikant šią politiką leidžiama teikti spausdintuvų konfigūraciją
-      „<ph name="PRODUCT_OS_NAME" />“ įrenginiams.
-      Failas negali būti didesnis nei 5 MB ir turi būti užkoduotas taikant JSON.
-      Formatas toks pat kaip „NativePrinters“ žodyno formatas. Numatoma,
-      kad failas, kuriame pateikta maždaug 21 000 spausdintuvų, bus užkoduotas kaip 5 MB
-      failas. Kriptografinė maišos vertė naudojama atsisiuntimo vientisumui
-      patvirtinti.
-
-      Failas atsisiunčiamas ir saugomas talpykloje. Jis bus iš naujo atsisiųstas
-      pasikeitus URL arba maišos vertei.
-
-      Jei ši politika nustatyta,
-      „<ph name="PRODUCT_OS_NAME" />“ atsisiųs
-      spausdintuvų konfigūracijos failą ir nustatys, kad spausdintuvai būtų pasiekiami
-      laikantis „DeviceNativePrintersAccessMode“, „DeviceNativePrintersWhitelist“
-      ir „DeviceNativePrintersBlacklist“ reikalavimų.
-
-      Ši politika neturi įtakos nustatant, ar naudotojai gali konfigūruoti spausdintuvus
-      atskiruose įrenginiuose. Ji taikoma kaip papildoma
-      atskirų naudotojų spausdintuvų konfigūracijos politika.
-
-      Ši politika yra politikos „NativePrintersBulkConfiguration“ priedas.
-
-      Nenustačius šios politikos, nebus įrenginių spausdintuvų ir nebus paisoma kitų
-      „NativeDevicePrinter“* politikos nuostatų.</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="2134437727173969994">Leidimas užrakinti ekraną</translation>
@@ -547,22 +512,6 @@
       Kiekvienas sąrašo įrašas nurodo identifikatorių, naudojamą vidiniais tikslais siekiant atskirti skirtingas vietines įrenginio paskyras.</translation>
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
-<translation id="2789419769822054691">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „DeviceNativePrintersAccessMode“ nustatymas
-      „WhitelistPrintersOnly“.
-
-      Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai, kurių ID
-      atitinka šioje politikoje nurodytas vertes. ID turi atitikti
-      įrašus faile, kuris nurodytas „DeviceNativePrinters“.</translation>
-<translation id="2794520838025002425">Nurodomi spausdintuvai, kurių naudotojas negali naudoti.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „NativePrintersBulkAccessMode“
-      nustatymas „BlacklistRestriction“.
-
-      Jei ši politika naudojama, naudotojui pateikiami visi spausdintuvai,
-      išskyrus tuos, kurių ID nurodyti šioje politikoje.
-      </translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
       Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
@@ -1061,7 +1010,6 @@
 <translation id="4541530620466526913">Vietinės įrenginio paskyros</translation>
 <translation id="4555850956567117258">Įgalinti nuotolinį naudotojo patvirtinimą</translation>
 <translation id="4557134566541205630">Numatytojo paieškos teikėjo naujo skirtuko puslapio URL</translation>
-<translation id="4558592878156368639">Nenaudojimo valandų intervalai, kai išleidžiama „OffHours“ |ignored_policies|</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
 <translation id="4604931264910482931">Savosios susirašinėjimo pranešimais programos juodojo sąrašo konfigūravimas</translation>
 <translation id="4617338332148204752">Praleisti metažymų tikrinimą „<ph name="PRODUCT_FRAME_NAME" />“</translation>
@@ -1470,7 +1418,7 @@
 <translation id="6111936128861357925">Leisti dinozaurų Velykų kiaušinių žaidimą</translation>
 <translation id="6114416803310251055">nepatvirtinta</translation>
 <translation id="6133088669883929098">Leisti visoms svetainėms naudoti rakto generavimą</translation>
-<translation id="6139485614509308022">Jei politika „OffHours“ (nenaudojimo valandos) nustatyta, tada nepaisoma nurodytos įrenginio politikos (naudojami numatytieji šios politikos nustatymai) nustatytais laiko intervalais. Įrenginio politiką „Chrome“ pakartotinai pritaiko per kiekvieną įvykį, kai „OffHours“ laikotarpis prasideda ir baigiasi. Naudotojams bus pranešta ir jie bus priverstinai atjungti, kai „OffHours“ laikas pasibaigs ir įrenginio politikos nustatymai bus pakeisti (pvz., kai naudotojas prisijungęs su neleidžiama paskyra).</translation>
+<translation id="6139485614509308022">Nustačius politiką „OffHours“ (nenaudojimo valandos) nustatytais laiko intervalais nepaisoma nurodytos įrenginio politikos (naudojami numatytieji šios politikos nustatymai). Įrenginio politiką „Chrome“ pakartotinai pritaiko per kiekvieną įvykį, kai „OffHours“ laikotarpis prasideda ir baigiasi. Naudotojams bus pranešta ir jie bus priverstinai atjungti, kai „OffHours“ laikas pasibaigs ir įrenginio politikos nustatymai bus pakeisti (pvz., kai naudotojas prisijungęs su neleidžiama paskyra).</translation>
 <translation id="6145799962557135888">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -2042,18 +1990,6 @@
 
       Jei politika neįgalinta arba nenustatyta, prisijungiant jungiamasi prie įprastų profilių.</translation>
 <translation id="8158758865057576716">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą.</translation>
-<translation id="8169931650834542988">Valdoma, kurie spausdintuvai iš
-      „NativePrintersBulkConfiguration“ pasiekiami naudotojams.
-
-      Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai.
-      Jei pasirinkta „AllowAll“, rodomi visi spausdintuvai. Jei pasirinkta „BlacklistRestrction“,
-      „NativePrintersBulkBlacklist“ naudojama prieigai prie nurodytų spausdintuvų apriboti.
-      Jei pasirinkta „WhitelistPrintersOnly“,
-      „NativePrintersWhitelist“ nustato tik tuos spausdintuvus,
-      kuriuos galima pasirinkti.
-
-      Jei ši politika nenustatyta, taikoma „BlacklistRestriction“.
-      </translation>
 <translation id="8170878842291747619">Įgalinama integruota „Google“ vertėjo paslauga „<ph name="PRODUCT_NAME" />“.
 
       Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ bus rodoma integruota įrankių juosta, kurioje siūloma naudotojui išversti puslapį, kai tai galima.
@@ -2144,14 +2080,6 @@
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
-<translation id="8480767919856518465">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
-
-      Ši politika naudojama, tik jei pasirinktas politikos „NativePrintersBulkAccessMode“
-      nustatymas „WhitelistPrintersOnly“.
-
-      Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai,
-      kurių ID atitinka šioje politikoje nurodytas vertes. ID turi atitikti
-      įrašus faile, kuris nurodytas „NativePrintersBulkConfiguration“.</translation>
 <translation id="8484458986062090479">Tinkinkite URL šablonų, kuriuos prieglobos naršyklė visada turėtų pateikti, sąrašą.
 
           Jei ši politika nenustatyta, numatytasis pateikėjas naudojamas visose svetainėse, kaip nurodyta politikoje „ChromeFrameRendererSettings“.
@@ -2162,30 +2090,6 @@
 <translation id="8519264904050090490">Tvarkomi naudotojo neautomatinių išimčių URL</translation>
 <translation id="8544375438507658205">Numatytasis „<ph name="PRODUCT_FRAME_NAME" />“ HTML teikėjas</translation>
 <translation id="8549772397068118889">Įspėti, kai apsilankoma svetainėse, nesančiose turinio paketuose</translation>
-<translation id="8555589883248082762">Nurodoma įmonės spausdintuvų konfigūracija.
-
-      Pagal šią politiką leidžiama nurodyti
-      „<ph name="PRODUCT_OS_NAME" />“ įrenginių spausdintuvų konfigūraciją.
-      Failo dydis neturi viršyti 5 MB ir failas turi būti koduotas naudojant JSON.
-      Toks pats formatas nurodytas „NativePrinters“ žodyne. Numatyta,
-      kad failas, kuriame yra maždaug 21 tūkst. spausdintuvų, bus koduojamas kaip 5 MB
-      failas. Atsisiųsto failo vientisumas patikrinamas naudojant
-      kriptografinę maišą.
-
-      Failas atsisiunčiamas ir išsaugomas talpykloje. Jis bus iš naujo atsisiųstas,
-      kai pasikeis URL arba maiša.
-
-      Jei ši politika nustatyta,
-      „<ph name="PRODUCT_OS_NAME" />“ atsisiųs
-      spausdintuvo konfigūracijų failą ir suteiks galimybę naudoti spausdintuvus
-      pagal „NativePrintersBulkAccessMode“, „NativePrintersBulkWhitelist“
-      ir „NativePrintersBulkBlacklist“.
-
-      Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
-
-      Ši politika nepaveiks naudotojams suteiktos galimybės konfigūruoti spausdintuvus
-      atskiruose įrenginiuose. Politika papildo
-      atskirų naudotojų spausdintuvų konfigūraciją.</translation>
 <translation id="8566842294717252664">Internetinės parduotuvės slėpimas Naujo skirtuko puslapyje ir programų paleidimo priemonėje</translation>
 <translation id="8587229956764455752">Leisti kurti naujų naudotojų paskyras</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
@@ -2247,18 +2151,6 @@
 <translation id="8864975621965365890">Nerodomas raginimas išjungti, kuris rodomas, kai svetainę pateikia „<ph name="PRODUCT_FRAME_NAME" />“.</translation>
 <translation id="8870318296973696995">Pagrindinis puslapis</translation>
 <translation id="8882006618241293596">Užblokuoti papildinį „<ph name="FLASH_PLUGIN_NAME" />“ šiose svetainėse</translation>
-<translation id="8887644176044431146">Valdoma, kurie spausdintuvai iš
-      „DeviceNativePrintersConfiguration“ pasiekiami naudotojams.
-
-      Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai.
-      Jei pasirinkta „AllowAll“, rodomi visi spausdintuvai. Jei pasirinkta
-      „BlacklistRestrction“, „DeviceNativePrintersBlacklist“ naudojama prieigai prie
-      nurodytų spausdintuvų apriboti. Jei pasirinkta „WhitelistPrintersOnly“,
-      „DeviceNativePrintersWhitelist“ nustato tik tuos spausdintuvus, kuriuos galima
-      pasirinkti.
-
-      Jei ši politika nenustatyta, taikoma „BlacklistRestriction“.
-      </translation>
 <translation id="8906768759089290519">Įgalinti svečio režimą</translation>
 <translation id="8908294717014659003">Leidžiama jums nustatyti, ar svetainėms leidžiama prieiga prie medijos vaizdų įvedimo įrenginių. Medijos vaizdų įvedimo įrenginių prieiga gali būti leidžiama pagal numatytuosius nustatymus arba naudotojo (-os) gali būti klausiama kiekvieną kartą, kai svetainė nori gauti prieigą prie medijos vaizdų įvedimo įrenginių.
 

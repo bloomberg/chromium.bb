@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Aktifkan keyboard di layar</translation>
 <translation id="1330985749576490863">Menonaktifkan Google Drive melalui sambungan seluler di aplikasi File <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nama Kebijakan</translation>
-<translation id="134402861816424823">Menentukan printer yang tidak dapat digunakan oleh pengguna.
-
-      Kebijakan ini hanya digunakan jika BlacklistRestriction dipilih untuk
-      DeviceNativePrintersAccessMode.
-
-      Jika kebijakan ini digunakan, semua printer disediakan kepada pengguna,
-      kecuali untuk ID yang dicantumkan pada kebijakan ini.
-      </translation>
 <translation id="1353966721814789986">Laman permulaan</translation>
 <translation id="1359553908012294236">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengaktifkan proses masuk tamu. Proses masuk tamu adalah profil <ph name="PRODUCT_NAME" /> dengan semua jendela dalam mode penyamaran.
 
@@ -260,33 +252,6 @@
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait kerusakan</translation>
 <translation id="2113068765175018713">Membatasi waktu operasi perangkat dengan melakukan booting ulang secara otomatis</translation>
-<translation id="2126314858836465216">Menyediakan konfigurasi untuk printer perusahaan yang terikat dengan perangkat.
-
-      Kebijakan ini memungkinkan Anda menyediakan konfigurasi printer untuk
-      perangkat <ph name="PRODUCT_OS_NAME" />.
-      Ukuran file tidak boleh melebihi 5MB dan harus dienkode dalam format JSON.
-      Format tersebut sama dengan format yang berada di kamus NativePrinters. Diperkirakan
-      bahwa file yang berisi kira-kira 21.000 printer akan dienkode sebagai file 
-      5MB. Hash kriptografi digunakan untuk memverifikasi integritas
-      hasil download.
-
-      File tersebut didownload dan disimpan dalam cache. File akan didownload ulang setiap kali
-      URL atau hash diubah.
-
-      Jika kebijakan ini disetel,
-      <ph name="PRODUCT_OS_NAME" /> akan mendownload
-      file tersebut untuk konfigurasi printer dan menyediakan printer
-      sesuai dengan kebijakan DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      dan DeviceNativePrintersBlacklist.
-
-      Kebijakan ini tidak memengaruhi apakah pengguna dapat mengonfigurasi printer
-      di masing-masing perangkat. Kebijakan ini ditujukan sebagai tambahan terhadap
-      konfigurasi printer yang diberikan oleh masing-masing pengguna.
-
-      Kebijakan ini merupakan tambahan untuk kebijakan NativePrintersBulkConfiguration.
-
-      Jika kebijakan ini tidak disetel, tidak akan ada printer perangkat dan kebijakan
-      NativeDevicePrinter* akan diabaikan.</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
 <translation id="2134437727173969994">Mengizinkan penguncian layar</translation>
@@ -521,22 +486,6 @@
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
-<translation id="2789419769822054691">Menentukan printer yang dapat digunakan oleh pengguna.
-
-      Kebijakan ini hanya digunakan jika WhitelistPrintersOnly dipilih untuk
-      DeviceNativePrintersAccessMode.
-
-      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai
-      dalam kebijakan ini yang tersedia untuk pengguna. ID harus sesuai dengan
-      entri dalam file yang ditentukan di DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Menentukan printer yang tidak dapat digunakan oleh pengguna.
-
-      Kebijakan ini hanya digunakan jika BlacklistRestriction dipilih untuk
-      NativePrintersBulkAccessMode.
-
-      Jika kebijakan ini digunakan, semua printer disediakan kepada pengguna, kecuali
-      untuk ID yang dicantumkan pada kebijakan ini.
-      </translation>
 <translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
 
       Jika kebijakan ini disetel ke False, pengguna tidak dapat memainkan game dinosaur easter egg saat perangkat offline. Jika setelan ini disetel ke True, pengguna dapat memainkan game tersebut. Jika kebijakan ini tidak disetel, pengguna tidak dapat memainkan game dinosaur easter egg pada Chrome OS yang terdaftar, tapi pengguna dapat memainkannya dalam situasi tertentu.</translation>
@@ -686,7 +635,7 @@
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai tujuan <ph name="PRODUCT_NAME" />.
 
-          Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
+          Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
@@ -1010,7 +959,6 @@
 <translation id="4541530620466526913">Akun lokal perangkat</translation>
 <translation id="4555850956567117258">Mengaktifkan pengesahan jarak jauh bagi pengguna</translation>
 <translation id="4557134566541205630">URL laman tab baru penyedia penelusuran default</translation>
-<translation id="4558592878156368639">Interval di luar jam kerja saat |ignored_policies| DeviceOffHours dirilis</translation>
 <translation id="4600786265870346112">Aktifkan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1172,7 +1120,7 @@
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
 
-          Jika kebijakan ini disetel ke False, pengguna tidak akan dapat mentransmisikan (cast) konten ke perangkat mereka. Jika kebijakan disetel ke True, pengguna diizinkan untuk mentransmisikan konten. Jika kebijakan ini tidak disetel, pengguna tidak diizinkan mentransmisikan konten ke perangkat Chrome OS yang terdaftar, namun dapat mentransmisikan ke perangkat yang tidak terdaftar.</translation>
+          Jika kebijakan ini disetel ke False, pengguna tidak akan dapat mentransmisikan konten ke perangkat mereka. Jika kebijakan ini disetel ke True, pengguna diizinkan untuk mentransmisikan konten. Jika kebijakan ini tidak disetel, pengguna tidak diizinkan untuk mentransmisikan konten ke perangkat Chrome OS yang terdaftar, namun dapat mentransmisikan ke perangkat yang tidak terdaftar.</translation>
 <translation id="5330684698007383292">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut</translation>
 <translation id="5365946944967967336">Tampilkan tombol Beranda di bilah alat</translation>
 <translation id="5366977351895725771">Jika disetel ke false, pembuatan pengguna yang dilindungi oleh pengguna ini akan dinonaktifkan. Pengguna diawasi mana pun yang sudah ada akan tetap tersedia.
@@ -1388,7 +1336,7 @@
 <translation id="6111936128861357925">Izinkan Game Dinosaur Easter Egg</translation>
 <translation id="6114416803310251055">tak lagi digunakan</translation>
 <translation id="6133088669883929098">Izinkan semua situs menggunakan pembuatan kunci</translation>
-<translation id="6139485614509308022">Jika kebijakan "OffHours" disetel, kebijakan perangkat tertentu akan diabaikan (gunakan setelan default kebijakan tersebut) selama rentang waktu yang ditentukan. Kebijakan perangkat akan diterapkan kembali oleh Chrome pada setiap aktivitas saat periode "OffHours" dimulai atau berakhir. Pengguna akan diberi tahu dan dipaksa logout saat waktu "OffHours" berakhir dan setelan kebijakan perangkat diubah (yaitu, saat pengguna login menggunakan akun yang tidak diizinkan).</translation>
+<translation id="6139485614509308022">Jika kebijakan "OffHours" disetel, kebijakan perangkat tertentu akan diabaikan (gunakan setelan default kebijakan tersebut) selama rentang waktu yang ditentukan. Kebijakan perangkat akan diterapkan kembali oleh Chrome pada setiap aktivitas saat periode "OffHours" dimulai atau berakhir. Pengguna akan diberi tahu dan dipaksa logout saat waktu "OffHours" berakhir, dan setelan kebijakan perangkat akan diubah (yaitu, saat pengguna login menggunakan akun yang tidak diizinkan).</translation>
 <translation id="6145799962557135888">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="614662973812186053">Kebijakan ini juga mengontrol pengumpulan data diagnostik dan penggunaan Android.</translation>
 <translation id="6155936611791017817">Setel status default kursor besar di layar masuk</translation>
@@ -1917,18 +1865,6 @@
 
       Jika kebijakan ini disetel ke nonaktif atau dibiarkan tidak disetel, proses masuk akan mengarahkan ke profil reguler.</translation>
 <translation id="8158758865057576716">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Mengontrol printer dari
-      NativePrintersBulkConfiguration yang tersedia untuk pengguna.
-
-      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal.
-      Jika AllowAll dipilih, semua printer akan ditampilkan. Jika BlacklistRestrction
-      dipilih, NativePrintersBulkBlacklist digunakan untuk membatasi akses ke
-      printer yang ditentukan. Jika WhitelistPrintersOnly dipilih,
-      NativePrintersWhitelist hanya ditetapkan pada printer yang dapat
-      dipilih.
-
-      Jika kebijakan ini tidak disetel, opsi BlacklistRestriction akan diterapkan.
-      </translation>
 <translation id="8170878842291747619">Mengaktifkan layanan Google Terjemahan terpadu di <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menunjukkan penawaran bilah alat terpadu untuk menerjemahkan laman bagi pengguna, bila diperlukan. Jika Anda menonaktifkan setelan ini, pengguna tidak akan melihat bilah terjemahan. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />. Jika setelan ini dibiarkan tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="817455428376641507">Memungkinkan akses ke URL yang tercantum, kecuali untuk URL yang masuk dalam daftar hitam.
 
@@ -2011,14 +1947,6 @@
 <translation id="8465065632133292531">Parameter untuk URL instan yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan izinkan situs mana pun menampilkan munculan</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Menentukan printer yang dapat digunakan oleh pengguna.
-
-      Kebijakan ini hanya digunakan jika WhitelistPrintersOnly dipilih untuk
-      NativePrintersBulkAccessMode.
-
-      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai
-      dalam kebijakan ini yang tersedia untuk pengguna. ID harus sesuai dengan
-      entri dalam file yang ditentukan di NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Menyesuaikan daftar pola URL yang harus selalu dirender oleh browser host.
 
           Jika kebijakan ini tidak disetel, perender default akan digunakan untuk semua situs yang telah ditetapkan oleh kebijakan 'ChromeFrameRendererSettings'.
@@ -2029,35 +1957,11 @@
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
-<translation id="8555589883248082762">Menyediakan konfigurasi untuk printer perusahaan.
-
-      Kebijakan ini memungkinkan Anda menyediakan konfigurasi printer untuk
-      perangkat <ph name="PRODUCT_OS_NAME" />.
-      Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON.
-      Format tersebut sama dengan format yang berada di kamus NativePrinters. Diperkirakan
-      bahwa file yang berisi kira-kira 21.000 printer akan dienkode sebagai file
-      yang berukuran 5 MB. Hash kriptografi akan digunakan untuk memverifikasi integritas
-      hasil download.
-
-      File tersebut didownload dan disimpan dalam cache. File akan didownload ulang ketika
-      URL atau hash diubah.
-
-      Jika kebijakan ini disetel,
-      <ph name="PRODUCT_OS_NAME" /> akan mendownload
-      file tersebut untuk konfigurasi printer dan menyediakan printer sesuai
-      dengan kebijakan NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
-      dan NativePrintersBulkBlacklist.
-
-      Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
-
-      Kebijakan ini tidak memengaruhi apakah pengguna dapat mengonfigurasi printer di
-      masing-masing perangkat. Kebijakan ini ditujukan sebagai tambahan terhadap
-      konfigurasi printer oleh masing-masing pengguna.</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Laman Tab Baru dan peluncur aplikasi</translation>
 <translation id="8587229956764455752">Mengizinkan pembuatan akun pengguna baru</translation>
 <translation id="8614804915612153606">Nonaktifkan Pembaruan Otomatis</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">Untuk aplikasi Android, kebijakan ini hanya memengaruhi kamera bawaan. Jika kebijakan ini disetel ke true, kamera akan dinonaktifkan untuk semua aplikasi Android, tanpa pengecualian.</translation>
+<translation id="863319402127182273">Untuk aplikasi Android, kebijakan ini hanya memengaruhi kamera built-in. Jika kebijakan ini disetel ke true, kamera akan dinonaktifkan untuk semua aplikasi Android, tanpa pengecualian.</translation>
 <translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan hardware ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
 
           Jika disetel ke false, perangkat tidak akan menggunakan atestasi perlindungan konten jarak jauh dan tidak dapat memutar konten yang dilindungi.
@@ -2104,18 +2008,6 @@
 <translation id="8864975621965365890">Menimpa permintaan penghentian yang muncul saat situs dirender oleh <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Beranda</translation>
 <translation id="8882006618241293596">Blokir plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
-<translation id="8887644176044431146">Mengontrol printer dari
-      DeviceNativePrintersConfiguration yang tersedia untuk pengguna.
-
-      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal.
-      Jika AllowAll dipilih, semua printer akan ditampilkan. Jika BlacklistRestriction
-      dipilih, DeviceNativePrintersBlacklist digunakan untuk membatasi akses ke
-      printer tertentu. Jika WhitelistPrintersOnly dipilih,
-      DeviceNativePrintersWhitelist hanya ditetapkan pada printer
-      yang dapat dipilih.
-
-      Jika kebijakan ini tidak disetel, BlacklistRestriction yang akan disetel.
-      </translation>
 <translation id="8906768759089290519">Aktifkan mode tamu</translation>
 <translation id="8908294717014659003">Memungkinkan Anda menyetel apakah situs web diizinkan untuk mengakses perangkat tangkap media. Akses ke perangkat tangkap media dapat diizinkan secara default, atau dapat ditanyakan pada pengguna setiap saat situs web ingin mendapatkan akses ke perangkat tangkap media.
 

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Odabir mape</translation>
 <translation id="1265739287306757398">Saznajte kako</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
-<translation id="129553762522093515">Nedavno zatvoreno</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Dodirnite dvaput da biste promijenili nadređenu mapu.</translation>
 <translation id="1340643665687018190">Zatvori izbornik</translation>
@@ -359,7 +358,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7769602470925380267">Prihvati i odjavi se</translation>
 <translation id="7772032839648071052">Potvrdi zaporku</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
-<translation id="7851858861565204677">Ostali uređaji</translation>
 <translation id="7859704718976024901">Povijest pregledavanja</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
@@ -403,6 +401,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="8775144690796719618">Nevažeći URL</translation>
 <translation id="8820817407110198400">Knjižne oznake</translation>
 <translation id="8840513115188359703">Nećete se odjaviti s Google računa.</translation>
+<translation id="8870413625673593573">Nedavno zatvoreno</translation>
 <translation id="8881801611828450202">Potraži sliku na usluzi <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome sinkronizacija</translation>
 <translation id="895541991026785598">Prijavljivanje problema</translation>

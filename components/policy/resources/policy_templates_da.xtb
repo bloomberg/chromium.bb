@@ -74,14 +74,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1330145147221172764">Aktivér skærmtastatur</translation>
 <translation id="1330985749576490863">Deaktiverer Google Drev over mobilforbindelser i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Navn på politik</translation>
-<translation id="134402861816424823">Angiver, hvilke printere en bruger ikke kan anvende.
-
-      Denne politik anvendes kun, hvis BlacklistRestriction er valgt for
-      DeviceNativePrintersAccessMode.
-
-      Hvis denne politik anvendes, har brugeren adgang til alle printere bortset fra
-      dem med id'er, der er angivet i denne politik.
-      </translation>
 <translation id="1353966721814789986">Startsider</translation>
 <translation id="1359553908012294236">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_NAME" /> gæstelogins. Gæstelogins er <ph name="PRODUCT_NAME" />-profiler, hvor alle vinduer er i inkognitotilstand.
 
@@ -260,33 +252,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering af brugs- og nedbrudsrelaterede data</translation>
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
-<translation id="2126314858836465216">Angiver konfigurationer af virksomhedsprintere, der er knyttet til enheder.
-
-      Denne politik tillader, at du kan konfigurere printere for
-      <ph name="PRODUCT_OS_NAME" />-enheder.
-      Filen må ikke være større end 5 MB, og den skal indkodes i JSON.
-      Formatet er det samme som for NativePrinters-ordbogen. En fil
-      med ca. 21.000 printere forventes at indkode som en fil på
-      5 MB. Den kryptografiske hash-værdi bruges til at bekræfte downloadens
-      integritet.
-
-      Filen downloades og gemmes i cachen. Den downloades igen, hver gang
-      webadressen eller hash-værdien ændres.
-
-      Hvis denne politik er angivet,
-      vil <ph name="PRODUCT_OS_NAME" /> downloade
-      filen til printerkonfigurationer og gøre printere tilgængelige
-      i overensstemmelse med DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      og DeviceNativePrintersBlacklist.
-
-      Denne politik har ingen indflydelse på, om brugere kan konfigurere printere på
-      individuelle enheder. Den har til formål at supplere
-      printerkonfigurationen for individuelle brugere.
-
-      Denne politik er en tilføjelse til NativePrintersBulkConfiguration.
-
-      Hvis denne politik ikke er angivet, er der ingen printere for enhederne, og andre
-      politikker af typen NativeDevicePrinter* ignoreres.</translation>
 <translation id="2127599828444728326">Tillad underretninger på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
 <translation id="2134437727173969994">Tillad låsning af skærmen</translation>
@@ -521,22 +486,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hver post på listen angiver et id, som bruges internt til at skelne mellem de forskellige enhedslokale konti.</translation>
 <translation id="2769952903507981510">Konfigurer det påkrævede domænenavn for værter med fjernadgang</translation>
 <translation id="2787173078141616821">Rapportér oplysninger om status for Android</translation>
-<translation id="2789419769822054691">Angiver, hvilke printere en bruger kan anvende.
-
-      Denne politik anvendes kun, hvis WhitelistPrintersOnly er valgt for
-      DeviceNativePrintersAccessMode.
-
-      Hvis denne politik anvendes, er det kun printere med id'er, der matcher værdierne
-      i denne politik, som kan anvendes af brugeren. Id'erne skal svare til
-      posterne i den fil, der er angivet i DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Angiver, hvilke printere en bruger ikke kan anvende.
-
-      Denne politik anvendes kun, hvis BlacklistRestriction er valgt for
-      NativePrintersBulkAccessMode.
-
-      Hvis denne politik anvendes, har brugeren adgang til alle printere bortset fra
-      dem med id'er, der er angivet i denne politik.
-      </translation>
 <translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke spille det ekstra dinosaurspil, når enheden er offline. Hvis indstillingen er angivet til Sand, kan brugerne spille dinosaurspillet. Hvis politikken ikke er angivet, kan brugerne ikke spille det ekstra dinosaurspil på tilmeldte Chrome OS-systemer, men de kan spille det under andre omstændigheder.</translation>
@@ -1009,7 +958,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4541530620466526913">Enhedslokale konti</translation>
 <translation id="4555850956567117258">Aktivér fjernattestering for brugeren</translation>
 <translation id="4557134566541205630">Webadresse for siden Ny fane i standardsøgemaskinen</translation>
-<translation id="4558592878156368639">Intervaller uden for åbningstiden, hvor OffHours |ignored_policies| anvendes på enheden</translation>
 <translation id="4600786265870346112">Aktivér Stor markør</translation>
 <translation id="4604931264910482931">Konfigurer spærrelisten for indbyggede beskedhosts</translation>
 <translation id="4617338332148204752">Spring kontrol af metatag over i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1170,7 +1118,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5318185076587284965">Aktivér brugen af relæservere for hosten for fjernadgang</translation>
 <translation id="5323128137188992869">Tillad, at indhold castes til enheden via <ph name="PRODUCT_NAME" />.
 
-          Hvis denne politik er angivet som Falsk, kan brugerne ikke caste indhold til deres enheder. Hvis denne politik er angivet som Sand, kan brugerne caste indhold. Hvis politikken ikke er angivet, kan brugerne ikke caste indhold til tilmeldte Chrome OS-enheder, men de kan caste indhold til andre enheder.</translation>
+          Hvis denne politik er angivet som Falsk, kan brugerne ikke caste indhold til deres enheder. Hvis denne politik er angivet som Sand, kan brugerne caste indhold. Hvis politikken ikke er angivet, kan brugerne ikke caste indhold til tilmeldte Chrome OS-enheder, men de kan caste indhold til enheder, der ikke er tilmeldt.</translation>
 <translation id="5330684698007383292">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper</translation>
 <translation id="5365946944967967336">Vis knap til startsiden på værktøjslinjen</translation>
 <translation id="5366977351895725771">Hvis dette er angivet som falsk, vil oprettelse af administrerede brugere være deaktiveret for denne bruger. Alle eksisterende administrerede brugere vil stadig være tilgængelige.
@@ -1905,18 +1853,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis politikken er deaktiveret eller ikke er angivet, fører login til en almindelig profil.</translation>
 <translation id="8158758865057576716">Aktivér oprettelse af roamingkopier til <ph name="PRODUCT_NAME" />-profildata.</translation>
-<translation id="8169931650834542988">Bestemmer, hvilke printere fra
-      NativePrintersBulkConfiguration der kan anvendes af brugerne.
-
-      Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere.
-      Hvis AllowAll er valgt, vises alle printere. Hvis BlacklistRestrction
-      er valgt, anvendes NativePrintersBulkBlacklist til at begrænse adgangen til
-      de angivne printere. Hvis WhitelistPrintersOnly er valgt,
-      angiver NativePrintersWhitelist kun de printere, der kan
-      vælges.
-
-      Hvis denne politik ikke er angivet, anvendes BlacklistRestriction som standard.
-      </translation>
 <translation id="8170878842291747619">Aktiverer den integrerede tjeneste Google Oversæt på <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vil <ph name="PRODUCT_NAME" /> vise en integreret værktøjslinje, der tilbyder at oversætte siden for brugeren, når det er relevant. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se oversættelsesbjælken. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />. Hvis denne indstilling ikke angives, kan brugeren vælge, om funktionen skal anvendes eller ej.</translation>
 <translation id="817455428376641507">Giver adgang til de angivne webadresser som undtagelser til sortlisten for webadresser.
 
@@ -1994,14 +1930,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Angiver, hvilke printere en bruger kan anvende.
-
-      Denne politik anvendes kun, hvis WhitelistPrintersOnly er valgt for
-      NativePrintersBulkAccessMode.
-
-      Hvis denne politik anvendes, er det kun printere med id'er, der matcher værdierne
-      i denne politik, som kan anvendes af brugeren. Id'erne skal svare til
-      posterne i den fil, der er angivet i NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Tilpas listen over webstedsmønstre, der altid bør gengives af hostbrowseren.
 
           Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken "ChromeFrameRendererSettings".
@@ -2012,30 +1940,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8519264904050090490">Webadresser for manuel undtagelse af administreret bruger</translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
-<translation id="8555589883248082762">Angiver konfigurationer af virksomhedsprintere.
-
-      Denne politik tillader, at du kan konfigurere printere for
-      <ph name="PRODUCT_OS_NAME" />-enheder.
-      Filen må ikke være større end 5 MB, og den skal indkodes i JSON.
-      Formatet er det samme som for NativePrinters-ordbogen. En fil
-      med ca. 21.000 printere forventes at indkode som en fil på
-      5 MB. Den kryptografiske nøgletransformation bruges til at bekræfte downloadens
-      integritet.
-
-      Filen downloades og gemmes i cachen. Den downloades igen, hver gang
-      webadressen eller nøgletransformationen ændres.
-
-      Hvis denne politik er angivet,
-      vil <ph name="PRODUCT_OS_NAME" /> downloade
-      filen til printerkonfigurationer og gøre printere tilgængelige
-      i overensstemmelse med NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      og NativePrintersBulkBlacklist.
-
-      Hvis du har angivet denne politik, kan brugerne ikke ændre eller tilsidesætte den.
-
-      Denne politik har ingen indflydelse på, om brugere kan konfigurere printere på
-      individuelle enheder. Den har til formål at supplere
-      printerkonfigurationen for individuelle brugere.</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
 <translation id="8587229956764455752">Tillad oprettelse af nye brugerkonti</translation>
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>
@@ -2087,18 +1991,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
-<translation id="8887644176044431146">Bestemmer, hvilke printere fra
-      DeviceNativePrintersConfiguration der kan anvendes af brugerne.
-
-      Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere.
-      Hvis AllowAll er valgt, vises alle printere. Hvis BlacklistRestrction
-      er valgt, anvendes DeviceNativePrintersBlacklist til at begrænse adgangen til
-      de angivne printere. Hvis WhitelistPrintersOnly er valgt,
-      angiver DeviceNativePrintersWhitelist kun de printere, der kan
-      vælges.
-
-      Hvis denne politik ikke er angivet, anvendes BlacklistRestriction som standard.
-      </translation>
 <translation id="8906768759089290519">Aktivér gæstetilstand</translation>
 <translation id="8908294717014659003">Giver dig mulighed for at angive, om websites skal have adgang til optageenheder. Der kan gives adgang til optageenheder som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at få adgang til optageenheder.
 

@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, isključi</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, gumb</translation>
 <translation id="3466530247399808663">Pritisak na nevažeću tipku</translation>
+<translation id="3468959318854349468">Bez naslova</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Od <ph name="V1" /> do <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{desna zagrada}one{# desna zagrada}few{# desne zagrade}other{# desnih zagrada}}</translation>

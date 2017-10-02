@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Klasör Seçin</translation>
 <translation id="1265739287306757398">Nasıl Yapacağınızı Öğrenin</translation>
 <translation id="1272079795634619415">Durdur</translation>
-<translation id="129553762522093515">Son kapatılan</translation>
 <translation id="1323735185997015385">Sil</translation>
 <translation id="132683371494960526">Üst klasörü değiştirmek için iki kez dokunun.</translation>
 <translation id="1340643665687018190">Menüyü Kapat</translation>
@@ -359,7 +358,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7769602470925380267">Kabul et ve oturumu kapat</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
-<translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7859704718976024901">Tarama Geçmişi</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
@@ -403,6 +401,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8775144690796719618">Geçersiz URL</translation>
 <translation id="8820817407110198400">Favoriler</translation>
 <translation id="8840513115188359703">Google Hesaplarınızdaki oturumlarınız kapatılmaz.</translation>
+<translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8881801611828450202">Bu Resmi <ph name="SEARCH_ENGINE" /> Üzerinde Ara</translation>
 <translation id="8904976895050290827">Chrome Senkronizasyonu</translation>
 <translation id="895541991026785598">Sorun Bildirin</translation>

@@ -74,12 +74,6 @@
 <translation id="1330145147221172764">Activa el teclat en pantalla</translation>
 <translation id="1330985749576490863">Desactiva Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /> per a les connexions mòbils</translation>
 <translation id="13356285923490863">Nom de la política</translation>
-<translation id="134402861816424823">Especifica les impressores que un usuari no pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona BlacklistRestriction per a DeviceNativePrintersAccessMode.
-
-      Si s'utilitza aquesta política, l'usuari té accés a totes les impressores excepte als identificadors que s'inclouen a la política.
-      </translation>
 <translation id="1353966721814789986">Pàgines d'inici</translation>
 <translation id="1359553908012294236">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà els inicis de sessió en mode de convidat. Aquests inicis són perfils de <ph name="PRODUCT_NAME" /> on totes les finestres utilitzen el mode d'incògnit.
 
@@ -254,21 +248,6 @@
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Activa la creació d'informes d'ús i de dades relacionades amb bloqueigs</translation>
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
-<translation id="2126314858836465216">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
-
-      Aquesta política et permet proporcionar configuracions d'impressió als dispositius <ph name="PRODUCT_OS_NAME" />.
-      La mida del fitxer no pot superar els 5 MB i ha d'estar codificat en JSON.
-      El format és el mateix que el del diccionari NativePrinters. Es calcula que un fitxer que contingui unes 21.000 impressores es codificarà com un fitxer de 5 MB. El resum criptogràfic serveix per verificar la integritat de la baixada.
-
-      El fitxer es baixa i es desa a la memòria cau, i es tornarà a baixar si es modifica l'URL o el resum.
-
-      Si aquesta política es defineix, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressora i les impressores estaran disponibles de conformitat amb DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist i DeviceNativePrintersBlacklist.
-
-      Aquesta política no influeix en la possibilitat que tenen els usuaris de configurar les impressores en dispositius individuals. La seva finalitat és complementar la configuració de les impressores per part d'usuaris individuals.
-
-      Aquesta política és addicional a NativePrintersBulkConfiguration.
-
-      Si aquesta política no es defineix, no hi haurà impressores per al dispositiu i les altres polítiques NativeDevicePrinter* s'ignoraran.</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
 <translation id="2134437727173969994">Permet bloquejar la pantalla</translation>
@@ -504,17 +483,6 @@
 Cada entrada de la llista especifica un identificador, que s'utilitza internament per diferenciar els diversos comptes locals del dispositiu.</translation>
 <translation id="2769952903507981510">Configuració del nom de domini necessari per als amfitrions d'accés remot</translation>
 <translation id="2787173078141616821">Ofereix informació sobre l'estat d'Android</translation>
-<translation id="2789419769822054691">Especifica les impressores que un usuari pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona WhitelistPrintersOnly per a DeviceNativePrintersAccessMode.
-
-      Si s'utilitza aquesta política, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Especifica les impressores que un usuari no pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona BlacklistRestriction per a NativePrintersBulkAccessMode.
-
-      Si s'utilitza aquesta política, l'usuari té accés a totes les impressores excepte als identificadors que s'inclouen a la política.
-      </translation>
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
        Si aquesta política s'estableix en "false", els usuaris no podran jugar-hi quan el dispositiu estigui sense connexió. En canvi, si s'estableix en "true", els usuaris podran jugar-hi. Si es deixa sense establir, els usuaris no podran jugar a aquest joc en un dispositiu Chrome OS inscrit, però sí que ho podran fer en altres circumstàncies.</translation>
@@ -663,9 +631,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
-<translation id="332771718998993005">Determina el nom anunciat com a destinació per a <ph name="PRODUCT_NAME" />.
+<translation id="332771718998993005">Determina el nom que s'utilitzarà com a destinació de <ph name="PRODUCT_NAME" />.
 
-          Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom de la destinació per a <ph name="PRODUCT_NAME" />. En cas contrari, el nom de la destinació serà el nom del dispositiu. Si aquesta política no es defineix, el nom de la destinació serà el nom del dispositiu i el propietari del dispositiu (o un usuari del domini que gestioni el dispositiu) podrà canviar-lo. El nom pot tenir 24 caràcters com a màxim.</translation>
+          Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom de la destinació de <ph name="PRODUCT_NAME" />. En cas contrari, el nom de la destinació serà el nom del dispositiu. Si aquesta política no es defineix, el nom de la destinació serà el nom del dispositiu i el propietari del dispositiu (o un usuari del domini que gestioni el dispositiu) podrà canviar-lo. El nom pot tenir 24 caràcters com a màxim.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
@@ -984,7 +952,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4541530620466526913">Comptes locals del dispositiu</translation>
 <translation id="4555850956567117258">Activa el testimoni remot per a l'usuari.</translation>
 <translation id="4557134566541205630">URL de la pestanya nova del proveïdor de cerca predeterminat</translation>
-<translation id="4558592878156368639">Intervals "OffHours" en què s'apliquen les |ignored_policies| "OffHours" del dispositiu</translation>
 <translation id="4600786265870346112">Activa el cursor gran</translation>
 <translation id="4604931264910482931">Configura la llista negra de missatgeria nativa</translation>
 <translation id="4617338332148204752">Omet la comprovació de metaetiquetes a <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1144,7 +1111,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5318185076587284965">Permet que l'amfitrió d'accés remot pugui utilitzar els servidors de tramesa</translation>
 <translation id="5323128137188992869">Permet que s'emeti el contingut al dispositiu mitjançant <ph name="PRODUCT_NAME" />.
 
-          Si aquesta política es defineix com a "false", els usuaris no podran emetre contingut al seu dispositiu. Si es defineix com a "true", els usuaris podran emetre contingut. Si no es defineix, els usuaris no podran emetre contingut en dispositius de Chrome OS inscrits, però sí que ho podran fer en dispositius no inscrits.</translation>
+          Si aquesta política es defineix com a "false", els usuaris no podran emetre contingut al seu dispositiu. Si es defineix com a "true", els usuaris podran emetre contingut. Si no es defineix, els usuaris no podran emetre contingut en dispositius de Chrome OS inscrits, però sí que ho podran fer en dispositius no inscrits.</translation>
 <translation id="5330684698007383292">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="5366977351895725771">Si es defineix com a fals, la creació d'usuaris supervisats per part d'aquest usuari es desactivarà. Els usuaris supervisats existents continuaran estant disponibles.
@@ -1358,7 +1325,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
-<translation id="6139485614509308022">Si es defineix la política "OffHours", les polítiques específiques del dispositiu s'ignoraran durant els intervals de temps definits i s'utilitzarà la configuració predeterminada d'aquestes polítiques. Chrome tornarà a aplicar les polítiques del dispositiu en cada esdeveniment quan el període "OffHours" s'iniciï o finalitzi. L'usuari rebrà una notificació i se'l forçarà a tancar la sessió quan finalitzi el temps establert a "OffHours" i es modifiqui la configuració de la política del dispositiu (per exemple, quan un usuari iniciï la sessió amb un compte no permès).</translation>
+<translation id="6139485614509308022">Si es defineix la política "OffHours", s'ignoraran les polítiques específiques del dispositiu (s'utilitza la configuració predeterminada d'aquestes polítiques) durant els intervals de temps definits. Chrome tornarà a aplicar les polítiques del dispositiu en cada esdeveniment quan el període "OffHours" s'iniciï o finalitzi. L'usuari rebrà una notificació i se'l forçarà a tancar la sessió quan finalitzi el temps establert a "OffHours" i es modifiqui la configuració de la política del dispositiu (per exemple, quan un usuari iniciï la sessió amb un compte no permès).</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="614662973812186053">Aquesta política també controla la recopilació de dades d'ús i de diagnòstic d'Android.</translation>
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
@@ -1886,12 +1853,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si la política s'estableix com a desactivada o no s'estableix, l'inici de sessió donarà accés a perfils normals.</translation>
 <translation id="8158758865057576716">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Controla quines impressores de NativePrintersBulkConfiguration tenen disponibles els usuaris.
-
-      Descriu quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona AllowAll, es mostren totes les impressores. Si se selecciona BlacklistRestrction, s'utilitza NativePrintersBulkBlacklist per restringir l'accés a les impressores especificades. Si se selecciona WhitelistPrintersOnly, NativePrintersWhitelist només es mostren les impressores que es poden seleccionar.
-
-      Si aquesta política no es defineix, es pressuposa que s'aplica BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Activa el servei de Google Translate integrat a <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> mostrarà una barra d'eines integrada que permet traduir la pàgina per a l'usuari, si és apropiat. Si el desactiveu, els usuaris no veuran mai la barra de traducció. Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />. Si no es defineix aquest paràmetre, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="817455428376641507">Permet l'accés als URL de la llista, com a excepció de la llista negra d'URL.
 
@@ -1974,11 +1935,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Especifica les impressores que un usuari pot fer servir.
-
-      Aquesta política només s'utilitza si se selecciona WhitelistPrintersOnly per a NativePrintersBulkAccessMode.
-
-      Si s'utilitza aquesta política, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personalitza la llista de patrons d'URL que ha de renderitzar sempre el navegador amfitrió.
 
 
@@ -1991,19 +1947,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8519264904050090490">URL d'excepcions manuals d'usuari gestionat</translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
-<translation id="8555589883248082762">Proporciona configuracions per a les impressores d'empresa.
-
-      Aquesta política et permet proporcionar configuracions d'impressió als dispositius <ph name="PRODUCT_OS_NAME" />.
-      La mida del fitxer no pot superar els 5 MB i ha d'estar codificat en JSON.
-      El format és el mateix que el del diccionari NativePrinters. Es calcula que un fitxer que contingui unes 21.000 impressores es codificarà com un fitxer de 5 MB. El resum criptogràfic serveix per verificar la integritat de la baixada.
-
-      El fitxer es baixa i es desa a la memòria cau. Es tornarà a baixar si es modifica l'URL o el resum.
-
-      Si aquesta política es defineix, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressora i les impressores estaran disponibles de conformitat amb NativePrintersBulkAccessMode, NativePrintersBulkWhitelist i NativePrintersBulkBlacklist.
-
-      Si es defineix aquesta política, els usuaris no podran canviar-la ni sobreescriure-la.
-
-      Aquesta política no té cap efecte en si els usuaris poden configurar impressores en dispositius concrets. S'ha creat per complementar la configuració d'impressores per part dels usuaris.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>
@@ -2055,13 +1998,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
 <translation id="8882006618241293596">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
-<translation id="8887644176044431146">Controla quines impressores de DeviceNativePrintersConfiguration tenen disponibles els usuaris.
-
-      Descriu quina política d'accés s'utilitza per a la configuració massiva d'impressores.
-      Si se selecciona AllowAll, es mostren totes les impressores. Si se selecciona BlacklistRestrction, s'utilitza DeviceNativePrintersBlacklist per restringir l'accés a les impressores especificades. Si se selecciona WhitelistPrintersOnly, DeviceNativePrintersWhitelist només mostra les impressores que es poden seleccionar.
-
-      Si aquesta política no es defineix, es pressuposa que s'aplica BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Activa el mode de convidat</translation>
 <translation id="8908294717014659003">Us permet decidir si els llocs web poden accedir als vostres dispositius de captura multimèdia. Es pot proporcionar accés als dispositius de captura multimèdia de manera predeterminada o demanar permís a l'usuari cada vegada que un lloc web vol accedir als dispositius de captura multimèdia.
 

@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="1330985749576490863">Disables Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="13356285923490863">Policy Name</translation>
-<translation id="134402861816424823">Specifies the printers which a user cannot use.
-
-      This policy is only used if BlacklistRestriction is chosen for
-      DeviceNativePrintersAccessMode.
-
-      If this policy is used, all printers are provided to the user except
-      for the ids listed in this policy.
-      </translation>
 <translation id="1353966721814789986">Startup pages:</translation>
 <translation id="1359553908012294236">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME" /> profiles where all windows are in incognito mode.
 
@@ -268,33 +260,6 @@
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
-<translation id="2126314858836465216">Provides configurations for enterprise printers bound to devices.
-
-      This policy allows you to provide printer configurations to
-      <ph name="PRODUCT_OS_NAME" /> devices.
-      The size of the file must not exceed 5 MB and must be encoded in JSON.
-      The format is the same as the NativePrinters dictionary. It is estimated
-      that a file containing approximately 21,000 printers will encode as a 5-MB
-      file. The cryptographic hash is used to verify the integrity of the
-      download.
-
-      The file is downloaded and cached. It will be re-downloaded whenever
-      the URL or the hash changes.
-
-      If this policy is set,
-      <ph name="PRODUCT_OS_NAME" /> will download
-      the file for printer configurations and make printers available in
-      accordance with DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
-      and DeviceNativePrintersBlacklist.
-
-      This policy has no effect on whether users can configure printers on
-      individual devices. It is intended to be supplementary to the
-      configuration of printers by individual users.
-
-      This policy is additive to the NativePrintersBulkConfiguration.
-
-      If this policy is unset, there will be no device printers and the other
-      NativeDevicePrinter* policies will be ignored.</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="2134437727173969994">Permit locking the screen</translation>
@@ -547,22 +512,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
-<translation id="2789419769822054691">Specifies the printers which a user can use.
-
-      This policy is only used if WhitelistPrintersOnly is chosen for
-      DeviceNativePrintersAccessMode.
-
-      If this policy is used, only the printers with ids matching the values
-      in this policy are available to the user. The ids must correspond to
-      the entries in the file specified in DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Specifies the printers which a user cannot use.
-
-      This policy is only used if BlacklistRestriction is chosen for
-      NativePrintersBulkAccessMode.
-
-      If this policy is used, all printers are provided to the user except
-      for the ids listed in this policy.
-      </translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
@@ -1061,7 +1010,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4541530620466526913">Device-local accounts</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
-<translation id="4558592878156368639">Off hours intervals when device OffHours |ignored_policies| are released</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="4604931264910482931">Configure native messaging blacklist</translation>
 <translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1162,6 +1110,48 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4980635395568992380">Data Types</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
+<translation id="5010252829147312914">Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
+
+      This policy can be used to configure which Android apps are automatically installed on the device:
+
+      {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "description": "Android app identifier, e.g. "com.google.android.gm" for Gmail",
+              "type": "string"
+            },
+            "installType": {
+              "description": "Specifies how an app is installed. OPTIONAL: The app is not installed automatically, but the user can install it. This is the default if this policy is not specified. PRELOAD: The app is installed automatically, but the user can uninstall it. FORCE_INSTALLED: The app is installed automatically and the user cannot uninstall it. BLOCKED: The app is blocked and cannot be installed. If the app was installed under a previous policy it will be uninstalled.",
+              "type": "string",
+              "enum": [
+                "OPTIONAL"
+                "PRELOAD",
+                "FORCE_INSTALLED",
+                "BLOCKED"
+              ]
+            },
+            "defaultPermissionPolicy": {
+              "description": "Policy for granting permission requests to apps. PERMISSION_POLICY_UNSPECIFIED: Policy not specified. If no policy is specified for a permission at any level, then the `PROMPT` behaviour is used by default. PROMPT: Prompt the user to grant a permission. GRANT: Automatically grant a permission. DENY: Automatically deny a permission.",
+              "type": "string",
+              "enum": [
+                "PERMISSION_POLICY_UNSPECIFIED",
+                "PROMPT",
+                "GRANT",
+                "DENY"
+              ]
+            },
+            "managedConfiguration": {
+              "description": "App-specific JSON configuration string. The keys are defined in the app manifest. Typically looks like '{ "key" : value }'.",
+              "type": "string"
+            }
+          }
+        }
+      }
+
+      To pin apps to the launcher, see PinnedLauncherApps.</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -1420,6 +1410,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users can temporarily override it by enabling or disabling the large cursor. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, the large cursor is disabled when the login screen is first shown. Users can enable or disable the large cursor at any time and its status on the login screen is persisted between users.</translation>
+<translation id="5932767795525445337">This policy can also be used to pin Android apps.</translation>
 <translation id="5936622343001856595">Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
 
       If you enable this setting, SafeSearch in Google Search is always active.
@@ -1472,7 +1463,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6133088669883929098">Allow all sites to use key generation</translation>
-<translation id="6139485614509308022">If 'OffHours' policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when 'OffHours' period starts or ends. User will be notified and forced to sign out when 'OffHours' time end and device policy settings are changed (i.e. when user is logged in not with an allowed account).</translation>
+<translation id="6139485614509308022">If 'OffHours' policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when 'OffHours' period starts or ends. User will be notified and forced to sign out when 'OffHours' time end and device policy settings are changed, (i.e. when user is logged in not with an allowed account).</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -2040,18 +2031,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is set to disabled or left not set signing in leads to regular profiles.</translation>
 <translation id="8158758865057576716">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data.</translation>
-<translation id="8169931650834542988">Controls which printers from the
-      NativePrintersBulkConfiguration are available to users.
-
-      Designates which access policy is used for bulk printer configuration.
-      If AllowAll is selected, all printers are shown. If BlacklistRestrction
-      is selected, NativePrintersBulkBlacklist is used to restrict access to
-      the specified printers. If WhitelistPrintersOnly is selected,
-      NativePrintersWhitelist designates only those printers which are
-      selectable.
-
-      If this policy is not set, BlacklistRestriction is assumed.
-      </translation>
 <translation id="8170878842291747619">Enables the integrated Google Translate service on <ph name="PRODUCT_NAME" />.
 
       If you enable this setting, <ph name="PRODUCT_NAME" /> will show an integrated toolbar offering to translate the page for the user, when appropriate.
@@ -2142,14 +2121,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Specifies the printers which a user can use.
-
-      This policy is only used if WhitelistPrintersOnly is chosen for
-      NativePrintersBulkAccessMode.
-
-      If this policy is used, only the printers with ids matching the values
-      in this policy are available to the user. The ids must correspond to
-      the entries in the file specified in NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Customise the list of URL patterns that should always be rendered by the host browser.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
@@ -2160,30 +2131,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
-<translation id="8555589883248082762">Provides configurations for enterprise printers.
-
-      This policy allows you to provide printer configurations to
-      <ph name="PRODUCT_OS_NAME" /> devices.
-      The size of the file must not exceed 5 MB and must be encoded in JSON.
-      The format is the same as the NativePrinters dictionary. It is estimated
-      that a file containing approximately 21,000 printers will encode as a 5-MB
-      file. The cryptographic hash is used to verify the integrity of the
-      download.
-
-      The file is downloaded and cached. It will be re-downloaded whenever
-      the URL or the hash changes.
-
-      If this policy is set,
-      <ph name="PRODUCT_OS_NAME" /> will download
-      the file for printer configurations and make printers available in
-      accordance with NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      and NativePrintersBulkBlacklist.
-
-      If you set this policy, users cannot change or override it.
-
-      This policy has no effect on whether users can configure printers on
-      individual devices. It is intended to be supplementary to the
-      configuration of printers by individual users.</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
@@ -2245,18 +2192,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
-<translation id="8887644176044431146">Controls which printers from the
-      DeviceNativePrintersConfiguration are available to users.
-
-      Designates which access policy is used for bulk printer configuration.
-      If AllowAll is selected, all printers are shown. If BlacklistRestriction
-      is selected, DeviceNativePrintersBlacklist is used to restrict access to
-      the specified printers. If WhitelistPrintersOnly is selected,
-      DeviceNativePrintersWhitelist designates only those printers which are
-      selectable.
-
-      If this policy is not set, BlacklistRestriction is assumed.
-      </translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 

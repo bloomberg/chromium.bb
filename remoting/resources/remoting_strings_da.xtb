@@ -3,6 +3,9 @@
 <translationbundle lang="da">
 <translation id="1002108253973310084">Der er registreret en inkompatibel version af protokollen. Kontrollér, at du har den nyeste version af softwaren installeret på begge computere, og prøv igen.</translation>
 <translation id="1050693411695664090">Dårlig</translation>
+<translation id="1059802506829356230">• Nyt udseende og ny brugeroplevelse
+• Forbedret ydeevne, svartid og driftssikkerhed
+• Understøttelse af afspilning af lyd fra Windows- eller Linux-computere</translation>
 <translation id="1152528166145813711">Vælg …</translation>
 <translation id="1199593201721843963">Deaktiver fjernforbindelserne</translation>
 <translation id="1291443878853470558">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chromoting til at få adgang til denne computer.</translation>
@@ -81,6 +84,11 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2841013758207633010">Tid</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Der opstod en netværksfejl. Vi genstarter appen, når din enhed er online igen.</translation>
+<translation id="289405675947420287">Få adgang til din computer fra din iOS-enhed på sikker vis. Det er hurtigt, nemt og gratis.
+
+• Download appen Chrome Fjernskrivebord fra Chrome Webshop på den computer, du vil have fjernadgang til
+• Installer softwaren til Chrome Fjernskrivebord, og følg vejledningen for at fuldføre konfigurationen
+• Åbn appen på din iOS-enhed, og tryk på en af dine computere, der er online, for at oprette forbindelse</translation>
 <translation id="2894654864775534701">Denne computer deles i øjeblikket under en anden konto.</translation>
 <translation id="2919669478609886916">Du deler i øjeblikket denne maskine med en anden bruger. Vil du fortsætte med at dele?</translation>
 <translation id="2921543551052660690">Du har tidligere logget ind som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). For at få adgang til dine computere på den pågældende konto skal du <ph name="LINK_BEGIN" />logge ind på Chromium<ph name="LINK_END" /> med denne konto og geninstallere Chromoting.</translation>
@@ -115,6 +123,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Få flere oplysninger om, hvordan du gør</translation>
 <translation id="3718805989288361841">Der er en fejl i politikindstillingerne for Chrome Fjernskrivebord. Kontakt din systemadministrator for at få hjælp.</translation>
+<translation id="3759645055923345178">Når konfigurationen er fuldført, kan du få adgang til computeren via denne side ved at angive pin- eller adgangskoden</translation>
 <translation id="3776024066357219166">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekræft din konto og pinkode nedenfor for at tillade adgang via Chrome Fjernskrivebord.</translation>
@@ -155,6 +164,13 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="4660011489602794167">Vis tastatur</translation>
 <translation id="4703302905453407178">En nødvendig komponent er holdt op med at fungere. Sørg for at rapportere dette problem til udviklerne.</translation>
 <translation id="4703799847237267011">Din session med Chromoting er afsluttet.</translation>
+<translation id="4706355010316049867">Chrome
+Fjernadgang
+Skrivebord
+Adgang
+Support
+Computer
+Pc</translation>
 <translation id="4736223761657662401">Forbindelseshistorik</translation>
 <translation id="4741792197137897469">Godkendelsen mislykkedes. Log ind i Chrome igen.</translation>
 <translation id="477305884757156764">Applikationen er for langsom.</translation>
@@ -198,6 +214,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="5773590752998175013">Dato for parring</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
 <translation id="5810269635982033450">Skærmen fungere som trackpad</translation>
+<translation id="5823658491130719298">Åbn Chrome på den computer, du vil have fjernadgang til, og gå til <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Valgmuligheder for visning</translation>
 <translation id="5843054235973879827">Hvorfor er det sikkert?</translation>
 <translation id="5859141382851488196">Nyt vindue...</translation>
@@ -272,6 +289,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="7782471917492991422">Kontrollér indstillingerne for strømstyring på din computer, og sørg for, at den ikke er konfigureret til at gå i dvale, når den er inaktiv.</translation>
 <translation id="7810127880729796595">Vis statistik (forbindelse: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Nogle obligatoriske komponenter mangler. Kontrollér, at du har den nyeste version af Chrome, og prøv igen.</translation>
+<translation id="7850909060902317210">Installer softwaren Chrome Fjernskrivebord, og følg vejledningen for at fuldføre konfigurationen</translation>
 <translation id="7868137160098754906">Indtast din pinkode til fjerncomputeren.</translation>
 <translation id="7869445566579231750">Du har ikke tilladelse til at køre denne applikation.</translation>
 <translation id="7895403300744144251">Sikkerhedspolitikkerne på fjerncomputeren tillader ikke forbindelser fra din konto.</translation>
@@ -307,6 +325,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="8642984861538780905">Rimelig</translation>
 <translation id="8712909229180978490">Jeg kan ikke se mine gemte filer online i Google Drev.</translation>
 <translation id="8743328882720071828">Vil du give <ph name="CLIENT_USERNAME" /> tilladelse til at se og styre din computer?</translation>
+<translation id="8747048596626351634">Sessionen gik ned eller kunne ikke startes. Hvis ~/.chrome-remote-desktop-session findes på fjerncomputeren, skal du sørge for, at den starter en proces, der er længe åben i forgrunden, f.eks. et computermiljø eller en vinduesadministrator.</translation>
 <translation id="8759753423332885148">Få flere oplysninger.</translation>
 <translation id="8791202241915690908">Download installationsprogrammet til Chromoting-host</translation>
 <translation id="894763922177556086">God</translation>

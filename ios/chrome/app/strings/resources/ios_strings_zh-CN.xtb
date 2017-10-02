@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">选择文件夹</translation>
 <translation id="1265739287306757398">了解如何操作</translation>
 <translation id="1272079795634619415">停止</translation>
-<translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1323735185997015385">删除</translation>
 <translation id="132683371494960526">点按两次即可更改父文件夹。</translation>
 <translation id="1340643665687018190">关闭菜单</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
-<translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7859704718976024901">浏览记录</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">接受并登录</translation>
@@ -403,8 +401,9 @@
 <translation id="8775144690796719618">网址无效</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="8840513115188359703">您不会因此而退出自己的 Google 帐号。</translation>
+<translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8881801611828450202">在 <ph name="SEARCH_ENGINE" /> 中搜索此图片</translation>
-<translation id="8904976895050290827">酷容浏览器同步</translation>
+<translation id="8904976895050290827">Chrome 浏览器同步</translation>
 <translation id="895541991026785598">报告问题</translation>
 <translation id="8971089644512329999">知道了</translation>
 <translation id="8981454092730389528">Google 活动控件</translation>

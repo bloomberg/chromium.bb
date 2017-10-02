@@ -270,7 +270,7 @@
         "lt": "litewski",
         "lv": "łotewski",
         "nb": "norweski Bokmål",
-        "nl": "holenderski",
+        "nl": "niderlandzki",
         "pl": "polski",
         "pt": "portugalski",
         "ro": "rumuński",
@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, przełącznik wyłączony</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, przycisk</translation>
 <translation id="3466530247399808663">Naciśnięcie niewłaściwego klawisza</translation>
+<translation id="3468959318854349468">Bez tytułu</translation>
 <translation id="3473644018603298796">zaznaczono <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Od <ph name="V1" /> do <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{prawy nawias kwadratowy}few{# prawe nawiasy kwadratowe}many{# prawych nawiasów kwadratowych}other{# right brackets}}</translation>

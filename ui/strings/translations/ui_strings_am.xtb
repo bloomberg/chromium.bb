@@ -31,6 +31,7 @@
 <translation id="2190355936436201913">(ባዶ)</translation>
 <translation id="219905428774326614">ማስጀመሪያ፣ ሁሉም መተግበሪያዎች</translation>
 <translation id="2289052229480071835">በማያ ገጽዎ ላይ ያሉት የንክኪ ዒላማዎችን መታ ያድርጉ።</translation>
+<translation id="2295140143284145483">የዳሰሳ ጥናት</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ቴባ/ሰ</translation>
 <translation id="24452542372838207">ማሳወቂያን ዘርጋ</translation>
 <translation id="2497284189126895209">ሁሉም ፋይሎች</translation>
@@ -90,6 +91,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ሰዓት}one{# ሰዓቶች}other{# ሰዓቶች}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">ሁሉም መተግበሪያዎች</translation>
+<translation id="6012623610530968780">ገጽ <ph name="SELECTED_PAGE" /> ከ<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">የፍለጋ ሳጥን ጽሑፍን አጽዳ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="6119846243427417423">አንቃ</translation>
@@ -103,6 +105,7 @@
 <translation id="6394627529324717982">ኮማ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ሰከንድ በፊት}one{# ሰከንዶች በፊት}other{# ሰከንዶች በፊት}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ከ1 ሰከንድ በፊት}one{ከ# ሰከንዶች በፊት}other{ከ# ሰከንዶች በፊት}}</translation>
+<translation id="6567071839949112727">ዘር ማንዘርን ጠቅ አድርግ</translation>
 <translation id="6612467943526193239">ከመቃኘት ለመውጣት Escን ይጫኑ።</translation>
 <translation id="6620110761915583480">ፋይል አስቀምጥ</translation>
 <translation id="6699343763173986273">የሚዲያ ቀጣይ ትራክ</translation>
@@ -120,6 +123,7 @@
 <translation id="7130207228079676353">የመሆን ዕድላቸው ከፍ ያለ ነው</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ደቂቃ ቀርቷል}one{# ደቂቃዎች ቀርቷል}other{# ደቂቃዎች ቀርተዋል}}</translation>
+<translation id="7319740667687257810">ማስጀመሪያ፣ ከፊል እይታ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 ደቂቃ በፊት}one{# ደቂቃዎች በፊት}other{# ደቂቃዎች በፊት}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 ደቂቃ ቀርቷል}one{# ደቂቃዎች ቀርቷል}other{# ደቂቃዎች ቀርተዋል}}</translation>

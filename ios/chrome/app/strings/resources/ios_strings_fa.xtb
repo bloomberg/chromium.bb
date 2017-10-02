@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1265739287306757398">با نحوه انجام کار آشنا شوید</translation>
 <translation id="1272079795634619415">توقف</translation>
-<translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">برای تغییر پوشه والد دو ضربه سریع بزنید.</translation>
 <translation id="1340643665687018190">بستن منو</translation>
@@ -360,7 +359,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
-<translation id="7851858861565204677">دستگاه‌های دیگر</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
@@ -404,6 +402,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8775144690796719618">نشانی وب نامعتبر</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8840513115188359703">‏از حساب Google خود خارج نمی‌شوید.</translation>
+<translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8881801611828450202">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="8904976895050290827">‏همگام‌سازی Chrome</translation>
 <translation id="895541991026785598">گزارش یک مسئله</translation>
@@ -420,7 +419,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9148126808321036104">ورود مجدد به سیستم</translation>
 <translation id="914898748153555155">‏هر وقت خواستید می‌توانید این تنظیم برگزیده را در تنظیمات Chrome تغییر دهید.</translation>
-<translation id="91549621916703028">برای همه کارهایتان چند برگه متفاوت ایجاد کنید</translation>
+<translation id="91549621916703028">چند برگه برای همه کارهایتان ایجاد کنید</translation>
 <translation id="9157836665414082580">توقف نمایش کادرهای گفتگو</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9203116392574189331">Handoff</translation>

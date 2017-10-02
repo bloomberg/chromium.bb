@@ -214,6 +214,7 @@
 <translation id="1329584516321524826">剛才更新</translation>
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="1331977651797684645">這是我。</translation>
+<translation id="1338776410427958681">收合「<ph name="FOLDER_NAME" />」</translation>
 <translation id="1338950911836659113">刪除中...</translation>
 <translation id="1339266338863469628">預設 (只擷取您的聲音)</translation>
 <translation id="1340527397989195812">使用「檔案」應用程式備份裝置上的媒體。</translation>
@@ -1108,7 +1109,7 @@
 <translation id="2688196195245426394">向伺服器註冊裝置時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="2690024944919328218">顯示語言選項</translation>
 <translation id="2691385045260836588">型號</translation>
-<translation id="2693176596243495071">糟糕！發生不明錯誤。請稍後再試一次，如果這樣無法解決問題，請與你的管理員聯絡。</translation>
+<translation id="2693176596243495071">糟糕！發生不明錯誤，請稍後再試。如果這樣無法解決問題，請與你的管理員聯絡。</translation>
 <translation id="2694026874607847549">1 個 Cookie</translation>
 <translation id="2695749433451188613">網際網路列印通訊協定 (HTTPS)</translation>
 <translation id="270358213449696159">Google Chrome 作業系統條款內容</translation>
@@ -1201,7 +1202,6 @@
 <translation id="281133045296806353">已在目前的瀏覽器工作階段開啟新視窗。</translation>
 <translation id="2812944337881233323">請嘗試登出，再重新登入</translation>
 <translation id="2812989263793994277">不顯示任何圖片</translation>
-<translation id="2814100462326464815">相片已翻轉回原狀</translation>
 <translation id="2814489978934728345">停止載入此網頁</translation>
 <translation id="2815500128677761940">書籤列</translation>
 <translation id="2815693974042551705">書籤資料夾</translation>
@@ -1462,6 +1462,7 @@
 <translation id="3190558889382726167">密碼已儲存</translation>
 <translation id="3191308084656429858">{NUM_POPUPS,plural, =1{1 個彈出式視窗已遭封鎖}other{# 個彈出式視窗已遭封鎖}}</translation>
 <translation id="3192947282887913208">音訊檔</translation>
+<translation id="3195213714973468956"><ph name="SERVER_NAME" /> 上的 <ph name="PRINTER_NAME" /></translation>
 <translation id="3199127022143353223">伺服器</translation>
 <translation id="3202131003361292969">路徑</translation>
 <translation id="3202173864863109533">分頁音訊已關閉。</translation>
@@ -1519,6 +1520,7 @@
 <translation id="329650768420594634">封裝擴充功能警告</translation>
 <translation id="329838636886466101">修復</translation>
 <translation id="3298789223962368867">輸入的網址無效。</translation>
+<translation id="32991397311664836">裝置：</translation>
 <translation id="3300394989536077382">簽署者</translation>
 <translation id="33022249435934718">GDI 控制代碼</translation>
 <translation id="3302340765592941254">下載完成通知</translation>
@@ -1624,6 +1626,7 @@
 <translation id="3438633801274389918">忍者</translation>
 <translation id="3439153939049640737">一律允許 <ph name="HOST" /> 存取你的麥克風</translation>
 <translation id="3439970425423980614">正在預覽中開啟 PDF</translation>
+<translation id="3440663250074896476">更多可對「<ph name="BOOKMARK_NAME" />」執行的動作</translation>
 <translation id="3440761377721825626">當網站要使用外掛程式存取您的電腦時，必須先詢問您</translation>
 <translation id="3441653493275994384">螢幕</translation>
 <translation id="3445830502289589282">第 2 階段驗證：</translation>
@@ -2098,7 +2101,6 @@
 <translation id="4158739975813877944">開啟播放清單</translation>
 <translation id="4159681666905192102">這是由 <ph name="CUSTODIAN_EMAIL" /> 和 <ph name="SECOND_CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
 <translation id="4163560723127662357">未知的鍵盤</translation>
-<translation id="4165986682804962316">網站設定</translation>
 <translation id="4166210099837486476">監控你在 Chrome 的操作</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> 的部分設定已與你共用。不過只有使用多重登入時，這些設定才會影響你的帳戶。</translation>
 <translation id="4172051516777682613">一律顯示</translation>
@@ -2267,10 +2269,12 @@
 <translation id="4454939697743986778">系統管理員已安裝這個憑證。</translation>
 <translation id="445923051607553918">加入 Wi-Fi 網路</translation>
 <translation id="4467100756425880649">Chrome 線上應用程式商店擴充功能庫</translation>
+<translation id="4467101674048705704">展開「<ph name="FOLDER_NAME" />」</translation>
 <translation id="4474155171896946103">將所有分頁加入書籤...</translation>
 <translation id="4475552974751346499">搜尋下載內容</translation>
 <translation id="4476590490540813026">運動員</translation>
 <translation id="4478664379124702289">另存連結(&amp;K)...</translation>
+<translation id="4479424953165245642">管理 Kiosk 應用程式</translation>
 <translation id="4479639480957787382">乙太網路</translation>
 <translation id="4481249487722541506">載入未封裝擴充功能</translation>
 <translation id="4481530544597605423">解除配對的裝置</translation>
@@ -2444,6 +2448,7 @@
 <translation id="4763830802490665879">系統將於你退出時將多個網站產生的 Cookie 清除。</translation>
 <translation id="4768332406694066911">您有這些機構核發給您的憑證</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
+<translation id="4777825441726637019">Play 商店</translation>
 <translation id="4779083564647765204">縮放</translation>
 <translation id="4780321648949301421">另存網頁...</translation>
 <translation id="4781787911582943401">放大畫面</translation>
@@ -2466,7 +2471,6 @@
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="480990236307250886">開啟首頁</translation>
 <translation id="4812632551187706935">無法初始化連線</translation>
-<translation id="4812684235631257312">主機</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4820334425169212497">否，我沒有看到</translation>
@@ -3513,7 +3517,6 @@
     <ph name="LINE_BREAK" />
     請點選 [下一步] 繼續登入您的 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 帳戶。</translation>
 <translation id="6419546358665792306">載入未封裝項目</translation>
-<translation id="6422329785618833949">相片已翻轉</translation>
 <translation id="642282551015776456">無法使用這個名稱做為檔案名稱或資料夾名稱</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6426200009596957090">開啟 ChromeVox 設定</translation>
@@ -3742,6 +3745,7 @@
 <translation id="6751256176799620176">已選取 1 個資料夾</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (無痕模式)</translation>
 <translation id="6757101664402245801">已複製網址</translation>
+<translation id="6758056191028427665">請讓我們瞭解你的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
 <translation id="6766101255664245434">你可以拍一張新的相片，也可以選擇現有的相片或圖示。
           <ph name="LINE_BREAK" />
@@ -3932,7 +3936,7 @@
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7056526158851679338">檢查裝置 (&amp;I)</translation>
 <translation id="7059858479264779982">設為自動啟動</translation>
-<translation id="7059893117020417984">如果想要進行私密瀏覽，請按一下三個點的圖示選單，然後開啟無痕式視窗</translation>
+<translation id="7059893117020417984">如果想要進行私密瀏覽，請按一下三個圓點圖示的選單，然後開啟無痕式視窗</translation>
 <translation id="7062222374113411376">允許最近關閉的網站完成資料的傳送及接收 (建議)</translation>
 <translation id="7063129466199351735">正在處理捷徑...</translation>
 <translation id="7063957500469387217">使用 Google 雲端列印設定或管理印表機。</translation>
@@ -4329,7 +4333,6 @@
 <translation id="7710568461918838723">投放(&amp;C)...</translation>
 <translation id="7713320380037170544">允許所有網站使用系統專用訊息存取 MIDI 裝置</translation>
 <translation id="7714464543167945231">憑證</translation>
-<translation id="7716020873543636594">滑鼠指標停止時自動點擊</translation>
 <translation id="7716781361494605745">Netscape 憑證授權原則網址</translation>
 <translation id="7716970641886237992">修改者</translation>
 <translation id="7717014941119698257">下載：<ph name="STATUS" /></translation>
@@ -4407,6 +4410,7 @@
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">結束時間</translation>
 <translation id="7833720883933317473">你所儲存的自訂字詞會顯示在這裡</translation>
+<translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">你的首頁已變更為 <ph name="URL" />。</translation>
 <translation id="7839051173341654115">查看/備份媒體</translation>
 <translation id="7839192898639727867">憑證主體金鑰識別碼</translation>
@@ -4597,8 +4601,9 @@
 <translation id="8113043281354018522">選擇授權類型</translation>
 <translation id="8116190140324504026">更多資訊...</translation>
 <translation id="8116483400482790018">自訂拼字字典</translation>
+<translation id="8116925261070264013">已設為靜音</translation>
 <translation id="8116972784401310538">書籤管理員(&amp;B)</translation>
-<translation id="8118362518458010043">Chrome 已停用這個擴充功能，因為這項功能可能不安全。</translation>
+<translation id="8118362518458010043">這個擴充功能可能不安全，因此遭到 Chrome 停用。</translation>
 <translation id="8118860139461251237">管理下載內容</translation>
 <translation id="8119631488458759651">移除這個網站</translation>
 <translation id="81238879832906896">黃色和白色花朵</translation>
@@ -4618,14 +4623,12 @@
 <translation id="8142732521333266922">確定，同步處理所有資料</translation>
 <translation id="8146177459103116374">如果你已在這部裝置上註冊，你可以<ph name="LINK2_START" />用現有的使用者身分登入<ph name="LINK2_END" />。</translation>
 <translation id="8146793085009540321">登入失敗，請與您的管理員聯絡或再試一次。</translation>
-<translation id="8148913456785123871">在啟動器中顯示 Google 即時資訊卡</translation>
 <translation id="8151185429379586178">開發人員工具</translation>
 <translation id="8151638057146502721">設定</translation>
 <translation id="8152091997436726702">印表機註冊程序逾時。如要註冊印表機，你必須完成印表機的註冊確認程序。</translation>
 <translation id="8153607920959057464">無法顯示這個檔案。</translation>
 <translation id="8154790740888707867">沒有檔案</translation>
 <translation id="815491593104042026">糟糕！由於設定使用的網址 (<ph name="BLOCKED_URL" />) 不安全，導致驗證失敗。請與你的管理員聯絡。</translation>
-<translation id="8156020606310233796">清單檢視</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="816055135686411707">憑證信任設定錯誤</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />，<ph name="TIME_REMAINING" /></translation>
@@ -4650,6 +4653,7 @@
 <translation id="8191453843330043793">V8 Proxy 解析工具</translation>
 <translation id="8195027750202970175">佔磁碟容量</translation>
 <translation id="8195739004487400241">你的首頁已變更為 <ph name="URL" />。如要將變更首頁的擴充功能停用，請按一下 [還原]。</translation>
+<translation id="8199300056570174101">網路 (服務) 與裝置屬性</translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8202160505685531999">請再次輸入您的密碼，以更新您的 <ph name="DEVICE_TYPE" /> 設定檔。</translation>
 <translation id="8206354486702514201">這項設定由管理員執行。</translation>
@@ -5072,6 +5076,7 @@
 <translation id="8888432776533519951">顏色：</translation>
 <translation id="8892992092192084762">已安裝「<ph name="THEME_NAME" />」主題。</translation>
 <translation id="8893928184421379330">很抱歉，系統無法識別 <ph name="DEVICE_LABEL" /> 裝置。</translation>
+<translation id="8895454554629927345">書籤清單</translation>
 <translation id="88986195241502842">Page Down 鍵</translation>
 <translation id="8898786835233784856">選取下一個分頁</translation>
 <translation id="8898840733695078011">訊號強度</translation>
@@ -5229,7 +5234,6 @@
 <translation id="9124003689441359348">你所儲存的密碼會顯示在這裡</translation>
 <translation id="912419004897138677">轉碼器</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (還剩 <ph name="LICENSE_COUNT" /> 個)</translation>
-<translation id="9127762771585363996">水平翻轉相機圖片</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9130015405878219958">輸入的模式無效。</translation>
 <translation id="9130775360844693113">「<ph name="DESTINATION_NAME" />」的成員將可存取這些項目。</translation>
@@ -5302,6 +5306,7 @@
 <translation id="958515377357646513">輕觸即可繼續。</translation>
 <translation id="960719561871045870">電信業者代碼</translation>
 <translation id="960987915827980018">剩下約 1 個小時</translation>
+<translation id="962802172452141067">書籤資料夾樹狀結構</translation>
 <translation id="968174221497644223">應用程式快取</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="970794034573172516">啟用語音和音訊活動</translation>

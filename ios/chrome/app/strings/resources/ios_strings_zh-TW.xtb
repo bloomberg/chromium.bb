@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1265739287306757398">操作說明</translation>
 <translation id="1272079795634619415">停止</translation>
-<translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1323735185997015385">刪除</translation>
 <translation id="132683371494960526">輕觸兩下即可變更上層資料夾。</translation>
 <translation id="1340643665687018190">關閉選單</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
-<translation id="7851858861565204677">其他裝置</translation>
 <translation id="7859704718976024901">瀏覽紀錄</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">接受並登入</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">網址無效</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="8840513115188359703">您不會因此登出 Google 帳戶。</translation>
+<translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8881801611828450202">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
 <translation id="8904976895050290827">Google Chrome 同步功能</translation>
 <translation id="895541991026785598">回報問題</translation>

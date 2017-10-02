@@ -31,6 +31,7 @@
 <translation id="2190355936436201913">(empty)</translation>
 <translation id="219905428774326614">Launcher, all apps</translation>
 <translation id="2289052229480071835">Tap the touch targets on your screen.</translation>
+<translation id="2295140143284145483">Survey</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Expand notification</translation>
 <translation id="2497284189126895209">All Files</translation>
@@ -90,6 +91,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hour}other{# hours}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">All Apps</translation>
+<translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> of <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Clear search box text</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6119846243427417423">activate</translation>
@@ -103,6 +105,7 @@
 <translation id="6394627529324717982">Comma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec ago}other{# secs ago}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 second ago}other{# seconds ago}}</translation>
+<translation id="6567071839949112727">click ancestor</translation>
 <translation id="6612467943526193239">To exit calibration press Esc.</translation>
 <translation id="6620110761915583480">Save File</translation>
 <translation id="6699343763173986273">Media Next Track</translation>
@@ -120,6 +123,7 @@
 <translation id="7130207228079676353">MOST LIKELY</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min left}other{# mins left}}</translation>
+<translation id="7319740667687257810">Launcher, partial view</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min ago}other{# mins ago}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" />..</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute left}other{# minutes left}}</translation>

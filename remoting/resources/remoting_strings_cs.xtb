@@ -3,6 +3,9 @@
 <translationbundle lang="cs">
 <translation id="1002108253973310084">Byla zjištěna nekompatibilní verze protokolu. Zkontrolujte, zda máte v obou počítačích nainstalovanou nejnovější verzi softwaru, a zkuste to znovu.</translation>
 <translation id="1050693411695664090">Nízká</translation>
+<translation id="1059802506829356230">• Nový vzhled a design
+• Vylepšený výkon, responzivita a spolehlivost
+• Podpora přehrávání zvuku z počítačů se systémem Windows nebo Linux</translation>
 <translation id="1152528166145813711">Vybrat…</translation>
 <translation id="1199593201721843963">Zakázat vzdálená připojení</translation>
 <translation id="1291443878853470558">Chcete-li se k tomuto počítači připojit prostřednictvím funkce Chromoting, je třeba povolit vzdálená připojení.</translation>
@@ -81,6 +84,11 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="2841013758207633010">Čas</translation>
 <translation id="2851754573186462851">Streamování aplikací Chromium</translation>
 <translation id="2888969873284818612">Došlo k chybě sítě. Aplikaci restartujeme, až bude zařízení opět online.</translation>
+<translation id="289405675947420287">Bezpečně ze svého zařízení iOS přistupujte k počítači. Je to rychlé, jednoduché a zdarma.
+
+• Chcete-li se k počítači vzdáleně připojovat, stáhněte si do něj z Internetového obchodu Chrome aplikaci Vzdálená plocha Chrome.
+• Nainstalujte software Vzdálená plocha Chrome a podle pokynů dokončete nastavení.
+• Na zařízení iOS otevřete příslušnou aplikaci a klepnutím na některý ze svých online počítačů se připojte.</translation>
 <translation id="2894654864775534701">Tento počítač je aktuálně sdílen pod jiným účtem.</translation>
 <translation id="2919669478609886916">Momentálně sdílíte tento počítač s jiným uživatelem. Chcete ve sdílení pokračovat?</translation>
 <translation id="2921543551052660690">Dříve jste byli přihlášeni pomocí účtu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Chcete-li získat přístup k počítačům v tomto účtu, <ph name="LINK_BEGIN" />přihlaste se do prohlížeče Chromium<ph name="LINK_END" /> pomocí příslušného účtu a znovu nainstalujte aplikaci Chromoting.</translation>
@@ -115,6 +123,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Postup</translation>
 <translation id="3718805989288361841">Nastavení zásad Vzdálené plochy Chrome je chybné. Požádejte o pomoc administrátora systému.</translation>
+<translation id="3759645055923345178">Po dokončení nastavení k počítači budete moci přistupovat z této stránky tím, že zadáte PIN nebo přístupový kód.</translation>
 <translation id="3776024066357219166">Relace Vzdálené plochy Chrome byla ukončena.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">K povolení přístupu prostřednictvím Vzdálené plochy Chrome je třeba potvrdit účet a kód PIN níže.</translation>
@@ -155,6 +164,13 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="4660011489602794167">Zobrazit klávesnici</translation>
 <translation id="4703302905453407178">Vyžadovaná komponenta přestala pracovat. Nahlaste tento problém vývojářům.</translation>
 <translation id="4703799847237267011">Relace funkce Chromoting byla ukončena.</translation>
+<translation id="4706355010316049867">Vzdálená
+plocha
+Chrome
+Přístup
+Podpora
+Počítač
+PC</translation>
 <translation id="4736223761657662401">Historie připojení</translation>
 <translation id="4741792197137897469">Ověření selhalo. Přihlaste se do prohlížeče Chrome znovu.</translation>
 <translation id="477305884757156764">Aplikace je příliš pomalá.</translation>
@@ -198,6 +214,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="5773590752998175013">Datum spárování</translation>
 <translation id="579702532610384533">Znovu připojit</translation>
 <translation id="5810269635982033450">Obrazovka se chová jako trackpad</translation>
+<translation id="5823658491130719298">Na počítači, ke kterému chcete vzdáleně přistupovat, otevřete Chrome a navštivte stránku <ph name="INSTALLATION_LINK" />.</translation>
 <translation id="5841343754884244200">Možnosti zobrazení</translation>
 <translation id="5843054235973879827">Proč je toto připojení bezpečné?</translation>
 <translation id="5859141382851488196">Nové okno…</translation>
@@ -272,6 +289,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="7782471917492991422">Zkontrolujte prosím nastavení řízení spotřeby svého počítače a ujistěte se, zda není nastaven na přechod do režimu spánku při nečinnosti.</translation>
 <translation id="7810127880729796595">Zobrazit statistiky (připojení: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Chybí některé povinné komponenty. Zkontrolujte, zda máte nejnovější verzi Chromu, a zkuste to znovu.</translation>
+<translation id="7850909060902317210">Nainstalujte software Vzdálená plocha Chrome a podle pokynů dokončete nastavení.</translation>
 <translation id="7868137160098754906">Zadejte kód PIN pro vzdálený počítač.</translation>
 <translation id="7869445566579231750">Ke spuštění této aplikace nemáte oprávnění.</translation>
 <translation id="7895403300744144251">Zásady zabezpečení na vzdáleném počítači připojení z vašeho účtu nepovolují.</translation>
@@ -307,6 +325,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="8642984861538780905">Přijatelná</translation>
 <translation id="8712909229180978490">Soubory uložené online na Disku Google se nezobrazují.</translation>
 <translation id="8743328882720071828">Chcete uživateli <ph name="CLIENT_USERNAME" /> povolit zobrazit a ovládat váš počítač?</translation>
+<translation id="8747048596626351634">Relace selhala, nebo se ji nepodařilo spustit. Je-li ve vzdáleném počítači k dispozici relace ~/.chrome-remote-desktop-session, zkontrolujte, zda spouští dlouho běžící proces na popředí, například počítačovou plochu nebo správce oken.</translation>
 <translation id="8759753423332885148">Další informace</translation>
 <translation id="8791202241915690908">Stažení instalačního programu hostitele funkce Chromoting</translation>
 <translation id="894763922177556086">Dobrá</translation>

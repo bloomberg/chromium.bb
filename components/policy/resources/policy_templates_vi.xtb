@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="1330985749576490863">Tắt Google Drive trên các kết nối di động trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Tên chính sách</translation>
-<translation id="134402861816424823">Chỉ định các máy in mà người dùng không thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn BlacklistRestriction cho 
-      DeviceNativePrintersAccessMode.
-
-      Nếu sử dụng chính sách này, thì tất cả máy in sẽ được cung cấp cho
-      người dùng trừ các máy in có id nằm trong chính sách này.
-      </translation>
 <translation id="1353966721814789986">Trang khởi động</translation>
 <translation id="1359553908012294236">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ bật chế độ đăng nhập khách. Chế độ đăng nhập khách là hồ sơ <ph name="PRODUCT_NAME" /> trong đó tất cả cửa sổ đều ở chế độ ẩn danh.
 
@@ -262,33 +254,6 @@
 <translation id="209586405398070749">Kênh ổn định</translation>
 <translation id="2098658257603918882">Bật tính năng báo cáo sử dụng và dữ liệu liên quan đến sự cố</translation>
 <translation id="2113068765175018713">Giới hạn thời gian hoạt động của thiết bị bằng cách tự động khởi động lại</translation>
-<translation id="2126314858836465216">Cung cấp cấu hình máy in dành cho doanh nghiệp được kết nối với các thiết bị.
-
-      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các
-      thiết bị <ph name="PRODUCT_OS_NAME" />.
-      Kích thước tệp không được quá 5 MB và phải được mã hóa ở định dạng JSON.
-      Định dạng này giống với định dạng của từ điển NativePrinters. Ước tính một tệp
-      chứa xấp xỉ 21.000 máy in sẽ mã hóa dưới dạng một tệp 5 MB.
-      Hàm băm mật mã dùng để xác minh tính toàn vẹn của
-      nội dung tải xuống.
-
-      Tệp được tải xuống và lưu vào bộ nhớ cache. Tệp này sẽ tải
-      xuống lại bất cứ khi nào URL hoặc hàm băm đó thay đổi.
-
-      Nếu bạn đặt chính sách này,
-      <ph name="PRODUCT_OS_NAME" /> sẽ tải tệp
-      cấu hình máy in xuống và cung cấp máy in theo đúng các chính sách
-      DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
-      và DeviceNativePrintersBlacklist.
-
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu 
-      hình máy in trên từng thiết bị hay không. Chính sách này nhằm bổ 
-      sung cho cấu hình của các máy in theo từng người dùng.
-
-      Chính sách này bổ sung cho NativePrintersBulkConfiguration.
-
-      Nếu bạn không đặt chính sách này, thì sẽ không có máy in nào cho thiết bị
-      và các chính sách NativeDevicePrinter* khác sẽ bị bỏ qua.</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
 <translation id="2134437727173969994">Cho phép khóa màn hình</translation>
@@ -545,22 +510,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
-<translation id="2789419769822054691">Chỉ định các máy in mà người dùng có thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn WhitelistPrintersOnly cho
-      DeviceNativePrintersAccessMode.
-
-      Nếu bạn sử dụng chính sách này, thì chỉ những máy in có id phù hợp với
-      các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với
-      các mục nhập trong tệp đã chỉ định trong DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Chỉ định các máy in mà người dùng không thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn BlacklistRestriction cho
-      NativePrintersBulkAccessMode.
-
-      Nếu bạn sử dụng chính sách này, thì tất cả các máy in sẽ được cung cấp cho người dùng, ngoại trừ
-      các máy in có ID đã được liệt kê trong chính sách này.
-      </translation>
 <translation id="2801230735743888564">Cho phép người dùng chơi trò chơi trứng khủng long Phục sinh khi thiết bị ngoại tuyến.
 
 
@@ -1052,7 +1001,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4541530620466526913">Tài khoản trong thiết bị</translation>
 <translation id="4555850956567117258">Cho phép chứng thực từ xa cho người dùng</translation>
 <translation id="4557134566541205630">URL trang tab mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
-<translation id="4558592878156368639">Khoảng thời gian tắt khi chính sách |ignored_policies| OffHours của thiết bị được phát hành</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2018,18 +1966,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách được đặt ở trạng thái tắt hoặc không được đặt, việc đăng nhập sẽ dẫn tới cấu hình thông thường.</translation>
 <translation id="8158758865057576716">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Kiểm soát máy in nào có sẵn cho người dùng từ
-      NativePrintersBulkConfiguration.
-
-      Chỉ định chính sách truy cập nào được sử dụng cho cấu hình máy in số lượng lớn.
-      Nếu bạn chọn AllowAll, tất cả các máy in sẽ hiển thị. Nếu bạn chọn BlacklistRestrction, thì
-      NativePrintersBulkBlacklist sẽ được sử dụng để hạn chế quyền truy cập vào
-      các máy in đã chỉ định. Nếu bạn chọn WhitelistPrintersOnly, thì
-      NativePrintersWhitelist sẽ chỉ chỉ định những máy in
-      có thể chọn được.
-
-      Nếu bạn không đặt chính sách này, thì BlacklistRestriction sẽ được sử dụng làm mặc định.
-      </translation>
 <translation id="8170878842291747619">Cho phép dịch vụ Google Dịch tích hợp trên <ph name="PRODUCT_NAME" />.
 
       Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ hiển thị tùy chọn thanh công cụ được tích hợp để dịch trang cho người dùng khi phù hợp.
@@ -2137,14 +2073,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Chỉ định các máy in mà người dùng có thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu bạn đã chọn WhitelistPrintersOnly cho
-      NativePrintersBulkAccessMode.
-
-      Nếu bạn sử dụng chính sách này, thì người dùng chỉ có thể sử dụng những máy in
-      có ID khớp với các giá trị trong chính sách này. Những ID này phải tương ứng với
-      các mục nhập trong tệp được chỉ định trong NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị.
 
           Nếu bạn không đặt chính sách này, kết xuất đồ họa mặc định sẽ được sử dụng cho tất cả các trang web được chỉ định theo chính sách 'ChromeFrameRendererSettings'.
@@ -2155,30 +2083,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8519264904050090490">URL ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
-<translation id="8555589883248082762">Cung cấp cấu hình máy in dành cho doanh nghiệp.
-
-      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị
-      <ph name="PRODUCT_OS_NAME" />.
-      Kích thước tệp không được vượt quá 5 MB và phải được mã hóa ở định dạng JSON.
-      Định dạng này giống với định dạng của từ điển NativePrinters. Ước tính rằng
-      một tệp chứa xấp xỉ 21.000 máy in sẽ mã hóa dưới dạng một tệp 5 MB.
-      Hàm băm mật mã dùng để xác minh tính toàn vẹn của
-      nội dung tải xuống đó.
-
-      Tệp được tải xuống và lưu vào bộ nhớ cache. Tệp này sẽ được tải xuống lại bất cứ khi nào
-      URL hoặc hàm băm đó thay đổi.
-
-      Nếu bạn đặt chính sách này, thì
-      <ph name="PRODUCT_OS_NAME" /> sẽ tải
-      tệp cấu hình máy in xuống và cung cấp máy in theo
-      đúng các chính sách NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      và NativePrintersBulkBlacklist.
-
-      Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách.
-
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên
-      từng thiết bị hay không. Chính sách này nhằm bổ sung cho
-      cấu hình máy in của từng người dùng.</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
 <translation id="8587229956764455752">Cho phép tạo tài khoản người dùng mới</translation>
 <translation id="8614804915612153606">Tắt cập nhật tự động</translation>
@@ -2238,18 +2142,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8864975621965365890">Loại bỏ lời nhắc từ chối xuất hiện khi một trang web được hiển thị bởi <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
 <translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
-<translation id="8887644176044431146">Kiểm soát máy in nào từ
-      DeviceNativePrintersConfiguration được cung cấp cho người dùng.
-
-      Chỉ định chính sách truy cập nào được sử dụng cho cấu hình máy in số lượng lớn.
-      Nếu chọn AllowAll, thì tất cả máy in sẽ hiển thị. Nếu chọn
-      BlacklistRestrction, thì DeviceNativePrintersBlacklist sẽ được sử dụng để hạn
-      chế truy cập vào các máy in đã chỉ định. Nếu chọn WhitelistPrintersOnly, thì
-      DeviceNativePrintersWhitelist sẽ chỉ chỉ định những máy in có thể chọn
-      được.
-
-      Nếu không đặt chính sách này, thì BlacklistRestriction sẽ được sử dụng làm mặc định.
-      </translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>
 <translation id="8908294717014659003">Cho phép bạn đặt liệu trang web có được phép truy cập vào thiết bị thu dữ liệu truyền thông hay không. Quyền truy cập vào thiết bị thu dữ liệu truyền thông có thể được phép theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn có quyền truy cập vào thiết bị thu dữ liệu truyền thông.
 
