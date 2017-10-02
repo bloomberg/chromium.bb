@@ -84,8 +84,7 @@ char kTSanDefaultSuppressions[] =
     "race:*trace_event_unique_catstatic*\n"
 
     // http://crbug.com/244856
-    "race:AutoPulseLock\n"
-    "race:pulse::InitPulse\n"
+    "race:libpulsecommon*.so\n"
 
     // http://crbug.com/246968
     "race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback\n"
