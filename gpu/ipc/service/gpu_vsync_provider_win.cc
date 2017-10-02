@@ -25,6 +25,14 @@ namespace {
 // Default v-sync interval used when there is no history of v-sync timestamps.
 const int kDefaultInterval = 16666;
 
+// Occasionally DWM stops advancing qpcVBlank timestamp. The existing
+// implementation can cope with that by adjusting the qpcVBlank value forward
+// by a number of v-sync intervals, although the accuracy of adjustment depends
+// on accuracy of the calculated v-sync interval. To avoid accumulating the
+// error, any DWM values that are more than the threshold number of intervals
+// in the past are ignored.
+const int kMissingDwmTimestampsThreshold = 7;
+
 // from <D3dkmthk.h>
 typedef LONG NTSTATUS;
 typedef UINT D3DKMT_HANDLE;
@@ -93,7 +101,7 @@ class GpuVSyncWorker : public base::Thread,
   void AddTimestamp(base::TimeTicks timestamp);
   void AddInterval(base::TimeDelta interval);
   base::TimeDelta GetAverageInterval() const;
-  void ClearIntervalHistory();
+  void ClearHistory();
 
   bool GetDisplayFrequency(const wchar_t* device_name, DWORD* frequency);
   void UpdateCurrentDisplayFrequency();
@@ -139,15 +147,59 @@ class GpuVSyncWorker : public base::Thread,
   base::TimeDelta min_accepted_interval_;
   base::TimeDelta max_accepted_interval_;
 
-  // History of recent deltas between timestamps which is used to calculate the
-  // average v-sync interval and organized as a circular buffer.
-  static const size_t kIntervalHistorySize = 60;
-  base::TimeDelta interval_history_[kIntervalHistorySize];
-  size_t history_index_ = 0;
-  size_t history_size_ = 0;
+  // A simple circular buffer for storing a number of recent v-sync intervals
+  // or DWM adjustment deltas and finding an average of them.
+  class TimeDeltaRingBuffer {
+   public:
+    TimeDeltaRingBuffer() = default;
+    ~TimeDeltaRingBuffer() = default;
 
-  // Rolling sum of intervals in the circular buffer above.
-  base::TimeDelta rolling_interval_sum_;
+    void Add(base::TimeDelta value) {
+      if (size_ == kMaxSize) {
+        rolling_sum_ -= values_[next_index_];
+      } else {
+        size_++;
+      }
+
+      values_[next_index_] = value;
+      rolling_sum_ += value;
+      next_index_ = (next_index_ + 1) % kMaxSize;
+    }
+
+    void Clear() {
+      rolling_sum_ = base::TimeDelta();
+      next_index_ = 0;
+      size_ = 0;
+    }
+
+    base::TimeDelta GetAverage() const {
+      if (size_ == 0)
+        return base::TimeDelta();
+
+      return rolling_sum_ / size_;
+    }
+
+   private:
+    enum { kMaxSize = 60 };
+
+    base::TimeDelta values_[kMaxSize];
+    size_t next_index_ = 0;
+    size_t size_ = 0;
+
+    // Rolling sum of TimeDelta values in the circular buffer above.
+    base::TimeDelta rolling_sum_;
+
+    DISALLOW_COPY_AND_ASSIGN(TimeDeltaRingBuffer);
+  };
+
+  // History of recent deltas between timestamps used to calculate the average
+  // v-sync interval.
+  TimeDeltaRingBuffer recent_intervals_;
+
+  // History of recent DWM adjustments used to calculate the average adjustment.
+  TimeDeltaRingBuffer recent_adjustments_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuVSyncWorker);
 };
 
 GpuVSyncWorker::GpuVSyncWorker(
@@ -289,27 +341,19 @@ void GpuVSyncWorker::AddInterval(base::TimeDelta interval) {
   if (interval < min_accepted_interval_ || interval > max_accepted_interval_)
     return;
 
-  if (history_size_ == kIntervalHistorySize) {
-    rolling_interval_sum_ -= interval_history_[history_index_];
-  } else {
-    history_size_++;
-  }
-
-  interval_history_[history_index_] = interval;
-  rolling_interval_sum_ += interval;
-  history_index_ = (history_index_ + 1) % kIntervalHistorySize;
+  recent_intervals_.Add(interval);
 }
 
-void GpuVSyncWorker::ClearIntervalHistory() {
+void GpuVSyncWorker::ClearHistory() {
   last_timestamp_ = base::TimeTicks();
-  rolling_interval_sum_ = base::TimeDelta();
-  history_index_ = 0;
-  history_size_ = 0;
+  recent_intervals_.Clear();
+  recent_adjustments_.Clear();
 }
 
 base::TimeDelta GpuVSyncWorker::GetAverageInterval() const {
-  return !rolling_interval_sum_.is_zero()
-             ? rolling_interval_sum_ / history_size_
+  base::TimeDelta average_interval = recent_intervals_.GetAverage();
+  return !average_interval.is_zero()
+             ? average_interval
              : base::TimeDelta::FromMicroseconds(kDefaultInterval);
 }
 
@@ -341,11 +385,10 @@ void GpuVSyncWorker::UpdateCurrentDisplayFrequency() {
     current_display_frequency_ = frequency;
     base::TimeDelta interval = base::TimeDelta::FromMicroseconds(
         base::Time::kMicrosecondsPerSecond / static_cast<double>(frequency));
-    ClearIntervalHistory();
+    ClearHistory();
 
     min_accepted_interval_ = interval * 0.8;
     max_accepted_interval_ = interval * 1.2;
-    AddInterval(interval);
   }
 }
 
@@ -366,14 +409,22 @@ void GpuVSyncWorker::SendGpuVSyncUpdate(base::TimeTicks now, bool use_dwm) {
   base::TimeDelta adjustment;
 
   if (use_dwm && GetDwmVBlankTimestamp(&timestamp)) {
-    // Timestamp comes from DwmGetCompositionTimingInfo and apparently it might
-    // be up to 2-3 vsync cycles in the past or in the future.
-    // The adjustment formula was suggested here:
-    // http://www.vsynctester.com/firefoxisbroken.html
     base::TimeDelta interval = GetAverageInterval();
-    adjustment =
-        ((now - timestamp + interval / 8) % interval + interval) % interval -
-        interval / 8;
+    if (now - timestamp > interval * kMissingDwmTimestampsThreshold) {
+      // DWM timestamp is too far in the past. Ignore it and use average
+      // historical adjustment to be applied to |now| time to estimate
+      // the v-sync timestamp.
+      adjustment = recent_adjustments_.GetAverage();
+    } else {
+      // Timestamp comes from DwmGetCompositionTimingInfo and apparently it
+      // might be a few v-sync cycles in the past or in the future.
+      // The adjustment formula was suggested here:
+      // http://www.vsynctester.com/firefoxisbroken.html
+      adjustment =
+          ((now - timestamp + interval / 8) % interval + interval) % interval -
+          interval / 8;
+      recent_adjustments_.Add(adjustment);
+    }
     timestamp = now - adjustment;
   } else {
     // Not using DWM.
@@ -382,11 +433,13 @@ void GpuVSyncWorker::SendGpuVSyncUpdate(base::TimeTicks now, bool use_dwm) {
 
   AddTimestamp(timestamp);
 
-  TRACE_EVENT1("gpu", "GpuVSyncWorker::SendGpuVSyncUpdate", "adjustment",
-               adjustment.ToInternalValue());
+  base::TimeDelta average_interval = GetAverageInterval();
+  TRACE_EVENT2("gpu", "GpuVSyncWorker::SendGpuVSyncUpdate", "adjustment",
+               adjustment.InMicroseconds(), "interval",
+               average_interval.InMicroseconds());
 
-  DCHECK_GT(GetAverageInterval().InMillisecondsF(), 0);
-  InvokeCallbackAndReschedule(timestamp, GetAverageInterval());
+  DCHECK_GT(average_interval.InMillisecondsF(), 0);
+  InvokeCallbackAndReschedule(timestamp, average_interval);
 }
 
 void GpuVSyncWorker::InvokeCallbackAndReschedule(base::TimeTicks timestamp,
@@ -461,7 +514,7 @@ void GpuVSyncWorker::CloseAdapter() {
     current_adapter_handle_ = 0;
     current_device_name_.clear();
 
-    ClearIntervalHistory();
+    ClearHistory();
   }
 }
 
