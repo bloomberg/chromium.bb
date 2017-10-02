@@ -724,6 +724,10 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
+bool RenderWidgetCompositor::IsSurfaceSynchronizationEnabled() const {
+  return layer_tree_host_->GetSettings().enable_surface_synchronization;
+}
+
 void RenderWidgetCompositor::SetNeedsForcedRedraw() {
   layer_tree_host_->SetNeedsCommitWithForcedRedraw();
 }

@@ -1958,6 +1958,8 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
     return;
 
   auto_resize_mode_ = true;
+  AutoResizeCompositor();
+
   if (IsUseZoomForDSFEnabled()) {
     webview()->EnableAutoResizeMode(
         gfx::ScaleToCeiledSize(min_size, device_scale_factor_),

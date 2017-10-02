@@ -305,6 +305,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // which would indicate that this paint message is an ACK for multiple
   // request messages.
   IPC_STRUCT_MEMBER(int, flags)
+
+  // A unique monotonically increasing sequence number used to identify this
+  // ACK.
+  IPC_STRUCT_MEMBER(uint64_t, sequence_number)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
@@ -345,6 +349,12 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 // have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
 // we don't have to fetch it every time WebKit asks for it.
 IPC_MESSAGE_ROUTED1(ViewMsg_Resize, content::ResizeParams /* params */)
+
+// Tells the widget to use the provided viz::LocalSurfaceId to submit
+// CompositorFrames for autosize.
+IPC_MESSAGE_ROUTED2(ViewMsg_SetLocalSurfaceIdForAutoResize,
+                    uint64_t /* sequence_number */,
+                    viz::LocalSurfaceId /* local_surface_id */)
 
 // Enables device emulation. See WebDeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,

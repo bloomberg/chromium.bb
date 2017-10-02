@@ -632,6 +632,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetLocalSurfaceIdForAutoResize,
+                        OnSetLocalSurfaceIdForAutoResize)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableDeviceEmulation,
@@ -760,6 +762,15 @@ void RenderWidget::OnResize(const ResizeParams& params) {
   }
 
   Resize(params);
+}
+
+void RenderWidget::OnSetLocalSurfaceIdForAutoResize(
+    uint64_t sequence_number,
+    const viz::LocalSurfaceId& local_surface_id) {
+  if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number)
+    return;
+  local_surface_id_ = local_surface_id;
+  compositor_->SetViewportSize(physical_backing_size_, local_surface_id);
 }
 
 void RenderWidget::OnEnableDeviceEmulation(
@@ -967,18 +978,7 @@ void RenderWidget::DidCompletePageScaleAnimation() {}
 
 void RenderWidget::DidReceiveCompositorFrameAck() {
   TRACE_EVENT0("renderer", "RenderWidget::DidReceiveCompositorFrameAck");
-
-  if (!next_paint_flags_ && !need_update_rect_for_auto_resize_) {
-    return;
-  }
-
-  ViewHostMsg_UpdateRect_Params params;
-  params.view_size = size_;
-  params.flags = next_paint_flags_;
-
-  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
-  next_paint_flags_ = 0;
-  need_update_rect_for_auto_resize_ = false;
+  DidResizeAck();
 }
 
 bool RenderWidget::IsClosing() const {
@@ -1271,11 +1271,15 @@ void RenderWidget::Resize(const ResizeParams& params) {
     local_surface_id_ = *params.local_surface_id;
 
   if (compositor_) {
-    // If surface synchronization is enable, then this will use the provided
+    // If surface synchronization is enabled, then this will use the provided
     // |local_surface_id_| to submit the next generated CompositorFrame.
     // If the ID is not valid, then the compositor will defer commits until
     // it receives a valid surface ID. This is a no-op if surface
     // synchronization is disabled.
+    // TODO(crbug.com/758387): Re-enable this DCHECK once the mash login screen
+    // is fixed.
+    // DCHECK(!compositor_->IsSurfaceSynchronizationEnabled() ||
+    //       local_surface_id_.is_valid());
     compositor_->SetViewportSize(params.physical_backing_size,
                                  local_surface_id_);
     compositor_->SetBrowserControlsHeight(
@@ -2162,8 +2166,17 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
 
     AutoResizeCompositor();
 
-    if (!resizing_mode_selector_->is_synchronous_mode())
+    if (!resizing_mode_selector_->is_synchronous_mode()) {
       need_update_rect_for_auto_resize_ = true;
+      // If surface synchronization is off, then ResizeAcks go to the browser in
+      // response to a DidReceiveCompositorFrame. With surface synchronization
+      // on, that notification will not arrive here because the compositor is
+      // deferring commits and thus submission of CompositorFrames.
+      if (!size_.IsEmpty() && compositor_ &&
+          compositor_->IsSurfaceSynchronizationEnabled()) {
+        DidResizeAck();
+      }
+    }
   }
 }
 
@@ -2465,6 +2478,20 @@ void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
   // A RenderWidgetHost should not need more than one channel.
   widget_binding_.Close();
   widget_binding_.Bind(std::move(request));
+}
+
+void RenderWidget::DidResizeAck() {
+  if (!next_paint_flags_ && !need_update_rect_for_auto_resize_)
+    return;
+
+  ViewHostMsg_UpdateRect_Params params;
+  params.view_size = size_;
+  params.flags = next_paint_flags_;
+  params.sequence_number = ++resize_or_repaint_ack_num_;
+
+  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
+  next_paint_flags_ = 0;
+  need_update_rect_for_auto_resize_ = false;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
