@@ -135,12 +135,6 @@ class ASH_EXPORT MessageCenterView
   message_center::MessageCenter* message_center_;
   message_center::MessageCenterTray* tray_;
 
-  // Map notification_id->MessageView*. It contains all MessageViews currently
-  // displayed in MessageCenter.
-  typedef std::map<std::string, message_center::MessageView*>
-      NotificationViewsMap;
-  NotificationViewsMap notification_views_;
-
   // Child views.
   views::ScrollView* scroller_;
   std::unique_ptr<MessageListView> message_list_view_;

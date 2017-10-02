@@ -140,7 +140,7 @@ void MessageListView::RemoveNotification(MessageView* view) {
 
 void MessageListView::UpdateNotification(MessageView* view,
                                          const Notification& notification) {
-  // Skip updating the notification being cleared
+  // Skip updating the notification being cleared.
   if (base::ContainsValue(clearing_all_views_, view))
     return;
 
@@ -154,6 +154,38 @@ void MessageListView::UpdateNotification(MessageView* view,
     deleted_when_done_.erase(view);
   view->UpdateWithNotification(notification);
   DoUpdateIfPossible();
+}
+
+std::pair<int, MessageView*> MessageListView::GetNotificationById(
+    const std::string& id) {
+  for (int i = child_count() - 1; i >= 0; --i) {
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    if (view->notification_id() == id && IsValidChild(view))
+      return std::make_pair(i, view);
+  }
+  return std::make_pair(-1, nullptr);
+}
+
+MessageView* MessageListView::GetNotificationAt(int index) {
+  for (int i = child_count() - 1; i >= 0; --i) {
+    MessageView* view = static_cast<MessageView*>(child_at(i));
+    if (IsValidChild(view)) {
+      if (index == 0)
+        return view;
+      index--;
+    }
+  }
+  return nullptr;
+}
+
+size_t MessageListView::GetNotificationCount() const {
+  int count = 0;
+  for (int i = child_count() - 1; i >= 0; --i) {
+    const MessageView* view = static_cast<const MessageView*>(child_at(i));
+    if (IsValidChild(view))
+      count++;
+  }
+  return count;
 }
 
 gfx::Size MessageListView::CalculatePreferredSize() const {
