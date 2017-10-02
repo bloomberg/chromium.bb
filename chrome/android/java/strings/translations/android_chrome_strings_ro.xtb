@@ -311,6 +311,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3997476611815694295">Stocare neimportantă</translation>
 <translation id="4002066346123236978">Titlu</translation>
 <translation id="4013356575049925793">Comerț electronic</translation>
+<translation id="4041402800604793551">Continuând, ești de acord cu <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și cu <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome și cu <ph name="BEGIN_LINK3" />Notificarea privind confidențialitatea pentru Conturile Google create în Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Afișează sugestii atunci când o adresă web nu se rezolvă sau nu poate fi stabilită o conexiune</translation>
 <translation id="4046123991198612571">Melodia următoare</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -389,6 +390,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4797039098279997504">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Numele de pe card</translation>
 <translation id="4807963036345170158">Economizorul de date este dezactivat</translation>
+<translation id="4811736444948656478">Panoul de navigare este deschis la jumătate din înălțime</translation>
 <translation id="4816465935029283692">Tipuri de date</translation>
 <translation id="4837753911714442426">Deschide opțiunile pentru a printa pagina</translation>
 <translation id="4842092870884894799">Fereastra pop-up pentru generarea parolelor este afișată</translation>
@@ -544,6 +546,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6177111841848151710">Blocată pentru motorul de căutare actual</translation>
 <translation id="6177390657002841081">Activează Economizorul de date</translation>
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
+<translation id="618555311922999635">Panoul de navigare este deschis la înălțimea completă</translation>
 <translation id="6192792657125177640">Excepții</translation>
 <translation id="6210748933810148297">Nu ești <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Dacă activezi opțiunea „Nu urmări”, o solicitare va fi inclusă împreună cu traficul de navigare. Efectul variază în funcție de răspunsul site-ului la solicitare și în funcție de modul în care este interpretată solicitarea.
@@ -757,6 +760,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8087000398470557479">Acest conținut provine de pe <ph name="DOMAIN_NAME" />, oferit de Google.</translation>
 <translation id="8100932616285851614">Panoul de navigare este închis</translation>
 <translation id="8103578431304235997">Filă incognito</translation>
+<translation id="8116925261070264013">Cu sunetul dezactivat</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8137558756159375272">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutare Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Conținut</translation>
@@ -773,6 +777,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8283853025636624853">Se sincronizează cu <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">File standard</translation>
+<translation id="8334426458436697004">Dezactivează sunetul pentru un anumit site.</translation>
 <translation id="8339163506404995330">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse</translation>
 <translation id="8372721116225477180">Rețele sociale</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
@@ -840,7 +845,6 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8993760627012879038">Deschide o filă nouă în modul incognito</translation>
 <translation id="8998729206196772491">Te conectezi cu un cont gestionat de <ph name="MANAGED_DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chrome. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chrome, datele se vor șterge de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
 <translation id="9019902583201351841">Gestionat de părinții tăi</translation>
-<translation id="9038649477754266430">Folosește un serviciu de predicții pentru a încărca paginile mai rapid</translation>
 <translation id="9050666287014529139">Expresie de acces</translation>
 <translation id="9060538597317784206">Vezi aplicația <ph name="APP_NAME" /> în Magazinul Play.  Evaluare: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Dezactivează opțiunea Versiune site pentru desktop</translation>

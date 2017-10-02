@@ -3,6 +3,9 @@
 <translationbundle lang="lt">
 <translation id="1002108253973310084">Aptikta nesuderinama protokolo versija. Įsitikinkite, kad įdiegėte naujausios versijos programinę įrangą abiejuose kompiuteriuose ir bandykite dar kartą.</translation>
 <translation id="1050693411695664090">Prastas</translation>
+<translation id="1059802506829356230">• Nauja išvaizda ir funkcijos.
+• Padidintas našumas, interaktyvumas ir patikimumas.
+• Palaikymas leidžiant garso įrašus iš „Windows“ arba „Linux“ kompiuterių.</translation>
 <translation id="1152528166145813711">Pasirinkite…</translation>
 <translation id="1199593201721843963">Neleisti nuotolinio ryšio</translation>
 <translation id="1291443878853470558">Jei norite naudoti „Chrome“ nuotolinį ryšį šiam kompiuteriui pasiekti, turite įgalinti nuotolinį ryšį.</translation>
@@ -81,6 +84,11 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="2841013758207633010">Laikas</translation>
 <translation id="2851754573186462851">„Chromium“ programos srautinis perdavimas</translation>
 <translation id="2888969873284818612">Įvyko tinklo klaida. Kai įrenginys bus vėl prijungtas, iš naujo paleisime programą.</translation>
+<translation id="289405675947420287">Saugiai pasiekite kompiuterius naudodami „iOS“ įrenginį. Tai greita, paprasta ir nieko nekainuoja.
+
+• Iš „Chrome“ internetinės parduotuvės atsisiųskite „Chrome“ nuotolinio kompiuterio valdymo programą kompiuteryje, kurį norite pasiekti nuotoliniu būdu.
+• Įdiekite „Chrome“ nuotolinio kompiuterio valdymo programinę įrangą ir laikydamiesi instrukcijų užbaikite sąranką.
+• „iOS“ įrenginyje atidarykite programą ir palieskite bet kurį prijungtą kompiuterį, kad prisijungtumėte.</translation>
 <translation id="2894654864775534701">Šis kompiuteris šiuo metu bendrinamas su kita paskyra.</translation>
 <translation id="2919669478609886916">Šiuo metu šį kompiuterį bendrinate su kitu naudotoju. Ar norite toliau bendrinti?</translation>
 <translation id="2921543551052660690">Anksčiau prisijungėte kaip <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Kad pasiektumėte kompiuterius toje paskyroje, <ph name="LINK_BEGIN" />prisijunkite prie „Chromium“<ph name="LINK_END" /> naudodami tą paskyrą ir iš naujo įdiekite „Chrome“ nuotolinį ryšį.</translation>
@@ -115,6 +123,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="369442766917958684">Neprisijungus.</translation>
 <translation id="3695446226812920698">Sužinokite kaip</translation>
 <translation id="3718805989288361841">Įvyko „Chrome“ nuotolinio kompiuterio valdymo politikos nustatymų klaida. Kreipkitės pagalbos į sistemos administratorių.</translation>
+<translation id="3759645055923345178">Kai sąranka bus baigta, galėsite pasiekti kompiuterį iš šio puslapio įvedę PIN kodą ar prieigos kodą</translation>
 <translation id="3776024066357219166">Baigėsi „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
 <translation id="3884839335308961732">Kad leistumėte prieigą naudojant „Chrome“ nuotolinį kompiuterio valdymą, toliau patvirtinkite savo paskyrą ir PIN kodą.</translation>
@@ -155,6 +164,13 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="4660011489602794167">Rodyti klaviatūrą</translation>
 <translation id="4703302905453407178">Būtinas komponentas nebeveikia. Praneškite apie šią problemą kūrėjams.</translation>
 <translation id="4703799847237267011">„Chrome“ nuotolinio ryšio sesija baigėsi.</translation>
+<translation id="4706355010316049867">„Chrome“
+Nuotolinis
+Kompiuteris
+Prieiga
+Palaikymas
+Kompiuteris
+AK</translation>
 <translation id="4736223761657662401">Ryšių istorija</translation>
 <translation id="4741792197137897469">Nepavyko autentifikuoti. Dar kartą prisijunkite prie „Chrome“.</translation>
 <translation id="477305884757156764">Programa per lėta.</translation>
@@ -198,6 +214,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="5773590752998175013">Susiejimo data</translation>
 <translation id="579702532610384533">Pakartotinai prijungti</translation>
 <translation id="5810269635982033450">Ekranas veikia kaip jutiklinis kilimėlis</translation>
+<translation id="5823658491130719298">Kompiuteryje, kurį norite pasiekti nuotoliniu būdu, atidarykite „Chrome“ ir apsilankykite adresu <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Pateikties parinktys</translation>
 <translation id="5843054235973879827">Kodėl tai saugu?</translation>
 <translation id="5859141382851488196">Naujas langas...</translation>
@@ -272,6 +289,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="7782471917492991422">Patikrinkite kompiuterio galios tvarkymo nustatymus ir įsitikinkite, kad jis nėra sukonfigūruotas užmigti neveikos būsenos.</translation>
 <translation id="7810127880729796595">Rodyti statistiką (ryšys: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Trūksta kai kurių būtinų komponentų. Įsitikinkite, kad naudojate naujausios versijos „Chrome“, ir bandykite dar kartą.</translation>
+<translation id="7850909060902317210">Įdiekite „Chrome“ nuotolinio kompiuterio valdymo programinę įrangą ir vadovaudamiesi instrukcijomis užbaikite sąranką</translation>
 <translation id="7868137160098754906">Įveskite nuotolinio kompiuterio PIN kodą.</translation>
 <translation id="7869445566579231750">Neturite leidimo paleisti šią programą.</translation>
 <translation id="7895403300744144251">Pagal nuotolinio kompiuterio saugos politiką neleidžiama prisijungti naudojant jūsų paskyrą.</translation>
@@ -307,6 +325,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="8642984861538780905">Neblogas</translation>
 <translation id="8712909229180978490">Prisijungus nerodomi „Google“ diske išsaugoti failai.</translation>
 <translation id="8743328882720071828">Ar norite leisti <ph name="CLIENT_USERNAME" /> matyti kompiuterio informaciją ir jį valdyti?</translation>
+<translation id="8747048596626351634">Sesija užstrigo arba jos nepavyko paleisti. Jei nuotoliniame kompiuteryje yra ~/.chrome-remote-desktop-session, įsitikinkite, kad jis paleidžia ilgai vykdomą priekinio plano procesą, pvz., darbalaukio aplinką ar langų tvarkytuvę.</translation>
 <translation id="8759753423332885148">Sužinokite daugiau.</translation>
 <translation id="8791202241915690908">„Chrome“ nuotolinio ryšio prieglobos diegimo programos atsisiuntimas</translation>
 <translation id="894763922177556086">Geras</translation>

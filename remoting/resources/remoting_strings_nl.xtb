@@ -3,6 +3,9 @@
 <translationbundle lang="nl">
 <translation id="1002108253973310084">Er is een incompatibele versie gedetecteerd. Controleer of de nieuwste versie van de software is geïnstalleerd op beide computers en probeer het opnieuw.</translation>
 <translation id="1050693411695664090">Slecht</translation>
+<translation id="1059802506829356230">• Nieuw uiterlijk.
+• Verbeterde prestaties, responsiviteit en betrouwbaarheid.
+• Ondersteuning voor het afspelen van audio van Windows- of Linux-computers.</translation>
 <translation id="1152528166145813711">Selecteren…</translation>
 <translation id="1199593201721843963">Externe verbindingen uitschakelen</translation>
 <translation id="1291443878853470558">Je moet externe verbindingen inschakelen als je Chromoting wilt gebruiken voor toegang tot deze computer.</translation>
@@ -81,6 +84,11 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2841013758207633010">Tijd</translation>
 <translation id="2851754573186462851">Streaming via Chromium-app</translation>
 <translation id="2888969873284818612">Er is een netwerkfout opgetreden. We starten de app opnieuw wanneer je apparaat weer online is.</translation>
+<translation id="289405675947420287">Krijg op een veilige manier toegang tot je computer vanaf je iOS-apparaat. Het is snel, gemakkelijk en eenvoudig.
+
+• Download de Chrome Remote Desktop-app vanuit de Chrome Web Store naar de computer waartoe je extern toegang wilt.
+• Installeer de Chrome Remote Desktop-software en volg de instructies om het instellen te voltooien.
+• Open de app op je iOS-apparaat en tik op een van je online computers om verbinding te maken.</translation>
 <translation id="2894654864775534701">Deze computer wordt momenteel via een ander account gedeeld.</translation>
 <translation id="2919669478609886916">Je deelt deze computer momenteel met een andere gebruiker. Wil je doorgaan met delen?</translation>
 <translation id="2921543551052660690">Je bent eerder ingelogd als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN" />log je in bij Chromium<ph name="LINK_END" /> met dat account en installeer je Chromoting opnieuw.</translation>
@@ -115,6 +123,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Meer informatie</translation>
 <translation id="3718805989288361841">Er is een probleem met de beleidsinstellingen voor Chrome Remote Desktop. Neem contact op met je systeembeheerder voor hulp.</translation>
+<translation id="3759645055923345178">Nadat het instellen is voltooid, kun je vanaf deze pagina toegang krijgen tot de computer door de pincode of toegangscode op te geven</translation>
 <translation id="3776024066357219166">Je Chrome Remote Desktop-sessie is beëindigd.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bevestig je account en pincode hieronder om toegang door Chrome Remote Desktop toe te staan.</translation>
@@ -155,6 +164,13 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="4660011489602794167">Toetsenbord weergeven</translation>
 <translation id="4703302905453407178">Een vereiste component werkt niet meer. Meld dit probleem aan de ontwikkelaars.</translation>
 <translation id="4703799847237267011">Je Chromoting-sessie is beëindigd.</translation>
+<translation id="4706355010316049867">Chrome
+Remote
+Desktop
+Toegang
+Ondersteuning
+Computer
+Pc</translation>
 <translation id="4736223761657662401">Verbindingsgeschiedenis</translation>
 <translation id="4741792197137897469">Verificatie mislukt. Log opnieuw in bij Chrome.</translation>
 <translation id="477305884757156764">De app is te langzaam.</translation>
@@ -198,6 +214,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="5773590752998175013">Koppelingsdatum</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
 <translation id="5810269635982033450">Scherm werkt als een trackpad</translation>
+<translation id="5823658491130719298">Ga naar de computer waarvoor je externe toegang wilt hebben. Open Chrome en ga naar <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Weergaveopties</translation>
 <translation id="5843054235973879827">Waarom is dit veilig?</translation>
 <translation id="5859141382851488196">Nieuw venster…</translation>
@@ -272,6 +289,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="7782471917492991422">Controleer de instellingen voor energiebeheer van je computer en zorg ervoor dat de slaapstand niet wordt geactiveerd wanneer de computer inactief is.</translation>
 <translation id="7810127880729796595">Statistieken weergeven (verbinding: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Er ontbreken enkele vereiste componenten. Controleer of je de nieuwste versie van Chrome gebruikt en probeer het opnieuw.</translation>
+<translation id="7850909060902317210">Installeer de Chrome Remote Desktop-software en volg de instructies om het instellen te voltooien</translation>
 <translation id="7868137160098754906">Voer je pincode voor de externe computer in.</translation>
 <translation id="7869445566579231750">Je hebt geen toestemming om deze app uit te voeren.</translation>
 <translation id="7895403300744144251">Beveiligingsbeleid op de externe computer staat verbindingen vanuit je account niet toe.</translation>
@@ -307,6 +325,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="8642984861538780905">Redelijk</translation>
 <translation id="8712909229180978490">Ik kan mijn opgeslagen bestanden niet online zien in Google Drive.</translation>
 <translation id="8743328882720071828">Wil je toestaan dat <ph name="CLIENT_USERNAME" /> je computer ziet en beheert?</translation>
+<translation id="8747048596626351634">De sessie is gecrasht of kan niet worden gestart. Als ~/.chrome-remote-desktop-session bestaat op de externe computer, moet je ervoor zorgen dat hiermee een langdurig voorgrondproces wordt gestart, zoals een bureaubladomgeving of vensterbeheer.</translation>
 <translation id="8759753423332885148">Meer informatie.</translation>
 <translation id="8791202241915690908">Installatieprogramma voor Chromoting-host downloaden</translation>
 <translation id="894763922177556086">Goed</translation>

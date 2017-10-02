@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Mapes izvēle</translation>
 <translation id="1265739287306757398">Uzzināt, kā to izdarīt</translation>
 <translation id="1272079795634619415">Apturēt</translation>
-<translation id="129553762522093515">Nesen aizvērtas</translation>
 <translation id="1323735185997015385">Dzēst</translation>
 <translation id="132683371494960526">Veiciet dubultskārienu, lai mainītu vecākmapi.</translation>
 <translation id="1340643665687018190">Aizvērt izvēlni</translation>
@@ -359,7 +358,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7769602470925380267">Piekrist un izrakstīties</translation>
 <translation id="7772032839648071052">Apstipriniet ieejas frāzi</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
-<translation id="7851858861565204677">Citas ierīces</translation>
 <translation id="7859704718976024901">Pārlūkošanas vēsture</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
@@ -403,6 +401,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8775144690796719618">Nederīgs URL</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>
 <translation id="8840513115188359703">Jūs netiksiet izrakstīts no sava Google konta.</translation>
+<translation id="8870413625673593573">Nesen aizvērtas</translation>
 <translation id="8881801611828450202">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Ziņot par problēmu</translation>

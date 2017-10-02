@@ -135,7 +135,7 @@
 <translation id="120368089816228251">সুর সঙ্কেত</translation>
 <translation id="1205489148908752564">পরিচ্ছন্ন তালিকাতে যুক্ত ব্যবহারকারিদের পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="1206407435587370571">আপনার Chromebook এর বৈশিষ্ট্যগুলি জানুন</translation>
-<translation id="1211364473545090084">একটি ছদ্মবেশী উইন্ডো দিয়ে ওয়েব ব্যবহার করলে আপনার ব্রাউজিংয়ের ইতিহাস সেভ করা হয় না</translation>
+<translation id="1211364473545090084">ব্রাউজিং এর ইতিহাস সেভ না করে ওয়েব ব্রাউজ করার জন্য ছদ্মবেশী উইন্ডো ব্যবহার করুন</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" />টি আঙ্গুলের ছাপের সেট আপ</translation>
 <translation id="1215411991991485844">নতুন পটভূমি অ্যাপ্লিকেশন জোড়া হয়েছে</translation>
 <translation id="1216654534877302979">সাইটগুলি মিউট করুন</translation>
@@ -1204,7 +1204,6 @@
 <translation id="281133045296806353">বিদ্যমান ব্রাউজার সেশনে নতুন উইন্ডো তৈরি হয়েছে৷</translation>
 <translation id="2812944337881233323">সাইন আউট করে আবার ফিরে এসে দেখুন</translation>
 <translation id="2812989263793994277">কোনও ছবি দেখাবেন না</translation>
-<translation id="2814100462326464815">ফটো পেছনের দিকে সরানো হয়েছে</translation>
 <translation id="2814489978934728345">এই পৃষ্ঠা লোড করা বন্ধ করুন</translation>
 <translation id="2815500128677761940">বুকমার্ক দণ্ড</translation>
 <translation id="2815693974042551705">বুকমার্ক ফোল্ডার</translation>
@@ -1453,7 +1452,7 @@
 <translation id="3166571619128686629">ভয়েস অনুসন্ধান শুরু করতে ক্লিক করুন অথবা "Ok Google" বলুন</translation>
 <translation id="3170072451822350649">এছাড়াও আপনি প্রবেশ করুন এড়িয়ে যেতে ও <ph name="LINK_START" />অতিথি হিসাবে ব্রাউজ<ph name="LINK_END" /> করতে পারেন৷</translation>
 <translation id="3177048931975664371">পাসওয়ার্ড লুকাতে ক্লিক করুন</translation>
-<translation id="3177857336576585529"><ph name="SITE_NAME" /> থেকে একটি অনুমতির অনুরোধ এসেছে।</translation>
+<translation id="3177857336576585529"><ph name="SITE_NAME" /> একটি অনুমতি চাইছে।</translation>
 <translation id="3177909033752230686">পৃষ্ঠার ভাষা:</translation>
 <translation id="3180365125572747493">এই শংসাপত্র ফাইলটি এনক্রিপ্ট করতে একটি পাসওয়ার্ড দিন৷</translation>
 <translation id="3181110748548073003">এগিয়ে যাওয়ার জন্য |<ph name="SHORTCUT" />| টিপুন</translation>
@@ -2099,7 +2098,6 @@
 <translation id="4158739975813877944">প্লে তালিকা খুলুন</translation>
 <translation id="4159681666905192102">এইটি হল বাচ্চাদের জন্য <ph name="CUSTODIAN_EMAIL" /> এবং <ph name="SECOND_CUSTODIAN_EMAIL" /> দ্বারা পরিচালিত একটি অ্যাকাউন্ট৷</translation>
 <translation id="4163560723127662357">অজানা কীবোর্ড</translation>
-<translation id="4165986682804962316">সাইটের সেটিংস</translation>
 <translation id="4166210099837486476">আপনি Chrome এ অ্যাকশন গ্রহনের সময় নজর রাখুন</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> এর কিছু সেটিংস আপনার সাথে শেয়ার করা হচ্ছে৷ এই সেটিংস শুধুমাত্র আপনার অ্যাকাউন্টে একাধিক প্রবেশ করুন ব্যবহারের সময় কাজ করে৷</translation>
 <translation id="4172051516777682613">সর্বদা দেখান</translation>
@@ -2272,6 +2270,7 @@
 <translation id="4475552974751346499">ডাউনলোডগুলি খুঁজুন</translation>
 <translation id="4476590490540813026">ক্রীড়াবিদ</translation>
 <translation id="4478664379124702289">লি&amp;ঙ্ক এই রূপে সেভ করুন...</translation>
+<translation id="4479424953165245642">kiosk অ্যাপ্লিকেশানগুলি পরিচালনা করুন</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
 <translation id="4481249487722541506">প্যাক না করা এক্সটেনশন লোড করুন...</translation>
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
@@ -2445,6 +2444,7 @@
 <translation id="4763830802490665879">একাধিক সাইট থেকে কুকিগুলি প্রস্থানে সাফ করা হবে৷</translation>
 <translation id="4768332406694066911">আপনার পরিচয় শনাক্ত করে এমন সংস্থাগুলি থেকে শংসাপত্র আপনার কাছে আছে</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য পাসওয়ার্ড</translation>
+<translation id="4777825441726637019">Play স্টোর</translation>
 <translation id="4779083564647765204">জুম</translation>
 <translation id="4780321648949301421">এইভাবে পৃষ্ঠা সেভ করুন...</translation>
 <translation id="4781787911582943401">স্ক্রিন জুম করুন</translation>
@@ -2466,7 +2466,6 @@
 <translation id="4807098396393229769">কার্ডে থাকা নাম</translation>
 <translation id="480990236307250886">হোম পৃষ্ঠাটি খুলুন</translation>
 <translation id="4812632551187706935">সংযোগ আরম্ভ করা যায়নি</translation>
-<translation id="4812684235631257312">হোস্ট</translation>
 <translation id="4813512666221746211">নেটওয়ার্ক  ত্রুটি</translation>
 <translation id="4816492930507672669">পৃষ্ঠাতে মানানসই</translation>
 <translation id="4820334425169212497">না, আমি এটা দেখিনি</translation>
@@ -3295,7 +3294,7 @@
 <translation id="6076448957780543068">এই স্ক্রীনশটটি অন্তর্ভুক্ত করুন</translation>
 <translation id="6077131872140550515">পছন্দের তালিকা থেকে সরান</translation>
 <translation id="6078752646384677957">অনুগ্রহ করে আপনার মাইক্রোফোন এবং অডিওর স্তর ভালকরে দেখে নিন।</translation>
-<translation id="6080515710685820702">শেয়ার করা কম্পিউটার ব্যবহার করছেন? একটি ছদ্মবেশী উইন্ডো ব্যবহার করে দেখুন।</translation>
+<translation id="6080515710685820702">শেয়ার করা কম্পিউটার ব্যবহার করছেন? তাহলে ছদ্মবেশী উইন্ডো ব্যবহার করুন।</translation>
 <translation id="6080689532560039067">আপনার সিস্টেমের সময় চেক করুন</translation>
 <translation id="6082651258230788217">সরঞ্জাম দণ্ডের মধ্যে দেখান</translation>
 <translation id="6086814797483779854">ক্লিক করলে চালু করুন</translation>
@@ -3514,7 +3513,6 @@
     <ph name="LINE_BREAK" />
     আপনার <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> অ্যাকাউন্টে প্রবেশ করুন চালিয়ে যেতে দয়া করে "পরবর্তী" ক্লিক করুন।</translation>
 <translation id="6419546358665792306">প্যাকমুক্ত না করা অবস্থায় লোড করুন</translation>
-<translation id="6422329785618833949">ফটো সরানো হয়েছে</translation>
 <translation id="642282551015776456">ফাইল বা ফোল্ডারের নাম হিসাবে নামটি ব্যবহৃত নাও হতে পারে</translation>
 <translation id="6423239382391657905">VPN খুলুন</translation>
 <translation id="6426200009596957090">ChromeVox এর সেটিংস খুলুন</translation>
@@ -3933,7 +3931,7 @@
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7056526158851679338">এবং ডিভাইসগুলি পরিদর্শন</translation>
 <translation id="7059858479264779982">স্বয়ংক্রিয় লঞ্চ সেট করুন</translation>
-<translation id="7059893117020417984">ব্যক্তিগতভাবে ব্রাউজ করতে হলে, একটি ছদ্মবেশী উইন্ডো খুলতে ডট আইকন মেনুতে ক্লিক করুন</translation>
+<translation id="7059893117020417984">গোপনে ব্রাউজ করার জন্য ছদ্মবেশী উইন্ডো খুলতে ডট আইকন মেনুতে ক্লিক করুন</translation>
 <translation id="7062222374113411376">সম্প্রতি বন্ধ করা সাইটগুলিকে ডেটা পাঠানো ও গ্রহণ শেষ করতে অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="7063129466199351735">শর্টকাটগুলি প্রক্রিয়া করা হচ্ছে...</translation>
 <translation id="7063957500469387217">Google মেঘ মুদ্রণে প্রিন্টারগুলি সেট আপ বা পরিচালনা করুন।</translation>
@@ -4332,7 +4330,6 @@
 <translation id="7710568461918838723">&amp;কাস্ট করুন...</translation>
 <translation id="7713320380037170544">সমস্ত সাইটকে MIDI ডিভাইসগুলি অ্যাক্সেস করার জন্য সিস্টেমের বিশিষ্ট বার্তাগুলি ব্যবহার করার অনুমতি দিন</translation>
 <translation id="7714464543167945231">শংসাপত্র</translation>
-<translation id="7716020873543636594">মাউস পয়েন্টার বন্ধ হয়ে গেলে স্বয়ংক্রিয়ভাবে ক্লিক করুন</translation>
 <translation id="7716781361494605745">Netscape শংসাপত্র কর্তৃপক্ষ নীতি URL</translation>
 <translation id="7716970641886237992">সংশোধন করেছেন</translation>
 <translation id="7717014941119698257">ডাউনলোড হচ্ছে: <ph name="STATUS" /></translation>
@@ -4600,8 +4597,9 @@
 <translation id="8113043281354018522">লাইসেন্সের প্রকার বেছে নিন</translation>
 <translation id="8116190140324504026">আরও তথ্য...</translation>
 <translation id="8116483400482790018">কাস্টম বানান অভিধান</translation>
+<translation id="8116925261070264013">মিউট করা আছে</translation>
 <translation id="8116972784401310538">&amp;বুকমার্ক পরিচালক</translation>
-<translation id="8118362518458010043">Chrome থেকে অক্ষম করা আছে। এই এক্সটেনশনটি অনিরাপদ হতে পারে।</translation>
+<translation id="8118362518458010043">Chrome এটি অক্ষম করেছে। এই এক্সটেনশনটি নিরাপদ নাও হতে পারে।</translation>
 <translation id="8118860139461251237">আপনার ডাউনলোডগুলি পরিচালনা করুন</translation>
 <translation id="8119631488458759651">এই সাইটটি সরান</translation>
 <translation id="81238879832906896">হলুদ এবং সাদা ফুল</translation>
@@ -4621,14 +4619,12 @@
 <translation id="8142732521333266922">ঠিক আছে, সবকিছু সমন্বয় করুন</translation>
 <translation id="8146177459103116374">আপনি যদি এই ডিভাইসে ইতিমধ্যেই নিবন্ধন করে থাকনে, তাহলে আপনি <ph name="LINK2_START" />একজন বিদ্যমান ব্যবহারকারী হিসাবে প্রবেশ করতে পারেন<ph name="LINK2_END" />৷</translation>
 <translation id="8146793085009540321">প্রবেশ করুন ব্যর্থ হয়েছে। দয়া করে আপনার প্রশাসকের সাথে যোগাযোগ করুন অথবা আবার চেষ্টা করুন।</translation>
-<translation id="8148913456785123871">লঞ্চারে Google Now কার্ডগুলি দেখান</translation>
 <translation id="8151185429379586178">বিকাশকারী সরঞ্জামগুলি</translation>
 <translation id="8151638057146502721">কনফিগার করুন</translation>
 <translation id="8152091997436726702">প্রিন্ট নিবন্ধনের জন্য নির্ধারিত সময়সীমা শেষ হয়ে গেছে৷ একটি প্রিন্ট নিবন্ধন করতে, আপনাকে অবশ্যই প্রিন্টে নিবন্ধন নিশ্চিত করতে হবে৷</translation>
 <translation id="8153607920959057464">এই ফাইলটি প্রদর্শিত হতে পারে না৷ </translation>
 <translation id="8154790740888707867">কোনো ফাইল নেই</translation>
 <translation id="815491593104042026">ওহো! এটি একটি অ-নিরাপদ URL (<ph name="BLOCKED_URL" />) ব্যবহার করার জন্য কনফিগার করার কারণে প্রমাণীকরণ ব্যর্থ হয়েছে। দয়া করে প্রশাসকের সঙ্গে যোগাযোগ করুন।</translation>
-<translation id="8156020606310233796">তালিকা দৃশ্য</translation>
 <translation id="8157939133946352716">৭x৫</translation>
 <translation id="816055135686411707">সেটিং শংসাপত্র আস্থায় ত্রুটি</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
@@ -4717,7 +4713,7 @@
 <translation id="8283475148136688298">"<ph name="DEVICE_NAME" />" এর সাথে সংযুক্ত হওয়ার সময়ে প্রমাণীকরণ কোড প্রত্যাখ্যাত হয়েছে৷</translation>
 <translation id="8284279544186306258">সব <ph name="WEBSITE_1" /> সাইট</translation>
 <translation id="8286036467436129157">প্রবেশ করুন</translation>
-<translation id="8286963743045814739">আপনি একটি ছদ্মবেশী উইন্ডো ব্যবহার করে ব্যক্তিগতভাবে ব্রাউজ করতে পারেন</translation>
+<translation id="8286963743045814739">আপনি ছদ্মবেশী উইন্ডো ব্যবহার করে গোপনে ব্রাউজ করতে পারেন</translation>
 <translation id="8291967909914612644">হোম পরিষেবা প্রদানকারী দেশ</translation>
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8297006494302853456">দুর্বল</translation>
@@ -5237,7 +5233,6 @@
 <translation id="9124003689441359348">সংরক্ষিত পাসওয়ার্ডগুলি এখানে দেখা যাবে</translation>
 <translation id="912419004897138677">কোডেক</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" />টি বাকি)</translation>
-<translation id="9127762771585363996">অনুভূমিকভাবে ক্যামেরা ছবিটি উল্টান</translation>
 <translation id="9128870381267983090">নেটওয়ার্কে সংযোগ করুন</translation>
 <translation id="9130015405878219958">অবৈধ মোড প্রবেশ করানো হয়েছে৷</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' এর সদস্যরা এই আইটেমগুলির অ্যাক্সেস পাবেন।</translation>

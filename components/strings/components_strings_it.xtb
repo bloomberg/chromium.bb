@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Adatta in larghezza</translation>
 <translation id="1088860948719068836">Aggiungi il nome indicato sulla carta</translation>
 <translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Mostra tutte le password salvate...</translation>
 <translation id="1107591249535594099">Se questa opzione viene selezionata, Chrome memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="1111153019813902504">Preferiti aggiunti di recente</translation>
 <translation id="1113869188872983271">&amp;Annulla ridisposizione</translation>
@@ -306,6 +305,7 @@
 <translation id="3282497668470633863">Aggiungi il nome indicato sulla carta</translation>
 <translation id="3286538390144397061">Riavvia adesso</translation>
 <translation id="3287510313208355388">Scarica quando è online</translation>
+<translation id="3293642807462928945">Scopri di più sulla policy <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Nessun risultato di ricerca trovato</translation>
 <translation id="3305707030755673451">I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
@@ -380,6 +380,7 @@
 <translation id="3714780639079136834">Attivare la rete dati mobile o Wi-Fi</translation>
 <translation id="3715597595485130451">Collegati alla rete Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Controllare la configurazione del proxy, firewall e DNS<ph name="END_LINK" /></translation>
+<translation id="372429172604983730">Le applicazioni che possono causare questo errore includono software antivirus, firewall e proxy o di filtraggio web.</translation>
 <translation id="3736520371357197498">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK" />visitare questo sito non sicuro<ph name="END_LINK" /> senza aspettare che vengano rimossi i programmi pericolosi.</translation>
 <translation id="3739623965217189342">Link che hai copiato</translation>
 <translation id="3744899669254331632">Al momento non puoi visitare il sito <ph name="SITE" /> perché tale sito web ha inviato credenziali criptate che Chromium non è riuscito a elaborare. Gli attacchi e gli errori di rete in genere sono temporanei, pertanto è possibile che questa pagina funzioni più tardi.</translation>
@@ -409,7 +410,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> è bloccato</translation>
 <translation id="3987940399970879459">Meno di 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Una pagina web nelle vicinanze}other{# pagine web nelle vicinanze}}</translation>
-<translation id="4021036232240155012">DNS è il servizio di rete che traduce il nome di un sito web nel relativo indirizzo Internet.</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
 <translation id="404928562651467259">AVVISO</translation>
 <translation id="4058922952496707368">Chiave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -897,7 +897,6 @@
 <translation id="8118489163946903409">Metodo di pagamento</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" non è stato installato correttamente sul computer o sulla rete. Chiedi all'amministratore IT di risolvere il problema.</translation>
 <translation id="8131740175452115882">Conferma</translation>
-<translation id="8134994873729925007">Impossibile trovare l'<ph name="BEGIN_ABBR" />indirizzo DNS<ph name="END_ABBR" /> del server <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
 <translation id="8150722005171944719">Il file all'indirizzo <ph name="URL" /> non è leggibile. Potrebbe essere stato rimosso, spostato oppure delle autorizzazioni del file potrebbero impedire l'accesso.</translation>
 <translation id="8184538546369750125">Usa predefinita globale (Consenti)</translation>

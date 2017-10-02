@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="2144487987174258011">Reštartujte a aktualizujte tak Adobe Flash Player</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
+<translation id="2220572644011485463">PIN alebo heslo</translation>
 <translation id="225680501294068881">Hľadajú sa zariadenia...</translation>
 <translation id="2268130516524549846">Rozhranie Bluetooth je deaktivované</translation>
 <translation id="2268813581635650749">Odhlásiť všetkých</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Zariadenie USB-C (port vľavo vpredu)</translation>
 <translation id="2865888419503095837">Informácie o sieti</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
+<translation id="2911940648265863620">Zdieľate svoju obrazovku</translation>
 <translation id="2942516765047364088">Pozícia poličky</translation>
 <translation id="2946119680249604491">Pridať pripojenie</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Mobilné dátové prenosy</translation>
 <translation id="3236488194889173876">Nie je k dispozícii žiadna mobilná sieť</translation>
 <translation id="3294437725009624529">Hosť</translation>
+<translation id="332587331255250389">Vymeňte batériu</translation>
 <translation id="3364721542077212959">Nástroje pre dotykové pero</translation>
 <translation id="3368922792935385530">Pripojené</translation>
 <translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Hovorenú spätnú väzbu zakážete kombináciou klávesov Ctrl+Alt+Z.</translation>
 <translation id="5612734644261457353">Je nám ľúto, stále sa nedarí overiť vaše heslo. Poznámka: Ak ste nedávno zmenili heslo, vaše nové heslo bude použité až po odhlásení. Použite svoje staré heslo.</translation>
 <translation id="5648021990716966815">Konektor mikrofónu</translation>
+<translation id="5673434351075758678">Po synchronizácii nastavení bol zmenený z možnosti <ph name="FROM_LOCALE" /> na <ph name="TO_LOCALE" />.</translation>
 <translation id="5744083938413354016">Presunutie klepnutím</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
 <translation id="57838592816432529">Vypnúť zvuk</translation>
@@ -191,12 +195,14 @@
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="6165508094623778733">Ďalšie informácie</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktivuje sa...</translation>
+<translation id="6284232397434400372">Rozlíšenie sa zmenilo</translation>
 <translation id="6297287540776456956">Pomocou dotykového pera vyberte oblasť</translation>
 <translation id="6310121235600822547">Obrazovka <ph name="DISPLAY_NAME" /> bola otočená o <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Prekryvná vrstva klávesnice</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Odmietnuť</translation>
+<translation id="6453179446719226835">Bol zmenený jazyk.</translation>
 <translation id="6459472438155181876">Rozšírenie obrazovky na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Zariadenie USB-C (port vpravo)</translation>
 <translation id="6501401484702599040">Prenášanie obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +215,7 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Heslo</translation>
 <translation id="6691659475504239918">Hľadať+Shift+H</translation>
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
@@ -230,6 +237,7 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadný mikrofóm</translation>
+<translation id="726276584504105859">Presuňte okno sem a použite tak rozdelenú obrazovku</translation>
 <translation id="7348093485538360975">Klávesnica na obrazovke</translation>
 <translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="7377169924702866686">Kláves Caps Lock je zapnutý.</translation>

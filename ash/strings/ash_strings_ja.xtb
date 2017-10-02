@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2144487987174258011">Adobe Flash Player を更新するには再起動してください</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
+<translation id="2220572644011485463">PIN またはパスワード</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
 <translation id="2865888419503095837">ネットワーク情報</translation>
 <translation id="2872961005593481000">終了</translation>
+<translation id="2911940648265863620">画面を共有中です</translation>
 <translation id="2942516765047364088">シェルフの位置</translation>
 <translation id="2946119680249604491">接続を追加</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">モバイル データ</translation>
 <translation id="3236488194889173876">利用できるモバイル ネットワークがありません</translation>
 <translation id="3294437725009624529">ゲスト</translation>
+<translation id="332587331255250389">バッテリーを交換してください</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="5612734644261457353">パスワードはまだ確認されていません。注: パスワードを最近変更した場合、新しいパスワードはログアウトした後に適用されます。こちらでは古いパスワードを使用してください。</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
+<translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="57838592816432529">ミュート</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">拒否</translation>
+<translation id="6453179446719226835">言語が変更されました</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> へ画面を拡張しています</translation>
 <translation id="6490471652906364588">USB-C デバイス（右側面のポート）</translation>
 <translation id="6501401484702599040">画面を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
@@ -209,6 +214,7 @@
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">パスワード</translation>
 <translation id="6691659475504239918">検索+Shift+H</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>

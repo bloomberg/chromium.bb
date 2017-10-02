@@ -311,6 +311,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3997476611815694295">Nesvarīga krātuve</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4013356575049925793">E-komercija</translation>
+<translation id="4041402800604793551">Turpinot darbu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />, kā arī <ph name="BEGIN_LINK3" />konfidencialitātes paziņojumam par Google kontiem, kas izveidoti lietotnē Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Rādīt ieteikumus, ja nedarbojas tīmekļa adrese vai nevar izveidot savienojumu.</translation>
 <translation id="4046123991198612571">Nākamais ieraksts</translation>
 <translation id="4056223980640387499">Sēpija</translation>
@@ -389,6 +390,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4797039098279997504">Pieskarieties, lai atgrieztos cilnē <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Vārds uz kartes</translation>
 <translation id="4807963036345170158">Datu lietojuma samazinātājs ir izslēgts.</translation>
+<translation id="4811736444948656478">Atvērts navigācijas panelis pusekrāna augstumā</translation>
 <translation id="4816465935029283692">Datu tipi</translation>
 <translation id="4837753911714442426">Atvērt iespējas, lai izdrukātu lapu</translation>
 <translation id="4842092870884894799">Tiek rādīts paroles ģenerēšanas uznirstošais logs</translation>
@@ -544,6 +546,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="6177111841848151710">Bloķēta pašreizējai meklētājprogrammai</translation>
 <translation id="6177390657002841081">Ieslēgt Datu lietojuma samazinātāju</translation>
 <translation id="6181444274883918285">Pievienot vietnes izņēmumu</translation>
+<translation id="618555311922999635">Atvērts navigācijas panelis pilnā augstumā</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> nav mana e-pasta adrese</translation>
 <translation id="6232535412751077445">Iespējojot funkciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
@@ -757,6 +760,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8087000398470557479">Šis saturs ir no vietnes <ph name="DOMAIN_NAME" />, ko nodrošina Google.</translation>
 <translation id="8100932616285851614">Navigācijas panelis aizvērts</translation>
 <translation id="8103578431304235997">Inkognito cilne</translation>
+<translation id="8116925261070264013">Izslēgta skaņa</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8137558756159375272">Izmantojot meklēšanu pieskaroties, atlasītais vārds un pašreiz skatītā lapa tiek nosūtīta kā konteksts pakalpojumam Google meklēšana. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Saturs</translation>
@@ -773,6 +777,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8283853025636624853">Sinhronizēšana ar <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standarta cilnes</translation>
+<translation id="8334426458436697004">Izslēgt skaņu noteiktai vietnei.</translation>
 <translation id="8339163506404995330">Lapas šādā valodā: <ph name="LANGUAGE" /> netiks tulkotas.</translation>
 <translation id="8372721116225477180">Sociālie tīkli</translation>
 <translation id="8372893542064058268">Atļaut sinhronizāciju fonā konkrētai vietnei</translation>
@@ -840,7 +845,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="8993760627012879038">Atvērt jaunu cilni inkognito režīmā</translation>
 <translation id="8998729206196772491">Jūs pierakstāties kontā, kas tiek pārvaldīts domēnā <ph name="MANAGED_DOMAIN" />, un sniedzat tā administratoram kontroli pār saviem Chrome datiem. Jūsu dati tiks neatgriezeniski saistīti ar šo kontu. Izrakstoties no pārlūka Chrome, jūsu dati tiks dzēsti no šīs ierīces, taču tie tiks saglabāti jūsu Google kontā.</translation>
 <translation id="9019902583201351841">Pārvalda jūsu vecāki</translation>
-<translation id="9038649477754266430">Ieteikumu pakalpojuma izmantošana ātrākai lapu ielādei</translation>
 <translation id="9050666287014529139">Ieejas frāze</translation>
 <translation id="9060538597317784206">Skatiet lietotni <ph name="APP_NAME" /> Play veikalā. Vērtējums: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Izslēgt iestatījumu “Pieprasīt datora vietni”</translation>

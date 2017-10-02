@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">符合視窗寬度</translation>
 <translation id="1088860948719068836">新增持卡人姓名</translation>
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">顯示所有已儲存的密碼...</translation>
 <translation id="1107591249535594099">勾選後，Chrome 會在這個裝置上儲存您的信用卡複本，以便更快填寫資訊。</translation>
 <translation id="1111153019813902504">最近使用過的書籤</translation>
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 遭到封鎖</translation>
 <translation id="3987940399970879459">不到 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 個網頁}other{附近有 # 個網頁}}</translation>
-<translation id="4021036232240155012">DNS 這項網路服務會將網站的名稱轉譯成網際網路位址。</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY" />」：<ph name="ERROR" /></translation>
@@ -599,7 +597,7 @@
 <translation id="5540224163453853">找不到要求的文章。</translation>
 <translation id="5541546772353173584">新增電子郵件地址</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> 的嵌入式網頁顯示：</translation>
-<translation id="5545756402275714221">為你推薦的文章</translation>
+<translation id="5545756402275714221">為你推薦的報導</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5560088892362098740">到期日</translation>
 <translation id="5565735124758917034">管理中</translation>
@@ -620,7 +618,7 @@
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5669703222995421982">取得個人化內容</translation>
 <translation id="5675650730144413517">這個網頁無法正常運作</translation>
-<translation id="5689199277474810259">匯出為 JSON 格式</translation>
+<translation id="5689199277474810259">以 JSON 格式匯出</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5719499550583120431">接受預付卡。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」未正確安裝在電腦或網路上。請通知 IT 管理員解決這個問題。</translation>
 <translation id="8131740175452115882">確認</translation>
-<translation id="8134994873729925007">找不到 <ph name="HOST_NAME" /> 的伺服器 <ph name="BEGIN_ABBR" />DNS 位址<ph name="END_ABBR" />。</translation>
 <translation id="8149426793427495338">您的電腦已進入睡眠模式。</translation>
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL" /> 的檔案。這個檔案可能已遭移除或移動位置，或者檔案權限為禁止存取。</translation>
 <translation id="8184538546369750125">使用全域預設值 (允許)</translation>

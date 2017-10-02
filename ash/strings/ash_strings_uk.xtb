@@ -3,7 +3,7 @@
 <translationbundle lang="uk">
 <translation id="1012876632442809908">Пристрій із портом USB типу C (на передній панелі)</translation>
 <translation id="1013923882670373915">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE" /></translation>
-<translation id="1032891413405719768">Акумулятор стилуса розряджений</translation>
+<translation id="1032891413405719768">Низький заряд акумулятора стилуса</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
 <translation id="2144487987174258011">Перезапустіть Chrome, щоб оновити Adobe Flash Player</translation>
 <translation id="2208323208084708176">Режим уніфікованого комп’ютера</translation>
+<translation id="2220572644011485463">PIN-код або пароль</translation>
 <translation id="225680501294068881">Пошук пристроїв...</translation>
 <translation id="2268130516524549846">Bluetooth вимкнено</translation>
 <translation id="2268813581635650749">Вийти з усіх облікових записів</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Пристрій, під’єднаний до порту USB-C (ліворуч на передній панелі)</translation>
 <translation id="2865888419503095837">Інформація про мережу</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
+<translation id="2911940648265863620">Ви показуєте свій екран</translation>
 <translation id="2942516765047364088">Розташування полиці</translation>
 <translation id="2946119680249604491">Додати з’єднання</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Мобільне передавання даних</translation>
 <translation id="3236488194889173876">Немає мобільних мереж</translation>
 <translation id="3294437725009624529">Гість</translation>
+<translation id="332587331255250389">Замініть акумулятор</translation>
 <translation id="3364721542077212959">Інструменти стилуса</translation>
 <translation id="3368922792935385530">Підключено</translation>
 <translation id="3371140690572404006">пристрій, під’єднаний до порту USB-C (праворуч на передній панелі)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Натисніть Ctrl + Alt + Z, щоб вимкнути голосові підказки.</translation>
 <translation id="5612734644261457353">На жаль, поки не вдалося підтвердити ваш пароль. Зверніть увагу: якщо ви нещодавно змінили пароль, новий пароль буде застосовано, щойно ви вийдете з облікового запису. Скористайтеся тут старим паролем.</translation>
 <translation id="5648021990716966815">Гніздо для мікрофона</translation>
+<translation id="5673434351075758678">Після синхронізації налаштувань мову змінено. Попередня мова: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
 <translation id="5744083938413354016">Перетягування дотиком</translation>
 <translation id="5777841717266010279">Скасувати спільний доступ до екрана?</translation>
 <translation id="57838592816432529">Вимкнути звук</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Відхилити</translation>
+<translation id="6453179446719226835">Мову змінено</translation>
 <translation id="6459472438155181876">Розширення екрана на <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Пристрій із портом USB типу C (праворуч)</translation>
 <translation id="6501401484702599040">Вміст екрана транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
@@ -209,6 +214,7 @@
 <translation id="6585808820553845416">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей ключ доступу: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Пароль</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">Кнопка меню IME</translation>
 <translation id="6713285437468012787">Пристрій Bluetooth "<ph name="DEVICE_NAME" />" підключено. Він доступний для всіх користувачів. Відключити пристрій можна в Налаштуваннях.</translation>

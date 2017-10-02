@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">প্রস্থের মধ্যে আঁটান</translation>
 <translation id="1088860948719068836">কার্ডে নাম যোগ করুন</translation>
 <translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">সেভ করা সব পাসওয়ার্ড দেখুন...</translation>
 <translation id="1107591249535594099">যদি পরীক্ষা করা হয়, Chrome দ্রুত ফর্ম পূরণ করার জন্য এই ডিভাইসে থাকা আপনার কার্ডের একটি প্রতিলিপি সঞ্চয় করবে৷</translation>
 <translation id="1111153019813902504">সাম্প্রতিক ঘুরে দেখা বুকমার্কগুলি</translation>
 <translation id="1113869188872983271">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
@@ -413,7 +412,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> অবরুদ্ধ হয়ে রয়েছে</translation>
 <translation id="3987940399970879459">১ MB এর কম</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}one{# web pages nearby}other{# web pages nearby}}</translation>
-<translation id="4021036232240155012">DNS সেই নেটওয়ার্ক পরিষেবা যা কোনো ওয়েবসাইটের নামকে ইন্টারনেট ঠিকানায় রুপান্তরিত করে।</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="404928562651467259">সতর্কতা</translation>
 <translation id="4058922952496707368">কী "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -621,7 +619,7 @@
 <translation id="5659593005791499971">ইমেল</translation>
 <translation id="5669703222995421982">ব্যক্তিগতকৃত সামগ্রী পান</translation>
 <translation id="5675650730144413517">এই পৃষ্ঠাটি কাজ করছে না</translation>
-<translation id="5689199277474810259">JSON ফর্ম্যাটে এক্সপোর্ট করুন</translation>
+<translation id="5689199277474810259">JSON এ রপ্তানি করুন</translation>
 <translation id="5710435578057952990">এই ওয়েবসাইটির পরিচয় যাচাই করা হয় নি৷</translation>
 <translation id="5719499550583120431">প্রিপেড কার্ড গ্রহণ করা হয়।</translation>
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">পেমেন্টের পদ্ধতি</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" আপনার কম্পিউটার বা নেটওয়ার্কে সঠিক ভাবে ইনস্টল করা হয়নি। আপনার IT প্রশাসককে এই সমস্যাটি সমাধান করতে বলুন।</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" /> এর সার্ভার <ph name="BEGIN_ABBR" />DNS ঠিকানা<ph name="END_ABBR" />খুঁজে পাওয়া যায়নি।</translation>
 <translation id="8149426793427495338">আপনার কম্পিউটারটি নিদ্রা মোডে গিয়েছে।</translation>
 <translation id="8150722005171944719"><ph name="URL" />এ ফাইলটি পাঠযোগ্য নয়৷ এটা মুছে ফেলা হয়েছে পারে, সরিয়ে দেওয়া হয়েছে, অথবা ফাইল অনুমতি প্রবেশাধিকার প্রতিরোধ করতে পারে৷</translation>
 <translation id="8184538546369750125">বিশ্বব্যাপী ডিফল্ট ব্যবহার করুন (অনুমতি দিন)</translation>

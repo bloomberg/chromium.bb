@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2144487987174258011">Перезагрузите, чтобы обновить Adobe Flash Player</translation>
 <translation id="2208323208084708176">Унифицированный режим рабочего стола</translation>
+<translation id="2220572644011485463">PIN-код или пароль</translation>
 <translation id="225680501294068881">Поиск устройств…</translation>
 <translation id="2268130516524549846">Bluetooth отключен</translation>
 <translation id="2268813581635650749">Выйти из всех аккаунтов</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Устройство USB-C (ближний порт слева)</translation>
 <translation id="2865888419503095837">Информация о сети</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
+<translation id="2911940648265863620">Ваш экран виден другим участникам</translation>
 <translation id="2942516765047364088">Положение панели запуска</translation>
 <translation id="2946119680249604491">Добавить подключение</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Мобильное подключение</translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
 <translation id="3294437725009624529">Гость</translation>
+<translation id="332587331255250389">Замените батарею в стилусе</translation>
 <translation id="3364721542077212959">Инструменты стилуса</translation>
 <translation id="3368922792935385530">Подключено</translation>
 <translation id="3371140690572404006">Устройство USB-C (ближний порт справа)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Чтобы отключить озвучивание текста на экране, нажмите CTRL + ALT + Z.</translation>
 <translation id="5612734644261457353">Неверный пароль. Обратите внимание: если вы недавно изменили пароль, но не выходили из системы, значит новый пароль ещё не вступил в силу и необходимо указать старый.</translation>
 <translation id="5648021990716966815">Микрофонный разъем</translation>
+<translation id="5673434351075758678">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
 <translation id="5744083938413354016">Перетаскивание нажатием</translation>
 <translation id="5777841717266010279">Закрыть доступ к экрану?</translation>
 <translation id="57838592816432529">Отключить звук</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">CAPS LOCK отключен</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Отклонить</translation>
+<translation id="6453179446719226835">Язык изменен</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Устройство USB-C (порт справа)</translation>
 <translation id="6501401484702599040">Трансляция содержимого экрана: <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +214,7 @@
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Поиск + Shift + K</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
+<translation id="6657585470893396449">Пароль</translation>
 <translation id="6691659475504239918">ПОИСК + SHIFT + H</translation>
 <translation id="6700713906295497288">Кнопка меню редактора методов ввода</translation>
 <translation id="6713285437468012787">Устройство <ph name="DEVICE_NAME" /> подключено через Bluetooth и доступно всем пользователям. Вы можете отключить его на странице настроек.</translation>

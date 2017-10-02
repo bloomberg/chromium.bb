@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
 <translation id="1403254041219632970">‏גרסאות עתידיות של Chromium כבר לא יתמכו במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
+<translation id="1440917365206527807">‏Chromium מנע מהאתר הזה להעביר אותך אל</translation>
 <translation id="1444754455097148408">‏רישיונות קוד פתוח של Chromium</translation>
 <translation id="1502360822835740515">‏הגדר את Chromium בתור דפדפן ברירת המחדל</translation>
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">‏המתקין לא הצליח לבטל את דחיסת הארכיון. הורד שוב את Chromium.</translation>
 <translation id="3130323860337406239">‏Chromium משתמש במיקרופון שלך.</translation>
 <translation id="3155163173539279776">‏הפעל מחדש את Chromium</translation>
+<translation id="3179665906251668410">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
 <translation id="3190315855212034486">‏וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
 <translation id="3256316712990552818">‏הועתק אל Chromium</translation>
 <translation id="3258596308407688501">‏Chromium אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -75,6 +77,7 @@
 <translation id="3549345495227188780">‏תחילת העבודה עם Chromium OS</translation>
 <translation id="3582788516608077514">‏מעדכן את Chromium‏...</translation>
 <translation id="358997566136285270">‏לוגו של Chromium</translation>
+<translation id="3713809861844741608">‏פתח את הקישור ב&amp;כרטיסיית Chromium חדשה</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3762167353400286894">‏Chromium OS מוצג בשפה זו</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
@@ -127,6 +130,7 @@
 <translation id="5466153949126434691">‏Chromium מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chromium יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="5479196819031988440">‏מערכת ההפעלה של Chromium אינה יכול לפתוח את הדף הזה.</translation>
 <translation id="549669000822060376">‏המתן בזמן ש-Chromium מתקין את עדכוני המערכת האחרונים.</translation>
+<translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
 <translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>
@@ -174,6 +178,7 @@
 <translation id="6883876366448858277">‏שולח לחיפוש Google מילה יחד עם ההקשר סביבה. מחזיר הגדרות, תמונות, ותוצאות חיפוש נוספות.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="6944967875980567883">‏מודולים שנטענו ב-Chromium</translation>
+<translation id="6964305034639999644">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chromium</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="705851970750939768">‏עדכן את Chromium‏</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
@@ -253,6 +258,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="9022552996538154597">‏היכנס אל Chromium</translation>
 <translation id="9036189287518468038">Chromium App Launcher</translation>
 <translation id="9089354809943900324">‏Chromium אינו מעודכן</translation>
+<translation id="91086099826398415">‏פתח את הקישור &amp;בכרטיסיית Chromium חדשה</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="918373042641772655">‏ניתוק <ph name="USERNAME" /> ינקה את ההיסטוריה, הסימניות, ההגדרות ונתוני Chromium אחרים המאוחסנים במכשיר הזה. נתונים המאוחסנים בחשבון Google לא ינוקו, וניתן לנהל אותם <ph name="GOOGLE_DASHBOARD_LINK" />במרכז השליטה של Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">‏Chromium ‏(mDNS-In)</translation>

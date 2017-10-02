@@ -300,7 +300,7 @@
 <translation id="393697183122708255">Голосовий пошук вимкнено</translation>
 <translation id="3946611741043634542">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="3950820424414687140">Увійти</translation>
-<translation id="395206256282351086">Пропозиції пошукових термінів і сайтів вимкнено</translation>
+<translation id="395206256282351086">Пропозиції термінів і сайтів вимкнено</translation>
 <translation id="395922942268463099">Сторінки регулярно оновлюються</translation>
 <translation id="3967822245660637423">Завантажено</translation>
 <translation id="397583555483684758">Синхронізація перестала працювати</translation>
@@ -311,6 +311,7 @@
 <translation id="3997476611815694295">Неважливі дані</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4013356575049925793">Електронна комерція</translation>
+<translation id="4041402800604793551">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, створених у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Показувати пропозиції, коли неможливо перейти за веб-адресою чи не вдається встановити з’єднання</translation>
 <translation id="4046123991198612571">Наступна композиція</translation>
 <translation id="4056223980640387499">Сепія</translation>
@@ -389,6 +390,7 @@
 <translation id="4797039098279997504">Торкніться, щоб повернутися на сторінку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Ім'я на картці</translation>
 <translation id="4807963036345170158">Заощадження трафіку вимкнено</translation>
+<translation id="4811736444948656478">Панель навігації відкрито на половину екрана</translation>
 <translation id="4816465935029283692">Типи даних</translation>
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
 <translation id="4842092870884894799">Показ спливаючих вікон для створення пароля</translation>
@@ -544,6 +546,7 @@
 <translation id="6177111841848151710">Заблоковано для поточної пошукової системи</translation>
 <translation id="6177390657002841081">Увімкнути Заощадження трафіку</translation>
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
+<translation id="618555311922999635">Панель навігації відкрито на весь екран</translation>
 <translation id="6192792657125177640">Винятки</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Якщо ввімкнути параметр "Не відстежувати", запит додаватиметься в трафік веб-перегляду. Результат залежатиме від того, чи реагує веб-сайт на цей запит і як тлумачиться запит.
@@ -757,6 +760,7 @@
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
 <translation id="8100932616285851614">Панель навігації закрито</translation>
 <translation id="8103578431304235997">Анонімна вкладка</translation>
+<translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
 <translation id="8137558756159375272">Функція пошуку дотиком надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Вміст</translation>
@@ -773,6 +777,7 @@
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8283853025636624853">Синхронізація з обліковим записом <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
+<translation id="8334426458436697004">Вимкнути звук для певного сайту.</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8372721116225477180">Соцмережі</translation>
 <translation id="8372893542064058268">сайті.</translation>
@@ -840,7 +845,6 @@
 <translation id="8993760627012879038">Відкрити нове вікно в режимі анонімного перегляду</translation>
 <translation id="8998729206196772491">Ви входите в обліковий запис, зареєстрований у домені <ph name="MANAGED_DOMAIN" />, і надаєте його адміністратору доступ до своїх даних Chrome. Ваші дані буде назавжди зв’язано з цим обліковим записом. Якщо ви вийдете з облікового запису в Chrome, дані буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="9019902583201351841">Керується батьками</translation>
-<translation id="9038649477754266430">Користуйтеся службою передбачення, щоб сторінки завантажувалися швидше</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>
 <translation id="9060538597317784206">Перегляньте додаток <ph name="APP_NAME" /> у магазині Google Play. Оцінка: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Вимкнути функцію "Запитувати версію сайту для комп’ютера"</translation>

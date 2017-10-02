@@ -300,7 +300,7 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3946611741043634542">‏من خلال المتابعة، فإنك توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> من Chrome.</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
-<translation id="395206256282351086">اقتراحات البحث والمواقع الإلكترونية معطّلة</translation>
+<translation id="395206256282351086">اقتراحات البحث ومواقع الويب معطّلة</translation>
 <translation id="395922942268463099">صفحات تم تحديثها بانتظام</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
@@ -311,6 +311,7 @@
 <translation id="3997476611815694295">سعة تخزين غير مهمة</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4013356575049925793">التجارة الإلكترونية</translation>
+<translation id="4041402800604793551">‏في حال المتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> و<ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google التي تم إنشاؤها في Family Link<ph name="END_LINK3" /> من Chrome.</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4056223980640387499">بني داكن</translation>
@@ -390,6 +391,7 @@
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
 <translation id="4807963036345170158">تم إيقاف توفير البيانات</translation>
+<translation id="4811736444948656478">لوحة التنقل مفتوحة بنصف ارتفاع</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
 <translation id="4842092870884894799">عرض نافذة إنشاء كلمة المرور المنبثقة</translation>
@@ -545,6 +547,7 @@
 <translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
 <translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
+<translation id="618555311922999635">لوحة التنقل مفتوحة بالارتفاع الكامل</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
 <translation id="6210748933810148297">ليس <ph name="EMAIL" />؟</translation>
 <translation id="6232535412751077445">يعني تمكين ميزة "عدم التعقب" تضمين الطلب مع عدد زيارات التصفح. ويعتمد أي تأثير على استجابة موقع الويب للطلب من عدمه، بالإضافة إلى كيفية تفسير الطلب.
@@ -678,7 +681,7 @@
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="7445411102860286510">السماح للمواقع بتشغيل مقاطع الفيديو مكتومة الصوت تلقائيًا (مُستحسن)</translation>
-<translation id="7453467225369441013">‏يُسجِّل خروجك من معظم مواقع الويب. لن يُسجَّل خروجك من حسابك في Google.</translation>
+<translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7455923816558154057">يُرجى النقر للعرض</translation>
 <translation id="7464701184726199289">يمحو هذا الخيار البيانات المتزامنة من كافة الأجهزة. لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
@@ -745,7 +748,7 @@
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
-<translation id="805047784848435650">استنادًا إلى سجلّ التصفح</translation>
+<translation id="805047784848435650">استنادًا إلى سجلّ التصفُّح</translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
 <translation id="8063895661287329888">أخفقت إضافة الإشارة المرجعية.</translation>
@@ -758,6 +761,7 @@
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
 <translation id="8100932616285851614">تم إغلاق لوحة التنقل</translation>
 <translation id="8103578431304235997">علامة تبويب للتصفح المتخفي</translation>
+<translation id="8116925261070264013">مواقع الويب التي تم كتم الصوت فيها</translation>
 <translation id="813082847718468539">عرض معلومات الموقع</translation>
 <translation id="8137558756159375272">‏يرسل "المس للبحث" الكلمة المحددة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافه في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">المحتوى</translation>
@@ -774,6 +778,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8283853025636624853">تتم المزامنة مع <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">علامات التبويب القياسية</translation>
+<translation id="8334426458436697004">كتم الصوت لموقع ويب معين.</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8372721116225477180">الاجتماعية</translation>
 <translation id="8372893542064058268">السماح بتشغيل "مزامنة الخلفية" لموقع ويب معين.</translation>
@@ -841,7 +846,6 @@
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
-<translation id="9038649477754266430">استخدام إحدى خدمات التوقع لتحميل الصفحات بسرعة أكبر</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
 <translation id="9060538597317784206">‏عرض تطبيق <ph name="APP_NAME" /> في متجر Play.  التقييم: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">إيقاف طلب موقع الويب لسطح المكتب</translation>

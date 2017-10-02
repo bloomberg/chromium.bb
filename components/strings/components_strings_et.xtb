@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Sobita laiusesse</translation>
 <translation id="1088860948719068836">Kaardil oleva nime lisamine</translation>
 <translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Kuva kõik salvestatud paroolid …</translation>
 <translation id="1107591249535594099">Kui see on märgitud, salvestab Chrome teie kaardi koopia sellesse seadmesse, et vormi kiiremini täita.</translation>
 <translation id="1111153019813902504">Hiljuti kasutatud järjehoidjad</translation>
 <translation id="1113869188872983271">&amp;Võta korrastamine tagasi</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> on blokeeritud</translation>
 <translation id="3987940399970879459">Alla 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
-<translation id="4021036232240155012">DNS on võrguteenus, mis tõlgib veebisaidi nime selle Interneti-aadressiks.</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
 <translation id="404928562651467259">HOIATUS</translation>
 <translation id="4058922952496707368">Võti „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Makseviis</translation>
 <translation id="8127301229239896662">Tarkvara „<ph name="SOFTWARE_NAME" />” ei installitud teie arvutisse või võrku korralikult. Paluge IT-administraatoril see probleem lahendada.</translation>
 <translation id="8131740175452115882">Kinnita</translation>
-<translation id="8134994873729925007">Hosti <ph name="HOST_NAME" /> serveri <ph name="BEGIN_ABBR" />DNS-aadressi<ph name="END_ABBR" /> ei leitud.</translation>
 <translation id="8149426793427495338">Teie arvuti lülitus unerežiimile.</translation>
 <translation id="8150722005171944719">Fail <ph name="URL" /> ei ole loetav. Võimalik, et see on eemaldatud, teisaldatud või faili load takistavad juurdepääsu.</translation>
 <translation id="8184538546369750125">Kasuta globaalset vaikeseadet (luba)</translation>

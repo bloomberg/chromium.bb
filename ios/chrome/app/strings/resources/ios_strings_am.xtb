@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">አቃፊ ይምረጡ</translation>
 <translation id="1265739287306757398">እንዴት እንደሆነ ይወቁ</translation>
 <translation id="1272079795634619415">አቁም</translation>
-<translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="1323735185997015385">ሰርዝ</translation>
 <translation id="132683371494960526">የቀድሞ አቃፊውን ለመለወጥ ሁለቴ መታ ያድርጉ።</translation>
 <translation id="1340643665687018190">ምናሌን ዝጋ</translation>
@@ -80,6 +79,7 @@
 <translation id="2381405137052800939">መሠረታዊ ነገሮች</translation>
 <translation id="2386793615875593361">1 ተመርጧል</translation>
 <translation id="2435457462613246316">የይለፍ ቃል አሳይ</translation>
+<translation id="2529021024822217800">ሁሉንም ክፈት</translation>
 <translation id="2572712655377361602">አንድ የመሣሪያ መመሪያ የፎቶዎችዎን መዳረሻ አግዷል</translation>
 <translation id="2584132361465095047">መለያ አክል…</translation>
 <translation id="2593774076813182497">ይህ ገጽ ሊታተም አይችልም።</translation>
@@ -313,6 +313,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6797885426782475225">የድምፅ ፍለጋ</translation>
 <translation id="6807889908376551050">ሁሉንም አሳይ...</translation>
 <translation id="681368974849482173">ንጥል ተፈጥሯል</translation>
+<translation id="6871663519944855400">ማንነት በማያሳውቅ ሁነታ ይክፈቱ</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
@@ -359,7 +360,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7769602470925380267">ተቀበልና ዘግተህ ውጣ</translation>
 <translation id="7772032839648071052">የይለፍ ሐረግ ያረጋግጡ</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
-<translation id="7851858861565204677">ሌሎች መሣሪያዎች</translation>
 <translation id="7859704718976024901">የአሰሳ ታሪክ</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
@@ -403,6 +403,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8775144690796719618">ልክ ያልሆነ ዩአርኤል</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
 <translation id="8840513115188359703">ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም።</translation>
+<translation id="8870413625673593573">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="8881801611828450202">ይህን ምስል በ<ph name="SEARCH_ENGINE" /> ውስጥ ፈልግ</translation>
 <translation id="8904976895050290827">Chrome ሥምረት</translation>
 <translation id="895541991026785598">ችግር ሪፖርት ያድርጉ</translation>

@@ -73,14 +73,6 @@
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
 <translation id="1330985749576490863">携帯回線接続時に <ph name="PRODUCT_OS_NAME" /> ファイル アプリでの Google ドライブの同期を無効にする</translation>
 <translation id="13356285923490863">ポリシー名</translation>
-<translation id="134402861816424823">ユーザーに使用を禁止するプリンタを指定します。
-
-      このポリシーは、DeviceNativePrintersAccessMode の値に
-      BlacklistRestriction が選択されている場合にのみ使用されます。
-
-      このポリシーが使用される場合、ユーザーはこのポリシーに
-      指定されている ID 以外のすべてのプリンタを使用できます。
-      </translation>
 <translation id="1353966721814789986">起動ページ</translation>
 <translation id="1359553908012294236">このポリシーが true に設定されているか未設定の場合、<ph name="PRODUCT_NAME" /> ではゲストモードでのログインが可能です。ゲストモードでのログインには、すべてのウィンドウをシークレット モードで表示する <ph name="PRODUCT_NAME" /> プロフィールが適用されます。
 
@@ -261,33 +253,6 @@
 <translation id="209586405398070749">Stable チャンネル</translation>
 <translation id="2098658257603918882">使用状況とクラッシュ関連データのレポートを有効にする</translation>
 <translation id="2113068765175018713">自動再起動を行ってデバイスの稼働時間を制限する</translation>
-<translation id="2126314858836465216">デバイスに関連付けられる企業プリンタの設定を指定します。
-
-      このポリシーにより、<ph name="PRODUCT_OS_NAME" /> デバイスのプリンタ設定を
-      指定できます。
-      このファイルは、5 MB 以下のサイズで、JSON エンコードで
-      作成されている必要があります。
-      フォーマットは NativePrinters 辞書と同じです。5 MB は
-      約 2,1000 台の プリンタを指定してエンコードしたファイルに相当します。
-      ダウンロードの整合性の確認には暗号化ハッシュが使用されます。
-
-      このファイルはダウンロードされてキャッシュされ、URL またはハッシュが
-      変わったときには再度ダウンロードされます。
-
-      このポリシーが設定されている場合は、
-      <ph name="PRODUCT_OS_NAME" /> によってプリンタ設定ファイルがダウンロードされ、
-      DeviceNativePrintersAccessMode、DeviceNativePrintersWhitelist、
-      DeviceNativePrintersBlacklist に沿って
-      プリンタが利用可能になります。
-
-      このポリシーは、ユーザーが個々のデバイスでプリンタを
-      設定できるかどうかに影響するものではなく、個々のユーザーが
-      プリンタを設定するときの補助として使用されることを想定したものです。
-
-      これは NativePrintersBulkConfiguration の追加ポリシーとして使用されます。
-
-      このポリシーが未設定の場合、デバイス プリンタは存在しないことになり、
-      他の NativeDevicePrinter* ポリシーは無視されます。</translation>
 <translation id="2127599828444728326">これらのサイトの通知を許可する</translation>
 <translation id="2131902621292742709">画面が暗くなるまでの時間（バッテリー電源での実行時）</translation>
 <translation id="2134437727173969994">画面のロックを許可</translation>
@@ -516,22 +481,6 @@
       リストの各エントリは識別子を示します。これらの識別子は、デバイスのローカル アカウントを区別するために内部で使用されます。</translation>
 <translation id="2769952903507981510">リモート アクセス ホストの必須のドメイン名を設定する</translation>
 <translation id="2787173078141616821">Android のステータスに関する情報を報告する</translation>
-<translation id="2789419769822054691">ユーザーに使用を許可するプリンタを指定します。
-
-      このポリシーは、DeviceNativePrintersAccessMode の値に
-      WhitelistPrintersOnly が選択されている場合にのみ使用されます。
-
-      このポリシーが使用される場合、ユーザーはこのポリシーに指定されている値に
-      一致する ID のプリンタのみを使用できます。この ID は、
-      DeviceNativePrinters で指定されたファイル内のエントリに対応している必要があります。</translation>
-<translation id="2794520838025002425">ユーザーに使用を禁止するプリンタを指定します。
-
-      このポリシーは、NativePrintersBulkAccessMode の値に
-      BlacklistRestriction が選択されている場合にのみ使用されます。
-
-      このポリシーが使用される場合、ユーザーはこのポリシーに
-      指定されている ID 以外のすべてのプリンタを使用できます。
-      </translation>
 <translation id="2801230735743888564">デバイスがオフラインのときに、ユーザーが恐竜のイースター エッグゲームをプレイすることを許可します。
 
       このポリシーを False に設定すると、ユーザーはデバイスがオフラインのときに恐竜のイースター エッグゲームをプレイできません。True に設定するとプレイできます。ポリシーが未設定の場合、登録されている Chrome OS ではプレイできませんが、他の環境ではプレイできます。</translation>
@@ -1004,7 +953,6 @@
 <translation id="4541530620466526913">デバイスのローカル アカウント</translation>
 <translation id="4555850956567117258">ユーザーのリモート認証を有効にする</translation>
 <translation id="4557134566541205630">デフォルトの検索プロバイダの新しいタブ ページ URL</translation>
-<translation id="4558592878156368639">デバイスの OffHours |ignored_policies| が解除されたときの管理外時間の間隔</translation>
 <translation id="4600786265870346112">大きいカーソルを有効にする</translation>
 <translation id="4604931264910482931">ネイティブ メッセージングのブラックリストを設定する</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> でのメタ タグ チェックをスキップする</translation>
@@ -1911,18 +1859,6 @@
 
       このポリシーが無効に設定されているか未設定の場合は、ログイン時に通常のプロフィールが適用されます。</translation>
 <translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> プロフィール データのローミング コピーの作成を有効にする。</translation>
-<translation id="8169931650834542988">ユーザーが NativePrintersBulkConfiguration の
-      どのプリンタを使用できるかを制御します。
-
-      このポリシーは、プリンタの一括設定で使用するアクセス ポリシーを指定するものです。
-      AllowAll が選択されている場合は、すべてのプリンタが表示されます。
-      BlacklistRestrction が選択されている場合は、NativePrintersBulkBlacklist に
-      基づき、指定されたプリンタへのアクセスが制限されます。
-      WhitelistPrintersOnly が選択されている場合は、
-      NativePrintersWhitelist で指定されたプリンタのみが選択可能になります。
-
-      このポリシーが未設定の場合は、BlacklistRestriction が選択された場合と同じ動作になります。
-      </translation>
 <translation id="8170878842291747619"><ph name="PRODUCT_NAME" /> に統合された Google 翻訳サービスを有効にします。この設定を有効にすると、必要に応じてユーザーがページを翻訳できる統合ツールバー サービスが <ph name="PRODUCT_NAME" /> に表示されます。この設定を無効にすると、翻訳バーは表示されません。この設定を有効または無効にすると、ユーザーは <ph name="PRODUCT_NAME" /> でこの設定の変更やオーバーライドができなくなります。未設定の場合は、この機能を使用するかどうかをユーザーが指定できます。</translation>
 <translation id="817455428376641507">URL ブラックリストの例外として、リストに登録された URL へのアクセスを許可します。
 
@@ -2005,14 +1941,6 @@
 <translation id="8465065632133292531">POST を使用するインスタント検索 URL のパラメータ</translation>
 <translation id="847472800012384958">すべてのサイトに対してポップアップ表示を許可しない</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">ユーザーに使用を許可するプリンタを指定します。
-
-      このポリシーは、NativePrintersBulkAccessMode の値に
-      WhitelistPrintersOnly が選択されている場合にのみ使用されます。
-
-      このポリシーが使用される場合、ユーザーはこのポリシーに指定されている値に
-      一致する ID のプリンタのみを使用できます。この ID は、
-      NativePrintersBulkConfiguration で指定されたファイル内のエントリに対応している必要があります。</translation>
 <translation id="8484458986062090479">常にホストブラウザでレンダリングする URL パターンのリストをカスタマイズします。
 
           このポリシーが未設定の場合は、「ChromeFrameRendererSettings」ポリシーで指定されているデフォルトのレンダラがすべてのサイトで使用されます。
@@ -2023,28 +1951,6 @@
 <translation id="8519264904050090490">管理対象ユーザーの手動による例外 URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> のデフォルトの HTML レンダラ</translation>
 <translation id="8549772397068118889">コンテンツ パック外部のサイトを訪問したときに警告する</translation>
-<translation id="8555589883248082762">デバイスに関連付けられる企業プリンタの設定を指定します。
-
-      このポリシーにより、<ph name="PRODUCT_OS_NAME" /> デバイスのプリンタ設定を
-      指定できます。
-      このファイルは、5 MB 以下のサイズで、JSON エンコードで作成されている
-      必要があります。フォーマットは NativePrinters 辞書と同じです。
-      5 MB は約 2,1000 台のプリンタを指定してエンコードしたファイル
-      に相当します。ダウンロードの整合性の確認には暗号化ハッシュが使用
-      されます。
-
-      このファイルはダウンロードされてキャッシュされ、URL またはハッシュが
-      変わったときには再度ダウンロードされます。
-      このポリシーが設定されている場合は、<ph name="PRODUCT_OS_NAME" /> によって
-      プリンタ設定ファイルがダウンロードされ、NativePrintersBulkAccessMode、
-      NativePrintersBulkWhitelist、NativePrintersBulkBlacklist に沿って
-      プリンタが利用可能になります。
-
-      このポリシーを設定した場合、ユーザーが設定内容を変更したりオーバーライドしたりすることはできません。
-
-      このポリシーは、ユーザーが個々のデバイスでプリンタを
-      設定できるかどうかに影響するものではなく、個々のユーザーが
-      プリンタを設定するときの補助として使用されることを想定したものです。</translation>
 <translation id="8566842294717252664">新しいタブページとアプリ ランチャーでウェブストアを非表示にする</translation>
 <translation id="8587229956764455752">新しいユーザー アカウントの作成を許可する</translation>
 <translation id="8614804915612153606">自動更新を無効にする</translation>
@@ -2096,18 +2002,6 @@
 <translation id="8864975621965365890">サイトが <ph name="PRODUCT_FRAME_NAME" /> によってレンダリングされるときに表示されるサポート終了メッセージを抑制します。</translation>
 <translation id="8870318296973696995">ホームページ</translation>
 <translation id="8882006618241293596">これらのサイトで <ph name="FLASH_PLUGIN_NAME" /> プラグインをブロックする</translation>
-<translation id="8887644176044431146">ユーザーが DeviceNativePrintersConfiguration の
-      どのプリンタを使用できるかを制御します。
-
-      このポリシーは、プリンタの一括設定で使用するアクセス ポリシーを指定するものです。
-      AllowAll が選択されている場合は、すべてのプリンタが表示されます。
-      BlacklistRestriction が選択されている場合は、DeviceNativePrintersBlacklist で
-      指定されたプリンタへのアクセスが制限されます。
-      WhitelistPrintersOnly が選択されている場合は、
-      DeviceNativePrintersWhitelist で指定されたプリンタのみが選択可能になります。
-
-      このポリシーが未設定の場合は、BlacklistRestriction が選択された場合と同じ動作になります。
-      </translation>
 <translation id="8906768759089290519">ゲスト モードを有効にする</translation>
 <translation id="8908294717014659003">メディア キャプチャ デバイスのアクセスをウェブサイトに許可するかどうかを設定できます。デフォルトでメディア キャプチャ デバイスへのアクセスを許可するか、メディア キャプチャ デバイスへのアクセス要求がウェブサイトからあるたびにユーザーに確認することができます。
 

@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Omogući tipkovnicu na zaslonu</translation>
 <translation id="1330985749576490863">Onemogućuje Google disk putem mobilne veze u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Naziv pravila</translation>
-<translation id="134402861816424823">Određuje pisače koje korisnik ne može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je BlacklistRestriction odabrano
-      za DeviceNativePrintersAccessMode.
-
-      Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim
-      ID-ova navedenih u tom pravilu.
-      </translation>
 <translation id="1353966721814789986">Početne stranice</translation>
 <translation id="1359553908012294236">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju profile preglednika <ph name="PRODUCT_NAME" /> u kojima se svi prozori otvaraju u anonimnom načinu.
 
@@ -260,33 +252,6 @@
 <translation id="209586405398070749">Stabilan kanal</translation>
 <translation id="2098658257603918882">Omogući izvješćivanje o upotrebi i podatke o rušenjima programa</translation>
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
-<translation id="2126314858836465216">Pruža konfiguracije za pisače tvrtke povezane s uređajima.
-
-      To vam pravilo omogućuje da pružite konfiguracije pisača za
-      <ph name="PRODUCT_OS_NAME" /> uređaje.
-      Datoteka ne smije biti veća od 5 MB i mora se kodirati u JSON-u.
-      Format je jednak kao za rječnik NativePrinters. Procjenjuje se
-      da će se datoteka koja sadrži približno 21.000 pisača kodirati kao datoteka
-      od 5 MB. Kriptografsko raspršivanje upotrebljava se za potvrdu integriteta
-      preuzimanja.
-
-      Datoteka se preuzima i predmemorira. Ponovo će se preuzeti svaki put kada
-      se URL ili raspršivanje promijene.
-
-      Ako se to pravilo postavi,
-      <ph name="PRODUCT_OS_NAME" /> preuzet će
-      datoteku za konfiguracije pisača i učiniti pisače dostupnima u skladu s
-      pravilima DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
-      i DeviceNativePrintersBlacklist.
-
-      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na
-      pojedinačnim uređajima. Služi kao dodatno pravilo za konfiguraciju
-      pisača koju vrše pojedinačni korisnici.
-
-      To je pravilo dodatno pravilo za NativePrintersBulkConfiguration.
-
-      Ako se to pravilo ne postavi, neće biti pisača za uređaje i ostala će se
-      pravila za NativeDevicePrinter* zanemariti.</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="2134437727173969994">Dopusti zaključavanje zaslona</translation>
@@ -521,22 +486,6 @@
       Svaki unos na popisu navodi identifikator, koji se upotrebljava interno da bi se razlikovali lokalni računi na uređaju.</translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
-<translation id="2789419769822054691">Određuje pisače koje korisnik može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je pravilo WhitelistPrintersOnly
-      odabrano za DeviceNativePrintersAccessMode.
-
-      Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima
-      podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s
-      unosima u datoteci navedenoj u pravilu DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Određuje pisače koje korisnik ne može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je BlacklistRestriction odabrano za
-      NativePrintersBulkAccessMode.
-
-      Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim
-      ID-ova navedenih u tom pravilu.
-      </translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
       Ako se to pravilo postavi na "False", korisnici neće moći igrati skrivenu igru s dinosaurom kada uređaj nije povezan s mrežom. Ako se ta postavka postavi na "True", korisnici će moći igrati igru s dinosaurom. Ako se to pravilo ne postavi, korisnici neće moći igrati skrivenu igru s dinosaurom u prijavljenom OS-u Chrome, ali će je moći igrati u drugim okolnostima.</translation>
@@ -1006,7 +955,6 @@
 <translation id="4541530620466526913">Lokalni računi na uređaju</translation>
 <translation id="4555850956567117258">Omogući daljinsku ovjeru za korisnika</translation>
 <translation id="4557134566541205630">URL web-stranice nove kartice zadanog davatelja usluge pretraživanja</translation>
-<translation id="4558592878156368639">Razdoblja prekida rada kad se izdaju pravila OffHours |ignored_policies| za uređaj</translation>
 <translation id="4600786265870346112">Omogućivanje velikog pokazivača</translation>
 <translation id="4604931264910482931">Konfiguriraj popis nedopuštenih za lokalno slanje poruka</translation>
 <translation id="4617338332148204752">Preskoči provjeru metaoznaka u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1916,18 +1864,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se pravilo postavi na onemogućeno ili se ne postavi, prijava vodi na normalne profile.</translation>
 <translation id="8158758865057576716">Omogućuje izradu roaming kopija podataka <ph name="PRODUCT_NAME" /> profila.</translation>
-<translation id="8169931650834542988">Određuje koji su pisači iz pravila 
-      NativePrintersBulkConfiguration dostupni korisnicima.
-
-      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača.
-      Ako se odabere AllowAll, prikazuju se svi pisači. Ako se odabere BlacklistRestrction,
-      NativePrintersBulkBlacklist upotrebljava se za ograničenje pristupa
-      navedenim pisačima. Ako se odabere WhitelistPrintersOnly,
-      NativePrintersWhitelist određuje samo one pisače koji se mogu odabrati.
- 
-
-      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Omogućuje integriranu uslugu Google Prevoditelj u proizvodu <ph name="PRODUCT_NAME" />. Ako omogućite ovu postavku, usluga <ph name="PRODUCT_NAME" /> prikazivat će integriranu alatnu traku koja u odgovarajućem slučaju korisniku nudi prijevod stranice. Ako onemogućite ovu postavku, korisnicima se nikad neće prikazivati traka prevođenja. Ako omogućite ili onemogućite ovu postavku, korisnici ne mogu mijenjati niti poništiti tu postavku u proizvodu <ph name="PRODUCT_NAME" />. Ako ova postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
 <translation id="817455428376641507">Omogućuje pristup navedenim URL-ovima kao iznimkama s popisa zabranjenih URL-ova.
 
@@ -2010,14 +1946,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8465065632133292531">Parametri za URL usluge Instant koji upotrebljava POST</translation>
 <translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Određuje pisače koje korisnik može upotrebljavati.
-
-      To se pravilo upotrebljava samo ako je pravilo WhitelistPrintersOnly odabrano za
-      NativePrintersBulkAccessMode.
-
-      Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima
-      podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s
-      unosima u datoteci navedenoj u pravilu NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Prilagođava popis uzoraka URL-ova koje bi preglednik hosta trebao uvijek generirati.
 
           Ako se to pravilo ne postavi, zadani će se ispunjivač upotrebljavati za sve web-lokacije određene pravilom "ChromeFrameRendererSettings".
@@ -2028,30 +1956,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8519264904050090490">URL-ovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
-<translation id="8555589883248082762">Pruža konfiguracije za pisače tvrtke.
-
-      To vam pravilo omogućuje da pružite konfiguracije pisača za
-      <ph name="PRODUCT_OS_NAME" /> uređaje.
-      Datoteka ne smije biti veća od 5 MB i mora se kodirati u JSON-u.
-      Format je jednak kao za rječnik NativePrinters. Procjenjuje se
-      da će se datoteka koja sadrži približno 21.000 pisača kodirati kao datoteka od
-      5 MB. Kriptografsko raspršivanje upotrebljava se za potvrdu integriteta
-      preuzimanja.
-
-      Datoteka se preuzima i predmemorira. Ponovo će se preuzeti svaki put
-      kad se URL ili raspršivanje promijene.
-
-      Ako se to pravilo postavi,
-      <ph name="PRODUCT_OS_NAME" /> preuzet će
-      datoteku za konfiguracije pisača i učiniti pisače dostupnima
-      u skladu s pravilima NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      i NativePrintersBulkBlacklist.
-
-      Ako postavite to pravilo, korisnici ga ne mogu promijeniti ili nadjačati.
-
-      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na
-      pojedinačnim uređajima. Služi kao dodatno pravilo za
-      konfiguraciju pisača koju vrše pojedinačni korisnici.</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>
@@ -2107,18 +2011,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8864975621965365890">Zaustavlja upit za odbijanje koji se pojavljuje kada web-lokaciju generira <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
-<translation id="8887644176044431146">Upravlja time koji su pisači iz pravila
-      DeviceNativePrintersConfiguration dostupni korisnicima.
-
-      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju
-      pisača. Ako se odabere AllowAll, prikazuju se svi pisači. Ako se odabere
-      BlacklistRestrction, DeviceNativePrintersBlacklist upotrebljava se za
-      ograničenje pristupa navedenim pisačima. Ako se odabere
-      WhitelistPrintersOnly, DeviceNativePrintersWhitelist određuje samo one
-      pisače koji se mogu odabrati.
-
-      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
 <translation id="8908294717014659003">Omogućuje vam da postavite hoće li web-lokacijama biti dopušten pristup medijskim uređajima za snimanje. Pristup medijskim uređajima za snimanje može biti dopušten prema zadanim postavkama ili se korisniku može postaviti pitanje svaki put kada web-lokacija želi pristupiti tim uređajima.
 

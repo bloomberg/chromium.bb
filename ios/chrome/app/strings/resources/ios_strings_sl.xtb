@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Izbira mape</translation>
 <translation id="1265739287306757398">Več o tem</translation>
 <translation id="1272079795634619415">Ustavi</translation>
-<translation id="129553762522093515">Nedavno zaprto</translation>
 <translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close Menu</translation>
@@ -357,7 +356,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7769602470925380267">Sprejem in odjava</translation>
 <translation id="7772032839648071052">Potrdi geslo</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
-<translation id="7851858861565204677">Druge naprave</translation>
 <translation id="7859704718976024901">Zgodovina brskanja</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
@@ -401,6 +399,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8775144690796719618">Neveljaven URL</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="8840513115188359703">Iz Google Računa ne boste odjavljeni.</translation>
+<translation id="8870413625673593573">Nedavno zaprto</translation>
 <translation id="8881801611828450202">Uporabi <ph name="SEARCH_ENGINE" /> za iskanje te slike</translation>
 <translation id="8904976895050290827">Sinhronizacija za Chrome</translation>
 <translation id="895541991026785598">Prijavite težavo</translation>

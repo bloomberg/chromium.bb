@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1265739287306757398">Se, hvordan du gør</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="129553762522093515">Senest lukkede</translation>
 <translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
 <translation id="1340643665687018190">Luk menu</translation>
@@ -359,7 +358,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7769602470925380267">Acceptér, og log ud</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
 <translation id="780301667611848630">Nej tak</translation>
-<translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7859704718976024901">Browserhistorik</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
@@ -403,6 +401,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8775144690796719618">Ugyldig webadresse</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="8840513115188359703">Du bliver ikke logget ud af din Google-konto.</translation>
+<translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>

@@ -311,6 +311,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3997476611815694295">Bộ nhớ không quan trọng</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4013356575049925793">Thương mại điện tử</translation>
+<translation id="4041402800604793551">Bằng cách tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome cũng như <ph name="BEGIN_LINK3" />Thông báo bảo mật cho Tài khoản Google được tạo trong Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
@@ -389,6 +390,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="4797039098279997504">Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
 <translation id="4807963036345170158">Trình tiết kiệm dữ liệu tắt</translation>
+<translation id="4811736444948656478">Đã mở bảng điều hướng cao bằng nửa màn hình</translation>
 <translation id="4816465935029283692">Loại dữ liệu</translation>
 <translation id="4837753911714442426">Mở tùy chọn để in trang</translation>
 <translation id="4842092870884894799">Hiển thị cửa sổ bật lên tạo mật khẩu</translation>
@@ -544,6 +546,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6177111841848151710">Bị chặn đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
+<translation id="618555311922999635">Đã mở bảng điều hướng trên toàn bộ màn hình</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
 <translation id="6210748933810148297">Không phải là <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
@@ -757,6 +760,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8087000398470557479">Nội dung này đến từ <ph name="DOMAIN_NAME" />, do Google phân phối.</translation>
 <translation id="8100932616285851614">Đã đóng bảng điều hướng</translation>
 <translation id="8103578431304235997">Tab ẩn danh</translation>
+<translation id="8116925261070264013">Đã ẩn</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8137558756159375272">Chạm để tìm kiếm sẽ gửi từ đã chọn và trang hiện tại làm ngữ cảnh cho Google Tìm kiếm. Bạn có thể tắt tính năng này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Nội dung</translation>
@@ -773,6 +777,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8283853025636624853">Đang đồng bộ hóa với <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Tab chuẩn</translation>
+<translation id="8334426458436697004">Tắt âm thanh trên trang web cụ thể.</translation>
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
 <translation id="8372721116225477180">Xã hội</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
@@ -840,7 +845,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8993760627012879038">Mở tab mới trong chế độ Ẩn danh</translation>
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
-<translation id="9038649477754266430">Sử dụng dịch vụ gợi ý để tải trang nhanh hơn</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
 <translation id="9060538597317784206">Xem ứng dụng <ph name="APP_NAME" /> trên Cửa hàng Play. Xếp hạng: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Tắt Yêu cầu trang web cho máy tính</translation>

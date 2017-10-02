@@ -295,6 +295,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, вимкнено</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, кнопка</translation>
 <translation id="3466530247399808663">Натискання недійсної клавіші</translation>
+<translation id="3468959318854349468">Без назви</translation>
 <translation id="3473644018603298796">виділено: <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Від <ph name="V1" /> до <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{права квадратна дужка}one{# права квадратна дужка}few{# праві квадратні дужки}many{# правих квадратних дужок}other{# right brackets}}</translation>

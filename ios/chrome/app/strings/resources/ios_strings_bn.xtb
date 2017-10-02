@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">ফোল্ডার বেছে নিন</translation>
 <translation id="1265739287306757398">কিভাবে করবেন জানুন</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
-<translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="1323735185997015385">মুছুন</translation>
 <translation id="132683371494960526">মূল ফোল্ডার পরিবর্তন করতে দুবার আলতো চাপুন।</translation>
 <translation id="1340643665687018190">মেনু বন্ধ করুন</translation>
@@ -66,7 +65,7 @@
 <translation id="209018056901015185">ডেস্কটপ সাইট অনুরোধ করুন</translation>
 <translation id="2103075008456228677">history.google.com খুলুন</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
-<translation id="213900355088104901">ব্যক্তিগতভাবে ব্রাউজ করতে একটি ছদ্মবেশী ট্যাব খুলুন</translation>
+<translation id="213900355088104901">গোপনে ব্রাউজ করার জন্য ছদ্মবেশী ট্যাব খুলুন</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="2154710561487035718">URL কপি করুন</translation>
 <translation id="2230173723195178503">Webpage loaded</translation>
@@ -360,7 +359,6 @@
 <translation id="7769602470925380267">স্বীকার করে প্রস্থান করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="780301667611848630">না থাক</translation>
-<translation id="7851858861565204677">অন্যান্য ডিভাইস</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
 <translation id="7938254975914653459">ফেসটাইম</translation>
 <translation id="7947953824732555851">স্বীকার করুন ও প্রবেশ করুন</translation>
@@ -404,6 +402,7 @@
 <translation id="8775144690796719618">অবৈধ URL</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="8840513115188359703">আপনাকে আপনার Google অ্যাকাউন্ট থেকে প্রস্থান করা হবে না।</translation>
+<translation id="8870413625673593573">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="8881801611828450202">এই ছবিটির জন্য <ph name="SEARCH_ENGINE" /> এ খুঁজুন</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">কোনও সমস্যা অভিযোগ করুন</translation>
@@ -420,7 +419,7 @@
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
 <translation id="914898748153555155">আপনি যেকোনও সময়ে Chrome সেটিংসে গিয়ে এই পছন্দটি পরিবর্তন করতে পারবেন</translation>
-<translation id="91549621916703028">আপনার সমস্ত কার্যের জন্য একাধিক ট্যাব তৈরি করুন</translation>
+<translation id="91549621916703028">আপনার সবকটি টাস্কের জন্য একাধিক ট্যাব তৈরি করুন</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>
 <translation id="9188680907066685419">পরিচালিত অ্যাকাউন্ট থেকে প্রস্থান করুন</translation>
 <translation id="9203116392574189331">Handoff</translation>

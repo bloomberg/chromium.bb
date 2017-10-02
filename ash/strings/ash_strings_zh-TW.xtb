@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">低功率充電器</translation>
 <translation id="2144487987174258011">重新啟動以便更新 Adobe Flash Player</translation>
 <translation id="2208323208084708176">整合桌面模式</translation>
+<translation id="2220572644011485463">PIN 或密碼</translation>
 <translation id="225680501294068881">正在掃描裝置...</translation>
 <translation id="2268130516524549846">藍牙已停用</translation>
 <translation id="2268813581635650749">登出所有使用者</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">USB-C 裝置 (左前方連接埠)</translation>
 <translation id="2865888419503095837">網路資訊</translation>
 <translation id="2872961005593481000">關閉</translation>
+<translation id="2911940648265863620">你正在分享螢幕畫面</translation>
 <translation id="2942516765047364088">檔案櫃位置</translation>
 <translation id="2946119680249604491">新增連線</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">行動數據</translation>
 <translation id="3236488194889173876">沒有可用的行動網路</translation>
 <translation id="3294437725009624529">訪客</translation>
+<translation id="332587331255250389">請更換電池</translation>
 <translation id="3364721542077212959">觸控筆工具</translation>
 <translation id="3368922792935385530">已連線</translation>
 <translation id="3371140690572404006">USB-C 裝置 (右前方連接埠)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
 <translation id="5612734644261457353">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="5648021990716966815">麥克風插孔</translation>
+<translation id="5673434351075758678">同步處理設定後，「<ph name="FROM_LOCALE" />」已變更為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="5744083938413354016">輕觸拖曳</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="57838592816432529">靜音</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">拒絕</translation>
+<translation id="6453179446719226835">語言已變更</translation>
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME" /> 畫面</translation>
 <translation id="6490471652906364588">USB-C 裝置 (右側連接埠)</translation>
 <translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
@@ -209,6 +214,7 @@
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
 <translation id="6627638273713273709">搜尋鍵 + Shift + K 鍵</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">密碼</translation>
 <translation id="6691659475504239918">搜尋鍵 + Shift 鍵 + H 鍵</translation>
 <translation id="6700713906295497288">IME 選單按鈕</translation>
 <translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME" />」已配對成功，可供所有使用者使用。如要移除配對，請使用「設定」。</translation>

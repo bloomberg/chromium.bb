@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">พอดีกับความกว้าง</translation>
 <translation id="1088860948719068836">เพิ่มชื่อบนบัตร</translation>
 <translation id="1103523840287552314">แปลภาษา<ph name="LANGUAGE" />ทุกครั้ง</translation>
-<translation id="1103778128462718200">แสดงรหัสผ่านที่บันทึกไว้ทั้งหมด...</translation>
 <translation id="1107591249535594099">หากเลือก Chrome จะจัดเก็บสำเนาของบัตรบนอุปกรณ์นี้เพื่อการกรอกข้อมูลแบบฟอร์มอย่างรวดเร็ว</translation>
 <translation id="1111153019813902504">บุ๊กมาร์กที่เพิ่งดู</translation>
 <translation id="1113869188872983271">&amp;เลิกทำการจัดลำดับใหม่</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
 <translation id="3987940399970879459">ไม่ถึง 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
-<translation id="4021036232240155012">DNS คือบริการเครือข่ายที่แปลชื่อของเว็บไซต์เป็นที่อยู่อินเทอร์เน็ต</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
 <translation id="404928562651467259">คำเตือน</translation>
 <translation id="4058922952496707368">คีย์ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">วิธีการชำระเงิน</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" ไม่ได้ติดตั้งในคอมพิวเตอร์หรือเครือข่ายอย่างถูกต้อง โปรดขอให้ผู้ดูแลระบบ IT แก้ไขปัญหานี้</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
-<translation id="8134994873729925007">ไม่พบ<ph name="BEGIN_ABBR" />ที่อยู่ DNS<ph name="END_ABBR" /> ของเซิร์ฟเวอร์ของ <ph name="HOST_NAME" /></translation>
 <translation id="8149426793427495338">คอมพิวเตอร์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
 <translation id="8150722005171944719">ไฟล์ที่ <ph name="URL" /> ไม่สามารถอ่านได้ เนื่องจากอาจถูกลบ ย้ายไปแล้ว หรือการอนุญาตของไฟล์อาจป้องกันการเข้าถึง</translation>
 <translation id="8184538546369750125">ใช้ค่าเริ่มต้นสากล (อนุญาต)</translation>

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1265739287306757398">Weitere Informationen</translation>
 <translation id="1272079795634619415">Stopp</translation>
-<translation id="129553762522093515">Kürzlich geschlossen</translation>
 <translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Doppeltippen Sie hier, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
@@ -359,7 +358,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7769602470925380267">Akzeptieren und abmelden</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
-<translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7859704718976024901">Browserverlauf</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
@@ -403,6 +401,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8775144690796719618">Ungültige URL</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="8840513115188359703">Sie werden nicht von Ihrem Google-Konto abgemeldet.</translation>
+<translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8881801611828450202">In <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
 <translation id="8904976895050290827">Google Chrome Sync</translation>
 <translation id="895541991026785598">Problem melden</translation>

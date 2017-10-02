@@ -3,6 +3,9 @@
 <translationbundle lang="id">
 <translation id="1002108253973310084">Versi protokol yang tidak kompatibel terdeteksi. Pastikan Anda memasang software versi terbaru di kedua komputer dan coba lagi.</translation>
 <translation id="1050693411695664090">Buruk</translation>
+<translation id="1059802506829356230">• Tampilan dan nuansa baru.
+• Performa, respons, dan keandalan yang disempurnakan.
+• Dukungan untuk memutar audio dari komputer Windows atau Linux.</translation>
 <translation id="1152528166145813711">Pilih…</translation>
 <translation id="1199593201721843963">Nonaktifkan sambungan jarak jauh</translation>
 <translation id="1291443878853470558">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chromoting untuk mengakses komputer ini.</translation>
@@ -81,6 +84,11 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2841013758207633010">Waktu</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Terjadi kesalahan jaringan. Kami akan memulai ulang aplikasi saat perangkat Anda kembali online.</translation>
+<translation id="289405675947420287">Akses komputer dari perangkat iOS dengan aman. Cepat, mudah, dan gratis.
+
+• Download aplikasi Chrome Desktop Jarak Jauh dari Toko Web Chrome di komputer yang ingin diakses dari jarak jauh.
+• Instal software Chrome Desktop Jarak Jauh dan ikuti petunjuknya untuk menyelesaikan penyiapan.
+• Pada perangkat iOS, buka aplikasi dan tap komputer online mana pun agar terhubung.</translation>
 <translation id="2894654864775534701">Saat ini komputer ini dibagikan dengan akun lain.</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
 <translation id="2921543551052660690">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chromoting.</translation>
@@ -115,6 +123,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="369442766917958684">Offline.</translation>
 <translation id="3695446226812920698">Pelajari caranya</translation>
 <translation id="3718805989288361841">Terjadi error pada setelan kebijakan untuk Chrome Desktop Jarak Jauh. Hubungi administrator sistem untuk mendapatkan bantuan.</translation>
+<translation id="3759645055923345178">Setelah penyiapan selesai, Anda dapat mengakses komputer dari halaman ini dengan memasukkan PIN atau kode akses</translation>
 <translation id="3776024066357219166">Sesi Chrome Desktop Jarak Jauh Anda telah berakhir.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Konfirmasi akun dan PIN Anda di bawah guna mengizinkan akses oleh Chrome Desktop Jarak Jauh</translation>
@@ -155,6 +164,13 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="4660011489602794167">Tampilkan keyboard</translation>
 <translation id="4703302905453407178">Komponen wajib berhenti bekerja. Laporkan masalah ini kepada pengembang.</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>
+<translation id="4706355010316049867">Chrome
+Jarak Jauh
+Desktop
+Akses
+Dukungan
+Komputer
+PC</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
 <translation id="4741792197137897469">Autentikasi gagal. Masuk ke Chrome lagi.</translation>
 <translation id="477305884757156764">Aplikasi ini terlalu lambat.</translation>
@@ -198,6 +214,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="5773590752998175013">Tanggal penyandingan</translation>
 <translation id="579702532610384533">Sambungkan ulang</translation>
 <translation id="5810269635982033450">Layar berfungsi seperti trackpad</translation>
+<translation id="5823658491130719298">Pada komputer yang ingin diakses dari jarak jauh, buka Chrome lalu buka <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Opsi tampilan</translation>
 <translation id="5843054235973879827">Mengapa ini aman?</translation>
 <translation id="5859141382851488196">Jendela baru...</translation>
@@ -272,6 +289,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="7782471917492991422">Periksa setelan pengelolaan daya komputer Anda dan pastikan agar tidak dikonfigurasi untuk tidur ketika menganggur.</translation>
 <translation id="7810127880729796595">Tampilkan statistik (sambungan: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda menjalankan Chrome versi terbaru dan coba lagi.</translation>
+<translation id="7850909060902317210">Instal software Chrome Desktop Jarak Jauh dan ikuti petunjuk untuk menyelesaikan penyiapan</translation>
 <translation id="7868137160098754906">Masukkan PIN komputer jarak jauh Anda.</translation>
 <translation id="7869445566579231750">Anda tidak memiliki izin untuk menjalankan aplikasi ini.</translation>
 <translation id="7895403300744144251">Kebijakan keamanan di komputer jarak jauh tidak mengizinkan sambungan dari akun Anda.</translation>
@@ -307,6 +325,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="8642984861538780905">Sedang</translation>
 <translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="8743328882720071828">Izinkan <ph name="CLIENT_USERNAME" /> melihat dan mengontrol komputer Anda?</translation>
+<translation id="8747048596626351634">Sesi error atau gagal dimulai. Jika ~/.chrome-remote-desktop-session terdapat di komputer jarak jauh, pastikan file tersebut memulai proses latar depan (foreground) yang berjalan lama seperti lingkungan desktop atau pengelola jendela.</translation>
 <translation id="8759753423332885148">Pelajari lebih lanjut.</translation>
 <translation id="8791202241915690908">Download Pemasang Host Chromoting</translation>
 <translation id="894763922177556086">Baik</translation>

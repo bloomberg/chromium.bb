@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">వెడల్పు సరిపోయేలా అమర్చు</translation>
 <translation id="1088860948719068836">కార్డ్‌లో పేరుని జోడించండి</translation>
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
-<translation id="1103778128462718200">సేవ్ చేసిన అన్ని పాస్‌వర్డ్‌లను చూపు...</translation>
 <translation id="1107591249535594099">ఎంచుకున్నట్లయితే, Chrome వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
 <translation id="1111153019813902504">ఇటీవలి బుక్‌మార్క్‌లు</translation>
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> బ్లాక్ చేయబడింది</translation>
 <translation id="3987940399970879459">1 MB కంటే తక్కువ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 వెబ్ పేజీ సమీపంలో ఉంది}other{# వెబ్ పేజీలు సమీపంలో ఉన్నాయి}}</translation>
-<translation id="4021036232240155012">DNS అనేది వెబ్‌సైట్ పేరును దాని ఇంటర్నెట్ చిరునామాకి అనువదించే నెట్‌వర్క్ సేవ.</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="404928562651467259">హెచ్చరిక</translation>
 <translation id="4058922952496707368">కీ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">చెల్లింపు పద్ధతి</translation>
 <translation id="8127301229239896662">మీ కంప్యూటర్ లేదా నెట్‌వర్క్‌లో "<ph name="SOFTWARE_NAME" />" సరిగ్గా ఇన్‌స్టాల్ కాలేదు. ఈ సమస్యను పరిష్కరించమని మీ IT నిర్వాహకులను కోరండి.</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" /> సర్వర్ <ph name="BEGIN_ABBR" />DNS చిరునామా<ph name="END_ABBR" />ను కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="8149426793427495338">మీ కంప్యూటర్ నిద్రావస్థకి వెళ్లింది.</translation>
 <translation id="8150722005171944719"><ph name="URL" />లో ఫైల్ చదవగలిగేది కాదు. దీన్ని తీసివేసి ఉండవచ్చు, తరలించి ఉండవచ్చు లేదా ఫైల్ అనుమతులు ప్రాప్యతను నిరోధిస్తుండవచ్చు.</translation>
 <translation id="8184538546369750125">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (అనుమతించు)</translation>

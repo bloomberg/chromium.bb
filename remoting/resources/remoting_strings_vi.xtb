@@ -3,6 +3,9 @@
 <translationbundle lang="vi">
 <translation id="1002108253973310084">Đã phát hiện một phiên bản giao thức không tương thích. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm trên cả hai máy tính và thử lại.</translation>
 <translation id="1050693411695664090">Kém</translation>
+<translation id="1059802506829356230">• Giao diện mới.
+• Hiệu suất, khả năng phản hồi và độ tin cậy được cải thiện.
+• Hỗ trợ phát âm thanh từ máy tính chạy Windows hoặc Linux.</translation>
 <translation id="1152528166145813711">Chọn…</translation>
 <translation id="1199593201721843963">Tắt kết nối từ xa</translation>
 <translation id="1291443878853470558">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Kết nối từ xa trên Chrome để truy cập vào máy tính này.</translation>
@@ -81,6 +84,11 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2841013758207633010">Thời gian</translation>
 <translation id="2851754573186462851">Phát trực tuyến ứng dụng Chromium</translation>
 <translation id="2888969873284818612">Đã xảy ra lỗi mạng. Chúng tôi sẽ khởi động lại ứng dụng khi thiết bị của bạn trực tuyến trở lại.</translation>
+<translation id="289405675947420287">Truy cập vào máy tính của bạn một cách an toàn từ thiết bị iOS. Thật nhanh chóng, đơn giản và miễn phí!
+
+• Tải xuống ứng dụng Chrome Remote Desktop từ Cửa hàng Chrome trực tuyến trên máy tính mà bạn muốn truy cập từ xa.
+• Cài đặt phần mềm Chrome Remote Desktop và làm theo hướng dẫn để hoàn tất quá trình thiết lập.
+• Trên thiết bị iOS, hãy mở ứng dụng và nhấn vào máy tính có kết nối mạng bất kỳ để kết nối.</translation>
 <translation id="2894654864775534701">Máy tính này hiện được chia sẻ dưới một tài khoản khác.</translation>
 <translation id="2919669478609886916">Bạn hiện đang chia sẻ máy này với một người dùng khác. Bạn có muốn tiếp tục chia sẻ không?</translation>
 <translation id="2921543551052660690">Trước đó, bạn đã đăng nhập bằng <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Để truy cập máy tính của bạn bằng tài khoản đó, hãy <ph name="LINK_BEGIN" />đăng nhập vào Chromium<ph name="LINK_END" /> bằng tài khoản đó và cài đặt lại Kết nối từ xa trên Chrome.</translation>
@@ -115,6 +123,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="369442766917958684">Ngoại tuyến.</translation>
 <translation id="3695446226812920698">Tìm hiểu cách thức</translation>
 <translation id="3718805989288361841">Đã xảy ra lỗi với cài đặt chính sách cho Chrome Remote Desktop. Hãy liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
+<translation id="3759645055923345178">Sau khi thiết lập xong, bạn có thể truy cập vào máy tính từ trang này bằng cách nhập mã PIN hoặc mã truy cập</translation>
 <translation id="3776024066357219166">Phiên Chrome Remote Desktop của bạn đã kết thúc.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép Chrome Remote Desktop truy cập.</translation>
@@ -155,6 +164,13 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="4660011489602794167">Hiển thị bàn phím</translation>
 <translation id="4703302905453407178">Thành phần được yêu cầu đã dừng hoạt động. Vui lòng báo cáo sự cố này cho nhà phát triển.</translation>
 <translation id="4703799847237267011">Phiên Kết nối từ xa trên Chrome của bạn đã kết thúc.</translation>
+<translation id="4706355010316049867">Chrome
+Từ xa
+Máy tính để bàn
+Truy cập
+Hỗ trợ
+Máy tính
+PC</translation>
 <translation id="4736223761657662401">Lịch sử kết nối</translation>
 <translation id="4741792197137897469">Xác thực bị lỗi. Vui lòng đăng nhập lại vào Chrome.</translation>
 <translation id="477305884757156764">Ứng dụng quá chậm.</translation>
@@ -198,6 +214,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="5773590752998175013">Ngày ghép nối</translation>
 <translation id="579702532610384533">Kết nối lại</translation>
 <translation id="5810269635982033450">Màn hình đóng vai trò như bàn di chuột</translation>
+<translation id="5823658491130719298">Trên máy tính mà bạn muốn truy cập từ xa, hãy mở Chrome và truy cập vào <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Tùy chọn hiển thị</translation>
 <translation id="5843054235973879827">Tại sao thao tác này lại an toàn?</translation>
 <translation id="5859141382851488196">Cửa sổ mới...</translation>
@@ -272,6 +289,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="7782471917492991422">Vui lòng kiểm tra cài đặt quản lý nguồn máy tính của bạn và đảm bảo rằng máy tính không được định cấu hình để ngủ khi không hoạt động.</translation>
 <translation id="7810127880729796595">Hiển thị số liệu thống kê (kết nối: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đang chạy phiên bản Chrome mới nhất và thử lại.</translation>
+<translation id="7850909060902317210">Cài đặt phần mềm Chrome Remote Desktop và làm theo hướng dẫn để hoàn tất quá trình thiết lập</translation>
 <translation id="7868137160098754906">Hãy nhập mã PIN của bạn cho máy tính từ xa.</translation>
 <translation id="7869445566579231750">Bạn không có quyền chạy ứng dụng này.</translation>
 <translation id="7895403300744144251">Chính sách bảo mật trên máy tính từ xa không cho phép các kết nối từ tài khoản của bạn.</translation>
@@ -307,6 +325,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="8642984861538780905">Khá tốt</translation>
 <translation id="8712909229180978490">Tôi không thể xem các tệp đã lưu của mình trực tuyến trong Google Drive.</translation>
 <translation id="8743328882720071828">Bạn có muốn cho phép <ph name="CLIENT_USERNAME" /> xem và điều khiển máy tính của mình không?</translation>
+<translation id="8747048596626351634">Phiên bị lỗi hoặc không bắt đầu được. Nếu đã có ~/.chrome-remote-desktop-session trên máy tính từ xa, hãy đảm bảo rằng phiên này bắt đầu chạy một quy trình ở nền trước trong thời gian dài, chẳng hạn như môi trường máy tính để bàn hoặc trình quản lý cửa sổ.</translation>
 <translation id="8759753423332885148">Tìm hiểu thêm.</translation>
 <translation id="8791202241915690908">Tải xuống trình cài đặt máy chủ kết nối từ xa trên Chrome</translation>
 <translation id="894763922177556086">Tốt</translation>

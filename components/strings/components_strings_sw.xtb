@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Fanya itoshe kwenye upana</translation>
 <translation id="1088860948719068836">Ongeza Jina kwenye Kadi</translation>
 <translation id="1103523840287552314">Tafsiri <ph name="LANGUAGE" /> kila wakati</translation>
-<translation id="1103778128462718200">Onyesha manenosiri yote yaliyohifadhiwa...</translation>
 <translation id="1107591249535594099">Ikiteuliwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka.</translation>
 <translation id="1111153019813902504">Alamisho za hivi majuzi</translation>
 <translation id="1113869188872983271">Tendua kupanga upya</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> imezuiwa.</translation>
 <translation id="3987940399970879459">Chini ya MB 1</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
-<translation id="4021036232240155012">DNS ni huduma za mtandao ambazo hubadilisha jina la tovuti kuwa anwani yake ya Intaneti.</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
 <translation id="404928562651467259">ONYO</translation>
 <translation id="4058922952496707368">Kitufe "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -444,7 +442,7 @@
 <translation id="4235360514405112390">Halali</translation>
 <translation id="4250431568374086873">Muunganisho wako kwenye tovuti hii si salama kabisa</translation>
 <translation id="4250680216510889253">La</translation>
-<translation id="425582637250725228">Huenda mabadiliko uliyofanya yasihifadhiwe.</translation>
+<translation id="425582637250725228">Huenda mabadiliko uliyofanya hayatahifadhiwa.</translation>
 <translation id="4258748452823770588">Sahihi mbaya</translation>
 <translation id="4265872034478892965">Imeruhusiwa na msimamizi wako</translation>
 <translation id="4269787794583293679">(Hakuna jina la mtumiaji)</translation>
@@ -599,7 +597,7 @@
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
 <translation id="5541546772353173584">Ongeza Anwani ya Barua Pepe</translation>
 <translation id="5544037170328430102">Ukurasa uliopachikwa kwenye <ph name="SITE" /> unasema:</translation>
-<translation id="5545756402275714221">Makala Unayopendekezewa</translation>
+<translation id="5545756402275714221">Makala Tunayokupendekezea</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5560088892362098740">Tarehe ya Mwisho wa Matumizi</translation>
 <translation id="5565735124758917034">Inatumika</translation>
@@ -620,7 +618,7 @@
 <translation id="5659593005791499971">Barua pepe</translation>
 <translation id="5669703222995421982">Pata maudhui yanayokufaa</translation>
 <translation id="5675650730144413517">Ukurasa huu haufanyi kazi</translation>
-<translation id="5689199277474810259">Hamishia katika mfumo wa JSON</translation>
+<translation id="5689199277474810259">Tuma katika mfumo wa JSON</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5719499550583120431">Kadi za kulipia awali zinakubaliwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Njia ya kulipa</translation>
 <translation id="8127301229239896662">Haikusakinisha "<ph name="SOFTWARE_NAME" />" kwa njia sahihi kwenye mtandao au kompyuta yako. Mweleze msimamizi wako wa TEHAMA asuluhishe tatizo hili.</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
-<translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Anwani ya DNS <ph name="END_ABBR" /> ya seva ya <ph name="HOST_NAME" /> haikupatikana.</translation>
 <translation id="8149426793427495338">Kompyuta yako iko katika hali tuli.</translation>
 <translation id="8150722005171944719">Faili katika <ph name="URL" /> haisomeki. Huenda imeondolewa, kusogezwa, au idhini za faili huenda zinazuia ufikiaji.</translation>
 <translation id="8184538546369750125">Tumia chaguo-msingi la duniani (Ruhusu)</translation>

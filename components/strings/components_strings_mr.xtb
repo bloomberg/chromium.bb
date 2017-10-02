@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">रूंदीत फिट करा</translation>
 <translation id="1088860948719068836">कार्डवर नाव जोडा</translation>
 <translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">सेव्ह केलेले सर्व पासवर्ड दाखवा...</translation>
 <translation id="1107591249535594099">चेक केल्यास, अधिक जलद फॉर्म भरण्यासाठी या डिव्हाइसवर Chrome आपल्या कार्डची एक प्रत संचयित करेल.</translation>
 <translation id="1111153019813902504">अलीकडील बुकमार्क</translation>
 <translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरोधित केले आहे</translation>
 <translation id="3987940399970879459">1 MB पेक्षा कमी</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{जवळपास 1 वेब पृष्‍ठ}one{जवळपास # वेब पृष्‍ठ}other{जवळपास # वेब पृष्ठे}}</translation>
-<translation id="4021036232240155012">DNS ही नेटवर्क सेवा आहे जी वेबसाइटचे नाव तिच्या इंटरनेट पत्त्यामध्‍ये भाषांतरित करते.</translation>
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
 <translation id="404928562651467259">चेतावणी:</translation>
 <translation id="4058922952496707368">की "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -902,7 +900,6 @@
 <translation id="8118489163946903409">पेमेंट पद्धत</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" तुमच्या काँप्युटरवर किंवा नेटवर्कवर योग्य रीतीने इंस्टॉल केले नव्हते. तुमच्या अ‍ॅडमिनिस्ट्रेटरला ही समस्या सोडवण्यास सांगा.</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" />चे सर्व्हर <ph name="BEGIN_ABBR" />DNS पत्ता<ph name="END_ABBR" /> शोधणे शक्य झाले नाही.</translation>
 <translation id="8149426793427495338">आपला संगणक निष्क्रीय झाला.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> येथील फाइल वाचनीय नाही. ती काढून टाकलेली, हलविलेली असू शकते किंवा फाइल परवानग्या प्रवेश प्रतिबंधित करत असू शकतात.</translation>
 <translation id="8184538546369750125">सार्वत्रिक डीफॉल्‍ट वापरा (अनुमती द्या)</translation>

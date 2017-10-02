@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Vừa với chiều rộng</translation>
 <translation id="1088860948719068836">Thêm tên trên thẻ</translation>
 <translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Hiển thị tất cả mật khẩu đã lưu...</translation>
 <translation id="1107591249535594099">Nếu được chọn, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
 <translation id="1111153019813902504">Dấu trang gần đây</translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> bị chặn</translation>
 <translation id="3987940399970879459">Dưới 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
-<translation id="4021036232240155012">DNS là dịch vụ mạng dịch tên trang web sang địa chỉ Internet.</translation>
 <translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
 <translation id="404928562651467259">CẢNH BÁO</translation>
 <translation id="4058922952496707368">Khóa "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Phương thức thanh toán</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng trên máy tính hoặc mạng của bạn. Hãy yêu cầu quản trị viên CNTT của bạn giải quyết vấn đề này.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
-<translation id="8134994873729925007">Không thể tìm thấy <ph name="BEGIN_ABBR" />địa chỉ DNS<ph name="END_ABBR" /> của máy chủ của <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Máy tính của bạn đã chuyển sang chế độ ngủ.</translation>
 <translation id="8150722005171944719">Không thể đọc được tệp tại <ph name="URL" />.  Tệp này có thể đã bị xóa, di chuyển hoặc quyền tệp có thể đang chặn truy cập.</translation>
 <translation id="8184538546369750125">Sử dụng cài đặt mặc định chung (Cho phép)</translation>

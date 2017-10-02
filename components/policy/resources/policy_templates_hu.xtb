@@ -74,16 +74,6 @@
 <translation id="1330145147221172764">Képernyő-billentyűzet engedélyezése</translation>
 <translation id="1330985749576490863">Letiltja a Google Drive használatát mobiladat-kapcsolaton keresztül a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="13356285923490863">A szabály neve</translation>
-<translation id="134402861816424823">Meghatározza, hogy melyik nyomtatókat nem használhatja a felhasználó.
-
-      Ez a házirend csak akkor van használatban, ha a
-      DeviceNativePrintersAccessMode házirendhez a BlacklistRestriction lehetőség
-      van kiválasztva.
-
-      Ha használatban van a házirend, a felhasználó számára az összes nyomtató
-      rendelkezésre áll, kivéve azokat, amelyek azonosítója szerepel a
-      házirendben.
-      </translation>
 <translation id="1353966721814789986">Kezdőoldalak</translation>
 <translation id="1359553908012294236">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> engedélyezi a vendégüzemmódban történő bejelentkezést. A vendégüzemmód olyan profil a <ph name="PRODUCT_NAME" /> böngészőben, amelyben az összes ablak inkognitómódban van.
 
@@ -261,35 +251,6 @@
 <translation id="209586405398070749">Stabil csatorna</translation>
 <translation id="2098658257603918882">Használati és összeomlással kapcsolatos adatok jelentésének engedélyezése</translation>
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
-<translation id="2126314858836465216">Eszközökhöz kötött vállalati nyomtatókhoz biztosít beállításokat.
-
-      Ez a házirend lehetővé teszi, hogy nyomtatóbeállításokat adjon meg
-      <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz.
-      A fájl mérete nem lépheti túl az 5 MB-ot, és JSON kódolással kell
-      rendelkeznie.
-      A formátum megegyezik a NativePrinters szótáréval. Becslések szerint
-      a kb. 21 000 nyomtatót tartalmazó kódolt fájl mérete 5 MB. A letöltés
-      integritását a kriptográfiai kivonattal ellenőrzi a rendszer.
-
-      A rendszer letölti és gyorsítótárba helyezi a fájlt. Ha módosul az URL
-      vagy a kivonat, a fájl újból letöltésre kerül.
-
-      Ha be van állítva a házirend,
-      a(z) <ph name="PRODUCT_OS_NAME" /> rendszer letölti
-      a nyomtatóbeállításokat tartalmazó fájlt, és a
-      DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      valamint a DeviceNativePrintersBlacklist házirendeknek megfelelően
-      hozzáférhetővé teszi a nyomtatókat.
-
-      A házirend nem befolyásolja, hogy a felhasználók beállíthatják-e a
-      nyomtatókat saját eszközeiken. A házirend célja, hogy kiegészítse
-      az egyéni felhasználók általi nyomtatóbeállítást.
-
-      Ez a házirend kiegészíti a NativePrintersBulkConfiguration házirendet.
-
-      Ha a házirend nincs beállítva, nem lesznek megadva eszközhöz kötött
-      nyomtatók, a többi NativeDevicePrinter* házirendet pedig figyelmen kívül
-      hagyja a rendszer.</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
 <translation id="2134437727173969994">A képernyő zárolásának engedélyezése</translation>
@@ -524,25 +485,6 @@
       A lista minden bejegyzése egy azonosítót ad meg, amely az eszköz különböző helyi fiókjainak belső megkülönböztetésére szolgál.</translation>
 <translation id="2769952903507981510">Beállítja a távoli hozzáférésű gazdagép szükséges domainnevét</translation>
 <translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
-<translation id="2789419769822054691">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
-
-      A házirend csak akkor van használatban, ha a WhitelistPrintersOnly
-      lehetőség van kiválasztva a DeviceNativePrintersAccessMode házirendnél.
-
-      Ha használatban van ez a házirend, csak a házirendben lévő értékeknek
-      megfelelő azonosítójú nyomtatók állnak a felhasználó rendelkezésére.
-      Az azonosítóknak meg kell egyezniük a DeviceNativePrinters házirendben
-      meghatározott bejegyzésekkel.</translation>
-<translation id="2794520838025002425">Meghatározza, hogy melyik nyomtatókat nem használhatja a felhasználó.
-
-      Ez a házirend csak akkor van használatban, ha a
-      NativePrintersBulkAccessMode házirendhez a BlacklistRestriction lehetőség
-      van kiválasztva.
-
-      Ha használatban van a házirend, akkor az összes
-      nyomtató a felhasználó rendelkezésére áll, kivéve azokat, amelyek
-      azonosítója szerepel a házirendben.
-      </translation>
 <translation id="2801230735743888564">A felhasználók játszhatnak a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van.
 
       Ha a házirend értéke hamis, akkor a felhasználók nem tudnak játszani a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van. Ha a házirend értéke igaz, akkor a felhasználók játszhatnak a játékkal. Ha nincs beállítva, akkor a regisztrált vállalati Chrome OS-t használók nem játszhatnak a játékkal, más körülmények között azonban játszhatnak vele a felhasználók.</translation>
@@ -1010,7 +952,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4541530620466526913">Eszköz helyi fiókjai</translation>
 <translation id="4555850956567117258">A felhasználó távoli tanúsításának engedélyezése</translation>
 <translation id="4557134566541205630">Alapértelmezett keresőszolgáltató új lap oldal URL-címe</translation>
-<translation id="4558592878156368639">A házirend figyelmen kívül hagyásának időtartama, amikor az OffHours |ignored_policies| érvényben van az eszközön</translation>
 <translation id="4600786265870346112">Nagy egérmutató engedélyezése</translation>
 <translation id="4604931264910482931">Natív üzenetkezelő tiltólista konfigurálása</translation>
 <translation id="4617338332148204752">A metacímkék ellenőrzésének kihagyása a következőben: <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -1170,7 +1111,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           A házirend értékét ezredmásodpercben kell meghatározni. Az értékeknek a tétlenségi késleltetéshez képest kisebbnek vagy egyenlőnek kell lenniük.</translation>
 <translation id="5307432759655324440">Inkognitómód elérhetősége</translation>
 <translation id="5318185076587284965">Relay szerverek használatának engedélyezése a távoli gazdagép számára</translation>
-<translation id="5323128137188992869">A tartalom átküldhető az eszközre ezzel: <ph name="PRODUCT_NAME" />.
+<translation id="5323128137188992869">A tartalom átküldésének az engedélyezése az eszközre a következő használatával <ph name="PRODUCT_NAME" />.
 
           Ha a házirend értéke hamis, a felhasználók nem tudnak tartalmat átküldeni eszközükre. Ha a házirend értéke igaz, a felhasználók átküldhetnek tartalmat. Ha a házirend nincs beállítva, a felhasználók a regisztrált Chrome OS-t használó eszközökre nem küldhetnek át tartalmat, de a nem regisztráltakra igen.</translation>
 <translation id="5330684698007383292">A következő tartalomtípusok kezelésének engedélyezése a(z) <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
@@ -1389,7 +1330,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6111936128861357925">A rejtett dinoszauruszos játék engedélyezése</translation>
 <translation id="6114416803310251055">elavult</translation>
 <translation id="6133088669883929098">Kulcsgenerálás használatának engedélyezése minden webhelyen</translation>
-<translation id="6139485614509308022">Ha az „OffHours” házirend be van állítva, akkor a megadott eszközszabályzatokat a rendszer nem veszi figyelembe (azaz az alapértelmezés szerinti beállításokkal használja őket) a meghatározott időintervallumban. A Chrome újra bekapcsolja az eszközszabályzatokat minden alkalommal, amikor az „OffHours” időszaka elindul vagy befejeződik. Az „OffHours” időszak végén az eszközszabályzat módosulásával a felhasználók értesítést kapnak, és kijelentkezteti őket a rendszer (azaz amikor a felhasználó nem engedélyezett fiókkal van bejelentkezve).</translation>
+<translation id="6139485614509308022">Ha az „OffHours” házirend be van állítva, akkor a megadott eszközházirendeket a rendszer nem veszi figyelembe (azaz az alapértelmezés szerinti beállításokkal használja őket) a meghatározott időintervallumban. A Chrome újra bekapcsolja az eszközszabályzatokat minden alkalommal, amikor az „OffHours” időszaka elindul vagy befejeződik. Az „OffHours” időszak végén az eszközszabályzat módosulásával a felhasználók értesítést kapnak, és kijelentkezteti őket a rendszer (azaz amikor a felhasználó nem engedélyezett fiókkal van bejelentkezve).</translation>
 <translation id="6145799962557135888">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak JavaScriptet. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="614662973812186053">Ez a házirend szabályozza az Android használati és diagnosztikai adatainak gyűjtését is.</translation>
 <translation id="6155936611791017817">A nagy egérmutató alapértelmezett állapotának beállítása a bejelentkezési képernyőn</translation>
@@ -1918,19 +1859,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a házirend le van tiltva, vagy ha nincs beállítva, akkor a bejelentkezés normál profilhoz vezet.</translation>
 <translation id="8158758865057576716">Lehetővé teszi barangolási példányok létrehozását a(z) <ph name="PRODUCT_NAME" /> profiladatai számára.</translation>
-<translation id="8169931650834542988">Azt vezérli, hogy
-      a NativePrintersBulkConfiguration házirend melyik nyomtatói állnak
-      a felhasználók rendelkezésére.
-
-      Kijelöli, hogy melyik hozzáférési házirend van használatban a tömeges
-      nyomtatóbeállításhoz. Ha az AllowAll van kiválasztva, minden nyomtató
-      megjelenik. Ha a BlacklistRestrction van kiválasztva,
-      a NativePrintersBulkBlacklist házirend korlátozza a megadott nyomtatókhoz
-      való hozzáférést. Ha a WhitelistPrintersOnly van kiválasztva, a
-      NativePrintersWhitelist csak a kiválasztható nyomtatókat jelöli ki.
-
-      Ha a házirend nincs beállítva, a BlacklistRestriction van érvényben.
-      </translation>
 <translation id="8170878842291747619">Engedélyezi az integrált Google Fordító szolgáltatást a következőben: <ph name="PRODUCT_NAME" />. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> megjelenít egy integrált eszköztárat, amely szükség esetén felkínálja az oldal fordítását a felhasználó számára. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül ezt a beállítást a(z) <ph name="PRODUCT_NAME" /> termékben. Ha a beállítás konfigurálatlanul marad, akkor a felhasználó dönthet a funkció használatáról.</translation>
 <translation id="817455428376641507">Az URL-tiltólista kivételeiként hozzáférést biztosít az ebben a listában szereplő URL-ekhez.
 
@@ -2013,15 +1941,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8465065632133292531">Paraméterek POST metódust használó azonnali URL-hez</translation>
 <translation id="847472800012384958">Előugró ablakok tiltása minden webhely esetén</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
-
-      A házirend csak akkor van használatban, ha a WhitelistPrintersOnly
-      lehetőség van kiválasztva a NativePrintersBulkAccessMode házirendnél.
-
-      Ha használatban van a házirend, csak a házirendben lévő értékeknek
-      megfelelő azonosítójú nyomtatók állnak a felhasználó rendelkezésére.
-      Az azonosítóknak meg kell egyezniük a NativePrintersBulkConfiguration
-      házirendben meghatározott bejegyzésekkel.</translation>
 <translation id="8484458986062090479">A mindig a gazdagép böngészője segítségével megjelenítendő URL-minták listájának testreszabása.
 
           Ha nincs konfigurálva ez a házirend, akkor a rendszer a „ChromeFrameRendererSettings” házirend által meghatározott alapértelmezett megjelenítőt használja valamennyi webhely esetében.
@@ -2032,29 +1951,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8519264904050090490">Felügyelt felhasználó manuális kivételi URL-jei</translation>
 <translation id="8544375438507658205">Alapértelmezett HTML-megjelenítő a <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
 <translation id="8549772397068118889">Figyelmeztetés tartalomcsomagokon kívüli webhelyek felkeresése esetén</translation>
-<translation id="8555589883248082762">Vállalati nyomtatókhoz biztosít beállításokat.
-
-      Ez a házirend lehetővé teszi, hogy nyomtatóbeállításokat adjon meg
-      <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz.
-      A fájl mérete nem lépheti túl az 5 MB-ot, és JSON kódolással kell
-      rendelkeznie. A formátum megegyezik a NativePrinters szótáréval. Becslések
-      szerint a kb. 21 000 nyomtatót tartalmazó kódolt fájl mérete 5 MB.
-      A letöltés integritását a kriptográfiai kivonattal ellenőrzi a rendszer.
-
-      A rendszer letölti és gyorsítótárba helyezi a fájlt. Ha módosul az URL vagy
-      a kivonat, a fájl újból letöltésre kerül.
-
-      Ha be van állítva a házirend,
-      a(z) <ph name="PRODUCT_OS_NAME" /> rendszer letölti a nyomtatóbeállításokat tartalmazó fájlt, és a 
-      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
-      valamint a NativePrintersBulkBlacklist házirendeknek megfelelően
-      hozzáférhetővé teszi a nyomtatókat.
-
-      Ha beállítja a házirendet, a felhasználók nem tudják módosítani és felülírni.
-
-      A házirend nem befolyásolja, hogy a felhasználók beállíthatják-e
-      a nyomtatókat saját eszközeiken. A házirend célja, hogy kiegészítse
-      az egyéni felhasználók nyomtatóbeállításait.</translation>
 <translation id="8566842294717252664">Az Internetes áruház elrejtése az Új lap oldalon és az alkalmazásindítón</translation>
 <translation id="8587229956764455752">Új felhasználói fiókok létrehozásának engedélyezése</translation>
 <translation id="8614804915612153606">Letiltja az automatikus frissítést</translation>
@@ -2106,19 +2002,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8864975621965365890">Elrejti a kikapcsolási figyelmeztetést, amely akkor jelenik meg, ha egy webhelyet a(z) <ph name="PRODUCT_FRAME_NAME" /> jeleníti meg.</translation>
 <translation id="8870318296973696995">Kezdőoldal</translation>
 <translation id="8882006618241293596">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul letiltása ezeken a webhelyeken</translation>
-<translation id="8887644176044431146">Azt vezérli, hogy
-      a DeviceNativePrintersConfiguration házirend melyik nyomtatói állnak
-      a felhasználók rendelkezésére.
-
-      Kijelöli, hogy melyik hozzáférési házirend van használatban a tömeges
-      nyomtatóbeállításhoz. Ha az AllowAll van kiválasztva, minden nyomtató
-      megjelenik. Ha a BlacklistRestrction van kiválasztva,
-      a DeviceNativePrintersBlacklist házirend korlátozza a megadott nyomtatókhoz
-      való hozzáférést. Ha a WhitelistPrintersOnly van kiválasztva, a
-      DeviceNativePrintersWhitelist csak a kiválasztható nyomtatókat jelöli ki.
-
-      Ha a házirend nincs beállítva, a BlacklistRestriction van érvényben.
-      </translation>
 <translation id="8906768759089290519">Vendég mód bekapcsolása</translation>
 <translation id="8908294717014659003">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a felvevőeszközökhöz. A felvevőeszközökhöz való hozzáférés engedélyezhető alapértelmezés szerint, vagy a rendszer rákérdezhet minden alkalommal, amikor egy webhely megpróbál hozzájuk férni.
 

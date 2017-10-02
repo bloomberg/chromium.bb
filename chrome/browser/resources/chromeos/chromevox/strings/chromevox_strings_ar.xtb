@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />، في وضع إيقاف التشغيل</translation>
 <translation id="3462439746547587373">الزر <ph name="NAME" /></translation>
 <translation id="3466530247399808663">الضغط على مفتاح غير صالح</translation>
+<translation id="3468959318854349468">بلا عنوان</translation>
 <translation id="3473644018603298796">تم تحديد <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> إلى <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{قوس متوسط أيمن واحد}zero{# right brackets}two{قوسان متوسطان أيمنان (#)}few{# أقواس متوسطة يمنى}many{# قوسًا متوسطًا أيمنًا}other{# من الأقواس المتوسطة اليمنى}}</translation>

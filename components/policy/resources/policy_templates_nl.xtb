@@ -73,12 +73,6 @@
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="1330985749576490863">Schakelt Google Drive uit via mobiele verbindingen in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Naam van beleid</translation>
-<translation id="134402861816424823">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als BlacklistRestriction is gekozen voor DeviceNativePrintersAccessMode.
-
-      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de printer-ID's die in dit beleid worden vermeld.
-      </translation>
 <translation id="1353966721814789986">Homepage's</translation>
 <translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
 
@@ -262,19 +256,6 @@
 <translation id="209586405398070749">Stabiel kanaal</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
-<translation id="2126314858836465216">Hiermee worden configuraties geleverd voor zakelijke printers die zijn gekoppeld aan apparaten.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON-indeling. De indeling is gelijk aan het NativePrinters-woordenboek. Naar schatting wordt een bestand dat ongeveer 21.000 printers bevat, gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en gecacht. Het bestand wordt opnieuw gedownload wanneer de URL of de hash verandert.
-
-      Als dit beleid is ingesteld, wordt in <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties gedownload en worden printers beschikbaar gesteld in overeenstemming met DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist en DeviceNativePrintersBlacklist.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.
-
-      Dit beleid vormt een aanvulling op NativePrintersBulkConfiguration.
-
-      Als dit beleid niet is ingesteld, zijn er geen apparaatprinters en worden de overige beleidsregels van NativeDevicePrinter* genegeerd.</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
 <translation id="2134437727173969994">Schermvergrendeling toestaan</translation>
@@ -529,17 +510,6 @@
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
-<translation id="2789419769822054691">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als WhitelistPrintersOnly is gekozen voor DeviceNativePrintersAccessMode.
-
-      Als dit beleid wordt gebruikt, zijn alleen de printers met ID's die overeenkomen met de waarden in dit beleid, beschikbaar voor de gebruiker. De ID's moeten overeenkomen met de vermeldingen in het bestand dat is opgegeven in DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als BlacklistRestriction is gekozen voor NativePrintersBulkAccessMode.
-
-      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de printer-ID's die in dit beleid worden vermeld.
-      </translation>
 <translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
 
       Als dit beleid is ingesteld op 'oinwaar', kunnen gebruikers de easter egg-dinosaurusgame niet spelen wanneer het apparaat offline is. Als deze instelling is ingesteld op 'waar', kunnen gebruikers de easter egg-dinosaurusgame spelen. Als dit beleid niet is ingesteld, kunnen gebruikers de easter egg-dinosaurusgame niet spelen op geregistreerde Chrome OS-apparaten, maar kunnen ze deze wel onder andere omstandigheden spelen.</translation>
@@ -1037,7 +1007,6 @@
 <translation id="4541530620466526913">Lokale accounts op apparaat</translation>
 <translation id="4555850956567117258">Externe bevestiging van gebruiker inschakelen</translation>
 <translation id="4557134566541205630">URL van standaard zoekprovider voor nieuwe tabbladpagina</translation>
-<translation id="4558592878156368639">Intervallen buiten gebruikstijd wanneer OffHours van het apparaat |ignored_policies| worden vrijgegeven</translation>
 <translation id="4600786265870346112">Grote muisaanwijzer inschakelen</translation>
 <translation id="4604931264910482931">Zwarte lijst voor systeemeigen berichten configureren</translation>
 <translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME" /> overslaan</translation>
@@ -2013,12 +1982,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als het beleid is uitgeschakeld of niet is ingesteld, leidt inloggen tot het gebruik van gewone profielen.</translation>
 <translation id="8158758865057576716">Het maken van roaming-exemplaren voor <ph name="PRODUCT_NAME" />-profielgegevens inschakelen.</translation>
-<translation id="8169931650834542988">Hiermee wordt beheerd welke printers uit NativePrintersBulkConfiguration beschikbaar zijn voor gebruikers.
-
-      Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als AllowAll is geselecteerd, worden alle printers weergegeven. Als BlacklistRestrction is geselecteerd, wordt NativePrintersBulkBlacklist gebruikt om de toegang te beperken tot de gespecificeerde printers. Als WhitelistPrintersOnly is geselecteerd, geeft NativePrintersWhitelist alleen die printers aan die kunnen worden geselecteerd.
-
-      Als dit beleid niet is ingesteld, wordt uitgegaan van BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Hiermee wordt de geïntegreerde service Google Translate ingeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, wordt in <ph name="PRODUCT_NAME" /> een geïntegreerde werkbalk weergegeven waarin de gebruiker wordt gevraagd of deze de pagina wil laten vertalen (indien van toepassing).
@@ -2109,11 +2072,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
-
-      Dit beleid wordt alleen gebruikt als WhitelistPrintersOnly is gekozen voor NativePrintersBulkAccessMode.
-
-      Als dit beleid wordt gebruikt, zijn voor de gebruiker alleen de printers beschikbaar met ID's die overeenkomen met de waarden in dit beleid. De ID's moeten overeenkomen met de vermeldingen in het bestand dat is opgegeven in NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Hiermee kun je de lijst aanpassen van URL-patronen die altijd door de hostbrowser moeten worden verwerkt.
 
          Als dit beleid niet is ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites die door het beleid 'ChromeFrameRendererSettings' zijn gespecificeerd.
@@ -2124,17 +2082,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
-<translation id="8555589883248082762">Hiermee worden configuraties geleverd voor zakelijke printers.
-
-      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON-indeling. De indeling is gelijk aan het NativePrinters-woordenboek. Naar schatting wordt een bestand dat ongeveer 21.000 printers bevat, gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
-
-      Het bestand wordt gedownload en gecachet. Het bestand wordt opnieuw gedownload wanneer de URL of hash verandert.
-
-      Als dit beleid is ingesteld, wordt in <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties gedownload en worden printers beschikbaar gesteld in overeenstemming met NativePrintersBulkAccessMode, NativePrintersBulkWhitelist en NativePrintersBulkBlacklist.
-
-      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
 <translation id="8614804915612153606">Schakelt 'Automatisch updaten' uit</translation>
@@ -2196,12 +2143,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8864975621965365890">Hiermee onderdruk je de prompt die wordt weergegeven wanneer een site wordt weergegeven door <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="8882006618241293596">De <ph name="FLASH_PLUGIN_NAME" />-plug-in blokkeren op deze sites</translation>
-<translation id="8887644176044431146">Hiermee wordt beheerd welke printers uit DeviceNativePrintersConfiguration beschikbaar zijn voor gebruikers.
-
-      Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als AllowAll is geselecteerd, worden alle printers weergegeven. Als BlacklistRestrction is geselecteerd, wordt DeviceNativePrintersBlacklist gebruikt om de toegang te beperken tot de gespecificeerde printers. Als WhitelistPrintersOnly is geselecteerd, geeft DeviceNativePrintersWhitelist alleen die printers aan die kunnen worden geselecteerd.
-
-      Als dit beleid niet is ingesteld, wordt uitgegaan van BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Gastmodus inschakelen</translation>
 <translation id="8908294717014659003">Hiermee kun je instellen of websites toegang mogen krijgen tot media-opnameapparaten. Toegang tot media-opnameapparaten kan standaard worden toegestaan of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot media-opnameapparaten.
 

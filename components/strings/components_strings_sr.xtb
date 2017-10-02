@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Уклопите по ширини</translation>
 <translation id="1088860948719068836">Додајте име са картице</translation>
 <translation id="1103523840287552314">Увек преводи <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Прикажи све сачуване лозинке…</translation>
 <translation id="1107591249535594099">Ако означите ову опцију, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="1111153019813902504">Недавно коришћени обележивачи</translation>
 <translation id="1113869188872983271">&amp;Опозови промену редоследа</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> је блокиран</translation>
 <translation id="3987940399970879459">Мање од 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница у околини}one{# веб-страница у околини}few{# веб-странице у околини}other{# веб-страница у околини}}</translation>
-<translation id="4021036232240155012">DNS је мрежна услуга која преводи назив веб-сајта у његову интернет адресу.</translation>
 <translation id="4030383055268325496">&amp;Опозови додавање</translation>
 <translation id="404928562651467259">УПОЗОРЕЊЕ</translation>
 <translation id="4058922952496707368">Кључ „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -900,7 +898,6 @@
 <translation id="8118489163946903409">Начин плаћања</translation>
 <translation id="8127301229239896662">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно инсталиран на рачунару или мрежи. Затражите од ИТ администратора да реши овај проблем.</translation>
 <translation id="8131740175452115882">Потврди</translation>
-<translation id="8134994873729925007">Нисмо успели да пронађемо <ph name="BEGIN_ABBR" />DNS адресу<ph name="END_ABBR" /> сервера хоста <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Рачунар је прешао у режим спавања.</translation>
 <translation id="8150722005171944719">Датотека на адреси <ph name="URL" /> не може да се чита. Можда је уклоњена или премештена или дозволе за датотеке спречавају приступ.</translation>
 <translation id="8184538546369750125">Користи глобалну подразумевану вредност (Дозволи)</translation>

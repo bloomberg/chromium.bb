@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Valitse kansio</translation>
 <translation id="1265739287306757398">Lisätietoja</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
-<translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
 <translation id="1323735185997015385">Poista</translation>
 <translation id="132683371494960526">Vaihda ylätason kansiota kaksoisnapauttamalla.</translation>
 <translation id="1340643665687018190">Sulje valikko</translation>
@@ -359,7 +358,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7769602470925380267">Hyväksy ja kirjaudu ulos</translation>
 <translation id="7772032839648071052">Vahvista tunnuslause</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
-<translation id="7851858861565204677">Muut laitteet</translation>
 <translation id="7859704718976024901">Selaushistoria</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
@@ -403,6 +401,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8775144690796719618">Virheellinen URL-osoite</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="8840513115188359703">Sinua ei kirjata ulos Google-tililtäsi.</translation>
+<translation id="8870413625673593573">Hiljattain suljetut</translation>
 <translation id="8881801611828450202">Hae kuvaa seuraavasta palvelusta: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chromen synkronointi</translation>
 <translation id="895541991026785598">Ilmoita ongelmasta</translation>

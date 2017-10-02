@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">متناسب با پهنا</translation>
 <translation id="1088860948719068836">افزودن نام روی کارت</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> همیشه ترجمه شود</translation>
-<translation id="1103778128462718200">نمایش همه گذرواژه‌های ذخیره‌شده…</translation>
 <translation id="1107591249535594099">‏اگر علامت زده شود، Chrome یک کپی از این کارت را در دستگاه نگهداری می‌کند تا برای پرکردن فرم‌ها از آن استفاده شود.</translation>
 <translation id="1111153019813902504">نشانک‌های اخیر</translation>
 <translation id="1113869188872983271">&amp;واگرد ترتیب‌بندی مجدد</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
 <translation id="3987940399970879459">کمتر از ۱ مگابایت</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ ۱ صفحه وب در این نزدیکی است}one{ # صفحه وب در این نزدیکی است}other{ # صفحه وب در این نزدیکی است}}</translation>
-<translation id="4021036232240155012">‏DNS خدماتی از شبکه است که نام وب‌سایت را به آدرس اینترنتی آن ترجمه می‌کند.</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="404928562651467259">اخطار</translation>
 <translation id="4058922952496707368">کلید "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">روش پرداخت</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» به‌درستی در رایانه یا شبکه‌تان پیکربندی نشد. از سرپرست فناوری اطلاعات خود بخواهید این مشکل را حل کند.</translation>
 <translation id="8131740175452115882">تأیید</translation>
-<translation id="8134994873729925007">‏<ph name="BEGIN_ABBR" />نشانی DNS<ph name="END_ABBR" /> سرور <ph name="HOST_NAME" /> پیدا نشد.</translation>
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
 <translation id="8150722005171944719">این فایل در <ph name="URL" /> قابل خواندن نیست. ممکن است حذف شده، جابجا شده باشد و یا مجوزهای فایل از دسترسی جلوگیری می‌کنند.</translation>
 <translation id="8184538546369750125">استفاده از پیش‌فرض جهانی (مجاز)</translation>

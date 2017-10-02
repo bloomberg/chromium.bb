@@ -214,6 +214,7 @@
 <translation id="1329584516321524826">たった今更新されました</translation>
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
 <translation id="1331977651797684645">これは私です。</translation>
+<translation id="1338776410427958681"><ph name="FOLDER_NAME" /> を折りたたみます</translation>
 <translation id="1338950911836659113">削除しています...</translation>
 <translation id="1339266338863469628">既定（ユーザーの音声のみを検出）</translation>
 <translation id="1340527397989195812">ファイルアプリを使用してデバイスからメディアをバックアップします。</translation>
@@ -1202,7 +1203,6 @@
 <translation id="281133045296806353">既存のブラウザ セッションに新しいウィンドウが作成されました。</translation>
 <translation id="2812944337881233323">ログアウトして再度ログインしてみてください</translation>
 <translation id="2812989263793994277">すべての画像を表示しない</translation>
-<translation id="2814100462326464815">写真の反転を元に戻しました</translation>
 <translation id="2814489978934728345">このページの読み込みを停止します</translation>
 <translation id="2815500128677761940">ブックマーク バー</translation>
 <translation id="2815693974042551705">ブックマーク フォルダ</translation>
@@ -1463,6 +1463,7 @@
 <translation id="3190558889382726167">パスワードを保存しました</translation>
 <translation id="3191308084656429858">{NUM_POPUPS,plural, =1{1 個のポップアップがブロックされています}other{# 個のポップアップがブロックされています}}</translation>
 <translation id="3192947282887913208">音声ファイル</translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" />（<ph name="SERVER_NAME" /> 上）</translation>
 <translation id="3199127022143353223">サーバー</translation>
 <translation id="3202131003361292969">パス</translation>
 <translation id="3202173864863109533">このタブの音声はミュートされています。</translation>
@@ -1520,6 +1521,7 @@
 <translation id="329650768420594634">拡張機能のパッケージ化に関する警告</translation>
 <translation id="329838636886466101">修復</translation>
 <translation id="3298789223962368867">入力された URL が無効です。</translation>
+<translation id="32991397311664836">デバイス:</translation>
 <translation id="3300394989536077382">署名</translation>
 <translation id="33022249435934718">GDI ハンドル</translation>
 <translation id="3302340765592941254">ダウンロードの完了通知</translation>
@@ -1625,6 +1627,7 @@
 <translation id="3438633801274389918">忍者</translation>
 <translation id="3439153939049640737"><ph name="HOST" /> によるマイクへのアクセスを常に許可する</translation>
 <translation id="3439970425423980614">PDF をプレビューしています</translation>
+<translation id="3440663250074896476"><ph name="BOOKMARK_NAME" /> に対するその他の操作</translation>
 <translation id="3440761377721825626">サイトがプラグインを使用してパソコンにアクセスしようとしたときに確認する</translation>
 <translation id="3441653493275994384">画面</translation>
 <translation id="3445830502289589282">フェーズ 2 認証:</translation>
@@ -2100,7 +2103,6 @@
 <translation id="4158739975813877944">再生リストを開く</translation>
 <translation id="4159681666905192102">これは <ph name="CUSTODIAN_EMAIL" /> と <ph name="SECOND_CUSTODIAN_EMAIL" /> によって管理されている子供向けのアカウントです。</translation>
 <translation id="4163560723127662357">不明なキーボード</translation>
-<translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4166210099837486476">Chrome でのユーザー操作の監視</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> に帰属する設定の一部を共有しています。これらの設定は、マルチ ログインを使用した場合にのみこのアカウントに適用されます。</translation>
 <translation id="4172051516777682613">常に表示</translation>
@@ -2269,10 +2271,12 @@
 <translation id="4454939697743986778">この証明書はシステム管理者によってインストールされたものです。</translation>
 <translation id="445923051607553918">Wi-Fi ネットワークへの接続</translation>
 <translation id="4467100756425880649">Chrome ウェブストア ギャラリー</translation>
+<translation id="4467101674048705704"><ph name="FOLDER_NAME" /> を展開します</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
 <translation id="4475552974751346499">ダウンロード検索</translation>
 <translation id="4476590490540813026">競技選手</translation>
 <translation id="4478664379124702289">リンク先を別名で保存(&amp;K)...</translation>
+<translation id="4479424953165245642">キオスク アプリケーションを管理</translation>
 <translation id="4479639480957787382">イーサネット</translation>
 <translation id="4481249487722541506">パッケージ化されていない拡張機能を読み込む...</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
@@ -2446,6 +2450,7 @@
 <translation id="4763830802490665879">終了時に複数のサイトからの Cookie が消去されます。</translation>
 <translation id="4768332406694066911">次の機関から発行された、あなたを識別する証明書があります</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
+<translation id="4777825441726637019">Play ストア</translation>
 <translation id="4779083564647765204">ズーム</translation>
 <translation id="4780321648949301421">ページを別名で保存...</translation>
 <translation id="4781787911582943401">画面を拡大</translation>
@@ -2468,7 +2473,6 @@
 <translation id="4807098396393229769">名義人名</translation>
 <translation id="480990236307250886">ホームページを開く</translation>
 <translation id="4812632551187706935">接続を初期化できませんでした</translation>
-<translation id="4812684235631257312">ホスト</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
 <translation id="4820334425169212497">いいえ、表示されていません</translation>
@@ -3516,7 +3520,6 @@
     <ph name="LINE_BREAK" />
     このまま <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> アカウントにログインするには [次へ] をクリックしてください。</translation>
 <translation id="6419546358665792306">パッケージ化されていない拡張機能を読み込む</translation>
-<translation id="6422329785618833949">写真を反転しました</translation>
 <translation id="642282551015776456">この名前はフォルダのファイル名として使用できません</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6426200009596957090">ChromeVox 設定を開く</translation>
@@ -3746,6 +3749,7 @@
 <translation id="6751256176799620176">フォルダを 1 個選択しました</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（シークレット モード）</translation>
 <translation id="6757101664402245801">URL がコピーされました</translation>
+<translation id="6758056191028427665">アンケートにご協力ください。</translation>
 <translation id="6759193508432371551">初期状態へのリセット</translation>
 <translation id="6766101255664245434">新しく写真を撮るか、既存の写真またはアイコンを選択してください。
           <ph name="LINE_BREAK" />
@@ -4338,7 +4342,6 @@
 <translation id="7710568461918838723">キャスト(&amp;C)...</translation>
 <translation id="7713320380037170544">システム エクスクルーシブ メッセージを使用して MIDI デバイスにアクセスすることをすべてのサイトに許可する</translation>
 <translation id="7714464543167945231">証明書</translation>
-<translation id="7716020873543636594">マウス ポインタの停止時に自動的にクリックする</translation>
 <translation id="7716781361494605745">Netscape 認証局ポリシー URL</translation>
 <translation id="7716970641886237992">更新者</translation>
 <translation id="7717014941119698257">ダウンロード: <ph name="STATUS" /></translation>
@@ -4416,6 +4419,7 @@
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">終了時間</translation>
 <translation id="7833720883933317473">保存したカスタムの単語がここに表示されます</translation>
+<translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">ホームページが <ph name="URL" /> に変更されました。</translation>
 <translation id="7839051173341654115">メディアを表示 / バックアップ</translation>
 <translation id="7839192898639727867">証明書のサブジェクトのキー ID</translation>
@@ -4606,6 +4610,7 @@
 <translation id="8113043281354018522">ライセンスの種類を選択してください</translation>
 <translation id="8116190140324504026">詳細情報...</translation>
 <translation id="8116483400482790018">カスタム スペルチェック辞書</translation>
+<translation id="8116925261070264013">ミュート中</translation>
 <translation id="8116972784401310538">ブックマーク マネージャ(&amp;B)</translation>
 <translation id="8118362518458010043">Chrome によって無効にされました。この拡張機能は安全ではない可能性があります。</translation>
 <translation id="8118860139461251237">ダウンロードの管理</translation>
@@ -4627,14 +4632,12 @@
 <translation id="8142732521333266922">はい、すべて同期します</translation>
 <translation id="8146177459103116374">このデバイスでの登録が済んでいる場合は<ph name="LINK2_START" />既存のユーザー<ph name="LINK2_END" />としてログインできます。</translation>
 <translation id="8146793085009540321">ログインできませんでした。管理者にお問い合わせいただくか、もう一度お試しください。</translation>
-<translation id="8148913456785123871">ランチャーで Google Now カードを利用する</translation>
 <translation id="8151185429379586178">デベロッパー ツール</translation>
 <translation id="8151638057146502721">設定</translation>
 <translation id="8152091997436726702">プリンタの登録がタイムアウトしました。プリンタを登録するには、プリンタで登録を確認する必要があります。</translation>
 <translation id="8153607920959057464">このファイルは表示できませんでした。</translation>
 <translation id="8154790740888707867">ファイルがありません</translation>
 <translation id="815491593104042026">セキュリティで保護されていない URL（<ph name="BLOCKED_URL" />）を使用するよう設定されているため、認証に失敗しました。管理者にお問い合わせください。</translation>
-<translation id="8156020606310233796">リスト ビュー</translation>
 <translation id="8157939133946352716">7×5</translation>
 <translation id="816055135686411707">証明書の信頼設定エラー</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />（<ph name="TIME_REMAINING" />）</translation>
@@ -4659,6 +4662,7 @@
 <translation id="8191453843330043793">V8 プロキシ リゾルバ</translation>
 <translation id="8195027750202970175">ディスク上のサイズ</translation>
 <translation id="8195739004487400241">ホームページが <ph name="URL" /> に変更されました。ホームページを変更する拡張機能を無効にするには、[復元] をクリックしてください。</translation>
+<translation id="8199300056570174101">ネットワーク（サービス）とデバイスのプロパティ</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8202160505685531999"><ph name="DEVICE_TYPE" /> のプロフィールを更新するにはパスワードを再入力してください。</translation>
 <translation id="8206354486702514201">この設定は管理者によって制御されています。</translation>
@@ -5081,6 +5085,7 @@
 <translation id="8888432776533519951">色:</translation>
 <translation id="8892992092192084762">テーマ「<ph name="THEME_NAME" />」をインストールしました。</translation>
 <translation id="8893928184421379330">デバイス <ph name="DEVICE_LABEL" /> を認識できませんでした。</translation>
+<translation id="8895454554629927345">ブックマーク リスト</translation>
 <translation id="88986195241502842">ページ内を下に移動</translation>
 <translation id="8898786835233784856">次のタブを選択</translation>
 <translation id="8898840733695078011">電波強度</translation>
@@ -5238,7 +5243,6 @@
 <translation id="9124003689441359348">保存したパスワードがここに表示されます</translation>
 <translation id="912419004897138677">コーデック</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" />（残り <ph name="LICENSE_COUNT" /> ライセンス）</translation>
-<translation id="9127762771585363996">カメラ画像を水平にめくる</translation>
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9130015405878219958">入力されたモードが無効です。</translation>
 <translation id="9130775360844693113">「<ph name="DESTINATION_NAME" />」のメンバーがこれらのアイテムにアクセスできるようになります。</translation>
@@ -5311,6 +5315,7 @@
 <translation id="958515377357646513">タップして次に進みます。</translation>
 <translation id="960719561871045870">事業者コード</translation>
 <translation id="960987915827980018">あと約 1 時間</translation>
+<translation id="962802172452141067">ブックマーク フォルダ ツリー</translation>
 <translation id="968174221497644223">アプリケーション キャッシュ</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 個のタブ}other{# 個のタブ}}</translation>
 <translation id="970794034573172516">音声アクティビティを有効にする</translation>

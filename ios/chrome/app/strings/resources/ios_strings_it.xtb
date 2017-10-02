@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Scegli cartella</translation>
 <translation id="1265739287306757398">Scopri come</translation>
 <translation id="1272079795634619415">Interrompi</translation>
-<translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="1323735185997015385">Elimina</translation>
 <translation id="132683371494960526">Tocca due volte per cambiare la cartella principale.</translation>
 <translation id="1340643665687018190">Chiudi menu</translation>
@@ -80,6 +79,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2381405137052800939">Opzioni di base</translation>
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2435457462613246316">Mostra password</translation>
+<translation id="2529021024822217800">Apri tutto</translation>
 <translation id="2572712655377361602">Una norma relativa ai dispositivi ha impedito l'accesso alle tue foto</translation>
 <translation id="2584132361465095047">Aggiungi account…</translation>
 <translation id="2593774076813182497">Impossibile stampare la pagina.</translation>
@@ -313,6 +313,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6797885426782475225">Ricerca vocale</translation>
 <translation id="6807889908376551050">Mostra tutte...</translation>
 <translation id="681368974849482173">Elemento creato</translation>
+<translation id="6871663519944855400">Apri in modalità di navigazione in incognito</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6945221475159498467">Seleziona</translation>
@@ -359,7 +360,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
 <translation id="780301667611848630">No grazie</translation>
-<translation id="7851858861565204677">Altri dispositivi</translation>
 <translation id="7859704718976024901">Cronologia di navigazione</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
@@ -403,6 +403,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8775144690796719618">URL non valido</translation>
 <translation id="8820817407110198400">Preferiti</translation>
 <translation id="8840513115188359703">Non verrai scollegato dal tuo account Google.</translation>
+<translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8881801611828450202">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sincronizzazione Google Chrome</translation>
 <translation id="895541991026785598">Segnala un problema</translation>

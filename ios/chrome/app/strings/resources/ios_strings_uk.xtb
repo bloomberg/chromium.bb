@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Вибрати папку</translation>
 <translation id="1265739287306757398">Докладніше</translation>
 <translation id="1272079795634619415">Зупинити</translation>
-<translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="1323735185997015385">Видалити</translation>
 <translation id="132683371494960526">Двічі торкніться, щоб змінити батьківську папку.</translation>
 <translation id="1340643665687018190">Закрити меню</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">Прийняти та вийти</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
-<translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7859704718976024901">Історія веб-перегляду</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">Недійсна URL-адреса</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8840513115188359703">Ви не вийдете з облікового запису Google.</translation>
+<translation id="8870413625673593573">Нещодавно закриті</translation>
 <translation id="8881801611828450202">Пошук цього зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Синхронізація Chrome</translation>
 <translation id="895541991026785598">Повідомити про проблему</translation>

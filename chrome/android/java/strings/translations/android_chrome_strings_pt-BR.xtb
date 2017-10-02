@@ -310,6 +310,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3997476611815694295">Armazenamento sem importância</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4013356575049925793">Comércio eletrônico</translation>
+<translation id="4041402800604793551">Ao continuar, você aceita os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e a <ph name="BEGIN_LINK2" />Política de Privacidade<ph name="END_LINK2" /> do Chrome, assim como o <ph name="BEGIN_LINK3" />Aviso de privacidade para Contas do Google criadas no Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço da Web não for convertido ou uma conexão não puder ser estabelecida</translation>
 <translation id="4046123991198612571">Próxima faixa</translation>
 <translation id="4056223980640387499">Sépia</translation>
@@ -388,6 +389,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Nome no cartão de crédito</translation>
 <translation id="4807963036345170158">A Economia de dados está desativada</translation>
+<translation id="4811736444948656478">Painel de navegação aberto pela metade</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4837753911714442426">Abrir opções de impressão de página</translation>
 <translation id="4842092870884894799">Mostrando pop-up da criação de senhas</translation>
@@ -542,6 +544,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="6177111841848151710">Bloqueado para o mecanismo de pesquisa atual</translation>
 <translation id="6177390657002841081">Ativar a Economia de dados</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
+<translation id="618555311922999635">Painel de navegação aberto no tamanho máximo</translation>
 <translation id="6192792657125177640">Exceções</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfego de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
@@ -755,6 +758,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8087000398470557479">Este conteúdo é de <ph name="DOMAIN_NAME" />, veiculado pelo Google.</translation>
 <translation id="8100932616285851614">Painel de navegação fechado</translation>
 <translation id="8103578431304235997">Guia anônima</translation>
+<translation id="8116925261070264013">Com som desativado</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
@@ -771,6 +775,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8283853025636624853">Sincronizando com <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Guias padrão</translation>
+<translation id="8334426458436697004">Desative o som para um site específico.</translation>
 <translation id="8339163506404995330">Páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8372721116225477180">Social</translation>
 <translation id="8372893542064058268">Permite a sincronização em segundo plano para um site específico.</translation>
@@ -837,7 +842,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8993760627012879038">Abrir uma nova guia no modo sem rastros</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
-<translation id="9038649477754266430">Usar um serviço de previsão para carregar páginas mais rapidamente</translation>
 <translation id="9050666287014529139">Senha</translation>
 <translation id="9060538597317784206">Ver aplicativo <ph name="APP_NAME" /> na Play Store.  Classificação: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Desativar "Ver versão para Web"</translation>

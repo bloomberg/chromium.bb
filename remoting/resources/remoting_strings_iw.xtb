@@ -3,6 +3,9 @@
 <translationbundle lang="iw">
 <translation id="1002108253973310084">זוהתה גרסת פרוטוקול לא תואמת. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה בשני המחשבים ונסה שוב.</translation>
 <translation id="1050693411695664090">איכות גרועה</translation>
+<translation id="1059802506829356230">‏• ממשק בעיצוב חדש.
+• שיפור בביצועים, במהירות התגובה ובאמינות.
+• תמיכה בהפעלת אודיו ממחשבי Windows או Linux.</translation>
 <translation id="1152528166145813711">בחר...</translation>
 <translation id="1199593201721843963">השבת חיבורים מרוחקים</translation>
 <translation id="1291443878853470558">‏אם ברצונך להשתמש ב-Chromoting כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
@@ -71,6 +74,7 @@
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏שים לב: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את שולחן העבודה המרוחק של Chrome ל'פתח כחלון'.</translation>
 <translation id="2540992418118313681">האם ברצונך לשתף מחשב זה כך שמשתמש אחר יראה אותו וישלוט בו?</translation>
+<translation id="2579271889603567289">המארח קרס או שלא הופעל.</translation>
 <translation id="2599300881200251572">‏שירות זה מאפשר חיבורים נכנסים מלקוחות שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
 <translation id="2676780859508944670">עובד…</translation>
@@ -81,6 +85,11 @@
 <translation id="2841013758207633010">שעה</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
+<translation id="289405675947420287">‏האפליקציה מאפשרת לגשת למחשב באופן מאובטח ממכשיר ה-iOS. זה מהיר, פשוט ובחינם.
+
+• יש להוריד את האפליקציה 'שולחן עבודה מרוחק של Chrome' מחנות האינטרנט של Chrome למחשב שאליו רוצים לגשת מרחוק.
+• יש להתקין את התוכנה 'שולחן עבודה מרוחק של Chrome' ולפעול לפי ההוראות לסיום תהליך ההגדרה.
+• במכשיר ה-iOS, יש לפתוח את האפליקציה ולהקיש על אחד מהמחשבים שבמצב מקוון כדי להתחבר אליו.</translation>
 <translation id="2894654864775534701">המחשב הזו משותף כרגע כחלק מחשבון אחר.</translation>
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
 <translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN" />היכנס אל Chromium<ph name="LINK_END" /> עם החשבון והתקן מחדש את Chromoting.</translation>
@@ -115,6 +124,7 @@
 <translation id="369442766917958684">פועל במצב לא מקוון.</translation>
 <translation id="3695446226812920698">איך עושים זאת</translation>
 <translation id="3718805989288361841">‏אירעה שגיאה בהגדרות המדיניות לשולחן העבודה המרוחק של Chrome. פנה למנהל המערכת כדי לקבל עזרה.</translation>
+<translation id="3759645055923345178">‏כשתהליך ההגדרה יסתיים, אפשר יהיה לגשת למחשב מדף זה על ידי הזנת ה-PIN או קוד הגישה</translation>
 <translation id="3776024066357219166">‏הפעילות של 'שולחן עבודה מרוחק של Chrome' הסתיימה.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה כדי לאפשר גישה באמצעות שולחן העבודה המרוחק של Chrome.</translation>
@@ -155,9 +165,17 @@
 <translation id="4660011489602794167">הצגת מקלדת</translation>
 <translation id="4703302905453407178">רכיב נדרש הפסיק לפעול. דווח על בעיה זו למפתחים.</translation>
 <translation id="4703799847237267011">‏הפעילות של Chromoting הסתיימה.</translation>
+<translation id="4706355010316049867">‏שולחן עבודה
+מרוחק
+Chrome
+גישה
+תמיכה
+מחשב
+מחשב PC</translation>
 <translation id="4736223761657662401">היסטוריית חיבורים</translation>
 <translation id="4741792197137897469">‏האימות נכשל. היכנס שוב ל-Chrome.</translation>
 <translation id="477305884757156764">היישום איטי מדי.</translation>
+<translation id="4784508858340177375">‏המארח X קרס או שלא הופעל.</translation>
 <translation id="4795786176190567663">אין לך הרשאה לביצוע הפעולה.</translation>
 <translation id="4798680868612952294">אפשרויות עכבר</translation>
 <translation id="4804818685124855865">נתק</translation>
@@ -198,6 +216,7 @@
 <translation id="5773590752998175013">תאריך ההתאמה</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
 <translation id="5810269635982033450">המסך פועל כמשטח מגע</translation>
+<translation id="5823658491130719298">‏במחשב שאליו רוצים לגשת מרחוק, יש לפתוח את Chrome ולהיכנס אל <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">אפשרויות תצוגה</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
 <translation id="5859141382851488196">חלון חדש…</translation>
@@ -231,6 +250,7 @@
 <translation id="6572345186230665992">‏ל-Mac ‏(OS X Mavericks מגירסה 10.9 ואילך)</translation>
 <translation id="6583902294974160967">תמיכה</translation>
 <translation id="6612717000975622067">‏שלח Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">שיתוף</translation>
 <translation id="6668065415969892472">‏ה-PIN שלך עודכן.</translation>
 <translation id="6681800064886881394">‏Copyright © 2013 Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="6705482892455291412">לאחר הזנת הקוד, תתבקש לאשר את החיבור ולהתחיל בשיתוף ההפעלה.</translation>
@@ -272,6 +292,7 @@
 <translation id="7782471917492991422">בדוק את הגדרות ניהול צריכת החשמל של המחשב כדי לוודא שאינו מוגדר לעבור למצב שינה בזמן חוסר פעילות.</translation>
 <translation id="7810127880729796595">הצג סטטיסטיקה (חיבור: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">‏חלק מהרכיבים הדרושים חסרים. ודא שאתה משתמש בגרסה העדכנית ביותר של Chrome ונסה שוב.</translation>
+<translation id="7850909060902317210">‏יש להתקין את התוכנה 'שולחן עבודה מרוחק של Chrome' ולבצע את ההוראות להשלמת ההגדרה</translation>
 <translation id="7868137160098754906">‏הזן את מספר ה-PIN עבור המחשב המרוחק.</translation>
 <translation id="7869445566579231750">אין לך הרשאה להריץ את היישום הזה.</translation>
 <translation id="7895403300744144251">מדיניות האבטחה במחשב המרוחק אינה מתירה חיבורים מהחשבון שלך.</translation>
@@ -307,6 +328,7 @@
 <translation id="8642984861538780905">איכות סבירה</translation>
 <translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="8743328882720071828">האם ברצונך לאפשר ל-<ph name="CLIENT_USERNAME" /> לראות את המחשב שלך ולשלוט בו?</translation>
+<translation id="8747048596626351634">‏ההפעלה קרסה או שלא התחילה. אם ‎~/.chrome-remote-desktop-session קיים במחשב המרוחק, יש לוודא שהוא מפעיל תהליך ארוך טווח בחזית. לדוגמה: סביבת שולחן העבודה או מנהל החלונות.</translation>
 <translation id="8759753423332885148">למידע נוסף</translation>
 <translation id="8791202241915690908">‏הורד את מנהל ההתקנה של מארח Chromoting</translation>
 <translation id="894763922177556086">איכות טובה</translation>

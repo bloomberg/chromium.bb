@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, ஸ்விட்ச் ஆஃப்</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, பொத்தான்</translation>
 <translation id="3466530247399808663">தவறான விசை அழுத்தம்</translation>
+<translation id="3468959318854349468">தலைப்பு இல்லை</translation>
 <translation id="3473644018603298796">தேர்ந்தெடுத்தவை <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> முதல் <ph name="V2" /> வரை</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{வலது அடைப்புக்குறி}other{# வலது அடைப்புக்குறிகள்}}</translation>

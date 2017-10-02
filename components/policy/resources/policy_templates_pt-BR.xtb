@@ -70,14 +70,6 @@
 <translation id="1330145147221172764">Ativar o teclado na tela</translation>
 <translation id="1330985749576490863">Desativar o Google Drive por conexões de rede celular no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nome da política</translation>
-<translation id="134402861816424823">Especifica as impressoras que um usuário não pode usar.
-
-      Esta política é usada apenas se BlacklistRestriction é escolhida para 
-      DeviceNativePrintersAccessMode.
-
-      Se esta política for usada, todas as impressoras serão fornecidas ao usuário, com exceção
-      dos códigos listados nesta política.
-      </translation>
 <translation id="1353966721814789986">Páginas de inicialização</translation>
 <translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo sem rastros.
 
@@ -256,33 +248,6 @@
 <translation id="209586405398070749">Canal Stable</translation>
 <translation id="2098658257603918882">Ativar relato de uso e dados relacionados a falhas</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
-<translation id="2126314858836465216">Fornece configurações para impressoras empresariais vinculadas a dispositivos.
-
-      Esta política permite que você forneça configurações de impressora para
-      dispositivos <ph name="PRODUCT_OS_NAME" />.
-      O tamanho do arquivo não pode exceder 5 MB e precisa estar codificado em JSON.
-      O formato é o mesmo que o do dicionário NativePrinters. Estima-se 
-      que um arquivo contendo aproximadamente 21.000 impressoras será codificado como um arquivo de
-      5 MB. O hash criptográfico é usado para verificar a integridade do
-      download.
-
-      O arquivo é transferido por download e armazenado em cache. O download dele será feito novamente sempre que
-      o URL ou o hash forem alterados.
-
-      Se esta política for definida,
-      o <ph name="PRODUCT_OS_NAME" /> fará o download
-      do arquivo para as configurações de impressora e disponibilizará as impressoras de
-      acordo com DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
-      e DeviceNativePrintersBlacklist.
-
-      Esta política não afeta se os usuários podem configurar impressoras em
-      dispositivos individuais. Ela se destina a complementar a
-      configuração de impressoras por usuários individuais.
-
-      Esta política é adicional a NativePrintersBulkConfiguration.
-
-      Se esta política for deixada sem definição, não haverá nenhuma impressora, e as outras
-      políticas NativeDevicePrinter* serão ignoradas.</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
 <translation id="2134437727173969994">Autorizar bloqueio da tela</translation>
@@ -516,22 +481,6 @@
       Cada entrada da lista especifica um identificador, que é usado internamente para diferenciar as contas locais de dispositivo.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio obrigatório para hosts de acesso remoto</translation>
 <translation id="2787173078141616821">Informações de relatório sobre o status do Android</translation>
-<translation id="2789419769822054691">Especifica as impressoras que o usuário pode utilizar.
-
-      Esta política é usada apenas se WhitelistPrintersOnly é escolhida para
-      DeviceNativePrintersAccessMode.
-
-      Se esta política for usada, apenas as impressoras com códigos correspondentes aos valores
-      contidos nesta política serão disponibilizadas para o usuário. Os códigos precisam corresponder
-      às entradas no arquivo especificado em DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Especifica as impressoras que um usuário não pode usar.
-
-      Esta política é usada apenas se BlacklistRestriction é escolhida para
-      NativePrintersBulkAccessMode.
-
-      Se esta política for usada, todas as impressoras serão fornecidas ao usuário,
-      com exceção dos códigos listados nesta política.
-      </translation>
 <translation id="2801230735743888564">Permite que os usuários joguem o easter egg de dinossauro quando o dispositivo estiver off-line.
 
       Se esta política for configurada como "False", não será possível jogar o easter egg de dinossauro quando o dispositivo estiver off-line. Se esta configuração for definida como "True", os usuários estarão autorizados a jogar o easter egg de dinossauro. Se esta política não for configurada, os usuários não terão autorização para jogar o easter egg de dinossauro em Chrome OS registrados, mas poderão jogá-lo em outras circunstâncias.</translation>
@@ -1002,7 +951,6 @@
 <translation id="4541530620466526913">Contas locais de dispositivo</translation>
 <translation id="4555850956567117258">Ativar declaração remota para o usuário</translation>
 <translation id="4557134566541205630">URL da página "Nova guia" do provedor de pesquisa padrão</translation>
-<translation id="4558592878156368639">Intervalos de horas extras quando OffHours |ignored_policies| do dispositivo são lançadas</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1103,6 +1051,48 @@
 <translation id="4980635395568992380">Tipo do dado:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
+<translation id="5010252829147312914">Especifica um conjunto de políticas que serão entregues ao tempo de execução de ARC. O valor deve ser um JSON válido.
+
+      Esta política pode ser usada para configurar quais apps Android são automaticamente instalados no dispositivo:
+
+      {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "description": "Identificador de app Android, por ex. "com.google.android.gm" para Gmail",
+              "type": "string"
+            },
+            "installType": {
+              "description": "Especifica como um app é instalado. OPTIONAL: o app não é instalado automaticamente, mas o usuário pode instalar. Esse é o padrão se esta política não for especificada. PRELOAD: o app é instalado automaticamente, mas o usuário pode desinstalar. FORCE_INSTALLED: o app é instalado automaticamente e o usuário não pode desinstalar. BLOCKED: o app é bloqueado e não pode ser instalado. Se o app foi instalado de acordo com política anterior, será desinstalado.",
+              "type": "string",
+              "enum": [
+                "OPTIONAL"
+                "PRELOAD",
+                "FORCE_INSTALLED",
+                "BLOCKED"
+              ]
+            },
+            "defaultPermissionPolicy": {
+              "description": "Política para conceder solicitações de permissão para apps. PERMISSION_POLICY_UNSPECIFIED: política não especificada. Se nenhuma política for especificada para uma permissão em nenhum nível, o comportamento `PROMPT` é usado por padrão. PROMPT: solicita que o usuário conceda uma permissão. GRANT: concede uma permissão automaticamente. DENY: nega uma permissão automaticamente.",
+              "type": "string",
+              "enum": [
+                "PERMISSION_POLICY_UNSPECIFIED",
+                "PROMPT",
+                "GRANT",
+                "DENY"
+              ]
+            },
+            "managedConfiguration": {
+              "description": "string de configuração de JSON específico do app. As chaves são definidas no manifesto do app. Normalmente, tem esta aparência '{ "key" : value }'.",
+              "type": "string"
+            }
+          }
+        }
+      }
+
+      Para fixar apps na tela de início, consulte PinnedLauncherApps.</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
@@ -1160,7 +1150,7 @@
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem iguais ou inferiores ao período de inatividade.</translation>
 <translation id="5307432759655324440">Disponibilidade do modo sem rastros</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
-<translation id="5323128137188992869">Permite que o conteúdo seja transmitido no dispositivo usando o <ph name="PRODUCT_NAME" />.
+<translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
@@ -1322,6 +1312,7 @@
           Se você definir esta política, os usuários poderão substituí-la temporariamente ativando ou desativando o cursor grande. No entanto, a escolha do usuário não é permanente e o padrão será restaurado sempre que a tela de login for exibida novamente ou quando o usuário permanecer inativo na tela de login por um minuto.
 
           Se esta política não for definida, o cursor grande será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar o cursor grande a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
+<translation id="5932767795525445337">Esta política também pode ser usada para fixar apps Android.</translation>
 <translation id="5936622343001856595">Força as consultas no Google Web Search a serem feitas com o SafeSearch ativado e impede que os usuários alterem esta configuração.
 
       Se você ativar esta configuração, o SafeSearch estará sempre ativo na Pesquisa Google.
@@ -1374,7 +1365,7 @@
 <translation id="6111936128861357925">Permitir jogo easter egg de dinossauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Permitir que todos os sites usem a geração de chaves</translation>
-<translation id="6139485614509308022">Se a política "OffHours" for definida, as políticas do dispositivo especificadas serão ignoradas (use as configurações padrão dessas políticas) durante os intervalos de tempo definidos. As políticas do dispositivo são reaplicadas pelo Chrome em todos os eventos quando o período "OffHours" começa ou termina. O usuário será notificado e forçado a se desconectar quando o período "OffHours" terminar e as políticas do dispositivo forem alteradas (ou seja, quando o usuário estiver conectado com uma conta que não é permitida).</translation>
+<translation id="6139485614509308022">Se a política "OffHours" for definida, as políticas do dispositivo especificadas serão ignoradas (use as configurações padrão dessas políticas) durante os intervalos de tempo definidos. As políticas do dispositivo são reaplicadas pelo Chrome em todos os eventos quando o período "OffHours" começa ou termina. O usuário será notificado e forçado a se desconectar quando o período "OffHours" terminar e as configurações de política do dispositivo forem alteradas (ou seja, quando o usuário estiver conectado com uma conta que não é permitida).</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="614662973812186053">Esta política também controla a coleta de dados de uso e diagnóstico do Android.</translation>
 <translation id="6155936611791017817">Definir estado padrão do cursor grande na tela de login</translation>
@@ -1901,18 +1892,6 @@
 
       Se a política for desativada ou não for definida, o login levará a perfis regulares.</translation>
 <translation id="8158758865057576716">Permite a criação de cópias em roaming dos dados de perfil do <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Controla quais impressoras da
-      NativePrintersBulkConfiguration estão disponíveis para os usuários.
-
-      Designa qual política de acesso é usada para configuração em massa de impressoras.
-      Se AllowAll for selecionada, todas as impressoras serão mostradas. Se BlacklistRestrction
-      for selecionada, NativePrintersBulkBlacklist será usada para restringir o acesso
-      às impressoras especificadas.  Se WhitelistPrintersOnly for selecionada,
-      NativePrintersWhitelist designará somente as impressoras
-      selecionáveis.
-
-      Se esta política não for definida, BlacklistRestriction será adotada.
-      </translation>
 <translation id="8170878842291747619">Permite o serviço integrado Google Tradutor em <ph name="PRODUCT_NAME" />. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> mostrará uma barra de ferramentas Google integrada que oferece a tradução da página para o usuário, quando apropriado. Se desativar esta configuração, os usuários nunca visualizarão a barra de tradução. Se ativar ou desativar esta configuração, os usuários não podem alterar ou substituir esta configuração em <ph name="PRODUCT_NAME" />. Se essa configuração for deixada sem definição, o usuário pode optar por utilizar esta função ou não.</translation>
 <translation id="817455428376641507">Permite acesso aos URLs listados, como exceções à lista negra de URLs.
 
@@ -1991,14 +1970,6 @@
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Especifica as impressoras que um usuário pode usar.
-
-      Esta política será usada apenas se WhitelistPrintersOnly for escolhida para
-      NativePrintersBulkAccessMode.
-
-      Se esta política for usada, apenas as impressoras com códigos correspondentes aos valores 
-      contidos nesta política serão disponibilizadas para o usuário. Os códigos precisam corresponder
-      às entradas no arquivo especificado em NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que deve sempre ser processada pelo navegador do host.
 
           Se esta política não estiver definida, o renderizador padrão será usado para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".
@@ -2009,30 +1980,6 @@
 <translation id="8519264904050090490">URLs de exceção manual do usuário gerenciado</translation>
 <translation id="8544375438507658205">Renderizador padrão de HTML para o <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
-<translation id="8555589883248082762">Fornece configurações para impressoras empresariais.
-
-      Esta política permite fornecer configurações de impressoras para
-      <ph name="PRODUCT_OS_NAME" /> dispositivos.
-      O tamanho do arquivo não deve exceder a 5MB e deve estar codificado em JSON.
-      O formato é o mesmo que o do dicionário NativePrinters. Estima-se
-      que um arquivo contendo aproximadamente 21.000 impressoras será codificado como um arquivo de 5MB.
-      O hash criptográfico é usado para verificar a integridade do
-      download.
-
-      O arquivo é baixado e armazenado em cache. O download será feito novamente sempre que
-      o URL ou o hash for alterado.
-
-      Se esta política for definida,
-      o <ph name="PRODUCT_OS_NAME" /> fará o download
-      do arquivo de configuração das impressoras tornando-as disponíveis de
-      acordo com NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
-      e NativePrintersBulkBlacklist.
-
-      Se você definir esta política, os usuários não poderão alterar ou modificá-la.
-
-      Esta política não tem nenhum efeito sobre a possibilidade de os usuários configurarem impressoras em
-      dispositivos individuais.  Ela destina-se a complementar a
-      configuração de impressoras por usuários individuais.</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
 <translation id="8587229956764455752">Permite a criação de novas contas de usuários</translation>
 <translation id="8614804915612153606">Desativa a atualização automática</translation>
@@ -2084,18 +2031,6 @@
 <translation id="8864975621965365890">Remove a solicitação de recusa que aparece quando um site é processado pelo <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
-<translation id="8887644176044431146">Controla quais impressoras de
-      DeviceNativePrintersConfiguration são disponibilizadas para os usuários.
-
-      Determina qual política de acesso é usada para a configuração em massa de impressoras.
-      Se AllowAll for selecionada, todas as impressoras serão exibidas. Se BlacklistRestrction
-      for selecionada, DeviceNativePrintersBlacklist será usada para restringir o acesso às
-      impressoras especificadas. Se WhitelistPrintersOnly for selecionada,
-      DeviceNativePrintersWhitelist determinará apenas as impressoras que podem ser
-      selecionadas.
-
-      Se esta política for deixada sem definição, BlacklistRestriction será aplicada.
-      </translation>
 <translation id="8906768759089290519">Ativa o modo visitante</translation>
 <translation id="8908294717014659003">Permite definir se os sites podem ter acesso a dispositivos de captura de mídia. O acesso a dispositivos de captura de mídia pode ser permitido por padrão, ou uma pergunta será feita ao usuário cada vez que um site quiser ter acesso a dispositivos de captura de mídia.
 

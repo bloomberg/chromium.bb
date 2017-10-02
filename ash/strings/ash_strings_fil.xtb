@@ -3,7 +3,7 @@
 <translationbundle lang="fil">
 <translation id="1012876632442809908">USB-C device (port sa harap)</translation>
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
-<translation id="1032891413405719768">Paubos na ang baterya ng stylus</translation>
+<translation id="1032891413405719768">Mahina na ang baterya ng stylus</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
 <translation id="1153356358378277386">Mga nakapares na device</translation>
@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="2144487987174258011">I-restart upang i-update ang Adobe Flash Player</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>
+<translation id="2220572644011485463">PIN o password</translation>
 <translation id="225680501294068881">Nag-i-scan para sa mga device...</translation>
 <translation id="2268130516524549846">Hindi pinagana ang Bluetooth</translation>
 <translation id="2268813581635650749">I-sign out ang lahat</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
 <translation id="2865888419503095837">Impormasyon ng network</translation>
 <translation id="2872961005593481000">Shut down</translation>
+<translation id="2911940648265863620">Ibinabahagi mo ang iyong screen</translation>
 <translation id="2942516765047364088">Posisyon ng shelf</translation>
 <translation id="2946119680249604491">Magdagdag ng koneksyon</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Data sa mobile</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3294437725009624529">Bisita</translation>
+<translation id="332587331255250389">Pakipalitan ang baterya</translation>
 <translation id="3364721542077212959">Mga stylus tool</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Pindutin ang Ctrl + Alt + Z upang i-disable ang pasalitang feedback.</translation>
 <translation id="5612734644261457353">Paumanhin, hindi pa rin ma-verify ang iyong password. Tandaan: kung pinalitan mo kamakailan ang iyong password, malalapat ang iyong bagong password sa sandaling mag-sign out ka, pakigamit ang lumang password dito.</translation>
 <translation id="5648021990716966815">Jack ng mikropono</translation>
+<translation id="5673434351075758678">Gagawing "<ph name="TO_LOCALE" />" mula "<ph name="FROM_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="5744083938413354016">Pag-tap upang mag-drag</translation>
 <translation id="5777841717266010279">Itigil ang screen sharing?</translation>
 <translation id="57838592816432529">I-mute</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">Naka-off ang CAPS LOCK</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Tanggihan</translation>
+<translation id="6453179446719226835">Napalitan na ang wika</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C device (port sa kanan)</translation>
 <translation id="6501401484702599040">Kina-cast ang screen sa <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +214,7 @@ Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</tran
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">Button ng menu ng IME</translation>
 <translation id="6713285437468012787">Naipares na ang bluetooth device na "<ph name="DEVICE_NAME" />" at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>

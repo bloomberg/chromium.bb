@@ -3,7 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza este código PIN nesse dispositivo: <ph name="PINCODE" /></translation>
-<translation id="1032891413405719768">A caneta stylus está com bateria fraca</translation>
+<translation id="1032891413405719768">A bateria da caneta stylus está fraca</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de ambiente de trabalho unificado</translation>
+<translation id="2220572644011485463">PIN ou palavra-passe</translation>
 <translation id="225680501294068881">A procurar dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal do lado esquerdo)</translation>
 <translation id="2865888419503095837">Informações da rede</translation>
 <translation id="2872961005593481000">Encerrar</translation>
+<translation id="2911940648265863620">Está a partilhar o seu ecrã</translation>
 <translation id="2942516765047364088">Posição da prateleira</translation>
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Dados móveis</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Convidado</translation>
+<translation id="332587331255250389">Substitua a bateria.</translation>
 <translation id="3364721542077212959">Ferramentas da caneta stylus</translation>
 <translation id="3368922792935385530">Ligado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Prima Ctrl + Alt + Z para desativar os comentários de voz.</translation>
 <translation id="5612734644261457353">Lamentamos, mas não foi possível confirmar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
 <translation id="5648021990716966815">Entrada para microfone</translation>
+<translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas definições.</translation>
 <translation id="5744083938413354016">Arrastamento através do toque</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
 <translation id="57838592816432529">Desativar som</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
+<translation id="6453179446719226835">O idioma foi alterado</translation>
 <translation id="6459472438155181876">A prolongar ecrã para <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta direita)</translation>
 <translation id="6501401484702599040">A transmitir o ecrã para <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +214,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6691659475504239918">Pesquisa + Shift + H</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>

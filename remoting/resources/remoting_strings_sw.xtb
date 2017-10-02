@@ -3,6 +3,9 @@
 <translationbundle lang="sw">
 <translation id="1002108253973310084">Toleo lisilooana la itifaki liligunduliwa. Tafadhali hakikisha kuwa umesakinisha toleo jipya la programu kwenye kompyuta zote mbili na ujaribu tena.</translation>
 <translation id="1050693411695664090">Mbaya</translation>
+<translation id="1059802506829356230">• Muundo na mwonekano mpya.
+• Tumeboresha hali ya kutenda, kutekeleza na kutegemeka.
+• Inaweza kucheza sauti katika kompyuta za Windows au Linux.</translation>
 <translation id="1152528166145813711">Chagua...</translation>
 <translation id="1199593201721843963">Funga miunganisho ya mbali</translation>
 <translation id="1291443878853470558">Lazima uwashe miunganisho ya mbali iwapo unataka kutumia Chromoting kufikia kompyuta hii.</translation>
@@ -81,6 +84,11 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2841013758207633010">Muda</translation>
 <translation id="2851754573186462851">Utiririshaji wa Programu ya Chromium</translation>
 <translation id="2888969873284818612">Hitilafu ya mtandao imetokea. Tutazima na kuwasha programu kifaa chako kikiwa mtandaoni tena.</translation>
+<translation id="289405675947420287">Fikia kompyuta yako kwa usalama ukitumia kifaa chako cha iOS. Inafanya kazi kwa haraka, ni rahisi kutumia na hailipishwi.
+
+• Pakua Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali (katika duka la Chrome kwenye Wavuti) kwenye kompyuta ambayo ungependa kufikia kutoka mbali.
+• Sakinisha Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali na ufuate maagizo ili ukamilishe shughuli ya kuweka mipangilio.
+• Kwenye kifaa chako cha iOS, fungua programu na ugonge kompyuta yako yoyote iliyounganishwa mtandaoni ili uiunganishe.</translation>
 <translation id="2894654864775534701">Kompyuta hii kwa sasa inashirikiwa chini ya akaunti tofauti.</translation>
 <translation id="2919669478609886916">Kwa sasa unashiriki mashine hii na mtumiaji mwengine. Unataka kuendelea kushiriki?</translation>
 <translation id="2921543551052660690">Mwanzoni uliingia katika akaunti kama <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Ili kufikia kompyuta zako katika akaunti hiyo, <ph name="LINK_BEGIN" />ingia katika Chromium<ph name="LINK_END" /> kwa akaunti hiyo na usakinishe tena Chromoting.</translation>
@@ -115,6 +123,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="369442766917958684">Nje ya mtandao.</translation>
 <translation id="3695446226812920698">Pata maelezo</translation>
 <translation id="3718805989288361841">Kuna hitilafu ya mipangilio ya sera ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali.  Wasiliana na msimamizi wako ili upate usaidizi.</translation>
+<translation id="3759645055923345178">Baada ya kukamilisha shughuli ya kuweka mipangilio, utaweza kufikia kompyuta kwenye ukurasa huu kwa kuweka PIN au msimbo wa kufikia</translation>
 <translation id="3776024066357219166">Kipindi chako cha Eneo-kazi la Mbali la Chrome kimekamilika.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Tafadhali thibitisha akaunti yako na PIN hapa chini ili kuruhusu ufikiaji kwa Kompyuta ya Mbali ya Chrome</translation>
@@ -155,6 +164,13 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="4660011489602794167">Onyesha kibodi</translation>
 <translation id="4703302905453407178">Kipengele kinachohitajika kimeacha kufanya kazi. Tafadhali ripoti tatizo hili kwa wasanidi programu.</translation>
 <translation id="4703799847237267011">Kipindi chako cha Chromoting kimekamilika.</translation>
+<translation id="4706355010316049867">Chrome
+Kutoka mbali
+Kompyuta ya mezani
+Ufikiaji
+Usaidizi
+Kompyuta
+PC</translation>
 <translation id="4736223761657662401">Historia ya Muunganisho</translation>
 <translation id="4741792197137897469">Uidhinishaji haujafaulu. Tafadhali ingia kwenye Chrome tena.</translation>
 <translation id="477305884757156764">Programu inafanya kazi polepole sana.</translation>
@@ -198,6 +214,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="5773590752998175013">Tarehe ya kuoanisha</translation>
 <translation id="579702532610384533">Unganisha upya</translation>
 <translation id="5810269635982033450">Skrini inafanya kazi kama padi ya kusogeza</translation>
+<translation id="5823658491130719298">Kwenye kompyuta ambayo ungependa kufikia kutoka mbali, fungua Chrome kisha ufungue <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Onyesha chaguo</translation>
 <translation id="5843054235973879827">Kwa nini hii ni salama?</translation>
 <translation id="5859141382851488196">Dirisha jipya...</translation>
@@ -272,6 +289,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="7782471917492991422">Tafadhali kagua mipangilio ya usimamizi wa nishati wa kompyuta yako na uhakikishe kuwa haijasanidiwa kulala  inapokuwa haifanyi kitu.</translation>
 <translation id="7810127880729796595">Onyesha takwimu (muunganisho: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Baadhi ya vipengele vinavyohitajika havipo. Tafadhali hakikisha kuwa unatumia toleo jipya la Chrome na ujaribu tena.</translation>
+<translation id="7850909060902317210">Sakinisha Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali kisha ufuate maagizo ili ukamilishe shughuli ya kuweka mipangilio</translation>
 <translation id="7868137160098754906">Tafadhali weka PIN yako ya kompyuta ya mbali.</translation>
 <translation id="7869445566579231750">Huna ruhusa ya kuendesha programu hii.</translation>
 <translation id="7895403300744144251">Sera za faragha kuhusu kompyuta ya mbali haziruhusu miunganisho kutoka akaunti yako.</translation>
@@ -308,6 +326,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="8642984861538780905">Wastani</translation>
 <translation id="8712909229180978490">Siwezi kuona faili zangu zilizohifadhiwa mtandaoni katika Hifadhi ya Google.</translation>
 <translation id="8743328882720071828">Ungependa kuruhusu <ph name="CLIENT_USERNAME" /> aone na adhibiti kompyuta yako?</translation>
+<translation id="8747048596626351634">Kipindi kiliacha kufanya kazi au kilishindwa kuanza. Ikiwa ~/.chrome-remote-desktop-session iko kwenye kompyuta yako ya mbali, hakikisha kwamba inaanza kutekeleza mchakato kwenye skrini utakaochukua muda mrefu kama vile kidhibiti cha dirisha au mazingira ya eneo kazi.</translation>
 <translation id="8759753423332885148">Pata maelezo zaidi.</translation>
 <translation id="8791202241915690908">Pakua Kisakinishaji cha Seva Pangishi ya Kuwasiliana na Mifumo Tofauti kutoka Mbali</translation>
 <translation id="894763922177556086">Mzuri</translation>

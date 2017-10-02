@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">An Breite anpassen</translation>
 <translation id="1088860948719068836">Angabe für "Name auf der Karte" hinzufügen</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
-<translation id="1103778128462718200">Alle gespeicherten Passwörter anzeigen...</translation>
 <translation id="1107591249535594099">Bei Aktivierung speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="1111153019813902504">Vor Kurzem aufgerufene Lesezeichen</translation>
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
@@ -411,7 +410,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
-<translation id="4021036232240155012">DNS ist der Netzwerkdienst, der den Namen einer Website in die entsprechende Internetadresse umwandelt.</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="404928562651467259">Warnung</translation>
 <translation id="4058922952496707368">Schlüssel "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -900,7 +898,6 @@
 <translation id="8118489163946903409">Zahlungsmethode</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" war nicht ordnungsgemäß auf Ihrem Computer oder im Netzwerk installiert. Bitten Sie Ihren IT-Administrator, das Problem zu lösen.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
-<translation id="8134994873729925007">Die <ph name="BEGIN_ABBR" />DNS-Adresse<ph name="END_ABBR" /> des Servers von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>
 <translation id="8150722005171944719">Die Datei unter <ph name="URL" /> kann nicht gelesen werden. Sie wurde möglicherweise entfernt oder verschoben oder die Dateiberechtigungen verhindern den Zugriff.</translation>
 <translation id="8184538546369750125">Globalen Standard verwenden (Zulassen)</translation>

@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1088860948719068836">Adicionar nome no cartão</translation>
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Mostrar todas as palavras-passe guardadas…</translation>
 <translation id="1107591249535594099">Se marcada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="1111153019813902504">Marcadores recentes</translation>
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 página Web próxima}one{# web pages nearby}other{# páginas Web próximas}}</translation>
-<translation id="4021036232240155012">O DNS é o serviço de rede que converte o nome de um Website no respetivo endereço de Internet.</translation>
 <translation id="4030383055268325496">&amp;Anular adição</translation>
 <translation id="404928562651467259">AVISO</translation>
 <translation id="4058922952496707368">Chave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -749,7 +747,7 @@
 <translation id="6895330447102777224">O seu cartão foi confirmado</translation>
 <translation id="6897140037006041989">Agente do utilizador</translation>
 <translation id="6915804003454593391">Utilizador:</translation>
-<translation id="6945221475159498467">Seleccionar</translation>
+<translation id="6945221475159498467">Selecionar</translation>
 <translation id="6948701128805548767">Para ver os métodos de recolha e os requisitos, selecione um endereço</translation>
 <translation id="6957887021205513506">O certificado do servidor parece ser uma falsificação.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Método de pagamento</translation>
 <translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao administrador de TI que resolva este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
-<translation id="8134994873729925007">Não foi possível encontrar o <ph name="BEGIN_ABBR" />endereço DNS<ph name="END_ABBR" /> do servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
 <translation id="8150722005171944719">O ficheiro em <ph name="URL" /> não é legível. Pode ter sido removido, movido ou as permissões do ficheiro podem estar a impedir o acesso.</translation>
 <translation id="8184538546369750125">Utilizar predefinição global (Permitir)</translation>

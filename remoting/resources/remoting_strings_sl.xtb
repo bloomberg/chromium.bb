@@ -3,6 +3,9 @@
 <translationbundle lang="sl">
 <translation id="1002108253973310084">Zaznana je bila nezdružljiva različica protokola. Poskrbite, da ste v obeh računalnikih nameščeni najnovejši različici, in poskusite znova.</translation>
 <translation id="1050693411695664090">Slaba</translation>
+<translation id="1059802506829356230">• Novi videz in občutek.
+• Izboljšano delovanje, odzivnost in zanesljivost.
+• Podpora za predvajanje zvoka v računalnikih s sistemom Windows ali Linux.</translation>
 <translation id="1152528166145813711">Izberite …</translation>
 <translation id="1199593201721843963">Onemogoči oddaljene povezave</translation>
 <translation id="1291443878853470558">Če želite do računalnika dostopati z Oddaljenim povezovanjem s Chromom, omogočite oddaljene povezave.</translation>
@@ -79,6 +82,11 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2841013758207633010">Čas</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Prišlo je do napake v omrežju. Ko bo naprava spet dosegljiva, bo aplikacija znova zagnana.</translation>
+<translation id="289405675947420287">Varen dostop do računalnikov iz naprave iOS. Je hitro, preprosto in brezplačno.
+
+• V računalniku, do katerega želite dostopati na daljavo, prenesite aplikacijo Oddaljeno namizje za Chrome iz Spletne trgovine Chrome.
+• Namestite programsko opremo Oddaljeno namizje za Chrome in upoštevajte navodila za dokončanje nastavitve.
+• Če se želite povezati z računalnikom, v napravi iOS odprite aplikacijo in se dotaknite enega od računalnikov, povezanih s spletom.</translation>
 <translation id="2894654864775534701">Ta računalnik je trenutno v skupni rabi z uporabo drugega računa.</translation>
 <translation id="2919669478609886916">Trenutno imate to napravo v skupni rabi z drugim uporabnikom. Ali želite nadaljevati skupno rabo?</translation>
 <translation id="2921543551052660690">V preteklosti ste se prijavljali kot <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Če želite dostopati do računalnikov v tistem računu, <ph name="LINK_BEGIN" />se prijavite v Chromium<ph name="LINK_END" /> s tistim računom in znova namestite Oddaljeno povezovanje s Chromom.</translation>
@@ -113,6 +121,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="369442766917958684">Brez povezave.</translation>
 <translation id="3695446226812920698">Oglejte si navodila</translation>
 <translation id="3718805989288361841">Napaka z nastavitvami pravilnika za Oddaljeno namizje Chrome. Če želite pomoč, se obrnite na sistemskega skrbnika.</translation>
+<translation id="3759645055923345178">Po končani nastavitvi boste lahko dostopali do računalnika na tej strani tako, da boste vnesli PIN ali kodo za dostop</translation>
 <translation id="3776024066357219166">Seja Oddaljenega namizja za Chrome je končana.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Če želite dovoliti dostop prek Oddaljenega namizja za Chrome, spodaj potrdite račun in PIN.</translation>
@@ -151,6 +160,13 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="4619978527973181021">Sprejmite in namestite</translation>
 <translation id="4703302905453407178">Zahtevana komponenta je nehala delovati. O tem obvestite razvijalce.</translation>
 <translation id="4703799847237267011">Seja Oddaljenega povezovanja s Chromom je končana.</translation>
+<translation id="4706355010316049867">Chrome
+Remote
+Desktop
+Access
+Support
+Computer
+PC</translation>
 <translation id="4736223761657662401">Zgodovina povezav</translation>
 <translation id="4741792197137897469">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Chrome.</translation>
 <translation id="477305884757156764">Ta aplikacija je prepočasna.</translation>
@@ -190,6 +206,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="5773590752998175013">Datum seznanjenja</translation>
 <translation id="579702532610384533">Znova poveži</translation>
 <translation id="5810269635982033450">Zaslon deluje kot sledilna ploščica</translation>
+<translation id="5823658491130719298">V računalniku, do katerega želite dostopati na daljavo, odprite Chrome in obiščite <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5843054235973879827">Zakaj je to varno?</translation>
 <translation id="5859141382851488196">Novo okno …</translation>
 <translation id="6011539954251327702">Storitev Oddaljeno povezovanje s Chromom omogoča varno skupno rabo računalnika v spletu. Oba uporabnika morata uporabljati aplikacijo Oddaljeno povezovanje s Chromom, ki jo najdete na <ph name="URL" />.</translation>
@@ -259,6 +276,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="7782471917492991422">Preverite nastavitve računalnika za upravljanje porabe in zagotovite, da za čas nedejavnosti ni določeno stanje pripravljenosti.</translation>
 <translation id="7810127880729796595">Prikaži statistične podatke (povezava: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Ni nekaterih zahtevanih delov. Preverite, ali imate najnovejšo različico Chroma in poskusite znova.</translation>
+<translation id="7850909060902317210">Namestite programsko opremo za Oddaljeno namizje za Chrome in upoštevajte navodila za dokončanje nastavitve</translation>
 <translation id="7868137160098754906">Vnesite PIN za oddaljeni računalnik.</translation>
 <translation id="7869445566579231750">Nimate dovoljenja za izvajanje te aplikacije.</translation>
 <translation id="7895403300744144251">Varnostni pravilniki na oddaljenem računalniku ne dovoljujejo povezav iz vašega računa.</translation>
@@ -292,6 +310,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="8642984861538780905">Zadovoljiva</translation>
 <translation id="8712909229180978490">V spletu ne vidim shranjenih datotek v Googlu Drive.</translation>
 <translation id="8743328882720071828">Ali želite dovoliti, da ima uporabnik <ph name="CLIENT_USERNAME" /> dostop do vašega računalnika in ga lahko nadzira?</translation>
+<translation id="8747048596626351634">Seja se je zrušila ali je ni bilo mogoče začeti. Če je v oddaljenem računalniku seja ~/.chrome-remote-desktop-session, poskrbite, da je v njej zagnan dolgotrajen proces v ospredju, kot je okolje namizja ali upravitelj oken.</translation>
 <translation id="8759753423332885148">Več o tem</translation>
 <translation id="8791202241915690908">Prenos namestitvenega programa za gostitelja za Oddaljeno povezovanje s Chromom</translation>
 <translation id="894763922177556086">Dobra</translation>

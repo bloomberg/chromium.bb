@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2144487987174258011">Genstart for at opdatere Adobe Flash Player</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
+<translation id="2220572644011485463">Pin- eller adgangskode</translation>
 <translation id="225680501294068881">Søger efter enheder...</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">USB-C-enhed (porten foran i venstre side)</translation>
 <translation id="2865888419503095837">Netværksoplysninger</translation>
 <translation id="2872961005593481000">Sluk</translation>
+<translation id="2911940648265863620">Du deler din skærm</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="2946119680249604491">Tilføj forbindelse</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="3294437725009624529">Gæst</translation>
+<translation id="332587331255250389">Udskift batteriet</translation>
 <translation id="3364721542077212959">Penneværktøjer</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="3371140690572404006">USB-C-enhed (porten foran i højre side)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere oplæsning.</translation>
 <translation id="5612734644261457353">Din adgangskode kunne desværre stadig ikke bekræftes. Bemærk! Hvis du har ændret din adgangskode for nylig, anvendes din nye adgangskode først, når du har logget ud. Du skal bruge den gamle adgangskode her.</translation>
 <translation id="5648021990716966815">Stik til mikrofon</translation>
+<translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Afvis</translation>
+<translation id="6453179446719226835">Sproget er blevet ændret</translation>
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C-enhed (højre port)</translation>
 <translation id="6501401484702599040">Caster skærmen til <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +214,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Adgangskode</translation>
 <translation id="6691659475504239918">Søg+Shift+H</translation>
 <translation id="6700713906295497288">IME-menuknap</translation>
 <translation id="6713285437468012787">Bluetooth-enheden "<ph name="DEVICE_NAME" />" er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>

@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Genişliğe sığdır</translation>
 <translation id="1088860948719068836">Kart Üzerindeki Adı Ekleyin</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> dilini daima çevir</translation>
-<translation id="1103778128462718200">Tüm kayıtlı şifreleri göster...</translation>
 <translation id="1107591249535594099">İşaretlenirse Chrome, formları daha hızlı doldurma amacıyla kartınızın bir kopyasını bu cihazda depolar.</translation>
 <translation id="1111153019813902504">Son yer işaretleri</translation>
 <translation id="1113869188872983271">Sıralama değişikliğini &amp;geri al</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> engellendi</translation>
 <translation id="3987940399970879459">1 MB'tan az</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
-<translation id="4021036232240155012">DNS, bir web sitesinin adını o siteye özgü İnternet adresine dönüştüren ağ hizmetidir.</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
 <translation id="404928562651467259">UYARI</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" anahtarı: <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Ödeme yöntemi</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş. BT yöneticinizden sorunu çözmesini isteyin.</translation>
 <translation id="8131740175452115882">Onayla</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" /> ana makinesinin sunucu <ph name="BEGIN_ABBR" />DNS adresi<ph name="END_ABBR" /> bulunamadı.</translation>
 <translation id="8149426793427495338">Bilgisayarınız uyku moduna geçti.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> konumundaki dosya okunamıyor. Kaldırılmış ya da taşınmış olabilir veya dosya izinleri erişimi önlüyordur.</translation>
 <translation id="8184538546369750125">Genel varsayılanı kullan (İzin ver)</translation>

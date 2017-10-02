@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Pritaikyti pagal plotį</translation>
 <translation id="1088860948719068836">Kortelėje nurodytų vardo ir pavardės pridėjimas</translation>
 <translation id="1103523840287552314">Visada versti <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Rodyti visus išsaugotus slaptažodžius...</translation>
 <translation id="1107591249535594099">Jei pažymėta, „Chrome“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="1111153019813902504">Naujausios žymės</translation>
 <translation id="1113869188872983271">&amp;Anuliuoti pertvarkymą</translation>
@@ -413,7 +412,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> užblokuota.</translation>
 <translation id="3987940399970879459">Mažiau nei 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 tinklalapis netoliese}one{# tinklalapis netoliese}few{# tinklalapiai netoliese}many{# tinklalapio netoliese}other{# tinklalapių netoliese}}</translation>
-<translation id="4021036232240155012">DNS – tai tinklo paslauga, verčianti svetainės pavadinimą į interneto adresą.</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
 <translation id="404928562651467259">ĮSPĖJIMAS</translation>
 <translation id="4058922952496707368">Raktas „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -902,7 +900,6 @@
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
-<translation id="8134994873729925007">Nepavyko rasti <ph name="HOST_NAME" /> serverio <ph name="BEGIN_ABBR" />DNS adreso<ph name="END_ABBR" />.</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> nurodyto failo negalima skaityti. Gali būti, kad jis pašalintas, perkeltas arba neleidžiama prieiga prie jo dėl failo leidimų.</translation>
 <translation id="8184538546369750125">Naudoti visuotinį numatytąjį nustatymą (leisti)</translation>

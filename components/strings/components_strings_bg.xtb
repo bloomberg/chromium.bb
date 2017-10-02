@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Побиране на ширина</translation>
 <translation id="1088860948719068836">Добавяне на името на картодържателя</translation>
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Показване на всички запазени пароли...</translation>
 <translation id="1107591249535594099">Ако поставите отметка, Chrome ще съхранява копие на картата ви на това устройство с цел по-бързо попълване на формуляри.</translation>
 <translation id="1111153019813902504">Скорошни отметки</translation>
 <translation id="1113869188872983271">&amp;Отмяна на пренареждането</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
 <translation id="3987940399970879459">По-малко от 1 МБ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
-<translation id="4021036232240155012">DNS е услугата за мрежи, която преобразува имената на уебсайтовете към техните адреси в интернет.</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="404928562651467259">ПРЕДУПРЕЖДЕНИЕ</translation>
 <translation id="4058922952496707368">Ключ „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Начин на плащане</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> не се инсталира правилно на компютъра ви или в мрежата. Помолете системния си администратор да реши този проблем.</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>
-<translation id="8134994873729925007">Не можа да бъде намерен <ph name="BEGIN_ABBR" />DNS адресът<ph name="END_ABBR" /> на сървъра на <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Компютърът ви премина в спящ режим.</translation>
 <translation id="8150722005171944719">Файлът на адрес <ph name="URL" /> не може да бъде прочетен.  Възможно е да е премахнат, преместен или разрешенията му да предотвратяват достъпа.</translation>
 <translation id="8184538546369750125">Използване на глобалната стандартна стойност (разрешаване)</translation>

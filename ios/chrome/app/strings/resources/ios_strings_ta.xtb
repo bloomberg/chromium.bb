@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">கோப்புறையைத் தேர்வுசெய்யவும்</translation>
 <translation id="1265739287306757398">எப்படி என அறிக</translation>
 <translation id="1272079795634619415">நிறுத்து</translation>
-<translation id="129553762522093515">சமீபத்தில் மூடியவை</translation>
 <translation id="1323735185997015385">நீக்கு</translation>
 <translation id="132683371494960526">மூலக் கோப்புறையை மாற்ற, இருமுறை தட்டவும்.</translation>
 <translation id="1340643665687018190">மூடு மெனு</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">சரி, வெளியேறு</translation>
 <translation id="7772032839648071052">கடவுச்சொற்றொடரை உறுதி செய்க</translation>
 <translation id="780301667611848630">தேவையில்லை</translation>
-<translation id="7851858861565204677">பிற சாதனங்கள்</translation>
 <translation id="7859704718976024901">உலாவல் வரலாறு</translation>
 <translation id="7938254975914653459">ஃபேஸ்டைம்</translation>
 <translation id="7947953824732555851">ஏற்று உள்நுழைக</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">தவறான URL</translation>
 <translation id="8820817407110198400">புத்தகக்குறிகள்</translation>
 <translation id="8840513115188359703">உங்கள் Google கணக்கிலிருந்து வெளியேறமாட்டீர்கள்.</translation>
+<translation id="8870413625673593573">சமீபத்தில் மூடியவை</translation>
 <translation id="8881801611828450202">இந்தப் படத்தை <ph name="SEARCH_ENGINE" /> இல் தேடு</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">சிக்கலைப் புகார் செய்க</translation>

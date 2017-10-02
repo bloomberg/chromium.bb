@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="2144487987174258011">Repornește ca să actualizezi Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>
+<translation id="2220572644011485463">PIN sau parolă</translation>
 <translation id="225680501294068881">Se caută gadgeturi...</translation>
 <translation id="2268130516524549846">Bluetooth dezactivat</translation>
 <translation id="2268813581635650749">Deconectați toți utilizatorii</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Dispozitiv USB-C (portul din stânga față)</translation>
 <translation id="2865888419503095837">Informații despre rețea</translation>
 <translation id="2872961005593481000">Închide</translation>
+<translation id="2911940648265863620">Acum permiți accesul la ecran</translation>
 <translation id="2942516765047364088">Poziție raft</translation>
 <translation id="2946119680249604491">Adăugați o conexiune</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Date mobile</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
 <translation id="3294437725009624529">Invitat</translation>
+<translation id="332587331255250389">Înlocuiește bateria</translation>
 <translation id="3364721542077212959">Instrumente pentru creion</translation>
 <translation id="3368922792935385530">Conectată</translation>
 <translation id="3371140690572404006">Dispozitiv USB-C (portul din dreapta față)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Apasă Ctrl + Alt + Z ca să dezactivezi feedbackul rostit.</translation>
 <translation id="5612734644261457353">Ne pare rău, parola dvs. tot nu a putut fi confirmată. Notă: dacă v-ați schimbat recent parola, aceasta se va aplica după ce vă deconectați. Vă rugăm să utilizați aici parola veche.</translation>
 <translation id="5648021990716966815">Mufă pentru microfon</translation>
+<translation id="5673434351075758678">Din „<ph name="FROM_LOCALE" />” în „<ph name="TO_LOCALE" />” după sincronizarea setărilor.</translation>
 <translation id="5744083938413354016">Tragere prin atingere</translation>
 <translation id="5777841717266010279">Oprești permiterea accesului la ecran?</translation>
 <translation id="57838592816432529">Dezactivează sunetul</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Respingeți</translation>
+<translation id="6453179446719226835">Limba a fost schimbată</translation>
 <translation id="6459472438155181876">Se extinde ecranul pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispozitiv USB-C (portul din dreapta)</translation>
 <translation id="6501401484702599040">Se proiectează ecranul pe <ph name="RECEIVER_NAME" /></translation>
@@ -208,6 +213,7 @@ Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Parolă</translation>
 <translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>
 <translation id="6713285437468012787">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” a fost conectat și este disponibil acum pentru toți utilizatorii. Puteți elimina această conexiune din Setări.</translation>

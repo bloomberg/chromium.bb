@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
 <translation id="1088860948719068836">名義人名の追加</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
-<translation id="1103778128462718200">保存したパスワードをすべて表示...</translation>
 <translation id="1107591249535594099">チェックボックスをオンにすると、Chrome はフォームに迅速に入力するために、カード情報のコピーをこのデバイスに保存します。</translation>
 <translation id="1111153019813902504">最近アクセスしたブックマーク</translation>
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
-<translation id="4021036232240155012">DNS はウェブサイトの名前をインターネット アドレスに変換するネットワーク サービスです。</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">キー「<ph name="SUBKEY" />」: <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">お支払い方法</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。管理者にこの問題を解決するよう依頼してください。</translation>
 <translation id="8131740175452115882">確認</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" /> のサーバーの <ph name="BEGIN_ABBR" />DNS アドレス<ph name="END_ABBR" />が見つかりませんでした。</translation>
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
 <translation id="8150722005171944719"><ph name="URL" /> のファイルを読むことができません。削除されたか移動された可能性があります。ファイルに対するアクセス権がない場合もあります。</translation>
 <translation id="8184538546369750125">グローバルのデフォルト値（[許可]）を使用</translation>

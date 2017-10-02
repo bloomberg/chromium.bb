@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Ricevi assistenza per Chrome</translation>
 <translation id="163860049029591106">Inizia a utilizzare Chrome OS</translation>
 <translation id="1653828314016431939">OK - Riavvia ora</translation>
+<translation id="1674870198290878346">Apri link in una finestra di navigazione in inco&amp;gnito di Chrome</translation>
 <translation id="1682634494516646069">Google Chrome non è in grado di leggere e scrivere nella directory dei dati: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
 <translation id="1718131156967340976">Seleziona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
@@ -59,6 +60,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
 <translation id="2586406160782125153">Verranno eliminati i tuoi dati di navigazione da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chrome come <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo di Chrome</translation>
+<translation id="2652691236519827073">Apri link in una nuova &amp;scheda di Chrome</translation>
 <translation id="2664962310688259219">Licenze open source di Chrome OS</translation>
 <translation id="2665296953892887393">Aiutaci a migliorare Google Chrome inviando a Google rapporti sugli arresti anomali e <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Questa estensione ha cambiato la pagina mostrata all'avvio di Chrome.</translation>
@@ -100,8 +102,10 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="3847841918622877581">Google Chrome potrebbe utilizzare servizi web per migliorare la navigazione.</translation>
 <translation id="386202838227397562">Chiudi tutte le finestre di Google Chrome e riprova.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Apri link in una finestra di navigazione in inco&amp;gnito di Chrome</translation>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
 <translation id="4028693306634653894">Apri Chrome più velocemente</translation>
+<translation id="4031074602479304239">Chrome ha impedito a questo sito di portarti alla pagina</translation>
 <translation id="4042449298237264661">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non sono più supportati.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
@@ -130,6 +134,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="4794050651896644714">Salva dati in Chrome</translation>
 <translation id="4804732725083176494">L'accesso a Chrome è disattivato dall'amministratore del dispositivo.</translation>
 <translation id="4891791193823137474">Lascia Google Chrome in esecuzione in background</translation>
+<translation id="4895437082222824641">Apri link in una nuova &amp;scheda di Chrome</translation>
 <translation id="4921569541910214635">Condividi un computer con altre persone? Ora puoi configurare Chrome come preferisci.</translation>
 <translation id="4953650215774548573">Imposta Google Chrome come browser predefinito</translation>
 <translation id="495931528404527476">In Chrome</translation>
@@ -151,6 +156,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="5430073640787465221">Il file delle preferenze è danneggiato o non valido. Google Chrome non è in grado di recuperare le impostazioni.</translation>
 <translation id="5453904507266736060">Lascia Google Chrome in esecuzione in background</translation>
 <translation id="5495581687705680288">Moduli caricati in Google Chrome</translation>
+<translation id="5524843473235508879">Reindirizzamento bloccato.</translation>
 <translation id="556024056938947818">Google Chrome sta cercando di visualizzare le password.</translation>
 <translation id="5563479599352954471">Ricerca con un tocco</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>

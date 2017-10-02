@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Activați tastatura pe ecran</translation>
 <translation id="1330985749576490863">Dezactivează Google Drive prin conexiuni celulare în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Numele politicii</translation>
-<translation id="134402861816424823">Specifică imprimantele pe care nu le poate folosi un utilizator.
-
-      Această politică este folosită numai dacă opțiunea BlacklistRestriction este aleasă pentru
-      DeviceNativePrintersAccessMode.
-
-      Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror
-      ID-uri sunt specificate în politică.
-      </translation>
 <translation id="1353966721814789986">Pagini de pornire</translation>
 <translation id="1359553908012294236">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite conectările ca invitat. Conectările ca invitat sunt profiluri <ph name="PRODUCT_NAME" /> în care toate ferestrele sunt în modul incognito.
 
@@ -261,33 +253,6 @@
 <translation id="209586405398070749">Canalul în versiune stabilă</translation>
 <translation id="2098658257603918882">Activează raportarea datelor privind utilizarea și blocările</translation>
 <translation id="2113068765175018713">Limitează durata de funcționare a dispozitivului prin repornirea automată a acestuia</translation>
-<translation id="2126314858836465216">Specifică configurațiile pentru imprimantele companiei asociate dispozitivelor.
-
-      Această politică îți permite să specifici configurațiile imprimantelor pentru
-      dispozitivele <ph name="PRODUCT_OS_NAME" />.
-      Dimensiunea fișierului nu trebuie să depășească 5 MB, iar fișierul trebuie codificat în format JSON.
-      Formatul este același cu cel al dicționarului NativePrinters. Se estimează
-      că un fișier care conține aproximativ 21.000 de imprimante va fi codificat într-un fișier de 5 MB.
-      Codul hash criptografic este folosit pentru a se verifica integritatea
-      descărcării.
-
-      Fișierul este descărcat și stocat în memoria cache. Va fi descărcat din nou, ori de câte ori
-      adresa URL sau codul hash se modifică.
-
-      Dacă politica este configurată,
-      <ph name="PRODUCT_OS_NAME" /> va descărca
-      fișierul pentru configurația imprimantei și va face imprimantele disponibile,
-      conform cu DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      și DeviceNativePrintersBlacklist.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura
-      imprimantele pe dispozitive individuale. Este menită să fie suplimentară
-      față de configurarea imprimantelor de către utilizatori individuali.
-
-      Această politică se adaugă politicii NativePrintersBulkConfiguration.
-
-      Dacă politica nu este configurată, nu vor exista imprimante asociate dispozitivelor, iar celelalte politici
-      NativeDevicePrinter* vor fi ignorate.</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
 <translation id="2134437727173969994">Permite blocarea ecranului</translation>
@@ -524,22 +489,6 @@
       Fiecare intrare de pe listă specifică un identificator, care este utilizat la nivel intern pentru a face diferența între conturile locale de pe gadget.</translation>
 <translation id="2769952903507981510">Configurați numele de domeniu necesar pentru gazdele de acces la distanță</translation>
 <translation id="2787173078141616821">Raportează informații despre starea Android</translation>
-<translation id="2789419769822054691">Specifică imprimantele pe care le poate folosi un utilizator.
-
-      Această politică este folosită numai dacă opțiunea WhitelistPrintersOnly este aleasă pentru
-      DeviceNativePrintersAccessMode.
-
-      Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile
-      din politică. ID-urile trebuie să corespundă
-      intrărilor din fișierul specificat în DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Specifică imprimantele pe care nu le poate folosi un utilizator.
-
-      Această politică este folosită numai dacă opțiunea BlacklistRestriction este aleasă pentru
-      NativePrintersBulkAccessMode.
-
-      Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror
-      ID-uri sunt specificate în politică.
-      </translation>
 <translation id="2801230735743888564">Permite utilizatorilor să joace jocul ascuns cu dinozaurul când dispozitivul este offline.
 
       Dacă această politică este dezactivată, utilizatorii nu vor putea să joace jocul ascuns cu dinozaurul când dispozitivul este offline. Dacă această politică este activată, utilizatorii pot să joace jocul cu dinozaurul. Dacă această politică nu este configurată, utilizatorii nu pot să joace jocul ascuns cu dinozaurul pe un dispozitiv înregistrat, cu sistem de operare Chrome, însă pot să îl joace în alte circumstanțe.</translation>
@@ -1018,7 +967,6 @@
 <translation id="4541530620466526913">Conturi locale de pe gadget</translation>
 <translation id="4555850956567117258">Activați atestarea la distanță pentru utilizator</translation>
 <translation id="4557134566541205630">Adresa URL pentru pagina Filă nouă a furnizorului de căutare prestabilit</translation>
-<translation id="4558592878156368639">Intervalele de inactivitate când politicile OffHours |ignored_policies| ale dispozitivului sunt lansate</translation>
 <translation id="4600786265870346112">Activați cursorul mare</translation>
 <translation id="4604931264910482931">Configurați lista neagră a mesageriei native</translation>
 <translation id="4617338332148204752">Ignoră verificarea existenței unor metaetichete în <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1184,7 +1132,7 @@
 <translation id="5318185076587284965">Activați folosirea serverelor de transmisie de către gazdele de acces la distanță</translation>
 <translation id="5323128137188992869">Permite proiectarea conținutului pe dispozitiv folosind <ph name="PRODUCT_NAME" />.
 
-      Dacă această politică este dezactivată, utilizatorii nu vor putea să proiecteze conținut pe dispozitivul lor. Dacă această politică este activată, utilizatorii pot să proiecteze conținut. Dacă această politică nu este configurată, utilizatorii nu pot să proiecteze conținut pe dispozitivele cu sistemul de operare Chrome înregistrate, însă pot să facă acest lucru pe alte dispozitive.</translation>
+          Dacă această politică este dezactivată, utilizatorii nu vor putea să proiecteze conținut pe dispozitivul lor. Dacă această politică este activată, utilizatorii pot să proiecteze conținut. Dacă această politică nu este configurată, utilizatorii nu pot să proiecteze conținut pe dispozitivele cu sistemul de operare Chrome înregistrate, însă pot să facă acest lucru pe dispozitive neînregistrate.</translation>
 <translation id="5330684698007383292">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut</translation>
 <translation id="5365946944967967336">Afișează butonul Pagina de pornire în bara de instrumente</translation>
 <translation id="5366977351895725771">Dacă această politică nu este activată, crearea utilizatorilor monitorizați de către acest utilizator va fi dezactivată. Utilizatorii monitorizați existenți vor fi în continuare disponibili.
@@ -1929,18 +1877,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă politica este dezactivată sau nu este configurată, conectarea face legătura cu profilurile obișnuite.</translation>
 <translation id="8158758865057576716">Activează crearea unor copii de roaming pentru datele profilului <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Controlează care imprimante din
-      NativePrintersBulkConfiguration sunt disponibile utilizatorilor.
-
-      Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc.
-      Dacă se selectează AllowAll, toate imprimantele sunt afișate. Dacă se selectează BlacklistRestriction,
-      se va folosi NativePrintersBulkBlacklist pentru a se restricționa accesul
-      la imprimantele specificate. Dacă se selectează WhitelistPrintersOnly,
-      NativePrintersWhitelist indică numai acele imprimante care
-      se pot selecta.
-
-      Dacă politica nu este configurată, se va folosi BlacklistRestriction în mod prestabilit.
-      </translation>
 <translation id="8170878842291747619">Activează serviciul integrat Google Traducere pe <ph name="PRODUCT_NAME" />. Dacă activați această setare, <ph name="PRODUCT_NAME" /> va afișa o bară de instrumente integrată, care oferă traducerea paginii pentru utilizator, atunci când este cazul. Dacă dezactivați această setare, utilizatorii nu vor vedea bara de traducere. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="817455428376641507">Permite accesul la adresele URL enumerate, ca excepții de la lista neagră cu adrese URL.
 
@@ -2022,14 +1958,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
 <translation id="847472800012384958">Nu permite niciunui site să afișeze ferestre pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Specifică imprimantele pe care le poate folosi un utilizator.
-
-      Această politică este folosită numai dacă opțiunea WhitelistPrintersOnly este aleasă pentru
-      NativePrintersBulkAccessMode.
-
-      Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile
-      din politică. ID-urile trebuie să corespundă
-      intrărilor din fișierul specificat în NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personalizează lista cu șabloane de adrese URL care trebuie să fie redate întotdeauna de browserul gazdă.
 
           Dacă această politică nu este configurată, va fi folosit programul de redare prestabilit pentru toate site-urile, așa cum este indicat în politica „ChromeFrameRendererSettings”.
@@ -2040,30 +1968,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8519264904050090490">Adrese URL pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
-<translation id="8555589883248082762">Specifică configurațiile pentru imprimantele companiei.
-
-      Această politică îți permite să specifici configurațiile imprimantelor pentru
-      dispozitivele <ph name="PRODUCT_OS_NAME" />
-      Dimensiunea fișierului nu trebuie să depășească 5 MB, iar fișierul trebuie codificat în format JSON.
-      Formatul este același cu cel al dicționarului NativePrinters. Se estimează
-      că un fișier care conține aproximativ 21.000 de imprimante va fi codificat într-un fișier de 5 MB.
-      Codul hash criptografic este folosit pentru a se verifica integritatea
-      descărcării.
-
-      Fișierul este descărcat și stocat în memoria cache. Va fi descărcat din nou, ori de câte ori
-      adresa URL sau codul hash se modifică.
-
-      Dacă politica este configurată,
-      <ph name="PRODUCT_OS_NAME" /> va descărca
-      fișierul pentru configurațiile imprimantelor și va face imprimantele disponibile,
-      conform cu NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
-      și NativePrintersBulkBlacklist.
-
-      Dacă această politică este configurată, utilizatorii nu pot să o modifice sau să o ignore.
-
-      Această politică nu afectează opțiunea utilizatorilor de a configura
-      imprimantele pe dispozitive individuale. Este menită să fie suplimentară
-      față de configurarea imprimantelor de către utilizatori individuali.</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="8614804915612153606">Dezactivează actualizarea automată</translation>
@@ -2117,18 +2021,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8864975621965365890">Elimină solicitarea de refuzare care apare atunci când un site web este redat de <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
-<translation id="8887644176044431146">Controlează care imprimante din
-      DeviceNativePrintersConfiguration sunt disponibile utilizatorilor.
-
-      Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc.
-      Dacă se selectează AllowAll, toate imprimantele sunt afișate. Dacă se selectează BlacklistRestriction,
-      se va folosi DeviceNativePrintersBlacklist pentru a se restricționa accesul
-      la imprimantele specificate. Dacă se selectează WhitelistPrintersOnly,
-      DeviceNativePrintersWhitelist indică numai acele imprimante care
-      se pot selecta.
-
-      Dacă politica nu este configurată, se va folosi BlacklistRestriction în mod prestabilit.
-      </translation>
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>
 <translation id="8908294717014659003">Vă permite să stabiliți dacă site-urile web au acces la dispozitivele de captură media. Accesul la dispozitivele de captură media poate fi permis în mod prestabilit sau se poate solicita confirmarea utilizatorului de fiecare dată când un site web dorește acces la dispozitivele de captură media.
 

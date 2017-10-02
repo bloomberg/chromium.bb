@@ -295,6 +295,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, vypnuté</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, tlačidlo</translation>
 <translation id="3466530247399808663">Neplatné stlačenie klávesa</translation>
+<translation id="3468959318854349468">Bez názvu</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> až <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{pravá hranatá zátvorka}few{# pravé hranaté zátvorky}many{# right brackets}other{# pravých hranatých zátvoriek}}</translation>

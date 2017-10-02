@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Szélességhez igazítás</translation>
 <translation id="1088860948719068836">Adja meg a kártyán szereplő nevet</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> - mindig legyen lefordítva</translation>
-<translation id="1103778128462718200">Az összes mentett jelszó megjelenítése…</translation>
 <translation id="1107591249535594099">Ha be van jelölve, a Chrome ezen az eszközön tárolja a kártya egy példányát az űrlapok gyorsabb kitöltéséhez.</translation>
 <translation id="1111153019813902504">Legutóbbi könyvjelzők</translation>
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
@@ -410,7 +409,6 @@
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
 <translation id="3987940399970879459">Kevesebb mint 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 közeli weboldal}other{# közeli weboldal}}</translation>
-<translation id="4021036232240155012">A DNS az a hálózati szolgáltatás, amely a webhelynevet az adott webhely internetes címére fordítja le.</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
 <translation id="404928562651467259">FIGYELMEZTETÉS</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" kulcs: <ph name="ERROR" /></translation>
@@ -618,7 +616,7 @@
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Személyre szabott tartalmak fogadása</translation>
 <translation id="5675650730144413517">Az oldal nem működik</translation>
-<translation id="5689199277474810259">Exportálás JSON-formátumba</translation>
+<translation id="5689199277474810259">Exportálás JSON formátumba</translation>
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
 <translation id="5719499550583120431">Elfogadott feltöltőkártyák.</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
@@ -899,7 +897,6 @@
 <translation id="8118489163946903409">Fizetési mód</translation>
 <translation id="8127301229239896662">A(z) „<ph name="SOFTWARE_NAME" />” nem megfelelően lett telepítve a számítógépre vagy a hálózatra. A probléma elhárítása érdekében forduljon rendszergazdájához.</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" /> szerverének <ph name="BEGIN_ABBR" />DNS-címe<ph name="END_ABBR" /> nem található.</translation>
 <translation id="8149426793427495338">Számítógépe alvó üzemmódba váltott.</translation>
 <translation id="8150722005171944719">A fájl (<ph name="URL" />) nem olvasható. Lehet, hogy eltávolították, áthelyezték, vagy a fájlengedélyek megakadályozzák a hozzáférést.</translation>
 <translation id="8184538546369750125">Globális alapértelmezés használata (Engedélyezés)</translation>

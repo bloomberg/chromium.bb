@@ -3,6 +3,9 @@
 <translationbundle lang="pt-BR">
 <translation id="1002108253973310084">Foi detectada uma versão incompatível do protocolo. Certifique-se de que você tenha a versão mais recente do software instalada em ambos os computadores e tente novamente.</translation>
 <translation id="1050693411695664090">Insatisfatória</translation>
+<translation id="1059802506829356230">• Nova aparência.
+• Desempenho, capacidade de resposta e confiabilidade aprimorados.
+• Compatibilidade com reprodução de áudio em computadores Windows ou Linux.</translation>
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="1199593201721843963">Desativar conexões remotas</translation>
 <translation id="1291443878853470558">Ative conexões remotas se desejar usar o Chromoting para acessar este computador.</translation>
@@ -71,6 +74,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar a Área de trabalho remota do Google Chrome para "Abrir como janela".</translation>
 <translation id="2540992418118313681">Gostaria de compartilhar este computador para que outro usuário o veja e controle?</translation>
+<translation id="2579271889603567289">Ocorreu uma falha no host ou não foi possível iniciá-lo.</translation>
 <translation id="2599300881200251572">Este serviço permite conexões de entrada a partir de clientes da Área de trabalho remota do Google Chrome.</translation>
 <translation id="2647232381348739934">Serviço Chromoting</translation>
 <translation id="2676780859508944670">Processando…</translation>
@@ -81,6 +85,11 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2841013758207633010">Tempo</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Ocorreu um erro de rede. Reiniciaremos o aplicativo quando seu dispositivo estiver on-line novamente.</translation>
+<translation id="289405675947420287">Acesse seu computador com segurança a partir do dispositivo iOS. É rápido, simples e gratuito.
+
+• No computador que você quer acessar remotamente, faça o download do app Área de trabalho remota do Google Chrome na Chrome Web Store.
+• Instale o software Área de trabalho remota do Google Chrome e siga as instruções para concluir a configuração.
+• No dispositivo iOS, abra o app e toque em qualquer um dos seus computadores on-line para se conectar a ele.</translation>
 <translation id="2894654864775534701">Atualmente, este computador é compartilhado com uma conta diferente.</translation>
 <translation id="2919669478609886916">Esta máquina está sendo compartilhada com outro usuário. Deseja continuar compartilhando?</translation>
 <translation id="2921543551052660690">Você fez login anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN" />faça login no Chromium<ph name="LINK_END" /> usando essa conta e reinstale o Chromoting.</translation>
@@ -115,6 +124,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="369442766917958684">Off-line.</translation>
 <translation id="3695446226812920698">Saiba como</translation>
 <translation id="3718805989288361841">Ocorreu um erro nas configurações de políticas da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para receber ajuda.</translation>
+<translation id="3759645055923345178">Depois de concluir a configuração, você conseguirá acessar o computador a partir desta página inserindo o PIN ou o código de acesso</translation>
 <translation id="3776024066357219166">Sua sessão na Área de trabalho remota do Google Chrome foi encerrada.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirme sua conta e seu PIN abaixo para permitir acesso pela Área de trabalho remota do Google Chrome.</translation>
@@ -155,9 +165,17 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4703302905453407178">Um componente necessário parou de funcionar. Informe esse problema aos desenvolvedores.</translation>
 <translation id="4703799847237267011">Sua sessão do Chromoting foi encerrada.</translation>
+<translation id="4706355010316049867">Área de trabalho
+Remota
+Chrome
+Acesso
+Compatibilidade
+Computador
+PC</translation>
 <translation id="4736223761657662401">Histórico de conexões</translation>
 <translation id="4741792197137897469">Falha na autenticação. Faça login novamente no Chrome.</translation>
 <translation id="477305884757156764">O aplicativo está muito lento.</translation>
+<translation id="4784508858340177375">Ocorreu uma falha no servidor X ou não foi possível iniciá-lo.</translation>
 <translation id="4795786176190567663">Você não tem permissão para executar esta ação.</translation>
 <translation id="4798680868612952294">Opções do mouse</translation>
 <translation id="4804818685124855865">Desconectar</translation>
@@ -198,6 +216,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="5773590752998175013">Data do pareamento</translation>
 <translation id="579702532610384533">Reconectar</translation>
 <translation id="5810269635982033450">A tela atua como um trackpad</translation>
+<translation id="5823658491130719298">No computador que você quer acessar remotamente, abra o Chrome e acesse <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Opções de exibição</translation>
 <translation id="5843054235973879827">Por que isto é seguro?</translation>
 <translation id="5859141382851488196">Nova janela...</translation>
@@ -231,6 +250,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="6572345186230665992">Para Mac (OS X Mavericks 10.9 e versões superiores)</translation>
 <translation id="6583902294974160967">Suporte</translation>
 <translation id="6612717000975622067">Enviar Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">Compartilhar</translation>
 <translation id="6668065415969892472">O PIN foi atualizado.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos os direitos reservados.</translation>
 <translation id="6705482892455291412">Depois que o código é informado, é solicitado que você aceite a conexão e inicie a sessão de compartilhamento.</translation>
@@ -272,6 +292,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="7782471917492991422">Verifique as configurações de gerenciamento de energia de seu computador para garantir que ele não esteja configurado para entrar em modo de espera quando estiver inativo.</translation>
 <translation id="7810127880729796595">Mostrar estatísticas (conexão: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do Google Chrome e tente novamente.</translation>
+<translation id="7850909060902317210">Instale o software Área de trabalho remota do Google Chrome e siga as instruções para concluir a configuração</translation>
 <translation id="7868137160098754906">Digite seu PIN do computador remoto.</translation>
 <translation id="7869445566579231750">Você não tem permissão para executar este aplicativo.</translation>
 <translation id="7895403300744144251">As políticas de segurança no computador remoto não permitem conexões a partir da sua conta.</translation>
@@ -307,6 +328,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="8642984861538780905">Regular</translation>
 <translation id="8712909229180978490">Não consigo ver meus arquivos salvos on-line no Google Drive.</translation>
 <translation id="8743328882720071828">Deseja permitir que <ph name="CLIENT_USERNAME" /> veja e controle seu computador?</translation>
+<translation id="8747048596626351634">Ocorreu uma falha na sessão ou não foi possível iniciá-la. Se ~/.chrome-remote-desktop-session existe no computador remoto, verifique se ele inicia um processo de execução longa em primeiro plano, como um ambiente de área de trabalho ou um gerenciador de janelas.</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
 <translation id="8791202241915690908">Fazer o download do instalador do host do Chromoting</translation>
 <translation id="894763922177556086">Boa</translation>

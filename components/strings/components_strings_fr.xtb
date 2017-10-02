@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Ajuster à la largeur</translation>
 <translation id="1088860948719068836">Ajouter le nom du titulaire de la carte</translation>
 <translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Afficher tous les mots de passe enregistrés…</translation>
 <translation id="1107591249535594099">Si cette case est cochée, une copie de votre carte est stockée sur cet appareil pour compléter les formulaires plus rapidement.</translation>
 <translation id="1111153019813902504">Favoris consultés récemment</translation>
 <translation id="1113869188872983271">&amp;Annuler la réorganisation</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> est bloqué</translation>
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
-<translation id="4021036232240155012">DNS est le service Web qui convertit les noms de sites Web en adresses Internet.</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
 <translation id="404928562651467259">AVERTISSEMENT</translation>
 <translation id="4058922952496707368">Clé "<ph name="SUBKEY" />" : <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Mode de paiement</translation>
 <translation id="8127301229239896662">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur votre réseau. Demandez à l'administrateur informatique de résoudre le problème.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
-<translation id="8134994873729925007">Impossible de trouver l'<ph name="BEGIN_ABBR" />adresse DNS<ph name="END_ABBR" /> du serveur <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
 <translation id="8150722005171944719">Le fichier disponible à l'adresse <ph name="URL" /> n'est pas lisible. Il est possible qu'il ait été supprimé ou déplacé, ou que les autorisations associées empêchent d'y accéder.</translation>
 <translation id="8184538546369750125">Utiliser le paramètre global par défaut ("Autoriser")</translation>

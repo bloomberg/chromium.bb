@@ -300,7 +300,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="393697183122708255">La búsqueda por voz no está disponible</translation>
 <translation id="3946611741043634542">Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones de Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
-<translation id="395206256282351086">Sugerencias de búsqueda y sitios web inhabilitadas</translation>
+<translation id="395206256282351086">Sugerencias de sitios web y búsqueda inhabilitadas</translation>
 <translation id="395922942268463099">Páginas actualizadas con frecuencia</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="397583555483684758">La sincronización ha dejado de funcionar</translation>
@@ -311,6 +311,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3997476611815694295">Almacenamiento no importante</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4013356575049925793">Comercio electrónico</translation>
+<translation id="4041402800604793551">Si continúas, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" />, así como el <ph name="BEGIN_LINK3" />aviso de privacidad para cuentas de Google creadas en Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Muestra sugerencias cuando no se puede resolver una dirección web o no se puede establecer una conexión</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -389,6 +390,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
 <translation id="4807963036345170158">Ahorro de Datos desactivado</translation>
+<translation id="4811736444948656478">El panel de navegación ocupa la mitad inferior de la pantalla</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando la ventana emergente de generación de contraseña</translation>
@@ -544,6 +546,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="6177111841848151710">Bloqueado en el motor de búsqueda actual</translation>
 <translation id="6177390657002841081">Activar Ahorro de Datos</translation>
 <translation id="6181444274883918285">Añadir excepción de sitio web</translation>
+<translation id="618555311922999635">El panel de navegación ocupa toda la pantalla</translation>
 <translation id="6192792657125177640">Excepciones</translation>
 <translation id="6210748933810148297">¿No eres <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con el tráfico de navegación. El efecto dependerá de si algún sitio web responde a la solicitud y de cómo se interpreta.
@@ -757,6 +760,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
 <translation id="8100932616285851614">Panel de navegación cerrado</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
+<translation id="8116925261070264013">Silenciados</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenido</translation>
@@ -773,6 +777,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8283853025636624853">Sincronizando con <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Pestañas estándar</translation>
+<translation id="8334426458436697004">Silencia el sonido de un sitio web específico.</translation>
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8372721116225477180">Social</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
@@ -840,7 +845,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8993760627012879038">Abre una nueva pestaña en modo incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
-<translation id="9038649477754266430">Utilizar un servicio de predicciones para que las páginas se carguen más rápido</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9060538597317784206">Ver la aplicación <ph name="APP_NAME" /> en Play Store. Valoración: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Desactivar opción para ver como ordenador</translation>

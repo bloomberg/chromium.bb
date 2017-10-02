@@ -75,12 +75,6 @@
 <translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
 <translation id="1330985749576490863"><ph name="PRODUCT_OS_NAME" />, Files uygulamasında hücresel bağlantılar üzerinden Google Drive erişimini devre dışı bırakır</translation>
 <translation id="13356285923490863">Politika Adı</translation>
-<translation id="134402861816424823">Kullanıcının kullanamayacağı yazıcıları belirtir.
-
-      Bu politika yalnızca DeviceNativePrintersAccessMode için BlacklistRestriction değeri seçilirse kullanılır.
-
-      Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında kalan tüm yazıcılar kullanıcıya sağlanır.
-      </translation>
 <translation id="1353966721814789986">Başlangıç sayfaları</translation>
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
@@ -269,19 +263,6 @@
 <translation id="209586405398070749">Mevcut ürün kanalı</translation>
 <translation id="2098658257603918882">Kullanım ve kilitlenme ile ilgili verilerin raporlanmasını etkinleştir</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
-<translation id="2126314858836465216">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
-
-      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır. Dosya 5 MB'tan daha büyük olmamalı ve JSON olarak kodlanmalıdır. Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
-
-      Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
-
-      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, yazıcı yapılandırmalarına ilişkin dosyayı indirir ve yazıcıları DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist ve DeviceNativePrintersBlacklist ile uyumlu bir şekilde kullanıma sunar.
-
-      Bu politikanın, kullanıcıların bağımsız cihazlardaki yazıcıları yapılandırıp yapılandıramamaları üzerinde herhangi bir etkisi yoktur. Bağımsız kullanıcıların yazıcı yapılandırmalarını tamamlaması amaçlanmıştır.
-
-      Bu politika, NativePrintersBulkConfiguration politikasına ektir.
-
-      Bu politika ayarlanmazsa cihaz yazıcısı olmaz ve diğer NativeDevicePrinter* politikaları yoksayılır.</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
 <translation id="2134437727173969994">Ekranı kilitlemeye izin ver</translation>
@@ -532,17 +513,6 @@
       Her liste girişi, farklı cihaz-yerel hesaplarını ayırt etmek için dahili olarak kullanılan bir tanımlayıcıyı belirtir.</translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
-<translation id="2789419769822054691">Kullanıcının kullanabileceği yazıcıları belirtir.
-
-      Bu politika yalnızca DeviceNativePrintersAccessMode için WhitelistPrintersOnly değeri seçilirse kullanılır.
-
-      Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, DeviceNativePrinters politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.</translation>
-<translation id="2794520838025002425">Kullanıcının kullanamayacağı yazıcıları belirtir.
-
-      Bu politika yalnızca NativePrintersBulkAccessMode için BlacklistRestriction değeri seçilirse kullanılır.
-
-      Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında kalan tüm yazıcılar kullanıcıya sağlanır.
-      </translation>
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
       Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
@@ -1031,7 +1001,6 @@ politikayı geçersiz kılamaz.
 <translation id="4541530620466526913">Cihaz-yerel hesaplar</translation>
 <translation id="4555850956567117258">Kullanıcı için uzaktan doğrulamayı etkinleştir</translation>
 <translation id="4557134566541205630">Varsayılan arama sağlayıcısı yeni sekme sayfası URL'si</translation>
-<translation id="4558592878156368639">Cihazın OffHours |ignored_policies| etkinleştirildiğinde kapalı olduğu saat aralıkları</translation>
 <translation id="4600786265870346112">Büyük imleci etkinleştir</translation>
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> cihazında meta etiket kontrolünü atla</translation>
@@ -2006,12 +1975,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Politika devre dışı olarak ayarlanırsa veya ayarlanmadan bırakılırsa oturum açıldığında normal profiller kullanılır.</translation>
 <translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> profil verileri için dolaşım kopyalarının oluşturulmasını etkinleştir.</translation>
-<translation id="8169931650834542988">Kullanıcıların NativePrintersBulkConfiguration politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
-
-      Toplu yazıcı yapılandırması için hangi erişim politikasının kullanılacağını belirler. AllowAll seçilirse tüm yazıcılar gösterilir. BlacklistRestrction seçilirse, belirtilen yazıcılara erişimi kısıtlamak için NativePrintersBulkBlacklist kullanılır. WhitelistPrintersOnly seçilirse, NativePrintersWhitelist yalnızca seçilebilir yazıcıları gösterir.
-
-      Bu politika ayarlanmazsa BlacklistRestriction uygulanır.
-      </translation>
 <translation id="8170878842291747619"><ph name="PRODUCT_NAME" /> üzerinde entegre Google Çeviri hizmetini sağlar.
 
       Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, uygun durumlarda sayfayı kullanıcı için çevirmeyi öneren entegre bir araç çubuğu gösterir.
@@ -2105,12 +2068,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Bir kullanıcının kullanabileceği yazıcıları belirtir.
-
-      Bu politika yalnızca NativePrintersBulkAccessMode için WhitelistPrintersOnly değeri seçilirse kullanılır.
-      .
-
-      Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, NativePrintersBulkConfiguration politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.</translation>
 <translation id="8484458986062090479">Her zaman ana makine tarayıcısı tarafından oluşturulması gereken URL kalıplarının listesini özelleştirir.
 
           Bu politika ayarlanmazsa, tüm siteler için "ChromeFrameRendererSettings" politikası tarafından belirtilen varsayılan oluşturucu kullanılır.
@@ -2121,19 +2078,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
-<translation id="8555589883248082762">Kurumsal yazıcılar için yapılandırmalar sağlar.
-
-      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır.
-      Dosya 5 MB'tan daha büyük olmamalı ve JSON olarak kodlanmamalıdır.
-      Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
-
-      Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
-
-      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, yazıcı yapılandırmalarına ilişkin dosyayı indirir ve yazıcıları NativePrintersBulkAccessMode, NativePrintersBulkWhitelist ve NativePrintersBulkBlacklist ile uyumlu bir şekilde kullanıma sunar.
-
-      Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.
-
-      Bu politikanın, kullanıcıların bağımsız cihazlardaki yazıcıları yapılandırıp yapılandıramamaları üzerinde herhangi bir etkisi yoktur. Bağımsız kullanıcıların yazıcı yapılandırmalarını tamamlaması amaçlanmıştır.</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8587229956764455752">Yeni kullanıcı hesapları oluşturulmasına izin ver</translation>
 <translation id="8614804915612153606">Otomatik Güncellemeyi devre dışı bırakır</translation>
@@ -2193,12 +2137,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
 <translation id="8870318296973696995">Ana sayfa</translation>
 <translation id="8882006618241293596">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
-<translation id="8887644176044431146">Kullanıcıların DeviceNativePrintersConfiguration politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
-
-      Toplu yazıcı yapılandırması için hangi erişim politikasının kullanılacağını belirler. AllowAll seçilirse tüm yazıcılar gösterilir. BlacklistRestriction seçilirse, belirtilen yazıcılara erişimi kısıtlamak için DeviceNativePrintersBlacklist kullanılır. WhitelistPrintersOnly seçilirse DeviceNativePrintersWhitelist, yalnızca seçilebilir yazıcıları gösterir.
-
-      Bu politika ayarlanmazsa BlacklistRestriction uygulanır.
-      </translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>
 <translation id="8908294717014659003">Web sitelerinin medya yakalama cihazlarına erişmelerine izin verilip verilmeyeceğini ayarlamanıza olanak sağlar. Medya yakalama cihazlarına erişime varsayılan olarak izin verilebilir veya bir web sitesinin medya yakalama cihazlarına erişmek istediği her defasında kullanıcıya sorulabilir.
 

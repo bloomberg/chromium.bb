@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">ફોલ્ડર પસંદ કરો</translation>
 <translation id="1265739287306757398">જાણો કેવી રીતે</translation>
 <translation id="1272079795634619415">રોકો</translation>
-<translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="1323735185997015385">કાઢી નાખો</translation>
 <translation id="132683371494960526">મૂળ ફોલ્ડર બદલવા માટે બે વાર ટૅપ કરો.</translation>
 <translation id="1340643665687018190">મેનૂ બંધ કરો</translation>
@@ -80,7 +79,7 @@
 <translation id="2381405137052800939">મૂળભૂત</translation>
 <translation id="2386793615875593361">1 પસંદ કર્યું છે</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
-<translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટાની ઍક્સેસને અવરોધિત કરી</translation>
+<translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટોની ઍક્સેસને અવરોધિત કરી</translation>
 <translation id="2584132361465095047">એકાઉન્ટ ઉમેરો...</translation>
 <translation id="2593774076813182497">આ પૃષ્ઠ છાપી શકાતું નથી.</translation>
 <translation id="2625189173221582860">પાસવર્ડ કૉપિ કર્યો</translation>
@@ -252,7 +251,7 @@
 <translation id="5871497086027727873">1 આઇટમ ખસેડી</translation>
 <translation id="5911030830365207728">Google અનુવાદ</translation>
 <translation id="5916664084637901428">ચાલુ</translation>
-<translation id="5948291296578561264">આ તમને તમારી ફોટો લાઇબ્રેરીમાં ફોટા સાચવવા દે છે.</translation>
+<translation id="5948291296578561264">આ તમને તમારી ફોટો લાઇબ્રેરીમાં ફોટો સાચવવા દે છે.</translation>
 <translation id="5953603475187800576">Google Payments માંથી સરનામાં અને ક્રેડિટ કાર્ડ્સ દર્શાવો</translation>
 <translation id="5955891643922670672">ઑફલાઇન સંસ્કરણ જોઈ રહ્યાં છે</translation>
 <translation id="5964480694698977962">નવું છૂપું ટૅબ બનાવો</translation>
@@ -278,7 +277,7 @@
 <translation id="6196207969502475924">વૉઇસ શોધ</translation>
 <translation id="6254066287920239840">બ્રાઉઝરને બદલે ઍપ્લિકેશનમાં લિંક્સ ખોલો.</translation>
 <translation id="6255097610484507482">ક્રેડિટ કાર્ડ સંપાદિત કરો </translation>
-<translation id="6308436439357671616">આ તમને ફોટા લેવા અને અપલોડ કરવા દે છે.</translation>
+<translation id="6308436439357671616">આ તમને ફોટો લેવા અને અપલોડ કરવા દે છે.</translation>
 <translation id="6314335155547195432">પાસવર્ડ જનરેટ કરો</translation>
 <translation id="6324528485781869530">સમન્વયન એકાઉન્ટ સ્વિચ કરો</translation>
 <translation id="6324669097367352121">સાઇન ઇન કરો સેટિંગ્સ</translation>
@@ -359,14 +358,13 @@
 <translation id="7769602470925380267">સ્વીકારો અને સાઇન આઉટ કરો</translation>
 <translation id="7772032839648071052">પાસફ્રેઝની પુષ્ટિ કરો</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>
-<translation id="7851858861565204677">અન્ય ઉપકરણો</translation>
 <translation id="7859704718976024901">બ્રાઉઝિંગ ઇતિહાસ</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">સ્વીકારો અને સાઇન ઇન કરો</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 <translation id="7971521879845308059">પૉપ-અપ્સ અવરોધિત કરો</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
-<translation id="8019783059653722575">આ તમને ફોટા સાચવવા અને અપલોડ કરવા દે છે.</translation>
+<translation id="8019783059653722575">આ તમને ફોટો સાચવવા અને અપલોડ કરવા દે છે.</translation>
 <translation id="8023878949384262191">વિભાગને વિસ્તૃત કરે છે.</translation>
 <translation id="8059533439631660104">વિભાગને સંકુચિત કરે છે.</translation>
 <translation id="806745655614357130">મારા ડેટાને અલગ રાખો</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">અમાન્ય URL</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="8840513115188359703">તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ થશો નહીં.</translation>
+<translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" /> પર આ છબી શોધો</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">સમસ્યાની જાણ કરો</translation>

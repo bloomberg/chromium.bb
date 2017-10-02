@@ -3,6 +3,9 @@
 <translationbundle lang="no">
 <translation id="1002108253973310084">Det ble oppdaget en ikke-kompatibel protokollversjon. Kontrollér at du har nyeste programvareversjon installert på begge datamaskinene, og prøv igjen.</translation>
 <translation id="1050693411695664090">Dårlig</translation>
+<translation id="1059802506829356230">• Brukergrensesnittet har fått nytt design.
+• Forbedret ytelse, respons og pålitelighet.
+• Støtte for avspilling av lyd fra Windows- eller Linux-datamaskiner.</translation>
 <translation id="1152528166145813711">Velg</translation>
 <translation id="1199593201721843963">Deaktiver eksterne tilkoblinger</translation>
 <translation id="1291443878853470558">Du må aktivere eksterne tilkoblinger hvis du ønsker å bruke Chromoting med denne datamaskinen.</translation>
@@ -81,6 +84,11 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2841013758207633010">Klokkeslett</translation>
 <translation id="2851754573186462851">Chromium-appstrømming</translation>
 <translation id="2888969873284818612">En nettverksfeil oppsto. Appen blir startet på nytt når enheten din er på nettet igjen.</translation>
+<translation id="289405675947420287">Få sikker tilgang til datamaskinen din fra iOS-enheter. Det er raskt, enkelt og gratis.
+
+• Last ned Chrome Eksternt skrivebord-appen fra Chrome Nettmarked på datamaskinen du vil ha ekstern tilgang til.
+• Installer Chrome Eksternt skrivebord, og følg veiledningen for å fullføre konfigureringen.
+• Åpne appen på iOS-enheten din, og trykk på en av de tilgjengelige datamaskinene dine for å koble til.</translation>
 <translation id="2894654864775534701">Denne datamaskinen er for øyeblikket delt under en annen konto.</translation>
 <translation id="2919669478609886916">Du deler denne datamaskinen med en annen bruker. Vil du fortsette å dele?</translation>
 <translation id="2921543551052660690">Du har tidligere logget på som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Hvis du vil ha tilgang til datamaskiner på den kontoen, må du bruke den til å <ph name="LINK_BEGIN" />logge på Chromium<ph name="LINK_END" /> og deretter installere Chromoting på nytt.</translation>
@@ -115,6 +123,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="369442766917958684">Utenfor nettet.</translation>
 <translation id="3695446226812920698">Sånn gjør du det</translation>
 <translation id="3718805989288361841">Det er noe feil med innstillingene for retningslinjene for Chrome Eksternt skrivebord. Kontakt systemadministratoren din for å få hjelp.</translation>
+<translation id="3759645055923345178">Når konfigureringen er fullført, kan du bruke datamaskinen fra denne siden ved å skrive inn PIN- eller tilgangskoden</translation>
 <translation id="3776024066357219166">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekreft kontoen og PIN-koden din nedenfor for å tillate tilgang via Chrome Eksternt skrivebord.</translation>
@@ -155,6 +164,13 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="4660011489602794167">Vis tastatur</translation>
 <translation id="4703302905453407178">En nødvendig komponent har sluttet å fungere. Vennligst rapportér dette problemet til utviklerne.</translation>
 <translation id="4703799847237267011">Chromoting-økten er avsluttet.</translation>
+<translation id="4706355010316049867">Chrome
+Eksternt
+Skrivebord
+Bruk
+Brukerstøtte
+Datamaskin
+PC</translation>
 <translation id="4736223761657662401">Tilkoblingslogg</translation>
 <translation id="4741792197137897469">Autentiseringen mislyktes. Logg på Chrome på nytt.</translation>
 <translation id="477305884757156764">Appen er for langsom.</translation>
@@ -198,6 +214,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="5773590752998175013">Tilknytningsdato</translation>
 <translation id="579702532610384533">Koble til på nytt</translation>
 <translation id="5810269635982033450">Skjermen fungerer som en styreflate</translation>
+<translation id="5823658491130719298">Åpne Chrome på datamaskinen du vil ha ekstern tilgang til, og gå til <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Visningsalternativer</translation>
 <translation id="5843054235973879827">Hvorfor er dette trygt?</translation>
 <translation id="5859141382851488196">Nytt vindu</translation>
@@ -272,6 +289,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="7782471917492991422">Kontrollér datamaskinens strøminnstillinger og sørg for at den ikke er konfigurert til å gå i dvale når den ikke er i bruk.</translation>
 <translation id="7810127880729796595">Vis statistikk (tilkobling: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av Chrome, og prøv på nytt.</translation>
+<translation id="7850909060902317210">Installer Chrome Eksternt skrivebord-programvaren, og følg veiledningen for å fullføre konfigureringen</translation>
 <translation id="7868137160098754906">Skriv inn PIN-koden for den eksterne datamaskinen.</translation>
 <translation id="7869445566579231750">Du har ikke tillatelse til å kjøre dette programmet.</translation>
 <translation id="7895403300744144251">Sikkerhetsinnstillingene på den eksterne datamaskinen tillater ikke tilkoblinger fra kontoen din.</translation>
@@ -307,6 +325,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="8642984861538780905">Akseptabel</translation>
 <translation id="8712909229180978490">Jeg ser ikke de lagrede filene mine på nettet i Google Disk.</translation>
 <translation id="8743328882720071828">Vil du tillate at <ph name="CLIENT_USERNAME" /> kan se og kontrollere datamaskinen din?</translation>
+<translation id="8747048596626351634">Økten kræsjet eller kunne ikke starte. Hvis ~/.chrome-remote-desktop-session eksisterer på den eksterne datamaskinen, må du sørge for at den starter en prosess i forgrunnen som kjører lenge – for eksempel et skrivebordsmiljø eller en vindusbehandler.</translation>
 <translation id="8759753423332885148">Finn ut mer</translation>
 <translation id="8791202241915690908">Last ned installasjonsprogrammet for Chromoting-verten</translation>
 <translation id="894763922177556086">God</translation>

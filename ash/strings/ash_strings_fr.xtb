@@ -3,7 +3,7 @@
 <translationbundle lang="fr">
 <translation id="1012876632442809908">Appareil USB de type C (port situé sur l'avant de l'appareil)</translation>
 <translation id="1013923882670373915">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code suivant sur l'appareil : <ph name="PINCODE" />.</translation>
-<translation id="1032891413405719768">Le niveau de charge des piles du stylet est faible.</translation>
+<translation id="1032891413405719768">Le niveau de charge des piles du stylet est faible</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" /> : <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2144487987174258011">Redémarrez pour mettre Adobe Flash Player à jour</translation>
 <translation id="2208323208084708176">Mode bureau unifié</translation>
+<translation id="2220572644011485463">Code ou mot de passe</translation>
 <translation id="225680501294068881">Recherche d'appareils…</translation>
 <translation id="2268130516524549846">Bluetooth désactivé</translation>
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'avant)</translation>
 <translation id="2865888419503095837">Informations réseau</translation>
 <translation id="2872961005593481000">Éteindre</translation>
+<translation id="2911940648265863620">Vous partagez votre écran</translation>
 <translation id="2942516765047364088">Position de l'étagère</translation>
 <translation id="2946119680249604491">Ajouter une connexion</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Données mobiles</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
 <translation id="3294437725009624529">Invité</translation>
+<translation id="332587331255250389">Veuillez remplacer la batterie</translation>
 <translation id="3364721542077212959">Outils de stylet</translation>
 <translation id="3368922792935385530">Connecté</translation>
 <translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Appuyez sur Ctrl+Alt+Z pour désactiver les commentaires audio.</translation>
 <translation id="5612734644261457353">Désolé, nous ne pouvons toujours pas valider votre mot de passe. Remarque : si vous l'avez modifié dernièrement, votre nouveau mot de passe ne sera appliqué qu'une fois que vous vous serez déconnecté. Veuillez donc utiliser votre ancien mot de passe.</translation>
 <translation id="5648021990716966815">Connecteur micro</translation>
+<translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
 <translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
 <translation id="57838592816432529">Couper le son</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Refuser</translation>
+<translation id="6453179446719226835">La langue a été modifiée</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Appareil USB de type C (port situé sur la droite de l'appareil)</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
@@ -209,6 +214,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
+<translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6691659475504239918">Recherche+Maj+H</translation>
 <translation id="6700713906295497288">Bouton de menu IME</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>

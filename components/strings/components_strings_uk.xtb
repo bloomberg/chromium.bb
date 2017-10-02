@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">За шириною сторінки</translation>
 <translation id="1088860948719068836">Додайте ім’я на картці</translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Показати всі збережені паролі…</translation>
 <translation id="1107591249535594099">Якщо вибрати цю опцію, Chrome зберігатиме копію даних вашої картки на цьому пристрої для швидшого заповнення форм.</translation>
 <translation id="1111153019813902504">Останні закладки</translation>
 <translation id="1113869188872983271">&amp;Відмінити перевпорядкування</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> заблокований</translation>
 <translation id="3987940399970879459">Менше 1 МБ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-сторінка поруч}one{# веб-сторінка поруч}few{# веб-сторінки поруч}many{# веб-сторінок поруч}other{# веб-сторінки поруч}}</translation>
-<translation id="4021036232240155012">DNS – це мережева служба, яка перетворює назву веб-сайту на його інтернет-адресу.</translation>
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
 <translation id="404928562651467259">ЗАСТЕРЕЖЕННЯ</translation>
 <translation id="4058922952496707368">Ключ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -620,7 +618,7 @@
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5669703222995421982">Отримувати персоналізовані пропозиції</translation>
 <translation id="5675650730144413517">Сторінка не працює</translation>
-<translation id="5689199277474810259">Експортувати у форматі JSON</translation>
+<translation id="5689199277474810259">Експортувати у формат JSON</translation>
 <translation id="5710435578057952990">Ідентифікаційну інформацію цього веб-сайта не було перевірено.</translation>
 <translation id="5719499550583120431">Передплачені картки, які приймаються.</translation>
 <translation id="5720705177508910913">Поточний користувач</translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Спосіб оплати</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> неправильно встановлено на вашому комп’ютері або в мережі. Попросіть IT-адміністратора вирішити цю проблему.</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
-<translation id="8134994873729925007">Не вдалося знайти <ph name="BEGIN_ABBR" />адресу DNS-сервера<ph name="END_ABBR" /> хосту <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Ваш комп’ютер перейшов у режим сну.</translation>
 <translation id="8150722005171944719">Файл за адресою <ph name="URL" /> не читається. Можливо, його видалено, переміщено або доступ заборонено дозволами файлу.</translation>
 <translation id="8184538546369750125">Використовувати глобальне налаштування за умовчанням (Дозволяти)</translation>

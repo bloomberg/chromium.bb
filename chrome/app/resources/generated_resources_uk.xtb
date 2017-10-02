@@ -214,6 +214,7 @@
 <translation id="1329584516321524826">Щойно оновлено</translation>
 <translation id="1330145147221172764">Увімкнути екранну клавіатуру</translation>
 <translation id="1331977651797684645">Це я.</translation>
+<translation id="1338776410427958681">Згорнути папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="1338950911836659113">Видалення…</translation>
 <translation id="1339266338863469628">За умовчанням (слухати лише мій голос)</translation>
 <translation id="1340527397989195812">Створити резервну копію медіа-вмісту з пристрою за допомогою додатка Файли.</translation>
@@ -1201,7 +1202,6 @@
 <translation id="281133045296806353">Відкрито нове вікно в поточному сеансі веб-переглядача.</translation>
 <translation id="2812944337881233323">Вийдіть зі свого облікового запису та ввійдіть у нього знову</translation>
 <translation id="2812989263793994277">Не показувати жодних зображень</translation>
-<translation id="2814100462326464815">Фотографія повернулась в оргінальне положення</translation>
 <translation id="2814489978934728345">Припинити завантаження цієї сторінки</translation>
 <translation id="2815500128677761940">Панель закладок</translation>
 <translation id="2815693974042551705">Папка із закладками</translation>
@@ -1462,6 +1462,7 @@
 <translation id="3190558889382726167">Пароль збережено</translation>
 <translation id="3191308084656429858">{NUM_POPUPS,plural, =1{Спливаюче вікно заблоковано}one{# спливаюче вікно заблоковано}few{# спливаючі вікна заблоковано}many{# спливаючих вікон заблоковано}other{# спливаючого вікна заблоковано}}</translation>
 <translation id="3192947282887913208">Аудіофайли</translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на сервері <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3202131003361292969">Шлях</translation>
 <translation id="3202173864863109533">Звук на цій вкладці вимкнено.</translation>
@@ -1519,6 +1520,7 @@
 <translation id="329650768420594634">Застереження щодо пакування розширення</translation>
 <translation id="329838636886466101">Відновити</translation>
 <translation id="3298789223962368867">Введено недійсну URL-адресу.</translation>
+<translation id="32991397311664836">Пристрої:</translation>
 <translation id="3300394989536077382">Підписано</translation>
 <translation id="33022249435934718">Обробка GDI</translation>
 <translation id="3302340765592941254">Сповіщення про завершення завантаження</translation>
@@ -1624,6 +1626,7 @@
 <translation id="3438633801274389918">Ніндзя</translation>
 <translation id="3439153939049640737">Завжди дозволяти хосту <ph name="HOST" /> доступ до вашого мікрофона</translation>
 <translation id="3439970425423980614">Відкривання файлу PDF у вікні попереднього перегляду</translation>
+<translation id="3440663250074896476">Інші дії для закладки <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Запитувати, якщо сайт хоче запустити плагін на комп’ютері</translation>
 <translation id="3441653493275994384">Екран</translation>
 <translation id="3445830502289589282">2-га фаза автентифікації:</translation>
@@ -2099,7 +2102,6 @@
 <translation id="4158739975813877944">Відкрити список відтворення</translation>
 <translation id="4159681666905192102"><ph name="CUSTODIAN_EMAIL" /> і <ph name="SECOND_CUSTODIAN_EMAIL" /> керують цим обліковим записом для дітей.</translation>
 <translation id="4163560723127662357">Невідома клавіатура</translation>
-<translation id="4165986682804962316">Налаштування сайту</translation>
 <translation id="4166210099837486476">Відстежувати свої дії в Chrome</translation>
 <translation id="4168015872538332605">Деякі налаштування, які встановив користувач <ph name="PRIMARY_EMAIL" />, доступні для вас. Ці налаштування впливають на ваш обліковий запис, лише коли використовується паралельний вхід.</translation>
 <translation id="4172051516777682613">Завжди показувати</translation>
@@ -2268,10 +2270,12 @@
 <translation id="4454939697743986778">Цей сертифікат установив ваш системний адміністратор.</translation>
 <translation id="445923051607553918">Увійти в мережу Wi-Fi</translation>
 <translation id="4467100756425880649">Галерея Веб-магазину Chrome</translation>
+<translation id="4467101674048705704">Розгорнути папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4474155171896946103">Позначити закладками всі вкладки...</translation>
 <translation id="4475552974751346499">Пошук завантажень</translation>
 <translation id="4476590490540813026">Спортсменка</translation>
 <translation id="4478664379124702289">Зберегти посиланн&amp;я як...</translation>
+<translation id="4479424953165245642">Керувати програмами для терміналів</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481249487722541506">Завантажити розпаковане розширення...</translation>
 <translation id="4481530544597605423">Відключені пристрої</translation>
@@ -2445,6 +2449,7 @@
 <translation id="4763830802490665879">Файли cookie з багатьох сайтів буде очищено під час виходу.</translation>
 <translation id="4768332406694066911">Вас ідентифікують сертифікати від цих організацій</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4777825441726637019">Play Маркет</translation>
 <translation id="4779083564647765204">Збільшити</translation>
 <translation id="4780321648949301421">Зберегти сторінку як...</translation>
 <translation id="4781787911582943401">Збільшити масштаб екрана</translation>
@@ -2467,7 +2472,6 @@
 <translation id="4807098396393229769">Ім'я на картці</translation>
 <translation id="480990236307250886">Відкрити домашню сторінку</translation>
 <translation id="4812632551187706935">Не вдалось ініціалізувати з’єднання</translation>
-<translation id="4812684235631257312">Хост</translation>
 <translation id="4813512666221746211">Помилка мережі</translation>
 <translation id="4816492930507672669">За розміром сторінки</translation>
 <translation id="4820334425169212497">Ні</translation>
@@ -3515,7 +3519,6 @@
     <ph name="LINE_BREAK" />
     Натисніть "Далі", щоб увійти в обліковий запис <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="6419546358665792306">Завантажити розпаковане розширення</translation>
-<translation id="6422329785618833949">Фотографія обернулася</translation>
 <translation id="642282551015776456">Не може використовуватися як ім’я файлу чи назва папки</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6426200009596957090">Відкрити налаштування ChromeVox</translation>
@@ -3745,6 +3748,7 @@
 <translation id="6751256176799620176">Вибрано 1 папку</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Анонімний перегляд)</translation>
 <translation id="6757101664402245801">URL-адресу скопійовано</translation>
+<translation id="6758056191028427665">Поділіться з нами своїми враженнями.</translation>
 <translation id="6759193508432371551">Відновлення заводських налаштувань</translation>
 <translation id="6766101255664245434">Робіть новий знімок або вибирайте наявне фото чи значок.
           <ph name="LINE_BREAK" />
@@ -4334,7 +4338,6 @@
 <translation id="7710568461918838723">&amp;Транслювати…</translation>
 <translation id="7713320380037170544">Дозволити всім сайтам використовувати виняткові повідомлення системи, щоб отримувати доступ до пристроїв MIDI</translation>
 <translation id="7714464543167945231">Сертифікат</translation>
-<translation id="7716020873543636594">Автоматично натискати, коли курсор миші зупиняється</translation>
 <translation id="7716781361494605745">URL-адреса політики Центру сертифікації Netscape</translation>
 <translation id="7716970641886237992">Змінено користувачем</translation>
 <translation id="7717014941119698257">Завантаження: <ph name="STATUS" /></translation>
@@ -4412,6 +4415,7 @@
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">Час завершення</translation>
 <translation id="7833720883933317473">Тут відображатимуться збережені спеціальні слова</translation>
+<translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">Домашню сторінку змінено на <ph name="URL" />.</translation>
 <translation id="7839051173341654115">Переглянути медіа-вміст або створити його резервну копію</translation>
 <translation id="7839192898639727867">Ідентифікатор ключа суб'єкта сертифіката</translation>
@@ -4602,6 +4606,7 @@
 <translation id="8113043281354018522">Виберіть тип ліцензії</translation>
 <translation id="8116190140324504026">Докладніше...</translation>
 <translation id="8116483400482790018">Спеціальний орфографічний словник</translation>
+<translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="8116972784401310538">&amp;Диспетчер закладок</translation>
 <translation id="8118362518458010043">Розширення вимкнено, оскільки воно може бути небезпечним.</translation>
 <translation id="8118860139461251237">Керувати вашими завантаженнями</translation>
@@ -4623,14 +4628,12 @@
 <translation id="8142732521333266922">ОК, синхронізувати все</translation>
 <translation id="8146177459103116374">Якщо ви вже зареєструвалися на цьому пристрої, можна <ph name="LINK2_START" />ввійти як існуючий користувач<ph name="LINK2_END" /> .</translation>
 <translation id="8146793085009540321">Помилка під час входу. Зв’яжіться з адміністратором або повторіть спробу.</translation>
-<translation id="8148913456785123871">Показувати підказки Google Асистента на панелі запуску</translation>
 <translation id="8151185429379586178">Інструменти розробника</translation>
 <translation id="8151638057146502721">Налаштувати</translation>
 <translation id="8152091997436726702">Час очікування реєстрації принтера минув. Щоб зареєструвати принтер, підтвердьте реєстрацію на самому принтері.</translation>
 <translation id="8153607920959057464">Неможливо відобразити цей файл.</translation>
 <translation id="8154790740888707867">Немає файлу</translation>
 <translation id="815491593104042026">Помилка. Не вдалося отримати дозвіл, оскільки вас було переспрямовано на незахищену URL-адресу (<ph name="BLOCKED_URL" />). Зверніться до свого адміністратора.</translation>
-<translation id="8156020606310233796">Перегляд списку</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="816055135686411707">Помилка під час налаштування довіри сертифікату</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
@@ -4655,6 +4658,7 @@
 <translation id="8191453843330043793">Засіб розпізнавання проксі-сервера V8</translation>
 <translation id="8195027750202970175">Розмір на диску</translation>
 <translation id="8195739004487400241">Домашню сторінку змінено на <ph name="URL" />. Щоб вимкнути розширення, які змінюють домашню сторінку, натисніть "Відновити".</translation>
+<translation id="8199300056570174101">Параметри мережі (служби) і пристрою</translation>
 <translation id="8200772114523450471">Поновити</translation>
 <translation id="8202160505685531999">Щоб оновити профіль <ph name="DEVICE_TYPE" />, введіть пароль ще раз.</translation>
 <translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
@@ -5077,6 +5081,7 @@
 <translation id="8888432776533519951">Колір:</translation>
 <translation id="8892992092192084762">Установлено тему "<ph name="THEME_NAME" />".</translation>
 <translation id="8893928184421379330">На жаль, пристрій <ph name="DEVICE_LABEL" /> неможливо розпізнати.</translation>
+<translation id="8895454554629927345">Список закладок</translation>
 <translation id="88986195241502842">Сторінка вниз</translation>
 <translation id="8898786835233784856">Вибрати наступну вкладку</translation>
 <translation id="8898840733695078011">Рівень сигналу</translation>
@@ -5234,7 +5239,6 @@
 <translation id="9124003689441359348">Тут відображатимуться збережені паролі</translation>
 <translation id="912419004897138677">Кодек</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (залишилося: <ph name="LICENSE_COUNT" />)</translation>
-<translation id="9127762771585363996">Перевернути зображення з камери горизонтально</translation>
 <translation id="9128870381267983090">З'єднатися з мережею</translation>
 <translation id="9130015405878219958">Введено недійсний режим.</translation>
 <translation id="9130775360844693113">Учасники, які мають доступ до розташування "<ph name="DESTINATION_NAME" />", отримають доступ до цих елементів.</translation>
@@ -5307,6 +5311,7 @@
 <translation id="958515377357646513">Торкніться, щоб перейти далі.</translation>
 <translation id="960719561871045870">Код оператора</translation>
 <translation id="960987915827980018">Залишилася приблизно 1 год.</translation>
+<translation id="962802172452141067">Дерево папок із закладками</translation>
 <translation id="968174221497644223">Кеш програми</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 вкладка}one{# вкладка}few{# вкладки}many{# вкладок}other{# вкладки}}</translation>
 <translation id="970794034573172516">Увімкнути голосову й аудіоактивність</translation>

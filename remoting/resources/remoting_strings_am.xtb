@@ -3,6 +3,9 @@
 <translationbundle lang="am">
 <translation id="1002108253973310084">ተኳሃኝ ያልሆነ የፕሮቶኮል ስሪት ተገኝቷል። እባክዎ በሁለቱም ኮምፒውተሮች ላይ የሶፍትዌሩ የቅርብ ጊዜ ስሪት እንዳለዎት ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="1050693411695664090">ደካማ</translation>
+<translation id="1059802506829356230">• አዲስ መልክ እና ስሜት።
+• የተሻሻለ አፈጻጸም፣ ምላሽ ሰጪነት እና አስተማማኝነት።
+• ኦዲዮን ከWindows ወይም Linux ኮምፒውተሮች የማጫወት ድጋፍ።</translation>
 <translation id="1152528166145813711">ይምረጡ…</translation>
 <translation id="1199593201721843963">የርቀት ግንኙነቶችን አሰናክል</translation>
 <translation id="1291443878853470558">Chromotingን ተጠቅመው ይህንን ኮምፒውተር መድረስ ከፈለጉ የርቀት ግንኙነቶችን ማንቃት አለብዎት።</translation>
@@ -71,6 +74,7 @@
 <translation id="2509394361235492552">ከ<ph name="HOSTNAME" /> ጋር ተገናኝቷል</translation>
 <translation id="2512228156274966424">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chrome የርቀት ዴስክቶፕ ወደ «እንደ መስኮት ክፈት» ማዋቀር ይችላሉ።</translation>
 <translation id="2540992418118313681">ሌላ ተጠቃሚ ይህን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር ማጋራት ይፈልጋሉ?</translation>
+<translation id="2579271889603567289">አስተናጋጅ ተበላሽቷል ወይም መጀመር አልቻለም።</translation>
 <translation id="2599300881200251572">ይህ አገልግሎት ከChrome የርቀት ዴስክቶፕ ደንበኞች ገቢ ግንኙነቶችን ያነቃል።</translation>
 <translation id="2647232381348739934">Chromoting አገልግሎት</translation>
 <translation id="2676780859508944670">በመስራት ላይ…</translation>
@@ -81,6 +85,11 @@
 <translation id="2841013758207633010">ሰዓት</translation>
 <translation id="2851754573186462851">የChromium መተግበሪያ ዥረት</translation>
 <translation id="2888969873284818612">አንድ የአውታረ መረብ ስህተት ተከስቷል። መሣሪያዎችዎ ዳግም መስመር ላይ ሲሆኑ መተግበሪያውን ዳግም እናስጀምረዋለን።</translation>
+<translation id="289405675947420287">ኮምፒውተርዎን ከiOS መሣሪያዎ ሆነው ደህንነቱ በተጠበቀ መልኩ ይድረሱበት። ፈጣን፣ ቀላል እና ነጻ ነው።
+
+• በርቀት ሊደርሱበት በሚፈልጉት ኮምፒውተር ላይ የChrome ርቀት ዴስክቶፕ መተግበሪያውን በChrome ድር መደብር ላይ ያግኙት።
+• የChrome ርቀት ዴስክቶፕ ሶፍትዌሩን ይጫኑትና ማዋቀር ለማጠናቀቅ መመሪያዎቹን ይከተሉ።
+• በእርስዎ iOS መሣሪያ ላይ መተግበሪያውን ይክፈቱና ለመገናኘት ማንኛውም የመስመር ላይ ኮምፒውተሮችዎን መታ ያድርጉ።</translation>
 <translation id="2894654864775534701">ይህ ኮምፒውተር በተለየ መለያ ስር አሁን ላይ ተጋርቷል።</translation>
 <translation id="2919669478609886916">በአሁኑ ጊዜ ይህንን ማሽን ከሌላ ተጠቃሚ ጋር እየተጋሩ ነዎት። ማጋራቱን መቀጠል ይፈልጋሉ?</translation>
 <translation id="2921543551052660690">ከዚህ ቀደም እንደ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ሆነው ገብተዋል። በዚያ መለያ ውስጥ የእርስዎን ኮምፒውተሮች ለመድረስ በዚያ መለያ <ph name="LINK_BEGIN" />ወደ Chromium ይግቡ<ph name="LINK_END" />ና Chromotingን ዳግም ይጫኑት።</translation>
@@ -115,6 +124,7 @@
 <translation id="369442766917958684">ከመስመር ውጪ።</translation>
 <translation id="3695446226812920698">እንዴት እንደሆነ ይወቁ</translation>
 <translation id="3718805989288361841">በChrome የርቀት ዴስክቶፕ የመመሪያ ቅንብሮች ውስጥ አንድ ስህተት አለ። እገዛ ለማግኘት የሥርዓት አስተዳዳሪዎን ያነጋግሩ።</translation>
+<translation id="3759645055923345178">ማዋቀር ከተጠናቀቀ በኋላ ፒን ወይም የመዳረሻ ኮድ በማስገባት ከዚህ ገጽ ሆነው ኮምፒውተሩን መድረስ ይችላሉ</translation>
 <translation id="3776024066357219166">የChrome የርቀት ዴስክቶፕ ክፍለ-ጊዜው ተጠናቅቋል።</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">እባክዎ በChrome የርቀት ዴስክቶፕ መዳረሻ ለመፍቀድ መለያዎን እና ፒንዎን ከዚህ በታች ያረጋግጡ።</translation>
@@ -155,9 +165,17 @@
 <translation id="4660011489602794167">የቁልፍ ሰሌዳን አሳይ</translation>
 <translation id="4703302905453407178">የሚያስፈልግ ክፍለ-አካል መሥራቱን አቁሟል። እባክዎ ይህን ችግር ለገንቢዎቹ ሪፖርት ያድርጉት።</translation>
 <translation id="4703799847237267011">የChromoting ክፍለ-ጊዜዎ ተጠናቅቋል።</translation>
+<translation id="4706355010316049867">Chrome
+የርቀት
+ዴስክቶፕ
+መዳረሻ
+ድጋፍ
+ኮምፒዩተር
+ፒሲ</translation>
 <translation id="4736223761657662401">የግንኙነት ታሪክ</translation>
 <translation id="4741792197137897469">ማረጋገጥ አልተሳካም። እባክዎ እንደገና ወደ Chrome ይግቡ።</translation>
 <translation id="477305884757156764">መተግበሪያው ከልክ በላይ ቀርፋፋ ነው።</translation>
+<translation id="4784508858340177375">X አገልጋይ ተበላሽቷል ወይም መጀመር አልቻለም።</translation>
 <translation id="4795786176190567663">ያንን እርምጃ የማከናወን ፍቃድ የለዎትም።</translation>
 <translation id="4798680868612952294">የመዳፊት አማራጮች</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
@@ -198,6 +216,7 @@
 <translation id="5773590752998175013">የተጣመረበት ቀን</translation>
 <translation id="579702532610384533">ዳግም ያገናኙ</translation>
 <translation id="5810269635982033450">ማያ ገጽ እንደ የመከታተያ ፓድ ይሆናል</translation>
+<translation id="5823658491130719298">በርቀት ሊደርሱበት በሚፈልጉት ኮምፒውተር ላይ Chromeን ይክፈቱና <ph name="INSTALLATION_LINK" />ን ይጎብኙ</translation>
 <translation id="5841343754884244200">የማሳያ አማራጮች</translation>
 <translation id="5843054235973879827">ይሄ ለምንድነው ደህንነቱ የተጠበቀ የሆነው?</translation>
 <translation id="5859141382851488196">አዲሰ መስኮት…</translation>
@@ -231,6 +250,7 @@
 <translation id="6572345186230665992">ለMac (OS X Mavericks 10.9 እና ከዚያ በላይ)</translation>
 <translation id="6583902294974160967">ድጋፍ</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del ላክ</translation>
+<translation id="6654753848497929428">አጋራ</translation>
 <translation id="6668065415969892472">የእርስዎ ፒን ተዘምኗል።</translation>
 <translation id="6681800064886881394">የቅጂ መብት 2013 Google Inc. ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="6705482892455291412">አንዴ ኮዱን ካስገቡት በኋላ ግንኙነቱን እንዲቀበሉ እና ክፍለ-ጊዜውን ማጋራት እንዲጀምሩ ጥያቄ ይደርሰዎታል።</translation>
@@ -272,6 +292,7 @@
 <translation id="7782471917492991422">እባክዎ የኮምፒውተርዎ የኃይል አስተዳደር ቅንብሮችን ያረጋግጡና ስራ ሲፈታ እንዲተኛ አለመዋቀሩን ያረጋግጡ።</translation>
 <translation id="7810127880729796595">ስታቲስቲክስን አሳይ (ግንኙነት፦ <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">አንዳንድ የሚያስፈልጉ ክፍሎች ይጎድላሉ። እባክዎ የቅርብ ጊዜውን የChrome ስሪት መጫንዎን ያረጋግጡና እንደገና ይሞክሩ።</translation>
+<translation id="7850909060902317210">ማቀናበሩን ለማጠናቀቅ የChrome ርቀት ዴስክቶፕ ሶፍትዌሩን ይጫኑና መመሪያዎቹን ይከተሉj</translation>
 <translation id="7868137160098754906">እባክዎ የእርስዎን ፒን ለርቀት ኮምፒውተር ያስገቡ</translation>
 <translation id="7869445566579231750">ይህን መተግበሪያ ለማሄድ ፍቃድ የለዎትም።</translation>
 <translation id="7895403300744144251">በርቀት ኮምፒውተሩ ላይ ያሉ የደህንነት መመሪያዎች ከእርስዎ መለያ ጋር ግንኙነቶችን አይፈቅዱም።</translation>
@@ -307,6 +328,7 @@
 <translation id="8642984861538780905">ደህና</translation>
 <translation id="8712909229180978490">የእኔን በGoogle አንጻፊ ላይ የተቀመጡ ፋይሎች ማየት አልችልም።</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> የእርስዎን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር እንዲፈቀድለት ይፈልጋሉr?</translation>
+<translation id="8747048596626351634">ክፍለ ጊዜው ተበላሽቷል ወይም ለመጀመር አልቻለም። ~/.chrome-የርቀት-ዴስክቶፕ-ክፍለ ጊዜ በርቀት ኮምፒውተሩ ላይ የሚገኝ ከሆነ እንደ የዴስክቶፕ ድባብ ወይም የመስኮት አስተዳዳሪ የመሰለ ከፊት ገጽ የሚሄድ ሂደትን በመጠቀም እንደሚጀምር ያረጋግጡ።</translation>
 <translation id="8759753423332885148">ተጨማሪ ለመረዳት።</translation>
 <translation id="8791202241915690908">Chromoting አስተናጋጅ ጫኚውን በማውረድ ላይ</translation>
 <translation id="894763922177556086">ጥሩ</translation>

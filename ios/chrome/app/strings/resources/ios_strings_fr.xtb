@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1265739287306757398">En savoir plus</translation>
 <translation id="1272079795634619415">Arrêter</translation>
-<translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1323735185997015385">Supprimer</translation>
 <translation id="132683371494960526">Appuyez deux fois pour modifier le dossier parent.</translation>
 <translation id="1340643665687018190">Fermer le menu</translation>
@@ -359,7 +358,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7769602470925380267">Accepter et se déconnecter</translation>
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="780301667611848630">Non merci</translation>
-<translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
@@ -403,6 +401,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8775144690796719618">URL non valide.</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="8840513115188359703">Vous ne serez pas déconnecté de votre compte Google.</translation>
+<translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8881801611828450202">Chercher cette image sur <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Synchronisation Google Chrome</translation>
 <translation id="895541991026785598">Signaler un problème</translation>

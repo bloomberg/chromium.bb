@@ -51,6 +51,7 @@
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
 <translation id="2144487987174258011">Start opnieuw op om Adobe Flash Player te updaten</translation>
 <translation id="2208323208084708176">Samengestelde desktopmodus</translation>
+<translation id="2220572644011485463">Pincode of wachtwoord</translation>
 <translation id="225680501294068881">Zoeken naar apparaten...</translation>
 <translation id="2268130516524549846">Bluetooth uitgeschakeld</translation>
 <translation id="2268813581635650749">Alle gebruikers uitloggen</translation>
@@ -78,6 +79,7 @@
 <translation id="2844169650293029770">USB-C-apparaat (poort links aan de voorkant)</translation>
 <translation id="2865888419503095837">Netwerkinfo</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
+<translation id="2911940648265863620">Je deelt je scherm</translation>
 <translation id="2942516765047364088">Positie van plank</translation>
 <translation id="2946119680249604491">Verbinding toevoegen</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -94,6 +96,7 @@
 <translation id="315116470104423982">Mobiele gegevens</translation>
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="332587331255250389">Vervang de batterij</translation>
 <translation id="3364721542077212959">Stylustools</translation>
 <translation id="3368922792935385530">Verbonden</translation>
 <translation id="3371140690572404006">USB-C-apparaat (poort rechts aan de voorkant)</translation>
@@ -165,6 +168,7 @@
 <translation id="5600837773213129531">Druk op Ctrl + Alt + Z om gesproken feedback uit te schakelen.</translation>
 <translation id="5612734644261457353">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd zodra je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="5648021990716966815">Microfoonaansluiting</translation>
+<translation id="5673434351075758678">Van '<ph name="FROM_LOCALE" />' naar '<ph name="TO_LOCALE" />' na synchronisatie van je instellingen.</translation>
 <translation id="5744083938413354016">Tikken en slepen</translation>
 <translation id="5777841717266010279">Stoppen met scherm delen?</translation>
 <translation id="57838592816432529">Dempen</translation>
@@ -197,6 +201,7 @@
 <translation id="639644700271529076">CAPS LOCK is uitgeschakeld</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6452181791372256707">Weigeren</translation>
+<translation id="6453179446719226835">Taal is gewijzigd</translation>
 <translation id="6459472438155181876">Scherm uitbreiden naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C-apparaat (poort aan rechterkant)</translation>
 <translation id="6501401484702599040">Scherm casten naar <ph name="RECEIVER_NAME" /></translation>
@@ -209,6 +214,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
+<translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="6691659475504239918">Zoeken+Shift+H</translation>
 <translation id="6700713906295497288">IME-menuknop</translation>
 <translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>

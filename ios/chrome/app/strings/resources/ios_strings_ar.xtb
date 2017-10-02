@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1265739287306757398">تعرَّف على الطريقة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
-<translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">انقر نقرًا مزدوجًا لتغيير المجلد الرئيسي.</translation>
 <translation id="1340643665687018190">إغلاق القائمة</translation>
@@ -66,7 +65,7 @@
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
 <translation id="2103075008456228677">‏فتح history.google.com</translation>
 <translation id="2116625576999540962">تم نقل <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
-<translation id="213900355088104901">لتتصفَّح بشكل خاص، افتح علامة تبويب في وضع التصفح المتخفي</translation>
+<translation id="213900355088104901">للتصفُّح الخاص، افتح علامة تبويب للتصفُّح المتخفي</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
@@ -80,6 +79,7 @@
 <translation id="2381405137052800939">الأساسيات</translation>
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
+<translation id="2529021024822217800">فتح الكل</translation>
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
 <translation id="2584132361465095047">إضافة حساب...</translation>
 <translation id="2593774076813182497">لا يمكن طباعة هذه الصفحة.</translation>
@@ -313,6 +313,7 @@
 <translation id="6797885426782475225">البحث الصوتي</translation>
 <translation id="6807889908376551050">إظهار الكل...</translation>
 <translation id="681368974849482173">تم إنشاء العنصر</translation>
+<translation id="6871663519944855400">فتح في وضع التصفح المتخفي</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6945221475159498467">تحديد</translation>
@@ -359,7 +360,6 @@
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
-<translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7859704718976024901">سجل التصفح</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
@@ -403,6 +403,7 @@
 <translation id="8775144690796719618">‏عنوان URL غير صالح</translation>
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="8840513115188359703">‏لن يتم تسجيل خروجك من حساب Google.</translation>
+<translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8881801611828450202">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
 <translation id="8904976895050290827">‏مزامنة Chrome</translation>
 <translation id="895541991026785598">الإبلاغ عن مشكلة</translation>

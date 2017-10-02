@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Wybierz folder</translation>
 <translation id="1265739287306757398">Instrukcje</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
-<translation id="129553762522093515">Ostatnio zamknięte</translation>
 <translation id="1323735185997015385">Usuń</translation>
 <translation id="132683371494960526">Kliknij dwukrotnie, by zmienić folder nadrzędny.</translation>
 <translation id="1340643665687018190">Zamknij menu</translation>
@@ -359,7 +358,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7769602470925380267">Zaakceptuj i wyloguj się</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
-<translation id="7851858861565204677">Inne urządzenia</translation>
 <translation id="7859704718976024901">Historia przeglądania</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
@@ -403,6 +401,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8775144690796719618">Nieprawidłowy URL</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="8840513115188359703">Nie spowoduje to wylogowania z konta Google.</translation>
+<translation id="8870413625673593573">Ostatnio zamknięte</translation>
 <translation id="8881801611828450202">Szukaj tego obrazu w: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Synchronizacja Chrome</translation>
 <translation id="895541991026785598">Zgłaszanie problemu</translation>

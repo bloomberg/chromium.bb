@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1265739287306757398">詳細</translation>
 <translation id="1272079795634619415">中止</translation>
-<translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1323735185997015385">削除</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">同意してログアウトする</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="780301667611848630">いいえ</translation>
-<translation id="7851858861565204677">その他のデバイス</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">無効なURL</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="8840513115188359703">Google アカウントへのログイン状態は維持されます。</translation>
+<translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8881801611828450202">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="8904976895050290827">Chrome の同期</translation>
 <translation id="895541991026785598">問題の報告</translation>

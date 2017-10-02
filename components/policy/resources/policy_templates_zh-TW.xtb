@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="1330985749576490863">透過行動網路連線時，停用 <ph name="PRODUCT_OS_NAME" />中「檔案」應用程式的 Google 雲端硬碟功能</translation>
 <translation id="13356285923490863">政策名稱</translation>
-<translation id="134402861816424823">指定不開放使用者使用的印表機。
-
-      只有在為 DeviceNativePrintersAccessMode
-      選擇 BlacklistRestriction 的情況下才能使用這項政策。
-
-      一旦設定了這項政策，除了本政策中列出的 ID 外，
-      其他所有印表機皆可供使用者使用。
-      </translation>
 <translation id="1353966721814789986">起始網頁</translation>
 <translation id="1359553908012294236">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 會啟用訪客登入。訪客登入是 <ph name="PRODUCT_NAME" /> 設定檔，其中的所有視窗都處於無痕模式。
 
@@ -260,30 +252,6 @@
 <translation id="209586405398070749">穩定頻道</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
-<translation id="2126314858836465216">為繫結至裝置的企業印表機進行設定。
-
-      你可以透過這項政策為 <ph name="PRODUCT_OS_NAME" /> 裝置進行印表機設定。
-      這個檔案的大小不得超過 5MB，且必須使用 JSON 編碼，
-      格式則須和 NativePrinters 字典相同。根據估計，
-      一份 5MB 的編碼檔案中可包含約 21,000 台印表機。
-      系統會使用加密編譯雜湊驗證下載完整性。
-
-      系統會為這份檔案執行下載和快取作業。如果網址或雜湊有所變更，
-      系統就會重新下載檔案。
-
-      設定這項政策後，
-      <ph name="PRODUCT_OS_NAME" /> 會下載
-      這份檔案以進行印表機設定，並根據 DeviceNativePrintersAccessMode、
-      DeviceNativePrintersWhitelist 和 DeviceNativePrintersBlacklist
-      開放使用印表機。
-
-      這項政策不會影響到使用者在個別裝置上設定印表機的權限，
-      其目的是為了使個別使用者指定的印表機設定更為完善。
-
-      這項政策是 NativePrintersBulkConfiguration 的額外政策。
-
-      如果沒有設定這項政策，就沒有裝置印表機可供使用，
-      且系統會忽略其他 NativeDevicePrinter* 政策。</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="2134437727173969994">允許鎖定畫面</translation>
@@ -518,21 +486,6 @@
       每個清單項目都會指定一個識別碼，用來在系統內部區別不同的裝置本機帳戶。</translation>
 <translation id="2769952903507981510">設定遠端存取主機所需的網域名稱</translation>
 <translation id="2787173078141616821">回報 Android 狀態的相關資訊</translation>
-<translation id="2789419769822054691">指定使用者可使用的印表機。
-
-      只有在為 DeviceNativePrintersAccessMode 選擇
-      WhitelistPrintersOnly 的情況下才能使用這項政策。
-
-      一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，
-      且 ID 必須和 DeviceNativePrinters 中指定的檔案項目相符。</translation>
-<translation id="2794520838025002425">指定哪些印表機是禁止使用的。
-
-      只有在為 NativePrintersBulkAccessMode
-      選擇 BlacklistRestriction 的情況下，這項政策才有作用。
-
-      一旦設定了這項政策，除了本政策中列出的 ID 外，
-       其他所有印表機皆可供使用者使用。
-      </translation>
 <translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
 
       如果將這項政策設為 False，使用者將無法在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。如果將這項政策設為 True，使用者就可以玩這個遊戲。如果未設定這項政策，使用者將無法在已註冊的 Chrome 作業系統中玩恐龍復活節彩蛋遊戲，但可以在其他環境下玩這個遊戲。</translation>
@@ -1004,7 +957,6 @@
 <translation id="4541530620466526913">裝置本機帳戶</translation>
 <translation id="4555850956567117258">為使用者啟用遠端認證機制</translation>
 <translation id="4557134566541205630">預設搜尋引擎新分頁網址</translation>
-<translation id="4558592878156368639">裝置 OffHours |ignored_policies| 解除時的停機時間間隔</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
@@ -1909,18 +1861,6 @@
 
       如果將這項政策設為停用或不予設定，登入時會導向一般設定檔。</translation>
 <translation id="8158758865057576716">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本。</translation>
-<translation id="8169931650834542988">控制要開放 NativePrintersBulkConfiguration 中
-      哪些印表機供使用者使用。
-
-      指派用於大量印表機設定的存取權政策。
-      如果選取 AllowAll，系統會顯示所有印表機。
-      如果選取 BlacklistRestrction，系統會使用
-      NativePrintersBulkBlacklist 限制對特定印表機的存取權。
-      如果選取 WhitelistPrintersOnly，NativePrintersWhitelist
-      會指派可選取的印表機。
-
-      如果沒有設定這項政策，系統會自動採用 BlacklistRestriction。
-      </translation>
 <translation id="8170878842291747619">啟用「<ph name="PRODUCT_NAME" />」中整合的「Google 翻譯」服務。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會顯示整合的工具列，在適當的時機為使用者翻譯網頁。如果你停用這項設定，翻譯列就不會顯示。不論你啟用或停用這項設定，使用者都無法在「<ph name="PRODUCT_NAME" />」中變更或覆寫這項設定。如果你未調整這項設定，使用者可決定是否要使用這項功能。</translation>
 <translation id="817455428376641507">允許存取所列網址，這些網址是網址黑名單的例外情況。
 
@@ -1994,14 +1934,6 @@
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">指定哪些印表機是可以使用的。
-
-      只有在為 NativePrintersBulkAccessMode 選擇
-      WhitelistPrintersOnly 的情況下，這項政策才有作用。
-
-      一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的
-      印表機，且 ID 必須和 NativePrintersBulkConfiguration 中
-      指定的檔案項目相符。</translation>
 <translation id="8484458986062090479">自訂主機瀏覽器應一律轉譯的網址模式清單。
 
           如果未設定這項政策，系統會針對所有網站使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。
@@ -2012,30 +1944,6 @@
 <translation id="8519264904050090490">管理化環境下使用者手動建立的例外網址</translation>
 <translation id="8544375438507658205">預設 <ph name="PRODUCT_FRAME_NAME" /> 的 HTML 轉譯器</translation>
 <translation id="8549772397068118889">瀏覽內容套件以外的網站時顯示警告</translation>
-<translation id="8555589883248082762">為企業印表機進行設定。
-
-      你可以透過這項政策為 <ph name="PRODUCT_OS_NAME" /> 裝置
-      進行印表機設定。
-      這個檔案的大小不得超過 5MB，且必須使用 JSON 編碼，
-      格式則須和 NativePrinters 字典相同。根據估計，
-      一個 5MB 的編碼檔案中可包含約 21,000 部印表機。 
-      系統會使用加密編譯雜湊驗證
-      下載完整性。
-
-      系統會為這個檔案執行下載和快取作業。如果網址或雜湊有所變更，
-      系統就會重新下載檔案。
-
-      設定這項政策後，
-      <ph name="PRODUCT_OS_NAME" /> 會下載這個檔案
-      以進行印表機設定，並根據 NativePrintersBulkAccessMode、
-      NativePrintersBulkWhitelist 和 NativePrintersBulkBlacklist
-      開放使用印表機。
-
-      設定這項政策後，使用者無法予以變更或覆寫。
-
-      這項政策不會影響到使用者在個別裝置上
-      設定印表機的權限，其目的是為了讓個別使用者
-      指定的印表機設定更為完善。</translation>
 <translation id="8566842294717252664">在新分頁和應用程式啟動畫面中隱藏線上應用程式商店</translation>
 <translation id="8587229956764455752">允許建立新的使用者帳戶</translation>
 <translation id="8614804915612153606">停用自動更新</translation>
@@ -2087,17 +1995,6 @@
 <translation id="8864975621965365890">瀏覽使用 <ph name="PRODUCT_FRAME_NAME" />轉譯的網站時，隱藏停止支援提示。</translation>
 <translation id="8870318296973696995">首頁</translation>
 <translation id="8882006618241293596">禁止在這些網站上執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
-<translation id="8887644176044431146">控制要開放 DeviceNativePrintersConfiguration 中
-      哪些印表機供使用者使用。
-
-      指派用於大量印表機設定的存取權政策。
-      如果選取 AllowAll，系統會顯示所有印表機。如果選取 BlacklistRestrction，
-      系統會使用 DeviceNativePrintersBlacklist 限制對特定印表機的存取權。
-      如果選取 WhitelistPrintersOnly，DeviceNativePrintersWhitelist 
-      會指派可選取的印表機。
-
-      如果沒有設定這項政策，系統會自動採用 BlacklistRestriction。
-      </translation>
 <translation id="8906768759089290519">啟用訪客模式</translation>
 <translation id="8908294717014659003">讓你設定網站是否允許網站存取媒體擷取裝置。根據預設，系統允許網站存取媒體擷取裝置，你也可設為每當網站要存取媒體擷取裝置時詢問使用者。
 

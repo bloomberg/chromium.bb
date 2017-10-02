@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
 <translation id="1403254041219632970">‏لن تدعم الإصدارات المستقبلية من Chromium أنظمة Mac OS X 10.6 أو 10.7 أو 10.8.</translation>
 <translation id="1414495520565016063">‏تم تسجيل دخولك إلى Chromium!</translation>
+<translation id="1440917365206527807">‏منع Chromium هذا الموقع من توجيهك إلى</translation>
 <translation id="1444754455097148408">‏تراخيص مفتوحة المصدر لـ Chromium</translation>
 <translation id="1502360822835740515">‏جعل Chromium المتصفح الافتراضي</translation>
 <translation id="151962892725702025">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">‏أخفقت أداة التثبيت في فك ضغط الأرشيف. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="3130323860337406239">‏يستخدم Chromium الميكروفون.</translation>
 <translation id="3155163173539279776">‏إعادة تشغيل Chromium</translation>
+<translation id="3179665906251668410">‏فتح رابط في نافذة تصفح متخفٍ في Chromium</translation>
 <translation id="3190315855212034486">‏للأسف! تعطل Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="3256316712990552818">‏تم النسخ إلى Chromium</translation>
 <translation id="3258596308407688501">‏يتعذر على Chromium القراءة والكتابة في دليل البيانات الخاص به:
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">‏البدء في استخدام نظام التشغيل Chromium</translation>
 <translation id="3582788516608077514">‏جارٍ تحديث Chromium...</translation>
 <translation id="358997566136285270">‏شعار Chromium</translation>
+<translation id="3713809861844741608">‏فتح رابط في علامة تبويب جديدة في Chromium</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3762167353400286894">‏يتم عرض نظام تشغيل Chromium بهذه اللغة</translation>
 <translation id="378917192836375108">‏يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">‏يجري تحديث Chromium تلقائيًا بحيث يكون لديك أحدث إصدار. عند اكتمال هذا التحميل، ستتم إعادة تشغيل Chromium وستبدأ العمل.</translation>
 <translation id="5479196819031988440">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="549669000822060376">‏يُرجى الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
+<translation id="5524843473235508879">تم حظر إعادة التوجيه.</translation>
 <translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
 <translation id="5620765574781326016">تعرّف على مواضيع على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
@@ -176,6 +180,7 @@
 <translation id="6883876366448858277">‏إرسال الكلمة والسياق المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث الأخرى.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="6944967875980567883">‏الوحدات المحملة في Chromium</translation>
+<translation id="6964305034639999644">‏فتح رابط في نافذة تصفح متخفٍ في Chromium</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="7066436765290594559">‏تعذر على نظام التشغيل Chromium مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
@@ -255,6 +260,7 @@
 <translation id="9022552996538154597">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="9036189287518468038">‏مشغل تطبيقات Chromium</translation>
 <translation id="9089354809943900324">‏إصدار Chromium قديم</translation>
+<translation id="91086099826398415">‏فتح رابط في علامة تبويب جديدة في Chromium</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="918373042641772655">‏سيؤدي فصل <ph name="USERNAME" />إلى مسح السجّل والإشارات المرجعية والإعدادات و بيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK" />لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

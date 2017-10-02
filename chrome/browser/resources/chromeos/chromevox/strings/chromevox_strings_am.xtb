@@ -295,6 +295,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />፣ ጠፍቷል</translation>
 <translation id="3462439746547587373"><ph name="NAME" />፣ አዝራር</translation>
 <translation id="3466530247399808663">ልክ ያልሆነ የቁልፍ ጭነት</translation>
+<translation id="3468959318854349468">ርዕስ የለውም</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">ከ<ph name="V1" /> እስከ <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{የቀኝ ማዕዘን ቅንፍ}one{# የቀኝ ማዕዘን ቅንፎች}other{# የቀኝ ማዕዘን ቅንፎች}}</translation>

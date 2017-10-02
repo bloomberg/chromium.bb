@@ -135,7 +135,7 @@
 <translation id="120368089816228251">نت موسیقی</translation>
 <translation id="1205489148908752564">خواندن و تغییر کاربران فهرست مجاز</translation>
 <translation id="1206407435587370571">‏Chromebook خود را کاوش کنید</translation>
-<translation id="1211364473545090084">بدون ذخیره کردن سابقه مرور با پنجره‌ای ناشناس، از وب استفاده کنید</translation>
+<translation id="1211364473545090084">با پنجره ناشناس، بدون ذخیره کردن سابقه مرور از وب استفاده کنید</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> اثرانگشت تنظیم شده است</translation>
 <translation id="1215411991991485844">برنامه جدید پس‌زمینه اضافه شد</translation>
 <translation id="1216654534877302979">بی‌صدا کردن سایت‌ها</translation>
@@ -214,6 +214,7 @@
 <translation id="1329584516321524826">لحظاتی پیش به‌روزرسانی شد</translation>
 <translation id="1330145147221172764">فعال کردن صفحه‌کلید روی صفحه</translation>
 <translation id="1331977651797684645">من بودم.</translation>
+<translation id="1338776410427958681">کوچک کردن <ph name="FOLDER_NAME" /></translation>
 <translation id="1338950911836659113">در حال حذف...</translation>
 <translation id="1339266338863469628">پیش‌فرض (شنیدن فقط شما)</translation>
 <translation id="1340527397989195812">‏با استفاده از برنامه Files از رسانه‌ دستگاه پشتیبان بگیرید.</translation>
@@ -1104,7 +1105,7 @@
 <translation id="2688196195245426394">خطا هنگام ثبت دستگاه با سرور: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">نمایش گزینه‌های زبان</translation>
 <translation id="2691385045260836588">مدل</translation>
-<translation id="2693176596243495071">متأسفیم، خطای ناشناخته‌ای روی داد. لطفاً بعداً دوباره امتحان کنید یا اگر مشکل حل نشد، با سرپرستتان تماس بگیرید.</translation>
+<translation id="2693176596243495071">وای! خطای نامعلومی روی داد. لطفاً بعداً دوباره امتحان کنید یا اگر مشکل حل نشد، با سرپرستتان تماس بگیرید.</translation>
 <translation id="2694026874607847549">1 کوکی</translation>
 <translation id="2695749433451188613">‏پروتکل چاپ اینترنتی (HTTPS)</translation>
 <translation id="270358213449696159">‏محتوای شرایط سیستم‌عامل Google Chrome</translation>
@@ -1197,7 +1198,6 @@
 <translation id="281133045296806353">پنجرهٔ جدید ایجاد شده در جلسه مرورگر فعلی.</translation>
 <translation id="2812944337881233323">تلاش کنید از سیستم خارج و دوباره وارد شوید</translation>
 <translation id="2812989263793994277">تصویری نشان داده نشود</translation>
-<translation id="2814100462326464815">عکس وارونه شده است</translation>
 <translation id="2814489978934728345">توقف بارگیری این صفحه</translation>
 <translation id="2815500128677761940">نوار نشانک‌ها</translation>
 <translation id="2815693974042551705">پوشه نشانک</translation>
@@ -1447,7 +1447,7 @@
 <translation id="3166571619128686629">‏برای شروع جستجوی گفتاری، کلیک کنید یا بگویید «Ok Google»</translation>
 <translation id="3170072451822350649">همچنین می‌توانید از ورود به سیستم صرف‌نظر کرده، <ph name="LINK_START" />به عنوان مهمان مرور کنید<ph name="LINK_END" />.</translation>
 <translation id="3177048931975664371">برای پنهان کردن گذرواژه، کلیک کنید</translation>
-<translation id="3177857336576585529"><ph name="SITE_NAME" /> برای مجوز یک درخواست دارد.</translation>
+<translation id="3177857336576585529"><ph name="SITE_NAME" /> مجوز می‌خواهد.</translation>
 <translation id="3177909033752230686">زبان صفحه:</translation>
 <translation id="3180365125572747493">برای رمزگذاری این فایل مجوز، یک گذرواژه وارد کنید.</translation>
 <translation id="3181110748548073003">برای رفتن به جلو، |<ph name="SHORTCUT" />| را فشار دهید</translation>
@@ -1458,6 +1458,7 @@
 <translation id="3190558889382726167">گذرواژه ذخیره شد</translation>
 <translation id="3191308084656429858">{NUM_POPUPS,plural, =1{یک پنجره بازشو مسدود شد}one{# پنجره بازشو مسدود شد}other{# پنجره بازشو مسدود شد}}</translation>
 <translation id="3192947282887913208">فایل‌های صوتی</translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> در <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">سرورها</translation>
 <translation id="3202131003361292969">مسیر</translation>
 <translation id="3202173864863109533">صدای این برگه قطع شده است.</translation>
@@ -1515,6 +1516,7 @@
 <translation id="329650768420594634">هشدار در مورد پسوند بسته</translation>
 <translation id="329838636886466101">اصلاح</translation>
 <translation id="3298789223962368867">نشانی وب نامعتبری وارد شده است.</translation>
+<translation id="32991397311664836">دستگاه‌ها:</translation>
 <translation id="3300394989536077382">امضا شده توسط</translation>
 <translation id="33022249435934718">‏کنترل‌کننده‌های GDI</translation>
 <translation id="3302340765592941254">اعلان تکمیل بارگیری</translation>
@@ -1620,6 +1622,7 @@
 <translation id="3438633801274389918">نینجا</translation>
 <translation id="3439153939049640737">دسترسی <ph name="HOST" /> به میکروفون شما همیشه مجاز باشد</translation>
 <translation id="3439970425423980614">‏در حال باز کردن PDF در پیشنمایش</translation>
+<translation id="3440663250074896476">عملکردهای بیشتر برای <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">وقتی سایتی می‌خواهد از افزایه‌ای برای دسترسی به رایانه‌تان استفاده کند، سؤال شود</translation>
 <translation id="3441653493275994384">صفحه</translation>
 <translation id="3445830502289589282">راستی‌آزمایی مرحله 2:</translation>
@@ -2095,7 +2098,6 @@
 <translation id="4158739975813877944">باز کردن فهرست پخش</translation>
 <translation id="4159681666905192102">این یک حساب مخصوص بچه‌ها است که توسط <ph name="CUSTODIAN_EMAIL" /> و <ph name="SECOND_CUSTODIAN_EMAIL" /> مدیریت می‌شود.</translation>
 <translation id="4163560723127662357">صفحه‌کلید ناشناس</translation>
-<translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4166210099837486476">‏نظارت هنگامی که در Chrome اقداماتی انجام می‌دهید</translation>
 <translation id="4168015872538332605">برخی از تنظیمات متعلق به <ph name="PRIMARY_EMAIL" /> با شما به اشتراک گذاشته می‌شود. این تنظیمات وقتی از ورود چندگانه به سیستم استفاده شود، فقط در حساب شما اعمال می‌شود.</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
@@ -2264,10 +2266,12 @@
 <translation id="4454939697743986778">این گواهینامه توسط سرپرست سیستم شما نصب شده است.</translation>
 <translation id="445923051607553918">‏پیوستن به شبکه Wi-Fi</translation>
 <translation id="4467100756425880649">‏گالری فروشگاه وب Chrome</translation>
+<translation id="4467101674048705704">بزرگ کردن <ph name="FOLDER_NAME" /></translation>
 <translation id="4474155171896946103">نشانک‌گذاری همه برگه‌ها...</translation>
 <translation id="4475552974751346499">جستجوی فایل‌های بارگیری‌شده</translation>
 <translation id="4476590490540813026">ورزشکار</translation>
 <translation id="4478664379124702289">ذخیره پی&amp;وند به‌عنوان...</translation>
+<translation id="4479424953165245642">مدیریت برنامه‌های کاربردی کیوسک</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4481249487722541506">بارگیری افزونه غیرفشرده</translation>
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
@@ -2441,6 +2445,7 @@
 <translation id="4763830802490665879">کوکی‌های سایت‌های مختلف در هنگام خروج پاک خواهند شد.</translation>
 <translation id="4768332406694066911">گواهی‌هایی از این سازمان‌ها دارید که هویت شما را شناسایی می‌کنند</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4777825441726637019">‏فروشگاه Play</translation>
 <translation id="4779083564647765204">بزرگ‌نمایی</translation>
 <translation id="4780321648949301421">ذخیره صفحه به‌عنوان...</translation>
 <translation id="4781787911582943401">بزرگ‌نمایی صفحه</translation>
@@ -2462,7 +2467,6 @@
 <translation id="4807098396393229769">نام روی کارت</translation>
 <translation id="480990236307250886">باز کردن صفحه اصلی</translation>
 <translation id="4812632551187706935">اتصال راه‌اندازی اولیه نشد</translation>
-<translation id="4812684235631257312">میزبان</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4820334425169212497">نه، آن را نمی‌بینم</translation>
@@ -3292,7 +3296,7 @@
 <translation id="6076448957780543068">اضافه کردن این عکس صفحه‌نمایش</translation>
 <translation id="6077131872140550515">برداشتن از شبکه‌های برگزیده</translation>
 <translation id="6078752646384677957">لطفاً میکروفون و میزان صدا را بررسی کنید.</translation>
-<translation id="6080515710685820702">از رایانامه مشترکی استفاده می‌کنید؟ باز کردن پنجره ناشناس را امتحان کنید.</translation>
+<translation id="6080515710685820702">از رایانه مشترکی استفاده می‌کنید؟ پنجره ناشناس را امتحان کنید.</translation>
 <translation id="6080689532560039067">بررسی زمان سیستم</translation>
 <translation id="6082651258230788217">نمایش در نوار ابزار</translation>
 <translation id="6086814797483779854">با کلیک کردن اجرا شود</translation>
@@ -3510,7 +3514,6 @@
     <ph name="LINE_BREAK" />
      برای ادامه ورود به سیستم در حساب <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> خود، لطفاً روی «بعدی» کلیک کنید.</translation>
 <translation id="6419546358665792306">بار کردن غیرفشرده</translation>
-<translation id="6422329785618833949">عکس وارونه شده</translation>
 <translation id="642282551015776456">این نام ممکن است به‌عنوان نام فایلی از پوشه استفاده نشود</translation>
 <translation id="6423239382391657905">‏باز کردن VPN</translation>
 <translation id="6426200009596957090">‏باز کردن تنظیمات ChromeVox</translation>
@@ -3740,6 +3743,7 @@
 <translation id="6751256176799620176">۱ پوشه انتخاب شد</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (ناشناس)</translation>
 <translation id="6757101664402245801">نشانی اینترنتی کپی شد</translation>
+<translation id="6758056191028427665">عملکردمان را به ما نشان دهید.</translation>
 <translation id="6759193508432371551">بازنشانی به تنظیمات کارخانه</translation>
 <translation id="6766101255664245434">‏عکس جدیدی بگیرید یا عکس یا نماد موجودی را انتخاب کنید.
           <ph name="LINE_BREAK" />
@@ -3929,7 +3933,7 @@
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7056526158851679338">&amp;بازرسی دستگاه‌ها</translation>
 <translation id="7059858479264779982">تنظیم روی اجرای خودکار</translation>
-<translation id="7059893117020417984">برای مرور خصوصی، روی منوی نماد نقطه‌ها کلیک کنید تا پنجره ناشناس باز شود</translation>
+<translation id="7059893117020417984">برای مرور خصوصی، روی منوی نماد نقطه‌ها کلیک کنید تا پنجره ناشناسی باز شود</translation>
 <translation id="7062222374113411376">به سایت‌های اخیراً بسته‌شده امکان داده شود ارسال و دریافت داده را تکمیل کند (توصیه می‌شود)</translation>
 <translation id="7063129466199351735">در حال پردازش میان‌برها...</translation>
 <translation id="7063957500469387217">‏تنظیم یا مدیریت چاپگرها در Google Cloud Print.</translation>
@@ -4331,7 +4335,6 @@
 <translation id="7710568461918838723">&amp;ارسال محتوا…</translation>
 <translation id="7713320380037170544">‏به همه سایت‌ها اجازه داده شود برای دسترسی به دستگاه‌های MIDI از پیام‌های انحصاری سیستم استفاده کنند</translation>
 <translation id="7714464543167945231">گواهی</translation>
-<translation id="7716020873543636594">کلیک خودکار در هنگام توقف نشانگر موشواره</translation>
 <translation id="7716781361494605745">‏نشانی وب خط‌مشی ارائه دهنده مجوز Netscape</translation>
 <translation id="7716970641886237992">اصلاح‌شده توسط</translation>
 <translation id="7717014941119698257">بارگیری: <ph name="STATUS" /></translation>
@@ -4408,6 +4411,7 @@
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">زمان پایان</translation>
 <translation id="7833720883933317473">کلمات سفارشی ذخیره‌شده در اینجا نشان داده خواهند شد</translation>
+<translation id="7837307963048806839">•  $1</translation>
 <translation id="7837776265184002579">صفحه اصلی به <ph name="URL" /> تغییر کرد.</translation>
 <translation id="7839051173341654115">مشاهده/پشتیبان‌گیری رسانه</translation>
 <translation id="7839192898639727867">شناسه کلید موضوع گواهی</translation>
@@ -4598,8 +4602,9 @@
 <translation id="8113043281354018522">انتخاب نوع مجوز</translation>
 <translation id="8116190140324504026">اطلاعات بیشتر...</translation>
 <translation id="8116483400482790018">واژه‌نامه املای سفارشی</translation>
+<translation id="8116925261070264013">صامت‌شده</translation>
 <translation id="8116972784401310538">مدیر &amp;نشانک</translation>
-<translation id="8118362518458010043">‏توسط Chrome غیرفعال شد. ممکن است این افزونه ناامن باشد.</translation>
+<translation id="8118362518458010043">‏توسط Chrome غیرفعال شده است. ممکن است این افزونه ناامن باشد.</translation>
 <translation id="8118860139461251237">مدیریت بارگیری‌ها</translation>
 <translation id="8119631488458759651">حذف این سایت</translation>
 <translation id="81238879832906896">گل زرد و سفید</translation>
@@ -4619,14 +4624,12 @@
 <translation id="8142732521333266922">بسیار خوب، همه را همگام‌سازی کنید</translation>
 <translation id="8146177459103116374">اگر قبلاً در این دستگاه ثبت‌نام کردید، می‌توانید <ph name="LINK2_START" />به‌عنوان یک کاربر موجود، وارد شوید<ph name="LINK2_END" />.</translation>
 <translation id="8146793085009540321">ورود به سیستم انجام نشد. لطفاً با سرپرستتان تماس بگیرید یا دوباره امتحان کنید.</translation>
-<translation id="8148913456785123871">‏نمایش کارت‌های Google Now در راه‌انداز</translation>
 <translation id="8151185429379586178">ابزارهای برنامه‌نویس</translation>
 <translation id="8151638057146502721">پیکربندی</translation>
 <translation id="8152091997436726702">زمان مجاز ثبت‌نام چاپگر پایان یافت. برای ثبت یک چاپگر، باید ثبت را در چاپگر تأیید کنید.</translation>
 <translation id="8153607920959057464">این فایل نمایش داده نمی‌شود.</translation>
 <translation id="8154790740888707867">فایلی وجود ندارد</translation>
 <translation id="815491593104042026">وای! احراز هویت انجام نشد زیرا برای استفاده از نشانی وب غیر امن (<ph name="BLOCKED_URL" />) پیکربندی شده بود. لطفاً با سرپرستتان تماس بگیرید.</translation>
-<translation id="8156020606310233796">نمای فهرست</translation>
 <translation id="8157939133946352716">۷x۵</translation>
 <translation id="816055135686411707">خطا در تنظیم اعتماد مجوز</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />، <ph name="TIME_REMAINING" /></translation>
@@ -4651,6 +4654,7 @@
 <translation id="8191453843330043793">‏تحلیل‌گر پراکسی V8</translation>
 <translation id="8195027750202970175">اندازه روی دیسک</translation>
 <translation id="8195739004487400241">صفحه اصلی به <ph name="URL" /> تغییر کرد. برای غیرفعال کردن افزونه‌هایی که صفحه اصلی را تغییر می‌دهند، روی «بازیابی» کلیک کنید.</translation>
+<translation id="8199300056570174101">مشخصات دستگاه و شبکه (سرویس)</translation>
 <translation id="8200772114523450471">ازسرگیری</translation>
 <translation id="8202160505685531999">لطفاً برای به‌روزرسانی نمایه <ph name="DEVICE_TYPE" /> خود، گذرواژه‌تان را دوباره وارد کنید.</translation>
 <translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
@@ -4713,7 +4717,7 @@
 <translation id="8283475148136688298">هنگام اتصال به «<ph name="DEVICE_NAME" />» کد راستی‌آزمایی رد شد.</translation>
 <translation id="8284279544186306258">همه سایت‌های <ph name="WEBSITE_1" /></translation>
 <translation id="8286036467436129157">ورود به سیستم</translation>
-<translation id="8286963743045814739">می‌توانید با استفاده از پنجره ناشناس، به‌طور خصوصی مرور کنید</translation>
+<translation id="8286963743045814739">با پنجره ناشناس، می‌توانید خصوصی مرور کنید</translation>
 <translation id="8291967909914612644">کشور ارائه‌دهنده اصلی</translation>
 <translation id="8294431847097064396">منبع</translation>
 <translation id="8297006494302853456">ضعیف</translation>
@@ -5073,6 +5077,7 @@
 <translation id="8888432776533519951">رنگ:</translation>
 <translation id="8892992092192084762">طرح‌زمینه نصب شده "<ph name="THEME_NAME" />"</translation>
 <translation id="8893928184421379330">متأسفیم، دستگاه <ph name="DEVICE_LABEL" /> شناسایی نشد.</translation>
+<translation id="8895454554629927345">فهرست نشانک</translation>
 <translation id="88986195241502842">صفحه پایین</translation>
 <translation id="8898786835233784856">انتخاب برگه بعدی</translation>
 <translation id="8898840733695078011">قدرت سیگنال</translation>
@@ -5231,7 +5236,6 @@
 <translation id="9124003689441359348">گذرواژه‌های ذخیره‌شده در اینجا ظاهر خواهند شد</translation>
 <translation id="912419004897138677">کدک</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> باقی‌مانده.)</translation>
-<translation id="9127762771585363996">چرخاندن افقی تصویر دوربین</translation>
 <translation id="9128870381267983090">اتصال به شبکه</translation>
 <translation id="9130015405878219958">حالت نامعتبر وارد شده است.</translation>
 <translation id="9130775360844693113">اعضای «<ph name="DESTINATION_NAME" />» به این موارد دسترسی پیدا می‌کنند.</translation>
@@ -5304,6 +5308,7 @@
 <translation id="958515377357646513">برای حرکت به جلو،‌ لمس کنید.</translation>
 <translation id="960719561871045870">کد اپراتور</translation>
 <translation id="960987915827980018">حدود ۱ ساعت باقی مانده است</translation>
+<translation id="962802172452141067">درخت پوشه نشانک</translation>
 <translation id="968174221497644223">حافظه پنهان برنامه</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{‏۱ برگه}one{‏# برگه}other{‏# برگه}}</translation>
 <translation id="970794034573172516">فعال کردن فعالیت صوتی و گفتاری</translation>

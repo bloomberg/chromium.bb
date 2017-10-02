@@ -72,14 +72,6 @@
 <translation id="1330145147221172764">Włącz klawiaturę ekranową</translation>
 <translation id="1330985749576490863">Wyłącz Dysk Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" /> przy połączeniu komórkowym</translation>
 <translation id="13356285923490863">Nazwa zasady</translation>
-<translation id="134402861816424823">Określa drukarki, z których użytkownik nie może korzystać.
-
-      Ta zasada jest używana tylko wtedy, gdy wybrano opcję BlacklistRestriction dla
-      zasady DeviceNativePrintersAccessMode.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek oprócz
-      tych, których identyfikatory w niej określono.
-      </translation>
 <translation id="1353966721814789986">Strony otwierane po uruchomieniu</translation>
 <translation id="1359553908012294236">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie umożliwiać logowanie się w trybie gościa. Dane logowania gościa to profile <ph name="PRODUCT_NAME" />, dla których wszystkie okna otwierają się w trybie incognito.
 
@@ -258,33 +250,6 @@
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="2113068765175018713">Ogranicz czas działania urządzenia przez automatyczne ponowne uruchamianie</translation>
-<translation id="2126314858836465216">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
-
-      Ta zasada umożliwia udostępnianie konfiguracji drukarek
-      urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />.
-      Plik nie może być większy niż 5 MB i musi być zapisany w formacie JSON.
-      Format jest taki sam jak w słowniku NativePrinters. Szacuje się, że
-      w pliku o tym rozmiarze można zakodować około 21 000 drukarek.
-      Do weryfikacji integralności pobranego pliku służy skrót
-      kryptograficzny.
-
-      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej zmianie adresu URL
-      lub skrótu jest pobierany ponownie.
-
-      Jeśli ta zasada jest ustawiona,
-      <ph name="PRODUCT_OS_NAME" /> pobierze
-      plik do konfiguracji drukarek i udostępni drukarki
-      zgodnie z zasadami DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
-      i DeviceNativePrintersBlacklist.
-
-      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki
-      na pojedynczych urządzeniach. Nie ma być ona uzupełnieniem
-      konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
-
-      Ta zasada jest modyfikatorem zasady NativePrintersBulkConfiguration.
-
-      Jeśli ta zasada nie jest ustawiona, drukarki nie zostaną powiązane z urządzeniami, a inne zasady
-      NativeDevicePrinter* będą ignorowane.</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
 <translation id="2134437727173969994">Zezwól na blokowanie ekranu</translation>
@@ -520,22 +485,6 @@
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
 <translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
-<translation id="2789419769822054691">Określa drukarki, z których może korzystać użytkownik.
-
-      Ta zasada jest używana tylko wtedy, gdy dla zasady
-      DeviceNativePrintersAccessMode wybrano ustawienie WhitelistPrintersOnly.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek,
-      których identyfikatory pasują do wartości w niej ustawionych. Identyfikatory
-      muszą być zgodne z pozycjami w pliku określonym w zasadzie DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Określa drukarki, z których użytkownik nie może korzystać.
-
-      Ta zasada jest używana tylko wtedy, gdy wybrano opcję
-      BlacklistRestriction dla zasady NativePrintersBulkAccessMode.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich
-      drukarek oprócz tych, których identyfikatory w niej określono.
-      </translation>
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
 
       Jeśli ta zasada jest wyłączona, użytkownicy nie mają dostępu do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline. Jeśli jest włączona, użytkownicy mogą grać w tę grę. Jeśli zasada nie jest ustawiona, użytkownicy nie mają dostępu do gry na zarejestrowanych urządzeniach z Chrome OS, a w innych przypadkach mogą w nią grać.</translation>
@@ -1005,7 +954,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4541530620466526913">Lokalne konta na urządzeniu</translation>
 <translation id="4555850956567117258">Włącz zaświadczanie zdalne dla użytkownika</translation>
 <translation id="4557134566541205630">URL strony nowej karty domyślnego dostawcy wyszukiwania</translation>
-<translation id="4558592878156368639">Okresy bezczynności urządzeń, gdy aktywne są zasady OffHours |ignored_policies|</translation>
 <translation id="4600786265870346112">Włącz duży kursor</translation>
 <translation id="4604931264910482931">Skonfiguruj czarną listę wiadomości natywnych</translation>
 <translation id="4617338332148204752">Pomiń sprawdzanie metatagów w <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1897,18 +1845,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       Jeśli zasada jest wyłączona lub nie została ustawiona, logowanie prowadzi do zwykłych profili.</translation>
 <translation id="8158758865057576716">Włącz tworzenie przenośnych kopii danych profilu <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Steruje tym, które drukarki określone w zasadzie
-      NativePrintersBulkConfiguration są dostępne dla użytkowników.
-
-      Wskazuje zasadę dostępu, która jest używana do zbiorczego skonfigurowania drukarek.
-      Jeśli wybrano opcję AllowAll, pokazywane są wszystkie drukarki. Jeśli wybrano opcję BlacklistRestrction,
-      zasada NativePrintersBulkBlacklist jest używana do ograniczania dostępu do
-      określonych drukarek.  Jeśli wybrano ustawienie WhitelistPrintersOnly,
-      zasada NativePrintersWhitelist wskazuje tylko te drukarki, które można
-      wybrać.
-
-      Jeśli ta zasada nie jest ustawiona, domyślnie stosowana jest zasada BlacklistRestriction.
-      </translation>
 <translation id="8170878842291747619">Włącza zintegrowaną usługę Tłumacz Google w <ph name="PRODUCT_NAME" />. Jeśli włączysz tę opcję, w <ph name="PRODUCT_NAME" /> w razie potrzeby pojawi się zintegrowany pasek narzędzi oferujący możliwość przetłumaczenia strony. Jeśli wyłączysz tę opcję, użytkownicy nie zobaczą paska tłumaczeń. Ustawienie tej opcji zablokuje możliwość jej zmiany przez użytkowników w <ph name="PRODUCT_NAME" />. W przypadku nieokreślenia tego ustawienia użytkownicy mogą zdecydować, czy chcą używać tej funkcji czy nie.</translation>
 <translation id="817455428376641507">Zezwala na otwieranie wymienionych URL-i jako wyjątków względem czarnej listy URL-i.
 
@@ -1995,14 +1931,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Określa drukarki, z których może korzystać użytkownik.
-
-      Ta zasada jest używana tylko wtedy, gdy dla zasady
-      NativePrintersBulkAccessMode wybrano ustawienie WhitelistPrintersOnly.
-
-      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek,
-      których identyfikatory pasują do wartości w niej ustawionych.
-      Identyfikatory muszą być zgodne z pozycjami w pliku określonym w zasadzie NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Pozwala dostosować listę wzorców adresów URL stron, które przeglądarka hosta ma zawsze renderować.
 
           Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę ChromeFrameRendererSettings.
@@ -2013,29 +1941,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
-<translation id="8555589883248082762">Udostępnia konfiguracje drukarek firmowych.
-
-      Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom
-      z systemem <ph name="PRODUCT_OS_NAME" />.
-      Plik nie może być większy niż 5 MB i musi być kodowany w JSON.
-      Format jest taki sam jak w słowniku NativePrinters.
-      Szacuje się, że w pliku o tym rozmiarze można zakodować około 21 000 drukarek.
-      Do weryfikacji integralności pobranego pliku służy skrót kryptograficzny.
-
-      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej
-      zmianie adresu URL lub skrótu jest pobierany ponownie.
-
-      Jeśli ta zasada jest ustawiona,
-      <ph name="PRODUCT_OS_NAME" /> pobierze
-      plik do konfiguracji drukarek i udostępni drukarki
-      zgodnie z zasadami NativePrintersBulkAccessMode,
-      NativePrintersBulkWhitelist i NativePrintersBulkBlacklist.
-
-      W przypadku ustawienia tej zasady użytkownicy nie będą mogli jej zmienić ani nadpisać.
-
-      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować 
-      drukarki na pojedynczych urządzeniach.  Ma być ona uzupełnieniem
-      konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>
@@ -2087,17 +1992,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Strona startowa</translation>
 <translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
-<translation id="8887644176044431146">Steruje tym, które drukarki określone w zasadzie
-      DeviceNativePrintersConfiguration są dostępne dla użytkowników.
-
-      Wskazuje zasadę dotyczącą dostępu, która jest używana do zbiorczego skonfigurowania drukarek.
-      Jeśli wybrano opcję AllowAll, pokazywane są wszystkie drukarki. Jeśli wybrano opcję BlacklistRestriction,
-       zasada DeviceNativePrintersBlacklist jest używana do ograniczania dostępu do
-      określonych drukarek. Jeśli wybrano ustawienie WhitelistPrintersOnly,
-      zasada DeviceNativePrintersWhitelist wskazuje tylko te drukarki, które można wybrać.
-
-      Jeśli ta zasada nie jest ustawiona, domyślnie stosowana jest zasada BlacklistRestriction.
-      </translation>
 <translation id="8906768759089290519">Włącz tryb gościa</translation>
 <translation id="8908294717014659003">Pozwala określić, czy strony mogą korzystać z urządzeń do rejestrowania multimediów. Dostęp do tych urządzeń może być dozwolony domyślnie lub użytkownik może być pytany za każdym razem, gdy strona chce użyć urządzenia do rejestrowania multimediów.
 

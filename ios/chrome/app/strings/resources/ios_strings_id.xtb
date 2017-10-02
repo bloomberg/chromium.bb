@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Pelajari Caranya</translation>
 <translation id="1272079795634619415">Berhenti</translation>
-<translation id="129553762522093515">Barusan ditutup</translation>
 <translation id="1323735185997015385">Hapus</translation>
 <translation id="132683371494960526">Ketuk dua kali untuk mengubah folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
@@ -359,7 +358,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7769602470925380267">Terima dan keluar</translation>
 <translation id="7772032839648071052">Konfirmasi frasa sandi</translation>
 <translation id="780301667611848630">Lain kali</translation>
-<translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7859704718976024901">Histori Browsing</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
@@ -403,6 +401,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8775144690796719618">URL tidak valid</translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="8840513115188359703">Anda tidak akan keluar dari Akun Google.</translation>
+<translation id="8870413625673593573">Barusan Ditutup</translation>
 <translation id="8881801611828450202">Telusuri Gambar Ini di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sinkronisasi Chrome</translation>
 <translation id="895541991026785598">Laporkan Masalah</translation>

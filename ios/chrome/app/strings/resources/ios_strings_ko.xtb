@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">폴더 선택</translation>
 <translation id="1265739287306757398">자세히 알아보기</translation>
 <translation id="1272079795634619415">중지</translation>
-<translation id="129553762522093515">최근에 닫은 탭</translation>
 <translation id="1323735185997015385">삭제</translation>
 <translation id="132683371494960526">상위 폴더를 변경하려면 두 번 탭하세요.</translation>
 <translation id="1340643665687018190">메뉴 닫기</translation>
@@ -359,7 +358,6 @@
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
-<translation id="7851858861565204677">다른 기기</translation>
 <translation id="7859704718976024901">인터넷 사용 기록</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
@@ -403,6 +401,7 @@
 <translation id="8775144690796719618">URL이 올바르지 않습니다.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="8840513115188359703">Google 계정에서 로그아웃되지 않습니다.</translation>
+<translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="8904976895050290827">크롬 동기화</translation>
 <translation id="895541991026785598">문제 신고</translation>
@@ -419,7 +418,7 @@
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
 <translation id="914898748153555155">Chrome 설정에서 언제든지 이 환경설정을 변경할 수 있습니다.</translation>
-<translation id="91549621916703028">여러 개의 탭을 만들어 모든 작업을 같이 하세요.</translation>
+<translation id="91549621916703028">여러 개의 탭에서 한꺼번에 작업을 하세요.</translation>
 <translation id="9157836665414082580">대화상자 숨기기</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Pumili ng Folder</translation>
 <translation id="1265739287306757398">Alamin kung paano</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="129553762522093515">Kamakailang isinara</translation>
 <translation id="1323735185997015385">I-delete</translation>
 <translation id="132683371494960526">I-double tap upang baguhin ang parent folder.</translation>
 <translation id="1340643665687018190">Isara ang Menu</translation>
@@ -66,7 +65,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="209018056901015185">Hilingin ang Site sa Desktop</translation>
 <translation id="2103075008456228677">Buksan ang history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang inilipat</translation>
-<translation id="213900355088104901">Upang mag-browse nang pribado, magbukas ng incognito tab</translation>
+<translation id="213900355088104901">Upang mag-browse nang pribado, magbukas ng tab na incognito</translation>
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
 <translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
@@ -359,7 +358,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7769602470925380267">Tanggapin at mag-sign out</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
-<translation id="7851858861565204677">Iba pang mga device</translation>
 <translation id="7859704718976024901">History ng Pagba-browse</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
@@ -403,6 +401,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8775144690796719618">Di-wastong URL</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="8840513115188359703">Hindi ka masa-sign out sa iyong Google Account.</translation>
+<translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8881801611828450202">Hanapin sa <ph name="SEARCH_ENGINE" /> ang Larawang Ito</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Mag-ulat ng Isyu</translation>

@@ -296,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, dezactivează</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, buton</translation>
 <translation id="3466530247399808663">O apăsare de tastă nevalidă</translation>
+<translation id="3468959318854349468">Fără titlu</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> selectate</translation>
 <translation id="3486232535569802404">De la <ph name="V1" /> la <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{paranteză pătrată dreapta}few{# paranteze pătrate dreapta}other{# de paranteze pătrate dreapta}}</translation>

@@ -311,6 +311,7 @@
 <translation id="3997476611815694295">不重要網站的儲存資料量</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4013356575049925793">電子商務</translation>
+<translation id="4041402800604793551">繼續操作即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》，以及《<ph name="BEGIN_LINK3" />透過 Family Link 建立的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
 <translation id="4046123991198612571">下一首曲目</translation>
 <translation id="4056223980640387499">深褐色調</translation>
@@ -389,6 +390,7 @@
 <translation id="4797039098279997504">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4807963036345170158">Data Saver 已關閉</translation>
+<translation id="4811736444948656478">導覽面版已開啟，顯示在畫面下半部</translation>
 <translation id="4816465935029283692">資料類型</translation>
 <translation id="4837753911714442426">開啟列印網頁的選項</translation>
 <translation id="4842092870884894799">目前顯示的是密碼產生彈出式視窗</translation>
@@ -544,6 +546,7 @@
 <translation id="6177111841848151710">禁止目前的搜尋引擎存取位置資訊</translation>
 <translation id="6177390657002841081">開啟 Data Saver</translation>
 <translation id="6181444274883918285">新增例外網站</translation>
+<translation id="618555311922999635">導覽面版已開啟，填滿整個畫面</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
 <translation id="6232535412751077445">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
@@ -757,6 +760,7 @@
 <translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
 <translation id="8100932616285851614">導覽面版已關閉</translation>
 <translation id="8103578431304235997">無痕式分頁</translation>
+<translation id="8116925261070264013">已設為靜音</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
 <translation id="8168435359814927499">內容</translation>
@@ -773,6 +777,7 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8283853025636624853">同步的帳戶：<ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">標準分頁</translation>
+<translation id="8334426458436697004">將特定網站設為靜音。</translation>
 <translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>
 <translation id="8372721116225477180">社交</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
@@ -840,7 +845,6 @@
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="9019902583201351841">你的家長已停用這項功能</translation>
-<translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9060538597317784206">前往 Play 商店查看「<ph name="APP_NAME" />」應用程式。評分：<ph name="APP_RATING" />。</translation>
 <translation id="9063523880881406963">關閉「要求電腦版網站」</translation>

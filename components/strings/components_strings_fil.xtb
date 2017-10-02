@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Pagkasyahin sa lapad</translation>
 <translation id="1088860948719068836">Magdagdag ng Pangalan sa Card</translation>
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Ipakita ang lahat ng naka-save na password...</translation>
 <translation id="1107591249535594099">Kung lalagyan ng check, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="1111153019813902504">Mga kamakailang bookmark</translation>
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861">Naka-block ang <ph name="HOST_NAME" /></translation>
 <translation id="3987940399970879459">Wala pang 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page ang malapit}one{# web page ang malapit}other{# na web page ang malapit}}</translation>
-<translation id="4021036232240155012">Ang DNS ay ang serbisyo sa network na nagta-translate ng pangalan ng isang website sa Internet address nito.</translation>
 <translation id="4030383055268325496">&amp;I-undo ang pagdagdag</translation>
 <translation id="404928562651467259">BABALA</translation>
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">Paraan ng pagbabayad</translation>
 <translation id="8127301229239896662">Hindi na-install nang maayos ang "<ph name="SOFTWARE_NAME" />" sa iyong computer o network. Magtanong sa IT administrator mo upang malutas ang isyung ito.</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
-<translation id="8134994873729925007">Hindi makita ang <ph name="BEGIN_ABBR" />DNS address<ph name="END_ABBR" /> ng server ng <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Nag-sleep ang iyong computer.</translation>
 <translation id="8150722005171944719">Hindi nababasa ang file sa <ph name="URL" />. Maaaring ito ay naalis, nalipat, o maaaring pinipigilan ng mga pagpapahintulot ng file ang access.</translation>
 <translation id="8184538546369750125">Gamitin ang pangkalahatang default (Payagan)</translation>

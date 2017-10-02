@@ -311,6 +311,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3997476611815694295">Oviktig lagring</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4013356575049925793">E-handel</translation>
+<translation id="4041402800604793551">Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />sekretessmeddelandet för Google-konton som skapats i Family Link<ph name="END_LINK3" />.</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -389,6 +390,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4797039098279997504">Tryck här om du vill återgå till <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Namn på kort</translation>
 <translation id="4807963036345170158">Databesparing är inaktiverat</translation>
+<translation id="4811736444948656478">Navigeringspanelen har öppnats och tar upp halva skärmen</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
 <translation id="4842092870884894799">Visar popupfönster för lösenordsgenerering</translation>
@@ -544,6 +546,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6177111841848151710">Blockerad för den nuvarande sökmotorn</translation>
 <translation id="6177390657002841081">Aktivera Databesparing</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
+<translation id="618555311922999635">Navigeringspanelen har öppnats och tar upp hela skärmen</translation>
 <translation id="6192792657125177640">Undantag</translation>
 <translation id="6210748933810148297">Inte <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
@@ -757,6 +760,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
 <translation id="8100932616285851614">Navigeringspanelen har stängts</translation>
 <translation id="8103578431304235997">Inkognitoflik</translation>
+<translation id="8116925261070264013">Ljudet avstängt</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Innehåll</translation>
@@ -773,6 +777,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8283853025636624853">Synkroniseras med <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardflikar</translation>
+<translation id="8334426458436697004">Stäng av ljudet för en webbplats.</translation>
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8372721116225477180">Socialt</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
@@ -840,7 +845,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
-<translation id="9038649477754266430">Använd en förslagstjänst om du vill läsa in sidor snabbare</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
 <translation id="9060538597317784206">Visa appen <ph name="APP_NAME" /> i Play Butik. Betyg: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Inaktivera begäran av webbplats för stationär dator</translation>

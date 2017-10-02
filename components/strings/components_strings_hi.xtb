@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">चौड़ाई में फ़िट करें</translation>
 <translation id="1088860948719068836">कार्ड पर नाम जोड़ें</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> का हमेशा अनुवाद करें</translation>
-<translation id="1103778128462718200">सेव किए गए सभी पासवर्ड दिखाएं...</translation>
 <translation id="1107591249535594099">चेक किए होने पर, अधिक तेज़ फ़ॉर्म भरने के लिए Chrome इस डिवाइस पर आपके कार्ड की कॉपी संग्रहित कर लेगा.</translation>
 <translation id="1111153019813902504">हाल के बुकमार्क</translation>
 <translation id="1113869188872983271">&amp;पुन: क्रमित करना वापस लाएं</translation>
@@ -412,7 +411,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरुद्ध है</translation>
 <translation id="3987940399970879459">1 MB से कम</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{आस-पास 1 वेब पेज है}one{आस-पास # वेब पेज हैं}other{आस-पास # वेब पेज हैं}}</translation>
-<translation id="4021036232240155012">DNS एक नेटवर्क सेवा है जो किसी वेबसाइट के नाम को उसके इंटरनेट पते में बदलती है.</translation>
 <translation id="4030383055268325496">&amp;जोड़ना वापस लाएं</translation>
 <translation id="404928562651467259">चेतावनी</translation>
 <translation id="4058922952496707368">कुंजी "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -901,7 +899,6 @@
 <translation id="8118489163946903409">भुगतान विधि</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" आपके कंप्यूटर या नेटवर्क पर ठीक से इंस्टॉल नहीं हुआ था. अपने आईटी व्यवस्थापक से इस समस्या को ठीक करने के लिए कहें.</translation>
 <translation id="8131740175452115882">दुबारा पूछें</translation>
-<translation id="8134994873729925007"><ph name="HOST_NAME" /> का सर्वर <ph name="BEGIN_ABBR" />DNS पता<ph name="END_ABBR" /> नहीं ढूंढ़ा जा सका.</translation>
 <translation id="8149426793427495338">आपका कंप्यूटर निष्क्रिय हो गया है.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> पर मौजूद फ़ाइल पढ़ने योग्य नहीं है.  हो सकता है कि इसे निकाल दिया गया हो, कहीं ले जाया गया हो, या फ़ाइल की अनुमतियां पहुंच रोक रही हों.</translation>
 <translation id="8184538546369750125">वैश्विक डिफ़ॉल्ट का उपयोग करें (अनुमति दें)</translation>

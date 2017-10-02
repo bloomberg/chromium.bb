@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1265739287306757398">Más información</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
-<translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1323735185997015385">Eliminar</translation>
 <translation id="132683371494960526">Toca dos veces para cambiar la carpeta principal.</translation>
 <translation id="1340643665687018190">Cerrar el menú</translation>
@@ -359,7 +358,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7769602470925380267">Aceptar y cerrar sesión</translation>
 <translation id="7772032839648071052">Repite la contraseña</translation>
 <translation id="780301667611848630">No, gracias</translation>
-<translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
@@ -403,6 +401,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8775144690796719618">La URL no es válida</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="8840513115188359703">No se cerrará la sesión en tu cuenta de Google.</translation>
+<translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8881801611828450202">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sincronización de Chrome</translation>
 <translation id="895541991026785598">Notificar un error</translation>

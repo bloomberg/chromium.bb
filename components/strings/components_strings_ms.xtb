@@ -15,7 +15,6 @@
 <translation id="1080116354587839789">Muat ikut lebar</translation>
 <translation id="1088860948719068836">Tambahkan Nama pada Kad</translation>
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE" /></translation>
-<translation id="1103778128462718200">Tunjukkan semua kata laluan yang disimpan...</translation>
 <translation id="1107591249535594099">Jika ditandai, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="1111153019813902504">Penanda halaman terbaharu dilawati</translation>
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
@@ -309,6 +308,7 @@
 <translation id="3282497668470633863">Tambahkan nama pada kad</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
 <translation id="3287510313208355388">Muat turun semasa dalam talian</translation>
+<translation id="3293642807462928945">Ketahui lebih lanjut tentang dasar <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Tiada hasil carian ditemui</translation>
 <translation id="3305707030755673451">Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="3320021301628644560">Tambahkan alamat pengebilan</translation>
@@ -384,6 +384,7 @@
 <translation id="3714780639079136834">Menghidupkan data mudah alih atau Wi-Fi</translation>
 <translation id="3715597595485130451">Sambung ke Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Menyemak proksi, tembok api dan konfigurasi DNS<ph name="END_LINK" /></translation>
+<translation id="372429172604983730">Aplikasi yang boleh menyebabkan ralat ini termasuk antivirus, tembok api dan perisian penapisan web atau proksi.</translation>
 <translation id="3736520371357197498">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />melawati tapak web yang tidak selamat ini<ph name="END_LINK" /> sebelum program berbahaya dialih keluar.</translation>
 <translation id="3739623965217189342">Pautan yang anda salin</translation>
 <translation id="3744899669254331632">Anda tidak boleh melawat <ph name="SITE" /> sekarang kerana tapak web telah menghantar bukti kelayakan hancur yang tidak boleh diproses oleh Chromium. Ralat dan serangan rangkaian biasanya sementara. Oleh itu halaman ini mungkin akan berfungsi kemudian.</translation>
@@ -413,7 +414,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> disekat</translation>
 <translation id="3987940399970879459">Kurang daripada 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web berdekatan}other{# halaman web berdekatan}}</translation>
-<translation id="4021036232240155012">DNS ialah perkhidmatan rangkaian yang menterjemahkan nama tapak web kepada alamat Internetnya.</translation>
 <translation id="4030383055268325496">&amp;Buat asal tambahkan</translation>
 <translation id="404928562651467259">AMARAN</translation>
 <translation id="4058922952496707368">Kekunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
@@ -902,7 +902,6 @@
 <translation id="8118489163946903409">Kaedah pembayaran</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak dipasang dengan betul pada komputer atau rangkaian anda. Minta pentadbir IT anda menyelesaikan isu ini.</translation>
 <translation id="8131740175452115882">Sahkan</translation>
-<translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Alamat DNS<ph name="END_ABBR" /> pelayan <ph name="HOST_NAME" /> tidak ditemui.</translation>
 <translation id="8149426793427495338">Komputer anda dalam mod tidur.</translation>
 <translation id="8150722005171944719">Fail di <ph name="URL" /> tidak boleh dibaca.  Fail mungkin telah dialih keluar, dipindahkan atau kebenaran fail mungkin menghalang akses.</translation>
 <translation id="8184538546369750125">Gunakan lalai global (Benarkan)</translation>

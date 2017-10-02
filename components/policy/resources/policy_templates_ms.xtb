@@ -74,14 +74,6 @@
 <translation id="1330145147221172764">Dayakan papan kekunci pada skrin</translation>
 <translation id="1330985749576490863">Melumpuhkan Google Drive melalui sambungan selular dalam apl Fail <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nama Dasar</translation>
-<translation id="134402861816424823">Menentukan pencetak yang tidak boleh digunakan oleh pengguna.
-
-      Dasar ini hanya digunakan jika BlacklistRestriction dipiliih untuk
-      DeviceNativePrintersAccessMode.
-
-      Jika dasar ini digunakan, semua pencetak akan disediakan kepada
-      pengguna kecuali ID yang disenaraikan dalam dasar ini.
-      </translation>
 <translation id="1353966721814789986">Halaman permulaan</translation>
 <translation id="1359553908012294236">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu merupakan profil <ph name="PRODUCT_NAME" /> yang semua tetingkapnya dalam mod inkognito.
 
@@ -268,33 +260,6 @@
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Dayakan laporan penggunaan dan data berkaitan nahas</translation>
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
-<translation id="2126314858836465216">Menyediakan konfigurasi untuk pencetak perusahaan yang dihubungkan pada peranti.
-
-      Dasar ini membenarkan anda menyediakan konfigurasi pencetak kepada
-      peranti <ph name="PRODUCT_OS_NAME" />.
-      Saiz fail tidak boleh melebihi 5MB dan mesti dikodkan dalam JSON.
-      Format adalah sama dengan kamus NativePrinters.  Fail yang
-      mengandungi kira-kira 21,000 pencetak dianggar akan mengekod
-      sebagai fail 5MB.  Cincangan kriptografi digunakan untuk mengesahkan
-      integriti muat turun.
-
-      Fail dimuat turun dan dicache. Fail tersebut akan dimuat turun semula apabila
-      URL atau cincangan berubah.
-
-      Jika dasar ini ditetapkan,
-      <ph name="PRODUCT_OS_NAME" /> akan memuat turun
-      fail untuk konfigurasi pencetak dan menjadikan pencetak tersedia menurut
-      DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
-      dan DeviceNativePrintersBlacklist.
-
-      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi
-      pencetak pada peranti individu.  Tujuan dasar ini ialah sebagai tambahan
-      kepada konfigurasi pencetak oleh pengguna individu.
-
-      Dasar ini adalah tambahan kepada NativePrintersBulkConfiguration.
-
-      Jika dasar ini tidak ditetapkan, maka tiada pencetak peranti dan dasar
-      NativeDevicePrinter* yang lain akan diabaikan.</translation>
 <translation id="2127599828444728326">Benarkan pemberitahuan pada tapak ini</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="2134437727173969994">Benarkan mengunci skrin</translation>
@@ -545,22 +510,6 @@
       Setiap masukan senarai menetapkan pengecam, yang digunakan secara dalaman untuk membezakan akaun setempat peranti.</translation>
 <translation id="2769952903507981510">Konfigurasi nama domain yang diperlukan untuk hos akses jauh</translation>
 <translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
-<translation id="2789419769822054691">Menentukan pencetak yang boleh digunakan oleh pengguna.
-
-      Dasar ini hanya digunakan jika WhitelistPrintersOnly dipilih untuk
-      DeviceNativePrintersAccessMode.
-
-      Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan dengan
-      nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti sepadan
-      dengan masukan dalam fail yang dinyatakan dalam DeviceNativePrinters.</translation>
-<translation id="2794520838025002425">Menentukan pencetak yang tidak boleh digunakan oleh pengguna.
-
-      Dasar ini hanya digunakan jika BlacklistRestriction dipiliih untuk
-      NativePrintersBulkAccessMode.
-
-      Jika dasar ini digunakan, semua pencetak akan disediakan kepada
-      pengguna kecuali ID yang disenaraikan dalam dasar ini.
-      </translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
       Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat bermain permainan telur easter dinosaur apabila peranti di luar talian. Jika tetapan ini ditetapkan kepada Benar, pengguna dibenarkan bermain permainan dinosaur. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan bermain permainan telur easter dinosaur pada OS Chrome berdaftar, tetapi dibenarkan bermain menurut keadaan lain.</translation>
@@ -1058,7 +1007,6 @@
 <translation id="4541530620466526913">Akaun setempat peranti</translation>
 <translation id="4555850956567117258">Dayakan pembuktian jauh untuk pengguna</translation>
 <translation id="4557134566541205630">URL halaman tab baharu penyedia carian lalai</translation>
-<translation id="4558592878156368639">Selang luar waktu apabila OffHours peranti |ignored_policies| dikeluarkan</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasi senarai hitam pemesejan natif</translation>
 <translation id="4617338332148204752">Langkau semakan teg meta dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1159,6 +1107,48 @@
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Benarkan pemalam yang lapuk dijalankan</translation>
 <translation id="4988291787868618635">Tindakan yang perlu diambil apabila kelewatan melahu dicapai</translation>
+<translation id="5010252829147312914">Menentukan set dasar yang akan diserahkan kepada waktu jalan ARC. Nilainya mestilah JSON sah.
+
+      Dasar ini boleh digunakan untuk mengkonfigurasikan apl Android yang akan dipasang pada peranti secara automatik:
+
+      {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "description": "Pengecam apl Android, mis. "com.google.android.gm" untuk Gmail",
+              "type": "string"
+            },
+            "installType": {
+              "description": "Menentukan cara apl dipasang. OPTIONAL: Apl tidak dipasang secara automatik, tetapi pengguna boleh memasangnya. Ini merupakan nilai lalai jika dasar ini tidak ditentukan. PRELOAD: Apl dipasang secara automatik, tetapi pengguna boleh menyahpasangnya. FORCE_INSTALLED: Apl dipasang secara automatik dan pengguna tidak boleh menyahpasangnya. BLOCKED: Apl disekat dan tidak boleh dipasang. Jika apl dipasang di bawah dasar sebelumnya, apl itu akan dinyahpasang.",
+              "type": "string",
+              "enum": [
+                "OPTIONAL"
+                "PRELOAD",
+                "FORCE_INSTALLED",
+                "BLOCKED"
+              ]
+            },
+            "defaultPermissionPolicy": {
+              "description": "Dasar untuk meluluskan permintaan kebenaran kepada apl. PERMISSION_POLICY_UNSPECIFIED: Dasar tidak ditentukan. Jika tiada dasar ditentukan bagi kebenaran pada mana-mana tahap, maka tingkah laku `PROMPT` akan digunakan secara lalai. PROMPT: Gesa pengguna supaya memberikan kebenaran. GRANT: Berikan kebenaran secara automatik. DENY: Nafikan kebenaran secara automatik.",
+              "type": "string",
+              "enum": [
+                "PERMISSION_POLICY_UNSPECIFIED",
+                "PROMPT",
+                "GRANT",
+                "DENY"
+              ]
+            },
+            "managedConfiguration": {
+              "description": "Rentetan konfigurasi JSON khusus apl. Kunci ditakrifkan dalam manifes apl. Biasanya kelihatan seperti '{ "key" : value }'.",
+              "type": "string"
+            }
+          }
+        }
+      }
+
+      Untuk menyemat apl pada pelancar, lihat PinnedLauncherApps.</translation>
 <translation id="5047604665028708335">Benarkan akses ke tapak di luar pek kandungan</translation>
 <translation id="5052081091120171147">Jika didayakan, dasar ini memaksa sejarah penyemakan imbas diimport dari penyemak imbas lalai semasa. Jika didayakan, dasar ini juga memberikan kesan terhadap dialog import.
 
@@ -1233,7 +1223,7 @@
 <translation id="5318185076587284965">Dayakan penggunaan pelayan ganti oleh hos akses jauh.</translation>
 <translation id="5323128137188992869">Benarkan kandungan dihantar ke peranti menggunakan <ph name="PRODUCT_NAME" />.
 
-          Jika dasar ini ditetapkan kepada Palsu, pengguna tidak dapat menghantar kandungan ke peranti mereka. Jika dasar ini ditetapkan kepada Benar, pengguna dibenarkan menghantar kandungan. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan menghantar kandungan ke peranti OS Chrome berdaftar, tetapi boleh menghantar ke peranti yang tidak berdaftar.</translation>
+          Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat menghantar kandungan ke peranti mereka. Jika dasar ini ditetapkan kepada Benar, pengguna dibenarkan menghantar kandungan. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan menghantar kandungan ke peranti OS Chrome berdaftar, tetapi dibenarkan berbuat demikian ke peranti OS Chrome tidak berdaftar.</translation>
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan berikut</translation>
 <translation id="5365946944967967336">Paparkan butang Halaman Utama pada bar alat</translation>
 <translation id="5366977351895725771">Jika ditetapkan kepada palsu, penghasilan pengguna diselia oleh pengguna ini akan dilumpuhkan. Mana-mana pengguna diselia yang sedia ada masih akan tersedia.
@@ -1412,6 +1402,7 @@
           Jika anda menetapkan dasar ini, pengguna boleh mengatasinya secara sementara dengan mendayakan atau melumpuhkan kursor besar. Walau bagaimanapun, pilihan pengguna ini tidak berterusan dan lalai dipulihkan apabila skrin log masuk dipaparkan semula atau pengguna kekal melahu pada skrin log masuk selama satu minit.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kursor besar dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan kursor besar pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
+<translation id="5932767795525445337">Dasar ini juga boleh digunakan untuk menyemat apl Android.</translation>
 <translation id="5936622343001856595">Memaksa pertanyaan dalam Carian Web Google dilakukan dengan SafeSearch ditetapkan kepada aktif dan menghalang pengguna daripada menukar tetapan ini.
 
       Jika anda mendayakan tetapan ini, SafeSearch dalam Carian Google sentiasa diaktifkan.
@@ -2036,18 +2027,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini ditetapkan kepada dilumpuhkan atau dibiarkan tanpa ditetapkan, tindakan log masuk akan menghala ke profil biasa.</translation>
 <translation id="8158758865057576716">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Mengawal peranti daripada
-      NativePrintersBulkConfiguration yang tersedia kepada pengguna.
-
-      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak
-      pukal. Jika AllowAll dipilih, semua pencetak akan dipaparkan. Jika 
-      BlacklistRestrction dipilih, NativePrintersBulkBlacklist digunakan untuk
-      mengehadkan akses kepada pencetak yang ditetapkan.  Jika 
-      WhitelistPrintersOnly dipilih, NativePrintersWhitelist menetapkan pencetak 
-      yang boleh dipilih sahaja.
-
-      Jika dasar ini tidak ditetapkan, BlacklistRestriction akan digunakan.
-      </translation>
 <translation id="8170878842291747619">Mendayakan perkhidmatan Google Terjemah bersepadu pada <ph name="PRODUCT_NAME" />.
 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan memaparkan bar alat bersepadu yang menawarkan terjemahan halaman ini kepada pengguna, apabila bersesuaian.
@@ -2138,15 +2117,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
-<translation id="8480767919856518465">Menentukan pencetak yang boleh digunakan oleh pengguna.
-
-      Dasar ini hanya digunakan jika WhitelistPrintersOnly dipilih untuk
-      NativePrintersBulkAccessMode.
-
-      Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan
-      dengan nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti
-      sepadan dengan masukan dalam fail yang dinyatakan dalam
-      NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Sesuaikan senarai pola URL yang sentiasa harus dipaparkan oleh penyemak imbas hos.
 
           Jika dasar ini tidak ditetapkan, pemapar lalai akan digunakan untuk semua tapak seperti yang dinyatakan oleh dasar 'ChromeFrameRendererSettings'.
@@ -2157,31 +2127,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8519264904050090490">URL pengecualian manual pengguna terurus</translation>
 <translation id="8544375438507658205">Pemapar HTML lalai untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
-<translation id="8555589883248082762">Menyediakan konfigurasi untuk pencetak perusahaan.
-
-      Dasar ini membenarkan anda menyediakan konfigurasi pencetak kepada
-      peranti <ph name="PRODUCT_OS_NAME" />.
-      Saiz fail tidak boleh melebihi 5MB dan mesti dikodkan dalam JSON.
-      Format adalah sama dengan kamus NativePrinters.  Fail yang
-      mengandungi kira-kira 21,000 pencetak dianggar akan mengekod
-      sebagai fail 5MB.  Cincangan kriptografi digunakan untuk mengesahkan
-      integriti muat turun.
-
-      Fail dimuat turun dan dicache. Fail tersebut akan dimuat turun semula
-      apabila URL atau cincangan berubah.
-
-      Jika dasar ini ditetapkan,
-      <ph name="PRODUCT_OS_NAME" /> akan memuat turun
-      fail untuk konfigurasi pencetak dan menjadikan pencetak tersedia menurut
-      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      dan NativePrintersBulkBlacklist.
-
-      Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau
-      membatalkannya.
-
-      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi
-      pencetak pada peranti individu.  Tujuan dasar ini adalah sebagai tambahan
-      kepada konfigurasi pencetak oleh pengguna individu.</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
 <translation id="8587229956764455752">Benarkan ciptaan akaun pengguna baharu</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
@@ -2244,18 +2189,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8864975621965365890">Menyekat gesaan penolakan yang dipaparkan apabila tapak dipaparkan oleh <ph name="PRODUCT_FRAME_NAME" /> .</translation>
 <translation id="8870318296973696995">Halaman utama</translation>
 <translation id="8882006618241293596">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
-<translation id="8887644176044431146">Mengawal peranti daripada
-      DeviceNativePrintersConfiguration yang tersedia kepada pengguna.
-
-      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak pukal.
-      Jika AllowAll dipilih, semua pencetak akan dipaparkan. Jika BlacklistRestrction
-      dipilih, DeviceNativePrintersBlacklist digunakan untuk mengehadkan akses
-      kepada pencetak yang ditetapkan.  Jika WhitelistPrintersOnly dipilih,
-      DeviceNativePrintersWhitelist menetapkan pencetak yang boleh dipilih
-      sahaja.
-
-      Jika dasar ini tidak ditetapkan, BlacklistRestriction akan digunakan.
-      </translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>
 <translation id="8908294717014659003">Membenarkan anda menetapkan sama ada laman web dibenarkan untuk mendapatkan akses kepada peranti tangkapan media. Akses kepada peranti tangkapan media boleh dibenarkan secara lalai atau pengguna boleh ditanya setiap kali laman web ingin mendapatkan akses kepada peranti tangkapan media.
 

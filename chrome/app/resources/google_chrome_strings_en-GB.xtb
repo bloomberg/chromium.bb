@@ -26,6 +26,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1628000112320670027">Get help with Chrome</translation>
 <translation id="163860049029591106">Get Started with Chrome OS</translation>
 <translation id="1653828314016431939">OK - Restart now</translation>
+<translation id="1674870198290878346">Open Link in Chrome Inco&amp;gnito Window</translation>
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -63,6 +64,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="2586406160782125153">This will delete your browsing data from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome logo</translation>
+<translation id="2652691236519827073">Open Link in New Chrome &amp;tab</translation>
 <translation id="2664962310688259219">Chrome OS open source licences</translation>
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
 <translation id="2689103672227170538">This extension has changed the page that is shown when you start Chrome.</translation>
@@ -103,8 +105,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Open link in Chrome inco&amp;gnito window</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
 <translation id="4028693306634653894">Get to Chrome faster</translation>
+<translation id="4031074602479304239">Chrome stopped this site from taking you to</translation>
 <translation id="4042449298237264661">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported.</translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
@@ -133,6 +137,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4794050651896644714">Save details in Chrome</translation>
 <translation id="4804732725083176494">Sign in to Chrome is disabled by the administrator of this device.</translation>
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
+<translation id="4895437082222824641">Open link in new Chrome &amp;tab</translation>
 <translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
 <translation id="4953650215774548573">Set Google Chrome as your default browser</translation>
 <translation id="495931528404527476">In Chrome</translation>
@@ -158,6 +163,7 @@ Some features may be unavailable. Please specify a different profile directory o
 Google Chrome is unable to recover your settings.</translation>
 <translation id="5453904507266736060">Let Google Chrome Run In The Background</translation>
 <translation id="5495581687705680288">Modules loaded into Google Chrome</translation>
+<translation id="5524843473235508879">Redirect blocked.</translation>
 <translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>

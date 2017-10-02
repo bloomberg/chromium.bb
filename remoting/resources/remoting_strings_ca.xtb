@@ -3,6 +3,9 @@
 <translationbundle lang="ca">
 <translation id="1002108253973310084">S'ha detectat una versió del protocol incompatible. Assegureu-vos que tingueu instal·lada la versió més recent del programari als dos ordinadors i torneu-ho a provar.</translation>
 <translation id="1050693411695664090">Deficient</translation>
+<translation id="1059802506829356230">• Aparença completament nova.
+• S'ha millorat el rendiment, la capacitat de resposta i la fiabilitat.
+• S'ha afegit compatibilitat amb la reproducció d'àudio des d'ordinadors Windows i Linux.</translation>
 <translation id="1152528166145813711">Seleccioneu...</translation>
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
 <translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar Chromoting per accedir a aquest ordinador.</translation>
@@ -81,6 +84,11 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2841013758207633010">Hora</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">S'ha produït un error a la xarxa. Reiniciarem l'aplicació quan el dispositiu torni a estar en línia.</translation>
+<translation id="289405675947420287">Accedeix de manera segura al teu ordinador des d'un dispositiu iOS. És ràpid, senzill i gratuït.
+
+• Baixa l'aplicació Escriptori remot de Chrome des de Chrome Web Store a l'ordinador al qual vulguis accedir de manera remota.
+• Instal·la el programari Escriptori remot de Chrome i segueix les instruccions per completar-ne la configuració.
+• Al dispositiu iOS, obre l'aplicació i toca qualsevol dels teus ordinadors en línia per establir la connexió.</translation>
 <translation id="2894654864775534701">Aquest ordinador es comparteix actualment mitjançant un altre compte.</translation>
 <translation id="2919669478609886916">Esteu compartint aquest ordinador amb un altre usuari. Voleu continuar compartint-lo?</translation>
 <translation id="2921543551052660690">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Chromium<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar Chromoting.</translation>
@@ -115,6 +123,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="369442766917958684">Sense connexió</translation>
 <translation id="3695446226812920698">Més informació</translation>
 <translation id="3718805989288361841">S'ha produït un error amb la configuració de la política de l'escriptori remot de Chrome. Contacta amb l'administrador del sistema per obtenir assistència.</translation>
+<translation id="3759645055923345178">Un cop finalitzada la configuració, podràs accedir a l'ordinador des d'aquesta pàgina introduint el PIN o el codi d'accés</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per l'escriptori remot de Chrome.</translation>
@@ -155,6 +164,13 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="4660011489602794167">Mostra el teclat</translation>
 <translation id="4703302905453407178">Un component obligatori ha deixat de funcionar. Informeu-ne els desenvolupadors.</translation>
 <translation id="4703799847237267011">La vostra sessió de Chromoting ha finalitzat.</translation>
+<translation id="4706355010316049867">Chrome
+Remot
+Escriptori
+Accés
+Assistència
+Ordinador
+PC</translation>
 <translation id="4736223761657662401">Historial de connexions</translation>
 <translation id="4741792197137897469">L'autenticació ha fallat. Torneu a iniciar la sessió a Chrome.</translation>
 <translation id="477305884757156764">L'aplicació és massa lenta.</translation>
@@ -198,6 +214,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="5773590752998175013">Data de sincronització</translation>
 <translation id="579702532610384533">Torna a connectar</translation>
 <translation id="5810269635982033450">La pantalla fa de ratolí tàctil</translation>
+<translation id="5823658491130719298">Obre Chrome a l'ordinador al qual vulguis accedir de manera remota i ves a la pàgina <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Opcions de visualització</translation>
 <translation id="5843054235973879827">Per què és segur?</translation>
 <translation id="5859141382851488196">Finestra nova...</translation>
@@ -272,6 +289,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="7782471917492991422">Comproveu la configuració de gestió d'energia de l'ordinador i assegureu-vos que no s'hagi configurat per estar en mode de baix consum quan estigui inactiu.</translation>
 <translation id="7810127880729796595">Mostra les estadístiques (connexió: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Falten alguns components necessaris. Assegureu-vos que executeu la versió més recent de Chrome i torneu-ho a provar.</translation>
+<translation id="7850909060902317210">Instal·la el programari Escriptori remot de Chrome i segueix les instruccions per completar-ne la configuració</translation>
 <translation id="7868137160098754906">Introduïu el vostre PIN de l'ordinador remot.</translation>
 <translation id="7869445566579231750">No teniu permís per executar aquesta aplicació.</translation>
 <translation id="7895403300744144251">Les polítiques de seguretat de l'ordinador remot no permeten les connexions des del vostre compte.</translation>
@@ -307,6 +325,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="8642984861538780905">Suficient</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="8743328882720071828">Vols permetre que <ph name="CLIENT_USERNAME" /> pugui veure i controlar l'ordinador?</translation>
+<translation id="8747048596626351634">La sessió s'ha bloquejat o no s'ha pogut iniciar. Si s'ha introduït ~/.chrome-remote-desktop-session a l'ordinador remot, comprova que s'iniciï un procés llarg en primer pla, com ara un entorn d'escriptori o un gestor de finestres.</translation>
 <translation id="8759753423332885148">Més informació</translation>
 <translation id="8791202241915690908">Baixeu l'instal·lador de l'amfitrió de Chromoting</translation>
 <translation id="894763922177556086">Bona</translation>
