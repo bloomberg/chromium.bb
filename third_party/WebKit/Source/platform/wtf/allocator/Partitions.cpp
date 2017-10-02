@@ -90,18 +90,18 @@ void Partitions::DecommitFreeableMemory() {
   if (!initialized_)
     return;
 
-  PartitionPurgeMemoryGeneric(ArrayBufferPartition(),
-                              base::PartitionPurgeDecommitEmptyPages |
+  base::PartitionPurgeMemoryGeneric(
+      ArrayBufferPartition(), base::PartitionPurgeDecommitEmptyPages |
                                   base::PartitionPurgeDiscardUnusedSystemPages);
-  PartitionPurgeMemoryGeneric(BufferPartition(),
-                              base::PartitionPurgeDecommitEmptyPages |
-                                  base::PartitionPurgeDiscardUnusedSystemPages);
-  PartitionPurgeMemoryGeneric(FastMallocPartition(),
-                              base::PartitionPurgeDecommitEmptyPages |
-                                  base::PartitionPurgeDiscardUnusedSystemPages);
-  PartitionPurgeMemory(LayoutPartition(),
-                       base::PartitionPurgeDecommitEmptyPages |
-                           base::PartitionPurgeDiscardUnusedSystemPages);
+  base::PartitionPurgeMemoryGeneric(
+      BufferPartition(), base::PartitionPurgeDecommitEmptyPages |
+                             base::PartitionPurgeDiscardUnusedSystemPages);
+  base::PartitionPurgeMemoryGeneric(
+      FastMallocPartition(), base::PartitionPurgeDecommitEmptyPages |
+                                 base::PartitionPurgeDiscardUnusedSystemPages);
+  base::PartitionPurgeMemory(LayoutPartition(),
+                             base::PartitionPurgeDecommitEmptyPages |
+                                 base::PartitionPurgeDiscardUnusedSystemPages);
 }
 
 void Partitions::ReportMemoryUsageHistogram() {
