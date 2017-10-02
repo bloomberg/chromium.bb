@@ -1215,7 +1215,7 @@ class TestFormStructure : public FormStructure {
       AutofillField* form_field = field(i);
       ASSERT_TRUE(form_field);
       form_field->set_heuristic_type(heuristic_types[i]);
-      form_field->set_server_type(server_types[i]);
+      form_field->set_overall_server_type(server_types[i]);
     }
 
     UpdateAutofillCount();
@@ -3674,16 +3674,16 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure2));
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(3);
+  response.add_field()->set_overall_type_prediction(3);
   for (int i = 0; i < 7; ++i) {
-    response.add_field()->set_autofill_type(0);
+    response.add_field()->set_overall_type_prediction(0);
   }
-  response.add_field()->set_autofill_type(3);
-  response.add_field()->set_autofill_type(2);
-  response.add_field()->set_autofill_type(61);
-  response.add_field()->set_autofill_type(5);
-  response.add_field()->set_autofill_type(4);
-  response.add_field()->set_autofill_type(35);
+  response.add_field()->set_overall_type_prediction(3);
+  response.add_field()->set_overall_type_prediction(2);
+  response.add_field()->set_overall_type_prediction(61);
+  response.add_field()->set_overall_type_prediction(5);
+  response.add_field()->set_overall_type_prediction(4);
+  response.add_field()->set_overall_type_prediction(35);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -3726,13 +3726,13 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(3);
+  response.add_field()->set_overall_type_prediction(3);
   for (int i = 0; i < 7; ++i) {
-    response.add_field()->set_autofill_type(0);
+    response.add_field()->set_overall_type_prediction(0);
   }
-  response.add_field()->set_autofill_type(3);
-  response.add_field()->set_autofill_type(2);
-  response.add_field()->set_autofill_type(61);
+  response.add_field()->set_overall_type_prediction(3);
+  response.add_field()->set_overall_type_prediction(2);
+  response.add_field()->set_overall_type_prediction(61);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -4318,7 +4318,8 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
     // Assign the specified predicted type for each field in the test case.
     FormStructure form_structure(form);
     for (size_t i = 0; i < test_fields.size(); ++i) {
-      form_structure.field(i)->set_server_type(test_fields[i].predicted_type);
+      form_structure.field(i)->set_overall_server_type(
+          test_fields[i].predicted_type);
     }
 
     AutofillManager::DeterminePossibleFieldTypesForUpload(

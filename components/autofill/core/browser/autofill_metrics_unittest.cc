@@ -270,7 +270,7 @@ class TestFormStructure : public FormStructure {
       AutofillField* form_field = field(i);
       ASSERT_TRUE(form_field);
       form_field->set_heuristic_type(heuristic_types[i]);
-      form_field->set_server_type(server_types[i]);
+      form_field->set_overall_server_type(server_types[i]);
     }
 
     UpdateAutofillCount();
@@ -1309,13 +1309,13 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
 
   AutofillQueryResponseContents response;
   // Server response will match with autocomplete.
-  response.add_field()->set_autofill_type(NAME_LAST);
+  response.add_field()->set_overall_type_prediction(NAME_LAST);
   // Server response will NOT match with autocomplete.
-  response.add_field()->set_autofill_type(NAME_FIRST);
+  response.add_field()->set_overall_type_prediction(NAME_FIRST);
   // Server response will have no data.
-  response.add_field()->set_autofill_type(NO_SERVER_DATA);
+  response.add_field()->set_overall_type_prediction(NO_SERVER_DATA);
   // Not logged.
-  response.add_field()->set_autofill_type(NAME_MIDDLE);
+  response.add_field()->set_overall_type_prediction(NAME_MIDDLE);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -5493,10 +5493,10 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
 
 TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(7);
-  response.add_field()->set_autofill_type(30);
-  response.add_field()->set_autofill_type(9);
-  response.add_field()->set_autofill_type(0);
+  response.add_field()->set_overall_type_prediction(7);
+  response.add_field()->set_overall_type_prediction(30);
+  response.add_field()->set_overall_type_prediction(9);
+  response.add_field()->set_overall_type_prediction(0);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -5512,10 +5512,10 @@ TEST_F(AutofillMetricsParseQueryResponseTest, ServerHasData) {
 // logging.
 TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(0);
-  response.add_field()->set_autofill_type(0);
-  response.add_field()->set_autofill_type(9);
-  response.add_field()->set_autofill_type(0);
+  response.add_field()->set_overall_type_prediction(0);
+  response.add_field()->set_overall_type_prediction(0);
+  response.add_field()->set_overall_type_prediction(9);
+  response.add_field()->set_overall_type_prediction(0);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -5532,7 +5532,7 @@ TEST_F(AutofillMetricsParseQueryResponseTest, OneFormNoServerData) {
 TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
   AutofillQueryResponseContents response;
   for (int i = 0; i < 4; ++i) {
-    response.add_field()->set_autofill_type(0);
+    response.add_field()->set_overall_type_prediction(0);
   }
 
   std::string response_string;
@@ -5549,10 +5549,10 @@ TEST_F(AutofillMetricsParseQueryResponseTest, AllFormsNoServerData) {
 // UMA metric to say there is data.
 TEST_F(AutofillMetricsParseQueryResponseTest, PartialNoServerData) {
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(0);
-  response.add_field()->set_autofill_type(10);
-  response.add_field()->set_autofill_type(0);
-  response.add_field()->set_autofill_type(11);
+  response.add_field()->set_overall_type_prediction(0);
+  response.add_field()->set_overall_type_prediction(10);
+  response.add_field()->set_overall_type_prediction(0);
+  response.add_field()->set_overall_type_prediction(11);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));

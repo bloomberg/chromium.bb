@@ -25,10 +25,16 @@ message AutofillQueryContents {
 
 // This message is the result of an Autofill query. It holds the field type
 // information.
-// Next available id: 7
+// Next available id: 8
 message AutofillQueryResponseContents {
   optional bool upload_required = 1;
-  repeated group Field = 2 { required fixed32 autofill_type = 3; }
+  repeated group Field = 2 {
+    required fixed32 overall_type_prediction = 3;
+    // Detailed list of all possible predictions (including
+    // |overall_type_prediction| as the first item).
+    message FieldPrediction { optional fixed32 type = 1; }
+    repeated FieldPrediction predictions = 7;
+  }
 }
 
 // This message contains information about the field types in a single form.

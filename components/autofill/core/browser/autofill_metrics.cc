@@ -694,7 +694,7 @@ void AutofillMetrics::LogServerPredictionQualityMetrics(
     QualityMetricType metric_type) {
   LogPredictionQualityMetrics(
       PREDICTION_SOURCE_SERVER,
-      AutofillType(field.server_type()).GetStorableType(),
+      AutofillType(field.overall_server_type()).GetStorableType(),
       form_interactions_ukm_logger, form, field, metric_type);
 }
 
@@ -1413,7 +1413,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
   ukm::builders::Autofill_SuggestionsShown(source_id_)
       .SetHeuristicType(static_cast<int>(field.heuristic_type()))
       .SetHtmlFieldType(static_cast<int>(field.html_type()))
-      .SetServerType(static_cast<int>(field.server_type()))
+      .SetServerType(static_cast<int>(field.overall_server_type()))
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
       .Record(ukm_recorder_);
@@ -1461,7 +1461,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
   ukm::builders::Autofill_TextFieldDidChange(source_id_)
       .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
       .SetHeuristicType(static_cast<int>(field.heuristic_type()))
-      .SetServerType(static_cast<int>(field.server_type()))
+      .SetServerType(static_cast<int>(field.overall_server_type()))
       .SetHtmlFieldType(static_cast<int>(field.html_type()))
       .SetHtmlFieldMode(static_cast<int>(field.html_mode()))
       .SetIsAutofilled(field.is_autofilled)

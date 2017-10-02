@@ -943,8 +943,8 @@ TEST_F(FormStructureTest,
 
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->server_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->server_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->overall_server_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->overall_server_type());
 }
 
 // Tests the heuristics and server predictions are not run for forms with less
@@ -978,8 +978,8 @@ TEST_F(FormStructureTest,
 
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->server_type());
-  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->server_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->overall_server_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->overall_server_type());
 }
 
 // Even with an 'autocomplete' attribute set, ShouldBeCrowdsourced() should
@@ -3768,10 +3768,17 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   forms.push_back(&form_structure2);
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(7);
-  response.add_field()->set_autofill_type(30);
-  response.add_field()->set_autofill_type(9);
-  response.add_field()->set_autofill_type(0);
+  AutofillQueryResponseContents_Field* field0 = response.add_field();
+  field0->set_overall_type_prediction(7);
+  AutofillQueryResponseContents_Field_FieldPrediction* field_prediction0 =
+      field0->add_predictions();
+  field_prediction0->set_type(7);
+  AutofillQueryResponseContents_Field_FieldPrediction* field_prediction1 =
+      field0->add_predictions();
+  field_prediction1->set_type(22);
+  response.add_field()->set_overall_type_prediction(30);
+  response.add_field()->set_overall_type_prediction(9);
+  response.add_field()->set_overall_type_prediction(0);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -3779,10 +3786,19 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
-  EXPECT_EQ(7, forms[0]->field(0)->server_type());
-  EXPECT_EQ(30, forms[0]->field(1)->server_type());
-  EXPECT_EQ(9, forms[1]->field(0)->server_type());
-  EXPECT_EQ(0, forms[1]->field(1)->server_type());
+  EXPECT_EQ(7, forms[0]->field(0)->overall_server_type());
+  ASSERT_EQ(2U, forms[0]->field(0)->server_predictions().size());
+  EXPECT_EQ(7U, forms[0]->field(0)->server_predictions()[0].type());
+  EXPECT_EQ(22U, forms[0]->field(0)->server_predictions()[1].type());
+  EXPECT_EQ(30, forms[0]->field(1)->overall_server_type());
+  ASSERT_EQ(1U, forms[0]->field(1)->server_predictions().size());
+  EXPECT_EQ(30U, forms[0]->field(1)->server_predictions()[0].type());
+  EXPECT_EQ(9, forms[1]->field(0)->overall_server_type());
+  ASSERT_EQ(1U, forms[1]->field(0)->server_predictions().size());
+  EXPECT_EQ(9U, forms[1]->field(0)->server_predictions()[0].type());
+  EXPECT_EQ(0, forms[1]->field(1)->overall_server_type());
+  ASSERT_EQ(1U, forms[1]->field(1)->server_predictions().size());
+  EXPECT_EQ(0U, forms[1]->field(1)->server_predictions()[0].type());
 }
 
 TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
@@ -3808,8 +3824,8 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   forms.front()->DetermineHeuristicTypes(nullptr /* ukm_service */);
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(EMAIL_ADDRESS);
-  response.add_field()->set_autofill_type(ACCOUNT_CREATION_PASSWORD);
+  response.add_field()->set_overall_type_prediction(EMAIL_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ACCOUNT_CREATION_PASSWORD);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -3817,9 +3833,10 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   // Server type is parsed from the response and is the end result type.
-  EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(0)->server_type());
+  EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(0)->overall_server_type());
   EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(0)->Type().GetStorableType());
-  EXPECT_EQ(ACCOUNT_CREATION_PASSWORD, forms[0]->field(1)->server_type());
+  EXPECT_EQ(ACCOUNT_CREATION_PASSWORD,
+            forms[0]->field(1)->overall_server_type());
   // TODO(crbug.com/613666): Should be a properly defined type, and not
   // UNKNOWN_TYPE.
   EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(1)->Type().GetStorableType());
@@ -3852,10 +3869,11 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
   forms.push_back(&form_structure);
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(NAME_FULL);
-  response.add_field()->set_autofill_type(ADDRESS_HOME_LINE1);
-  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);  // Uh-oh!
-  response.add_field()->set_autofill_type(EMAIL_ADDRESS);
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_LINE1);
+  response.add_field()->set_overall_type_prediction(
+      CREDIT_CARD_EXP_MONTH);  // Uh-oh!
+  response.add_field()->set_overall_type_prediction(EMAIL_ADDRESS);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -3869,10 +3887,10 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
-    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->server_type());
-    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(2)->server_type());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->server_type());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(2)->overall_server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->overall_server_type());
   }
 
   // Sanity check that the enable/disabled works.
@@ -3884,10 +3902,10 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
-    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->server_type());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->server_type());
+    EXPECT_EQ(NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->overall_server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(3)->overall_server_type());
   }
 }
 
@@ -3914,9 +3932,9 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
   forms.push_back(&form_structure);
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_FIRST);
-  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_LAST);
-  response.add_field()->set_autofill_type(EMAIL_ADDRESS);
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_FIRST);
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_LAST);
+  response.add_field()->set_overall_type_prediction(EMAIL_ADDRESS);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -3930,9 +3948,9 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(3U, forms[0]->field_count());
-    EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->server_type());
-    EXPECT_EQ(NAME_LAST, forms[0]->field(1)->server_type());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->server_type());
+    EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(NAME_LAST, forms[0]->field(1)->overall_server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->overall_server_type());
   }
 
   // Sanity check that the enable/disabled works.
@@ -3944,9 +3962,10 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(3U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FIRST, forms[0]->field(0)->server_type());
-    EXPECT_EQ(CREDIT_CARD_NAME_LAST, forms[0]->field(1)->server_type());
-    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_FIRST,
+              forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_LAST, forms[0]->field(1)->overall_server_type());
+    EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->overall_server_type());
   }
 }
 
@@ -3981,11 +4000,13 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
   forms.push_back(&form_structure);
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_FULL);
-  response.add_field()->set_autofill_type(CREDIT_CARD_NUMBER);
-  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);
-  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
-  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);  // Uh-oh!
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_FULL);
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NUMBER);
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_EXP_MONTH);
+  response.add_field()->set_overall_type_prediction(
+      CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  response.add_field()->set_overall_type_prediction(
+      CREDIT_CARD_EXP_MONTH);  // Uh-oh!
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -3999,11 +4020,12 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(5U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR, forms[0]->field(3)->server_type());
-    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(4)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
+              forms[0]->field(3)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(4)->overall_server_type());
   }
 
   // Sanity check that the enable/disabled works.
@@ -4015,11 +4037,12 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(5U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR, forms[0]->field(3)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(4)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(2)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
+              forms[0]->field(3)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(4)->overall_server_type());
   }
 }
 
@@ -4050,10 +4073,12 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   forms.push_back(&form_structure);
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(CREDIT_CARD_NAME_FULL);
-  response.add_field()->set_autofill_type(CREDIT_CARD_NUMBER);
-  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
-  response.add_field()->set_autofill_type(CREDIT_CARD_EXP_MONTH);  // Uh-oh!
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_FULL);
+  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NUMBER);
+  response.add_field()->set_overall_type_prediction(
+      CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  response.add_field()->set_overall_type_prediction(
+      CREDIT_CARD_EXP_MONTH);  // Uh-oh!
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
@@ -4066,11 +4091,11 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->overall_server_type());
     EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-              forms[0]->field(2)->server_type());
-    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(3)->server_type());
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(3)->overall_server_type());
   }
 
   // Sanity check that the enable/disabled works.
@@ -4081,11 +4106,11 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
     FormStructure::ParseQueryResponse(response_string, forms);
     ASSERT_EQ(1U, forms.size());
     ASSERT_EQ(4U, forms[0]->field_count());
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->server_type());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->server_type());
+    EXPECT_EQ(CREDIT_CARD_NAME_FULL, forms[0]->field(0)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->overall_server_type());
     EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-              forms[0]->field(2)->server_type());
-    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(3)->server_type());
+              forms[0]->field(2)->overall_server_type());
+    EXPECT_EQ(CREDIT_CARD_EXP_MONTH, forms[0]->field(3)->overall_server_type());
   }
 }
 
