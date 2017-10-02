@@ -34,9 +34,9 @@
   var testSuite = [
     function dumpLevels(next) {
       TestRunner.addResult('All levels');
-      TestRunner.addObject(Console.ConsoleViewFilter.allLevelsFilterValue());
+      TestRunner.addObject(Console.ConsoleFilter.allLevelsFilterValue());
       TestRunner.addResult('Default levels');
-      TestRunner.addObject(Console.ConsoleViewFilter.defaultLevelsFilterValue());
+      TestRunner.addObject(Console.ConsoleFilter.defaultLevelsFilterValue());
       next();
     },
 
@@ -47,13 +47,13 @@
     },
 
     function allLevels(next) {
-      Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
+      Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleFilter.allLevelsFilterValue());
       dumpVisibleMessages();
       next();
     },
 
     function defaultLevels(next) {
-      Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.defaultLevelsFilterValue());
+      Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleFilter.defaultLevelsFilterValue());
       dumpVisibleMessages();
       next();
     },

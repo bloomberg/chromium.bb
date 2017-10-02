@@ -77,7 +77,7 @@
       next();
     },
     function allLevelsFilter(next) {
-      Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
+      Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleFilter.allLevelsFilterValue());
       dumpVisibleMessages();
       next();
     },
@@ -105,16 +105,6 @@
     },
     function removeAllFilters(next) {
       Console.ConsoleView.instance()._filter.removeMessageURLFilter();
-      dumpVisibleMessages();
-      next();
-    },
-    function checkContextFilter(next) {
-      Console.ConsoleView.instance()._filter.setContext('context1');
-      dumpVisibleMessages();
-      next();
-    },
-    function checkAllContextsFilter(next) {
-      Console.ConsoleView.instance()._filter.setContext(Console.ConsoleSidebar.AllContextsFilter);
       dumpVisibleMessages();
       next();
     },
