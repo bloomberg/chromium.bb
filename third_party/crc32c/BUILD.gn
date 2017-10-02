@@ -12,7 +12,10 @@ config("crc32c_config") {
     "src/include",
   ]
 
-  defines = []
+  defines = [
+    "BYTE_ORDER_BIG_ENDIAN=0",
+    "CRC32C_TESTS_BUILT_WITH_GLOG=0",
+  ]
 
   # If we ever support big-endian builds, add logic to conditionally enable
   # BYTE_ORDER_BIG_ENDIAN.
@@ -22,20 +25,40 @@ config("crc32c_config") {
       "HAVE_MM_PREFETCH=1",
       "HAVE_SSE42=1",
     ]
+  } else {
+    defines += [
+      "HAVE_MM_PREFETCH=0",
+      "HAVE_SSE42=0",
+    ]
   }
   if (is_clang || !is_win) {
     defines += [ "HAVE_BUILTIN_PREFETCH=1" ]
+  } else {
+    defines += [ "HAVE_BUILTIN_PREFETCH=0" ]
   }
 
   if (current_cpu == "arm64") {
     defines += [ "HAVE_ARM64_CRC32C=1" ]
+  } else {
+    defines += [ "HAVE_ARM64_CRC32C=0" ]
   }
 
   if (is_linux || is_chromeos) {
-    defines += [ "HAVE_STRONG_GETAUXVAL=1" ]
+    defines += [
+      "HAVE_STRONG_GETAUXVAL=1",
+      "HAVE_WEAK_GETAUXVAL=1",
+    ]
   } else if (is_android) {
     # Android added <sys/auxv.h> in API level 20.
-    defines += [ "HAVE_WEAK_GETAUXVAL=1" ]
+    defines += [
+      "HAVE_STRONG_GETAUXVAL=0",
+      "HAVE_WEAK_GETAUXVAL=1",
+    ]
+  } else {
+    defines += [
+      "HAVE_STRONG_GETAUXVAL=0",
+      "HAVE_WEAK_GETAUXVAL=0",
+    ]
   }
 }
 

@@ -1,7 +1,7 @@
 Name: CRC32C
 Short Name: crc32c
 URL: https://github.com/google/crc32c
-Version: 1.0.3
+Version: 1.0.4
 License: New BSD
 License File: src/LICENSE
 Security Critical: yes
