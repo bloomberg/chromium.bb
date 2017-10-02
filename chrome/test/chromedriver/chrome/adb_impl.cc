@@ -206,7 +206,10 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
                              const std::string& process_name,
                              int* pid) {
   std::string response;
-  Status status = ExecuteHostShellCommand(device_serial, "ps", &response);
+  // on Android O `ps` returns only user processes, so also try with `-A` flag.
+  Status status = ExecuteHostShellCommand(device_serial, "ps && ps -A",
+      &response);
+
   if (!status.IsOk())
     return status;
 
@@ -263,4 +266,3 @@ Status AdbImpl::ExecuteHostShellCommand(
       "host:transport:" + device_serial + "|shell:" + shell_command,
       response);
 }
-
