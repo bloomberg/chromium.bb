@@ -723,7 +723,7 @@ void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
       message_source, web_core_message_level, message.text,
       SourceLocation::Create(message.url, message.line_number,
                              message.column_number, nullptr));
-  console_message->SetNodes(std::move(nodes));
+  console_message->SetNodes(GetFrame(), std::move(nodes));
   GetFrame()->GetDocument()->AddConsoleMessage(console_message);
 }
 
