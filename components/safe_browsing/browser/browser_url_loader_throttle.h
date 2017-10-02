@@ -55,8 +55,15 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
       const base::Callback<content::WebContents*()>& web_contents_getter);
 
-  void OnCompleteCheck(bool proceed, bool showed_interstitial);
+  // |slow_check| indicates whether it reports the result of a slow check.
+  // (Please see comments of OnCheckUrlResult() for what slow check means).
+  void OnCompleteCheck(bool slow_check, bool proceed, bool showed_interstitial);
 
+  // If |slow_check_notifier| is non-null, it indicates that a "slow check" is
+  // ongoing, i.e., the URL may be unsafe and a more time-consuming process is
+  // required to get the final result. In that case, the rest of the callback
+  // arguments should be ignored. This method sets the |slow_check_notifier|
+  // output parameter to a callback to receive the final result.
   void OnCheckUrlResult(NativeUrlCheckNotifier* slow_check_notifier,
                         bool proceed,
                         bool showed_interstitial);
@@ -69,6 +76,8 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
   std::unique_ptr<SafeBrowsingUrlCheckerImpl> url_checker_;
 
   size_t pending_checks_ = 0;
+  // How many slow checks that haven't received results.
+  size_t pending_slow_checks_ = 0;
   bool blocked_ = false;
 
   // The time when we started deferring the request.

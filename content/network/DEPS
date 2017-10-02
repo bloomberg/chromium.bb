@@ -26,6 +26,7 @@ specific_include_rules = {
   '.*_[a-z]*test.*': [
     "+content/public/common/content_paths.h",
     "+content/public/common/service_names.mojom.h",
+    "+content/public/test/controllable_http_response.h",
     "+content/public/test/test_url_loader_client.h",
   ],
 }

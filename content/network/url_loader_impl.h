@@ -101,6 +101,10 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   net::HttpRawRequestHeaders raw_request_headers_;
   scoped_refptr<const net::HttpResponseHeaders> raw_response_headers_;
 
+  bool should_pause_reading_body_ = false;
+  // The response body stream is open, but transferring data is paused.
+  bool paused_reading_body_ = false;
+
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderImpl);

@@ -27,7 +27,9 @@ struct ResourceRequest;
 class CONTENT_EXPORT URLLoaderThrottle {
  public:
   // An interface for the throttle implementation to resume (when deferred) or
-  // cancel the resource load.
+  // cancel the resource load. Please note that these methods could be called
+  // in-band (i.e., inside URLLoaderThrottle notification methods such as
+  // WillStartRequest), or out-of-band.
   class CONTENT_EXPORT Delegate {
    public:
     // Cancels the resource load with the specified error code.
@@ -36,6 +38,11 @@ class CONTENT_EXPORT URLLoaderThrottle {
     // Resumes the deferred resource load. It is a no-op if the resource load is
     // not deferred or has already been canceled.
     virtual void Resume() = 0;
+
+    // Pauses/resumes reading response body if the resource is fetched from
+    // network.
+    virtual void PauseReadingBodyFromNet();
+    virtual void ResumeReadingBodyFromNet();
 
    protected:
     virtual ~Delegate();

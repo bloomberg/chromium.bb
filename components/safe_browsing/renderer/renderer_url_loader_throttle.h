@@ -44,6 +44,13 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
                         bool proceed,
                         bool showed_interstitial);
 
+  // Called by the two methods above.
+  // |slow_check| indicates whether it reports the result of a slow check.
+  // (Please see comments in safe_browsing.mojom for what slow check means).
+  void OnCompleteCheckInternal(bool slow_check,
+                               bool proceed,
+                               bool showed_interstitial);
+
   void OnConnectionError();
 
   mojom::SafeBrowsing* safe_browsing_;
@@ -57,6 +64,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;
 
   size_t pending_checks_ = 0;
+  size_t pending_slow_checks_ = 0;
   bool blocked_ = false;
 
   // The time when we started deferring the request.

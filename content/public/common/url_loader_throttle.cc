@@ -8,6 +8,9 @@
 
 namespace content {
 
+void URLLoaderThrottle::Delegate::PauseReadingBodyFromNet() {}
+void URLLoaderThrottle::Delegate::ResumeReadingBodyFromNet() {}
+
 URLLoaderThrottle::Delegate::~Delegate() {}
 
 URLLoaderThrottle::~URLLoaderThrottle() {}

@@ -113,15 +113,23 @@ void BrowserURLLoaderThrottle::set_net_event_logger(
     url_checker_->set_net_event_logger(net_event_logger);
 }
 
-void BrowserURLLoaderThrottle::OnCompleteCheck(bool proceed,
+void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
+                                               bool proceed,
                                                bool showed_interstitial) {
-  if (blocked_)
-    return;
+  DCHECK(!blocked_);
 
   DCHECK_LT(0u, pending_checks_);
   pending_checks_--;
 
+  if (slow_check) {
+    DCHECK_LT(0u, pending_slow_checks_);
+    pending_slow_checks_--;
+  }
+
   if (proceed) {
+    if (pending_slow_checks_ == 0 && slow_check)
+      delegate_->ResumeReadingBodyFromNet();
+
     if (pending_checks_ == 0 && deferred_) {
       LogDelay(base::TimeTicks::Now() - defer_start_time_);
       deferred_ = false;
@@ -133,9 +141,11 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool proceed,
       delegate_->Resume();
     }
   } else {
-    url_checker_.reset();
     blocked_ = true;
+
+    url_checker_.reset();
     pending_checks_ = 0;
+    pending_slow_checks_ = 0;
     delegate_->CancelWithError(net::ERR_ABORTED);
   }
 }
@@ -144,16 +154,27 @@ void BrowserURLLoaderThrottle::OnCheckUrlResult(
     NativeUrlCheckNotifier* slow_check_notifier,
     bool proceed,
     bool showed_interstitial) {
+  DCHECK(!blocked_);
+
   if (!slow_check_notifier) {
-    OnCompleteCheck(proceed, showed_interstitial);
+    OnCompleteCheck(false, proceed, showed_interstitial);
     return;
   }
 
+  pending_slow_checks_++;
+  // Pending slow checks indicate that the resource may be unsafe. In that case,
+  // pause reading response body from network to minimize the chance of
+  // processing unsafe contents (e.g., writing unsafe contents into cache),
+  // until we get the results. According to the results, we may resume reading
+  // or cancel the resource load.
+  if (pending_slow_checks_ == 1)
+    delegate_->PauseReadingBodyFromNet();
+
   // In this case |proceed| and |showed_interstitial| should be ignored. The
   // result will be returned by calling |*slow_check_notifier| callback.
-  // TODO(yzshen): Notify the network service to pause processing response body.
-  *slow_check_notifier = base::BindOnce(
-      &BrowserURLLoaderThrottle::OnCompleteCheck, base::Unretained(this));
+  *slow_check_notifier =
+      base::BindOnce(&BrowserURLLoaderThrottle::OnCompleteCheck,
+                     base::Unretained(this), true /* slow_check */);
 }
 
 }  // namespace safe_browsing

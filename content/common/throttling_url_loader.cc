@@ -24,6 +24,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
 
   void Resume() override { loader_->StopDeferringForThrottle(throttle_); }
 
+  void PauseReadingBodyFromNet() override {
+    loader_->PauseReadingBodyFromNet(throttle_);
+  }
+
+  void ResumeReadingBodyFromNet() override {
+    loader_->ResumeReadingBodyFromNet(throttle_);
+  }
+
  private:
   ThrottlingURLLoader* const loader_;
   URLLoaderThrottle* const throttle_;
@@ -202,19 +210,22 @@ void ThrottlingURLLoader::StartNow(
   if (factory) {
     DCHECK(!start_loader_callback);
 
-    mojom::URLLoaderPtr url_loader;
-    auto url_loader_request = mojo::MakeRequest(&url_loader);
-    url_loader_ = std::move(url_loader);
     factory->CreateLoaderAndStart(
-        std::move(url_loader_request), routing_id, request_id, options,
+        mojo::MakeRequest(&url_loader_), routing_id, request_id, options,
         url_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
   } else {
-    mojom::URLLoaderPtr url_loader;
-    auto url_loader_request = mojo::MakeRequest(&url_loader);
-    url_loader_ = std::move(url_loader);
     std::move(start_loader_callback)
-        .Run(std::move(url_loader_request), std::move(client));
+        .Run(mojo::MakeRequest(&url_loader_), std::move(client));
+  }
+
+  if (!pausing_reading_body_from_net_throttles_.empty())
+    url_loader_->PauseReadingBodyFromNet();
+
+  if (priority_info_) {
+    auto priority_info = std::move(priority_info_);
+    url_loader_->SetPriority(priority_info->priority,
+                             priority_info->intra_priority_value);
   }
 }
 
@@ -363,8 +374,6 @@ void ThrottlingURLLoader::OnClientConnectionError() {
 }
 
 void ThrottlingURLLoader::CancelWithError(int error_code) {
-  // TODO(yzshen): Support a mode that cancellation also deletes the disk cache
-  // entry.
   if (loader_cancelled_)
     return;
 
@@ -387,12 +396,6 @@ void ThrottlingURLLoader::Resume() {
                start_info_->request_id, start_info_->options,
                std::move(start_info_->start_loader_callback),
                start_info_->url_request, std::move(start_info_->task_runner));
-
-      if (priority_info_) {
-        auto priority_info = std::move(priority_info_);
-        url_loader_->SetPriority(priority_info->priority,
-                                 priority_info->intra_priority_value);
-      }
       break;
     }
     case DEFERRED_REDIRECT: {
@@ -413,6 +416,24 @@ void ThrottlingURLLoader::Resume() {
       break;
   }
   deferred_stage_ = DEFERRED_NONE;
+}
+
+void ThrottlingURLLoader::PauseReadingBodyFromNet(URLLoaderThrottle* throttle) {
+  if (pausing_reading_body_from_net_throttles_.empty() && url_loader_)
+    url_loader_->PauseReadingBodyFromNet();
+
+  pausing_reading_body_from_net_throttles_.insert(throttle);
+}
+
+void ThrottlingURLLoader::ResumeReadingBodyFromNet(
+    URLLoaderThrottle* throttle) {
+  auto iter = pausing_reading_body_from_net_throttles_.find(throttle);
+  if (iter == pausing_reading_body_from_net_throttles_.end())
+    return;
+
+  pausing_reading_body_from_net_throttles_.erase(iter);
+  if (pausing_reading_body_from_net_throttles_.empty() && url_loader_)
+    url_loader_->ResumeReadingBodyFromNet();
 }
 
 ThrottlingURLLoader::ThrottleEntry::ThrottleEntry(
