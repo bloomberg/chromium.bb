@@ -36,6 +36,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_control.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if !defined(OS_IOS)
 #include "services/service_manager/runner/host/service_process_launcher.h"
@@ -262,7 +263,7 @@ class ServiceManager::Instance
                                             base::Unretained(this)));
   }
 
-  bool StartWithFilePath(const base::FilePath& path) {
+  bool StartWithFilePath(const base::FilePath& path, SandboxType sandbox_type) {
 #if defined(OS_IOS)
     // iOS does not support launching services in their own processes.
     NOTREACHED();
@@ -273,9 +274,8 @@ class ServiceManager::Instance
     runner_ = service_manager_->service_process_launcher_factory_->Create(path);
     if (!runner_)
       return false;
-    bool start_sandboxed = false;
     mojom::ServicePtr service = runner_->Start(
-        identity_, start_sandboxed,
+        identity_, sandbox_type,
         base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()));
     StartWithService(std::move(service));
     return true;
@@ -860,45 +860,45 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
     instance->BindPIDReceiver(params->TakePIDReceiverRequest());
     instance->StartWithService(params->TakeService());
     return;
+  }
+  // The catalog was unable to read a manifest for this service. We can't do
+  // anything more.
+  if (result_interface_provider_specs_empty) {
+    LOG(ERROR)
+        << "Error: The catalog was unable to read a manifest for service \""
+        << entry->name() << "\".";
+    params->set_response_data(mojom::ConnectResult::ACCESS_DENIED, Identity());
+    return;
+  }
+
+  if (entry->parent()) {
+    // This service is provided by another service via a ServiceFactory.
+    const std::string* target_user_id = &target.user_id();
+    std::string factory_instance_name = instance_name;
+
+    // Use the original user ID so the existing embedder factory can
+    // be found and used to create the new service.
+    target_user_id = &original_target.user_id();
+    Identity packaged_service_target(target);
+    packaged_service_target.set_user_id(original_target.user_id());
+    instance->set_identity(packaged_service_target);
+
+    mojom::ServicePtr service;
+    Identity factory(entry->parent()->name(), *target_user_id,
+                     factory_instance_name);
+    CreateServiceWithFactory(factory, target.name(),
+                             mojo::MakeRequest(&service));
+    instance->StartWithService(std::move(service));
   } else {
-    // The catalog was unable to read a manifest for this service. We can't do
-    // anything more.
-    if (result_interface_provider_specs_empty) {
-      LOG(ERROR)
-          << "Error: The catalog was unable to read a manifest for service \""
-          << entry->name() << "\".";
-      params->set_response_data(mojom::ConnectResult::ACCESS_DENIED,
+    base::FilePath package_path = entry->path();
+    DCHECK(!package_path.empty());
+    if (!instance->StartWithFilePath(
+            package_path,
+            UtilitySandboxTypeFromString(entry->sandbox_type()))) {
+      OnInstanceError(instance);
+      params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
                                 Identity());
       return;
-    }
-
-    if (entry->parent()) {
-      // This service is provided by another service via a ServiceFactory.
-      const std::string* target_user_id = &target.user_id();
-      std::string factory_instance_name = instance_name;
-
-      // Use the original user ID so the existing embedder factory can
-      // be found and used to create the new service.
-      target_user_id = &original_target.user_id();
-      Identity packaged_service_target(target);
-      packaged_service_target.set_user_id(original_target.user_id());
-      instance->set_identity(packaged_service_target);
-
-      mojom::ServicePtr service;
-      Identity factory(entry->parent()->name(), *target_user_id,
-                       factory_instance_name);
-      CreateServiceWithFactory(factory, target.name(),
-                               mojo::MakeRequest(&service));
-      instance->StartWithService(std::move(service));
-    } else {
-      base::FilePath package_path = entry->path();
-      DCHECK(!package_path.empty());
-      if (!instance->StartWithFilePath(package_path)) {
-        OnInstanceError(instance);
-        params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
-                                  Identity());
-        return;
-      }
     }
   }
 

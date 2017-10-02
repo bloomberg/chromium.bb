@@ -19,6 +19,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
 class CommandLine;
@@ -53,7 +54,7 @@ class ServiceProcessLauncher {
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
   mojom::ServicePtr Start(const Identity& target,
-                          bool start_sandboxed,
+                          SandboxType sandbox_type,
                           const ProcessReadyCallback& callback);
 
   // Waits for the child process to terminate.
@@ -65,7 +66,7 @@ class ServiceProcessLauncher {
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   ServiceProcessLauncherDelegate* delegate_ = nullptr;
-  bool start_sandboxed_ = false;
+  SandboxType sandbox_type_ = SANDBOX_TYPE_NO_SANDBOX;
   Identity target_;
   base::FilePath service_path_;
   base::Process child_process_;

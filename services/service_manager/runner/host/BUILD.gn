@@ -30,6 +30,7 @@ source_set("lib") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",
+    "//services/service_manager/sandbox",
   ]
 
   public_deps = [

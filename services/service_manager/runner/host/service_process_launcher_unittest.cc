@@ -86,8 +86,7 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
                                   test_service_path);
   base::RunLoop run_loop;
   launcher.Start(
-      Identity(),
-      false,
+      Identity(), SANDBOX_TYPE_NO_SANDBOX,
       base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()));
   run_loop.Run();
 

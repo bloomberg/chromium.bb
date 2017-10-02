@@ -46,7 +46,6 @@ ServiceProcessLauncher::ServiceProcessLauncher(
     const base::FilePath& service_path)
     : launch_process_runner_(launch_process_runner),
       delegate_(delegate),
-      start_sandboxed_(false),
       service_path_(service_path),
       start_child_process_event_(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -62,11 +61,11 @@ ServiceProcessLauncher::~ServiceProcessLauncher() {
 
 mojom::ServicePtr ServiceProcessLauncher::Start(
     const Identity& target,
-    bool start_sandboxed,
+    SandboxType sandbox_type,
     const ProcessReadyCallback& callback) {
   DCHECK(!child_process_.IsValid());
 
-  start_sandboxed_ = start_sandboxed;
+  sandbox_type_ = sandbox_type;
   target_ = target;
 
   const base::CommandLine& parent_command_line =
@@ -81,9 +80,10 @@ mojom::ServicePtr ServiceProcessLauncher::Start(
   child_command_line->AppendSwitchASCII("u", target.user_id());
 #endif
 
-  if (start_sandboxed_)
+  if (!IsUnsandboxedSandboxType(sandbox_type_)) {
+    // TODO(tsepez): pass along sandbox information on command line.
     child_command_line->AppendSwitch(switches::kEnableSandbox);
-
+  }
   mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
   mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
       child_command_line.get(), &handle_passing_info_);
@@ -157,7 +157,7 @@ void ServiceProcessLauncher::DoLaunch(
   }
 #elif defined(OS_FUCHSIA)
   // LaunchProcess will share stdin/out/err with the child process by default.
-  if (start_sandboxed_)
+  if (!IsUnsandboxedSandboxType(sandbox_type_))
     NOTIMPLEMENTED();
   options.handles_to_transfer = std::move(handle_passing_info_);
 #elif defined(OS_POSIX)
@@ -169,7 +169,7 @@ void ServiceProcessLauncher::DoLaunch(
   DVLOG(2) << "Launching child with command line: "
            << child_command_line->GetCommandLineString();
 #if defined(OS_LINUX)
-  if (start_sandboxed_) {
+  if (!IsUnsandboxedSandboxType(sandbox_type_)) {
     child_process_ =
         sandbox::NamespaceSandbox::LaunchProcess(*child_command_line, options);
     if (!child_process_.IsValid()) {
