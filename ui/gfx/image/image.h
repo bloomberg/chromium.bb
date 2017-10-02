@@ -140,8 +140,10 @@ class GFX_EXPORT Image {
   // image is empty.
   ImageSkia AsImageSkia() const;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
   // Same as ToSkBitmap(), but returns nil if this image is empty.
+#if defined(OS_IOS)
+  UIImage* AsUIImage() const;
+#elif defined(OS_MACOSX)
   NSImage* AsNSImage() const;
 #endif
 
