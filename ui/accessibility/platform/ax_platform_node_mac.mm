@@ -81,6 +81,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_INPUT_TIME, @"AXTimeField"},
       {ui::AX_ROLE_LABEL_TEXT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_LEGEND, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_LINE_BREAK, NSAccessibilityGroupRole},
       {ui::AX_ROLE_LINK, NSAccessibilityLinkRole},
       {ui::AX_ROLE_LIST, NSAccessibilityListRole},
       {ui::AX_ROLE_LIST_BOX, NSAccessibilityListRole},
