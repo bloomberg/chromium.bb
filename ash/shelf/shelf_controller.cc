@@ -89,12 +89,12 @@ void SetShelfBehaviorsFromPrefs() {
 
 ShelfController::ShelfController() {
   // Synchronization is required in the Mash config, since Chrome and Ash run in
-  // separate processes; it's optional via kAshEnableShelfModelSynchronization
+  // separate processes; it's optional via kAshDisableShelfModelSynchronization
   // in the Classic Ash config, where Chrome can uses Ash's ShelfModel directly.
   should_synchronize_shelf_models_ =
       Shell::GetAshConfig() == Config::MASH ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableShelfModelSynchronization);
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableShelfModelSynchronization);
 
   // Set the delegate and title string for the app list item.
   model_.SetShelfItemDelegate(ShelfID(kAppListId),
