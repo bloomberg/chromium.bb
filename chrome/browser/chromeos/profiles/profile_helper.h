@@ -32,6 +32,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest;
 
 namespace arc {
 class ArcAuthServiceTest;
+class ArcCertStoreBridgeTest;
 class ArcSessionManagerTest;
 }
 
@@ -190,6 +191,7 @@ class ProfileHelper
   friend class ash::MultiUserWindowManagerChromeOSTest;
   friend class arc::ArcSessionManagerTest;
   friend class arc::ArcAuthServiceTest;
+  friend class arc::ArcCertStoreBridgeTest;
   friend class ::ArcAppTest;
   friend class ::SessionControllerClientTest;
   friend class ::test::BrowserFinderChromeOSTest;

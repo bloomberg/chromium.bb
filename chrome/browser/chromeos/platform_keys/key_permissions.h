@@ -16,7 +16,6 @@
 class PrefService;
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 
@@ -90,7 +89,7 @@ class KeyPermissions {
     ~PermissionsForExtension();
 
     // Returns true if the private key matching |public_key_spki_der| can be
-    // used for signing by the extension with id |extension_id|.
+    // used for signing by the extension with id |extension_id_|.
     // |public_key_spki_der| must be the DER of a Subject Public Key Info.
     bool CanUseKeyForSigning(const std::string& public_key_spki_der);
 
@@ -176,6 +175,16 @@ class KeyPermissions {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns true if |public_key_spki_der_b64| is a corporate usage key.
+  static bool IsCorporateKeyForProfile(
+      const std::string& public_key_spki_der_b64,
+      const PrefService* const profile_prefs);
+
+  // Returns the list of apps and extensions ids allowed to use corporate usage
+  // keys by policy in |profile_policies|.
+  static std::vector<std::string> GetCorporateKeyUsageAllowedAppIds(
+      policy::PolicyService* const profile_policies);
+
  private:
   bool IsCorporateKey(const std::string& public_key_spki_der_b64) const;
 
@@ -189,9 +198,6 @@ class KeyPermissions {
   // Writes |value| to the state store of the extension with id |extension_id|.
   void SetPlatformKeysOfExtension(const std::string& extension_id,
                                   std::unique_ptr<base::Value> value);
-
-  const base::DictionaryValue* GetPrefsEntry(
-      const std::string& public_key_spki_der_b64) const;
 
   const bool profile_is_managed_;
   PrefService* const profile_prefs_;

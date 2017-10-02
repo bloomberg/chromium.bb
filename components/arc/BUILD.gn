@@ -162,6 +162,7 @@ mojom("arc_bindings") {
     "common/bluetooth.mojom",
     "common/boot_phase_monitor.mojom",
     "common/cast_receiver.mojom",
+    "common/cert_store.mojom",
     "common/clipboard.mojom",
     "common/crash_collector.mojom",
     "common/enterprise_reporting.mojom",

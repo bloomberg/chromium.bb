@@ -336,6 +336,8 @@ source_set("chromeos") {
     "arc/cast_receiver/arc_cast_receiver_service.h",
     "arc/downloads_watcher/arc_downloads_watcher_service.cc",
     "arc/downloads_watcher/arc_downloads_watcher_service.h",
+    "arc/enterprise/arc_cert_store_bridge.cc",
+    "arc/enterprise/arc_cert_store_bridge.h",
     "arc/enterprise/arc_enterprise_reporting_service.cc",
     "arc/enterprise/arc_enterprise_reporting_service.h",
     "arc/extensions/arc_support_message_host.cc",

@@ -121,6 +121,11 @@ void ArcBridgeHostImpl::OnCastReceiverInstanceReady(
                   std::move(cast_receiver_ptr));
 }
 
+void ArcBridgeHostImpl::OnCertStoreInstanceReady(
+    mojom::CertStoreInstancePtr instance_ptr) {
+  OnInstanceReady(arc_bridge_service_->cert_store(), std::move(instance_ptr));
+}
+
 void ArcBridgeHostImpl::OnClipboardInstanceReady(
     mojom::ClipboardInstancePtr clipboard_ptr) {
   OnInstanceReady(arc_bridge_service_->clipboard(), std::move(clipboard_ptr));
