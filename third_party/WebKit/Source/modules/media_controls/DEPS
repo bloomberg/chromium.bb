@@ -1,6 +1,5 @@
 include_rules = [
   "-modules",
-  "+blink/public/resources/grit/media_controls_resources.h",
   "+device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h",
   "+modules/ModulesExport.h",
   "+modules/device_orientation",

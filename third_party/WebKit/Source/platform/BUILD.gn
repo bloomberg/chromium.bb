@@ -1544,7 +1544,6 @@ jumbo_component("platform") {
     "//third_party/WebKit/Source/platform/heap",
     "//third_party/WebKit/Source/platform/instrumentation",
     "//third_party/WebKit/Source/platform/loader",
-    "//third_party/WebKit/Source/platform/media",
     "//third_party/WebKit/Source/platform/scheduler",
     "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
