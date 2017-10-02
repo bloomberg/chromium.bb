@@ -26,12 +26,8 @@ std::string GenerateDeviceId() {
 
   std::string device_id;
   MachineIdStatus status = GetDeterministicMachineSpecificId(&device_id);
-  if (status != MachineIdStatus::NOT_IMPLEMENTED) {
-    // TODO(proberge): Remove this histogram once we validate that machine id
-    // generation is not flaky and consider adding a CHECK or DCHECK.
-    UMA_HISTOGRAM_BOOLEAN("Settings.MachineIdGenerationSuccess",
-                          status == MachineIdStatus::SUCCESS);
-  }
+  DCHECK(status == MachineIdStatus::NOT_IMPLEMENTED ||
+         status == MachineIdStatus::SUCCESS);
 
   if (status == MachineIdStatus::SUCCESS) {
     cached_device_id = device_id;

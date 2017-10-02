@@ -74959,6 +74959,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Settings.MachineIdGenerationSuccess" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated in Chrome 63, as we verified that machine id generation was not
+    flaky.
+  </obsolete>
   <owner>proberge@chromium.org</owner>
   <summary>
     Whether generation of the deterministic machine-specific device id was
