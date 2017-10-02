@@ -243,6 +243,7 @@ std::unique_ptr<int> p(new int(42));
 // |p| is moved into the internal storage of Bind(), and moved out to |Foo|.
 base::BindOnce(&Foo, std::move(p));
 base::BindRepeating(&Foo, base::Passed(&p));
+base::BindRepeating(&Foo, base::Passed(std::move(p)));
 ```
 
 ## Quick reference for advanced binding
