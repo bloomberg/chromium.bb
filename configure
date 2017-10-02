@@ -313,7 +313,6 @@ EXPERIMENT_LIST="
     masked_tx
     dependent_horztiles
     dist_8x8
-    tripred
     palette_throughput
     ref_adapt
     lv_map
