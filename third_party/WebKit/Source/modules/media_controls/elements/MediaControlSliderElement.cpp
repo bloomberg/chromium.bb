@@ -92,25 +92,25 @@ void MediaControlSliderElement::SetupBarSegments() {
   ShadowRoot& shadow_root = Shadow()->OldestShadowRoot();
   Element* track = shadow_root.getElementById(AtomicString("track"));
   DCHECK(track);
-  track->setAttribute("class", "-internal-media-controls-segmented-track");
+  track->SetShadowPseudoId("-internal-media-controls-segmented-track");
 
   // Add the following structure to #track.
   //
-  // div.-internal-track-segment-background (container)
-  //   - div.-internal-track-segment-highlight-before (blue highlight)
-  //   - div.-internal-track-segment-highlight-after (dark gray highlight)
+  // div::internal-track-segment-background (container)
+  //   - div::internal-track-segment-highlight-before (blue highlight)
+  //   - div::internal-track-segment-highlight-after (dark gray highlight)
   HTMLDivElement* background = HTMLDivElement::Create(GetDocument());
-  background->setAttribute("class", "-internal-track-segment-background");
+  background->SetShadowPseudoId("-internal-track-segment-background");
   track->appendChild(background);
 
   segment_highlight_before_ = HTMLDivElement::Create(GetDocument());
-  segment_highlight_before_->setAttribute(
-      "class", "-internal-track-segment-highlight-before");
+  segment_highlight_before_->SetShadowPseudoId(
+      "-internal-track-segment-highlight-before");
   background->appendChild(segment_highlight_before_);
 
   segment_highlight_after_ = HTMLDivElement::Create(GetDocument());
-  segment_highlight_after_->setAttribute(
-      "class", "-internal-track-segment-highlight-after");
+  segment_highlight_after_->SetShadowPseudoId(
+      "-internal-track-segment-highlight-after");
   background->appendChild(segment_highlight_after_);
 }
 
