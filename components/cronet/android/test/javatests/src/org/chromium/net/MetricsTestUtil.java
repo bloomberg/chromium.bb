@@ -164,7 +164,7 @@ public class MetricsTestUtil {
         RequestFinishedInfo.Metrics metrics = info.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
         // Check old (deprecated) timing metrics
-        assertTrue(metrics.getTotalTimeMs() > 0);
+        assertTrue(metrics.getTotalTimeMs() >= 0);
         assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
         // Check new timing metrics
         checkTimingMetrics(metrics, startTime, endTime);
