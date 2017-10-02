@@ -56,7 +56,10 @@ class AppListWaiter : public aura::WindowObserver {
 // TODO(jamescook|newcomer): Replace this with a unit test in //ash/app_list
 // after app list ownership moves out of the browser process into ash.
 // http://crbug.com/733662
-IN_PROC_BROWSER_TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
+//
+// Disabled due to timeouts on ChromeOS: https://crbug.com/770138
+IN_PROC_BROWSER_TEST_F(AppListTest,
+                       DISABLED_PressAppListButtonToShowAndDismiss) {
   aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
   ash::Shelf* shelf = ash::Shelf::ForWindow(root_window);
   ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
