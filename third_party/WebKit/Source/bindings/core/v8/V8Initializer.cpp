@@ -61,6 +61,7 @@
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Assertions.h"
@@ -395,9 +396,12 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
 
   String specifier = ToCoreStringWithNullCheck(v8_specifier);
   v8::Local<v8::Value> v8_referrer_url = v8_referrer->GetResourceName();
-  String referrer_url;
-  if (v8_referrer_url->IsString())
-    referrer_url = ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_url));
+  KURL referrer_url;
+  if (v8_referrer_url->IsString()) {
+    String referrer_url_str =
+        ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_url));
+    referrer_url = KURL(NullURL(), referrer_url_str);
+  }
   ReferrerScriptInfo referrer_info =
       ReferrerScriptInfo::FromV8HostDefinedOptions(
           context, v8_referrer->GetHostDefinedOptions());

@@ -108,7 +108,7 @@ bool ModulatorImplBase::HasValidContext() {
 
 void ModulatorImplBase::ResolveDynamically(
     const String& specifier,
-    const String& referrer_url,
+    const KURL& referrer_url,
     const ReferrerScriptInfo& referrer_info,
     ScriptPromiseResolver* resolver) {
   dynamic_module_resolver_->ResolveDynamically(specifier, referrer_url,

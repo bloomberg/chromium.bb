@@ -95,7 +95,7 @@ bool DummyModulator::HasValidContext() {
 }
 
 void DummyModulator::ResolveDynamically(const String&,
-                                        const String&,
+                                        const KURL&,
                                         const ReferrerScriptInfo&,
                                         ScriptPromiseResolver*) {
   NOTREACHED();
