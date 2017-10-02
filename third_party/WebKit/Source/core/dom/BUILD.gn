@@ -151,6 +151,8 @@ blink_core_sources("dom") {
     "LiveNodeList.h",
     "LiveNodeListBase.cpp",
     "LiveNodeListBase.h",
+    "LiveNodeListRegistry.cpp",
+    "LiveNodeListRegistry.h",
     "MessageChannel.cpp",
     "MessageChannel.h",
     "MessagePort.cpp",

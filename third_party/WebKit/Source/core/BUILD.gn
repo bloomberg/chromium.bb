@@ -1399,6 +1399,7 @@ jumbo_source_set("unit_tests") {
     "dom/FlatTreeTraversalTest.cpp",
     "dom/IdleDeadlineTest.cpp",
     "dom/LayoutTreeBuilderTraversalTest.cpp",
+    "dom/LiveNodeListRegistryTest.cpp",
     "dom/MockScriptElementBase.h",
     "dom/ModulatorTest.cpp",
     "dom/ModuleMapTest.cpp",
