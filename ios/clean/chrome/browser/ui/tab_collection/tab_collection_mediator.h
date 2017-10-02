@@ -7,13 +7,16 @@
 
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
+#import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
+
 @class SnapshotCache;
 @protocol TabCollectionConsumer;
 class WebStateList;
 
-// Mediator listens for web state list changes, then updates the consumer.
-// This also serves as data source for a tab collection.
-@interface TabCollectionMediator : NSObject<WebStateListObserving>
+// Mediator listens for web state list changes, web state updates, and snapshot
+// updates, then updates the consumer.
+@interface TabCollectionMediator
+    : NSObject<SnapshotCacheObserver, WebStateListObserving>
 
 // The source of changes and backing of the data source.
 @property(nonatomic, assign) WebStateList* webStateList;
@@ -22,8 +25,11 @@ class WebStateList;
 // list.
 @property(nonatomic, weak) id<TabCollectionConsumer> consumer;
 
-// Takes a snapshot of the active webState and updates the consumer.
-- (void)takeSnapshotWithCache:(SnapshotCache*)snapshotCache;
+// The source of snapshot updates.
+@property(nonatomic, weak) SnapshotCache* snapshotCache;
+
+// Takes a snapshot of the active webState and updates the snapshot cache.
+- (void)takeSnapshot;
 
 // Stops observing all objects.
 - (void)disconnect;

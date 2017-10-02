@@ -85,6 +85,7 @@
     return;
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
+  self.mediator.snapshotCache = self.snapshotCache;
 
   [self registerForContextMenuCommands];
   [self registerForTabGridCommands];
@@ -198,7 +199,7 @@
 }
 
 - (void)showTabGrid {
-  [self.mediator takeSnapshotWithCache:self.snapshotCache];
+  [self.mediator takeSnapshot];
   // This object should only ever have at most one child.
   DCHECK_LE(self.children.count, 1UL);
   BrowserCoordinator* child = [self.children anyObject];
