@@ -76,6 +76,7 @@ android_assets("android_webview_apk_assets") {
   sources = [
     "shell/assets/asset_file.html",
     "shell/assets/asset_icon.png",
+    "shell/assets/autofill.html",
     "shell/assets/cookie_test.html",
     "shell/assets/full_screen_video.js",
     "shell/assets/full_screen_video_inside_div_test.html",
