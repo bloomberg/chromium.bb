@@ -7,51 +7,27 @@
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/testing/DummyPageHolder.h"
-#include "core/timing/Performance.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "platform/DragImage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class DataTransferTest : public ::testing::Test {
+class DataTransferTest : public RenderingTest {
  protected:
-  DataTransferTest() = default;
-  ~DataTransferTest() override = default;
-
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
-  Page& GetPage() const { return dummy_page_holder_->GetPage(); }
+  Page& GetPage() const { return *GetDocument().GetPage(); }
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
-  Performance* GetPerformance() const { return performance_; }
-
-  void SetBodyContent(const std::string& body_content) {
-    GetDocument().body()->SetInnerHTMLFromString(
-        String::FromUTF8(body_content.c_str()));
-    UpdateAllLifecyclePhases();
-  }
-
   void UpdateAllLifecyclePhases() {
     GetDocument().View()->UpdateAllLifecyclePhases();
   }
-
- private:
-  void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    performance_ = Performance::Create(GetDocument().domWindow());
-  }
-
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<Performance> performance_;
 };
 
-TEST_F(DataTransferTest, nodeImage) {
-  SetBodyContent(
+TEST_F(DataTransferTest, NodeImage) {
+  SetBodyInnerHTML(
       "<style>"
-      "#sample { width: 100px; height: 100px; }"
+      "  #sample { width: 100px; height: 100px; }"
       "</style>"
       "<div id=sample></div>");
   Element* sample = GetDocument().getElementById("sample");
@@ -60,11 +36,11 @@ TEST_F(DataTransferTest, nodeImage) {
   EXPECT_EQ(IntSize(100, 100), image->Size());
 }
 
-TEST_F(DataTransferTest, nodeImageWithNestedElement) {
-  SetBodyContent(
+TEST_F(DataTransferTest, NodeImageWithNestedElement) {
+  SetBodyInnerHTML(
       "<style>"
-      "div { -webkit-user-drag: element }"
-      "span:-webkit-drag { color: #0F0 }"
+      "  div { -webkit-user-drag: element }"
+      "  span:-webkit-drag { color: #0F0 }"
       "</style>"
       "<div id=sample><span>Green when dragged</span></div>");
   Element* sample = GetDocument().getElementById("sample");
@@ -76,11 +52,11 @@ TEST_F(DataTransferTest, nodeImageWithNestedElement) {
       << "Descendants node should have :-webkit-drag.";
 }
 
-TEST_F(DataTransferTest, nodeImageWithPsuedoClassWebKitDrag) {
-  SetBodyContent(
+TEST_F(DataTransferTest, NodeImageWithPsuedoClassWebKitDrag) {
+  SetBodyInnerHTML(
       "<style>"
-      "#sample { width: 100px; height: 100px; }"
-      "#sample:-webkit-drag { width: 200px; height: 200px; }"
+      "  #sample { width: 100px; height: 100px; }"
+      "  #sample:-webkit-drag { width: 200px; height: 200px; }"
       "</style>"
       "<div id=sample></div>");
   Element* sample = GetDocument().getElementById("sample");
@@ -90,11 +66,11 @@ TEST_F(DataTransferTest, nodeImageWithPsuedoClassWebKitDrag) {
       << ":-webkit-drag should affect dragged image.";
 }
 
-TEST_F(DataTransferTest, nodeImageWithoutDraggedLayoutObject) {
-  SetBodyContent(
+TEST_F(DataTransferTest, NodeImageWithoutDraggedLayoutObject) {
+  SetBodyInnerHTML(
       "<style>"
-      "#sample { width: 100px; height: 100px; }"
-      "#sample:-webkit-drag { display:none }"
+      "  #sample { width: 100px; height: 100px; }"
+      "  #sample:-webkit-drag { display:none }"
       "</style>"
       "<div id=sample></div>");
   Element* sample = GetDocument().getElementById("sample");
@@ -103,11 +79,11 @@ TEST_F(DataTransferTest, nodeImageWithoutDraggedLayoutObject) {
   EXPECT_EQ(nullptr, image.get()) << ":-webkit-drag blows away layout object";
 }
 
-TEST_F(DataTransferTest, nodeImageWithChangingLayoutObject) {
-  SetBodyContent(
+TEST_F(DataTransferTest, NodeImageWithChangingLayoutObject) {
+  SetBodyInnerHTML(
       "<style>"
-      "#sample { color: blue; }"
-      "#sample:-webkit-drag { display: inline-block; color: red; }"
+      "  #sample { color: blue; }"
+      "  #sample:-webkit-drag { display: inline-block; color: red; }"
       "</style>"
       "<span id=sample>foo</span>");
   Element* sample = GetDocument().getElementById("sample");
@@ -131,7 +107,7 @@ TEST_F(DataTransferTest, nodeImageWithChangingLayoutObject) {
 }
 
 TEST_F(DataTransferTest, NodeImageExceedsViewportBounds) {
-  SetBodyContent(
+  SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
       "  #node { width: 2000px; height: 2000px; }"
@@ -143,7 +119,7 @@ TEST_F(DataTransferTest, NodeImageExceedsViewportBounds) {
 }
 
 TEST_F(DataTransferTest, NodeImageUnderScrollOffset) {
-  SetBodyContent(
+  SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
       "  #first { width: 500px; height: 500px; }"
@@ -173,7 +149,7 @@ TEST_F(DataTransferTest, NodeImageUnderScrollOffset) {
 }
 
 TEST_F(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
-  SetBodyContent(
+  SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
       "  html, body { height: 2000px; }"
@@ -205,7 +181,7 @@ TEST_F(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
 TEST_F(DataTransferTest, NodeImageWithPageScaleFactor) {
   // #bluegreen is a 2x1 rectangle where the left pixel is blue and the right
   // pixel is green. The element is offset by a margin of 1px.
-  SetBodyContent(
+  SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
       "  #bluegreen {"
