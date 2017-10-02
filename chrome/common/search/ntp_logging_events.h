@@ -30,9 +30,8 @@ enum NTPLoggingEventType {
   // The data for all NTP tiles (title, URL, etc, but not the thumbnail image)
   // has been received by the most visited iframe. In contrast to
   // NTP_ALL_TILES_LOADED, this is recorded before the actual DOM elements have
-  // loaded (in particular the thumbnail images). Logged by the single-iframe
-  // version of the NTP, and also by the multi-iframe version, but only as a
-  // workaround for crbug.com/698675.
+  // loaded (in particular the thumbnail images). Logged only by the
+  // single-iframe version of the NTP.
   NTP_ALL_TILES_RECEIVED = 12,
 
   // Activated by clicking on the fakebox icon. Logged by Voice Search.
