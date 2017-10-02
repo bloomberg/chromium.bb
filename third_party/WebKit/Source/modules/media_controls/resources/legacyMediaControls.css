@@ -464,7 +464,7 @@ input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
     background-repeat: no-repeat;
     background-position: center center;
 
-    height: 36px;
+    height: 48px;
     z-index: 2;
     width: 36px;
     margin: 0;

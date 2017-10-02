@@ -32,7 +32,6 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/MediaControlsPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/Theme.h"
@@ -112,47 +111,27 @@ bool ThemePainter::Paint(const LayoutObject& o,
       return PaintSliderThumb(o, paint_info, r);
     case kMediaEnterFullscreenButtonPart:
     case kMediaExitFullscreenButtonPart:
-      return MediaControlsPainter::PaintMediaFullscreenButton(o, paint_info, r);
     case kMediaPlayButtonPart:
-      return MediaControlsPainter::PaintMediaPlayButton(o, paint_info, r);
     case kMediaOverlayPlayButtonPart:
-      return MediaControlsPainter::PaintMediaOverlayPlayButton(o, paint_info,
-                                                               r);
     case kMediaMuteButtonPart:
-      return MediaControlsPainter::PaintMediaMuteButton(o, paint_info, r);
     case kMediaToggleClosedCaptionsButtonPart:
-      return MediaControlsPainter::PaintMediaToggleClosedCaptionsButton(
-          o, paint_info, r);
     case kMediaSliderPart:
-      return MediaControlsPainter::PaintMediaSlider(o, paint_info, r);
     case kMediaSliderThumbPart:
-      return MediaControlsPainter::PaintMediaSliderThumb(o, paint_info, r);
     case kMediaVolumeSliderContainerPart:
-      return true;
     case kMediaVolumeSliderPart:
-      return MediaControlsPainter::PaintMediaVolumeSlider(o, paint_info, r);
     case kMediaVolumeSliderThumbPart:
-      return MediaControlsPainter::PaintMediaVolumeSliderThumb(o, paint_info,
-                                                               r);
     case kMediaTimeRemainingPart:
     case kMediaCurrentTimePart:
     case kMediaControlsBackgroundPart:
-      return true;
     case kMediaCastOffButtonPart:
     case kMediaOverlayCastOffButtonPart:
-      return MediaControlsPainter::PaintMediaCastButton(o, paint_info, r);
     case kMediaTrackSelectionCheckmarkPart:
-      return MediaControlsPainter::PaintMediaTrackSelectionCheckmark(
-          o, paint_info, r);
     case kMediaClosedCaptionsIconPart:
-      return MediaControlsPainter::PaintMediaClosedCaptionsIcon(o, paint_info,
-                                                                r);
     case kMediaSubtitlesIconPart:
-      return MediaControlsPainter::PaintMediaSubtitlesIcon(o, paint_info, r);
     case kMediaOverflowMenuButtonPart:
-      return MediaControlsPainter::PaintMediaOverflowMenu(o, paint_info, r);
+    case kMediaRemotingCastIconPart:
     case kMediaDownloadIconPart:
-      return MediaControlsPainter::PaintMediaDownloadIcon(o, paint_info, r);
+      return true;
     case kMenulistButtonPart:
     case kTextFieldPart:
     case kTextAreaPart:
@@ -161,8 +140,6 @@ bool ThemePainter::Paint(const LayoutObject& o,
       return PaintSearchField(o, paint_info, r);
     case kSearchFieldCancelButtonPart:
       return PaintSearchFieldCancelButton(o, paint_info, r);
-    case kMediaRemotingCastIconPart:
-      return MediaControlsPainter::PaintMediaRemotingCastIcon(o, paint_info, r);
     default:
       break;
   }

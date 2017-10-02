@@ -26,7 +26,6 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/layout/LayoutThemeFontProvider.h"
-#include "core/paint/MediaControlsPainter.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/DataResourceHelper.h"
 #include "platform/LayoutTestSupport.h"
@@ -174,8 +173,6 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
   } else if (style.Appearance() == kSliderThumbVerticalPart) {
     style.SetWidth(Length(size.Height() * zoom_level, kFixed));
     style.SetHeight(Length(size.Width() * zoom_level, kFixed));
-  } else {
-    MediaControlsPainter::AdjustMediaSliderThumbSize(style);
   }
 }
 

@@ -28,7 +28,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutThemeDefault.h"
-#include "core/paint/MediaControlsPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/graphics/Color.h"
