@@ -37,7 +37,6 @@ using message_center::NotifierId;
 void NotifierStateTracker::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds);
-  registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds);
 }
 
 NotifierStateTracker::NotifierStateTracker(Profile* profile)
@@ -49,9 +48,6 @@ NotifierStateTracker::NotifierStateTracker(Profile* profile)
 {
   OnStringListPrefChanged(
       prefs::kMessageCenterDisabledExtensionIds, &disabled_extension_ids_);
-  OnStringListPrefChanged(
-      prefs::kMessageCenterDisabledSystemComponentIds,
-      &disabled_system_component_ids_);
 
   disabled_extension_id_pref_.Init(
       prefs::kMessageCenterDisabledExtensionIds,
@@ -61,15 +57,6 @@ NotifierStateTracker::NotifierStateTracker(Profile* profile)
           base::Unretained(this),
           base::Unretained(prefs::kMessageCenterDisabledExtensionIds),
           base::Unretained(&disabled_extension_ids_)));
-
-  disabled_system_component_id_pref_.Init(
-      prefs::kMessageCenterDisabledSystemComponentIds,
-      profile_->GetPrefs(),
-      base::Bind(
-          &NotifierStateTracker::OnStringListPrefChanged,
-          base::Unretained(this),
-          base::Unretained(prefs::kMessageCenterDisabledSystemComponentIds),
-          base::Unretained(&disabled_system_component_ids_)));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_registry_observer_.Add(
@@ -92,23 +79,17 @@ bool NotifierStateTracker::IsNotifierEnabled(
                                        notifier_id.url, notifier_id.url)
                  .content_setting == CONTENT_SETTING_ALLOW;
     case NotifierId::SYSTEM_COMPONENT:
-#if defined(OS_CHROMEOS)
-      return disabled_system_component_ids_.find(notifier_id.id) ==
-          disabled_system_component_ids_.end();
-#else
       // We do not disable system component notifications.
       return true;
-#endif
     case NotifierId::ARC_APPLICATION:
 #if defined(OS_CHROMEOS)
       // TODO(hriono): Ask Android if the application's notifications are
       // enabled.
       return true;
 #else
-      return false;
+      break;
 #endif
-    default:
-      NOTREACHED();
+    case NotifierId::SIZE:
       break;
   }
 
@@ -126,20 +107,13 @@ void NotifierStateTracker::SetNotifierEnabled(
   std::unique_ptr<base::Value> id;
   switch (notifier_id.type) {
     case NotifierId::APPLICATION:
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
       add_new_item = !enabled;
       id.reset(new base::Value(notifier_id.id));
-#if BUILDFLAG(ENABLE_EXTENSIONS)
       FirePermissionLevelChangedEvent(notifier_id, enabled);
-#endif
-      break;
-    case NotifierId::SYSTEM_COMPONENT:
-#if defined(OS_CHROMEOS)
-      pref_name = prefs::kMessageCenterDisabledSystemComponentIds;
-      add_new_item = !enabled;
-      id.reset(new base::Value(notifier_id.id));
 #else
-      return;
+      NOTREACHED();
 #endif
       break;
     default:

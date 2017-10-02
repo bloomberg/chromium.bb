@@ -30,8 +30,6 @@
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/notifications/notifier_state_tracker.h"
-#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -422,13 +420,21 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
   if (!chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
 
-  // TODO(sschmitz): make this work for Windows.
-  NotifierStateTracker* const notifier_state_tracker =
-      NotifierStateTrackerFactory::GetForProfile(GetProfile());
-  if (notifier_state_tracker->IsNotifierEnabled(message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          ash::system_notifier::kNotifierScreenshot))) {
-    if (result != ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS) {
+  if (result != ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
+            weak_factory_.GetWeakPtr(), result, screenshot_path, gfx::Image()));
+    return;
+  }
+
+  if (drive::util::IsUnderDriveMountPoint(screenshot_path)) {
+    drive::FileSystemInterface* file_system =
+        drive::util::GetFileSystemByProfile(GetProfile());
+    if (!file_system) {
+      LOG(ERROR) << "Failed to get file system of current profile";
+
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
           base::BindOnce(
@@ -437,33 +443,17 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
               gfx::Image()));
       return;
     }
-
-    if (drive::util::IsUnderDriveMountPoint(screenshot_path)) {
-      drive::FileSystemInterface* file_system =
-          drive::util::GetFileSystemByProfile(GetProfile());
-      if (!file_system) {
-        LOG(ERROR) << "Failed to get file system of current profile";
-
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&ChromeScreenshotGrabber::
-                               OnReadScreenshotFileForPreviewCompleted,
-                           weak_factory_.GetWeakPtr(), result, screenshot_path,
-                           gfx::Image()));
-        return;
-      }
-      file_system->GetFile(
-          drive::util::ExtractDrivePath(screenshot_path),
-          base::BindRepeating(
-              &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive,
-              weak_factory_.GetWeakPtr(), screenshot_path));
-    } else {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(
-              &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
-              weak_factory_.GetWeakPtr(), screenshot_path, screenshot_path));
-    }
+    file_system->GetFile(
+        drive::util::ExtractDrivePath(screenshot_path),
+        base::BindRepeating(
+            &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive,
+            weak_factory_.GetWeakPtr(), screenshot_path));
+  } else {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
+            weak_factory_.GetWeakPtr(), screenshot_path, screenshot_path));
   }
 }
 

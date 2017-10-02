@@ -282,14 +282,7 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
   std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
   controller()->GetNotifierList(&notifiers);
 
-#if !defined(OS_CHROMEOS)
   EXPECT_EQ(2u, notifiers.size());
-#else
-  // ChromeOS always adds a system notifier to end of the list.
-  EXPECT_EQ(3u, notifiers.size());
-  EXPECT_EQ(ash::system_notifier::kNotifierScreenshot,
-            notifiers[2]->notifier_id.id);
-#endif
 
   EXPECT_EQ(kBarId, notifiers[0]->notifier_id.id);
   EXPECT_EQ(kFooId, notifiers[1]->notifier_id.id);
