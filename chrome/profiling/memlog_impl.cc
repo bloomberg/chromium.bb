@@ -54,15 +54,15 @@ void MemlogImpl::DumpProcess(base::ProcessId pid,
                      base::Passed(&file), base::Passed(&callback)));
 }
 
-void MemlogImpl::DumpProcessForTracing(base::ProcessId pid,
-                                       DumpProcessForTracingCallback callback) {
+void MemlogImpl::DumpProcessesForTracing(
+    DumpProcessesForTracingCallback callback) {
   // Need a memory map to make sense of the dump. The dump will be triggered
   // in the memory map global dump callback.
   // TODO(brettw) this should be a OnceCallback to avoid base::Passed.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->GetVmRegionsForHeapProfiler(base::Bind(
-          &MemlogImpl::OnGetVmRegionsCompleteForDumpProcessForTracing,
-          weak_factory_.GetWeakPtr(), pid, base::Passed(&callback)));
+          &MemlogImpl::OnGetVmRegionsCompleteForDumpProcessesForTracing,
+          weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void MemlogImpl::OnGetVmRegionsCompleteForDumpProcess(
@@ -103,34 +103,20 @@ void MemlogImpl::OnGetVmRegionsCompleteForDumpProcess(
   connection_manager_.get()->DumpProcess(std::move(args), true);
 }
 
-void MemlogImpl::OnGetVmRegionsCompleteForDumpProcessForTracing(
-    base::ProcessId pid,
-    mojom::Memlog::DumpProcessForTracingCallback callback,
+void MemlogImpl::OnGetVmRegionsCompleteForDumpProcessesForTracing(
+    mojom::Memlog::DumpProcessesForTracingCallback callback,
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   if (!success) {
     DLOG(ERROR) << "GetVMRegions failed";
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
+    std::move(callback).Run(
+        std::vector<profiling::mojom::SharedBufferWithSizePtr>());
     return;
   }
-  // Find the process's memory dump we want.
   // TODO(bug 752621) we should be asking and getting the memory map of only
   // the process we want rather than querying all processes and filtering.
-  memory_instrumentation::mojom::ProcessMemoryDump* process_dump = nullptr;
-  for (const auto& proc : dump->process_dumps) {
-    if (proc->pid == pid) {
-      process_dump = &*proc;
-      break;
-    }
-  }
-  if (!process_dump) {
-    DLOG(ERROR) << "Don't have a memory dump for PID " << pid;
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
-    return;
-  }
-  connection_manager_->DumpProcessForTracing(
-      pid, std::move(callback),
-      std::move(process_dump->os_dump->memory_maps_for_heap_profiler));
+  connection_manager_->DumpProcessesForTracing(std::move(callback),
+                                               std::move(dump));
 }
 
 }  // namespace profiling

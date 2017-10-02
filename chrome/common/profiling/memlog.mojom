@@ -8,6 +8,12 @@ import "mojo/common/file.mojom";
 import "mojo/common/process_id.mojom";
 import "mojo/common/values.mojom";
 
+struct SharedBufferWithSize {
+  handle<shared_buffer> buffer;
+  uint32 size;
+  mojo.common.mojom.ProcessId pid;
+};
+
 interface Memlog {
   // Adds a new platform-specific pipe to read memlog trace data from.
   // In normal usage, each child process will be given the other end of this
@@ -23,10 +29,10 @@ interface Memlog {
   DumpProcess(mojo.common.mojom.ProcessId pid, handle output_file,
               mojo.common.mojom.DictionaryValue metadata) => (bool result);
 
-  // Dumps the memory log of the process with the given |pid| into a data
-  // pipe. The format is a JSON string compatible with TRACE_EVENT* macros.
-  // On success, returns a valid shared_buffer handle and the size of the
-  // data written. On failure, returns an invalid shared_buffer handle.
-  DumpProcessForTracing(mojo.common.mojom.ProcessId pid) =>
-      (handle<shared_buffer>? consumer, uint32 size);
+  // Dumps the memory log of all profiled processes into shared buffers. The
+  // contents of each shared buffer is a JSON string compatible with
+  // TRACE_EVENT* macros. Processes that fail to dump will be omitted from
+  // |buffers|.
+  DumpProcessesForTracing() =>
+      (array<SharedBufferWithSize> buffers);
 };
