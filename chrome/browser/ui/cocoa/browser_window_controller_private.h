@@ -16,6 +16,24 @@ namespace content {
 class WebContents;
 }  // content.
 
+// There are 2 mechanisms for invoking fullscreen: AppKit and Immersive.
+// PRESENTATION_MODE = 1 had been removed, but the enums aren't renumbered
+// since they are associated with a histogram.
+enum FullscreenStyle {
+  IMMERSIVE_FULLSCREEN = 0,
+  CANONICAL_FULLSCREEN = 2,
+  FULLSCREEN_STYLE_COUNT = 3
+};
+
+// The source that triggered fullscreen. The enums should not be renumbered
+// since they're ssociated with a histogram. Exposed for testing.
+enum class FullscreenSource {
+  BROWSER = 0,
+  TAB,
+  EXTENSION,
+  FULLSCREEN_SOURCE_COUNT
+};
+
 // Private methods for the |BrowserWindowController|. This category should
 // contain the private methods used by different parts of the BWC; private
 // methods used only by single parts should be declared in their own file.
@@ -158,6 +176,9 @@ class WebContents;
 // Determines the appropriate sliding fullscreen style and adjusts the UI to
 // it when we are entering fullscreen.
 - (void)adjustUIForEnteringFullscreen;
+
+// Records fullscreen metrics when the browser enters fullscreen.
+- (void)recordEnterFullscreenMetrics:(FullscreenStyle)style;
 
 // Accessor for the controller managing the fullscreen toolbar visibility
 // locks.

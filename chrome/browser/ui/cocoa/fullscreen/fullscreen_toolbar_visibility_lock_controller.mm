@@ -57,7 +57,7 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
   if (animate)
     animationController_->AnimateToolbarIn();
   else
-    [owner_ updateToolbarLayout];
+    [owner_ layoutToolbar];
 }
 
 - (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
@@ -69,7 +69,7 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
   if (animate)
     animationController_->AnimateToolbarOutIfPossible();
   else
-    [owner_ updateToolbarLayout];
+    [owner_ layoutToolbar];
 }
 
 @end

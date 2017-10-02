@@ -1953,7 +1953,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
     (ExclusiveAccessContext::TabFullscreenState)state {
   DCHECK([self isInAnyFullscreenMode]);
   [fullscreenToolbarController_
-      updateToolbarStyleExitingTabFullscreen:
+      layoutToolbarStyleIsExitingTabFullscreen:
           state == ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN];
 }
 

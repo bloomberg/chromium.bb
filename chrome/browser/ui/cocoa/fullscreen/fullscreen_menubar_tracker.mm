@@ -140,7 +140,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     state_ = FullscreenMenubarState::SHOWING;
 
   menubarFraction_ = progress;
-  [owner_ updateToolbarLayout];
+  [owner_ layoutToolbar];
 
   // AppKit drives the menu bar animation from a nested run loop. Flush
   // explicitly so that Chrome's UI updates during the animation.
@@ -157,7 +157,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   state_ = FullscreenMenubarState::HIDDEN;
   [[owner_ visibilityLockController] releaseToolbarVisibilityForOwner:self
                                                         withAnimation:NO];
-  [owner_ updateToolbarLayout];
+  [owner_ layoutToolbar];
 }
 
 @end

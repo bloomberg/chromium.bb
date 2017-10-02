@@ -121,7 +121,7 @@ void FullscreenToolbarAnimationController::DidFirstVisuallyNonEmptyPaint() {
 
 void FullscreenToolbarAnimationController::AnimationProgressed(
     const gfx::Animation* animation) {
-  [owner_ updateToolbarLayout];
+  [owner_ layoutToolbar];
 }
 
 void FullscreenToolbarAnimationController::AnimationEnded(

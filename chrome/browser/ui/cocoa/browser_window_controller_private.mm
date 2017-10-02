@@ -81,37 +81,6 @@ enum WindowLocation {
   WINDOW_LOCATION_COUNT = 3
 };
 
-// There are 2 mechanisms for invoking fullscreen: AppKit and Immersive.
-// PRESENTATION_MODE = 1 had been removed, but the enums aren't renumbered
-// since they are associated with a histogram.
-enum FullscreenStyle {
-  IMMERSIVE_FULLSCREEN = 0,
-  CANONICAL_FULLSCREEN = 2,
-  FULLSCREEN_STYLE_COUNT = 3
-};
-
-// Emits a histogram entry indicating the Fullscreen window location.
-void RecordFullscreenWindowLocation(NSWindow* window) {
-  NSArray* screens = [NSScreen screens];
-  bool primary_screen = ([[window screen] isEqual:[screens objectAtIndex:0]]);
-  bool multiple_screens = [screens count] > 1;
-
-  WindowLocation location = PRIMARY_SINGLE_SCREEN;
-  if (multiple_screens) {
-    location =
-        primary_screen ? PRIMARY_MULTIPLE_SCREEN : SECONDARY_MULTIPLE_SCREEN;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "OSX.Fullscreen.Enter.WindowLocation", location, WINDOW_LOCATION_COUNT);
-}
-
-// Emits a histogram entry indicating the Fullscreen style.
-void RecordFullscreenStyle(FullscreenStyle style) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "OSX.Fullscreen.Enter.Style", style, FULLSCREEN_STYLE_COUNT);
-}
-
 }  // namespace
 
 @interface NSWindow (NSPrivateApis)
@@ -460,8 +429,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)enterImmersiveFullscreen {
-  RecordFullscreenWindowLocation([self window]);
-  RecordFullscreenStyle(IMMERSIVE_FULLSCREEN);
+  [self recordEnterFullscreenMetrics:IMMERSIVE_FULLSCREEN];
 
   // Set to NO by |-windowDidEnterFullScreen:|.
   enteringImmersiveFullscreen_ = YES;
@@ -601,8 +569,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {
-  RecordFullscreenWindowLocation([self window]);
-  RecordFullscreenStyle(CANONICAL_FULLSCREEN);
+  [self recordEnterFullscreenMetrics:CANONICAL_FULLSCREEN];
 
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
@@ -810,6 +777,39 @@ willPositionSheet:(NSWindow*)sheet
   // Force the bookmark bar z-order to update.
   [[bookmarkBarController_ view] removeFromSuperview];
   [self layoutSubviews];
+}
+
+- (void)recordEnterFullscreenMetrics:(FullscreenStyle)style {
+  // Record fullscreen source.
+  FullscreenController* controller =
+      browser_->exclusive_access_manager()->fullscreen_controller();
+  FullscreenSource source = FullscreenSource::BROWSER;
+  if (controller->IsWindowFullscreenForTabOrPending())
+    source = FullscreenSource::TAB;
+  else if (controller->IsExtensionFullscreenOrPending())
+    source = FullscreenSource::EXTENSION;
+
+  UMA_HISTOGRAM_ENUMERATION("OSX.Fullscreen.Enter.Source", source,
+                            FullscreenSource::FULLSCREEN_SOURCE_COUNT);
+
+  // Record fullscreen style.
+  UMA_HISTOGRAM_ENUMERATION("OSX.Fullscreen.Enter.Style", style,
+                            FULLSCREEN_STYLE_COUNT);
+
+  // Record screen location.
+  NSArray* screens = [NSScreen screens];
+  bool primary_screen =
+      [[[self window] screen] isEqual:[screens objectAtIndex:0]];
+  bool multiple_screens = [screens count] > 1;
+
+  WindowLocation location = PRIMARY_SINGLE_SCREEN;
+  if (multiple_screens) {
+    location =
+        primary_screen ? PRIMARY_MULTIPLE_SCREEN : SECONDARY_MULTIPLE_SCREEN;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("OSX.Fullscreen.Enter.WindowLocation", location,
+                            WINDOW_LOCATION_COUNT);
 }
 
 - (CGFloat)toolbarDividerOpacity {
