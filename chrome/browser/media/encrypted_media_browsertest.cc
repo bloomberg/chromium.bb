@@ -881,6 +881,16 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, StorageIdTest) {
   TestNonPlaybackCases(kExternalClearKeyStorageIdTestKeySystem,
                        kUnitTestSuccess);
 }
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
+  if (!IsUsingMojoCdm()) {
+    DVLOG(0) << "Skipping test; Mojo CDM specific.";
+    return;
+  }
+
+  base::StringPairs empty_query_params;
+  RunMediaTestPage("multiple_cdm_types.html", empty_query_params, kEnded, true);
+}
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace chrome

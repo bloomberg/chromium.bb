@@ -281,7 +281,7 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 // supported platforms. On platforms that do not support ECK, this feature has
 // no effect.
 const base::Feature kExternalClearKeyForTesting{
-    "external-clear-key-for-testing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSupportExperimentalCdmInterface{
     "SupportExperimentalCdmInterface", base::FEATURE_DISABLED_BY_DEFAULT};
