@@ -1,2 +1,2 @@
 HTTP/1.1 200 OK
-Accept-CH: dpr,viewport-width
+Accept-CH: dpr,device-memory

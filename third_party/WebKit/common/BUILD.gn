@@ -21,6 +21,8 @@ component("blink_common") {
   defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
 
   sources = [
+    "client_hints/client_hints.cc",
+    "client_hints/client_hints.h",
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
     "device_memory/approximated_device_memory.h",
