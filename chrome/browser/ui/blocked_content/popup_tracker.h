@@ -25,12 +25,14 @@ class ScopedVisibilityTracker;
 class PopupTracker : public content::WebContentsObserver,
                      public content::WebContentsUserData<PopupTracker> {
  public:
+  static void CreateForWebContents(content::WebContents* contents,
+                                   content::WebContents* opener);
   ~PopupTracker() override;
 
  private:
   friend class content::WebContentsUserData<PopupTracker>;
 
-  explicit PopupTracker(content::WebContents* web_contents);
+  PopupTracker(content::WebContents* contents, content::WebContents* opener);
 
   // content::WebContentsObserver:
   void DidFinishNavigation(

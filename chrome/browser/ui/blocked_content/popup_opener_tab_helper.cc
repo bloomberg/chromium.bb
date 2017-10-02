@@ -16,11 +16,25 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupOpenerTabHelper);
 
 PopupOpenerTabHelper::~PopupOpenerTabHelper() {
-  // TODO(csharrison): Add breakout metrics for when this WebContents has opened
-  // a popup in its lifetime.
-  if (visibility_tracker_) {
-    UMA_HISTOGRAM_LONG_TIMES("Tab.VisibleTimeAfterCrossOriginRedirect",
-                             visibility_tracker_->GetForegroundDuration());
+  if (!visibility_tracker_)
+    return;
+  base::TimeDelta foreground_duration =
+      visibility_tracker_->GetForegroundDuration();
+  UMA_HISTOGRAM_LONG_TIMES("Tab.VisibleTimeAfterCrossOriginRedirect",
+                           foreground_duration);
+  if (!last_popup_open_time_before_redirect_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Tab.OpenedPopup.VisibleTimeAfterCrossOriginRedirect",
+        foreground_duration);
+  }
+}
+
+void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
+  if (!visibility_tracker_) {
+    // Should still have clock ownership, since it is passed to the visibility
+    // tracker when that is instantiated.
+    DCHECK(tick_clock_);
+    last_popup_open_time_before_redirect_ = tick_clock_->NowTicks();
   }
 }
 
@@ -50,9 +64,11 @@ void PopupOpenerTabHelper::DidFinishNavigation(
     return;
   }
 
-  // Only consider navigations without a user gesture.
-  if (navigation_handle->HasUserGesture())
+  // Only consider renderer-initiated navigations without a user gesture.
+  if (navigation_handle->HasUserGesture() ||
+      !navigation_handle->IsRendererInitiated()) {
     return;
+  }
 
   // An empty previous URL indicates this was the first load. We filter these
   // out because we're primarily interested in sites which navigate themselves
@@ -65,6 +81,15 @@ void PopupOpenerTabHelper::DidFinishNavigation(
   if (url::Origin(previous_main_frame_url)
           .IsSameOriginWith(url::Origin(navigation_handle->GetURL()))) {
     return;
+  }
+
+  // Use the tick clock before passing ownership.
+  if (!last_popup_open_time_before_redirect_.is_null()) {
+    // If long times doesn't have enough resolution, consider switching the
+    // macro.
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Tab.OpenedPopup.PopupToCrossOriginRedirectTime",
+        tick_clock_->NowTicks() - last_popup_open_time_before_redirect_);
   }
 
   visibility_tracker_ = base::MakeUnique<ScopedVisibilityTracker>(

@@ -11,6 +11,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -19,6 +20,7 @@ class NavigationHandle;
 class WebContents;
 }  // namespace content
 
+class PopupTracker;
 class ScopedVisibilityTracker;
 
 // This class tracks WebContents for the purpose of logging metrics related to
@@ -32,6 +34,8 @@ class PopupOpenerTabHelper
   void set_tick_clock_for_testing(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
   }
+
+  void OnOpenedPopup(PopupTracker* popup_tracker);
 
  private:
   friend class content::WebContentsUserData<PopupOpenerTabHelper>;
@@ -57,6 +61,10 @@ class PopupOpenerTabHelper
   // foreground. Will be nullptr until we redirect cross-origin in the
   // background.
   std::unique_ptr<ScopedVisibilityTracker> visibility_tracker_;
+
+  // Measures the time this WebContents opened a popup before
+  // |visibility_tracker_| is instantiated.
+  base::TimeTicks last_popup_open_time_before_redirect_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupOpenerTabHelper);
 };

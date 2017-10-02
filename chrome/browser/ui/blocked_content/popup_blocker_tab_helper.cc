@@ -200,7 +200,8 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
   chrome::Navigate(&popup->params);
 #endif
   if (popup->params.target_contents) {
-    PopupTracker::CreateForWebContents(popup->params.target_contents);
+    PopupTracker::CreateForWebContents(popup->params.target_contents,
+                                       web_contents());
 
     if (popup->params.disposition == WindowOpenDisposition::NEW_POPUP) {
       content::RenderFrameHost* host =
