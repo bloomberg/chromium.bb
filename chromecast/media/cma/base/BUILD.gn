@@ -42,7 +42,7 @@ source_set("base") {
     "//base",
     "//chromecast/base",
     "//chromecast/base/metrics",
-    "//chromecast/media/base",
+    "//chromecast/media/base:media_codec_support",
     "//media",
     "//media:shared_memory_support",
   ]

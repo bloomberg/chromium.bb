@@ -95,6 +95,7 @@ source_set("browser") {
     "//chromecast/common/media:interfaces",
     "//chromecast/graphics",
     "//chromecast/media",
+    "//chromecast/media:libcast_media",
     "//chromecast/media/service",
     "//chromecast/net",
     "//chromecast/service",
