@@ -126,9 +126,10 @@ BuildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
           .setDuration(duration)
           .setDirection(computed_timing.direction())
           .setFill(computed_timing.fill())
-          .setBackendNodeId(DOMNodeIds::IdForNode(effect->Target()))
           .setEasing(easing)
           .build();
+  if (effect->Target())
+    animation_object->setBackendNodeId(DOMNodeIds::IdForNode(effect->Target()));
   return animation_object;
 }
 
@@ -172,34 +173,44 @@ BuildObjectForAnimationKeyframes(const KeyframeEffectReadOnly* effect) {
 
 std::unique_ptr<protocol::Animation::Animation>
 InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
-  const Element* element =
-      ToKeyframeEffectReadOnly(animation.effect())->Target();
-  CSSAnimations& css_animations =
-      element->GetElementAnimations()->CssAnimations();
-  std::unique_ptr<protocol::Animation::KeyframesRule> keyframe_rule = nullptr;
   String animation_type;
+  std::unique_ptr<protocol::Animation::AnimationEffect> animation_effect_object;
 
-  if (css_animations.IsTransitionAnimationForInspector(animation)) {
-    // CSS Transitions
-    animation_type = AnimationType::CSSTransition;
+  if (!animation.effect()) {
+    animation_type = AnimationType::WebAnimation;
   } else {
-    // Keyframe based animations
-    keyframe_rule = BuildObjectForAnimationKeyframes(
-        ToKeyframeEffectReadOnly(animation.effect()));
-    animation_type = css_animations.IsAnimationForInspector(animation)
-                         ? AnimationType::CSSAnimation
-                         : AnimationType::WebAnimation;
+    const Element* element =
+        ToKeyframeEffectReadOnly(animation.effect())->Target();
+    std::unique_ptr<protocol::Animation::KeyframesRule> keyframe_rule;
+
+    if (!element) {
+      animation_type = AnimationType::WebAnimation;
+    } else {
+      CSSAnimations& css_animations =
+          element->GetElementAnimations()->CssAnimations();
+
+      if (css_animations.IsTransitionAnimationForInspector(animation)) {
+        // CSS Transitions
+        animation_type = AnimationType::CSSTransition;
+      } else {
+        // Keyframe based animations
+        keyframe_rule = BuildObjectForAnimationKeyframes(
+            ToKeyframeEffectReadOnly(animation.effect()));
+        animation_type = css_animations.IsAnimationForInspector(animation)
+                             ? AnimationType::CSSAnimation
+                             : AnimationType::WebAnimation;
+      }
+    }
+
+    animation_effect_object = BuildObjectForAnimationEffect(
+        ToKeyframeEffectReadOnly(animation.effect()),
+        animation_type == AnimationType::CSSTransition);
+    animation_effect_object->setKeyframesRule(std::move(keyframe_rule));
   }
 
   String id = String::Number(animation.SequenceNumber());
   id_to_animation_.Set(id, &animation);
   id_to_animation_type_.Set(id, animation_type);
-
-  std::unique_ptr<protocol::Animation::AnimationEffect>
-      animation_effect_object = BuildObjectForAnimationEffect(
-          ToKeyframeEffectReadOnly(animation.effect()),
-          animation_type == AnimationType::CSSTransition);
-  animation_effect_object->setKeyframesRule(std::move(keyframe_rule));
 
   std::unique_ptr<protocol::Animation::Animation> animation_object =
       protocol::Animation::Animation::create()
@@ -210,11 +221,12 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
           .setPlaybackRate(animation.playbackRate())
           .setStartTime(NormalizedStartTime(animation))
           .setCurrentTime(animation.currentTime())
-          .setSource(std::move(animation_effect_object))
           .setType(animation_type)
           .build();
   if (animation_type != AnimationType::WebAnimation)
     animation_object->setCssId(CreateCSSId(animation));
+  if (animation_effect_object)
+    animation_object->setSource(std::move(animation_effect_object));
   return animation_object;
 }
 
