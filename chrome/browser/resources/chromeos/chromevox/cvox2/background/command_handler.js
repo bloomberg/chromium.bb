@@ -221,6 +221,14 @@ CommandHandler.onCommand = function(command) {
       var state = cvox.ChromeVox.tts.toggleSpeechOnOrOff();
       new Output().format(state ? '@speech_on' : '@speech_off').go();
       return false;
+    case 'enableChromeVoxArcSupportForCurrentApp':
+      chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp(
+          true);
+      break;
+    case 'disableChromeVoxArcSupportForCurrentApp':
+      chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp(
+          false);
+      break;
     default:
       break;
   }

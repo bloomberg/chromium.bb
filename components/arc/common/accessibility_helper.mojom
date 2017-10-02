@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -286,7 +286,7 @@ interface AccessibilityHelperHost {
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
 };
 
-// Next method ID: 5
+// Next method ID: 6
 interface AccessibilityHelperInstance {
   Init@0(AccessibilityHelperHost host);
 
@@ -300,4 +300,9 @@ interface AccessibilityHelperInstance {
   // Perform an action on a node requested by a Chrome client.
   [MinVersion=4]PerformAction@4(AccessibilityActionData action_data)
       => (bool result);
+
+  // Sets the package to use ChromeVox (true) or TalkBack (false). Returns true
+  // if the request was processed.
+  [MinVersion=7]SetNativeChromeVoxArcSupport@5(
+    string package_name, bool enabled) => (bool processed);
 };

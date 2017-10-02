@@ -32,6 +32,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -190,4 +191,25 @@ AccessibilityPrivateSetSwitchAccessKeysFunction::Run() {
     manager->SetSwitchAccessKeys(key_codes);
   return RespondNow(NoArguments());
 }
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
+  std::unique_ptr<
+      accessibility_private::SetNativeChromeVoxArcSupportForCurrentApp::Params>
+      params = accessibility_private::
+          SetNativeChromeVoxArcSupportForCurrentApp::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  ChromeExtensionFunctionDetails details(this);
+  arc::ArcAccessibilityHelperBridge* bridge =
+      arc::ArcAccessibilityHelperBridge::GetForBrowserContext(
+          details.GetProfile());
+  if (bridge) {
+    bool enabled;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
+    bridge->SetNativeChromeVoxArcSupport(enabled);
+  }
+  return RespondNow(NoArguments());
+}
+
 #endif  // defined (OS_CHROMEOS)

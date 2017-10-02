@@ -118,6 +118,19 @@
           }
         ],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "setNativeChromeVoxArcSupportForCurrentApp",
+        "type": "function",
+        "description": "Sets current ARC app to use native ARC support.",
+        "parameters": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "True for ChromeVox (native), false for TalkBack."
+          }
+        ],
+        "platforms": ["chromeos"]
       }
     ],
     "events": [
