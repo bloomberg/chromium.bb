@@ -24,13 +24,14 @@
 #ifndef NameNodeList_h
 #define NameNodeList_h
 
+#include "core/CoreExport.h"
 #include "core/dom/LiveNodeList.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
 // NodeList which lists all Nodes in a Element with a given "name" attribute
-class NameNodeList final : public LiveNodeList {
+class CORE_EXPORT NameNodeList final : public LiveNodeList {
  public:
   static NameNodeList* Create(ContainerNode& root_node,
                               CollectionType type,
