@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
-#include "ash/highlighter/highlighter_controller.h"
-#include "ash/highlighter/highlighter_selection_observer.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_port_classic.h"
@@ -27,78 +25,6 @@
 #include "content/public/browser/notification_source.h"
 
 namespace chromeos {
-
-constexpr int kMetalayerSelectionDelayMs = 600;
-
-class VoiceInteractionSelectionObserver
-    : public ash::HighlighterSelectionObserver {
- public:
-  explicit VoiceInteractionSelectionObserver(Profile* profile)
-      : profile_(profile) {
-    ash::Shell::Get()->highlighter_controller()->SetObserver(this);
-  }
-
-  ~VoiceInteractionSelectionObserver() override {
-    if (ash::Shell::HasInstance() &&
-        ash::Shell::Get()->highlighter_controller()) {
-      ash::Shell::Get()->highlighter_controller()->SetObserver(nullptr);
-    }
-  };
-
-  void set_on_selection_done(base::OnceClosure done) {
-    on_selection_done_ = std::move(done);
-    delay_timer_.reset();
-  }
-
-  void set_disable_on_failed_selection(bool disable_on_failed_selection) {
-    disable_on_failed_selection_ = disable_on_failed_selection;
-  }
-
-  bool start_session_pending() const { return delay_timer_.get(); }
-
- private:
-  void HandleSelection(const gfx::Rect& rect) override {
-    // Delay the actual voice interaction service invocation for better
-    // visual synchronization with the metalayer animation.
-    delay_timer_ = base::MakeUnique<base::Timer>(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kMetalayerSelectionDelayMs),
-        base::Bind(&VoiceInteractionSelectionObserver::ReportSelection,
-                   base::Unretained(this), rect),
-        false /* not repeating */);
-    delay_timer_->Reset();
-    DisableMetalayer();
-  }
-
-  void HandleFailedSelection() override {
-    if (disable_on_failed_selection_)
-      DisableMetalayer();
-  }
-
-  void DisableMetalayer() {
-    DCHECK(on_selection_done_);
-    // This will disable the metalayer tool, which will result in a synchronous
-    // call to PaletteDelegateChromeOS::HideMetalayer.
-    std::move(on_selection_done_).Run();
-  }
-
-  void ReportSelection(const gfx::Rect& rect) {
-    auto* framework =
-        arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
-            profile_);
-    if (!framework)
-      return;
-    framework->StartSessionFromUserInteraction(rect);
-  }
-
-  Profile* const profile_;  // Owned by ProfileManager.
-
-  std::unique_ptr<base::Timer> delay_timer_;
-  base::OnceClosure on_selection_done_;
-  bool disable_on_failed_selection_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionSelectionObserver);
-};
 
 PaletteDelegateChromeOS::PaletteDelegateChromeOS() : weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
@@ -230,49 +156,6 @@ void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
 
 void PaletteDelegateChromeOS::CancelPartialScreenshot() {
   ash::Shell::Get()->screenshot_controller()->CancelScreenshotSession();
-}
-
-void PaletteDelegateChromeOS::ShowMetalayer(base::OnceClosure done,
-                                            bool via_button) {
-  auto* service =
-      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
-  if (!service)
-    return;
-  service->ShowMetalayer();
-
-  if (!highlighter_selection_observer_) {
-    highlighter_selection_observer_ =
-        base::MakeUnique<VoiceInteractionSelectionObserver>(profile_);
-  }
-  highlighter_selection_observer_->set_on_selection_done(std::move(done));
-  highlighter_selection_observer_->set_disable_on_failed_selection(via_button);
-  ash::Shell::Get()->highlighter_controller()->SetEnabled(true);
-}
-
-void PaletteDelegateChromeOS::HideMetalayer() {
-  auto* service =
-      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
-  if (!service)
-    return;
-
-  // ArcVoiceInteractionFrameworkService::HideMetalayer() causes the container
-  // to show a toast-like prompt. This toast is redundant and causes unnecessary
-  // flicker if the full voice interaction UI is about to be displayed soon.
-  // |start_session_pending| is a good signal that the session is about to
-  // start, but it is not guaranteed:
-  // 1) The user might re-enter the metalayer mode before the timer fires.
-  //    In this case the container will keep showing the prompt for the
-  //    metalayer mode.
-  // 2) The session might fail to start due to a peculiar combination of
-  //    failures on the way to the voice interaction UI. This is an open
-  //    problem.
-  // TODO(kaznacheev) Move this logic under ash when fixing crbug/761120.
-
-  DCHECK(highlighter_selection_observer_);
-  if (!highlighter_selection_observer_->start_session_pending())
-    service->HideMetalayer();
-
-  ash::Shell::Get()->highlighter_controller()->SetEnabled(false);
 }
 
 }  // namespace chromeos

@@ -18,6 +18,13 @@ HighlighterControllerTestApi::HighlighterControllerTestApi(
 
 HighlighterControllerTestApi::~HighlighterControllerTestApi() {
   instance_->SetObserver(nullptr);
+  if (enabled_)
+    instance_->SetEnabled(false);
+  instance_->DestroyPointerView();
+}
+
+void HighlighterControllerTestApi::CallMetalayerDone() {
+  instance_->CallExitCallback();
 }
 
 void HighlighterControllerTestApi::SetEnabled(bool enabled) {
@@ -63,17 +70,15 @@ const FastInkPoints& HighlighterControllerTestApi::predicted_points() const {
 void HighlighterControllerTestApi::HandleSelection(const gfx::Rect& rect) {
   handle_selection_called_ = true;
   selection_ = rect;
-  // This is mimicking the logic implemented PaletteDelegateChromeOS,
-  // which should eventually move to HighlighterController (crbug/761120).
-  CallMetalayerDone();
 }
 
 void HighlighterControllerTestApi::HandleFailedSelection() {
   handle_failed_selection_called_ = true;
-  // This is mimicking the logic implemented PaletteDelegateChromeOS,
-  // which should eventually move to HighlighterController (crbug/761120).
-  if (via_button_)
-    CallMetalayerDone();
+}
+
+void HighlighterControllerTestApi::HandleEnabledStateChange(bool enabled) {
+  handle_enabled_state_changed_called_ = true;
+  enabled_ = enabled;
 }
 
 }  // namespace ash

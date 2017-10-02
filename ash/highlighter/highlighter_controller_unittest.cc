@@ -22,16 +22,14 @@ class HighlighterControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    controller_ = base::MakeUnique<HighlighterController>();
-    controller_test_api_ =
-        base::MakeUnique<HighlighterControllerTestApi>(controller_.get());
+    controller_test_api_ = base::MakeUnique<HighlighterControllerTestApi>(
+        Shell::Get()->highlighter_controller());
   }
 
   void TearDown() override {
-    // This needs to be called first to remove the event handler before the
+    // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
     controller_test_api_.reset();
-    controller_.reset();
     AshTestBase::TearDown();
   }
 
@@ -46,7 +44,6 @@ class HighlighterControllerTest : public AshTestBase {
     GetEventGenerator().ReleaseTouch();
   }
 
-  std::unique_ptr<HighlighterController> controller_;
   std::unique_ptr<HighlighterControllerTestApi> controller_test_api_;
 
  private:

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/fast_ink/fast_ink_pointer_controller.h"
+#include "base/callback.h"
 
 namespace base {
 class OneShotTimer;
@@ -29,6 +30,12 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
 
   // Set the observer to handle selection results.
   void SetObserver(HighlighterSelectionObserver* observer);
+
+  // Set the callback to exit the highlighter mode. If |require_success| is
+  // true, the callback will be called only after a successful gesture
+  // recognition. If |require_success| is false, the callback will be  called
+  // after the first complete gesture, regardless of the recognition result.
+  void SetExitCallback(base::OnceClosure callback, bool require_success);
 
   // FastInkPointerController:
   void SetEnabled(bool enabled) override;
@@ -53,6 +60,9 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
 
   // Destroys |result_view_|, if it exists.
   void DestroyResultView();
+
+  // Calls and clears the mode exit callback, if it is set.
+  void CallExitCallback();
 
   // |highlighter_view_| will only hold an instance when the highlighter is
   // enabled and activated (pressed or dragged) and until the fade out
@@ -82,6 +92,12 @@ class ASH_EXPORT HighlighterController : public FastInkPointerController {
   // Not null while waiting for the next event to continue an interrupted
   // stroke.
   std::unique_ptr<base::OneShotTimer> interrupted_stroke_timer_;
+
+  // The callback to exit the mode in the UI.
+  base::OnceClosure exit_callback_;
+
+  // If true, the mode is not exited until a valid selection is made.
+  bool require_success_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterController);
 };

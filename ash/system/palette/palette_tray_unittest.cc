@@ -222,19 +222,14 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
     // ui takes ownership of the tick clock.
     ui::SetEventTickClockForTesting(base::WrapUnique(simulated_clock_));
 
-    highlighter_controller_ = base::MakeUnique<HighlighterController>();
     highlighter_test_api_ = base::MakeUnique<HighlighterControllerTestApi>(
-        highlighter_controller_.get());
-    test_palette_delegate()->set_highlighter_test_api(
-        highlighter_test_api_.get());
+        Shell::Get()->highlighter_controller());
   }
 
   void TearDown() override {
-    // This needs to be called first to remove the event handler before the
+    // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
-    test_palette_delegate()->set_highlighter_test_api(nullptr);
     highlighter_test_api_.reset();
-    highlighter_controller_.reset();
     PaletteTrayTest::TearDown();
   }
 
@@ -294,8 +289,6 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
   std::unique_ptr<HighlighterControllerTestApi> highlighter_test_api_;
 
  private:
-  std::unique_ptr<HighlighterController> highlighter_controller_;
-
   // Owned by |ui|.
   base::SimpleTestTickClock* simulated_clock_ = nullptr;
 
