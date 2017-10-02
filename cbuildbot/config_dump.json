@@ -15836,6 +15836,7 @@
             "lumpy-release",
             "mccloud-release",
             "monroe-release",
+            "nautilus-release",
             "nefario-release",
             "newbie-release",
             "ninja-release",
@@ -16362,6 +16363,78 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "nautilus-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "nautilus"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "nautilus-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "nautilus"
+        ]
+    },
+    "nautilus-full": {
+        "_template": "full",
+        "boards": [
+            "nautilus"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "nautilus-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "nautilus"
+        ]
+    },
+    "nautilus-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "nautilus"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "nautilus-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "nautilus"
+        ]
+    },
+    "nautilus-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "nautilus"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "nautilus-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "nautilus"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "nautilus-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "nautilus"
         ]
     },
     "nefario-chromium-pfq": {
