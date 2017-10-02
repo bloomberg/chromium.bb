@@ -11,6 +11,12 @@ namespace gles2 {
 
 namespace {
 
+template <typename R, typename... Args>
+GrGLFunction<R (*)(Args...)> bind(R (gl::GLApi::*func)(Args...),
+                                  gl::GLApi* api) {
+  return [func, api](Args... args) { return (api->*func)(args...); };
+}
+
 const GLubyte* GetStringHook(const char* version_string, GLenum name) {
   switch (name) {
     case GL_VERSION:
@@ -43,6 +49,7 @@ const char* kBlacklistExtensions[] = {
 sk_sp<const GrGLInterface> CreateGrGLInterface(
     const gl::GLVersionInfo& version_info) {
   gl::ProcsGL* gl = &gl::g_current_gl_driver->fn;
+  gl::GLApi* api = gl::g_current_gl_context;
 
   GrGLStandard standard =
       version_info.is_es ? kGLES_GrGLStandard : kGL_GrGLStandard;
@@ -60,12 +67,14 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
       return GetStringHook(fake_version, name);
     };
   } else {
-    get_string = gl->glGetStringFn;
+    get_string = bind(&gl::GLApi::glGetStringFn, api);
   }
 
+  auto get_stringi = bind(&gl::GLApi::glGetStringiFn, api);
+  auto get_integerv = bind(&gl::GLApi::glGetIntegervFn, api);
+
   GrGLExtensions extensions;
-  if (!extensions.init(standard, get_string, gl->glGetStringiFn,
-                       gl->glGetIntegervFn)) {
+  if (!extensions.init(standard, get_string, get_stringi, get_integerv)) {
     LOG(ERROR) << "Failed to initialize extensions";
     return nullptr;
   }
@@ -113,6 +122,7 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fDepthMask = gl->glDepthMaskFn;
   functions->fDisable = gl->glDisableFn;
   functions->fDisableVertexAttribArray = gl->glDisableVertexAttribArrayFn;
+  functions->fDiscardFramebuffer = gl->glDiscardFramebufferEXTFn;
   functions->fDrawArrays = gl->glDrawArraysFn;
   functions->fDrawBuffer = gl->glDrawBufferFn;
   functions->fDrawBuffers = gl->glDrawBuffersARBFn;
@@ -248,6 +258,10 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fFramebufferRenderbuffer = gl->glFramebufferRenderbufferEXTFn;
   functions->fBindRenderbuffer = gl->glBindRenderbufferEXTFn;
   functions->fRenderbufferStorageMultisample =
+      gl->glRenderbufferStorageMultisampleEXTFn;
+  functions->fFramebufferTexture2DMultisample =
+      gl->glFramebufferTexture2DMultisampleEXTFn;
+  functions->fRenderbufferStorageMultisampleES2EXT =
       gl->glRenderbufferStorageMultisampleEXTFn;
   functions->fBlitFramebuffer = gl->glBlitFramebufferFn;
 
