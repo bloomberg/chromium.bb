@@ -316,9 +316,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mRecyclerView = (SuggestionsRecyclerView) recyclerView;
 
         if (SuggestionsConfig.scrollToLoad()) {
-            mRecyclerView.addOnScrollListener(new ScrollToLoadListener(
+            mRecyclerView.setScrollToLoadListener(new ScrollToLoadListener(
                     this, mRecyclerView.getLinearLayoutManager(), mSections));
         }
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        if (SuggestionsConfig.scrollToLoad()) mRecyclerView.clearScrollToLoadListener();
     }
 
     @Override

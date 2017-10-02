@@ -18,9 +18,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -41,6 +43,7 @@ import java.util.Collections;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD})
 public class HomeSheetCardsUiCaptureTest {
     @Rule
     public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
