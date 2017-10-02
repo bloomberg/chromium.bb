@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Visitor.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -31,7 +32,7 @@ class CORE_EXPORT DynamicModuleResolver final
   // Implements "HostImportModuleDynamically" semantics.
   // Should be called w/ a valid V8 context.
   void ResolveDynamically(const String& specifier,
-                          const String& referrer_url,
+                          const KURL& referrer_url,
                           const ReferrerScriptInfo& referrer_info,
                           ScriptPromiseResolver*);
 

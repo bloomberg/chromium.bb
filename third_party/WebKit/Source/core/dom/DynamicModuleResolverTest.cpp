@@ -23,6 +23,13 @@ namespace {
 constexpr const char* kTestReferrerURL = "https://example.com/referrer.js";
 constexpr const char* kTestDependencyURL = "https://example.com/dependency.js";
 
+const KURL TestReferrerURL() {
+  return KURL(kParsedURLString, kTestReferrerURL);
+}
+const KURL TestDependencyURL() {
+  return KURL(kParsedURLString, kTestDependencyURL);
+}
+
 class DynamicModuleResolverTestModulator final : public DummyModulator {
  public:
   explicit DynamicModuleResolverTestModulator(ScriptState* script_state)
@@ -42,7 +49,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   ScriptState* GetScriptState() final { return script_state_.get(); }
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
-    EXPECT_EQ(kTestReferrerURL, url.GetString());
+    EXPECT_EQ(TestReferrerURL(), url);
     ModuleScript* module_script = ModuleScript::CreateForTest(
         this, ScriptModule(), url, "nonce", kParserInserted,
         WebURLRequest::kFetchCredentialsModeOmit);
@@ -51,7 +58,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
   void FetchTree(const ModuleScriptFetchRequest& request,
                  ModuleTreeClient* client) final {
-    EXPECT_EQ(kTestDependencyURL, request.Url().GetString());
+    EXPECT_EQ(TestDependencyURL(), request.Url());
 
     pending_client_ = client;
   }
@@ -194,19 +201,18 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
                NotReached::CreateFunction(scope.GetScriptState()));
 
   auto resolver = DynamicModuleResolver::Create(modulator);
-  resolver->ResolveDynamically("./dependency.js", kTestReferrerURL,
+  resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_FALSE(capture->WasCalled());
 
-  KURL url(kParsedURLString, kTestDependencyURL);
   ScriptModule record = ScriptModule::Compile(
-      scope.GetIsolate(), "export const foo = 'hello';", url.GetString(),
+      scope.GetIsolate(), "export const foo = 'hello';", TestReferrerURL(),
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ModuleScript* module_script = ModuleScript::CreateForTest(
-      modulator, record, url, "nonce", kNotParserInserted,
+      modulator, record, TestDependencyURL(), "nonce", kNotParserInserted,
       WebURLRequest::kFetchCredentialsModeOmit);
   record.Instantiate(scope.GetScriptState());
   EXPECT_FALSE(module_script->IsErrored());
@@ -230,7 +236,7 @@ TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
                capture->Bind());
 
   auto resolver = DynamicModuleResolver::Create(modulator);
-  resolver->ResolveDynamically("invalid-specifier", kTestReferrerURL,
+  resolver->ResolveDynamically("invalid-specifier", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -252,7 +258,7 @@ TEST(DynamicModuleResolverTest, FetchFailure) {
                capture->Bind());
 
   auto resolver = DynamicModuleResolver::Create(modulator);
-  resolver->ResolveDynamically("./dependency.js", kTestReferrerURL,
+  resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
   EXPECT_FALSE(capture->WasCalled());
@@ -278,18 +284,17 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
                capture->Bind());
 
   auto resolver = DynamicModuleResolver::Create(modulator);
-  resolver->ResolveDynamically("./dependency.js", kTestReferrerURL,
+  resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
   EXPECT_FALSE(capture->WasCalled());
 
-  KURL url(kParsedURLString, kTestDependencyURL);
   ScriptModule record = ScriptModule::Compile(
-      scope.GetIsolate(), "throw Error('bar')", url.GetString(),
+      scope.GetIsolate(), "throw Error('bar')", TestReferrerURL(),
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ModuleScript* module_script = ModuleScript::CreateForTest(
-      modulator, record, url, "nonce", kNotParserInserted,
+      modulator, record, TestDependencyURL(), "nonce", kNotParserInserted,
       WebURLRequest::kFetchCredentialsModeOmit);
   record.Instantiate(scope.GetScriptState());
   EXPECT_FALSE(module_script->IsErrored());

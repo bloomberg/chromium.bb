@@ -60,7 +60,7 @@ class ModulatorImplBase : public Modulator {
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
   void ResolveDynamically(const String& specifier,
-                          const String& referrer_url,
+                          const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
   ScriptModule CompileModule(const String& script,

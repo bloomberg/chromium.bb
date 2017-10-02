@@ -49,7 +49,7 @@ class DummyModulator : public Modulator {
                             ModuleScriptLoaderClient*) override;
   bool HasValidContext() override;
   void ResolveDynamically(const String& specifier,
-                          const String& referrer_url,
+                          const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
   ScriptModule CompileModule(const String& script,

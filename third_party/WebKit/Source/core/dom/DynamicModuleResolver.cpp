@@ -142,7 +142,7 @@ DEFINE_TRACE(DynamicModuleResolver) {
 
 void DynamicModuleResolver::ResolveDynamically(
     const String& specifier,
-    const String& referrer_url_str,
+    const KURL& referrer_url,
     const ReferrerScriptInfo& referrer_info,
     ScriptPromiseResolver* promise_resolver) {
   DCHECK(modulator_->GetScriptState()->GetIsolate()->InContext())
@@ -157,7 +157,6 @@ void DynamicModuleResolver::ResolveDynamically(
 
   // Step 2.1. "Let url be the result of resolving a module specifier
   // given referencing script and specifier." [spec text]
-  KURL referrer_url = KURL(NullURL(), referrer_url_str);
   DCHECK(referrer_url.IsValid());
   KURL url = Modulator::ResolveModuleSpecifier(specifier, referrer_url);
   if (!url.IsValid()) {
