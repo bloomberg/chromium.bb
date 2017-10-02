@@ -2551,7 +2551,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1800,
+          "hard_timeout": 2400,
           "output_links": [
             {
               "link": [
