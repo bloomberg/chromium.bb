@@ -64,10 +64,6 @@ android_library("content_java") {
     "//ui/gfx/geometry/mojo:mojo_java",
   ]
 
-  if (enable_vr) {
-    deps += [ "//device/vr:java" ]
-  }
-
   srcjar_deps = [
     ":common_aidl",
     ":is_ready_to_pay_service_aidl",
