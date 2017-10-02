@@ -340,7 +340,7 @@
     "matches": [
       "chrome://network/*",
       "chrome://oobe/*",
-      "chrome://proxy-settings/*",
+      "chrome://internet-detail-dialog/*",
       "chrome://settings/*"
     ]
   }],

@@ -101,10 +101,6 @@ class WebUILoginView : public views::View,
   // Returns instance of the OOBE WebUI.
   OobeUI* GetOobeUI();
 
-  // Opens proxy settings dialog for the network matching |network_id| or the
-  // default network if |network_id| is empty.
-  void OpenProxySettings(const std::string& network_id);
-
   // Called when WebUI is being shown after being initilized hidden.
   void OnPostponedShow();
 

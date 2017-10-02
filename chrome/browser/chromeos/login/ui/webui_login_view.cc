@@ -24,10 +24,10 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/login/ui/internet_detail_dialog.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
-#include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -352,22 +352,6 @@ OobeUI* WebUILoginView::GetOobeUI() {
     return nullptr;
 
   return static_cast<OobeUI*>(GetWebUI()->GetController());
-}
-
-void WebUILoginView::OpenProxySettings(const std::string& network_id) {
-  auto* network_state_handler = NetworkHandler::Get()->network_state_handler();
-  const NetworkState* network;
-  if (!network_id.empty())
-    network = network_state_handler->GetNetworkStateFromGuid(network_id);
-  else
-    network = network_state_handler->DefaultNetwork();
-  if (!network) {
-    LOG(ERROR) << "Network not found: " << network_id;
-    return;
-  }
-  ProxySettingsDialog* dialog = new ProxySettingsDialog(
-      ProfileHelper::GetSigninProfile(), *network, nullptr, GetNativeWindow());
-  dialog->Show();
 }
 
 void WebUILoginView::OnPostponedShow() {

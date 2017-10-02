@@ -151,7 +151,7 @@ gfx::NativeWindow NetworkDropdown::GetNativeWindow() const {
 }
 
 void NetworkDropdown::OpenButtonOptions() {
-  LoginDisplayHost::default_host()->OpenProxySettings("");
+  LoginDisplayHost::default_host()->OpenInternetDetailDialog("");
 }
 
 bool NetworkDropdown::ShouldOpenButtonOptions() const {

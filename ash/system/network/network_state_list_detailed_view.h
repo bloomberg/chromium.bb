@@ -82,7 +82,6 @@ class NetworkStateListDetailedView
 
   views::Button* info_button_;
   views::Button* settings_button_;
-  views::Button* proxy_settings_button_;
 
   // A small bubble for displaying network info.
   views::BubbleDialogDelegateView* info_bubble_;

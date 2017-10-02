@@ -402,7 +402,7 @@ class SigninScreenHandler
   void HandleAccountPickerReady();
   void HandleWallpaperReady();
   void HandleSignOutUser();
-  void HandleOpenProxySettings();
+  void HandleOpenInternetDetailDialog();
   void HandleLoginVisible(const std::string& source);
   void HandleCancelPasswordChangedFlow(const AccountId& account_id);
   void HandleCancelUserAdding();

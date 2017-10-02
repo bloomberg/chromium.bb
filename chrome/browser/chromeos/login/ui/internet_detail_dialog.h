@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_PROXY_SETTINGS_DIALOG_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_PROXY_SETTINGS_DIALOG_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_INTERNET_DETAIL_DIALOG_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_INTERNET_DETAIL_DIALOG_H_
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -19,20 +19,24 @@ namespace chromeos {
 class NetworkState;
 
 // Should be used on the UI thread only, because of static |instance_count_|.
-class ProxySettingsDialog : public LoginWebDialog {
+class InternetDetailDialog : public LoginWebDialog {
  public:
   // Returns whether the dialog is being shown.
   static bool IsShown();
 
-  ProxySettingsDialog(content::BrowserContext* browser_context,
-                      const NetworkState& network,
-                      LoginWebDialog::Delegate* delegate,
-                      gfx::NativeWindow window);
-  ~ProxySettingsDialog() override;
+  InternetDetailDialog(content::BrowserContext* browser_context,
+                       const NetworkState& network,
+                       LoginWebDialog::Delegate* delegate,
+                       gfx::NativeWindow window);
+  ~InternetDetailDialog() override;
 
   // LoginWebDialog
   base::string16 GetDialogTitle() const override;
   std::string GetDialogArgs() const override;
+
+  static void ShowDialog(content::BrowserContext* browser_context,
+                         gfx::NativeWindow window,
+                         const std::string& network_id);
 
  protected:
   // ui::WebDialogDelegate implementation.
@@ -46,9 +50,9 @@ class ProxySettingsDialog : public LoginWebDialog {
   std::string guid_;
   base::string16 name_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxySettingsDialog);
+  DISALLOW_COPY_AND_ASSIGN(InternetDetailDialog);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_PROXY_SETTINGS_DIALOG_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_INTERNET_DETAIL_DIALOG_H_

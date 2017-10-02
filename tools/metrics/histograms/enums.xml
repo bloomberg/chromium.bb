@@ -40772,7 +40772,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="1354146226" label="chrome://tab-modal-confirm-dialog/"/>
   <int value="1371905827" label="chrome://flags/"/>
   <int value="1396129399" label="chrome://flash/"/>
-  <int value="1403605293" label="chrome://proxy-settings/"/>
+  <int value="1403605293" label="chrome://internet-detail-dialog/"/>
   <int value="1427179406" label="chrome://gcm-internals/"/>
   <int value="1454088830" label="chrome://uber-frame/"/>
   <int value="1457759734" label="chrome://user-manager/"/>

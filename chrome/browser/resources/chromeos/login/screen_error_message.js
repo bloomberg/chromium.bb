@@ -193,14 +193,14 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
                   '" class="signin-link" href="#">',
               '</a>');
       $(FIX_PROXY_SETTINGS_ID).onclick = function() {
-        chrome.send('openProxySettings');
+        chrome.send('openInternetDetailDialog');
       };
       $('update-proxy-message-text').innerHTML = loadTimeData.getStringF(
           'updateProxyMessageText',
           '<a id="update-proxy-error-fix-proxy" class="signin-link" href="#">',
           '</a>');
       $('update-proxy-error-fix-proxy').onclick = function() {
-        chrome.send('openProxySettings');
+        chrome.send('openInternetDetailDialog');
       };
       $('signin-proxy-message-text').innerHTML = loadTimeData.getStringF(
           'signinProxyMessageText',
@@ -214,7 +214,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         gaiaScreen.doReload();
       };
       $('signin-proxy-error-fix-proxy').onclick = function() {
-        chrome.send('openProxySettings');
+        chrome.send('openInternetDetailDialog');
       };
 
       $('error-guest-signin').innerHTML = loadTimeData.getStringF(
