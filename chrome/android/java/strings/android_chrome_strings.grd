@@ -1892,7 +1892,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Open <ph name="WEBAPK_NAME">%1$s<ex>Telegram</ex></ph>
       </message>
       <message name="IDS_OPEN_WEBAPK_FAILED" desc="Opening of a WebAPK failed.">
-        Could not launch app
+        Could not open app
       </message>
       <message name="IDS_MENU_ADD_TO_HOMESCREEN_INSTALL" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
         Install web app
@@ -1912,8 +1912,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that the adding of a WebAPK is in progress.">
         Adding <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph>...
       </message>
-      <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully added to home screen.">
-        Added to home screen.
+      <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully added to Home screen.">
+        Added to Home screen
       </message>
 
       <!-- PageInfoPopup (PageInfo dialog) -->
