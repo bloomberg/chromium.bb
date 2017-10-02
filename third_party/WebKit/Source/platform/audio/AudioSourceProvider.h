@@ -30,6 +30,7 @@
 #define AudioSourceProvider_h
 
 #include <cstddef>
+#include "base/macros.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 
@@ -41,7 +42,7 @@ class AudioSourceProviderClient;
 // Abstract base-class for a pull-model client.
 class PLATFORM_EXPORT AudioSourceProvider {
   USING_FAST_MALLOC(AudioSourceProvider);
-  WTF_MAKE_NONCOPYABLE(AudioSourceProvider);
+  DISALLOW_COPY_AND_ASSIGN(AudioSourceProvider);
 
  public:
   AudioSourceProvider() {}

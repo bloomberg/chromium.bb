@@ -5,6 +5,7 @@
 #ifndef ObjectPaintInvalidator_h
 #define ObjectPaintInvalidator_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/wtf/Allocator.h"
@@ -114,7 +115,7 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
 // will always invalidate raster after paint.
 class DisablePaintInvalidationStateAsserts {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
+  DISALLOW_COPY_AND_ASSIGN(DisablePaintInvalidationStateAsserts);
 
  public:
   DisablePaintInvalidationStateAsserts();
