@@ -8,8 +8,6 @@
 
 namespace blink {
 
-static const char* kUnknownString = "Unknown";
-
 String FontVariantEastAsian::ToString(EastAsianForm form) {
   switch (form) {
     case EastAsianForm::kNormalForm:
@@ -27,7 +25,7 @@ String FontVariantEastAsian::ToString(EastAsianForm form) {
     case EastAsianForm::kTraditional:
       return "Traditional";
   }
-  return kUnknownString;
+  return "Unknown";
 }
 
 String FontVariantEastAsian::ToString(EastAsianWidth width) {
@@ -39,7 +37,7 @@ String FontVariantEastAsian::ToString(EastAsianWidth width) {
     case FontVariantEastAsian::kProportionalWidth:
       return "Proportional";
   }
-  return kUnknownString;
+  return "Unknown";
 }
 
 String FontVariantEastAsian::ToString() const {
