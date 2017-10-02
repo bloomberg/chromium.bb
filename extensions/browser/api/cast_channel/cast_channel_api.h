@@ -16,6 +16,7 @@
 #include "components/cast_channel/cast_socket.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/common/api/cast_channel.h"
 
 class CastChannelAPITest;
@@ -37,6 +38,7 @@ namespace extensions {
 struct Event;
 
 class CastChannelAPI : public BrowserContextKeyedAPI,
+                       public EventRouter::Observer,
                        public base::SupportsWeakPtr<CastChannelAPI> {
  public:
   explicit CastChannelAPI(content::BrowserContext* context);
@@ -59,11 +61,6 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
 
   // Sends an event to the extension's EventRouter, if it exists.
   void SendEvent(const std::string& extension_id, std::unique_ptr<Event> event);
-
-  // Registers |extension_id| with |observer_| and returns |observer_|.
-  cast_channel::CastSocket::Observer* GetObserver(
-      const std::string& extension_id,
-      scoped_refptr<cast_channel::Logger> logger);
 
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
@@ -88,8 +85,6 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
     void OnMessage(const cast_channel::CastSocket& socket,
                    const cast_channel::CastMessage& message) override;
 
-    void RegisterExtensionId(const std::string& extension_id);
-
    private:
     // Callback for sending events to the extension.
     // Should be bound to a weak pointer, to prevent any use-after-free
@@ -105,8 +100,14 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
 
   ~CastChannelAPI() override;
 
+  // EventRouter::Observer:
+  void OnListenerAdded(const EventListenerInfo& details) override;
+  void OnListenerRemoved(const EventListenerInfo& details) override;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "CastChannelAPI"; }
+
+  static const bool kServiceIsNULLWhileTesting = true;
 
   content::BrowserContext* const browser_context_;
   std::unique_ptr<cast_channel::CastSocket> socket_for_test_;
@@ -116,6 +117,10 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
 };
+
+template <>
+void BrowserContextKeyedAPIFactory<
+    CastChannelAPI>::DeclareFactoryDependencies();
 
 class CastChannelAsyncApiFunction : public AsyncApiFunction {
  public:
