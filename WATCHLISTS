@@ -901,6 +901,9 @@
     'gpu': {
       'filepath': 'gpu/',
     },
+    'gpu_passthrough_cmd_decoder': {
+      'filepath': 'gpu/command_buffer/service/.*passthrough',
+    },
     'history_ui': {
       'filepath': 'chrome/browser/resources/(md_)?history|'\
                   'chrome/browser/ui/webui/.*history',
@@ -2010,6 +2013,8 @@
            'dpranke@chromium.org',
            'tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
+    'gpu_passthrough_cmd_decoder': ['cwallez+watch@chromium.org',
+                                    'geofflang+watch@chromium.org'],
     'history_ui': ['pam+watch@chromium.org'],
     'hotword': ['rlp+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
