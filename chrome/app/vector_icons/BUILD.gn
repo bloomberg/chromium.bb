@@ -99,6 +99,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "tab_usb_connected.icon",
     "tablet.icon",
     "translate.icon",
+    "trash_can.icon",
     "user_account_avatar.icon",
     "warning_badge.icon",
     "web.icon",

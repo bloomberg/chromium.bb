@@ -20,12 +20,12 @@ class Label;
 class ManagePasswordsBubbleModel;
 
 // Standalone functions for creating username and password views.
-std::unique_ptr<views::Label> GenerateUsernameLabel(
+std::unique_ptr<views::Label> CreateUsernameLabel(
     const autofill::PasswordForm& form);
-std::unique_ptr<views::Label> GeneratePasswordLabel(
+std::unique_ptr<views::Label> CreatePasswordLabel(
     const autofill::PasswordForm& form,
     bool is_password_visible);
-std::unique_ptr<views::Textfield> GenerateUsernameEditable(
+std::unique_ptr<views::Textfield> CreateUsernameEditable(
     const autofill::PasswordForm& form);
 
 // A custom view of individual credentials. The view is represented as a table
