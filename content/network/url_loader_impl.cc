@@ -239,13 +239,22 @@ void URLLoaderImpl::SetPriority(net::RequestPriority priority,
 }
 
 void URLLoaderImpl::PauseReadingBodyFromNet() {
-  // TODO(yzshen): add implementation.
-  NOTIMPLEMENTED();
+  DVLOG(1) << "URLLoaderImpl pauses fetching response body for "
+           << (url_request_ ? url_request_->original_url().spec()
+                            : "a URL that has completed loading or failed.");
+  should_pause_reading_body_ = true;
 }
 
 void URLLoaderImpl::ResumeReadingBodyFromNet() {
-  // TODO(yzshen): add implementation.
-  NOTIMPLEMENTED();
+  DVLOG(1) << "URLLoaderImpl resumes fetching response body for "
+           << (url_request_ ? url_request_->original_url().spec()
+                            : "a URL that has completed loading or failed.");
+  should_pause_reading_body_ = false;
+
+  if (paused_reading_body_) {
+    paused_reading_body_ = false;
+    ReadMore();
+  }
 }
 
 void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
@@ -314,6 +323,12 @@ void URLLoaderImpl::ReadMore() {
   // Once the MIME type is sniffed, all data is sent as soon as it is read from
   // the network.
   DCHECK(consumer_handle_.is_valid() || !pending_write_);
+
+  if (should_pause_reading_body_) {
+    paused_reading_body_ = true;
+    return;
+  }
+
   if (!pending_write_.get()) {
     // TODO: we should use the abstractions in MojoAsyncResourceHandler.
     pending_write_buffer_offset_ = 0;
@@ -456,6 +471,11 @@ void URLLoaderImpl::CloseResponseBodyStreamProducer() {
   writable_handle_watcher_.Cancel();
   response_body_stream_.reset();
   pending_write_ = nullptr;
+
+  // Make sure if a ResumeReadingBodyFromNet() call is received later, we don't
+  // try to do ReadMore().
+  paused_reading_body_ = false;
+
   DeleteIfNeeded();
 }
 

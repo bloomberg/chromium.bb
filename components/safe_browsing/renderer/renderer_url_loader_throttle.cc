@@ -96,36 +96,34 @@ void RendererURLLoaderThrottle::WillProcessResponse(bool* defer) {
 
 void RendererURLLoaderThrottle::OnCompleteCheck(bool proceed,
                                                 bool showed_interstitial) {
-  if (blocked_ || !url_checker_)
-    return;
-
-  DCHECK_LT(0u, pending_checks_);
-  pending_checks_--;
-
-  if (proceed) {
-    if (pending_checks_ == 0 && deferred_) {
-      LogDelay(base::TimeTicks::Now() - defer_start_time_);
-      deferred_ = false;
-      delegate_->Resume();
-    }
-  } else {
-    url_checker_.reset();
-    blocked_ = true;
-    pending_checks_ = 0;
-    delegate_->CancelWithError(net::ERR_ABORTED);
-  }
+  OnCompleteCheckInternal(true /* slow_check */, proceed, showed_interstitial);
 }
 
 void RendererURLLoaderThrottle::OnCheckUrlResult(
     mojom::UrlCheckNotifierRequest slow_check_notifier,
     bool proceed,
     bool showed_interstitial) {
+  // When this is the callback of safe_browsing_->CreateCheckerAndCheck(), it is
+  // possible that we get here after a check with |url_checker_| has completed
+  // and blocked the request.
+  if (blocked_ || !url_checker_)
+    return;
+
   if (!slow_check_notifier.is_pending()) {
-    OnCompleteCheck(proceed, showed_interstitial);
+    OnCompleteCheckInternal(false /* slow_check */, proceed,
+                            showed_interstitial);
     return;
   }
 
-  // TODO(yzshen): Notify the network service to pause processing response body.
+  pending_slow_checks_++;
+  // Pending slow checks indicate that the resource may be unsafe. In that case,
+  // pause reading response body from network to minimize the chance of
+  // processing unsafe contents (e.g., writing unsafe contents into cache),
+  // until we get the results. According to the results, we may resume reading
+  // or cancel the resource load.
+  if (pending_slow_checks_ == 1)
+    delegate_->PauseReadingBodyFromNet();
+
   if (!notifier_bindings_) {
     notifier_bindings_ =
         std::make_unique<mojo::BindingSet<mojom::UrlCheckNotifier>>();
@@ -133,13 +131,54 @@ void RendererURLLoaderThrottle::OnCheckUrlResult(
   notifier_bindings_->AddBinding(this, std::move(slow_check_notifier));
 }
 
+void RendererURLLoaderThrottle::OnCompleteCheckInternal(
+    bool slow_check,
+    bool proceed,
+    bool showed_interstitial) {
+  DCHECK(!blocked_);
+  DCHECK(url_checker_);
+
+  DCHECK_LT(0u, pending_checks_);
+  pending_checks_--;
+
+  if (slow_check) {
+    DCHECK_LT(0u, pending_slow_checks_);
+    pending_slow_checks_--;
+  }
+
+  if (proceed) {
+    if (pending_slow_checks_ == 0 && slow_check)
+      delegate_->ResumeReadingBodyFromNet();
+
+    if (pending_checks_ == 0 && deferred_) {
+      LogDelay(base::TimeTicks::Now() - defer_start_time_);
+      deferred_ = false;
+      delegate_->Resume();
+    }
+  } else {
+    blocked_ = true;
+
+    url_checker_.reset();
+    notifier_bindings_.reset();
+    pending_checks_ = 0;
+    pending_slow_checks_ = 0;
+    delegate_->CancelWithError(net::ERR_ABORTED);
+  }
+}
+
 void RendererURLLoaderThrottle::OnConnectionError() {
   DCHECK(!blocked_);
 
   // If a service-side disconnect happens, treat all URLs as if they are safe.
   url_checker_.reset();
-  pending_checks_ = 0;
   notifier_bindings_.reset();
+
+  pending_checks_ = 0;
+
+  if (pending_slow_checks_ > 0) {
+    pending_slow_checks_ = 0;
+    delegate_->ResumeReadingBodyFromNet();
+  }
 
   if (deferred_) {
     deferred_ = false;

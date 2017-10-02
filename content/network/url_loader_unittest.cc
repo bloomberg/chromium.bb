@@ -16,6 +16,7 @@
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -291,13 +292,10 @@ class URLLoaderImplTest : public testing::Test {
     return client_.ssl_info();
   }
 
- private:
   // Reads the response body from client()->response_body() until the channel is
   // closed. Expects client()->response_body() to already be populated, and
   // non-NULL.
   std::string ReadBody() {
-    DCHECK(ran_);
-
     std::string body;
     while (true) {
       MojoHandle consumer = client()->response_body().value();
@@ -337,6 +335,26 @@ class URLLoaderImplTest : public testing::Test {
     return body;
   }
 
+  std::string ReadAvailableBody() {
+    MojoHandle consumer = client()->response_body().value();
+
+    uint32_t num_bytes = 0;
+    MojoResult result =
+        MojoReadData(consumer, nullptr, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+    CHECK_EQ(MOJO_RESULT_OK, result);
+    if (num_bytes == 0)
+      return std::string();
+
+    std::vector<char> buffer(num_bytes);
+    result = MojoReadData(consumer, buffer.data(), &num_bytes,
+                          MOJO_READ_DATA_FLAG_NONE);
+    CHECK_EQ(MOJO_RESULT_OK, result);
+    CHECK_EQ(num_bytes, buffer.size());
+
+    return std::string(buffer.data(), buffer.size());
+  }
+
+ private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<NetworkContext> context_;
@@ -623,6 +641,201 @@ TEST_F(URLLoaderImplTest, CloseResponseBodyConsumerBeforeProducer) {
   client()->RunUntilConnectionError();
 
   EXPECT_FALSE(client()->has_received_completion());
+}
+
+TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
+  const char* const kPath = "/hello.html";
+  const char* const kBodyContents = "This is the data as you requested.";
+
+  net::EmbeddedTestServer server;
+  ControllableHttpResponse response_controller(&server, kPath);
+  ASSERT_TRUE(server.Start());
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+
+  mojom::URLLoaderPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext.
+  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
+                    client()->CreateInterfacePtr(),
+                    TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Pausing reading response body from network stops future reads from the
+  // underlying URLRequest. So no data should be sent using the response body
+  // data pipe.
+  loader->PauseReadingBodyFromNet();
+  // In order to avoid flakiness, make sure PauseReadBodyFromNet() is handled by
+  // the loader before the test HTTP server serves the response.
+  loader.FlushForTesting();
+
+  response_controller.WaitForRequest();
+  response_controller.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/plain\r\n\r\n" +
+      std::string(kBodyContents));
+  response_controller.Done();
+
+  // We will still receive the response body data pipe, although there won't be
+  // any data available until ResumeReadBodyFromNet() is called.
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  // Wait for a little amount of time so that if the loader mistakenly reads
+  // response body from the underlying URLRequest, it is easier to find out.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  run_loop.Run();
+
+  std::string available_data = ReadAvailableBody();
+  EXPECT_TRUE(available_data.empty());
+
+  loader->ResumeReadingBodyFromNet();
+  client()->RunUntilComplete();
+
+  available_data = ReadBody();
+  EXPECT_EQ(kBodyContents, available_data);
+}
+
+TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetWhenReadIsPending) {
+  const char* const kPath = "/hello.html";
+  const char* const kBodyContentsFirstHalf = "This is the first half.";
+  const char* const kBodyContentsSecondHalf = "This is the second half.";
+
+  net::EmbeddedTestServer server;
+  ControllableHttpResponse response_controller(&server, kPath);
+  ASSERT_TRUE(server.Start());
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+
+  mojom::URLLoaderPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext.
+  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
+                    client()->CreateInterfacePtr(),
+                    TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  response_controller.WaitForRequest();
+  response_controller.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/plain\r\n\r\n" +
+      std::string(kBodyContentsFirstHalf));
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  loader->PauseReadingBodyFromNet();
+  loader.FlushForTesting();
+
+  response_controller.Send(kBodyContentsSecondHalf);
+  response_controller.Done();
+
+  // It is uncertain how much data has been read before reading is actually
+  // paused, because if there is a pending read when PauseReadingBodyFromNet()
+  // arrives, the pending read won't be cancelled. Therefore, this test only
+  // checks that after ResumeReadingBodyFromNet() we should be able to get the
+  // whole response body.
+  loader->ResumeReadingBodyFromNet();
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
+                std::string(kBodyContentsSecondHalf),
+            ReadBody());
+}
+
+TEST_F(URLLoaderImplTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
+  const char* const kPath = "/hello.html";
+  const char* const kBodyContentsFirstHalf = "This is the first half.";
+
+  net::EmbeddedTestServer server;
+  ControllableHttpResponse response_controller(&server, kPath);
+  ASSERT_TRUE(server.Start());
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+
+  mojom::URLLoaderPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext.
+  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
+                    client()->CreateInterfacePtr(),
+                    TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  loader->PauseReadingBodyFromNet();
+  loader.FlushForTesting();
+
+  response_controller.WaitForRequest();
+  response_controller.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/plain\r\n\r\n" +
+      std::string(kBodyContentsFirstHalf));
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  auto response_body = client()->response_body_release();
+  response_body.reset();
+
+  // It shouldn't cause any issue even if a ResumeReadingBodyFromNet() call is
+  // made after the response body data pipe is closed.
+  loader->ResumeReadingBodyFromNet();
+  loader.FlushForTesting();
+}
+
+TEST_F(URLLoaderImplTest, MultiplePauseResumeReadingBodyFromNet) {
+  const char* const kPath = "/hello.html";
+  const char* const kBodyContentsFirstHalf = "This is the first half.";
+  const char* const kBodyContentsSecondHalf = "This is the second half.";
+
+  net::EmbeddedTestServer server;
+  ControllableHttpResponse response_controller(&server, kPath);
+  ASSERT_TRUE(server.Start());
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL(kPath));
+
+  mojom::URLLoaderPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext.
+  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
+                    client()->CreateInterfacePtr(),
+                    TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
+  // PauseReadingBodyFromNet().
+  loader->ResumeReadingBodyFromNet();
+  loader.FlushForTesting();
+
+  response_controller.WaitForRequest();
+  response_controller.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/plain\r\n\r\n" +
+      std::string(kBodyContentsFirstHalf));
+
+  loader->PauseReadingBodyFromNet();
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  loader->PauseReadingBodyFromNet();
+  loader->PauseReadingBodyFromNet();
+  loader.FlushForTesting();
+
+  response_controller.Send(kBodyContentsSecondHalf);
+  response_controller.Done();
+
+  // One ResumeReadingBodyFromNet() call will resume reading even if there are
+  // multiple PauseReadingBodyFromNet() calls before it.
+  loader->ResumeReadingBodyFromNet();
+
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
+                std::string(kBodyContentsSecondHalf),
+            ReadBody());
 }
 
 }  // namespace content
