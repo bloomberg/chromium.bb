@@ -20,18 +20,25 @@ bool LocalFontFaceSource::IsLocalFontAvailable(
 RefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
     const FontDescription& font_description,
     const FontSelectionCapabilities&) {
-  // FIXME(drott) crbug.com/627143: We still have the issue of matching family
-  // name instead of postscript name for local fonts. However, we should
-  // definitely not try to take into account the full requested font description
-  // including the width, slope, weight styling when trying to match against
-  // local fonts.
-  FontDescription description_without_styling(font_description);
-  description_without_styling.SetStretch(NormalWidthValue());
-  description_without_styling.SetStyle(NormalSlopeValue());
-  description_without_styling.SetWeight(NormalWeightValue());
+  // FIXME(drott) crbug.com/627143: We still have the issue of matching
+  // family name instead of postscript name for local fonts. However, we
+  // should definitely not try to take into account the full requested
+  // font description including the width, slope, weight styling when
+  // trying to match against local fonts. An unstyled FontDescription
+  // needs to be used here, or practically none at all. Instead we
+  // should only look for the postscript or full font name.
+  // However, when passing a style-neutral FontDescription we can't
+  // match Roboto Bold and Thin anymore on Android given the CSS Google
+  // Fonts sends, compare crbug.com/765980. So for now, we continue to
+  // pass font_description to avoid breaking Google Fonts.
+  FontDescription unstyled_description(font_description);
+#if !defined(OS_ANDROID)
+  unstyled_description.SetStretch(NormalWidthValue());
+  unstyled_description.SetStyle(NormalSlopeValue());
+  unstyled_description.SetWeight(NormalWeightValue());
+#endif
   RefPtr<SimpleFontData> font_data = FontCache::GetFontCache()->GetFontData(
-      description_without_styling, font_name_,
-      AlternateFontName::kLocalUniqueFace);
+      unstyled_description, font_name_, AlternateFontName::kLocalUniqueFace);
   histograms_.Record(font_data.get());
   return font_data;
 }
