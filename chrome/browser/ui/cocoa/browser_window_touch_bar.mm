@@ -171,12 +171,6 @@ class HomePrefNotificationBridge {
 // Sets up the back and forward segmented control.
 - (void)setupBackForwardControl;
 
-// Methods to update controls on the touch bar. Called when creating the
-// touch bar or the page load state has been updated.
-- (void)updateReloadStopButton;
-- (void)updateBackForwardControl;
-- (void)updateStarredButton;
-
 // Creates and returns the search button.
 - (NSView*)searchTouchBarView API_AVAILABLE(macos(10.12));
 @end
@@ -401,53 +395,6 @@ class HomePrefNotificationBridge {
   backForwardControl_.reset([control retain]);
 }
 
-- (void)updateReloadStopButton {
-  const gfx::VectorIcon& icon =
-      isPageLoading_ ? kNavigateStopIcon : vector_icons::kReloadIcon;
-  int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
-  int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
-
-  if (!reloadStopButton_) {
-    reloadStopButton_.reset(
-        [CreateTouchBarButton(icon, self, commandId, tooltipId) retain]);
-    return;
-  }
-
-  [reloadStopButton_
-      setImage:CreateNSImageFromIcon(icon, kTouchBarDefaultIconColor)];
-  [reloadStopButton_ setTag:commandId];
-  [reloadStopButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
-}
-
-- (void)updateBackForwardControl {
-  if (!backForwardControl_)
-    [self setupBackForwardControl];
-
-  if (@available(macOS 10.10, *))
-    [backForwardControl_ setSegmentStyle:NSSegmentStyleSeparated];
-
-  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_BACK)
-                       forSegment:kBackSegmentIndex];
-  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)
-                       forSegment:kForwardSegmentIndex];
-}
-
-- (void)updateStarredButton {
-  const gfx::VectorIcon& icon =
-      isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
-  SkColor iconColor =
-      isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
-  int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
-  if (!starredButton_) {
-    starredButton_.reset([CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
-                                               tooltipId, iconColor) retain]);
-    return;
-  }
-
-  [starredButton_ setImage:CreateNSImageFromIcon(icon, iconColor)];
-  [starredButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
-}
-
 - (NSView*)searchTouchBarView {
   TemplateURLService* templateUrlService =
       TemplateURLServiceFactory::GetForProfile(browser_->profile());
@@ -513,6 +460,65 @@ class HomePrefNotificationBridge {
   [self updateReloadStopButton];
   [self updateBackForwardControl];
   [self updateStarredButton];
+}
+
+@end
+
+// Private methods exposed for testing.
+@implementation BrowserWindowTouchBar (ExposedForTesting)
+
+- (void)updateReloadStopButton {
+  const gfx::VectorIcon& icon =
+      isPageLoading_ ? kNavigateStopIcon : vector_icons::kReloadIcon;
+  int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
+  int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
+
+  if (!reloadStopButton_) {
+    reloadStopButton_.reset(
+        [CreateTouchBarButton(icon, self, commandId, tooltipId) retain]);
+    return;
+  }
+
+  [reloadStopButton_
+      setImage:CreateNSImageFromIcon(icon, kTouchBarDefaultIconColor)];
+  [reloadStopButton_ setTag:commandId];
+  [reloadStopButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
+}
+
+- (void)updateBackForwardControl {
+  if (!backForwardControl_)
+    [self setupBackForwardControl];
+
+  if (@available(macOS 10.10, *))
+    [backForwardControl_ setSegmentStyle:NSSegmentStyleSeparated];
+
+  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_BACK)
+                       forSegment:kBackSegmentIndex];
+  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)
+                       forSegment:kForwardSegmentIndex];
+}
+
+- (void)updateStarredButton {
+  const gfx::VectorIcon& icon =
+      isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
+  SkColor iconColor =
+      isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
+  int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
+  if (!starredButton_) {
+    starredButton_.reset([CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
+                                               tooltipId, iconColor) retain]);
+    return;
+  }
+
+  [starredButton_ setImage:CreateNSImageFromIcon(icon, iconColor)];
+  [starredButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
+}
+
+- (NSButton*)reloadStopButton {
+  if (!reloadStopButton_)
+    [self updateReloadStopButton];
+
+  return reloadStopButton_.get();
 }
 
 @end

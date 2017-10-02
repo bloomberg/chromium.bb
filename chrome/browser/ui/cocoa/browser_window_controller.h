@@ -629,6 +629,9 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Sets the fullscreen toolbar controller.
 - (void)setFullscreenToolbarController:(FullscreenToolbarController*)controller;
 
+// Sets |browserWindowTouchbar_|.
+- (void)setBrowserWindowTouchBar:(BrowserWindowTouchBar*)touchBar;
+
 @end  // @interface BrowserWindowController (TestingAPI)
 
 

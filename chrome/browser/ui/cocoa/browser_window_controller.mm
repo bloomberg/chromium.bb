@@ -1904,6 +1904,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   fullscreenToolbarController_.reset([controller retain]);
 }
 
+- (void)setBrowserWindowTouchBar:(BrowserWindowTouchBar*)touchBar {
+  touchBar_.reset(touchBar);
+}
+
 - (void)executeExtensionCommand:(const std::string&)extension_id
                         command:(const extensions::Command&)command {
   // Global commands are handled by the ExtensionCommandsGlobalRegistry
