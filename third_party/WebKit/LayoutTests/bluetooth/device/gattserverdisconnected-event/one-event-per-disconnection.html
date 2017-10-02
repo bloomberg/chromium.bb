@@ -24,7 +24,7 @@ promise_test(() => getHealthThermometerDevice()
     device.gatt.disconnect(),
   ]))
   // 3. Wait to catch disconnect events.
-  .then(() => new Promise(resolve => setTimeout(resolve, 50)))
+  .then(() => new Promise(resolve => step_timeout(resolve, 50)))
   // 4. Ensure there is exactly 1 disconnection recorded.
   .then(() => assert_equals(num_events, 1)), test_desc);
 </script>

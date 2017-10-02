@@ -265,7 +265,7 @@ function runGarbageCollection()
   return new Promise(
       function(resolve, reject) {
         GCController.collect();
-        setTimeout(resolve, 0);
+        step_timeout(resolve, 0);
       });
 }
 
@@ -349,9 +349,9 @@ function assert_no_events(object, event_name) {
       assert_unreached('Object should not fire an event.');
     };
     object.addEventListener(event_name, event_listener);
-    // TODO(ortuno): Remove timeout.
+    // TODO: Remove timeout.
     // http://crbug.com/543884
-    setTimeout(() => {
+    step_timeout(() => {
       object.removeEventListener(event_name, event_listener);
       resolve();
     }, 100);
