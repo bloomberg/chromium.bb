@@ -47619,6 +47619,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Network.URLLoader.BodyReadFromNetBeforePaused" units="bytes">
+  <owner>yzshen@chromium.org</owner>
+  <summary>
+    How much, in bytes, of the response body has been read from network by a
+    URLLoader before it pauses reading, when it receives a
+    PauseReadingBodyFromNet() call. If there are multiple calls to
+    PauseReadingBodyFromNet(), only a single value is recorded for the last
+    call. This histogram is recorded by URLLoader implementations that fetch
+    from network. When SafeBrowsing indicates that a resource may be unsafe and
+    therefore a more time-consuming check is required to classify it, reading
+    response body from network is paused in order to reduce the chance of
+    writing unsafe contents into cache. This histogram is useful to evaluate how
+    much data is cached during this window.
+  </summary>
+</histogram>
+
 <histogram name="Network.Wifi.AuthMode" enum="NetworkAuthModeType">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
