@@ -70,10 +70,6 @@ class GFX_EXPORT Image {
 #if defined(OS_IOS)
   // Retains |image|.
   explicit Image(UIImage* image);
-
-  // Retains argument according to |policy|.
-  Image(UIImage* image, base::scoped_policy::OwnershipPolicy policy);
-
 #elif defined(OS_MACOSX)
   // Does not retain |image|; expects to take ownership.
   // A single NSImage object can contain multiple bitmaps so there's no reason

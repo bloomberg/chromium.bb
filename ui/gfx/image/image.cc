@@ -350,13 +350,10 @@ Image::Image(const ImageSkia& image) {
 }
 
 #if defined(OS_IOS)
-Image::Image(UIImage* image) : Image(image, base::scoped_policy::RETAIN) {}
-
-Image::Image(UIImage* image, base::scoped_policy::OwnershipPolicy policy)
-    : storage_(new internal::ImageStorage(Image::kImageRepCocoaTouch)) {
+Image::Image(UIImage* image) {
   if (image) {
-    if (policy == base::scoped_policy::RETAIN)
-      base::mac::NSObjectRetain(image);
+    base::mac::NSObjectRetain(image);
+    storage_ = new internal::ImageStorage(Image::kImageRepCocoaTouch);
     AddRepresentation(base::MakeUnique<internal::ImageRepCocoaTouch>(image));
   }
 }
