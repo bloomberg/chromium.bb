@@ -35,6 +35,7 @@ import java.util.Locale;
 public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrapper>
         implements ThumbnailProvider.ThumbnailRequest {
     private final int mMargin;
+    private final int mMarginSubsection;
     private final int mIconBackgroundColor;
     private final int mIconBackgroundColorSelected;
     private final ColorStateList mIconForegroundColorList;
@@ -70,6 +71,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     public DownloadItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mMargin = context.getResources().getDimensionPixelSize(R.dimen.list_item_default_margin);
+        mMarginSubsection =
+                context.getResources().getDimensionPixelSize(R.dimen.list_item_subsection_margin);
         mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(context);
         mIconBackgroundColorSelected =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_grey_600);
@@ -153,6 +156,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     public void displayItem(BackendProvider provider, DownloadHistoryItemWrapper item) {
         mItem = item;
         setItem(item);
+
+        ApiCompatibilityUtils.setMarginStart(
+                (MarginLayoutParams) mLayoutContainer.getLayoutParams(),
+                item.isSuggested() ? mMarginSubsection : mMargin);
 
         // Cancel any previous thumbnail request for the previously displayed item.
         ThumbnailProvider thumbnailProvider = provider.getThumbnailProvider();
