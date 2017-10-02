@@ -11,6 +11,7 @@
 
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
 class Event;
@@ -65,6 +66,17 @@ class VrTestContext : public vr::ContentInputDelegate,
   gfx::Size window_size_;
 
   std::unique_ptr<ControllerInfo> controller_info_;
+
+  gfx::Transform head_pose_;
+  float head_angle_x_degrees_ = 0;
+  float head_angle_y_degrees_ = 0;
+  int last_drag_x_pixels_ = 0;
+  int last_drag_y_pixels_ = 0;
+
+  float view_scale_factor_ = 1.f;
+
+  bool fullscreen_ = false;
+  bool incognito_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VrTestContext);
 };
