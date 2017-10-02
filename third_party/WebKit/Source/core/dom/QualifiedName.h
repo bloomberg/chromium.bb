@@ -66,16 +66,16 @@ class CORE_EXPORT QualifiedName {
 
     unsigned ComputeHash() const;
 
-    void Ref() {
+    void AddRef() {
       if (is_static_)
         return;
-      RefCounted<QualifiedNameImpl>::Ref();
+      RefCounted<QualifiedNameImpl>::AddRef();
     }
 
-    void Deref() {
+    void Release() {
       if (is_static_)
         return;
-      RefCounted<QualifiedNameImpl>::Deref();
+      RefCounted<QualifiedNameImpl>::Release();
     }
 
     // We rely on StringHasher's hashMemory clearing out the top 8 bits when

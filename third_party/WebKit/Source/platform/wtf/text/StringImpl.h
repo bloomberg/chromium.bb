@@ -259,14 +259,14 @@ class WTF_EXPORT StringImpl {
     return ref_count_ == 1;
   }
 
-  ALWAYS_INLINE void Ref() const {
+  ALWAYS_INLINE void AddRef() const {
 #if DCHECK_IS_ON()
     DCHECK(IsStatic() || verifier_.OnRef(ref_count_)) << AsciiForDebugging();
 #endif
     ++ref_count_;
   }
 
-  ALWAYS_INLINE void Deref() const {
+  ALWAYS_INLINE void Release() const {
 #if DCHECK_IS_ON()
     DCHECK(IsStatic() || verifier_.OnDeref(ref_count_))
         << AsciiForDebugging() << " " << CurrentThread();

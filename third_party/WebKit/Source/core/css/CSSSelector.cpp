@@ -60,7 +60,7 @@ void CSSSelector::CreateRareData() {
     return;
   AtomicString value(data_.value_);
   if (data_.value_)
-    data_.value_->Deref();
+    data_.value_->Release();
   data_.rare_data_ = RareData::Create(value).LeakRef();
   has_rare_data_ = true;
 }

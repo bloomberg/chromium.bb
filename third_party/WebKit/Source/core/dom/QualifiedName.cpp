@@ -83,7 +83,7 @@ QualifiedName::QualifiedName(const AtomicString& p,
           data);
   impl_ = *add_result.stored_value;
   if (add_result.is_new_entry)
-    impl_->Deref();
+    impl_->Release();
 }
 
 QualifiedName::QualifiedName(const AtomicString& p,
@@ -96,7 +96,7 @@ QualifiedName::QualifiedName(const AtomicString& p,
           data);
   impl_ = *add_result.stored_value;
   if (add_result.is_new_entry)
-    impl_->Deref();
+    impl_->Release();
 }
 
 QualifiedName::~QualifiedName() {}

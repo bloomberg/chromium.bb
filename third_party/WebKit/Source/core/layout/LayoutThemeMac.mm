@@ -1052,7 +1052,7 @@ LayoutTheme& LayoutTheme::NativeTheme() {
 }
 
 RefPtr<LayoutTheme> LayoutThemeMac::Create() {
-  return AdoptRef(new LayoutThemeMac);
+  return WTF::AdoptRef(new LayoutThemeMac);
 }
 
 bool LayoutThemeMac::UsesTestModeFocusRingColor() const {

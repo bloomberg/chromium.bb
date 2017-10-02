@@ -50,14 +50,14 @@ template <typename T>
 ALWAYS_INLINE void RefIfNotNull(T* ptr) {
   if (LIKELY(ptr != 0)) {
     RequireAdoption(ptr);
-    ptr->Ref();
+    ptr->AddRef();
   }
 }
 
 template <typename T>
 ALWAYS_INLINE void DerefIfNotNull(T* ptr) {
   if (LIKELY(ptr != 0))
-    ptr->Deref();
+    ptr->Release();
 }
 
 inline void Adopted(const void*) {}

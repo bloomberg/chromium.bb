@@ -364,8 +364,8 @@ TEST(DequeTest, SwapWithOrWithoutInlineCapacity) {
 
 class LivenessCounter {
  public:
-  void Ref() { live_++; }
-  void Deref() { live_--; }
+  void AddRef() const { live_++; }
+  void Release() const { live_--; }
 
   static unsigned live_;
 };

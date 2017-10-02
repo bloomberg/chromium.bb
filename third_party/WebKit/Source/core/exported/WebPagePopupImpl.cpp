@@ -522,7 +522,7 @@ void WebPagePopupImpl::Close() {
   if (page_)
     Cancel();
   widget_client_ = nullptr;
-  Deref();
+  Release();
 }
 
 void WebPagePopupImpl::ClosePopup() {

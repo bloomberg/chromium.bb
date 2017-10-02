@@ -173,7 +173,6 @@ class CORE_EXPORT InvalidationSet
   }
 
  private:
-  friend class WTF::RefCounted<InvalidationSet, InvalidationSetDeleter>;
   friend struct InvalidationSetDeleter;
   void Destroy() const;
 

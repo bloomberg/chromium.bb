@@ -919,7 +919,7 @@ class RefCountedAndGarbageCollected
 
   ~RefCountedAndGarbageCollected() { ++destructor_calls_; }
 
-  void Ref() {
+  void AddRef() {
     if (UNLIKELY(!ref_count_)) {
 #if DCHECK_IS_ON()
       DCHECK(ThreadState::Current()->FindPageFromAddress(
@@ -930,7 +930,7 @@ class RefCountedAndGarbageCollected
     ++ref_count_;
   }
 
-  void Deref() {
+  void Release() {
     DCHECK_GT(ref_count_, 0);
     if (!--ref_count_)
       keep_alive_.Clear();

@@ -1610,7 +1610,7 @@ void WebViewImpl::Close() {
   // deleted.
   client_ = nullptr;
 
-  Deref();  // Balances ref() acquired in WebView::create
+  Release();  // Balances a reference acquired in WebView::Create
 }
 
 WebSize WebViewImpl::Size() {

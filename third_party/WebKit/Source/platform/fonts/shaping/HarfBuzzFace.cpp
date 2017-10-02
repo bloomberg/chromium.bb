@@ -81,7 +81,7 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
     HbFaceUniquePtr face(CreateFace());
     result.stored_value->value = CreateHbFontCacheEntry(face.get());
   }
-  result.stored_value->value->Ref();
+  result.stored_value->value->AddRef();
   unscaled_font_ = result.stored_value->value->HbFont();
   harf_buzz_font_data_ = result.stored_value->value->HbFontData();
 }
@@ -91,7 +91,7 @@ HarfBuzzFace::~HarfBuzzFace() {
       FontGlobalContext::GetHarfBuzzFontCache().find(unique_id_);
   SECURITY_DCHECK(result != FontGlobalContext::GetHarfBuzzFontCache().end());
   DCHECK(!result.Get()->value->HasOneRef());
-  result.Get()->value->Deref();
+  result.Get()->value->Release();
   if (result.Get()->value->HasOneRef())
     FontGlobalContext::GetHarfBuzzFontCache().erase(unique_id_);
 }
