@@ -82,9 +82,100 @@ def extract_certificates_from_pem(pem_bytes):
   return certificates_der
 
 
+def decode_netlog_hexdump(netlog_text):
+  lines = netlog_text.splitlines()
+
+  # Skip the text preceeding the actual hexdump.
+  while lines and 'hex_encoded_bytes' not in lines[0]:
+    del lines[0]
+  if not lines:
+    return None
+  del lines[0]
+
+  bytes = []
+  hex_re = re.compile('\s*([0-9A-Fa-f ]{48})')
+  for line in lines:
+    m = hex_re.search(line)
+    if not m:
+      break
+    hex_string = m.group(1)
+    bytes.extend(chr(int(part, 16)) for part in hex_string.split())
+
+  return ''.join(bytes)
+
+
+class ByteReader:
+  """Iteratively consume data from a byte string.
+
+  Automatically tracks and advances current position in the string as data is
+  consumed, and will throw an exception if attempting to read past the end of
+  the string.
+  """
+  def __init__(self, data):
+    self.data = data
+    self.pos = 0
+
+  def consume_byte(self):
+    i = ord(self.data[self.pos])
+    self.pos += 1
+    return i
+
+  def consume_int24(self):
+    return ((self.consume_byte() << 16) + (self.consume_byte() << 8) +
+            self.consume_byte())
+
+  def consume_bytes(self, n):
+    b = self.data[self.pos:self.pos+n]
+    if len(b) != n:
+      raise IndexError('requested:%d bytes  actual:%d bytes'%(n, len(b)))
+    self.pos += n
+    return b
+
+  def remaining_byte_count(self):
+    return len(self.data) - self.pos
+
+
+def decode_tls_certificate_message(certificate_message):
+  reader = ByteReader(certificate_message)
+  if reader.consume_byte() != 11:
+    sys.stderr.write('HandshakeType != 11. Not a Certificate Message.\n')
+    return []
+
+  message_length = reader.consume_int24()
+  if reader.remaining_byte_count() != message_length:
+    sys.stderr.write(
+        'message_length(%d) != remaining_byte_count(%d)\n' % (
+            message_length, reader.remaining_byte_count()))
+    return []
+
+  certificate_list_length = reader.consume_int24()
+  if reader.remaining_byte_count() != certificate_list_length:
+    sys.stderr.write(
+        'certificate_list_length(%d) != remaining_byte_count(%d)\n' % (
+            certificate_list_length, reader.remaining_byte_count()))
+    return []
+
+  certificates_der = []
+  while reader.remaining_byte_count():
+    cert_len = reader.consume_int24()
+    certificates_der.append(reader.consume_bytes(cert_len))
+
+  return certificates_der
+
+
+def extract_tls_certificate_message(netlog_text):
+  raw_certificate_message = decode_netlog_hexdump(netlog_text)
+  if not raw_certificate_message:
+    return []
+  return decode_tls_certificate_message(raw_certificate_message)
+
+
 def extract_certificates(source_bytes):
   if "BEGIN CERTIFICATE" in source_bytes:
     return extract_certificates_from_pem(source_bytes)
+
+  if "SSL_HANDSHAKE_MESSAGE_RECEIVED" in source_bytes:
+    return extract_tls_certificate_message(source_bytes)
 
   # Otherwise assume it is the DER for a single certificate
   return [source_bytes]
@@ -187,7 +278,9 @@ def main():
                       help='''Each SOURCE can be one of:
   (1) A server name such as www.google.com.
   (2) A PEM [*] file containing one or more CERTIFICATE blocks
-  (3) A binary file containing DER-encoded certificate
+  (3) A text NetLog dump of a TLS certificate message
+      (must include the SSL_HANDSHAKE_MESSAGE_RECEIVED line)
+  (4) A binary file containing DER-encoded certificate
 
 When multiple SOURCEs are listed, all certificates in them
 are concatenated. If no SOURCE is given then data will be
