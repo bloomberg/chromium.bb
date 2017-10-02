@@ -14,11 +14,11 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Point;
 class Rect;
-class Size;
 class Vector2d;
 }  // namespace gfx
 
@@ -130,8 +130,9 @@ class ScopedTextureBinder : ScopedBinder<Target> {
   }
 };
 
-class ReadbackYUVInterface;
 class GLHelperReadbackSupport;
+class I420Converter;
+class ReadbackYUVInterface;
 
 // Provides higher level operations on top of the gpu::gles2::GLES2Interface
 // interfaces.
@@ -313,6 +314,12 @@ class VIZ_COMMON_EXPORT GLHelper {
     virtual bool IsSameScaleRatio(const gfx::Vector2d& from,
                                   const gfx::Vector2d& to) const = 0;
 
+    // Returns the format to use when calling glReadPixels() to read-back the
+    // output texture(s). This indicates whether the 0th and 2nd bytes in each
+    // RGBA quad have been swapped. If no swapping has occurred, this will
+    // return GL_RGBA. Otherwise, it will return GL_BGRA_EXT.
+    virtual GLenum GetReadbackFormat() const = 0;
+
    protected:
     ScalerInterface() {}
 
@@ -331,6 +338,35 @@ class VIZ_COMMON_EXPORT GLHelper {
                                                 bool vertically_flip_texture,
                                                 bool swizzle);
 
+  // Create a pipeline that will (optionally) scale a source texture, and then
+  // convert it to I420 (YUV) planar form, delivering results in three separate
+  // output textures (one for each plane; see I420Converter::Convert()).
+  //
+  // Due to limitations in the OpenGL ES 2.0 API, the output textures will have
+  // a format of GL_RGBA. However, each RGBA "pixel" in these textures actually
+  // carries 4 consecutive pixels for the single-color-channel result plane.
+  // Therefore, when using the OpenGL APIs to read-back the image into system
+  // memory, note that a width 1/4 the actual |output_rect.width()| must be
+  // used.
+  //
+  // If |swizzle| is true, the 0th and 2nd elements in each RGBA quad will be
+  // swapped. This is beneficial for optimizing read-back into system memory.
+  //
+  // If |use_mrt| is true, the pipeline will try to optimize the YUV conversion
+  // using the multi-render-target extension, if the platform is capable.
+  // |use_mrt| should only be set to false for testing.
+  //
+  // The benefit of using this pipeline is seen when these output textures are
+  // read back from GPU to CPU memory: The I420 format reduces the amount of
+  // data read back by a factor of ~2.6 (32bpp → 12bpp) which can greatly
+  // improve performance, for things like video screen capture, on platforms
+  // with slow GPU read-back performance.
+  //
+  // WARNING: The returned I420Converter instance assumes both this GLHelper and
+  // its GLES2Interface/ContextSupport will outlive it!
+  std::unique_ptr<I420Converter>
+  CreateI420Converter(bool vertically_flip_texture, bool swizzle, bool use_mrt);
+
   // Create a readback pipeline that will (optionally) scale a source texture,
   // then convert it to YUV420 planar form, and finally read back that. This
   // reduces the amount of memory read from GPU to CPU memory by a factor of 2.6
@@ -343,6 +379,9 @@ class VIZ_COMMON_EXPORT GLHelper {
   //
   // WARNING: The returned ReadbackYUVInterface instance assumes both this
   // GLHelper and its GLES2Interface/ContextSupport will outlive it!
+  //
+  // TODO(crbug/754872): DEPRECATED. This will be removed soon, in favor of
+  // CreateI420Converter().
   std::unique_ptr<ReadbackYUVInterface> CreateReadbackPipelineYUV(
       bool vertically_flip_texture,
       bool use_mrt);
@@ -381,10 +420,57 @@ class VIZ_COMMON_EXPORT GLHelper {
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };
 
+// Splits an RGBA source texture's image into separate Y, U, and V planes. The U
+// and V planes are half-width and half-height, according to the I420 standard.
+class I420Converter {
+ public:
+  I420Converter();
+  virtual ~I420Converter();
+
+  // Transforms a RGBA |src_texture| into three textures, each containing bytes
+  // in I420 planar form. See the GLHelper::ScalerInterface::Scale() method
+  // comments for the meaning/semantics of |src_texture_size| and |output_rect|.
+  // If |optional_scaler| is not null, it will first be used to scale the source
+  // texture into an intermediate texture before generating the Y+U+V planes.
+  //
+  // See notes for CreateI420Converter() regarding the semantics of the output
+  // textures.
+  virtual void Convert(GLuint src_texture,
+                       const gfx::Size& src_texture_size,
+                       GLHelper::ScalerInterface* optional_scaler,
+                       const gfx::Rect& output_rect,
+                       GLuint y_plane_texture,
+                       GLuint u_plane_texture,
+                       GLuint v_plane_texture) = 0;
+
+  // Returns the format to use when calling glReadPixels() to read-back the
+  // output textures. This indicates whether the 0th and 2nd bytes in each RGBA
+  // quad have been swapped. If no swapping has occurred, this will return
+  // GL_RGBA. Otherwise, it will return GL_BGRA_EXT.
+  virtual GLenum GetReadbackFormat() const = 0;
+
+  // Returns the texture size of the Y plane texture, based on the size of the
+  // |output_rect| that was given to Convert(). This will have a width of
+  // CEIL(output_rect_size.width() / 4), and the same height.
+  static gfx::Size GetYPlaneTextureSize(const gfx::Size& output_rect_size);
+
+  // Like GetYPlaneTextureSize(), except the returned size will have a width of
+  // CEIL(output_rect_size.width() / 8), and a height of
+  // CEIL(output_rect_size.height() / 2); because the chroma planes are half-
+  // length in both dimensions in the I420 format.
+  static gfx::Size GetChromaPlaneTextureSize(const gfx::Size& output_rect_size);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(I420Converter);
+};
+
 // Similar to a ScalerInterface, a YUV readback pipeline will cache a scaler and
 // all intermediate textures and frame buffers needed to scale, crop, letterbox
 // and read back a texture from the GPU into CPU-accessible RAM. A single
 // readback pipeline can handle multiple outstanding readbacks at the same time.
+//
+// TODO(crbug/754872): DEPRECATED. This will be removed soon, in favor of
+// I420Converter and readback implementation in GLRendererCopier.
 class ReadbackYUVInterface {
  public:
   ReadbackYUVInterface() {}
