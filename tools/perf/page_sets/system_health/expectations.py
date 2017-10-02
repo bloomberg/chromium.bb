@@ -12,10 +12,6 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
     self.DisableStory('browse:search:google',
                       [expectations.ALL_WIN],
                       'win:crbug.com/673775, mac:crbug.com/756027')
-    self.DisableStory('browse:tools:maps', [expectations.ALL],
-                      'crbug.com/712694')
-    self.DisableStory('browse:tools:earth', [expectations.ALL],
-                      'crbug.com/708590')
     self.DisableStory('play:media:google_play_music', [expectations.ALL],
                       'crbug.com/649392')
     self.DisableStory('play:media:soundcloud', [expectations.ALL_WIN],
@@ -37,10 +33,6 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
                       'crbug.com/676336')
     self.DisableStory('browse:search:google', [expectations.ALL_WIN],
                       'crbug.com/673775')
-    self.DisableStory('browse:tools:maps', [expectations.ALL],
-                      'crbug.com/712694')
-    self.DisableStory('browse:tools:earth', [expectations.ALL],
-                      'crbug.com/708590')
     self.DisableStory('load:games:miniclip', [expectations.ALL_MAC],
                       'crbug.com/664661')
     self.DisableStory('play:media:google_play_music', [expectations.ALL],
@@ -127,10 +119,6 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
                       'crbug.com/759777')
     self.DisableStory('browse:news:cnn', [expectations.ALL_DESKTOP],
                       'mac:crbug.com/728576, all:crbug.com/759777')
-    self.DisableStory('browse:tools:earth', [expectations.ALL_DESKTOP],
-                      'crbug.com/708590')
-    self.DisableStory('browse:tools:maps', [expectations.ALL_DESKTOP],
-                      'crbug.com/712694')
 
 
 # Should only include browse:*:* stories.
