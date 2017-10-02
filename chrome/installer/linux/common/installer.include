@@ -169,8 +169,12 @@ stage_install_common() {
   # the code looks for. Originally, the SCons build system may have had a bug
   # where it did not support hyphens, so this is stuck as is to avoid breaking
   # anyone who expects the build artifact to have the underscore.
-  install -m 4755 -s "${BUILDDIR}/${PROGNAME}_sandbox" \
-    "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}-sandbox"
+  # the code looks for, but the build targets can't use hyphens (scons bug?)
+  buildfile="${BUILDDIR}/${PROGNAME}_sandbox"
+  strippedfile="${buildfile}.stripped"
+  debugfile="${buildfile}.debug"
+  "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
+  install -m 4755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}-sandbox"
 
   # l10n paks
   install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/locales/"

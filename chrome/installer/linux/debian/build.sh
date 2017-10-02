@@ -275,6 +275,9 @@ case "$TARGETARCH" in
   x64 )
     export ARCHITECTURE="amd64"
     ;;
+  mipsel )
+    export ARCHITECTURE="mipsel"
+    ;;
   * )
     echo
     echo "ERROR: Don't know how to build DEBs for '$TARGETARCH'."

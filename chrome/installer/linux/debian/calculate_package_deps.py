@@ -41,6 +41,9 @@ elif arch == 'x86':
 elif arch == 'arm':
   cmd.extend(['-l%s/usr/lib/arm-linux-gnueabihf' % sysroot,
               '-l%s/lib/arm-linux-gnueabihf' % sysroot])
+elif arch == 'mipsel':
+  cmd.extend(['-l%s/usr/lib/mipsel-linux-gnu' % sysroot,
+              '-l%s/lib/mipsel-linux-gnu' % sysroot])
 else:
   print 'Unsupported architecture ' + arch
   sys.exit(1)
