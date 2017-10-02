@@ -29,7 +29,7 @@ class ASH_EXPORT TrayInfoLabel : public ActionableView {
   // |delegate| may be null, which results in a TrayInfoLabel which cannot be
   // clicked.
   TrayInfoLabel(Delegate* delegate, int message_id);
-  ~TrayInfoLabel() override{};
+  ~TrayInfoLabel() override;
 
   // Updates the TrayInfoLabel to display the message associated with
   // |message_id|. This may update text styling if the delegate indicates that
