@@ -62,11 +62,11 @@ class ConnectionToClient {
                                        std::unique_ptr<MessagePipe> pipe) = 0;
 
    protected:
-    virtual ~EventHandler() {}
+    virtual ~EventHandler() = default;
   };
 
-  ConnectionToClient() {}
-  virtual ~ConnectionToClient() {}
+  ConnectionToClient() = default;
+  virtual ~ConnectionToClient() = default;
 
   // Set |event_handler| for connection events. Must be called once when this
   // object is created.
@@ -99,6 +99,10 @@ class ConnectionToClient {
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub) = 0;
   virtual void set_host_stub(HostStub* host_stub) = 0;
   virtual void set_input_stub(InputStub* input_stub) = 0;
+
+  // Set the preferred video codec for the connection. Implementations can
+  // ignore this function if no extra codec can be chosen from.
+  virtual void SetPreferredVideoCodec(const std::string& codec) {}
 };
 
 }  // namespace protocol

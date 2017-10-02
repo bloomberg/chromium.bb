@@ -50,6 +50,7 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_host_stub(HostStub* host_stub) override;
   void set_input_stub(InputStub* input_stub) override;
+  void SetPreferredVideoCodec(const std::string& codec) override;
 
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;

@@ -84,6 +84,8 @@ class WebrtcTransport : public Transport {
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
   void Close(ErrorCode error);
 
+  void SetPreferredVideoCodec(const std::string& codec);
+
  private:
   // PeerConnectionWrapper is responsible for PeerConnection creation,
   // ownership. It passes all events to the corresponding methods below. This is
@@ -143,6 +145,8 @@ class WebrtcTransport : public Transport {
 
   std::vector<std::unique_ptr<webrtc::IceCandidateInterface>>
       pending_incoming_candidates_;
+
+  std::string preferred_video_codec_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 

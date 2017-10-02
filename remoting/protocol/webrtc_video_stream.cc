@@ -250,12 +250,15 @@ void WebrtcVideoStream::OnFrameEncoded(
 void WebrtcVideoStream::OnEncoderCreated(webrtc::VideoCodecType codec_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (codec_type == webrtc::kVideoCodecVP8) {
+    LOG(ERROR) << "Using VP8 video codec.";
     encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
         WebrtcVideoEncoderVpx::CreateForVP8(), encode_task_runner_);
   } else if (codec_type == webrtc::kVideoCodecVP9) {
+    LOG(ERROR) << "Using VP9 video codec.";
     encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
         WebrtcVideoEncoderVpx::CreateForVP9(), encode_task_runner_);
   } else if (codec_type == webrtc::kVideoCodecH264) {
+    LOG(ERROR) << "Using H264 video codec.";
     // TODO(gusss): Whenever the H264 encoder is ready, this is how it will be
     // initialized.
     // encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
