@@ -39,8 +39,8 @@
 
 namespace blink {
 
+class DedicatedWorkerObjectProxy;
 class DedicatedWorkerThread;
-class InProcessWorkerObjectProxy;
 class ScriptState;
 struct GlobalScopeCreationParams;
 
@@ -81,7 +81,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                              std::unique_ptr<SecurityOrigin::PrivilegeData>,
                              WorkerClients*);
 
-  InProcessWorkerObjectProxy& WorkerObjectProxy() const;
+  DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 };
 
 }  // namespace blink

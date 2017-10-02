@@ -17,13 +17,14 @@
 
 namespace blink {
 
+class DedicatedWorkerObjectProxy;
 class InProcessWorkerBase;
-class InProcessWorkerObjectProxy;
 class SerializedScriptValue;
 class WorkerClients;
 
-// TODO(nhiroki): Add the class-level comment once
-// InProcessWorker->DedicatedWorker move is done (https://crbug.com/688116).
+// A proxy class to talk to the DedicatedWorkerGlobalScope on a worker thread
+// via the DedicatedWorkerMessagingProxy from the main thread. See class
+// comments on ThreadedMessagingProxyBase for the lifetime and thread affinity.
 class CORE_EXPORT DedicatedWorkerMessagingProxy
     : public ThreadedMessagingProxyBase {
   WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
@@ -48,14 +49,14 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   bool HasPendingActivity() const;
 
   // These methods come from worker context thread via
-  // InProcessWorkerObjectProxy and are called on the parent context thread.
+  // DedicatedWorkerObjectProxy and are called on the parent context thread.
   void PostMessageToWorkerObject(RefPtr<SerializedScriptValue>,
                                  Vector<MessagePortChannel>);
   void DispatchErrorEvent(const String& error_message,
                           std::unique_ptr<SourceLocation>,
                           int exception_id);
 
-  InProcessWorkerObjectProxy& WorkerObjectProxy() {
+  DedicatedWorkerObjectProxy& WorkerObjectProxy() {
     return *worker_object_proxy_.get();
   }
 
@@ -69,7 +70,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
   std::unique_ptr<WorkerThread> CreateWorkerThread() override;
 
-  std::unique_ptr<InProcessWorkerObjectProxy> worker_object_proxy_;
+  std::unique_ptr<DedicatedWorkerObjectProxy> worker_object_proxy_;
 
   // This must be weak. The base class (i.e., ThreadedMessagingProxyBase) has a
   // strong persistent reference to itself via SelfKeepAlive (see class-level

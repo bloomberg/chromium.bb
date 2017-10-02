@@ -33,8 +33,8 @@
 
 #include <memory>
 #include "core/workers/DedicatedWorkerGlobalScope.h"
+#include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -42,14 +42,14 @@ namespace blink {
 
 std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::Create(
     ThreadableLoadingContext* loading_context,
-    InProcessWorkerObjectProxy& worker_object_proxy) {
+    DedicatedWorkerObjectProxy& worker_object_proxy) {
   return WTF::WrapUnique(
       new DedicatedWorkerThread(loading_context, worker_object_proxy));
 }
 
 DedicatedWorkerThread::DedicatedWorkerThread(
     ThreadableLoadingContext* loading_context,
-    InProcessWorkerObjectProxy& worker_object_proxy)
+    DedicatedWorkerObjectProxy& worker_object_proxy)
     : WorkerThread(loading_context, worker_object_proxy),
       worker_backing_thread_(
           WorkerBackingThread::Create("DedicatedWorker Thread")),

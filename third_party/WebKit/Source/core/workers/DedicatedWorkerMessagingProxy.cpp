@@ -12,10 +12,10 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/InProcessWorkerBase.h"
-#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "platform/CrossThreadFunctional.h"
@@ -36,7 +36,7 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     : ThreadedMessagingProxyBase(execution_context, worker_clients),
       worker_object_(worker_object) {
   worker_object_proxy_ =
-      InProcessWorkerObjectProxy::Create(this, GetParentFrameTaskRunners());
+      DedicatedWorkerObjectProxy::Create(this, GetParentFrameTaskRunners());
 }
 
 DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;
@@ -86,7 +86,7 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
 
   if (GetWorkerThread()) {
     WTF::CrossThreadClosure task = CrossThreadBind(
-        &InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject,
+        &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
         CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
         WTF::Passed(std::move(channels)),
         CrossThreadUnretained(GetWorkerThread()));
@@ -104,7 +104,7 @@ void DedicatedWorkerMessagingProxy::WorkerThreadCreated() {
 
   for (auto& queued_task : queued_early_tasks_) {
     WTF::CrossThreadClosure task = CrossThreadBind(
-        &InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject,
+        &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
         CrossThreadUnretained(&WorkerObjectProxy()),
         std::move(queued_task.message),
         WTF::Passed(std::move(queued_task.channels)),
@@ -158,7 +158,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetWorkerThread())
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
-                     &InProcessWorkerObjectProxy::ProcessUnhandledException,
+                     &DedicatedWorkerObjectProxy::ProcessUnhandledException,
                      CrossThreadUnretained(worker_object_proxy_.get()),
                      exception_id, CrossThreadUnretained(GetWorkerThread())));
 }
