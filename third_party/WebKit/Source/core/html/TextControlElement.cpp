@@ -46,6 +46,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutBlock.h"
@@ -159,8 +160,8 @@ bool TextControlElement::IsPlaceholderEmpty() const {
 }
 
 bool TextControlElement::PlaceholderShouldBeVisible() const {
-  return SupportsPlaceholder() && IsEmptyValue() && IsEmptySuggestedValue() &&
-         !IsPlaceholderEmpty();
+  return SupportsPlaceholder() && InnerEditorValue().IsEmpty() &&
+         (!IsPlaceholderEmpty() || !IsEmptySuggestedValue());
 }
 
 HTMLElement* TextControlElement::PlaceholderElement() const {
@@ -969,6 +970,28 @@ String TextControlElement::DirectionForFormData() const {
   }
 
   return "ltr";
+}
+
+void TextControlElement::SetSuggestedValue(const String& value) {
+  suggested_value_ = value;
+  if (!suggested_value_.IsEmpty() && !InnerEditorValue().IsEmpty()) {
+    // Save the value that is in the editor and set the editor value to an empty
+    // string. This will allow the suggestion placeholder to be shown to the
+    // user.
+    value_before_set_suggested_value_ = InnerEditorValue();
+    SetInnerEditorValue("");
+  } else if (suggested_value_.IsEmpty() &&
+             !value_before_set_suggested_value_.IsEmpty()) {
+    // Reset the value that was in the editor before showing the suggestion.
+    SetInnerEditorValue(value_before_set_suggested_value_);
+    value_before_set_suggested_value_ = "";
+  }
+
+  UpdatePlaceholderText();
+}
+
+const String& TextControlElement::SuggestedValue() const {
+  return suggested_value_;
 }
 
 HTMLElement* TextControlElement::InnerEditorElement() const {
