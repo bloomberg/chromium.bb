@@ -84,6 +84,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.verifycdmhosttest";
   static const char kExternalClearKeyStorageIdTestKeySystem[] =
       "org.chromium.externalclearkey.storageidtest";
+  static const char kExternalClearKeyDifferentGuidTestKeySystem[] =
+      "org.chromium.externalclearkey.differentguid";
 
   std::vector<base::string16> additional_param_names;
   std::vector<base::string16> additional_param_values;
@@ -133,6 +135,10 @@ static void AddExternalClearKey(
   // A key system that fetches the Storage ID in ClearKeyCdm.
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
       kExternalClearKeyStorageIdTestKeySystem));
+
+  // A key system that is registered with a different CDM GUID.
+  concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
+      kExternalClearKeyDifferentGuidTestKeySystem));
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

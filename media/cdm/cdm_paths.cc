@@ -25,9 +25,9 @@ const char kClearKeyCdmAdapterFileName[] =
 #endif
 
 const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
-
 const char kClearKeyCdmType[] = "Clear Key CDM";
-
+const char kClearKeyCdmGuid[] = "C1A6B4E3-FE48-4D53-9F52-244AEEAD5335";
+const char kClearKeyCdmDifferentGuid[] = "747C565D-34EE-4B0D-AC1E-4F9FB17DDB40";
 const char kClearKeyCdmPepperMimeType[] = "application/x-ppapi-clearkey-cdm";
 
 // Note: This file must be in sync with cdm_paths.gni.
