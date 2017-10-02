@@ -5,6 +5,7 @@
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
 #include "core/dom/DOMException.h"
+#include "modules/EventTargetModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -14,12 +15,18 @@ namespace blink {
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     String id,
+    unsigned long long upload_total,
+    unsigned long long uploaded,
+    unsigned long long download_total,
+    unsigned long long downloaded,
     HeapVector<IconDefinition> icons,
-    long long total_download_size,
     String title)
     : id_(id),
+      upload_total_(upload_total),
+      uploaded_(uploaded),
+      download_total_(download_total),
+      downloaded_(downloaded),
       icons_(icons),
-      total_download_size_(total_download_size),
       title_(title) {}
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
@@ -34,16 +41,37 @@ String BackgroundFetchRegistration::id() const {
   return id_;
 }
 
+unsigned long long BackgroundFetchRegistration::uploadTotal() const {
+  return upload_total_;
+}
+
+unsigned long long BackgroundFetchRegistration::uploaded() const {
+  return uploaded_;
+}
+
+unsigned long long BackgroundFetchRegistration::downloadTotal() const {
+  return download_total_;
+}
+
+unsigned long long BackgroundFetchRegistration::downloaded() const {
+  return downloaded_;
+}
+
 HeapVector<IconDefinition> BackgroundFetchRegistration::icons() const {
   return icons_;
 }
 
-long long BackgroundFetchRegistration::totalDownloadSize() const {
-  return total_download_size_;
-}
-
 String BackgroundFetchRegistration::title() const {
   return title_;
+}
+
+const AtomicString& BackgroundFetchRegistration::InterfaceName() const {
+  return EventTargetNames::BackgroundFetchRegistration;
+}
+
+ExecutionContext* BackgroundFetchRegistration::GetExecutionContext() const {
+  DCHECK(registration_);
+  return registration_->GetExecutionContext();
 }
 
 ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
@@ -84,6 +112,7 @@ void BackgroundFetchRegistration::DidAbort(
 DEFINE_TRACE(BackgroundFetchRegistration) {
   visitor->Trace(registration_);
   visitor->Trace(icons_);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 }  // namespace blink

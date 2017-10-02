@@ -568,7 +568,7 @@ void BackgroundFetchDataManager::GetRegistration(
   registration.id = iter->first.id();
   registration.icons = options.icons;
   registration.title = options.title;
-  registration.total_download_size = options.total_download_size;
+  registration.download_total = options.download_total;
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
                           registration);

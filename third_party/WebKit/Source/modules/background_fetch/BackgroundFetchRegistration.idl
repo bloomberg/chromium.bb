@@ -7,12 +7,20 @@
 [
     Exposed=(Window,Worker),
     RuntimeEnabled=BackgroundFetch
-] interface BackgroundFetchRegistration {
+] interface BackgroundFetchRegistration : EventTarget {
     readonly attribute DOMString id;
-    readonly attribute FrozenArray<IconDefinition> icons;
-    readonly attribute long totalDownloadSize;
-    readonly attribute DOMString title;
+    readonly attribute unsigned long long uploadTotal;
+    readonly attribute unsigned long long uploaded;
+    readonly attribute unsigned long long downloadTotal;
+    readonly attribute unsigned long long downloaded;
     // TODO(crbug.com/699957): Implement the `activeFetches` attribute.
 
+    attribute EventHandler onprogress;
+
     [CallWith=ScriptState] Promise<bool> abort();
+
+    // TODO(crbug.com/769770): Remove the following deprecated attributes.
+    readonly attribute FrozenArray<IconDefinition> icons;
+    [ImplementedAs=downloadTotal] readonly attribute long totalDownloadSize;
+    readonly attribute DOMString title;
 };

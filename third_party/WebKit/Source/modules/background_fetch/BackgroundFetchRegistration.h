@@ -6,6 +6,7 @@
 #define BackgroundFetchRegistration_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
@@ -21,15 +22,16 @@ class ServiceWorkerRegistration;
 
 // Represents an individual Background Fetch registration. Gives developers
 // access to its properties, options, and enables them to abort the fetch.
-class BackgroundFetchRegistration final
-    : public GarbageCollectedFinalized<BackgroundFetchRegistration>,
-      public ScriptWrappable {
+class BackgroundFetchRegistration final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   BackgroundFetchRegistration(String id,
+                              unsigned long long upload_total,
+                              unsigned long long uploaded,
+                              unsigned long long download_total,
+                              unsigned long long downloaded,
                               HeapVector<IconDefinition> icons,
-                              long long total_download_size,
                               String title);
   ~BackgroundFetchRegistration();
 
@@ -38,13 +40,24 @@ class BackgroundFetchRegistration final
   void SetServiceWorkerRegistration(ServiceWorkerRegistration*);
 
   String id() const;
-  HeapVector<IconDefinition> icons() const;
-  long long totalDownloadSize() const;
-  String title() const;
+  unsigned long long uploadTotal() const;
+  unsigned long long uploaded() const;
+  unsigned long long downloadTotal() const;
+  unsigned long long downloaded() const;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
 
   ScriptPromise abort(ScriptState*);
 
-  DECLARE_TRACE();
+  // TODO(crbug.com/769770): Remove the following deprecated attributes.
+  HeapVector<IconDefinition> icons() const;
+  String title() const;
+
+  // EventTargetWithInlineData implementation.
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+
+  DECLARE_VIRTUAL_TRACE();
 
  private:
   void DidAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
@@ -52,8 +65,11 @@ class BackgroundFetchRegistration final
   Member<ServiceWorkerRegistration> registration_;
 
   String id_;
+  unsigned long long upload_total_;
+  unsigned long long uploaded_;
+  unsigned long long download_total_;
+  unsigned long long downloaded_;
   HeapVector<IconDefinition> icons_;
-  long long total_download_size_;
   String title_;
 };
 

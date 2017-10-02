@@ -7,5 +7,6 @@
 dictionary BackgroundFetchOptions {
     sequence<IconDefinition> icons = [];
     DOMString title = "";
-    long totalDownloadSize = 0;
+    [ImplementedAs=downloadTotal] unsigned long long totalDownloadSize = 0;
+    unsigned long long downloadTotal = 0;
 };

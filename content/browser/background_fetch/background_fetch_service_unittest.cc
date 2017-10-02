@@ -243,7 +243,7 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
   options.icons.push_back(CreateIcon("funny_cat.png", "256x256", "image/png"));
   options.icons.push_back(CreateIcon("silly_cat.gif", "512x512", "image/gif"));
   options.title = "My Background Fetch!";
-  options.total_download_size = 9001;
+  options.download_total = 9001;
 
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistration registration;
@@ -262,7 +262,7 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
   }
 
   EXPECT_EQ(registration.title, options.title);
-  EXPECT_EQ(registration.total_download_size, options.total_download_size);
+  EXPECT_EQ(registration.download_total, options.download_total);
 
   blink::mojom::BackgroundFetchError second_error;
   BackgroundFetchRegistration second_registration;
@@ -281,8 +281,7 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
   }
 
   EXPECT_EQ(second_registration.title, options.title);
-  EXPECT_EQ(second_registration.total_download_size,
-            options.total_download_size);
+  EXPECT_EQ(second_registration.download_total, options.download_total);
 }
 
 TEST_F(BackgroundFetchServiceTest, FetchDuplicatedRegistrationFailure) {

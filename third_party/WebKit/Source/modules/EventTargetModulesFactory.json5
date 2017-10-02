@@ -5,6 +5,7 @@
   },
 
   data: [
+    "modules/background_fetch/BackgroundFetchRegistration",
     "modules/battery/BatteryManager",
     "modules/bluetooth/BluetoothDevice",
     "modules/bluetooth/BluetoothRemoteGATTCharacteristic",

@@ -15,14 +15,20 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method fetch
 [Worker]     method get
 [Worker]     method getIds
-[Worker] interface BackgroundFetchRegistration
+[Worker] interface BackgroundFetchRegistration : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter downloadTotal
+[Worker]     getter downloaded
 [Worker]     getter icons
 [Worker]     getter id
+[Worker]     getter onprogress
 [Worker]     getter title
 [Worker]     getter totalDownloadSize
+[Worker]     getter uploadTotal
+[Worker]     getter uploaded
 [Worker]     method abort
 [Worker]     method constructor
+[Worker]     setter onprogress
 [Worker] interface BarcodeDetector
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

@@ -29,7 +29,7 @@ struct IconDefinition {
 // https://wicg.github.io/background-fetch/#background-fetch-manager
 struct BackgroundFetchOptions {
   array<IconDefinition> icons;
-  int64 total_download_size;
+  uint64 download_total;
   string title;
 };
 
@@ -38,8 +38,11 @@ struct BackgroundFetchOptions {
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 struct BackgroundFetchRegistration {
   string id;
+  uint64 upload_total;
+  uint64 uploaded;
+  uint64 download_total;
+  uint64 downloaded;
   array<IconDefinition> icons;
-  int64 total_download_size;
   string title;
 };
 

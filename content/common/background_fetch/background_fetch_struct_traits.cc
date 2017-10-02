@@ -19,7 +19,7 @@ bool StructTraits<blink::mojom::BackgroundFetchOptionsDataView,
   if (!data.ReadIcons(&options->icons) || !data.ReadTitle(&options->title))
     return false;
 
-  options->total_download_size = data.total_download_size();
+  options->download_total = data.download_total();
   return true;
 }
 
@@ -34,7 +34,10 @@ bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
     return false;
   }
 
-  registration->total_download_size = data.total_download_size();
+  registration->upload_total = data.upload_total();
+  registration->uploaded = data.uploaded();
+  registration->download_total = data.download_total();
+  registration->downloaded = data.downloaded();
   return true;
 }
 

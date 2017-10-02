@@ -40,7 +40,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchOptionsRoundtrip) {
       CreateIconDefinition("my_icon.png", "256x256", "image/png"),
       CreateIconDefinition("my_small_icon.jpg", "128x128", "image/jpg")};
   options.title = "My Background Fetch";
-  options.total_download_size = 9001;
+  options.download_total = 9001;
 
   BackgroundFetchOptions roundtrip_options;
   ASSERT_TRUE(blink::mojom::BackgroundFetchOptions::Deserialize(
@@ -54,7 +54,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchOptionsRoundtrip) {
   }
 
   EXPECT_EQ(roundtrip_options.title, options.title);
-  EXPECT_EQ(roundtrip_options.total_download_size, options.total_download_size);
+  EXPECT_EQ(roundtrip_options.download_total, options.download_total);
 }
 
 TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
@@ -64,7 +64,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
       CreateIconDefinition("my_icon.png", "256x256", "image/png"),
       CreateIconDefinition("my_small_icon.jpg", "128x128", "image/jpg")};
   registration.title = "My Background Fetch";
-  registration.total_download_size = 9001;
+  registration.download_total = 9001;
 
   BackgroundFetchRegistration roundtrip_registration;
   ASSERT_TRUE(blink::mojom::BackgroundFetchRegistration::Deserialize(
@@ -80,8 +80,7 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
   }
 
   EXPECT_EQ(roundtrip_registration.title, registration.title);
-  EXPECT_EQ(roundtrip_registration.total_download_size,
-            registration.total_download_size);
+  EXPECT_EQ(roundtrip_registration.download_total, registration.download_total);
 }
 
 TEST(BackgroundFetchStructTraitsTest, IconDefinitionRoundtrip) {

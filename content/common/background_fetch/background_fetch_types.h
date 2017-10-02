@@ -41,7 +41,7 @@ struct CONTENT_EXPORT BackgroundFetchOptions {
 
   std::vector<IconDefinition> icons;
   std::string title;
-  int64_t total_download_size = 0;
+  uint64_t download_total = 0;
 };
 
 // Represents the information associated with a Background Fetch registration.
@@ -53,11 +53,15 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   ~BackgroundFetchRegistration();
 
   std::string id;
+  uint64_t upload_total = 0;
+  uint64_t uploaded = 0;
+  uint64_t download_total = 0;
+  uint64_t downloaded = 0;
+  // TODO(crbug.com/699957): Support the `activeFetches` member.
+
+  // TODO(crbug.com/769770): Remove the following deprecated members.
   std::vector<IconDefinition> icons;
   std::string title;
-  int64_t total_download_size = 0;
-
-  // TODO(peter): Support the `activeFetches` member of the specification.
 };
 
 // Represents a request/response pair for a settled Background Fetch fetch.
