@@ -872,6 +872,11 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
     return reinterpret_cast<T>(ptr);
   }
 
+  template <typename T>
+  T* GetImmediateAs() {
+    return reinterpret_cast<T*>(immediate_buffer_);
+  }
+
   PassthroughResources* GetPassthroughResources() const {
     return group_->passthrough_resources();
   }
@@ -890,6 +895,25 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
                        GLsizeiptr size,
                        const void* data);
 
+  void DoBindTexture(GLenum target, GLuint client_id);
+  void DoTexImage2D(GLenum target,
+                    GLint level,
+                    GLenum internal_format,
+                    GLsizei width,
+                    GLsizei height,
+                    GLint border,
+                    GLenum format,
+                    GLenum type,
+                    uint32_t shared_memory_id,
+                    uint32_t shared_memory_offset);
+
+  void DoBindFramebuffer(GLenum target, GLuint client_id);
+  void DoFramebufferTexture2D(GLenum target,
+                              GLenum attachment,
+                              GLenum textarget,
+                              GLuint texture_client_id,
+                              GLint level);
+
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;
   static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
@@ -898,11 +922,15 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
 
   static const uint32_t kNewClientId = 501;
   static const GLuint kClientBufferId = 100;
+  static const GLuint kClientTextureId = 101;
+  static const GLuint kClientFramebufferId = 102;
 
   int32_t shared_memory_id_;
   uint32_t shared_memory_offset_;
   void* shared_memory_address_;
   void* shared_memory_base_;
+
+  uint32_t immediate_buffer_[64];
 
  private:
   ContextCreationAttribHelper context_creation_attribs_;

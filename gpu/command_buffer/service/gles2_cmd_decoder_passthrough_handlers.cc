@@ -848,16 +848,26 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
   GLenum type = static_cast<GLenum>(c.type);
   uint32_t pixels_shm_id = c.pixels_shm_id;
   uint32_t pixels_shm_offset = c.pixels_shm_offset;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
+  bool packBufferBound = bound_buffers_[GL_PIXEL_PACK_BUFFER] != 0;
 
   uint8_t* pixels = nullptr;
   unsigned int buffer_size = 0;
-  if (c.pixels_shm_id != 0) {
+  if (pixels_shm_id != 0) {
+    if (packBufferBound) {
+      return error::kInvalidArguments;
+    }
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
         pixels_shm_id, pixels_shm_offset, 0, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
   } else {
+    if (!packBufferBound) {
+      return error::kInvalidArguments;
+    }
     pixels =
         reinterpret_cast<uint8_t*>(static_cast<intptr_t>(pixels_shm_offset));
   }
@@ -876,20 +886,17 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
     return error::kOutOfBounds;
   }
 
-  typedef cmds::ReadPixels::Result Result;
-  Result* result = nullptr;
-  if (c.result_shm_id != 0) {
-    result = GetSharedMemoryAs<Result*>(c.result_shm_id, c.result_shm_offset,
-                                        sizeof(*result));
+  if (result_shm_id != 0) {
+    typedef cmds::ReadPixels::Result Result;
+    Result* result = GetSharedMemoryAs<Result*>(
+        result_shm_id, result_shm_offset, sizeof(*result));
     if (!result) {
       return error::kOutOfBounds;
     }
     if (result->success != 0) {
       return error::kInvalidArguments;
     }
-  }
 
-  if (result) {
     result->success = success;
     result->row_length = static_cast<uint32_t>(columns);
     result->num_rows = static_cast<uint32_t>(rows);
