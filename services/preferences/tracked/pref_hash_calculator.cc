@@ -103,7 +103,8 @@ PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
                          digest_string)) {
     return VALID;
   }
-  if (VerifyDigestString(seed_,
+  if (!legacy_device_id_.empty() &&
+      VerifyDigestString(seed_,
                          GetMessage(legacy_device_id_, path, value_as_string),
                          digest_string)) {
     return VALID_SECURE_LEGACY;
