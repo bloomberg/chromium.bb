@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -244,7 +245,7 @@ public class FeatureUtilities {
     }
 
     /**
-     * Cache whether or not Chrome Home is enabled.
+     * Cache whether or not Chrome Home and related features are enabled.
      */
     public static void cacheChromeHomeEnabled() {
         // Chrome Home doesn't work with tablets.
@@ -253,6 +254,12 @@ public class FeatureUtilities {
         boolean isChromeHomeEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
         ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
         manager.setChromeHomeEnabled(isChromeHomeEnabled);
+
+        PrefServiceBridge.getInstance().setChromeHomePersonalizedOmniboxSuggestionsEnabled(
+                !isChromeHomeEnabled()
+                        ? false
+                        : ChromeFeatureList.isEnabled(
+                                  ChromeFeatureList.CHROME_HOME_PERSONALIZED_OMNIBOX_SUGGESTIONS));
     }
 
     /**

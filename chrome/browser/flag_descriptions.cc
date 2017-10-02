@@ -1593,6 +1593,11 @@ const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
 const char kChromeHomeExpandButtonDescription[] =
     "Enables the expand button for Chrome Home.";
 
+const char kChromeHomePersonalizedOmniboxSuggestionsName[] =
+    "Chrome Home Personalized Omnibox Suggestions";
+const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =
+    "Enable personalized omnibox suggestions on focus for Chrome Home.";
+
 const char kChromeHomePromoName[] = "Chrome Home Promo";
 const char kChromeHomePromoDescription[] =
     "Force the Chrome Home promotion to show each time the browser restarts.";

@@ -613,7 +613,8 @@ static void PrefetchZeroSuggestResults(JNIEnv* env,
   if (!profile)
     return;
 
-  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
+  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+          profile->GetPrefs()))
     return;
 
   // ZeroSuggestPrefetcher deletes itself after it's done prefetching.

@@ -16,14 +16,19 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/omnibox/browser/url_index_private_data.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
 #include "components/variations/variations_associated_data.h"
+
+#if defined(OS_ANDROID)
+#include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#endif
 
 using metrics::OmniboxEventProto;
 
@@ -69,6 +74,12 @@ const base::Feature kAndroidFakeboxDemotion{"OmniboxAndroidFakeboxDemotion",
 // demoting URLs less clear, hence the separate feature flag.
 const base::Feature kAndroidFakeboxDemotionOnPhones{
     "OmniboxAndroidFakeboxDemotionOnPhones", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature to enable personalized omnibox suggestions on focus when Android's
+// Chrome Home feature is enabled.
+const base::Feature kAndroidChromeHomePersonalizedSuggestions{
+    "ChromeHomePersonalizedOmniboxSuggestions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to enable the search provider to send a request to the suggest
 // server on focus.  This allows the suggest server to warm up, by, for
@@ -244,6 +255,15 @@ double HUPScoringParams::ScoreBuckets::HalfLifeTimeDecay(
   return pow(2.0, -half_life_intervals);
 }
 
+#if defined(OS_ANDROID)
+// static
+void OmniboxFieldTrial::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(omnibox::kZeroSuggestChromeHomePersonalized,
+                                false);
+}
+#endif
+
 int OmniboxFieldTrial::GetDisabledProviderTypes() {
   const std::string& types_string = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -287,14 +307,15 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
 #endif
 }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
-  return InZeroSuggestMostVisitedWithoutSerpFieldTrial() ||
+bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(PrefService* prefs) {
+  return InZeroSuggestMostVisitedWithoutSerpFieldTrial(prefs) ||
       variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kZeroSuggestVariantRule) == "MostVisited";
 }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
+bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
+    PrefService* prefs) {
   std::string variant(variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kZeroSuggestVariantRule));
@@ -302,16 +323,29 @@ bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
     return true;
 #if defined(OS_ANDROID)
   // Android defaults to MostVisitedWithoutSERP
-  return variant.empty();
+  if (variant.empty() && !InChromeHomePersonalizedZeroSuggest(prefs))
+    return true;
+
+  return false;
 #else
   return false;
 #endif
 }
 
-bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kZeroSuggestVariantRule) == "Personalized";
+bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
+    PrefService* prefs) {
+  std::string variant(variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName, kZeroSuggestVariantRule));
+  if (variant == "Personalized")
+    return true;
+#if defined(OS_ANDROID)
+  if (variant.empty() && InChromeHomePersonalizedZeroSuggest(prefs))
+    return true;
+
+  return false;
+#else
+  return false;
+#endif
 }
 
 // static
@@ -858,3 +892,17 @@ std::string OmniboxFieldTrial::GetValueForRuleInContext(
   it = params.find(rule + ":*:*");
   return (it != params.end()) ? it->second : std::string();
 }
+
+#if defined(OS_ANDROID)
+// static
+bool OmniboxFieldTrial::InChromeHomePersonalizedZeroSuggest(
+    PrefService* prefs) {
+  // Android's Java code sets a preference controlling whether personalized
+  // suggestions are enabled based on whether Chrome Home is enabled and
+  // whether the |kAndroidChromeHomePersonalizedSuggestions| feature is
+  // enabled.
+  return prefs->GetBoolean(omnibox::kZeroSuggestChromeHomePersonalized) &&
+         base::FeatureList::IsEnabled(
+             omnibox::kAndroidChromeHomePersonalizedSuggestions);
+}
+#endif
