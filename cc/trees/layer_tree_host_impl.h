@@ -277,6 +277,9 @@ class CC_EXPORT LayerTreeHostImpl
                                        LayerTreeImpl* tree,
                                        const gfx::ScrollOffset& scroll_offset);
   void SetNeedUpdateGpuRasterizationStatus();
+  bool NeedUpdateGpuRasterizationStatusForTesting() const {
+    return need_update_gpu_rasterization_status_;
+  }
 
   // MutatorHostClient implementation.
   bool IsElementInList(ElementId element_id,
@@ -409,7 +412,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetHasGpuRasterizationTrigger(bool flag);
   void SetContentHasSlowPaths(bool flag);
   void SetContentHasNonAAPaint(bool flag);
-  bool CanUseGpuRasterization();
+  void GetGpuRasterizationCapabilities(bool* gpu_rasterization_enabled,
+                                       bool* gpu_rasterization_supported,
+                                       int* max_msaa_samples,
+                                       bool* supports_disable_msaa);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   bool use_msaa() const { return use_msaa_; }
 
