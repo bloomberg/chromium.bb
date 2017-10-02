@@ -349,7 +349,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // 17. "If the script element has a nonce attribute,
   //      then let cryptographic nonce be that attribute's value.
   //      Otherwise, let cryptographic nonce be the empty string."
-  String nonce = element_->GetNonceForElement();
+  nonce_ = element_->GetNonceForElement();
 
   // 18. is handled below.
 
@@ -425,7 +425,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         SubresourceIntegrityHelper::DoReport(element_document, report_info);
       }
 
-      if (!FetchClassicScript(url, element_document.Fetcher(), nonce,
+      if (!FetchClassicScript(url, element_document.Fetcher(), nonce_,
                               integrity_metadata, parser_state, cross_origin,
                               element_document.GetSecurityOrigin(), encoding)) {
         // TODO(hiroshige): Make this asynchronous. Currently we fire the error
@@ -446,7 +446,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       Modulator* modulator = Modulator::From(
           ToScriptStateForMainWorld(context_document->GetFrame()));
-      FetchModuleScriptTree(url, modulator, nonce, parser_state,
+      FetchModuleScriptTree(url, modulator, nonce_, parser_state,
                             credentials_mode);
 
       DCHECK(!resource_);
@@ -498,7 +498,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
         ModuleScript* module_script = ModuleScript::Create(
-            element_->TextFromChildren(), modulator, base_url, nonce,
+            element_->TextFromChildren(), modulator, base_url, nonce_,
             parser_state, credentials_mode, kSharableCrossOrigin, position);
 
         // 3. "If this returns null, set the script's script to null and abort
@@ -695,6 +695,9 @@ bool ScriptLoader::FetchClassicScript(
     CrossOriginAttributeValue cross_origin,
     SecurityOrigin* security_origin,
     const WTF::TextEncoding& encoding) {
+  // TODO(hiroshige): remove nonce from the method argument.
+  DCHECK_EQ(nonce_, nonce);
+
   // https://html.spec.whatwg.org/#prepare-a-script
   // 21.6, "classic":
   // "Fetch a classic script given url, settings, ..."
@@ -729,7 +732,7 @@ bool ScriptLoader::FetchClassicScript(
   FetchParameters params(resource_request, options);
 
   // "... cryptographic nonce, ..."
-  params.SetContentSecurityPolicyNonce(nonce);
+  params.SetContentSecurityPolicyNonce(nonce_);
 
   // "... integrity metadata, ..."
   params.SetIntegrityMetadata(integrity_metadata);
@@ -767,12 +770,15 @@ void ScriptLoader::FetchModuleScriptTree(
     const String& nonce,
     ParserDisposition parser_state,
     WebURLRequest::FetchCredentialsMode credentials_mode) {
+  // TODO(hiroshige): remove nonce from the method argument.
+  DCHECK_EQ(nonce_, nonce);
+
   // https://html.spec.whatwg.org/#prepare-a-script
   // 21.6, "module":
   //     "Fetch a module script graph given url, settings, "script",
   //      cryptographic nonce, parser state, and
   //      module script credentials mode."
-  ModuleScriptFetchRequest module_request(url, nonce, parser_state,
+  ModuleScriptFetchRequest module_request(url, nonce_, parser_state,
                                           credentials_mode);
 
   module_tree_client_ = ModulePendingScriptTreeClient::Create();

@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
+#include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/SubresourceIntegrityHelper.h"
@@ -166,16 +167,25 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   DCHECK(IsReady());
 
   error_occurred = ErrorOccurred();
+  const ScriptLoader* loader = GetElement()->Loader();
+  // Here, we use the nonce snapshot at "#prepare-a-script".
+  // Note that |loader| may be nullptr if ScriptStreamerTest.
+  const String& nonce = loader ? loader->Nonce() : String();
+  const ParserDisposition parser_state = (loader && loader->IsParserInserted())
+                                             ? kParserInserted
+                                             : kNotParserInserted;
   if (!GetResource()) {
-    return ClassicScript::Create(ScriptSourceCode(
-        GetElement()->TextFromChildren(), document_url, StartingPosition()));
+    return ClassicScript::Create(
+        ScriptSourceCode(GetElement()->TextFromChildren(), document_url, nonce,
+                         parser_state, StartingPosition()));
   }
 
   DCHECK(GetResource()->IsLoaded());
   bool streamer_ready = (ready_state_ == kReady) && streamer_ &&
                         !streamer_->StreamingSuppressed();
   return ClassicScript::Create(
-      ScriptSourceCode(streamer_ready ? streamer_ : nullptr, GetResource()));
+      ScriptSourceCode(streamer_ready ? streamer_ : nullptr, GetResource(),
+                       nonce, parser_state));
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {

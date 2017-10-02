@@ -55,7 +55,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   static ScriptLoader* Create(ScriptElementBase* element,
                               bool created_by_parser,
                               bool is_evaluated,
-                              bool created_during_document_write = false) {
+                              bool created_during_document_write) {
     return new ScriptLoader(element, created_by_parser, is_evaluated,
                             created_during_document_write);
   }
@@ -127,6 +127,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
            DocumentWriteIntervention::kDoNotFetchDocWrittenScript;
   }
   void SetFetchDocWrittenScriptDeferIdle();
+
+  const String& Nonce() const { return nonce_; }
 
   // To support script streaming, the ScriptRunner may need to access the
   // PendingScript. This breaks the intended layering, so please use with
@@ -240,6 +242,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   TraceWrapperMember<PendingScript> pending_script_;
   TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
+
+  String nonce_;
 
   // The context document at the time when PrepareScript() is executed.
   // This is only used to check whether the script element is moved between

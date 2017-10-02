@@ -419,9 +419,13 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     V8ThrowException::ThrowError(isolate, "Source file too large.");
     return v8::Local<v8::Script>();
   }
-  // TODO(kouhei) crbug.com/711706 : Plumb nonce/parser_state through
-  // ScriptSourceCode.
-  const ReferrerScriptInfo referrer_info;
+  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
+  // The "default classic fetch options" credentials mode is "omit".
+  // TODO(kouhei): Follow html spec proposal to allow different credentials
+  // mode. https://github.com/whatwg/html/pull/3044
+  const ReferrerScriptInfo referrer_info(
+      WebURLRequest::kFetchCredentialsModeOmit, source.Nonce(),
+      source.ParserState());
   return CompileScript(
       script_state, V8String(isolate, source.Source()), source.Url(),
       source.SourceMapUrl(), source.StartPosition(), source.GetResource(),
@@ -463,13 +467,6 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     AccessControlStatus access_control_status,
     V8CacheOptions cache_options,
     const ReferrerScriptInfo& referrer_info) {
-  // As specified in [HIMD] Step 5-6, the credentials mode for a classic script
-  // is always "omit".
-  // [HIMD]
-  // https://github.com/tc39/proposal-dynamic-import/blob/master/HTML%20Integration.md#hostimportmoduledynamicallyreferencingscriptormodule-specifier-promisecapability
-  DCHECK_EQ(WebURLRequest::kFetchCredentialsModeOmit,
-            referrer_info.CredentialsMode());
-
   TRACE_EVENT2(
       "v8,devtools.timeline", "v8.compile", "fileName", file_name.Utf8(),
       "data",
