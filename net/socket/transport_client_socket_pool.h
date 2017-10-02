@@ -208,7 +208,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   void RequestSockets(const std::string& group_name,
                       const void* params,
                       int num_sockets,
-                      const NetLogWithSource& net_log) override;
+                      const NetLogWithSource& net_log,
+                      HttpRequestInfo::RequestMotivation motivation) override;
   void SetPriority(const std::string& group_name,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
