@@ -246,8 +246,16 @@ public class BottomSheetContentController extends BottomNavigationView
         setOnNavigationItemSelectedListener(this);
         hideMenuLabels();
 
-        mSnackbarManager = new SnackbarManager(
-                mActivity, (ViewGroup) activity.findViewById(R.id.bottom_sheet_snackbar_container));
+        ViewGroup snackbarContainer =
+                (ViewGroup) activity.findViewById(R.id.bottom_sheet_snackbar_container);
+
+        if (mBottomSheet.useTallBottomNav()) {
+            getLayoutParams().height = mBottomSheet.getBottomNavHeight();
+            ((MarginLayoutParams) snackbarContainer.getLayoutParams()).bottomMargin =
+                    mBottomSheet.getBottomNavHeight();
+        }
+
+        mSnackbarManager = new SnackbarManager(mActivity, snackbarContainer);
         mSnackbarManager.onStart();
 
         ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
