@@ -8,6 +8,8 @@
 
 namespace blink {
 
+static const char* kUnknownNumericString = "Unknown";
+
 String FontVariantNumeric::ToString(NumericFigure figure) {
   switch (figure) {
     case kNormalFigure:
@@ -17,7 +19,7 @@ String FontVariantNumeric::ToString(NumericFigure figure) {
     case kOldstyleNums:
       return "OldstyleNums";
   }
-  return "Unknown";
+  return kUnknownNumericString;
 }
 
 String FontVariantNumeric::ToString(NumericSpacing spacing) {
@@ -29,7 +31,7 @@ String FontVariantNumeric::ToString(NumericSpacing spacing) {
     case kTabularNums:
       return "TabularNums";
   }
-  return "Unknown";
+  return kUnknownNumericString;
 }
 
 String FontVariantNumeric::ToString(NumericFraction fraction) {
@@ -41,7 +43,7 @@ String FontVariantNumeric::ToString(NumericFraction fraction) {
     case kStackedFractions:
       return "Stacked";
   }
-  return "Unknown";
+  return kUnknownNumericString;
 }
 
 String FontVariantNumeric::ToString(Ordinal ordinal) {
@@ -51,7 +53,7 @@ String FontVariantNumeric::ToString(Ordinal ordinal) {
     case kOrdinalOn:
       return "On";
   }
-  return "Unknown";
+  return kUnknownNumericString;
 }
 
 String FontVariantNumeric::ToString(SlashedZero slashed) {
@@ -61,7 +63,7 @@ String FontVariantNumeric::ToString(SlashedZero slashed) {
     case kSlashedZeroOn:
       return "On";
   }
-  return "Unknown";
+  return kUnknownNumericString;
 }
 
 String FontVariantNumeric::ToString() const {
