@@ -203,15 +203,6 @@ bool SessionController::IsUserFirstLogin() const {
   return GetUserSession(0)->user_info->is_new_profile;
 }
 
-bool SessionController::IsKioskSession() const {
-  if (!IsActiveUserSessionStarted())
-    return false;
-
-  user_manager::UserType active_user_type = GetUserSession(0)->user_info->type;
-  return active_user_type == user_manager::USER_TYPE_KIOSK_APP ||
-         active_user_type == user_manager::USER_TYPE_ARC_KIOSK_APP;
-}
-
 void SessionController::LockScreen() {
   if (client_)
     client_->RequestLockScreen();
