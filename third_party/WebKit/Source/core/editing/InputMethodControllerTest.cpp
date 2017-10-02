@@ -121,7 +121,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionEndEventListener(
 
 TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("fooX");
   GetDocument().UpdateStyleAndLayout();
@@ -440,7 +440,7 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
 
 TEST_F(InputMethodControllerTest, DeleteBySettingEmptyComposition) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("foo ");
   GetDocument().UpdateStyleAndLayout();
@@ -500,7 +500,7 @@ TEST_F(InputMethodControllerTest,
 }
 
 TEST_F(InputMethodControllerTest, ConfirmPasswordComposition) {
-  HTMLInputElement* input = toHTMLInputElement(InsertHTMLElement(
+  HTMLInputElement* input = ToHTMLInputElement(InsertHTMLElement(
       "<input id='sample' type='password' size='24'>", "sample"));
 
   Vector<ImeTextSpan> ime_text_spans;
@@ -514,7 +514,7 @@ TEST_F(InputMethodControllerTest, ConfirmPasswordComposition) {
 
 TEST_F(InputMethodControllerTest, DeleteSurroundingTextWithEmptyText) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("");
   GetDocument().UpdateStyleAndLayout();
@@ -543,7 +543,7 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextWithEmptyText) {
 
 TEST_F(InputMethodControllerTest, DeleteSurroundingTextWithRangeSelection) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("hello");
   GetDocument().UpdateStyleAndLayout();
@@ -583,7 +583,7 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextWithRangeSelection) {
 
 TEST_F(InputMethodControllerTest, DeleteSurroundingTextWithCursorSelection) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("hello");
   GetDocument().UpdateStyleAndLayout();
@@ -652,7 +652,7 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextWithCursorSelection) {
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextWithMultiCodeTextOnTheLeft) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // U+2605 == "black star". It takes up 1 space.
   input->setValue(String::FromUTF8("foo\xE2\x98\x85"));
@@ -718,7 +718,7 @@ TEST_F(InputMethodControllerTest,
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextWithMultiCodeTextOnTheRight) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // U+2605 == "black star". It takes up 1 space.
   input->setValue(String::FromUTF8("\xE2\x98\x85 foo"));
@@ -784,7 +784,7 @@ TEST_F(InputMethodControllerTest,
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextWithMultiCodeTextOnBothSides) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // "trophy" + "trophy".
   input->setValue(String::FromUTF8("\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86"));
@@ -830,7 +830,7 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextForMultipleNodes) {
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextInCodePointsWithMultiCodeTextOnTheLeft) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text (U+0E01
   // "ka kai" + U+0E49 "mai tho").
@@ -865,7 +865,7 @@ TEST_F(InputMethodControllerTest,
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextInCodePointsWithMultiCodeTextOnTheRight) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text
   input->setValue(String::FromUTF8(
@@ -884,7 +884,7 @@ TEST_F(InputMethodControllerTest,
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextInCodePointsWithMultiCodeTextOnBothSides) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // 'a' + "black star" + SPACE + "trophy" + SPACE + composed text
   input->setValue(String::FromUTF8(
@@ -911,7 +911,7 @@ TEST_F(InputMethodControllerTest, DeleteSurroundingTextInCodePointsWithImage) {
 TEST_F(InputMethodControllerTest,
        DeleteSurroundingTextInCodePointsWithInvalidSurrogatePair) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   // 'a' + high surrogate of "trophy" + "black star" + low surrogate of "trophy"
   // + SPACE
@@ -948,7 +948,7 @@ TEST_F(InputMethodControllerTest,
 
 TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("hello");
   GetDocument().UpdateStyleAndLayout();
@@ -1512,7 +1512,7 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
 
 TEST_F(InputMethodControllerTest, SetEmptyCompositionShouldNotMoveCaret) {
   HTMLTextAreaElement* textarea =
-      toHTMLTextAreaElement(InsertHTMLElement("<textarea id='txt'>", "txt"));
+      ToHTMLTextAreaElement(InsertHTMLElement("<textarea id='txt'>", "txt"));
 
   textarea->setValue("abc\n");
   GetDocument().UpdateStyleAndLayout();
@@ -1551,7 +1551,7 @@ TEST_F(InputMethodControllerTest, WhitespaceFixup) {
 
 TEST_F(InputMethodControllerTest, CommitEmptyTextDeletesSelection) {
   HTMLInputElement* input =
-      toHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
+      ToHTMLInputElement(InsertHTMLElement("<input id='sample'>", "sample"));
 
   input->setValue("Abc Def Ghi");
   GetDocument().UpdateStyleAndLayout();
@@ -2370,7 +2370,7 @@ TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
 
 // http://crbug.com/721666
 TEST_F(InputMethodControllerTest, MaxLength) {
-  HTMLInputElement* input = toHTMLInputElement(
+  HTMLInputElement* input = ToHTMLInputElement(
       InsertHTMLElement("<input id='a' maxlength='4'/>", "a"));
 
   EXPECT_EQ(kWebTextInputTypeText, Controller().TextInputType());

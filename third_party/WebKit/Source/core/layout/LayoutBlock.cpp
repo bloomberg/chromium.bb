@@ -1353,7 +1353,7 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
   max_logical_width = std::max(min_logical_width, max_logical_width);
 
   if (IsHTMLMarqueeElement(GetNode()) &&
-      toHTMLMarqueeElement(GetNode())->IsHorizontal())
+      ToHTMLMarqueeElement(GetNode())->IsHorizontal())
     min_logical_width = LayoutUnit();
 
   if (IsTableCell()) {

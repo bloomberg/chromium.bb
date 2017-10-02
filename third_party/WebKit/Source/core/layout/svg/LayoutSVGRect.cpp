@@ -43,7 +43,7 @@ void LayoutSVGRect::UpdateShapeFromElement() {
   fill_bounding_box_ = FloatRect();
   stroke_bounding_box_ = FloatRect();
   use_path_fallback_ = false;
-  SVGRectElement* rect = toSVGRectElement(GetElement());
+  SVGRectElement* rect = ToSVGRectElement(GetElement());
   DCHECK(rect);
 
   SVGLengthContext length_context(rect);

@@ -37,7 +37,7 @@ LayoutFrame::LayoutFrame(HTMLFrameElement* frame)
 }
 
 FrameEdgeInfo LayoutFrame::EdgeInfo() const {
-  HTMLFrameElement* element = toHTMLFrameElement(GetNode());
+  HTMLFrameElement* element = ToHTMLFrameElement(GetNode());
   return FrameEdgeInfo(element->NoResize(), element->HasFrameBorder());
 }
 

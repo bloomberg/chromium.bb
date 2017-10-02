@@ -363,7 +363,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
                        length_context.ValueForLength(style.Height(), style,
                                                      SVGLengthMode::kHeight));
   } else if (IsSVGLineElement(*svg_element)) {
-    SVGLineElement& element = toSVGLineElement(*svg_element);
+    SVGLineElement& element = ToSVGLineElement(*svg_element);
     WriteNameValuePair(ts, "x1",
                        element.x1()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "y1",
@@ -572,7 +572,7 @@ void WriteSVGResourceContainer(TextStream& ts,
     Filter* dummy_filter =
         Filter::Create(dummy_rect, dummy_rect, 1, Filter::kBoundingBox);
     SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
-    builder.BuildGraph(dummy_filter, toSVGFilterElement(*filter->GetElement()),
+    builder.BuildGraph(dummy_filter, ToSVGFilterElement(*filter->GetElement()),
                        dummy_rect);
     if (FilterEffect* last_effect = builder.LastEffect())
       last_effect->ExternalRepresentation(ts, indent + 1);
@@ -598,7 +598,7 @@ void WriteSVGResourceContainer(TextStream& ts,
     // patterns using xlink:href, we need to build the full inheritance chain,
     // aka. collectPatternProperties()
     PatternAttributes attributes;
-    toSVGPatternElement(pattern->GetElement())
+    ToSVGPatternElement(pattern->GetElement())
         ->CollectPatternAttributes(attributes);
 
     WriteNameValuePair(ts, "patternUnits", attributes.PatternUnits());
@@ -618,7 +618,7 @@ void WriteSVGResourceContainer(TextStream& ts,
     // gradients using xlink:href, we need to build the full inheritance chain,
     // aka. collectGradientProperties()
     LinearGradientAttributes attributes;
-    toSVGLinearGradientElement(gradient->GetElement())
+    ToSVGLinearGradientElement(gradient->GetElement())
         ->CollectGradientAttributes(attributes);
     WriteCommonGradientProperties(ts, attributes.SpreadMethod(),
                                   attributes.GradientTransform(),
@@ -635,7 +635,7 @@ void WriteSVGResourceContainer(TextStream& ts,
     // gradients using xlink:href, we need to build the full inheritance chain,
     // aka. collectGradientProperties()
     RadialGradientAttributes attributes;
-    toSVGRadialGradientElement(gradient->GetElement())
+    ToSVGRadialGradientElement(gradient->GetElement())
         ->CollectGradientAttributes(attributes);
     WriteCommonGradientProperties(ts, attributes.SpreadMethod(),
                                   attributes.GradientTransform(),
@@ -718,7 +718,7 @@ void WriteSVGGradientStop(TextStream& ts,
                           int indent) {
   WriteStandardPrefix(ts, stop, indent);
 
-  SVGStopElement* stop_element = toSVGStopElement(stop.GetNode());
+  SVGStopElement* stop_element = ToSVGStopElement(stop.GetNode());
   DCHECK(stop_element);
   DCHECK(stop.Style());
 

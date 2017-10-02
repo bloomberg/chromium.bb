@@ -233,7 +233,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
     Node* common_ancestor = Strategy::CommonAncestor(
         *start_.ComputeContainerNode(), *end_.ComputeContainerNode());
     DCHECK(common_ancestor);
-    HTMLBodyElement* body = toHTMLBodyElement(EnclosingElementWithTag(
+    HTMLBodyElement* body = ToHTMLBodyElement(EnclosingElementWithTag(
         Position::FirstPositionInNode(*common_ancestor), bodyTag));
     HTMLBodyElement* fully_selected_root = nullptr;
     // FIXME: Do this for all fully selected blocks, not just the body.

@@ -138,7 +138,7 @@ void TextTrackContainer::UpdateDisplay(HTMLMediaElement& media_element,
     return;
 
   // 2. Let video be the media element or other playback mechanism.
-  HTMLVideoElement& video = toHTMLVideoElement(media_element);
+  HTMLVideoElement& video = ToHTMLVideoElement(media_element);
 
   // 3. Let output be an empty list of absolutely positioned CSS block boxes.
 

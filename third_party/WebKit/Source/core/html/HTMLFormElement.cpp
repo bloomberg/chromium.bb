@@ -732,7 +732,7 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
   if (IsHTMLImageElement(*element)) {
     SECURITY_DCHECK(ImageElements().Find(element) != kNotFound);
   } else if (IsHTMLObjectElement(*element)) {
-    SECURITY_DCHECK(ListedElements().Find(toHTMLObjectElement(element)) !=
+    SECURITY_DCHECK(ListedElements().Find(ToHTMLObjectElement(element)) !=
                     kNotFound);
   } else {
     SECURITY_DCHECK(ListedElements().Find(ToHTMLFormControlElement(element)) !=

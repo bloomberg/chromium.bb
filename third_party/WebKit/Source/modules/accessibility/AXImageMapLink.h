@@ -48,7 +48,7 @@ class AXImageMapLink final : public AXNodeObject {
   ~AXImageMapLink() override;
   DECLARE_VIRTUAL_TRACE();
 
-  HTMLAreaElement* AreaElement() const { return toHTMLAreaElement(GetNode()); }
+  HTMLAreaElement* AreaElement() const { return ToHTMLAreaElement(GetNode()); }
 
   HTMLMapElement* MapElement() const;
 

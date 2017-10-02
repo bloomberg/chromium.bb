@@ -323,14 +323,14 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
     // Initialize the orientation lock when going fullscreen feature.
     controls->orientation_lock_delegate_ =
         new MediaControlsOrientationLockDelegate(
-            toHTMLVideoElement(media_element));
+            ToHTMLVideoElement(media_element));
   }
   if (RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled() &&
       media_element.IsHTMLVideoElement()) {
     // Initialize the rotate-to-fullscreen feature.
     controls->rotate_to_fullscreen_delegate_ =
         new MediaControlsRotateToFullscreenDelegate(
-            toHTMLVideoElement(media_element));
+            ToHTMLVideoElement(media_element));
   }
 
   // Initialize download in-product-help for video elements if enabled.
@@ -653,7 +653,7 @@ void MediaControlsImpl::MakeTransparent() {
 bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   // Never hide for a media element without visual representation.
   if (!MediaElement().IsHTMLVideoElement() || !MediaElement().HasVideo() ||
-      toHTMLVideoElement(MediaElement()).IsRemotingInterstitialVisible()) {
+      ToHTMLVideoElement(MediaElement()).IsRemotingInterstitialVisible()) {
     return false;
   }
 

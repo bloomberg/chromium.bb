@@ -22,7 +22,7 @@ TEST(StyleElementTest, CreateSheetUsesCache) {
       "<style id=style>a { top: 0; }</style>");
 
   HTMLStyleElement& style_element =
-      toHTMLStyleElement(*document.getElementById("style"));
+      ToHTMLStyleElement(*document.getElementById("style"));
   StyleSheetContents* sheet = style_element.sheet()->Contents();
 
   Comment* comment = document.createComment("hello!");

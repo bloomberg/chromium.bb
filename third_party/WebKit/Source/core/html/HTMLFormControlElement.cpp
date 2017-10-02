@@ -118,7 +118,7 @@ void HTMLFormControlElement::UpdateAncestorDisabledState() const {
     if (IsHTMLLegendElement(*ancestor))
       highest_legend_ancestor = ancestor;
     if (IsHTMLFieldSetElement(*ancestor) && ancestor->IsDisabledFormControl())
-      highest_disabled_field_set_ancestor = toHTMLFieldSetElement(ancestor);
+      highest_disabled_field_set_ancestor = ToHTMLFieldSetElement(ancestor);
   }
   ancestor_disabled_state_ =
       (highest_disabled_field_set_ancestor &&

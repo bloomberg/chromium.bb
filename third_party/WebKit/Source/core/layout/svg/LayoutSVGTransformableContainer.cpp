@@ -83,7 +83,7 @@ SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
   // translations induced by their corresponding use elements x/y attributes.
   SVGUseElement* use_element = ToSVGUseElementOrNull(*element);
   if (!use_element && IsSVGGElement(*element) &&
-      toSVGGElement(element)->InUseShadowTree())
+      ToSVGGElement(element)->InUseShadowTree())
     use_element = ToSVGUseElementOrNull(element->CorrespondingElement());
 
   if (use_element) {

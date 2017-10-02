@@ -1579,7 +1579,7 @@ bool IsTabHTMLSpanElementTextNode(const Node* node) {
 
 HTMLSpanElement* TabSpanElement(const Node* node) {
   return IsTabHTMLSpanElementTextNode(node)
-             ? toHTMLSpanElement(node->parentNode())
+             ? ToHTMLSpanElement(node->parentNode())
              : 0;
 }
 
@@ -2046,7 +2046,7 @@ Position AdjustedSelectionStartForStyleComputation(const Position& position) {
 bool IsInPasswordField(const Position& position) {
   TextControlElement* text_control = EnclosingTextControl(position);
   return IsHTMLInputElement(text_control) &&
-         toHTMLInputElement(text_control)->type() == InputTypeNames::password;
+         ToHTMLInputElement(text_control)->type() == InputTypeNames::password;
 }
 
 bool IsTextSecurityNode(const Node* node) {

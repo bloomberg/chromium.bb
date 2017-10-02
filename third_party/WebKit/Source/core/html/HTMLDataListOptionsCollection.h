@@ -19,7 +19,7 @@ class HTMLDataListOptionsCollection : public HTMLCollection {
   }
 
   HTMLOptionElement* Item(unsigned offset) const {
-    return toHTMLOptionElement(HTMLCollection::item(offset));
+    return ToHTMLOptionElement(HTMLCollection::item(offset));
   }
 
   bool ElementMatches(const HTMLElement&) const;

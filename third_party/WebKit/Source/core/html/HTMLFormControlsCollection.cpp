@@ -56,12 +56,12 @@ HTMLFormControlsCollection* HTMLFormControlsCollection::Create(
 HTMLFormControlsCollection::~HTMLFormControlsCollection() {}
 
 const ListedElement::List& HTMLFormControlsCollection::ListedElements() const {
-  return toHTMLFormElement(ownerNode()).ListedElements();
+  return ToHTMLFormElement(ownerNode()).ListedElements();
 }
 
 const HeapVector<Member<HTMLImageElement>>&
 HTMLFormControlsCollection::FormImageElements() const {
-  return toHTMLFormElement(ownerNode()).ImageElements();
+  return ToHTMLFormElement(ownerNode()).ImageElements();
 }
 
 static unsigned FindListedElement(const ListedElement::List& listed_elements,

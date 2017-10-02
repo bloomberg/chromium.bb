@@ -542,7 +542,7 @@ void SVGUseElement::AddReferencesToFirstDegreeNestedUseElements(
   // references are handled as the invalidation bubbles up the dependency
   // chain.
   SVGUseElement* use_element =
-      IsSVGUseElement(target) ? toSVGUseElement(&target)
+      IsSVGUseElement(target) ? ToSVGUseElement(&target)
                               : Traversal<SVGUseElement>::FirstWithin(target);
   for (; use_element;
        use_element = Traversal<SVGUseElement>::NextSkippingChildren(
@@ -615,7 +615,7 @@ bool SVGUseElement::ExpandUseElementsInShadowTree() {
        use;) {
     DCHECK(!use->ResourceIsStillLoading());
 
-    SVGUseElement& original_use = toSVGUseElement(*use->CorrespondingElement());
+    SVGUseElement& original_use = ToSVGUseElement(*use->CorrespondingElement());
     SVGElement* target = nullptr;
     if (HasCycleUseReferencing(original_use, *use, target))
       return false;

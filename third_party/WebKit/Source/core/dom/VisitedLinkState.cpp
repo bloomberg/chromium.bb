@@ -68,7 +68,7 @@ static void InvalidateStyleForAllLinksRecursively(
   for (Node& node : NodeTraversal::StartsAt(root_node)) {
     if (node.IsLink()) {
       if (invalidate_visited_link_hashes && IsHTMLAnchorElement(node))
-        toHTMLAnchorElement(node).InvalidateCachedVisitedLinkHash();
+        ToHTMLAnchorElement(node).InvalidateCachedVisitedLinkHash();
       ToElement(node).PseudoStateChanged(CSSSelector::kPseudoLink);
       ToElement(node).PseudoStateChanged(CSSSelector::kPseudoVisited);
       ToElement(node).PseudoStateChanged(CSSSelector::kPseudoAnyLink);

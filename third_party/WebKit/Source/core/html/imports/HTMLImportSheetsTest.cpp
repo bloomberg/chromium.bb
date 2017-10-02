@@ -30,7 +30,7 @@ TEST_F(HTMLImportSheetsTest, NeedsActiveStyleUpdate) {
 
   EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsActiveStyleUpdate());
   Document* import_doc =
-      toHTMLLinkElement(GetDocument().getElementById("link"))->import();
+      ToHTMLLinkElement(GetDocument().getElementById("link"))->import();
   ASSERT_TRUE(import_doc);
   EXPECT_TRUE(import_doc->GetStyleEngine().NeedsActiveStyleUpdate());
 
@@ -50,7 +50,7 @@ TEST_F(HTMLImportSheetsTest, UpdateStyleSheetList) {
 
   EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsActiveStyleUpdate());
   Document* import_doc =
-      toHTMLLinkElement(GetDocument().getElementById("link"))->import();
+      ToHTMLLinkElement(GetDocument().getElementById("link"))->import();
   ASSERT_TRUE(import_doc);
   EXPECT_TRUE(import_doc->GetStyleEngine().NeedsActiveStyleUpdate());
 

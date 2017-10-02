@@ -130,7 +130,7 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
     // serializing open tag of HEAD element.
     DCHECK(element);
     if (IsHTMLMetaElement(element) &&
-        toHTMLMetaElement(element)->ComputeEncoding().IsValid()) {
+        ToHTMLMetaElement(element)->ComputeEncoding().IsValid()) {
       // Found META tag declared charset, we need to skip it when
       // serializing DOM.
       param->skip_meta_element = element;

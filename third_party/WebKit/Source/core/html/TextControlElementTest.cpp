@@ -48,7 +48,7 @@ void TextControlElementTest::SetUp() {
   document_->View()->UpdateAllLifecyclePhases();
   text_control_ = ToTextControlElement(document_->getElementById("textarea"));
   text_control_->focus();
-  input_ = toHTMLInputElement(document_->getElementById("input"));
+  input_ = ToHTMLInputElement(document_->getElementById("input"));
 }
 
 TEST_F(TextControlElementTest, SetSelectionRange) {
@@ -80,7 +80,7 @@ TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
 
 TEST_F(TextControlElementTest, IndexForPosition) {
   HTMLInputElement* input =
-      toHTMLInputElement(GetDocument().getElementById("input"));
+      ToHTMLInputElement(GetDocument().getElementById("input"));
   input->setValue("Hello");
   HTMLElement* inner_editor = input->InnerEditorElement();
   EXPECT_EQ(5u, TextControlElement::IndexForPosition(

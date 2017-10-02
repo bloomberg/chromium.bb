@@ -162,7 +162,7 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
   if (IsHTMLNoScriptElement(element))
     return true;
   if (IsHTMLMetaElement(element) &&
-      toHTMLMetaElement(element).ComputeEncoding().IsValid()) {
+      ToHTMLMetaElement(element).ComputeEncoding().IsValid()) {
     return true;
   }
   return delegate_.ShouldIgnoreElement(element);

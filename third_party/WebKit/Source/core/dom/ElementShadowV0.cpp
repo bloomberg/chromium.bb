@@ -89,7 +89,7 @@ void DistributionPool::DistributeTo(V0InsertionPoint* insertion_point,
       continue;
 
     if (IsHTMLContentElement(*insertion_point) &&
-        !toHTMLContentElement(insertion_point)->CanSelectNode(nodes_, i))
+        !ToHTMLContentElement(insertion_point)->CanSelectNode(nodes_, i))
       continue;
 
     Node* node = nodes_[i];

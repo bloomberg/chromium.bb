@@ -77,24 +77,24 @@ void HTMLOptionsCollection::add(
     const HTMLOptionElementOrHTMLOptGroupElement& element,
     const HTMLElementOrLong& before,
     ExceptionState& exception_state) {
-  toHTMLSelectElement(ownerNode()).add(element, before, exception_state);
+  ToHTMLSelectElement(ownerNode()).add(element, before, exception_state);
 }
 
 void HTMLOptionsCollection::remove(int index) {
-  toHTMLSelectElement(ownerNode()).remove(index);
+  ToHTMLSelectElement(ownerNode()).remove(index);
 }
 
 int HTMLOptionsCollection::selectedIndex() const {
-  return toHTMLSelectElement(ownerNode()).selectedIndex();
+  return ToHTMLSelectElement(ownerNode()).selectedIndex();
 }
 
 void HTMLOptionsCollection::setSelectedIndex(int index) {
-  toHTMLSelectElement(ownerNode()).setSelectedIndex(index);
+  ToHTMLSelectElement(ownerNode()).setSelectedIndex(index);
 }
 
 void HTMLOptionsCollection::setLength(unsigned length,
                                       ExceptionState& exception_state) {
-  toHTMLSelectElement(ownerNode()).setLength(length, exception_state);
+  ToHTMLSelectElement(ownerNode()).setLength(length, exception_state);
 }
 
 void HTMLOptionsCollection::namedGetter(const AtomicString& name,
@@ -122,7 +122,7 @@ bool HTMLOptionsCollection::AnonymousIndexedSetter(
     unsigned index,
     HTMLOptionElement* value,
     ExceptionState& exception_state) {
-  HTMLSelectElement& base = toHTMLSelectElement(ownerNode());
+  HTMLSelectElement& base = ToHTMLSelectElement(ownerNode());
   if (!value) {  // undefined or null
     base.remove(index);
     return true;

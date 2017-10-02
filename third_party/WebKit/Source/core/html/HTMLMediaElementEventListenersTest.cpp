@@ -56,7 +56,7 @@ class HTMLMediaElementEventListenersTest : public ::testing::Test {
   Document& GetDocument() { return page_holder_->GetDocument(); }
   void DestroyDocument() { page_holder_.reset(); }
   HTMLVideoElement* Video() {
-    return toHTMLVideoElement(GetDocument().QuerySelector("video"));
+    return ToHTMLVideoElement(GetDocument().QuerySelector("video"));
   }
   MockWebMediaPlayer* WebMediaPlayer() {
     return static_cast<MockWebMediaPlayer*>(Video()->GetWebMediaPlayer());

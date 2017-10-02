@@ -90,7 +90,7 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
 
   if ((load_error || cached_image->GetResponse().HttpStatusCode() >= 400) &&
       IsHTMLObjectElement(*element))
-    toHTMLObjectElement(element)->RenderFallbackContent();
+    ToHTMLObjectElement(element)->RenderFallbackContent();
 }
 
 }  // namespace blink

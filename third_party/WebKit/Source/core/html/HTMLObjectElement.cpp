@@ -413,7 +413,7 @@ bool HTMLObjectElement::ContainsJavaApplet() const {
             child.getAttribute(valueAttr).GetString()))
       return true;
     if (IsHTMLObjectElement(child) &&
-        toHTMLObjectElement(child).ContainsJavaApplet())
+        ToHTMLObjectElement(child).ContainsJavaApplet())
       return true;
   }
 

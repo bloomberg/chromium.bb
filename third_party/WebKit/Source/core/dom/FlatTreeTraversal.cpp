@@ -86,7 +86,7 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
     const Node& node,
     TraversalDirection direction) {
   DCHECK(!IsHTMLSlotElement(node) ||
-         !toHTMLSlotElement(node).SupportsDistribution());
+         !ToHTMLSlotElement(node).SupportsDistribution());
   for (const Node* sibling = &node; sibling;
        sibling = (direction == kTraversalDirectionForward
                       ? sibling->nextSibling()

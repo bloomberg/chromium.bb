@@ -60,7 +60,7 @@ Node* HTMLTemplateElement::cloneNode(bool deep, ExceptionState&) {
 
   Node* clone = CloneElementWithChildren();
   if (content_)
-    content()->CloneChildNodes(toHTMLTemplateElement(clone)->content());
+    content()->CloneChildNodes(ToHTMLTemplateElement(clone)->content());
   return clone;
 }
 

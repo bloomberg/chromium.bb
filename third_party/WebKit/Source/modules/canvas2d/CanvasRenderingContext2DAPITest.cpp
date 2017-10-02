@@ -72,7 +72,7 @@ void CanvasRenderingContext2DAPITest::SetUp() {
   document_->documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
   document_->View()->UpdateAllLifecyclePhases();
-  canvas_element_ = toHTMLCanvasElement(document_->getElementById("c"));
+  canvas_element_ = ToHTMLCanvasElement(document_->getElementById("c"));
 }
 
 TEST_F(CanvasRenderingContext2DAPITest, SetShadowColor_Clamping) {
@@ -301,7 +301,7 @@ void ResetCanvasForAccessibilityRectTest(Document& document) {
       "<button id='button'></button></canvas>");
   document.GetSettings()->SetAccessibilityEnabled(true);
   HTMLCanvasElement* canvas =
-      toHTMLCanvasElement(document.getElementById("canvas"));
+      ToHTMLCanvasElement(document.getElementById("canvas"));
 
   String canvas_type("2d");
   CanvasContextCreationAttributes attributes;
@@ -317,7 +317,7 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion) {
 
   Element* button_element = GetDocument().getElementById("button");
   HTMLCanvasElement* canvas =
-      toHTMLCanvasElement(GetDocument().getElementById("canvas"));
+      ToHTMLCanvasElement(GetDocument().getElementById("canvas"));
   CanvasRenderingContext2D* context =
       static_cast<CanvasRenderingContext2D*>(canvas->RenderingContext());
 
@@ -346,7 +346,7 @@ TEST_F(CanvasRenderingContext2DAPITest,
 
   Element* button_element = GetDocument().getElementById("button");
   HTMLCanvasElement* canvas =
-      toHTMLCanvasElement(GetDocument().getElementById("canvas"));
+      ToHTMLCanvasElement(GetDocument().getElementById("canvas"));
   CanvasRenderingContext2D* context =
       static_cast<CanvasRenderingContext2D*>(canvas->RenderingContext());
 

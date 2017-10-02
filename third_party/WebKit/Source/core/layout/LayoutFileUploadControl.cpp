@@ -46,7 +46,7 @@ LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
 LayoutFileUploadControl::~LayoutFileUploadControl() {}
 
 void LayoutFileUploadControl::UpdateFromElement() {
-  HTMLInputElement* input = toHTMLInputElement(GetNode());
+  HTMLInputElement* input = ToHTMLInputElement(GetNode());
   DCHECK_EQ(input->type(), InputTypeNames::file);
 
   if (HTMLInputElement* button = UploadButton()) {
@@ -93,7 +93,7 @@ void LayoutFileUploadControl::ComputeIntrinsicLogicalWidths(
       font.Width(ConstructTextRun(font, character_as_string, StyleRef(),
                                   TextRun::kAllowTrailingExpansion));
 
-  const String label = toHTMLInputElement(GetNode())->GetLocale().QueryString(
+  const String label = ToHTMLInputElement(GetNode())->GetLocale().QueryString(
       WebLocalizedString::kFileButtonNoFileSelectedLabel);
   float default_label_width = font.Width(ConstructTextRun(
       font, label, StyleRef(), TextRun::kAllowTrailingExpansion));
@@ -162,7 +162,7 @@ PositionWithAffinity LayoutFileUploadControl::PositionForPoint(
 HTMLInputElement* LayoutFileUploadControl::UploadButton() const {
   // FIXME: This should be on HTMLInputElement as an API like
   // innerButtonElement().
-  HTMLInputElement* input = toHTMLInputElement(GetNode());
+  HTMLInputElement* input = ToHTMLInputElement(GetNode());
   return ToHTMLInputElementOrNull(input->UserAgentShadowRoot()->firstChild());
 }
 
@@ -174,7 +174,7 @@ String LayoutFileUploadControl::ButtonValue() {
 }
 
 String LayoutFileUploadControl::FileTextValue() const {
-  HTMLInputElement* input = toHTMLInputElement(GetNode());
+  HTMLInputElement* input = ToHTMLInputElement(GetNode());
   DCHECK(input->files());
   return LayoutTheme::GetTheme().FileListNameForWidth(
       input->GetLocale(), input->files(), Style()->GetFont(),

@@ -144,7 +144,7 @@ WebInputElement& WebInputElement::operator=(HTMLInputElement* elem) {
 }
 
 WebInputElement::operator HTMLInputElement*() const {
-  return toHTMLInputElement(private_.Get());
+  return ToHTMLInputElement(private_.Get());
 }
 
 WebInputElement* ToWebInputElement(WebElement* web_element) {

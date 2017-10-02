@@ -131,7 +131,7 @@ void LayoutMenuList::AdjustInnerStyle() {
 }
 
 HTMLSelectElement* LayoutMenuList::SelectElement() const {
-  return toHTMLSelectElement(GetNode());
+  return ToHTMLSelectElement(GetNode());
 }
 
 void LayoutMenuList::AddChild(LayoutObject* new_child,

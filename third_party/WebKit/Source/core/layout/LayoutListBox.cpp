@@ -54,7 +54,7 @@ LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
 LayoutListBox::~LayoutListBox() {}
 
 inline HTMLSelectElement* LayoutListBox::SelectElement() const {
-  return toHTMLSelectElement(GetNode());
+  return ToHTMLSelectElement(GetNode());
 }
 
 unsigned LayoutListBox::size() const {

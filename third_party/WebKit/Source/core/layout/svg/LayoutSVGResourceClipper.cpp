@@ -74,7 +74,7 @@ ClipStrategy DetermineClipStrategy(const SVGElement& element) {
         use_layout_object->StyleRef().Display() == EDisplay::kNone)
       return ClipStrategy::kNone;
     const SVGGraphicsElement* shape_element =
-        toSVGUseElement(element).VisibleTargetGraphicsElementForClipping();
+        ToSVGUseElement(element).VisibleTargetGraphicsElementForClipping();
     if (!shape_element)
       return ClipStrategy::kNone;
     ClipStrategy shape_strategy = DetermineClipStrategy(*shape_element);
@@ -271,7 +271,7 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
   }
 
   AffineTransform animated_local_transform =
-      toSVGClipPathElement(GetElement())
+      ToSVGClipPathElement(GetElement())
           ->CalculateTransform(SVGElement::kIncludeMotionTransform);
   if (!animated_local_transform.IsInvertible())
     return false;
@@ -301,7 +301,7 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
     CalculateLocalClipBounds();
 
   AffineTransform transform =
-      toSVGClipPathElement(GetElement())
+      ToSVGClipPathElement(GetElement())
           ->CalculateTransform(SVGElement::kIncludeMotionTransform);
   if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     transform.Translate(reference_box.X(), reference_box.Y());

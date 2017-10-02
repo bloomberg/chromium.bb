@@ -108,7 +108,7 @@ void LayoutProgress::UpdateAnimationState() {
 }
 
 HTMLProgressElement* LayoutProgress::ProgressElement() const {
-  return toHTMLProgressElement(GetNode());
+  return ToHTMLProgressElement(GetNode());
 }
 
 }  // namespace blink

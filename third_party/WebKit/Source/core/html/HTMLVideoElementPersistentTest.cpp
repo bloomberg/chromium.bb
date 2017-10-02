@@ -48,11 +48,11 @@ class HTMLVideoElementPersistentTest : public ::testing::Test {
   Document& GetDocument() { return page_holder_->GetDocument(); }
 
   HTMLVideoElement* VideoElement() {
-    return toHTMLVideoElement(GetDocument().QuerySelector("video"));
+    return ToHTMLVideoElement(GetDocument().QuerySelector("video"));
   }
 
   HTMLDivElement* DivElement() {
-    return toHTMLDivElement(GetDocument().QuerySelector("div"));
+    return ToHTMLDivElement(GetDocument().QuerySelector("div"));
   }
 
   Element* FullscreenElement() {

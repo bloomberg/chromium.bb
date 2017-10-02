@@ -120,7 +120,7 @@ TEST_P(FrameThrottlingTest, ThrottleInvisibleFrames) {
   main_resource.Complete("<iframe sandbox id=frame></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   // Initially both frames are visible.
@@ -150,11 +150,11 @@ TEST_P(FrameThrottlingTest, HiddenSameOriginFramesAreNotThrottled) {
   frame_resource.Complete("<iframe id=innerFrame></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   HTMLIFrameElement* inner_frame_element =
-      toHTMLIFrameElement(frame_document->getElementById("innerFrame"));
+      ToHTMLIFrameElement(frame_document->getElementById("innerFrame"));
   auto* inner_frame_document = inner_frame_element->contentDocument();
 
   EXPECT_FALSE(GetDocument().View()->CanThrottleRendering());
@@ -179,11 +179,11 @@ TEST_P(FrameThrottlingTest, HiddenCrossOriginFramesAreThrottled) {
   frame_resource.Complete("<iframe id=innerFrame sandbox></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   auto* inner_frame_element =
-      toHTMLIFrameElement(frame_document->getElementById("innerFrame"));
+      ToHTMLIFrameElement(frame_document->getElementById("innerFrame"));
   auto* inner_frame_document = inner_frame_element->contentDocument();
 
   EXPECT_FALSE(GetDocument().View()->CanThrottleRendering());
@@ -208,11 +208,11 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   frame_resource.Complete("<iframe id=innerFrame sandbox></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   auto* inner_frame_element =
-      toHTMLIFrameElement(frame_document->getElementById("innerFrame"));
+      ToHTMLIFrameElement(frame_document->getElementById("innerFrame"));
   auto* inner_frame_document = inner_frame_element->contentDocument();
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
@@ -273,11 +273,11 @@ TEST_P(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreNotThrottled) {
       "<iframe id=innerFrame width=0 height=0 sandbox></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   auto* inner_frame_element =
-      toHTMLIFrameElement(frame_document->getElementById("innerFrame"));
+      ToHTMLIFrameElement(frame_document->getElementById("innerFrame"));
   auto* inner_frame_document = inner_frame_element->contentDocument();
 
   EXPECT_FALSE(GetDocument().View()->CanThrottleRendering());
@@ -299,7 +299,7 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
   main_resource.Complete("<iframe sandbox id=frame></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   // Enable throttling for the child frame.
@@ -332,7 +332,7 @@ TEST_P(FrameThrottlingTest, UnthrottlingFrameSchedulesAnimation) {
   main_resource.Complete("<iframe sandbox id=frame></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   // First make the child hidden to enable throttling.
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
@@ -359,7 +359,7 @@ TEST_P(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation) {
   EXPECT_TRUE(display_items1.Contains(SimCanvas::kRect, "red"));
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   // Move the frame offscreen to throttle it.
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
@@ -397,7 +397,7 @@ TEST_P(FrameThrottlingTest, SynchronousLayoutInThrottledFrame) {
   frame_resource.Complete("<div id=div></div>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();
@@ -422,7 +422,7 @@ TEST_P(FrameThrottlingTest, UnthrottlingTriggersRepaint) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -463,7 +463,7 @@ TEST_P(FrameThrottlingTest, UnthrottlingTriggersRepaintInCompositedChild) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -496,7 +496,7 @@ TEST_P(FrameThrottlingTest, ChangeStyleInThrottledFrame) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -533,7 +533,7 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
   frame_resource.Complete("");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   CompositeFrame();
 
@@ -584,7 +584,7 @@ TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -616,7 +616,7 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -685,7 +685,7 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -728,7 +728,7 @@ TEST_P(FrameThrottlingTest,
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -779,7 +779,7 @@ TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
 
   // Move the frame offscreen to throttle it.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -813,7 +813,7 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
       "document.addEventListener('touchstart', function(){}, {passive: false});"
       "</script>");
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();  // Throttle the frame.
   CompositeFrame();  // Update touch handler regions.
@@ -850,7 +850,7 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
       "function(){});"
       "</script>");
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();  // Throttle the frame.
   CompositeFrame();  // Update touch handler regions.
@@ -877,7 +877,7 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
       "main <iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
   frame_resource.Complete("");
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -919,7 +919,7 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
   // Move the frame offscreen to throttle it and make sure it is backed by a
   // graphics layer.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr,
                               "transform: translateY(480px) translateZ(0px)");
   EXPECT_FALSE(
@@ -951,7 +951,7 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
   CompositeFrame();
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   // The inner div is composited.
   auto* inner_div = frame_element->contentDocument()->getElementById("div");
   EXPECT_NE(nullptr,
@@ -1044,8 +1044,8 @@ TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
 
   // Move both frames offscreen, but don't run the intersection observers yet.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
-  auto* child_frame_element = toHTMLIFrameElement(
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  auto* child_frame_element = ToHTMLIFrameElement(
       frame_element->contentDocument()->getElementById("child-frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   Compositor().BeginFrame();
@@ -1115,7 +1115,7 @@ TEST_P(FrameThrottlingTest, SkipPaintingLayersInThrottledFrames) {
   EXPECT_TRUE(display_items.Contains(SimCanvas::kRect, "red"));
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
@@ -1161,7 +1161,7 @@ TEST_P(FrameThrottlingTest, SynchronousLayoutInAnimationFrameCallback) {
 
   // Throttle the first frame.
   auto* first_frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("first"));
+      ToHTMLIFrameElement(GetDocument().getElementById("first"));
   first_frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();
   EXPECT_TRUE(
@@ -1172,7 +1172,7 @@ TEST_P(FrameThrottlingTest, SynchronousLayoutInAnimationFrameCallback) {
   // should not result in an unexpected lifecycle state even if the first
   // frame is throttled during the animation frame callback.
   auto* second_frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("second"));
+      ToHTMLIFrameElement(GetDocument().getElementById("second"));
   LocalFrame* local_frame = ToLocalFrame(second_frame_element->ContentFrame());
   local_frame->GetScriptController().ExecuteScriptInMainWorld(
       "window.requestAnimationFrame(function() {\n"
@@ -1201,7 +1201,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
       "</script>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
 
@@ -1223,7 +1223,7 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
   CompositeFrame();
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
   auto* inner_div = frame_document->getElementById("div");
   auto* inner_div_object = inner_div->GetLayoutObject();
@@ -1270,7 +1270,7 @@ TEST_P(FrameThrottlingTest, DisplayNoneNotThrottled) {
       "<iframe sandbox id=frame></iframe>");
 
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* frame_document = frame_element->contentDocument();
 
   // Initially the frame is throttled as it is offscreen.
@@ -1298,8 +1298,8 @@ TEST_P(FrameThrottlingTest, DisplayNoneChildrenRemainThrottled) {
 
   // Move both frames offscreen to make them throttled.
   auto* frame_element =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
-  auto* child_frame_element = toHTMLIFrameElement(
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  auto* child_frame_element = ToHTMLIFrameElement(
       frame_element->contentDocument()->getElementById("child-frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
   CompositeFrame();

@@ -53,7 +53,7 @@ WebLabelElement& WebLabelElement::operator=(HTMLLabelElement* elem) {
 }
 
 WebLabelElement::operator HTMLLabelElement*() const {
-  return toHTMLLabelElement(private_.Get());
+  return ToHTMLLabelElement(private_.Get());
 }
 
 }  // namespace blink

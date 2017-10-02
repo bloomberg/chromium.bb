@@ -313,7 +313,7 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
     if (!IsHTMLSourceElement(*child))
       continue;
 
-    HTMLSourceElement* source = toHTMLSourceElement(child);
+    HTMLSourceElement* source = ToHTMLSourceElement(child);
     if (!source->FastGetAttribute(srcAttr).IsNull()) {
       Deprecation::CountDeprecation(GetDocument(),
                                     WebFeature::kPictureSourceSrc);
@@ -401,7 +401,7 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     GetDocument().GetMediaQueryMatcher().AddViewportListener(listener_);
   Node* parent = parentNode();
   if (parent && IsHTMLPictureElement(*parent))
-    toHTMLPictureElement(parent)->AddListenerToSourceChildren();
+    ToHTMLPictureElement(parent)->AddListenerToSourceChildren();
 
   bool image_was_modified = false;
   if (GetDocument().IsActive()) {
@@ -430,7 +430,7 @@ void HTMLImageElement::RemovedFrom(ContainerNode* insertion_point) {
     GetDocument().GetMediaQueryMatcher().RemoveViewportListener(listener_);
     Node* parent = parentNode();
     if (parent && IsHTMLPictureElement(*parent))
-      toHTMLPictureElement(parent)->RemoveListenerFromSourceChildren();
+      ToHTMLPictureElement(parent)->RemoveListenerFromSourceChildren();
   }
   HTMLElement::RemovedFrom(insertion_point);
 }

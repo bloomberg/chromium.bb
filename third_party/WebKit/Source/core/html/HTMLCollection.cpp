@@ -226,7 +226,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
       return ToHTMLOptionsCollection(html_collection).ElementMatches(element);
     case kSelectedOptions:
       return IsHTMLOptionElement(element) &&
-             toHTMLOptionElement(element).Selected();
+             ToHTMLOptionElement(element).Selected();
     case kDataListOptions:
       return ToHTMLDataListOptionsCollection(html_collection)
           .ElementMatches(element);
@@ -234,7 +234,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
       return element.HasTagName(areaTag);
     case kDocApplets:
       return IsHTMLObjectElement(element) &&
-             toHTMLObjectElement(element).ContainsJavaApplet();
+             ToHTMLObjectElement(element).ContainsJavaApplet();
     case kDocEmbeds:
       return element.HasTagName(embedTag);
     case kDocLinks:

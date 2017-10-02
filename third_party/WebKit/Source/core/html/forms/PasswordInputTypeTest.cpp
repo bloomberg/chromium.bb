@@ -109,7 +109,7 @@ TEST(PasswordInputTypeTest, InvisiblePasswordFieldBecomesVisible) {
 
   // Now make the input visible.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setAttribute("style", "", ASSERT_NO_EXCEPTION);
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
@@ -131,7 +131,7 @@ TEST(PasswordInputTypeTest, NonPasswordFieldBecomesPassword) {
 
   // Now make the input a password field.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("password");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
@@ -154,7 +154,7 @@ TEST(PasswordInputTypeTest,
 
   // Now make the input a visible non-password field.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("text");
   input->setAttribute("style", "", ASSERT_NO_EXCEPTION);
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
@@ -177,7 +177,7 @@ TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
 
   // Now make the input invisible.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
@@ -199,14 +199,14 @@ TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
   // Make the first input invisible. There should be no message because
   // there is still a visible input.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
   // When all inputs are invisible, then a message should be sent.
-  input = toHTMLInputElement(page_holder->GetDocument().body()->lastChild());
+  input = ToHTMLInputElement(page_holder->GetDocument().body()->lastChild());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
@@ -238,7 +238,7 @@ TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
 
   // If the containing div becomes invisible, a message should be sent.
   HTMLElement* div =
-      toHTMLDivElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLDivElement(page_holder->GetDocument().body()->firstChild());
   div->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
@@ -271,14 +271,14 @@ TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
   // Make the first input a non-password input. There should be no
   // message because there is still a visible password input.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("text");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
   // When all inputs are no longer passwords, then a message should be sent.
-  input = toHTMLInputElement(page_holder->GetDocument().body()->lastChild());
+  input = ToHTMLInputElement(page_holder->GetDocument().body()->lastChild());
   input->setType("text");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();
@@ -296,7 +296,7 @@ TEST(PasswordInputTypeTest, MultipleEventsInSameTask) {
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   // Make the password field invisible in the same task.
   HTMLInputElement* input =
-      toHTMLInputElement(page_holder->GetDocument().body()->firstChild());
+      ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("text");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   blink::testing::RunPendingTasks();

@@ -612,7 +612,7 @@ bool CSPDirectiveList::AllowInlineScript(
   if (IsMatchingNoncePresent(directive, nonce))
     return true;
   if (element && IsHTMLScriptElement(element) &&
-      !toHTMLScriptElement(element)->Loader()->IsParserInserted() &&
+      !ToHTMLScriptElement(element)->Loader()->IsParserInserted() &&
       AllowDynamic()) {
     return true;
   }

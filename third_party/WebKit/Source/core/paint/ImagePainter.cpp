@@ -42,7 +42,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
   if (!IsHTMLAreaElement(focused_element))
     return;
 
-  HTMLAreaElement& area_element = toHTMLAreaElement(*focused_element);
+  HTMLAreaElement& area_element = ToHTMLAreaElement(*focused_element);
   if (area_element.ImageElement() != layout_image_.GetNode())
     return;
 

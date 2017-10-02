@@ -124,7 +124,7 @@ int AXRadioInput::CountFromFirstElement() const {
 }
 
 HTMLInputElement* AXRadioInput::GetInputElement() const {
-  return toHTMLInputElement(layout_object_->GetNode());
+  return ToHTMLInputElement(layout_object_->GetNode());
 }
 
 int AXRadioInput::SizeOfRadioGroup() const {

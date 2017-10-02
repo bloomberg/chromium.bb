@@ -88,7 +88,7 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   HTMLInputElement* input =
-      toHTMLInputElement(GetDocument().getElementById("input"));
+      ToHTMLInputElement(GetDocument().getElementById("input"));
   input->setCustomValidity(
       String::FromUTF8("\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89"));
   input->setAttribute(
@@ -138,7 +138,7 @@ TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
   Page::OrdinaryPages().insert(&GetPage());
 
   HTMLInputElement* input =
-      toHTMLInputElement(GetDocument().getElementById("input"));
+      ToHTMLInputElement(GetDocument().getElementById("input"));
   ScopedPageSuspender suspender;  // print() suspends the page.
   input->reportValidity();
   EXPECT_FALSE(validation_message_client->IsValidationMessageVisible(*input));

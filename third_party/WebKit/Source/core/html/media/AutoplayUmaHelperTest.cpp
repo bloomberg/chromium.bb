@@ -43,7 +43,7 @@ class AutoplayUmaHelperTest : public ::testing::Test {
   HTMLMediaElement& MediaElement() {
     Element* element = GetDocument().getElementById("video");
     DCHECK(element);
-    return toHTMLVideoElement(*element);
+    return ToHTMLVideoElement(*element);
   }
 
   MockAutoplayUmaHelper& UmaHelper() { return *uma_helper_; }

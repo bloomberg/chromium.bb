@@ -325,7 +325,7 @@ KURL HitTestResult::AbsoluteImageURL() const {
   // containers so ensure they contain a loaded image.
   if (IsHTMLImageElement(*inner_node_or_image_map_image) ||
       (IsHTMLInputElement(*inner_node_or_image_map_image) &&
-       toHTMLInputElement(inner_node_or_image_map_image)->type() ==
+       ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
            InputTypeNames::image))
     url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&

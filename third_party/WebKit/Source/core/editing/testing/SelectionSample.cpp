@@ -42,7 +42,7 @@ void ConvertTemplatesToShadowRoots(HTMLElement& element) {
     ShadowRoot& shadow_root =
         parent->AttachShadowRootInternal(ShadowRootType::kOpen);
     Node* const fragment =
-        document->importNode(toHTMLTemplateElement(template_element)->content(),
+        document->importNode(ToHTMLTemplateElement(template_element)->content(),
                              true, ASSERT_NO_EXCEPTION);
     shadow_root.AppendChild(fragment);
   }

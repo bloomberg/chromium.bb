@@ -479,7 +479,7 @@ bool Internals::isValidContentSelect(Element* insertion_point,
   }
 
   return IsHTMLContentElement(*insertion_point) &&
-         toHTMLContentElement(*insertion_point).IsSelectValid();
+         ToHTMLContentElement(*insertion_point).IsSelectValid();
 }
 
 Node* Internals::treeScopeRootNode(Node* node) {
@@ -1356,7 +1356,7 @@ void Internals::setEditingValue(Element* element,
     return;
   }
 
-  toHTMLInputElement(*element).SetEditingValue(value);
+  ToHTMLInputElement(*element).SetEditingValue(value);
 }
 
 void Internals::setAutofilled(Element* element,
@@ -2928,7 +2928,7 @@ void Internals::forceImageReload(Element* element,
         kInvalidAccessError, "The element should be HTMLImageElement.");
   }
 
-  toHTMLImageElement(*element).ForceReload();
+  ToHTMLImageElement(*element).ForceReload();
 }
 
 String Internals::selectMenuListText(HTMLSelectElement* select) {
@@ -2953,7 +2953,7 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {
   if (!node || !IsHTMLSelectElement(*node))
     return false;
 
-  HTMLSelectElement& select = toHTMLSelectElement(*node);
+  HTMLSelectElement& select = ToHTMLSelectElement(*node);
   if (item_index < 0 ||
       static_cast<size_t>(item_index) >= select.GetListItems().size())
     return false;
@@ -2966,7 +2966,7 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int item_index) {
   if (!node || !IsHTMLSelectElement(*node))
     return false;
 
-  HTMLSelectElement& select = toHTMLSelectElement(*node);
+  HTMLSelectElement& select = ToHTMLSelectElement(*node);
   if (item_index < 0 ||
       static_cast<size_t>(item_index) >= select.GetListItems().size())
     return false;
@@ -3030,7 +3030,7 @@ void Internals::setShouldRevealPassword(Element* element,
     return;
   }
 
-  return toHTMLInputElement(*element).SetShouldRevealPassword(reveal);
+  return ToHTMLInputElement(*element).SetShouldRevealPassword(reveal);
 }
 
 namespace {

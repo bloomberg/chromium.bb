@@ -177,7 +177,7 @@ static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
         ElementCannotHaveEndTag(target_node))) {
     Node* current = IsHTMLTemplateElement(target_node)
                         ? Strategy::FirstChild(
-                              *toHTMLTemplateElement(target_node).content())
+                              *ToHTMLTemplateElement(target_node).content())
                         : Strategy::FirstChild(target_node);
     for (; current; current = Strategy::NextSibling(*current))
       SerializeNodesWithNamespaces<Strategy>(accumulator, *current,

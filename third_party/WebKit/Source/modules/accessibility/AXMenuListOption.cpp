@@ -75,7 +75,7 @@ AXObject* AXMenuListOption::ComputeParent() const {
   Node* node = GetNode();
   if (!node)
     return nullptr;
-  HTMLSelectElement* select = toHTMLOptionElement(node)->OwnerSelectElement();
+  HTMLSelectElement* select = ToHTMLOptionElement(node)->OwnerSelectElement();
   if (!select)
     return nullptr;
   AXObject* select_ax_object = AxObjectCache().GetOrCreate(select);

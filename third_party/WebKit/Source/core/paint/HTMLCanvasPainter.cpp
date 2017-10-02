@@ -24,7 +24,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   paint_rect.MoveBy(paint_offset);
 
   HTMLCanvasElement* canvas =
-      toHTMLCanvasElement(layout_html_canvas_.GetNode());
+      ToHTMLCanvasElement(layout_html_canvas_.GetNode());
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       canvas->RenderingContext() &&

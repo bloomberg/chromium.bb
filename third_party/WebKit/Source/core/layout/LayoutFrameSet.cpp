@@ -47,7 +47,7 @@ LayoutFrameSet::~LayoutFrameSet() {}
 LayoutFrameSet::GridAxis::GridAxis() : split_being_resized_(kNoSplit) {}
 
 HTMLFrameSetElement* LayoutFrameSet::FrameSet() const {
-  return toHTMLFrameSetElement(GetNode());
+  return ToHTMLFrameSetElement(GetNode());
 }
 
 void LayoutFrameSet::Paint(const PaintInfo& paint_info,

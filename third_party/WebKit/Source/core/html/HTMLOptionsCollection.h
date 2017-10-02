@@ -41,7 +41,7 @@ class HTMLOptionsCollection final : public HTMLCollection {
   static HTMLOptionsCollection* Create(ContainerNode&, CollectionType);
 
   HTMLOptionElement* item(unsigned offset) const {
-    return toHTMLOptionElement(HTMLCollection::item(offset));
+    return ToHTMLOptionElement(HTMLCollection::item(offset));
   }
 
   void add(const HTMLOptionElementOrHTMLOptGroupElement&,

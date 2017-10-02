@@ -60,7 +60,7 @@ WebSelectElement& WebSelectElement::operator=(HTMLSelectElement* element) {
 }
 
 WebSelectElement::operator HTMLSelectElement*() const {
-  return toHTMLSelectElement(private_.Get());
+  return ToHTMLSelectElement(private_.Get());
 }
 
 }  // namespace blink

@@ -283,7 +283,7 @@ void SliderThumbElement::DetachLayoutTree(const AttachContext& context) {
 HTMLInputElement* SliderThumbElement::HostInput() const {
   // Only HTMLInputElement creates SliderThumbElement instances as its shadow
   // nodes.  So, ownerShadowHost() must be an HTMLInputElement.
-  return toHTMLInputElement(OwnerShadowHost());
+  return ToHTMLInputElement(OwnerShadowHost());
 }
 
 static const AtomicString& SliderThumbShadowPartId() {
@@ -328,7 +328,7 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
 DEFINE_NODE_FACTORY(SliderContainerElement)
 
 HTMLInputElement* SliderContainerElement::HostInput() const {
-  return toHTMLInputElement(OwnerShadowHost());
+  return ToHTMLInputElement(OwnerShadowHost());
 }
 
 LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&) {

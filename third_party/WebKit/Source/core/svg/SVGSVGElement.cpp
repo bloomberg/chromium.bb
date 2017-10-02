@@ -123,7 +123,7 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 
   void CommitChange() override {
     DCHECK(contextElement());
-    toSVGSVGElement(contextElement())->UpdateUserTransform();
+    ToSVGSVGElement(contextElement())->UpdateUserTransform();
   }
 
  private:
@@ -719,7 +719,7 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
   if (!IsSVGViewElement(anchor_node))
     return;
 
-  SVGViewElement& view_element = toSVGViewElement(*anchor_node);
+  SVGViewElement& view_element = ToSVGViewElement(*anchor_node);
 
   // Spec: If the SVG fragment identifier addresses a 'view' element
   // within an SVG document (e.g., MyDrawing.svg#MyView) then the

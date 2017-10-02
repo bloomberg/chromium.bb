@@ -134,7 +134,7 @@ bool HTMLSelectElement::HasPlaceholderLabelOption() const {
   // listItems() might have performance impact.
   if (GetListItems().size() == 0 || !IsHTMLOptionElement(GetListItems()[0]))
     return false;
-  return toHTMLOptionElement(GetListItems()[0])->value().IsEmpty();
+  return ToHTMLOptionElement(GetListItems()[0])->value().IsEmpty();
 }
 
 String HTMLSelectElement::validationMessage() const {
@@ -473,13 +473,13 @@ HTMLOptionElement* HTMLSelectElement::NextValidOption(int list_index,
     HTMLElement* element = list_items[list_index];
     if (!IsHTMLOptionElement(*element))
       continue;
-    if (toHTMLOptionElement(*element).IsDisplayNone())
+    if (ToHTMLOptionElement(*element).IsDisplayNone())
       continue;
     if (element->IsDisabledFormControl())
       continue;
     if (!UsesMenuList() && !element->GetLayoutObject())
       continue;
-    last_good_option = toHTMLOptionElement(element);
+    last_good_option = ToHTMLOptionElement(element);
     if (skip <= 0)
       break;
   }
@@ -560,10 +560,11 @@ void HTMLSelectElement::SaveLastSelection() {
   }
 
   last_on_change_selection_.clear();
-  for (auto& element : GetListItems())
+  for (auto& element : GetListItems()) {
     last_on_change_selection_.push_back(
         IsHTMLOptionElement(*element) &&
-        toHTMLOptionElement(element)->Selected());
+        ToHTMLOptionElement(element)->Selected());
+  }
 }
 
 void HTMLSelectElement::SetActiveSelectionAnchor(HTMLOptionElement* option) {
@@ -651,7 +652,7 @@ void HTMLSelectElement::ListBoxOnChange() {
   for (unsigned i = 0; i < items.size(); ++i) {
     HTMLElement* element = items[i];
     bool selected = IsHTMLOptionElement(*element) &&
-                    toHTMLOptionElement(element)->Selected();
+                    ToHTMLOptionElement(element)->Selected();
     if (selected != last_on_change_selection_[i])
       fire_on_change = true;
     last_on_change_selection_[i] = selected;
@@ -852,7 +853,7 @@ void HTMLSelectElement::setSelectedIndex(int index) {
 int HTMLSelectElement::SelectedListIndex() const {
   int index = 0;
   for (const auto& item : GetListItems()) {
-    if (IsHTMLOptionElement(item) && toHTMLOptionElement(item)->Selected())
+    if (IsHTMLOptionElement(item) && ToHTMLOptionElement(item)->Selected())
       return index;
     ++index;
   }
@@ -1104,7 +1105,7 @@ FormControlState HTMLSelectElement::SaveFormControlState() const {
   for (unsigned i = 0; i < length; ++i) {
     if (!IsHTMLOptionElement(*items[i]))
       continue;
-    HTMLOptionElement* option = toHTMLOptionElement(items[i]);
+    HTMLOptionElement* option = ToHTMLOptionElement(items[i]);
     if (!option->Selected())
       continue;
     state.Append(option->value());
@@ -1123,7 +1124,7 @@ size_t HTMLSelectElement::SearchOptionsForValue(const String& value,
   for (size_t i = list_index_start; i < loop_end_index; ++i) {
     if (!IsHTMLOptionElement(items[i]))
       continue;
-    if (toHTMLOptionElement(items[i])->value() == value)
+    if (ToHTMLOptionElement(items[i])->value() == value)
       return i;
   }
   return kNotFound;
@@ -1144,16 +1145,16 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   if (!IsMultiple()) {
     size_t index = state[1].ToUInt();
     if (index < items_size && IsHTMLOptionElement(items[index]) &&
-        toHTMLOptionElement(items[index])->value() == state[0]) {
-      toHTMLOptionElement(items[index])->SetSelectedState(true);
-      toHTMLOptionElement(items[index])->SetDirty(true);
-      last_on_change_option_ = toHTMLOptionElement(items[index]);
+        ToHTMLOptionElement(items[index])->value() == state[0]) {
+      ToHTMLOptionElement(items[index])->SetSelectedState(true);
+      ToHTMLOptionElement(items[index])->SetDirty(true);
+      last_on_change_option_ = ToHTMLOptionElement(items[index]);
     } else {
       size_t found_index = SearchOptionsForValue(state[0], 0, items_size);
       if (found_index != kNotFound) {
-        toHTMLOptionElement(items[found_index])->SetSelectedState(true);
-        toHTMLOptionElement(items[found_index])->SetDirty(true);
-        last_on_change_option_ = toHTMLOptionElement(items[found_index]);
+        ToHTMLOptionElement(items[found_index])->SetSelectedState(true);
+        ToHTMLOptionElement(items[found_index])->SetDirty(true);
+        last_on_change_option_ = ToHTMLOptionElement(items[found_index]);
       }
     }
   } else {
@@ -1162,9 +1163,9 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
       const String& value = state[i];
       const size_t index = state[i + 1].ToUInt();
       if (index < items_size && IsHTMLOptionElement(items[index]) &&
-          toHTMLOptionElement(items[index])->value() == value) {
-        toHTMLOptionElement(items[index])->SetSelectedState(true);
-        toHTMLOptionElement(items[index])->SetDirty(true);
+          ToHTMLOptionElement(items[index])->value() == value) {
+        ToHTMLOptionElement(items[index])->SetSelectedState(true);
+        ToHTMLOptionElement(items[index])->SetDirty(true);
         start_index = index + 1;
       } else {
         size_t found_index =
@@ -1173,8 +1174,8 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
           found_index = SearchOptionsForValue(value, 0, start_index);
         if (found_index == kNotFound)
           continue;
-        toHTMLOptionElement(items[found_index])->SetSelectedState(true);
-        toHTMLOptionElement(items[found_index])->SetDirty(true);
+        ToHTMLOptionElement(items[found_index])->SetSelectedState(true);
+        ToHTMLOptionElement(items[found_index])->SetDirty(true);
         start_index = found_index + 1;
       }
     }
@@ -1436,7 +1437,7 @@ HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
   Node* target_node = event.target()->ToNode();
   if (!target_node || !IsHTMLOptionElement(*target_node))
     return nullptr;
-  return toHTMLOptionElement(target_node);
+  return ToHTMLOptionElement(target_node);
 }
 
 int HTMLSelectElement::ListIndexForOption(const HTMLOptionElement& option) {

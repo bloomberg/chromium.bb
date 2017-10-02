@@ -175,7 +175,7 @@ void SearchFieldCancelButtonElement::DetachLayoutTree(
 
 void SearchFieldCancelButtonElement::DefaultEventHandler(Event* event) {
   // If the element is visible, on mouseup, clear the value, and set selection
-  HTMLInputElement* input(toHTMLInputElement(OwnerShadowHost()));
+  HTMLInputElement* input(ToHTMLInputElement(OwnerShadowHost()));
   if (!input || input->IsDisabledOrReadOnly()) {
     if (!event->DefaultHandled())
       HTMLDivElement::DefaultEventHandler(event);
@@ -196,7 +196,7 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event* event) {
 }
 
 bool SearchFieldCancelButtonElement::WillRespondToMouseClickEvents() {
-  const HTMLInputElement* input = toHTMLInputElement(OwnerShadowHost());
+  const HTMLInputElement* input = ToHTMLInputElement(OwnerShadowHost());
   if (input && !input->IsDisabledOrReadOnly())
     return true;
 

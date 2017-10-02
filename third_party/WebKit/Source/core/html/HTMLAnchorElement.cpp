@@ -123,7 +123,7 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
   if (!IsHTMLImageElement(*target))
     return;
 
-  HTMLImageElement& image_element = toHTMLImageElement(*target);
+  HTMLImageElement& image_element = ToHTMLImageElement(*target);
   if (!image_element.IsServerMap())
     return;
 

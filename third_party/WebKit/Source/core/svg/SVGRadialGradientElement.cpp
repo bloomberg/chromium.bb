@@ -111,7 +111,7 @@ static void SetGradientAttributes(const SVGGradientElement& element,
 
   if (!is_radial)
     return;
-  const SVGRadialGradientElement& radial = toSVGRadialGradientElement(element);
+  const SVGRadialGradientElement& radial = ToSVGRadialGradientElement(element);
 
   if (!attributes.HasCx() && radial.cx()->IsSpecified())
     attributes.SetCx(radial.cx()->CurrentValue());
