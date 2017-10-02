@@ -24,7 +24,7 @@ base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
 
 // The profiler is currently only implemented for Windows x64 and Mac x64.
 bool IsProfilerSupported() {
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MACOSX)
   #if defined(GOOGLE_CHROME_BUILD)
     // Only run on canary and dev.
     const version_info::Channel channel = chrome::GetChannel();
@@ -32,13 +32,6 @@ bool IsProfilerSupported() {
            channel == version_info::Channel::DEV;
   #else
     return true;
-  #endif
-#elif defined(OS_MACOSX)
-  // Only run on canary for now.
-  #if defined(GOOGLE_CHROME_BUILD)
-  return chrome::GetChannel() == version_info::Channel::CANARY;
-  #else
-  return true;
   #endif
 #else
   return false;
