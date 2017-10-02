@@ -23,8 +23,8 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SANDBOX_TYPE_UTILITY:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
-      command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
+      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
                                       switches::kUtilitySandbox);
       break;
     case SANDBOX_TYPE_GPU:
@@ -34,7 +34,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SANDBOX_TYPE_PPAPI:
       if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
           switches::kUtilityProcess) {
-        command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+        command_line->AppendSwitchASCII(switches::kServiceSandboxType,
                                         switches::kPpapiSandbox);
       } else {
         DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
@@ -44,15 +44,15 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SANDBOX_TYPE_NETWORK:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
-      command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
+      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
                                       switches::kNetworkSandbox);
       break;
     case SANDBOX_TYPE_CDM:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
-      command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
+      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
                                       switches::kCdmSandbox);
       break;
     default:
@@ -74,7 +74,7 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
 
   if (process_type == switches::kUtilityProcess) {
     return UtilitySandboxTypeFromString(
-        command_line.GetSwitchValueASCII(switches::kUtilityProcessSandboxType));
+        command_line.GetSwitchValueASCII(switches::kServiceSandboxType));
   }
   if (process_type == switches::kGpuProcess) {
     if (command_line.HasSwitch(switches::kDisableGpuSandbox))

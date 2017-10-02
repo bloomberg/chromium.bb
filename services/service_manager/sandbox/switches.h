@@ -11,9 +11,9 @@
 namespace service_manager {
 namespace switches {
 
-// Type of sandbox to apply to the utility process, one of the values
-// in the next block.
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilityProcessSandboxType[];
+// Type of sandbox to apply to the process running the service, one of the
+// values in the next block.
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kServiceSandboxType[];
 
 // Must be in sync with "sandbox_type" values as used in service manager's
 // manifest.json catalog files.
