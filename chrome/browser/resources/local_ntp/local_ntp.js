@@ -522,21 +522,31 @@ function registerKeyHandler(element, keycode, handler) {
 
 
 /**
- * Event handler for the focus changed and blacklist messages on link elements.
- * Used to toggle visual treatment on the tiles (depending on the message).
+ * Event handler for messages from the most visited iframe.
  * @param {Event} event Event received.
  */
 function handlePostMessage(event) {
   var cmd = event.data.cmd;
   var args = event.data;
-  if (cmd == 'tileBlacklisted') {
+  if (cmd == 'loaded') {
+    if (configData.isGooglePage) {
+      // Load the OneGoogleBar script. It'll create a global variable name "og"
+      // which is a dict corresponding to the native OneGoogleBarData type.
+      // We do this only after all the tiles have loaded, to avoid slowing down
+      // the main page load.
+      var ogScript = document.createElement('script');
+      ogScript.src = 'chrome-search://local-ntp/one-google.js';
+      document.body.appendChild(ogScript);
+      ogScript.onload = function() {
+        injectOneGoogleBar(og);
+      };
+    }
+  } else if (cmd == 'tileBlacklisted') {
     showNotification();
     lastBlacklistedTile = args.tid;
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
   }
-  // TODO(treib): Should we also handle the 'loaded' message from the iframe
-  // here? We could hide the page until it arrives, to avoid flicker.
 }
 
 
@@ -628,15 +638,6 @@ function init() {
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-
-    // Load the OneGoogleBar script. It'll create a global variable name "og"
-    // which is a dict corresponding to the native OneGoogleBarData type.
-    var ogScript = document.createElement('script');
-    ogScript.src = 'chrome-search://local-ntp/one-google.js';
-    document.body.appendChild(ogScript);
-    ogScript.onload = function() {
-      injectOneGoogleBar(og);
-    };
 
     // Load the Doodle. After the first request completes (getting cached
     // data), issue a second request for fresh Doodle data.
