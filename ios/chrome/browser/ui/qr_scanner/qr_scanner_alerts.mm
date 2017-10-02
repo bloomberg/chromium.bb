@@ -121,6 +121,7 @@ UIAlertController* DialogForCameraState(
     case qr_scanner::CAMERA_PERMISSION_DENIED:
       return CameraPermissionDeniedDialog(cancelBlock);
 
+    case qr_scanner::CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE:
     case qr_scanner::CAMERA_UNAVAILABLE:
       dialogTitle = l10n_util::GetNSString(
           IDS_IOS_QR_SCANNER_CAMERA_UNAVAILABLE_ALERT_TITLE);

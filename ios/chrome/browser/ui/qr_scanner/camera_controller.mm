@@ -353,6 +353,11 @@
       case AVCaptureSessionInterruptionReasonVideoDeviceNotAvailableWithMultipleForegroundApps:
         [self setCameraState:qr_scanner::MULTIPLE_FOREGROUND_APPS];
         break;
+#if defined(__IPHONE_11_1) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_1)
+      case AVCaptureSessionInterruptionReasonVideoDeviceNotAvailableDueToSystemPressure:
+        [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE_DUE_TO_SYSTEM_PRESSURE];
+        break;
+#endif
       case AVCaptureSessionInterruptionReasonAudioDeviceInUseByAnotherClient:
         NOTREACHED();
         break;
