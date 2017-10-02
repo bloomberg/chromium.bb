@@ -44,7 +44,7 @@ function test() {
         var savedSnapshotData;
         function saveMock(url, data) {
           savedSnapshotData = data;
-          setTimeout(() => Workspace.fileManager._savedURL(true, {data: url}), 0);
+          setTimeout(() => Workspace.fileManager._savedURL({data: {url: url}}), 0);
         }
         TestRunner.override(InspectorFrontendHost, 'save', saveMock);
 

@@ -197,7 +197,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                         const std::vector<std::string>& removed_paths) override;
 
   // DevToolsFileHelper callbacks.
-  void FileSavedAs(const std::string& url);
+  void FileSavedAs(const std::string& url, const std::string& file_system_path);
   void CanceledFileSaveAs(const std::string& url);
   void AppendedTo(const std::string& url);
   void IndexingTotalWorkCalculated(int request_id,
