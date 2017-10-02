@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERFACE_PROXY_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERFACE_PROXY_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -23,9 +24,13 @@ namespace content {
 
 class RenderFrameHost;
 
-// This implements the media::mojom::InterfaceFactory interface for
-// RenderFrameHostImpl. Upon media::mojom::InterfaceFactory calls, it will
-// figure out where to forward to the interface requests.
+// This implements the media::mojom::InterfaceFactory interface for a
+// RenderFrameHostImpl. Upon InterfaceFactory calls, it will
+// figure out where to forward to the interface requests. For example,
+// - When |enable_standalone_cdm_service| is true, forward CDM request to a
+//   standalone CDM service rather than the general media service.
+// - Forward CDM requests to different CDM service instances based on library
+//   CDM types.
 class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
  public:
   // Constructs MediaInterfaceProxy and bind |this| to the |request|. When
@@ -45,42 +50,59 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
                  media::mojom::ContentDecryptionModuleRequest request) final;
 
  private:
-  // Get the |interface_factory_ptr_|. Returns null if expected error happened.
-  media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
+  using InterfaceFactoryPtr = media::mojom::InterfaceFactoryPtr;
 
-  // Get the |cdm_interface_factory_ptr_|. Returns null if expected error
-  // happened.
-  media::mojom::InterfaceFactory* GetCdmInterfaceFactory(
-      const std::string& key_system);
-
-  // Callback for connection error from |interface_factory_ptr_| or
-  // |cdm_interface_factory_ptr_|.
-  void OnMediaServiceConnectionError();
-  void OnCdmServiceConnectionError();
-
+  // Gets services provided by the browser (at RenderFrameHost level) to the
+  // mojo media (or CDM) service running remotely.
   service_manager::mojom::InterfaceProviderPtr GetFrameServices();
 
+  // Gets the MediaService |interface_factory_ptr_|. Returns null if unexpected
+  // error happened.
+  InterfaceFactory* GetMediaInterfaceFactory();
+
   void ConnectToMediaService();
-  void ConnectToCdmService(const std::string& key_system);
+
+  // Callback for connection error from |interface_factory_ptr_|.
+  void OnMediaServiceConnectionError();
+
+#if BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
+  // Gets a CDM InterfaceFactory pointer for |key_system|. Returns null if
+  // unexpected error happened.
+  InterfaceFactory* GetCdmInterfaceFactory(const std::string& key_system);
+
+  // Connects to the CDM service associated with |key_system|, adds the new
+  // InterfaceFactoryPtr to the |cdm_interface_factory_map_|, and returns the
+  // newly created InterfaceFactory pointer. Returns nullptr if unexpected error
+  // happened.
+  InterfaceFactory* ConnectToCdmService(const std::string& cdm_guid,
+                                        const base::FilePath& cdm_path);
+
+  // Callback for connection error from the InterfaceFactoryPtr in the
+  // |cdm_interface_factory_map_| associated with |cdm_guid|.
+  void OnCdmServiceConnectionError(const std::string& cdm_guid);
+#endif  // BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
-  RenderFrameHost* render_frame_host_;
+  RenderFrameHost* const render_frame_host_;
+
+  // Binding for incoming InterfaceFactoryRequest from the the RenderFrameImpl.
+  mojo::Binding<InterfaceFactory> binding_;
 
   // TODO(xhwang): Replace InterfaceProvider with a dedicated host interface.
   // See http://crbug.com/660573
   std::vector<std::unique_ptr<media::MediaInterfaceProvider>> media_registries_;
 
-  mojo::Binding<media::mojom::InterfaceFactory> binding_;
-
-  // InterfacePtr to the remote media::mojom::InterfaceFactory implementation
+  // InterfacePtr to the remote InterfaceFactory implementation
   // in the service named kMediaServiceName hosted in the process specified by
   // the "mojo_media_host" gn argument. Available options are browser, GPU and
   // utility processes.
-  media::mojom::InterfaceFactoryPtr interface_factory_ptr_;
+  InterfaceFactoryPtr interface_factory_ptr_;
 
-  // InterfacePtr to the remote media::mojom::InterfaceFactory implementation
-  // in the service named kCdmServiceName hosted in the utility process.
-  media::mojom::InterfaceFactoryPtr cdm_interface_factory_ptr_;
+#if BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
+  // CDM GUID to CDM InterfaceFactoryPtr mapping, where the InterfaceFactory
+  // instances live in the standalone kCdmServiceName service instances.
+  std::map<std::string, InterfaceFactoryPtr> cdm_interface_factory_map_;
+#endif  // BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
 
   base::ThreadChecker thread_checker_;
 

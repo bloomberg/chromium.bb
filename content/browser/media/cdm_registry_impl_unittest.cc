@@ -19,7 +19,8 @@
 
 namespace content {
 
-const char kTestCdmType[] = "test";
+const char kTestCdmType[] = "Test CDM";
+const char kTestCdmGuid[] = "62FE9C4B-384E-48FD-B28A-9F6F248BC8CC";
 const char kTestPath[] = "/aa/bb";
 const char kVersion1[] = "1.1.1.1";
 const char kVersion2[] = "1.1.1.2";
@@ -44,9 +45,10 @@ class CdmRegistryImplTest : public testing::Test {
     const std::vector<std::string> codecs =
         base::SplitString(supported_codecs, kCodecDelimiter,
                           base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    cdm_registry_.RegisterCdm(CdmInfo(
-        type, base::Version(version), base::FilePath::FromUTF8Unsafe(path),
-        codecs, supported_key_system, supports_sub_key_systems));
+    cdm_registry_.RegisterCdm(
+        CdmInfo(type, kTestCdmGuid, base::Version(version),
+                base::FilePath::FromUTF8Unsafe(path), codecs,
+                supported_key_system, supports_sub_key_systems));
   }
 
   bool IsRegistered(const std::string& type, const std::string& version) {

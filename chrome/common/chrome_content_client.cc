@@ -551,26 +551,40 @@ void ChromeContentClient::AddContentDecryptionModules(
       // same directory as the installed adapter.
       const base::Version version(WIDEVINE_CDM_VERSION_STRING);
       DCHECK(version.IsValid());
-      cdms->push_back(content::CdmInfo(kWidevineCdmType, version, cdm_path,
-                                       codecs_supported, kWidevineKeySystem,
-                                       false));
+      cdms->push_back(content::CdmInfo(kWidevineCdmType, kWidevineCdmGuid,
+                                       version, cdm_path, codecs_supported,
+                                       kWidevineKeySystem, false));
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     // Register Clear Key CDM if specified in command line.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    std::string clear_key_cdm_path =
-        command_line->GetSwitchValueASCII(switches::kClearKeyCdmPathForTesting);
+    base::FilePath clear_key_cdm_path =
+        command_line->GetSwitchValuePath(switches::kClearKeyCdmPathForTesting);
     if (!clear_key_cdm_path.empty()) {
-      // TODO(crbug.com/764480): Remove this after we have a central place for
+      // TODO(crbug.com/764480): Remove these after we have a central place for
       // External Clear Key (ECK) related information.
+      // Normal External Clear Key key system.
       const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+      // A variant of ECK key system that has a different GUID.
+      const char kExternalClearKeyDifferentGuidTestKeySystem[] =
+          "org.chromium.externalclearkey.differentguid";
+
+      // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
+      // Otherwise, it'll be treated as a sub-key-system of normal
+      // kExternalClearKeyKeySystem. See MultipleCdmTypes test in
+      // ECKEncryptedMediaTest.
+      cdms->push_back(content::CdmInfo(
+          media::kClearKeyCdmType, media::kClearKeyCdmDifferentGuid,
+          base::Version("0.1.0.0"), clear_key_cdm_path, {},
+          kExternalClearKeyDifferentGuidTestKeySystem, false));
+
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
       cdms->push_back(
-          content::CdmInfo(media::kClearKeyCdmType, base::Version("0.1.0.0"),
-                           base::FilePath::FromUTF8Unsafe(clear_key_cdm_path),
-                           {}, kExternalClearKeyKeySystem, true));
+          content::CdmInfo(media::kClearKeyCdmType, media::kClearKeyCdmGuid,
+                           base::Version("0.1.0.0"), clear_key_cdm_path, {},
+                           kExternalClearKeyKeySystem, true));
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }
