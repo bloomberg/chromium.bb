@@ -9,6 +9,7 @@
 #include "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_cell.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -207,6 +208,18 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
   // handler.
   return
       [self.collectionViewModel itemTypeForIndexPath:indexPath] != ItemTypeApp;
+}
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  UIEdgeInsets inset = [self collectionView:collectionView
+                                     layout:collectionView.collectionViewLayout
+                     insetForSectionAtIndex:indexPath.section];
+  CGFloat width =
+      CGRectGetWidth(collectionView.bounds) - inset.left - inset.right;
+  return [MDCCollectionViewCell cr_preferredHeightForWidth:width forItem:item];
 }
 
 #pragma mark - Private
