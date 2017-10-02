@@ -57,7 +57,7 @@ TEST_F(UiInputManagerTest, NoMouseMovesDuringClick) {
   // Unless we suppress content move events during clicks, this will cause us to
   // call OnContentMove on the delegate. We should do this suppression, so we
   // set the expected number of calls to zero.
-  EXPECT_CALL(content_input_delegate_, OnContentMove(testing::_)).Times(0);
+  EXPECT_CALL(*content_input_delegate_, OnContentMove(testing::_)).Times(0);
 
   input_manager_->HandleInput(content_quad_center - origin, origin,
                               UiInputManager::ButtonState::DOWN, &gesture_list,

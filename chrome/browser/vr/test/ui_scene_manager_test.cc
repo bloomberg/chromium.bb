@@ -35,7 +35,9 @@ UiSceneManagerTest::UiSceneManagerTest() {}
 UiSceneManagerTest::~UiSceneManagerTest() {}
 
 void UiSceneManagerTest::SetUp() {
-  browser_ = base::MakeUnique<MockBrowserInterface>();
+  browser_ = base::MakeUnique<testing::NiceMock<MockBrowserInterface>>();
+  content_input_delegate_ =
+      base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
 }
 
 void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {
@@ -47,7 +49,7 @@ void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {
   ui_initial_state.in_web_vr = in_web_vr;
   ui_initial_state.web_vr_autopresentation_expected = false;
   manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
-                                              &content_input_delegate_,
+                                              content_input_delegate_.get(),
                                               model_.get(), ui_initial_state);
 }
 
@@ -60,7 +62,7 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
   ui_initial_state.in_web_vr = false;
   ui_initial_state.web_vr_autopresentation_expected = true;
   manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
-                                              &content_input_delegate_,
+                                              content_input_delegate_.get(),
                                               model_.get(), ui_initial_state);
 }
 
