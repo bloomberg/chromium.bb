@@ -215,12 +215,22 @@ Position PositionAfterContainingSpecialElement(
 // TODO(editing-dev): Renaming these two functions below is a first step
 // of moving all call sites from |Node*| to use |const Node&| as a parameter.
 // See crbug.com/766448
+// Instead of deprecated functions please use const-ref implementation below.
 inline Position FirstPositionInOrBeforeNodeDeprecated(Node* node) {
   return Position::FirstPositionInOrBeforeNodeDeprecated(node);
 }
 
 inline Position LastPositionInOrAfterNodeDeprecated(Node* node) {
   return Position::LastPositionInOrAfterNodeDeprecated(node);
+}
+
+// This is a |const Node&| versions of two deprecated functions above.
+inline Position FirstPositionInOrBeforeNode(const Node& node) {
+  return Position::FirstPositionInOrBeforeNode(node);
+}
+
+inline Position LastPositionInOrAfterNode(const Node& node) {
+  return Position::LastPositionInOrAfterNode(node);
 }
 
 CORE_EXPORT Position FirstEditablePositionAfterPositionInRoot(const Position&,
