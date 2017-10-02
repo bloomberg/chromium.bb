@@ -629,19 +629,7 @@ Pre-cq times available on <a href="http://shortn/_XK6xDPTof1">monarch history</a
 </p>
 
 <h2>Slowest Passing Slaves</h2>
-(this determination based on last-to-complete in otherwise passing builds)
-<table>
-  <tr>
-    <th>Slave</th>
-    <th>Times Slowest Slave</th>
-    <th>Median Time (hours)</th>
-    <th>90th Percentile (hours)</th>
-  </tr>
-{slow_slaves_html}
-</table>
-</p>
-
-A more accurate determination (which accounts for CQ self-destruct, relevance detection, and history-aware-submit logic) is available as a <A href="http://shortn/_RBQNer8DDk">monarch history</A>.
+The slowest passing slaves (accounting for CQ self-destruct, relevance detection, and history-aware-submit logic) are available as a <A href="http://shortn/_RBQNer8DDk">monarch history</A>.
 
 
 <h2>False rejections</h2>
@@ -679,16 +667,6 @@ def GenerateReport(file_out, summary):
 
   report = summary.copy()
   report['datetime'] = str(datetime.datetime.now())
-
-  slow_slaves_html = ''
-  for slave, count, per_50, per_90 in summary['slowest_cq_slaves']:
-    slow_slaves_html += '  <tr>\n'
-    slow_slaves_html += '    <td>{}</td>\n'.format(slave)
-    slow_slaves_html += '    <td>{:d}</td>\n'.format(count)
-    slow_slaves_html += '    <td>{:.2f}</td>\n'.format(per_50)
-    slow_slaves_html += '    <td>{:.2f}</td>\n'.format(per_90)
-    slow_slaves_html += '  </tr>\n'
-  report['slow_slaves_html'] = slow_slaves_html
 
   sorted_blame_counts = sorted([(v, k) for (k, v) in
                                 summary['patch_blame_counts'].iteritems()],
