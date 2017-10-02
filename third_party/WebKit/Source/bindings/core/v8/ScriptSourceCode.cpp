@@ -7,25 +7,38 @@
 namespace blink {
 
 ScriptSourceCode::ScriptSourceCode()
-    : start_position_(TextPosition::MinimumPosition()) {}
+    : parser_state_(kNotParserInserted),
+      start_position_(TextPosition::MinimumPosition()) {}
 
 ScriptSourceCode::ScriptSourceCode(const String& source,
                                    const KURL& url,
+                                   const String& nonce,
+                                   ParserDisposition parser_state,
                                    const TextPosition& start_position)
-    : source_(source), url_(url), start_position_(start_position) {
+    : source_(source),
+      url_(url),
+      nonce_(nonce),
+      parser_state_(parser_state),
+      start_position_(start_position) {
   TreatNullSourceAsEmpty();
   if (!url_.IsEmpty())
     url_.RemoveFragmentIdentifier();
 }
 
-ScriptSourceCode::ScriptSourceCode(ScriptResource* resource)
-    : ScriptSourceCode(nullptr, resource) {}
+ScriptSourceCode::ScriptSourceCode(ScriptResource* resource,
+                                   const String& nonce,
+                                   ParserDisposition parser_state)
+    : ScriptSourceCode(nullptr, resource, nonce, parser_state) {}
 
 ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
-                                   ScriptResource* resource)
+                                   ScriptResource* resource,
+                                   const String& nonce,
+                                   ParserDisposition parser_state)
     : source_(resource->SourceText()),
       resource_(resource),
       streamer_(streamer),
+      nonce_(nonce),
+      parser_state_(parser_state),
       start_position_(TextPosition::MinimumPosition()) {
   TreatNullSourceAsEmpty();
 }

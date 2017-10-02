@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
@@ -48,12 +49,17 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptSourceCode();
   // We lose the encoding information from ScriptResource.
   // Not sure if that matters.
-  explicit ScriptSourceCode(ScriptResource*);
+  ScriptSourceCode(ScriptResource*, const String& nonce, ParserDisposition);
   ScriptSourceCode(
-      const String&,
+      const String& source,
       const KURL& = KURL(),
+      const String& nonce = String(),
+      ParserDisposition parser_state = kNotParserInserted,
       const TextPosition& start_position = TextPosition::MinimumPosition());
-  ScriptSourceCode(ScriptStreamer*, ScriptResource*);
+  ScriptSourceCode(ScriptStreamer*,
+                   ScriptResource*,
+                   const String& nonce,
+                   ParserDisposition);
 
   ~ScriptSourceCode();
   DECLARE_TRACE();
@@ -66,6 +72,8 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptResource* GetResource() const { return resource_; }
   const KURL& Url() const;
   int StartLine() const { return start_position_.line_.OneBasedInt(); }
+  const String& Nonce() const { return nonce_; }
+  ParserDisposition ParserState() const { return parser_state_; }
   const TextPosition& StartPosition() const { return start_position_; }
   String SourceMapUrl() const;
 
@@ -78,6 +86,8 @@ class CORE_EXPORT ScriptSourceCode final {
   Member<ScriptResource> resource_;
   Member<ScriptStreamer> streamer_;
   mutable KURL url_;
+  const String nonce_;
+  const ParserDisposition parser_state_;
   TextPosition start_position_;
 };
 
