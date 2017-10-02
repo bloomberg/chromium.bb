@@ -271,10 +271,6 @@ String LayoutTheme::ExtraQuirksStyleSheet() {
   return String();
 }
 
-String LayoutTheme::ExtraMediaControlsStyleSheet() {
-  return String();
-}
-
 String LayoutTheme::ExtraFullscreenStyleSheet() {
   return String();
 }
