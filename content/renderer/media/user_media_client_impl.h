@@ -20,6 +20,7 @@
 #include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/user_media_processor.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
 #include "third_party/WebKit/public/web/WebMediaDeviceChangeObserver.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
@@ -83,6 +84,35 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
       blink::WebVector<blink::WebMediaDeviceInfo>& devices);
 
  private:
+  class Request {
+   public:
+    explicit Request(std::unique_ptr<UserMediaRequest> request);
+    explicit Request(const blink::WebApplyConstraintsRequest& request);
+    Request(Request&& other);
+    Request& operator=(Request&& other);
+    ~Request();
+
+    std::unique_ptr<UserMediaRequest> MoveUserMediaRequest();
+
+    UserMediaRequest* user_media_request() const {
+      return user_media_request_.get();
+    }
+
+    const blink::WebApplyConstraintsRequest& apply_constraints_request() const {
+      return apply_constraints_request_;
+    }
+
+    bool IsApplyConstraints() const {
+      return !apply_constraints_request_.IsNull();
+    }
+
+    bool IsUserMedia() const { return !!user_media_request_; }
+
+   private:
+    std::unique_ptr<UserMediaRequest> user_media_request_;
+    blink::WebApplyConstraintsRequest apply_constraints_request_;
+  };
+
   void MaybeProcessNextRequestInfo();
   void CurrentRequestCompleted();
 
@@ -111,7 +141,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   // is a flag that indicates if a request is being processed at a given time,
   // and |pending_request_infos_| is a list of queued requests.
   bool is_processing_request_ = false;
-  std::list<std::unique_ptr<UserMediaRequest>> pending_request_infos_;
+  std::list<Request> pending_request_infos_;
 
   MediaDevicesEventDispatcher::SubscriptionIdList
       device_change_subscription_ids_;
