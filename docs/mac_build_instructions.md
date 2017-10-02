@@ -1,6 +1,6 @@
 # Checking out and building Chromium for Mac
 
-There are instructions for other platforms linked from the 
+There are instructions for other platforms linked from the
 [get the code](get_the_code.md) page.
 
 ## Instructions for Google Employees
@@ -12,16 +12,16 @@ Are you a Google employee? See
 
 ## System requirements
 
-*   A 64-bit Mac running 10.11+.
-*   [Xcode](https://developer.apple.com/xcode) 7.3+.
-*   The OS X 10.10 SDK. Run
+*   A 64-bit Mac running 10.12+.
+*   [Xcode](https://developer.apple.com/xcode) 8+
+*   The OS X 10.12 SDK. Run
 
-    ```shell  
+    ```shell
     $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
- 
+
     to check whether you have it.  Building with a newer SDK works too, but
-    the releases currently use the 10.10 SDK.
+    the releases currently use the 10.12 SDK.
 
 ## Install `depot_tools`
 
