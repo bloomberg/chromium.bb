@@ -27,8 +27,8 @@
 
 namespace blink {
 void* BidiCharacterRun::operator new(size_t sz) {
-  return PartitionAlloc(WTF::Partitions::LayoutPartition(), sz,
-                        WTF_HEAP_PROFILER_TYPE_NAME(BidiCharacterRun));
+  return WTF::PartitionAlloc(WTF::Partitions::LayoutPartition(), sz,
+                             WTF_HEAP_PROFILER_TYPE_NAME(BidiCharacterRun));
 }
 
 void BidiCharacterRun::operator delete(void* ptr) {

@@ -106,22 +106,22 @@ class WTF_EXPORT Partitions {
   static void DumpMemoryStats(bool is_light_dump, base::PartitionStatsDumper*);
 
   ALWAYS_INLINE static void* BufferMalloc(size_t n, const char* type_name) {
-    return PartitionAllocGeneric(BufferPartition(), n, type_name);
+    return base::PartitionAllocGeneric(BufferPartition(), n, type_name);
   }
   ALWAYS_INLINE static void* BufferRealloc(void* p,
                                            size_t n,
                                            const char* type_name) {
-    return PartitionReallocGeneric(BufferPartition(), p, n, type_name);
+    return base::PartitionReallocGeneric(BufferPartition(), p, n, type_name);
   }
   ALWAYS_INLINE static void BufferFree(void* p) {
-    PartitionFreeGeneric(BufferPartition(), p);
+    base::PartitionFreeGeneric(BufferPartition(), p);
   }
   ALWAYS_INLINE static size_t BufferActualSize(size_t n) {
-    return PartitionAllocActualSize(BufferPartition(), n);
+    return base::PartitionAllocActualSize(BufferPartition(), n);
   }
   static void* FastMalloc(size_t n, const char* type_name) {
-    return PartitionAllocGeneric(Partitions::FastMallocPartition(), n,
-                                 type_name);
+    return base::PartitionAllocGeneric(Partitions::FastMallocPartition(), n,
+                                       type_name);
   }
   static void* FastZeroedMalloc(size_t n, const char* type_name) {
     void* result = FastMalloc(n, type_name);
@@ -129,11 +129,11 @@ class WTF_EXPORT Partitions {
     return result;
   }
   static void* FastRealloc(void* p, size_t n, const char* type_name) {
-    return PartitionReallocGeneric(Partitions::FastMallocPartition(), p, n,
-                                   type_name);
+    return base::PartitionReallocGeneric(Partitions::FastMallocPartition(), p,
+                                         n, type_name);
   }
   static void FastFree(void* p) {
-    PartitionFreeGeneric(Partitions::FastMallocPartition(), p);
+    base::PartitionFreeGeneric(Partitions::FastMallocPartition(), p);
   }
 
   static void HandleOutOfMemory();
@@ -158,6 +158,7 @@ using base::kSystemPageSize;
 using base::AllocPages;
 using base::DecommitSystemPages;
 using base::DiscardSystemPages;
+using base::PartitionAlloc;
 using base::PartitionFree;
 using base::FreePages;
 using base::GetAllocPageErrorCode;
