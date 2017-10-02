@@ -38,12 +38,11 @@
         z-index: 1;
       }
 
-      #toolbar::after {
-        content: '';
+      #drop-shadow {
         @apply(--cr-container-shadow);
       }
 
-      :host([has-shadow_]) #toolbar::after {
+      :host([has-shadow_]) #drop-shadow {
         opacity: var(--cr-container-shadow-max-opacity);
       }
 
@@ -89,6 +88,7 @@
     <downloads-toolbar id="toolbar" spinner-active="{{spinnerActive_}}"
         role="none">
     </downloads-toolbar>
+    <div id="drop-shadow"></div>
     <iron-list id="downloads-list" items="[[items_]]"
         hidden="[[!hasDownloads_]]">
       <template>
