@@ -6,18 +6,17 @@
 
 #include <memory>
 
+#include "ash/session/test_session_controller_client.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/session_manager/core/session_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
 using base::UTF8ToUTF16;
-using session_manager::SessionManager;
 using session_manager::SessionState;
 
 namespace ash {
@@ -25,7 +24,7 @@ namespace ash {
 namespace {
 
 class LoginStateNotificationBlockerTest
-    : public AshTestBase,
+    : public NoSessionAshTestBase,
       public message_center::NotificationBlocker::Observer {
  public:
   LoginStateNotificationBlockerTest() {}
@@ -33,10 +32,7 @@ class LoginStateNotificationBlockerTest
 
   // tests::AshTestBase overrides:
   void SetUp() override {
-    session_manager_ = base::MakeUnique<SessionManager>();
-    session_manager_->SetSessionState(SessionState::LOGIN_PRIMARY);
-
-    AshTestBase::SetUp();
+    NoSessionAshTestBase::SetUp();
     blocker_.reset(new LoginStateNotificationBlocker(
         message_center::MessageCenter::Get()));
     blocker_->AddObserver(this);
@@ -45,7 +41,7 @@ class LoginStateNotificationBlockerTest
   void TearDown() override {
     blocker_->RemoveObserver(this);
     blocker_.reset();
-    AshTestBase::TearDown();
+    NoSessionAshTestBase::TearDown();
   }
 
   // message_center::NotificationBlocker::Observer overrides:
@@ -71,14 +67,13 @@ class LoginStateNotificationBlockerTest
   }
 
   void SetLockedState(bool locked) {
-    SessionManager::Get()->SetSessionState(locked ? SessionState::LOCKED
-                                                  : SessionState::ACTIVE);
+    GetSessionControllerClient()->SetSessionState(
+        locked ? SessionState::LOCKED : SessionState::ACTIVE);
   }
 
  private:
   int state_changed_count_ = 0;
   std::unique_ptr<message_center::NotificationBlocker> blocker_;
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerTest);
 };
@@ -90,12 +85,12 @@ TEST_F(LoginStateNotificationBlockerTest, BaseTest) {
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
-  SessionManager::Get()->SetSessionState(SessionState::LOGIN_PRIMARY);
+  GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
-  SessionManager::Get()->SetSessionState(SessionState::ACTIVE);
+  SimulateUserLogin("user@test.com");
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
@@ -120,12 +115,12 @@ TEST_F(LoginStateNotificationBlockerTest, AlwaysAllowedNotifier) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
-  SessionManager::Get()->SetSessionState(SessionState::LOGIN_PRIMARY);
+  GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
-  SessionManager::Get()->SetSessionState(SessionState::ACTIVE);
+  SimulateUserLogin("user@test.com");
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 

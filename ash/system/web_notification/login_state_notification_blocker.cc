@@ -4,11 +4,11 @@
 
 #include "ash/system/web_notification/login_state_notification_blocker.h"
 
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/system/system_notifier.h"
-#include "components/session_manager/core/session_manager.h"
 #include "ui/message_center/message_center.h"
 
-using session_manager::SessionManager;
 using session_manager::SessionState;
 
 namespace ash {
@@ -16,14 +16,11 @@ namespace ash {
 LoginStateNotificationBlocker::LoginStateNotificationBlocker(
     message_center::MessageCenter* message_center)
     : NotificationBlocker(message_center) {
-  // SessionManager may not exist in some tests.
-  if (SessionManager::Get())
-    SessionManager::Get()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
 LoginStateNotificationBlocker::~LoginStateNotificationBlocker() {
-  if (SessionManager::Get())
-    SessionManager::Get()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
 bool LoginStateNotificationBlocker::ShouldShowNotificationAsPopup(
@@ -31,13 +28,11 @@ bool LoginStateNotificationBlocker::ShouldShowNotificationAsPopup(
   if (ash::system_notifier::ShouldAlwaysShowPopups(notification.notifier_id()))
     return true;
 
-  if (SessionManager::Get())
-    return SessionManager::Get()->session_state() == SessionState::ACTIVE;
-
-  return true;
+  return Shell::Get()->session_controller()->GetSessionState() ==
+         SessionState::ACTIVE;
 }
 
-void LoginStateNotificationBlocker::OnSessionStateChanged() {
+void LoginStateNotificationBlocker::OnSessionStateChanged(SessionState state) {
   NotifyBlockingStateChanged();
 }
 
