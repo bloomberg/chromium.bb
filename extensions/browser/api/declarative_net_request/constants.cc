@@ -23,7 +23,6 @@ const char kErrorEmptyUrlFilter[] =
     "*: Rule at index * cannot have an empty value for * key.";
 const char kErrorInvalidRedirectUrl[] =
     "*: Rule at index * does not provide a valid URL for * key.";
-const char kErrorListNotPassed[] = "*: Rules file does not have a valid list.";
 const char kErrorDuplicateIDs[] =
     "*: Rule at index * does not have a unique ID.";
 // Don't surface the actual error to the user, since it's an implementation

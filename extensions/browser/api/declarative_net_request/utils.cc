@@ -59,13 +59,10 @@ std::string GetJSONRulesetFilename(const Extension& extension) {
 
 // Helper function to index |rules| and persist them to the
 // |indexed_ruleset_path|.
-ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
+ParseInfo IndexAndPersistRulesImpl(const base::ListValue& rules,
                                    const Extension& extension,
                                    std::vector<InstallWarning>* warnings) {
   base::ThreadRestrictions::AssertIOAllowed();
-
-  if (!rules.is_list())
-    return ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED);
 
   FlatRulesetIndexer indexer;
   bool all_rules_parsed = true;
@@ -121,7 +118,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
 
 }  // namespace
 
-bool IndexAndPersistRules(const base::Value& rules,
+bool IndexAndPersistRules(const base::ListValue& rules,
                           const Extension& extension,
                           std::string* error,
                           std::vector<InstallWarning>* warnings) {

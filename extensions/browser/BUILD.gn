@@ -475,6 +475,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//extensions/browser",
+    "//extensions/browser/api/declarative_net_request:test_support",
     "//extensions/common",
     "//extensions/common:test_support",
     "//testing/gtest",

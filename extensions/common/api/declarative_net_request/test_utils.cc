@@ -4,8 +4,10 @@
 
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 
+#include "base/json/json_file_value_serializer.h"
 #include "base/values.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 
@@ -106,6 +108,32 @@ std::unique_ptr<base::ListValue> ToListValue(
   for (const std::string& str : vec)
     builder.Append(str);
   return builder.Build();
+}
+
+void WriteManifestAndRuleset(
+    const base::FilePath& extension_dir,
+    const base::FilePath::CharType* json_rules_filepath,
+    const std::string& json_rules_filename,
+    const std::vector<TestRule>& rules) {
+  ListBuilder builder;
+  for (const auto& rule : rules)
+    builder.Append(rule.ToValue());
+  WriteManifestAndRuleset(extension_dir, json_rules_filepath,
+                          json_rules_filename, *builder.Build());
+}
+
+void WriteManifestAndRuleset(
+    const base::FilePath& extension_dir,
+    const base::FilePath::CharType* json_rules_filepath,
+    const std::string& json_rules_filename,
+    const base::Value& rules) {
+  // Persist JSON rules file.
+  JSONFileValueSerializer(extension_dir.Append(json_rules_filepath))
+      .Serialize(rules);
+
+  // Persist manifest file.
+  JSONFileValueSerializer(extension_dir.Append(kManifestFilename))
+      .Serialize(*CreateManifest(json_rules_filename));
 }
 
 }  // namespace declarative_net_request

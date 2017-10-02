@@ -17,7 +17,8 @@ interface ExtensionUnpacker {
         mojo.common.mojom.FilePath path) => (bool success);
 
   // Unpack and sanitize the extension in directory |path|, and return its
-  // parsed manifest.json file in |manifest|. The supplied |location|, and
+  // parsed manifest.json file in |manifest| and its parsed JSON ruleset for
+  // the Declarative Net Request API in |json_ruleset|. The supplied |location|,
   // and the |creation_flags| defined by Extension::InitFromValueFlags are
   // passed into Extension::Create() when unpacking the extension. Decoded
   // image and message catalog data from the extension is written to files
@@ -33,7 +34,8 @@ interface ExtensionUnpacker {
          ManifestLocation location,
          int32 creation_flags)
       => (mojo.common.mojom.String16 error,
-          mojo.common.mojom.DictionaryValue? manifest);
+          mojo.common.mojom.DictionaryValue? manifest,
+          mojo.common.mojom.ListValue? json_ruleset);
 };
 
 [Native]

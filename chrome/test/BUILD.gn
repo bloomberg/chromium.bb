@@ -1249,6 +1249,7 @@ test("browser_tests") {
       "../browser/download/download_danger_prompt_browsertest.cc",
       "../browser/download/download_started_animation_browsertest.cc",
       "../browser/download/save_page_browsertest.cc",
+      "../browser/extensions/api/declarative_net_request/declarative_net_request_browsertest.cc",
       "../browser/fast_shutdown_browsertest.cc",
       "../browser/favicon/content_favicon_driver_browsertest.cc",
       "../browser/first_run/first_run_browsertest.cc",
