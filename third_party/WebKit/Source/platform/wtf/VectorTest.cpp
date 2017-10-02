@@ -25,14 +25,18 @@
 
 #include "platform/wtf/Vector.h"
 
+#include <memory>
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/WTFTestHelper.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace WTF {
+
+HashSet<void*> g_constructed_wrapped_ints;
+unsigned LivenessCounter::live_ = 0;
 
 namespace {
 
@@ -242,27 +246,6 @@ TEST(VectorTest, OwnPtr) {
   EXPECT_EQ(count, static_cast<size_t>(destruct_number));
 }
 
-class MoveOnly {
- public:
-  explicit MoveOnly(int i = 0) : i_(i) {}
-
-  MoveOnly(MoveOnly&& other) : i_(other.i_) { other.i_ = 0; }
-
-  MoveOnly& operator=(MoveOnly&& other) {
-    if (this != &other) {
-      i_ = other.i_;
-      other.i_ = 0;
-    }
-    return *this;
-  }
-
-  int Value() const { return i_; }
-
- private:
-  WTF_MAKE_NONCOPYABLE(MoveOnly);
-  int i_;
-};
-
 TEST(VectorTest, MoveOnlyType) {
   WTF::Vector<MoveOnly> vector;
   vector.push_back(MoveOnly(1));
@@ -299,36 +282,6 @@ TEST(VectorTest, MoveOnlyType) {
   vector = std::move(other_vector);
   EXPECT_EQ(count, vector.size());
 }
-
-// WrappedInt class will fail if it was memmoved or memcpyed.
-static HashSet<void*> g_constructed_wrapped_ints;
-class WrappedInt {
- public:
-  WrappedInt(int i = 0) : original_this_ptr_(this), i_(i) {
-    g_constructed_wrapped_ints.insert(this);
-  }
-
-  WrappedInt(const WrappedInt& other) : original_this_ptr_(this), i_(other.i_) {
-    g_constructed_wrapped_ints.insert(this);
-  }
-
-  WrappedInt& operator=(const WrappedInt& other) {
-    i_ = other.i_;
-    return *this;
-  }
-
-  ~WrappedInt() {
-    EXPECT_EQ(original_this_ptr_, this);
-    EXPECT_TRUE(g_constructed_wrapped_ints.Contains(this));
-    g_constructed_wrapped_ints.erase(this);
-  }
-
-  int Get() const { return i_; }
-
- private:
-  void* original_this_ptr_;
-  int i_;
-};
 
 TEST(VectorTest, SwapWithInlineCapacity) {
   const size_t kInlineCapacity = 2;
@@ -485,21 +438,11 @@ static_assert(!VectorTraits<MojoMoveOnlyType>::kCanMoveWithMemcpy,
 static_assert(!VectorTraits<MojoMoveOnlyType>::kCanCopyWithMemcpy,
               "MojoMoveOnlyType can't be copied with memcpy.");
 
-class LivenessCounter {
- public:
-  void AddRef() const { live_++; }
-  void Release() const { live_--; }
-
-  static unsigned live_;
-};
-
-unsigned LivenessCounter::live_ = 0;
-
 class VectorWithDifferingInlineCapacityTest
     : public ::testing::TestWithParam<size_t> {};
 
 template <size_t inlineCapacity>
-void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
+void TestVectorDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
   LivenessCounter::live_ = 0;
   LivenessCounter counter;
   EXPECT_EQ(0u, LivenessCounter::live_);
@@ -549,13 +492,13 @@ void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
 }
 
 TEST(VectorTest, SwapWithConstructorsAndDestructors) {
-  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
-  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<2>();
-  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<10>();
+  TestVectorDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
+  TestVectorDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<2>();
+  TestVectorDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<10>();
 }
 
 template <size_t inlineCapacity>
-void TestValuesMovedAndSwappedWithInlineCapacity() {
+void TestVectorValuesMovedAndSwappedWithInlineCapacity() {
   Vector<unsigned, inlineCapacity> vector;
   Vector<unsigned, inlineCapacity> vector2;
 
@@ -579,9 +522,9 @@ void TestValuesMovedAndSwappedWithInlineCapacity() {
 }
 
 TEST(VectorTest, ValuesMovedAndSwappedWithInlineCapacity) {
-  TestValuesMovedAndSwappedWithInlineCapacity<0>();
-  TestValuesMovedAndSwappedWithInlineCapacity<2>();
-  TestValuesMovedAndSwappedWithInlineCapacity<10>();
+  TestVectorValuesMovedAndSwappedWithInlineCapacity<0>();
+  TestVectorValuesMovedAndSwappedWithInlineCapacity<2>();
+  TestVectorValuesMovedAndSwappedWithInlineCapacity<10>();
 }
 
 TEST(VectorTest, UniquePtr) {

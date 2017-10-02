@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/WTFTestHelper.h"
 #include "platform/wtf/WeakPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -429,26 +430,6 @@ TEST(FunctionalTest, LotsOfBoundVariables) {
   EXPECT_TRUE(all_bound());
 }
 
-class MoveOnly {
- public:
-  explicit MoveOnly(int value) : value_(value) {}
-  MoveOnly(MoveOnly&& other) : value_(other.value_) {
-    // Reset the value on move.
-    other.value_ = 0;
-  }
-
-  int Value() const { return value_; }
-
- private:
-  MoveOnly(const MoveOnly&) = delete;
-  MoveOnly& operator=(const MoveOnly&) = delete;
-
-  // Disable move-assignment, since it isn't used within bind().
-  MoveOnly& operator=(MoveOnly&&) = delete;
-
-  int value_;
-};
-
 int SingleMoveOnlyByRvalueReference(MoveOnly&& move_only) {
   int value = move_only.Value();
   MoveOnly(std::move(move_only));
@@ -497,42 +478,42 @@ TEST(FunctionalTest, BindMoveOnlyObjects) {
   EXPECT_EQ(0, bound());
 }
 
-class CountCopy {
+class CountGeneration {
  public:
-  CountCopy() : copies_(0) {}
-  CountCopy(const CountCopy& other) : copies_(other.copies_ + 1) {}
+  CountGeneration() : copies_(0) {}
+  CountGeneration(const CountGeneration& other) : copies_(other.copies_ + 1) {}
 
   int Copies() const { return copies_; }
 
  private:
   // Copy/move-assignment is not needed in the test.
-  CountCopy& operator=(const CountCopy&) = delete;
-  CountCopy& operator=(CountCopy&&) = delete;
+  CountGeneration& operator=(const CountGeneration&) = delete;
+  CountGeneration& operator=(CountGeneration&&) = delete;
 
   int copies_;
 };
 
-int TakeCountCopyAsConstReference(const CountCopy& counter) {
+int TakeCountCopyAsConstReference(const CountGeneration& counter) {
   return counter.Copies();
 }
 
-int TakeCountCopyAsValue(CountCopy counter) {
+int TakeCountCopyAsValue(CountGeneration counter) {
   return counter.Copies();
 }
 
 TEST(FunctionalTest, CountCopiesOfBoundArguments) {
-  CountCopy lvalue;
+  CountGeneration lvalue;
   Function<int()> bound = Bind(TakeCountCopyAsConstReference, lvalue);
   EXPECT_EQ(2, bound());  // wrapping and unwrapping.
 
-  bound = Bind(TakeCountCopyAsConstReference, CountCopy());  // Rvalue.
+  bound = Bind(TakeCountCopyAsConstReference, CountGeneration());  // Rvalue.
   EXPECT_EQ(2, bound());
 
   bound = Bind(TakeCountCopyAsValue, lvalue);
   // wrapping, unwrapping and copying in the final function argument.
   EXPECT_EQ(3, bound());
 
-  bound = Bind(TakeCountCopyAsValue, CountCopy());
+  bound = Bind(TakeCountCopyAsValue, CountGeneration());
   EXPECT_EQ(3, bound());
 }
 
@@ -556,17 +537,18 @@ TEST(FunctionalTest, MoveUnboundArgumentsByRvalueReference) {
 }
 
 TEST(FunctionalTest, CountCopiesOfUnboundArguments) {
-  CountCopy lvalue;
-  Function<int(const CountCopy&)> bound1 = Bind(TakeCountCopyAsConstReference);
+  CountGeneration lvalue;
+  Function<int(const CountGeneration&)> bound1 =
+      Bind(TakeCountCopyAsConstReference);
   EXPECT_EQ(0, bound1(lvalue));  // No copies!
-  EXPECT_EQ(0, bound1(CountCopy()));
+  EXPECT_EQ(0, bound1(CountGeneration()));
 
-  Function<int(CountCopy)> bound2 = Bind(TakeCountCopyAsValue);
+  Function<int(CountGeneration)> bound2 = Bind(TakeCountCopyAsValue);
   // At Function::operator(), at Callback::Run() and at the destination
   // function.
   EXPECT_EQ(3, bound2(lvalue));
   // Compiler is allowed to optimize one copy away if the argument is rvalue.
-  EXPECT_LE(bound2(CountCopy()), 2);
+  EXPECT_LE(bound2(CountGeneration()), 2);
 }
 
 TEST(FunctionalTest, WeakPtr) {

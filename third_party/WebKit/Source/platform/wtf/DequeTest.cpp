@@ -25,10 +25,11 @@
 
 #include "platform/wtf/Deque.h"
 
+#include <memory>
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace WTF {
 
@@ -158,19 +159,6 @@ TEST(DequeTest, Reverse) {
   ReverseTest<2>();
 }
 
-class DestructCounter {
- public:
-  explicit DestructCounter(int i, int* destruct_number)
-      : i_(i), destruct_number_(destruct_number) {}
-
-  ~DestructCounter() { ++(*destruct_number_); }
-  int Get() const { return i_; }
-
- private:
-  int i_;
-  int* destruct_number_;
-};
-
 template <typename OwnPtrDeque>
 void OwnPtrTest() {
   int destruct_number = 0;
@@ -242,27 +230,6 @@ TEST(DequeTest, OwnPtr) {
   OwnPtrTest<Deque<std::unique_ptr<DestructCounter>, 2>>();
 }
 
-class MoveOnly {
- public:
-  explicit MoveOnly(int i = 0) : i_(i) {}
-
-  MoveOnly(MoveOnly&& other) : i_(other.i_) { other.i_ = 0; }
-
-  MoveOnly& operator=(MoveOnly&& other) {
-    if (this != &other) {
-      i_ = other.i_;
-      other.i_ = 0;
-    }
-    return *this;
-  }
-
-  int Value() const { return i_; }
-
- private:
-  WTF_MAKE_NONCOPYABLE(MoveOnly);
-  int i_;
-};
-
 TEST(DequeTest, MoveOnlyType) {
   Deque<MoveOnly> deque;
   deque.push_back(MoveOnly(1));
@@ -282,36 +249,7 @@ TEST(DequeTest, MoveOnlyType) {
   EXPECT_EQ(0u, deque.size());
 }
 
-// WrappedInt class will fail if it was memmoved or memcpyed.
 HashSet<void*> g_constructed_wrapped_ints;
-
-class WrappedInt {
- public:
-  WrappedInt(int i = 0) : original_this_ptr_(this), i_(i) {
-    g_constructed_wrapped_ints.insert(this);
-  }
-
-  WrappedInt(const WrappedInt& other) : original_this_ptr_(this), i_(other.i_) {
-    g_constructed_wrapped_ints.insert(this);
-  }
-
-  WrappedInt& operator=(const WrappedInt& other) {
-    i_ = other.i_;
-    return *this;
-  }
-
-  ~WrappedInt() {
-    EXPECT_EQ(original_this_ptr_, this);
-    EXPECT_TRUE(g_constructed_wrapped_ints.Contains(this));
-    g_constructed_wrapped_ints.erase(this);
-  }
-
-  int Get() const { return i_; }
-
- private:
-  void* original_this_ptr_;
-  int i_;
-};
 
 template <size_t inlineCapacity>
 void SwapWithOrWithoutInlineCapacity() {
@@ -362,16 +300,6 @@ TEST(DequeTest, SwapWithOrWithoutInlineCapacity) {
   SwapWithOrWithoutInlineCapacity<2>();
 }
 
-class LivenessCounter {
- public:
-  void AddRef() const { live_++; }
-  void Release() const { live_--; }
-
-  static unsigned live_;
-};
-
-unsigned LivenessCounter::live_ = 0;
-
 // Filter a few numbers out to improve the running speed of the tests. The
 // test has nested loops, and removing even numbers from 4 and up from the
 // loops makes it run 10 times faster.
@@ -380,7 +308,7 @@ bool InterestingNumber(int i) {
 }
 
 template <size_t inlineCapacity>
-void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
+void TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
   LivenessCounter::live_ = 0;
   LivenessCounter counter;
   EXPECT_EQ(0u, LivenessCounter::live_);
@@ -446,13 +374,13 @@ void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
 }
 
 TEST(DequeTest, SwapWithConstructorsAndDestructors) {
-  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
-  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<4>();
-  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<9>();
+  TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
+  TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<4>();
+  TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<9>();
 }
 
 template <size_t inlineCapacity>
-void TestValuesMovedAndSwappedWithInlineCapacity() {
+void TestDequeValuesMovedAndSwappedWithInlineCapacity() {
   Deque<unsigned, inlineCapacity> deque;
   Deque<unsigned, inlineCapacity> deque2;
 
@@ -501,9 +429,9 @@ void TestValuesMovedAndSwappedWithInlineCapacity() {
 }
 
 TEST(DequeTest, ValuesMovedAndSwappedWithInlineCapacity) {
-  TestValuesMovedAndSwappedWithInlineCapacity<0>();
-  TestValuesMovedAndSwappedWithInlineCapacity<4>();
-  TestValuesMovedAndSwappedWithInlineCapacity<9>();
+  TestDequeValuesMovedAndSwappedWithInlineCapacity<0>();
+  TestDequeValuesMovedAndSwappedWithInlineCapacity<4>();
+  TestDequeValuesMovedAndSwappedWithInlineCapacity<9>();
 }
 
 TEST(DequeTest, UniquePtr) {
@@ -536,24 +464,6 @@ TEST(DequeTest, UniquePtr) {
 
   deque.clear();
 }
-
-class CountCopy final {
- public:
-  explicit CountCopy(int* counter = nullptr) : counter_(counter) {}
-  CountCopy(const CountCopy& other) : counter_(other.counter_) {
-    if (counter_)
-      ++*counter_;
-  }
-  CountCopy& operator=(const CountCopy& other) {
-    counter_ = other.counter_;
-    if (counter_)
-      ++*counter_;
-    return *this;
-  }
-
- private:
-  int* counter_;
-};
 
 TEST(DequeTest, MoveShouldNotMakeCopy) {
   // Because data in inline buffer may be swapped or moved individually, we

@@ -25,12 +25,16 @@
 
 #include "platform/wtf/HashSet.h"
 
+#include <memory>
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace WTF {
+
+int* const CountCopy::kDeletedValue =
+    reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
 
 namespace {
 
@@ -76,14 +80,6 @@ void TestReserveCapacity() {
 TEST(HashSetTest, ReserveCapacity) {
   TestReserveCapacity<128>();
 }
-
-struct Dummy {
-  Dummy(bool& deleted) : deleted(deleted) {}
-
-  ~Dummy() { deleted = true; }
-
-  bool& deleted;
-};
 
 TEST(HashSetTest, HashSetOwnPtr) {
   bool deleted1 = false, deleted2 = false;
@@ -158,26 +154,6 @@ TEST(HashSetTest, HashSetOwnPtr) {
   EXPECT_EQ(ptr2, own_ptr2.get());
 }
 
-class DummyRefCounted : public RefCounted<DummyRefCounted> {
- public:
-  DummyRefCounted(bool& is_deleted) : is_deleted_(is_deleted) {
-    is_deleted_ = false;
-  }
-  ~DummyRefCounted() { is_deleted_ = true; }
-
-  void AddRef() {
-    WTF::RefCounted<DummyRefCounted>::AddRef();
-    ++ref_invokes_count_;
-  }
-
-  static int ref_invokes_count_;
-
- private:
-  bool& is_deleted_;
-};
-
-int DummyRefCounted::ref_invokes_count_ = 0;
-
 TEST(HashSetTest, HashSetRefPtr) {
   bool is_deleted = false;
   RefPtr<DummyRefCounted> ptr = WTF::AdoptRef(new DummyRefCounted(is_deleted));
@@ -203,64 +179,6 @@ TEST(HashSetTest, HashSetRefPtr) {
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 }
 
-class CountCopy final {
- public:
-  static int* const kDeletedValue;
-
-  explicit CountCopy(int* counter = nullptr) : counter_(counter) {}
-  CountCopy(const CountCopy& other) : counter_(other.counter_) {
-    if (counter_ && counter_ != kDeletedValue)
-      ++*counter_;
-  }
-  CountCopy& operator=(const CountCopy& other) {
-    counter_ = other.counter_;
-    if (counter_ && counter_ != kDeletedValue)
-      ++*counter_;
-    return *this;
-  }
-  const int* Counter() const { return counter_; }
-
- private:
-  int* counter_;
-};
-
-int* const CountCopy::kDeletedValue =
-    reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
-
-struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
-  static const bool kEmptyValueIsZero = false;
-  static const bool kHasIsEmptyValueFunction = true;
-  static bool IsEmptyValue(const CountCopy& value) { return !value.Counter(); }
-  static void ConstructDeletedValue(CountCopy& slot, bool) {
-    slot = CountCopy(CountCopy::kDeletedValue);
-  }
-  static bool IsDeletedValue(const CountCopy& value) {
-    return value.Counter() == CountCopy::kDeletedValue;
-  }
-};
-
-struct CountCopyHash : public PtrHash<const int*> {
-  static unsigned GetHash(const CountCopy& value) {
-    return PtrHash<const int>::GetHash(value.Counter());
-  }
-  static bool Equal(const CountCopy& left, const CountCopy& right) {
-    return PtrHash<const int>::Equal(left.Counter(), right.Counter());
-  }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
-}  // anonymous namespace
-
-template <>
-struct HashTraits<CountCopy> : public CountCopyHashTraits {};
-
-template <>
-struct DefaultHash<CountCopy> {
-  using Hash = CountCopyHash;
-};
-
-namespace {
-
 TEST(HashSetTest, MoveShouldNotMakeCopy) {
   HashSet<CountCopy> set;
   int counter = 0;
@@ -276,125 +194,55 @@ TEST(HashSetTest, MoveShouldNotMakeCopy) {
   EXPECT_EQ(0, counter);
 }
 
-class MoveOnly {
- public:
-  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key
-  // of a hash table.
-  enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
-
-  explicit MoveOnly(int value = kEmpty, int id = 0) : value_(value), id_(id) {}
-  MoveOnly(MoveOnly&& other) : value_(other.value_), id_(other.id_) {
-    other.value_ = kMovedOut;
-    other.id_ = 0;
-  }
-  MoveOnly& operator=(MoveOnly&& other) {
-    value_ = other.value_;
-    id_ = other.id_;
-    other.value_ = kMovedOut;
-    other.id_ = 0;
-    return *this;
-  }
-
-  int Value() const { return value_; }
-  // id() is used for distinguishing MoveOnlys with the same value().
-  int Id() const { return id_; }
-
- private:
-  MoveOnly(const MoveOnly&) = delete;
-  MoveOnly& operator=(const MoveOnly&) = delete;
-
-  int value_;
-  int id_;
-};
-
-struct MoveOnlyHashTraits : public GenericHashTraits<MoveOnly> {
-  // This is actually true, but we pretend that it's false to disable the
-  // optimization.
-  static const bool kEmptyValueIsZero = false;
-
-  static const bool kHasIsEmptyValueFunction = true;
-  static bool IsEmptyValue(const MoveOnly& value) {
-    return value.Value() == MoveOnly::kEmpty;
-  }
-  static void ConstructDeletedValue(MoveOnly& slot, bool) {
-    slot = MoveOnly(MoveOnly::kDeleted);
-  }
-  static bool IsDeletedValue(const MoveOnly& value) {
-    return value.Value() == MoveOnly::kDeleted;
-  }
-};
-
-struct MoveOnlyHash {
-  static unsigned GetHash(const MoveOnly& value) {
-    return DefaultHash<int>::Hash::GetHash(value.Value());
-  }
-  static bool Equal(const MoveOnly& left, const MoveOnly& right) {
-    return DefaultHash<int>::Hash::Equal(left.Value(), right.Value());
-  }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
-}  // anonymous namespace
-
-template <>
-struct HashTraits<MoveOnly> : public MoveOnlyHashTraits {};
-
-template <>
-struct DefaultHash<MoveOnly> {
-  using Hash = MoveOnlyHash;
-};
-
-namespace {
-
 TEST(HashSetTest, MoveOnlyValue) {
-  using TheSet = HashSet<MoveOnly>;
+  using TheSet = HashSet<MoveOnlyHashValue>;
   TheSet set;
   {
-    TheSet::AddResult add_result = set.insert(MoveOnly(1, 1));
+    TheSet::AddResult add_result = set.insert(MoveOnlyHashValue(1, 1));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(1, add_result.stored_value->Value());
     EXPECT_EQ(1, add_result.stored_value->Id());
   }
-  auto iter = set.find(MoveOnly(1));
+  auto iter = set.find(MoveOnlyHashValue(1));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(1, iter->Value());
 
-  iter = set.find(MoveOnly(2));
+  iter = set.find(MoveOnlyHashValue(2));
   EXPECT_TRUE(iter == set.end());
 
   for (int i = 2; i < 32; ++i) {
-    TheSet::AddResult add_result = set.insert(MoveOnly(i, i));
+    TheSet::AddResult add_result = set.insert(MoveOnlyHashValue(i, i));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(i, add_result.stored_value->Value());
     EXPECT_EQ(i, add_result.stored_value->Id());
   }
 
-  iter = set.find(MoveOnly(1));
+  iter = set.find(MoveOnlyHashValue(1));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(1, iter->Value());
   EXPECT_EQ(1, iter->Id());
 
-  iter = set.find(MoveOnly(7));
+  iter = set.find(MoveOnlyHashValue(7));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(7, iter->Value());
   EXPECT_EQ(7, iter->Id());
 
   {
-    TheSet::AddResult add_result =
-        set.insert(MoveOnly(7, 777));  // With different ID for identification.
+    TheSet::AddResult add_result = set.insert(
+        MoveOnlyHashValue(7, 777));  // With different ID for identification.
     EXPECT_FALSE(add_result.is_new_entry);
     EXPECT_EQ(7, add_result.stored_value->Value());
     EXPECT_EQ(7, add_result.stored_value->Id());
   }
 
-  set.erase(MoveOnly(11));
-  iter = set.find(MoveOnly(11));
+  set.erase(MoveOnlyHashValue(11));
+  iter = set.find(MoveOnlyHashValue(11));
   EXPECT_TRUE(iter == set.end());
 
-  MoveOnly thirteen(set.Take(MoveOnly(13)));
+  MoveOnlyHashValue thirteen(set.Take(MoveOnlyHashValue(13)));
   EXPECT_EQ(13, thirteen.Value());
   EXPECT_EQ(13, thirteen.Id());
-  iter = set.find(MoveOnly(13));
+  iter = set.find(MoveOnlyHashValue(13));
   EXPECT_TRUE(iter == set.end());
 
   set.clear();
@@ -449,12 +297,12 @@ TEST(HashSetTest, UniquePtr) {
   }
 }
 
-bool IsOneTwoThree(const HashSet<int>& set) {
+bool IsOneTwoThreeSet(const HashSet<int>& set) {
   return set.size() == 3 && set.Contains(1) && set.Contains(2) &&
          set.Contains(3);
 }
 
-HashSet<int> ReturnOneTwoThree() {
+HashSet<int> ReturnOneTwoThreeSet() {
   return {1, 2, 3};
 }
 
@@ -498,8 +346,8 @@ TEST(HashSetTest, InitializerList) {
 
   // Other ways of construction: as a function parameter and in a return
   // statement.
-  EXPECT_TRUE(IsOneTwoThree({1, 2, 3}));
-  EXPECT_TRUE(IsOneTwoThree(ReturnOneTwoThree()));
+  EXPECT_TRUE(IsOneTwoThreeSet({1, 2, 3}));
+  EXPECT_TRUE(IsOneTwoThreeSet(ReturnOneTwoThreeSet()));
 }
 
 enum TestEnum {

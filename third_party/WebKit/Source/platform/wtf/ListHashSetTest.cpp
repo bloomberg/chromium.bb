@@ -31,6 +31,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
@@ -535,14 +536,6 @@ TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator) {
   EXPECT_EQ(base_line, Complicated::objects_constructed_);
 }
 
-struct Dummy {
-  Dummy(bool& deleted) : deleted(deleted) {}
-
-  ~Dummy() { deleted = true; }
-
-  bool& deleted;
-};
-
 TEST(ListHashSetTest, WithOwnPtr) {
   bool deleted1 = false, deleted2 = false;
 
@@ -614,55 +607,6 @@ TEST(ListHashSetTest, WithOwnPtr) {
   EXPECT_EQ(ptr2, own_ptr2.get());
 }
 
-class CountCopy final {
- public:
-  static int* const kDeletedValue;
-
-  explicit CountCopy(int* counter = nullptr) : counter_(counter) {}
-  CountCopy(const CountCopy& other) : counter_(other.counter_) {
-    if (counter_ && counter_ != kDeletedValue)
-      ++*counter_;
-  }
-  const int* Counter() const { return counter_; }
-
- private:
-  int* counter_;
-};
-
-int* const CountCopy::kDeletedValue =
-    reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
-
-struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
-  static bool IsEmptyValue(const CountCopy& value) { return !value.Counter(); }
-  static void ConstructDeletedValue(CountCopy& slot, bool) {
-    slot = CountCopy(CountCopy::kDeletedValue);
-  }
-  static bool IsDeletedValue(const CountCopy& value) {
-    return value.Counter() == CountCopy::kDeletedValue;
-  }
-};
-
-struct CountCopyHash : public PtrHash<const int> {
-  static unsigned GetHash(const CountCopy& value) {
-    return PtrHash<const int>::GetHash(value.Counter());
-  }
-  static bool Equal(const CountCopy& left, const CountCopy& right) {
-    return PtrHash<const int>::Equal(left.Counter(), right.Counter());
-  }
-};
-
-}  // anonymous namespace
-
-template <>
-struct HashTraits<CountCopy> : public CountCopyHashTraits {};
-
-template <>
-struct DefaultHash<CountCopy> {
-  using Hash = CountCopyHash;
-};
-
-namespace {
-
 template <typename Set>
 class ListOrLinkedHashSetCountCopyTest : public ::testing::Test {};
 
@@ -695,61 +639,12 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy) {
   EXPECT_EQ(0, counter);
 }
 
-class MoveOnly {
- public:
-  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key
-  // of a hash table.
-  enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
-
-  explicit MoveOnly(int value = kEmpty, int id = 0) : value_(value), id_(id) {}
-  MoveOnly(MoveOnly&& other) : value_(other.value_), id_(other.id_) {
-    other.value_ = kMovedOut;
-    other.id_ = 0;
-  }
-  MoveOnly& operator=(MoveOnly&& other) {
-    value_ = other.value_;
-    id_ = other.id_;
-    other.value_ = kMovedOut;
-    other.id_ = 0;
-    return *this;
-  }
-
-  int Value() const { return value_; }
-  // id() is used for distinguishing MoveOnlys with the same value().
-  int Id() const { return id_; }
-
- private:
-  MoveOnly(const MoveOnly&) = delete;
-  MoveOnly& operator=(const MoveOnly&) = delete;
-
-  int value_;
-  int id_;
-};
-
-struct MoveOnlyHash {
-  static unsigned GetHash(const MoveOnly& value) {
-    return DefaultHash<int>::Hash::GetHash(value.Value());
-  }
-  static bool Equal(const MoveOnly& left, const MoveOnly& right) {
-    return DefaultHash<int>::Hash::Equal(left.Value(), right.Value());
-  }
-};
-
-}  // anonymous namespace
-
-template <>
-struct DefaultHash<MoveOnly> {
-  using Hash = MoveOnlyHash;
-};
-
-namespace {
-
 template <typename Set>
 class ListOrLinkedHashSetMoveOnlyTest : public ::testing::Test {};
 
-using MoveOnlySetTypes = ::testing::Types<ListHashSet<MoveOnly>,
-                                          ListHashSet<MoveOnly, 1>,
-                                          LinkedHashSet<MoveOnly>>;
+using MoveOnlySetTypes = ::testing::Types<ListHashSet<MoveOnlyHashValue>,
+                                          ListHashSet<MoveOnlyHashValue, 1>,
+                                          LinkedHashSet<MoveOnlyHashValue>>;
 TYPED_TEST_CASE(ListOrLinkedHashSetMoveOnlyTest, MoveOnlySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
@@ -757,56 +652,57 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
   using AddResult = typename Set::AddResult;
   Set set;
   {
-    AddResult add_result = set.insert(MoveOnly(1, 1));
+    AddResult add_result = set.insert(MoveOnlyHashValue(1, 1));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(1, add_result.stored_value->Value());
     EXPECT_EQ(1, add_result.stored_value->Id());
   }
   {
-    AddResult add_result = set.insert(MoveOnly(1, 111));
+    AddResult add_result = set.insert(MoveOnlyHashValue(1, 111));
     EXPECT_FALSE(add_result.is_new_entry);
     EXPECT_EQ(1, add_result.stored_value->Value());
     EXPECT_EQ(1, add_result.stored_value->Id());
   }
-  auto iter = set.find(MoveOnly(1));
+  auto iter = set.find(MoveOnlyHashValue(1));
   ASSERT_TRUE(iter != set.end());
   EXPECT_EQ(1, iter->Value());
   EXPECT_EQ(1, iter->Id());
 
-  iter = set.find(MoveOnly(2));
+  iter = set.find(MoveOnlyHashValue(2));
   EXPECT_TRUE(iter == set.end());
 
   // ListHashSet and LinkedHashSet have several flavors of add().
-  iter = set.AddReturnIterator(MoveOnly(2, 2));
+  iter = set.AddReturnIterator(MoveOnlyHashValue(2, 2));
   EXPECT_EQ(2, iter->Value());
   EXPECT_EQ(2, iter->Id());
 
-  iter = set.AddReturnIterator(MoveOnly(2, 222));
+  iter = set.AddReturnIterator(MoveOnlyHashValue(2, 222));
   EXPECT_EQ(2, iter->Value());
   EXPECT_EQ(2, iter->Id());
 
   {
-    AddResult add_result = set.AppendOrMoveToLast(MoveOnly(3, 3));
+    AddResult add_result = set.AppendOrMoveToLast(MoveOnlyHashValue(3, 3));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(3, add_result.stored_value->Value());
     EXPECT_EQ(3, add_result.stored_value->Id());
   }
   {
-    AddResult add_result = set.PrependOrMoveToFirst(MoveOnly(4, 4));
+    AddResult add_result = set.PrependOrMoveToFirst(MoveOnlyHashValue(4, 4));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(4, add_result.stored_value->Value());
     EXPECT_EQ(4, add_result.stored_value->Id());
   }
   {
-    AddResult add_result = set.InsertBefore(MoveOnly(4), MoveOnly(5, 5));
+    AddResult add_result =
+        set.InsertBefore(MoveOnlyHashValue(4), MoveOnlyHashValue(5, 5));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(5, add_result.stored_value->Value());
     EXPECT_EQ(5, add_result.stored_value->Id());
   }
   {
-    iter = set.find(MoveOnly(5));
+    iter = set.find(MoveOnlyHashValue(5));
     ASSERT_TRUE(iter != set.end());
-    AddResult add_result = set.InsertBefore(iter, MoveOnly(6, 6));
+    AddResult add_result = set.InsertBefore(iter, MoveOnlyHashValue(6, 6));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(6, add_result.stored_value->Value());
     EXPECT_EQ(6, add_result.stored_value->Id());
@@ -814,7 +710,7 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
 
   // ... but they don't have any pass-out (like take()) methods.
 
-  set.erase(MoveOnly(3));
+  set.erase(MoveOnlyHashValue(3));
   set.clear();
 }
 

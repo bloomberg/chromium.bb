@@ -30,9 +30,12 @@
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
+
+int DummyRefCounted::ref_invokes_count_ = 0;
 
 namespace {
 
@@ -88,19 +91,6 @@ TEST(HashMapTest, DoubleHashCollisions) {
   EXPECT_EQ(3, map.at(kNegativeZeroKey));
 }
 
-class DestructCounter {
- public:
-  explicit DestructCounter(int i, int* destruct_number)
-      : i_(i), destruct_number_(destruct_number) {}
-
-  ~DestructCounter() { ++(*destruct_number_); }
-  int Get() const { return i_; }
-
- private:
-  int i_;
-  int* destruct_number_;
-};
-
 using OwnPtrHashMap = HashMap<int, std::unique_ptr<DestructCounter>>;
 
 TEST(HashMapTest, OwnPtrAsValue) {
@@ -134,35 +124,6 @@ TEST(HashMapTest, OwnPtrAsValue) {
   own_counter1.reset();
   EXPECT_EQ(2, destruct_number);
 }
-
-class DummyRefCounted : public RefCounted<DummyRefCounted> {
- public:
-  DummyRefCounted(bool& is_deleted) : is_deleted_(is_deleted) {
-    is_deleted_ = false;
-  }
-  ~DummyRefCounted() {
-    DCHECK(!is_deleted_);
-    is_deleted_ = true;
-  }
-
-  void AddRef() {
-    DCHECK(!is_deleted_);
-    WTF::RefCounted<DummyRefCounted>::AddRef();
-    ++ref_invokes_count_;
-  }
-
-  void Release() {
-    DCHECK(!is_deleted_);
-    WTF::RefCounted<DummyRefCounted>::Release();
-  }
-
-  static int ref_invokes_count_;
-
- private:
-  bool& is_deleted_;
-};
-
-int DummyRefCounted::ref_invokes_count_ = 0;
 
 TEST(HashMapTest, RefPtrAsKey) {
   bool is_deleted = false;
@@ -295,75 +256,11 @@ TEST(HashMapTest, ValueTypeDestructed) {
   EXPECT_EQ(0, InstanceCounter::counter_);
 }
 
-class MoveOnly {
- public:
-  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key
-  // of a hash table.
-  enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
-
-  explicit MoveOnly(int value = kEmpty) : value_(value) {}
-  MoveOnly(MoveOnly&& other) : value_(other.value_) {
-    other.value_ = kMovedOut;
-  }
-  MoveOnly& operator=(MoveOnly&& other) {
-    value_ = other.value_;
-    other.value_ = kMovedOut;
-    return *this;
-  }
-
-  int Value() const { return value_; }
-
- private:
-  MoveOnly(const MoveOnly&) = delete;
-  MoveOnly& operator=(const MoveOnly&) = delete;
-
-  int value_;
-};
-
-struct MoveOnlyHashTraits : public GenericHashTraits<MoveOnly> {
-  // This is actually true, but we pretend that it's false to disable the
-  // optimization.
-  static const bool kEmptyValueIsZero = false;
-
-  static const bool kHasIsEmptyValueFunction = true;
-  static bool IsEmptyValue(const MoveOnly& value) {
-    return value.Value() == MoveOnly::kEmpty;
-  }
-  static void ConstructDeletedValue(MoveOnly& slot, bool) {
-    slot = MoveOnly(MoveOnly::kDeleted);
-  }
-  static bool IsDeletedValue(const MoveOnly& value) {
-    return value.Value() == MoveOnly::kDeleted;
-  }
-};
-
-struct MoveOnlyHash {
-  static unsigned GetHash(const MoveOnly& value) {
-    return DefaultHash<int>::Hash::GetHash(value.Value());
-  }
-  static bool Equal(const MoveOnly& left, const MoveOnly& right) {
-    return DefaultHash<int>::Hash::Equal(left.Value(), right.Value());
-  }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
-}  // anonymous namespace
-
-template <>
-struct HashTraits<MoveOnly> : public MoveOnlyHashTraits {};
-
-template <>
-struct DefaultHash<MoveOnly> {
-  using Hash = MoveOnlyHash;
-};
-
-namespace {
-
 TEST(HashMapTest, MoveOnlyValueType) {
-  using TheMap = HashMap<int, MoveOnly>;
+  using TheMap = HashMap<int, MoveOnlyHashValue>;
   TheMap map;
   {
-    TheMap::AddResult add_result = map.insert(1, MoveOnly(10));
+    TheMap::AddResult add_result = map.insert(1, MoveOnlyHashValue(10));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(1, add_result.stored_value->key);
     EXPECT_EQ(10, add_result.stored_value->value.Value());
@@ -378,7 +275,7 @@ TEST(HashMapTest, MoveOnlyValueType) {
 
   // Try to add more to trigger rehashing.
   for (int i = 2; i < 32; ++i) {
-    TheMap::AddResult add_result = map.insert(i, MoveOnly(i * 10));
+    TheMap::AddResult add_result = map.insert(i, MoveOnlyHashValue(i * 10));
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(i, add_result.stored_value->key);
     EXPECT_EQ(i * 10, add_result.stored_value->value.Value());
@@ -395,7 +292,7 @@ TEST(HashMapTest, MoveOnlyValueType) {
   EXPECT_EQ(70, iter->value.Value());
 
   {
-    TheMap::AddResult add_result = map.Set(9, MoveOnly(999));
+    TheMap::AddResult add_result = map.Set(9, MoveOnlyHashValue(999));
     EXPECT_FALSE(add_result.is_new_entry);
     EXPECT_EQ(9, add_result.stored_value->key);
     EXPECT_EQ(999, add_result.stored_value->value.Value());
@@ -405,7 +302,7 @@ TEST(HashMapTest, MoveOnlyValueType) {
   iter = map.find(11);
   EXPECT_TRUE(iter == map.end());
 
-  MoveOnly one_thirty(map.Take(13));
+  MoveOnlyHashValue one_thirty(map.Take(13));
   EXPECT_EQ(130, one_thirty.Value());
   iter = map.find(13);
   EXPECT_TRUE(iter == map.end());
@@ -416,76 +313,57 @@ TEST(HashMapTest, MoveOnlyValueType) {
 TEST(HashMapTest, MoveOnlyKeyType) {
   // The content of this test is similar to the test above, except that the
   // types of key and value are swapped.
-  using TheMap = HashMap<MoveOnly, int>;
+  using TheMap = HashMap<MoveOnlyHashValue, int>;
   TheMap map;
   {
-    TheMap::AddResult add_result = map.insert(MoveOnly(1), 10);
+    TheMap::AddResult add_result = map.insert(MoveOnlyHashValue(1), 10);
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(1, add_result.stored_value->key.Value());
     EXPECT_EQ(10, add_result.stored_value->value);
   }
-  auto iter = map.find(MoveOnly(1));
+  auto iter = map.find(MoveOnlyHashValue(1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.Value());
   EXPECT_EQ(10, iter->value);
 
-  iter = map.find(MoveOnly(2));
+  iter = map.find(MoveOnlyHashValue(2));
   EXPECT_TRUE(iter == map.end());
 
   for (int i = 2; i < 32; ++i) {
-    TheMap::AddResult add_result = map.insert(MoveOnly(i), i * 10);
+    TheMap::AddResult add_result = map.insert(MoveOnlyHashValue(i), i * 10);
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(i, add_result.stored_value->key.Value());
     EXPECT_EQ(i * 10, add_result.stored_value->value);
   }
 
-  iter = map.find(MoveOnly(1));
+  iter = map.find(MoveOnlyHashValue(1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.Value());
   EXPECT_EQ(10, iter->value);
 
-  iter = map.find(MoveOnly(7));
+  iter = map.find(MoveOnlyHashValue(7));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(7, iter->key.Value());
   EXPECT_EQ(70, iter->value);
 
   {
-    TheMap::AddResult add_result = map.Set(MoveOnly(9), 999);
+    TheMap::AddResult add_result = map.Set(MoveOnlyHashValue(9), 999);
     EXPECT_FALSE(add_result.is_new_entry);
     EXPECT_EQ(9, add_result.stored_value->key.Value());
     EXPECT_EQ(999, add_result.stored_value->value);
   }
 
-  map.erase(MoveOnly(11));
-  iter = map.find(MoveOnly(11));
+  map.erase(MoveOnlyHashValue(11));
+  iter = map.find(MoveOnlyHashValue(11));
   EXPECT_TRUE(iter == map.end());
 
-  int one_thirty = map.Take(MoveOnly(13));
+  int one_thirty = map.Take(MoveOnlyHashValue(13));
   EXPECT_EQ(130, one_thirty);
-  iter = map.find(MoveOnly(13));
+  iter = map.find(MoveOnlyHashValue(13));
   EXPECT_TRUE(iter == map.end());
 
   map.clear();
 }
-
-class CountCopy final {
- public:
-  CountCopy() : counter_(nullptr) {}
-  explicit CountCopy(int& counter) : counter_(&counter) {}
-  CountCopy(const CountCopy& other) : counter_(other.counter_) {
-    if (counter_)
-      ++*counter_;
-  }
-  CountCopy& operator=(const CountCopy& other) {
-    counter_ = other.counter_;
-    if (counter_)
-      ++*counter_;
-    return *this;
-  }
-
- private:
-  int* counter_;
-};
 
 TEST(HashMapTest, MoveShouldNotMakeCopy) {
   HashMap<int, CountCopy> map;
@@ -596,72 +474,74 @@ TEST(HashMapTest, UniquePtrAsValue) {
 }
 
 TEST(HashMapTest, MoveOnlyPairKeyType) {
-  using Pair = std::pair<MoveOnly, int>;
+  using Pair = std::pair<MoveOnlyHashValue, int>;
   using TheMap = HashMap<Pair, int>;
   TheMap map;
   {
-    TheMap::AddResult add_result = map.insert(Pair(MoveOnly(1), -1), 10);
+    TheMap::AddResult add_result =
+        map.insert(Pair(MoveOnlyHashValue(1), -1), 10);
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(1, add_result.stored_value->key.first.Value());
     EXPECT_EQ(-1, add_result.stored_value->key.second);
     EXPECT_EQ(10, add_result.stored_value->value);
   }
-  auto iter = map.find(Pair(MoveOnly(1), -1));
+  auto iter = map.find(Pair(MoveOnlyHashValue(1), -1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.first.Value());
   EXPECT_EQ(-1, iter->key.second);
   EXPECT_EQ(10, iter->value);
 
-  iter = map.find(Pair(MoveOnly(1), 0));
+  iter = map.find(Pair(MoveOnlyHashValue(1), 0));
   EXPECT_TRUE(iter == map.end());
 
   for (int i = 2; i < 32; ++i) {
-    TheMap::AddResult add_result = map.insert(Pair(MoveOnly(i), -i), i * 10);
+    TheMap::AddResult add_result =
+        map.insert(Pair(MoveOnlyHashValue(i), -i), i * 10);
     EXPECT_TRUE(add_result.is_new_entry);
     EXPECT_EQ(i, add_result.stored_value->key.first.Value());
     EXPECT_EQ(-i, add_result.stored_value->key.second);
     EXPECT_EQ(i * 10, add_result.stored_value->value);
   }
 
-  iter = map.find(Pair(MoveOnly(1), -1));
+  iter = map.find(Pair(MoveOnlyHashValue(1), -1));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(1, iter->key.first.Value());
   EXPECT_EQ(-1, iter->key.second);
   EXPECT_EQ(10, iter->value);
 
-  iter = map.find(Pair(MoveOnly(7), -7));
+  iter = map.find(Pair(MoveOnlyHashValue(7), -7));
   ASSERT_TRUE(iter != map.end());
   EXPECT_EQ(7, iter->key.first.Value());
   EXPECT_EQ(-7, iter->key.second);
   EXPECT_EQ(70, iter->value);
 
   {
-    TheMap::AddResult add_result = map.Set(Pair(MoveOnly(9), -9), 999);
+    TheMap::AddResult add_result = map.Set(Pair(MoveOnlyHashValue(9), -9), 999);
     EXPECT_FALSE(add_result.is_new_entry);
     EXPECT_EQ(9, add_result.stored_value->key.first.Value());
     EXPECT_EQ(-9, add_result.stored_value->key.second);
     EXPECT_EQ(999, add_result.stored_value->value);
   }
 
-  map.erase(Pair(MoveOnly(11), -11));
-  iter = map.find(Pair(MoveOnly(11), -11));
+  map.erase(Pair(MoveOnlyHashValue(11), -11));
+  iter = map.find(Pair(MoveOnlyHashValue(11), -11));
   EXPECT_TRUE(iter == map.end());
 
-  int one_thirty = map.Take(Pair(MoveOnly(13), -13));
+  int one_thirty = map.Take(Pair(MoveOnlyHashValue(13), -13));
   EXPECT_EQ(130, one_thirty);
-  iter = map.find(Pair(MoveOnly(13), -13));
+  iter = map.find(Pair(MoveOnlyHashValue(13), -13));
   EXPECT_TRUE(iter == map.end());
 
   map.clear();
 }
 
-bool IsOneTwoThree(const HashMap<int, int>& map) {
+bool IsOneTwoThreeMap(const HashMap<int, int>& map) {
   return map.size() == 3 && map.Contains(1) && map.Contains(2) &&
          map.Contains(3) && map.at(1) == 11 && map.at(2) == 22 &&
          map.at(3) == 33;
 };
 
-HashMap<int, int> ReturnOneTwoThree() {
+HashMap<int, int> ReturnOneTwoThreeMap() {
   return {{1, 11}, {2, 22}, {3, 33}};
 };
 
@@ -707,8 +587,8 @@ TEST(HashMapTest, InitializerList) {
 
   // Other ways of construction: as a function parameter and in a return
   // statement.
-  EXPECT_TRUE(IsOneTwoThree({{1, 11}, {2, 22}, {3, 33}}));
-  EXPECT_TRUE(IsOneTwoThree(ReturnOneTwoThree()));
+  EXPECT_TRUE(IsOneTwoThreeMap({{1, 11}, {2, 22}, {3, 33}}));
+  EXPECT_TRUE(IsOneTwoThreeMap(ReturnOneTwoThreeMap()));
 }
 
 }  // anonymous namespace
