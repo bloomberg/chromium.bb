@@ -31,7 +31,9 @@
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_metadata.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -759,10 +761,20 @@ bool IndexedDBCallbacks::IOThreadHelper::CreateAllBlobs(
   }
   IDB_TRACE("IndexedDBCallbacks::CreateAllBlobs");
   DCHECK_EQ(blob_info.size(), blob_or_file_info->size());
-  if (!dispatcher_host_->blob_storage_context())
+  storage::BlobStorageContext* blob_context =
+      dispatcher_host_->blob_storage_context();
+  if (!blob_context)
     return false;
-  for (size_t i = 0; i < blob_info.size(); ++i)
-    (*blob_or_file_info)[i]->uuid = CreateBlobData(blob_info[i]);
+  for (size_t i = 0; i < blob_info.size(); ++i) {
+    std::string uuid = CreateBlobData(blob_info[i]);
+    if (features::IsMojoBlobsEnabled()) {
+      storage::mojom::BlobPtr blob_ptr;
+      storage::BlobImpl::Create(blob_context->GetBlobDataFromUUID(uuid),
+                                MakeRequest(&blob_ptr));
+      (*blob_or_file_info)[i]->blob = std::move(blob_ptr);
+    }
+    (*blob_or_file_info)[i]->uuid = std::move(uuid);
+  }
   return true;
 }
 

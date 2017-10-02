@@ -91,11 +91,13 @@ void IndexedDBCallbacksImpl::ConvertValue(
                       blink::FilePathToWebString(info->file->path),
                       WebString::FromUTF16(info->file->name),
                       WebString::FromUTF16(info->mime_type),
-                      info->file->last_modified.ToDoubleT(), info->size);
+                      info->file->last_modified.ToDoubleT(), info->size,
+                      info->blob.PassInterface().PassHandle());
     } else {
       local_blob_info[i] =
           WebBlobInfo(WebString::FromUTF8(info->uuid),
-                      WebString::FromUTF16(info->mime_type), info->size);
+                      WebString::FromUTF16(info->mime_type), info->size,
+                      info->blob.PassInterface().PassHandle());
     }
   }
 
