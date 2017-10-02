@@ -72,9 +72,9 @@ std::unique_ptr<service_manager::Service> CreateFontService() {
 void RegisterMashServices(
     content::ContentUtilityClient::StaticServiceMap* services) {
   RegisterMashService(services, ui::mojom::kServiceName, &CreateUiService);
+#if defined(OS_CHROMEOS)
   RegisterMashService(services, mash::quick_launch::mojom::kServiceName,
                       &CreateQuickLaunch);
-#if defined(OS_CHROMEOS)
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, "accessibility_autoclick",
                       &CreateAccessibilityAutoclick);
