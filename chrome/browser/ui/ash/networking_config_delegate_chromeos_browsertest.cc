@@ -54,7 +54,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
   // Open the system tray menu.
   ash::SystemTray* system_tray =
       ash::Shell::GetPrimaryRootWindowController()->GetSystemTray();
-  system_tray->ShowDefaultView(ash::BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(ash::BUBBLE_CREATE_NEW,
+                               false /* show_by_click */);
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(system_tray->HasSystemBubble());
 

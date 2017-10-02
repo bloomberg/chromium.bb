@@ -21,7 +21,7 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
       SystemTrayTestApi(system_tray).tray_enterprise();
 
   // By default there is no enterprise item in the menu.
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_FALSE(tray_enterprise->tray_view()->visible());
   system_tray->CloseBubble();
 
@@ -31,7 +31,7 @@ TEST_F(TrayEnterpriseTest, ItemVisible) {
       "example.com", active_directory);
 
   // Enterprise managed devices show an item.
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray_enterprise->tray_view()->visible());
   system_tray->CloseBubble();
 }
@@ -49,7 +49,7 @@ TEST_F(TrayEnterpriseTest, ItemVisibleForActiveDirectory) {
       empty_domain, active_directory);
 
   // Active Directory managed devices show an item.
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray_enterprise->tray_view()->visible());
   system_tray->CloseBubble();
 }

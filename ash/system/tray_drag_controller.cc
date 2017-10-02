@@ -73,7 +73,7 @@ void TrayDragController::StartGestureDrag(const ui::GestureEvent& gesture) {
     if (gesture.details().scroll_y_hint() > 0)
       return;
 
-    tray_view_->ShowBubble();
+    tray_view_->ShowBubble(true /* show_by_click */);
   }
 
   if (!tray_view_->GetBubbleView())

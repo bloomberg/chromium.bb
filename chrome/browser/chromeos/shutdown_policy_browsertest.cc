@@ -146,7 +146,7 @@ class ShutdownPolicyInSessionTest
   // Opens the system tray menu. This creates the tray views.
   void OpenSystemTrayMenu() {
     ash::Shell::Get()->GetPrimarySystemTray()->ShowDefaultView(
-        ash::BUBBLE_CREATE_NEW);
+        ash::BUBBLE_CREATE_NEW, false /* show_by_click */);
   }
 
   // Closes the system tray menu. This deletes the tray views.

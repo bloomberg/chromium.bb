@@ -46,7 +46,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());
 
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   base::string16 label = tray_update->GetLabelForTesting()->text();
   EXPECT_EQ("Restart to update", base::UTF16ToUTF8(label));
 }
@@ -65,7 +65,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());
 
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   base::string16 label = tray_update->GetLabelForTesting()->text();
   EXPECT_EQ("Restart to update Adobe Flash Player", base::UTF16ToUTF8(label));
 }
@@ -87,7 +87,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdateOverCellularAvailable) {
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());
 
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   base::string16 label = tray_update->GetLabelForTesting()->text();
   EXPECT_EQ("Click to view update details", base::UTF16ToUTF8(label));
 

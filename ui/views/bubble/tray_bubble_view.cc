@@ -246,9 +246,10 @@ void TrayBubbleView::InitializeAndShowBubble() {
 
   ++g_current_tray_bubble_showing_count_;
 
-  // If TrayBubbleView cannot be activated, register pre target event handler to
-  // reroute key events to the widget for activating the view or closing it.
-  if (!CanActivate()) {
+  // If TrayBubbleView cannot be activated and is shown by clicking on the
+  // corresponding tray view, register pre target event handler to reroute key
+  // events to the widget for activating the view or closing it.
+  if (!CanActivate() && params_.show_by_click) {
     reroute_event_handler_ = base::MakeUnique<RerouteEventHandler>(this);
   }
 }

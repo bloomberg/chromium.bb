@@ -362,7 +362,7 @@ TrayBubbleView* TrayBackgroundView::GetBubbleView() {
 
 void TrayBackgroundView::CloseBubble() {}
 
-void TrayBackgroundView::ShowBubble() {}
+void TrayBackgroundView::ShowBubble(bool show_by_click) {}
 
 void TrayBackgroundView::UpdateAfterShelfAlignmentChange() {
   tray_container_->UpdateAfterShelfAlignmentChange();

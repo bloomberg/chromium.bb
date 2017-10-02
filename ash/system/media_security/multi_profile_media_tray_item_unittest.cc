@@ -45,7 +45,7 @@ TEST_F(MultiProfileMediaTrayItemTest, NotifyMediaCaptureChange) {
   GetSessionControllerClient()->CreatePredefinedUserSessions(2);
 
   SystemTray* system_tray = GetPrimarySystemTray();
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   views::View* in_user_view =
       system_tray->GetSystemBubble()->bubble_view()->GetViewByID(
           VIEW_ID_USER_VIEW_MEDIA_INDICATOR);

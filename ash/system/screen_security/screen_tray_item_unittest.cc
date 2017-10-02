@@ -200,7 +200,8 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   EXPECT_TRUE(tray_item->tray_view()->visible());
 
   // The default view should be created in a new bubble.
-  AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  AshTestBase::GetPrimarySystemTray()->ShowDefaultView(
+      BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray_item->default_view());
   AshTestBase::GetPrimarySystemTray()->CloseBubble();
   EXPECT_FALSE(tray_item->default_view());
@@ -209,7 +210,8 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   EXPECT_FALSE(tray_item->tray_view()->visible());
 
   // The default view should not be visible because session is stopped.
-  AshTestBase::GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
+  AshTestBase::GetPrimarySystemTray()->ShowDefaultView(
+      BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_FALSE(tray_item->default_view()->visible());
 }
 

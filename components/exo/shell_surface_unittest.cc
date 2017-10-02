@@ -1185,8 +1185,8 @@ TEST_F(ShellSurfaceTest, CompositorLockInRotation) {
   EXPECT_FALSE(compositor->IsLocked());
 }
 
-// System tray should be activated if user presses tab key while shell surface
-// is active.
+// If system tray is shown by click. It should be activated if user presses tab
+// key while shell surface is active.
 TEST_F(ShellSurfaceTest, KeyboardNavigationWithSystemTray) {
   const gfx::Size buffer_size(800, 600);
   std::unique_ptr<Buffer> buffer(
@@ -1201,9 +1201,11 @@ TEST_F(ShellSurfaceTest, KeyboardNavigationWithSystemTray) {
 
   EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
 
-  // Show system tray.
+  // Show system tray by perfoming a gesture tap at tray.
   ash::SystemTray* system_tray = GetPrimarySystemTray();
-  system_tray->ShowDefaultView(ash::BUBBLE_CREATE_NEW);
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  system_tray->PerformAction(tap);
   ASSERT_TRUE(system_tray->GetWidget());
 
   // Confirm that system tray is not active at this time.

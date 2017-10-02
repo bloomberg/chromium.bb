@@ -64,7 +64,7 @@ class TrayNetworkTest : public AshTestBase {
 TEST_F(TrayNetworkTest, Basics) {
   // Open the system tray menu.
   SystemTray* system_tray = GetPrimarySystemTray();
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
 
   // Show network details.

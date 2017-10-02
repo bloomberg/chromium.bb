@@ -48,7 +48,7 @@ class TrayEventFilterTest : public AshTestBase {
 
 TEST_F(TrayEventFilterTest, ClickingOutsideCloseBubble) {
   SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray->HasSystemBubble());
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 
@@ -60,7 +60,7 @@ TEST_F(TrayEventFilterTest, ClickingOutsideCloseBubble) {
 
 TEST_F(TrayEventFilterTest, ClickingInsideDoesNotCloseBubble) {
   SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray->HasSystemBubble());
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 
@@ -79,7 +79,7 @@ TEST_F(TrayEventFilterTest, ClickingOnMenuContainerDoesNotCloseBubble) {
       ->AddChild(menu_window.get());
 
   SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray->HasSystemBubble());
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 
@@ -102,7 +102,7 @@ TEST_F(TrayEventFilterTest, ClickingOnPopupDoesNotCloseBubble) {
                                              true);
 
   SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray->HasSystemBubble());
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 
@@ -124,7 +124,7 @@ TEST_F(TrayEventFilterTest, ClickingOnKeyboardContainerDoesNotCloseBubble) {
   keyboard_container->AddChild(keyboard_window.get());
 
   SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_TRUE(tray->HasSystemBubble());
   EXPECT_TRUE(tray->IsSystemBubbleVisible());
 

@@ -26,7 +26,7 @@ bool FakeMessageCenterTrayDelegate::ShowPopups() {
 void FakeMessageCenterTrayDelegate::HidePopups() {
 }
 
-bool FakeMessageCenterTrayDelegate::ShowMessageCenter() {
+bool FakeMessageCenterTrayDelegate::ShowMessageCenter(bool show_by_click) {
   return false;
 }
 

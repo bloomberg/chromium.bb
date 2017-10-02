@@ -71,7 +71,8 @@ class WebNotificationBubbleWrapper {
   // Takes ownership of |bubble| and creates |bubble_wrapper_|.
   WebNotificationBubbleWrapper(WebNotificationTray* tray,
                                TrayBackgroundView* anchor_tray,
-                               MessageCenterBubble* bubble) {
+                               MessageCenterBubble* bubble,
+                               bool show_by_click) {
     bubble_.reset(bubble);
     views::TrayBubbleView::InitParams init_params;
     init_params.delegate = tray;
@@ -84,6 +85,7 @@ class WebNotificationBubbleWrapper {
     init_params.max_width = width;
     init_params.max_height = bubble->max_height();
     init_params.bg_color = SkColorSetRGB(0xe7, 0xe7, 0xe7);
+    init_params.show_by_click = show_by_click;
 
     views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
     bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());
@@ -311,7 +313,8 @@ void WebNotificationTray::DisableAnimationsForTest(bool disable) {
 
 // Public methods.
 
-bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
+bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings,
+                                                    bool show_by_click) {
   if (!ShouldShowMessageCenter())
     return false;
 
@@ -337,15 +340,15 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
     anchor_tray = system_tray_;
 
   message_center_bubble_.reset(new WebNotificationBubbleWrapper(
-      this, anchor_tray, message_center_bubble));
+      this, anchor_tray, message_center_bubble, show_by_click));
 
   shelf()->UpdateAutoHideState();
   SetIsActive(true);
   return true;
 }
 
-bool WebNotificationTray::ShowMessageCenter() {
-  return ShowMessageCenterInternal(false /* show_settings */);
+bool WebNotificationTray::ShowMessageCenter(bool show_by_click) {
+  return ShowMessageCenterInternal(false /* show_settings */, show_by_click);
 }
 
 void WebNotificationTray::HideMessageCenter() {
@@ -459,7 +462,8 @@ bool WebNotificationTray::ShowNotifierSettings() {
         ->SetSettingsVisible();
     return true;
   }
-  return ShowMessageCenterInternal(true /* show_settings */);
+  return ShowMessageCenterInternal(true /* show_settings */,
+                                   false /* show_by_click */);
 }
 
 bool WebNotificationTray::IsContextMenuEnabled() const {
@@ -577,9 +581,9 @@ void WebNotificationTray::ClickedOutsideBubble() {
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {
   if (message_center_bubble())
-    message_center_tray_->HideMessageCenterBubble();
+    CloseBubble();
   else
-    message_center_tray_->ShowMessageCenterBubble();
+    ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
   return true;
 }
 
@@ -587,9 +591,9 @@ void WebNotificationTray::CloseBubble() {
   message_center_tray_->HideMessageCenterBubble();
 }
 
-void WebNotificationTray::ShowBubble() {
+void WebNotificationTray::ShowBubble(bool show_by_click) {
   if (!IsMessageCenterBubbleVisible())
-    message_center_tray_->ShowMessageCenterBubble();
+    message_center_tray_->ShowMessageCenterBubble(show_by_click);
 }
 
 views::TrayBubbleView* WebNotificationTray::GetBubbleView() {

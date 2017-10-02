@@ -1748,7 +1748,7 @@ TEST_F(WindowSelectorTest, ShowTextFilterMenu) {
 
   // Open system bubble shifting focus from the text filter.
   SystemTray* tray = GetPrimarySystemTray();
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
 
   // This should not cancel overview mode.

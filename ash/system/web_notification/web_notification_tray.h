@@ -81,7 +81,7 @@ class ASH_EXPORT WebNotificationTray
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
   void CloseBubble() override;
-  void ShowBubble() override;
+  void ShowBubble(bool show_by_click) override;
   views::TrayBubbleView* GetBubbleView() override;
 
   // Overridden from views::TrayBubbleView::Delegate.
@@ -94,7 +94,7 @@ class ASH_EXPORT WebNotificationTray
 
   // Overridden from MessageCenterTrayDelegate.
   void OnMessageCenterTrayChanged() override;
-  bool ShowMessageCenter() override;
+  bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
   bool ShowPopups() override;
   void HidePopups() override;
@@ -125,9 +125,10 @@ class ASH_EXPORT WebNotificationTray
   void UpdateTrayContent();
 
   // The actual process to show the message center. Set |show_settings| to true
-  // if the message center should be initialized with the settings visible.
-  // Returns true if the center is successfully created.
-  bool ShowMessageCenterInternal(bool show_settings);
+  // if the message center should be initialized with the settings visible. Set
+  // |show_by_click| to true if the message center is shown by mouse or gesture
+  // click. Returns true if the center is successfully created.
+  bool ShowMessageCenterInternal(bool show_settings, bool show_by_click);
 
   // Queries login status and the status area widget to determine visibility of
   // the message center.
