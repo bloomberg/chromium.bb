@@ -227,6 +227,8 @@ public class UrlBar extends AutocompleteEditText {
                 if (mUrlBarDelegate != null) mUrlBarDelegate.backKeyPressed();
             }
         });
+
+        ApiCompatibilityUtils.disableSmartSelectionTextClassifier(this);
     }
 
     /**
