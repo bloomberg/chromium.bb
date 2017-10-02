@@ -1274,9 +1274,13 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
-
     d = 0;
+#if CONFIG_NEW_MULTISYMBOL
+    for (i = 0; i < n; ++i)
+      d |= aom_read_symbol(r, mvcomp->bits_cdf[(i + 1) / 2], 2, ACCT_STR) << i;
+#else
     for (i = 0; i < n; ++i) d |= aom_read(r, mvcomp->bits[i], ACCT_STR) << i;
+#endif
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 

@@ -2255,6 +2255,7 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].hp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_hp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_cdf)
+      AVERAGE_TILE_CDFS(nmvc[j].comps[k].bits_cdf)
 #endif
     }
   }

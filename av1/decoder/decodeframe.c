@@ -5723,7 +5723,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
       if (!frame_is_intra_only(cm)) {
         av1_adapt_inter_frame_probs(cm);
+#if !CONFIG_NEW_MULTISYMBOL
         av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
+#endif
         av1_average_tile_inter_cdfs(&pbi->common, pbi->common.fc, tile_ctxs,
                                     cdf_ptrs, cm->tile_rows * cm->tile_cols);
         av1_average_tile_mv_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,

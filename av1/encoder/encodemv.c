@@ -62,9 +62,13 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
+#if CONFIG_NEW_MULTISYMBOL
+    for (i = 0; i < n; ++i)
+      aom_write_symbol(w, (d >> i) & 1, mvcomp->bits_cdf[(i + 1) / 2], 2);
+#else
     for (i = 0; i < n; ++i) aom_write(w, (d >> i) & 1, mvcomp->bits[i]);
+#endif
   }
-
 // Fractional bits
 #if CONFIG_INTRABC || CONFIG_AMVR
   if (precision > MV_SUBPEL_NONE)

@@ -68,6 +68,12 @@ static const nmv_context default_nmv_context = {
         { AOM_ICDF(160 * 128), AOM_ICDF(32768), 0 },
         { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
         { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+        { { AOM_ICDF(128 * 196), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 198), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 208), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 224), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 245), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 } },  // bits_cdf
 #endif
     },
     {
@@ -93,6 +99,12 @@ static const nmv_context default_nmv_context = {
         { AOM_ICDF(160 * 128), AOM_ICDF(32768), 0 },
         { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
         { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+        { { AOM_ICDF(128 * 196), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 198), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 208), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 224), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 245), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 } },  // bits_cdf
 #endif
     } },
 };
