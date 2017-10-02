@@ -432,7 +432,7 @@ def _GetCoverageHtmlReportPath(file_or_dir_path, output_dir):
   if os.path.isdir(file_or_dir_path):
     return os.path.join(html_path, DIRECTORY_COVERAGE_HTML_REPORT_NAME)
   else:
-    return html_path + '.html'
+    return os.extsep.join([html_path, 'html'])
 
 
 def _OverwriteHtmlReportsIndexFile(top_level_dir, dir_line_coverage_report,
