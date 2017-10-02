@@ -204,7 +204,6 @@ void SurfaceTreeHost::UpdateNeedsBeginFrame() {
 void SurfaceTreeHost::OnSurfaceCommit() {
   root_surface_->CommitSurfaceHierarchy(gfx::Point(), &frame_callbacks_,
                                         &presentation_callbacks_);
-  SubmitCompositorFrame();
 }
 
 void SurfaceTreeHost::OnSurfaceContentSizeChanged() {
@@ -292,6 +291,9 @@ void SurfaceTreeHost::OnLostResources() {
   root_surface_->SurfaceHierarchyResourcesLost();
   SubmitCompositorFrame();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SurfaceTreeHost, protected:
 
 void SurfaceTreeHost::SubmitCompositorFrame() {
   DCHECK(root_surface_);

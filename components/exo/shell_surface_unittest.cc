@@ -548,6 +548,11 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
       base::Bind(&Configure, base::Unretained(&suggested_size),
                  base::Unretained(&has_state_type),
                  base::Unretained(&is_resizing), base::Unretained(&is_active)));
+  // Commit without contents should result in a configure callback with empty
+  // suggested size as a mechanims to ask the client size itself.
+  surface->Commit();
+  EXPECT_EQ(gfx::Size(), suggested_size);
+
   shell_surface->Maximize();
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(CurrentContext()->bounds().width(), suggested_size.width());

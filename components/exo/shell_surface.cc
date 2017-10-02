@@ -767,6 +767,18 @@ void ShellSurface::OnSurfaceCommit() {
 
   SurfaceTreeHost::OnSurfaceCommit();
 
+  if (enabled() && !widget_) {
+    // Defer widget creation until surface contains some contents.
+    if (root_surface()->content_size().IsEmpty()) {
+      Configure();
+      return;
+    }
+
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+  }
+
+  SubmitCompositorFrame();
+
   // Apply the accumulated pending origin offset to reflect acknowledged
   // configure requests.
   origin_offset_ += pending_origin_offset_;
@@ -840,19 +852,6 @@ void ShellSurface::OnSurfaceCommit() {
       orientation_compositor_lock_.reset();
   } else {
     orientation_compositor_lock_.reset();
-  }
-}
-
-void ShellSurface::OnSurfaceContentSizeChanged() {
-  SurfaceTreeHost::OnSurfaceContentSizeChanged();
-  if (enabled() && !widget_) {
-    // Defer widget creation until surface contains some contents.
-    if (root_surface()->content_size().IsEmpty()) {
-      Configure();
-      return;
-    }
-
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
   }
 }
 

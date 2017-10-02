@@ -35,6 +35,7 @@ const gfx::Size& NotificationSurface::GetContentSize() const {
 
 void NotificationSurface::OnSurfaceCommit() {
   SurfaceTreeHost::OnSurfaceCommit();
+  SubmitCompositorFrame();
 
   gfx::Rect bounds = host_window()->bounds();
   auto& size = host_window()->bounds().size();
