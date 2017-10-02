@@ -222,9 +222,11 @@ class _FileLineCoverageReport(object):
     """
     files_to_delete = []
     for path in self._coverage:
-      should_include = (any(path.startswith(source)
+      should_include = (any(os.path.abspath(path).startswith(
+          os.path.abspath(source))
                             for source in include_sources))
-      should_exclude = (any(path.startswith(source)
+      should_exclude = (any(os.path.abspath(path).startswith(
+          os.path.abspath(source))
                             for source in exclude_sources))
 
       if not should_include or should_exclude:
@@ -278,7 +280,7 @@ class _DirectoryLineCoverageReport(object):
     sum_total_lines = 0
     sum_executed_lines = 0
     for sub_name in os.listdir(path):
-      sub_path = os.path.join(path, sub_name)
+      sub_path = os.path.normpath(os.path.join(path, sub_name))
       if os.path.isdir(sub_path):
         # Calculate coverage for sub-directories recursively.
         self._CalculateCoverageForDirectory(sub_path, line_coverage_result,
@@ -375,6 +377,7 @@ def _GeneratePerDirectoryCoverageHtmlReport(dir_line_coverage_report,
     output_dir: output directory for generated html files, the path needs to be
                 an absolute path.
   """
+  print 'Generating per directory code coverage breakdown in html'
   assert os.path.isabs(output_dir), 'output_dir must be an absolute path.'
   for dir_path in dir_line_coverage_report.GetListOfDirectories():
     _GenerateCoverageHtmlReportForDirectory(dir_path, dir_line_coverage_report,
@@ -399,7 +402,7 @@ def _GenerateCoverageHtmlReportForDirectory(dir_path, dir_line_coverage_report,
   html_generator = _DirectoryCoverageReportHtmlGenerator(css_path)
 
   for sub_name in os.listdir(dir_path):
-    sub_path = os.path.join(dir_path, sub_name)
+    sub_path = os.path.normpath(os.path.join(dir_path, sub_name))
     sub_path_html_report_path = _GetCoverageHtmlReportPath(
         sub_path, output_dir)
 
