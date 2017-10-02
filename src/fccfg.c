@@ -371,24 +371,17 @@ FcConfigAddCache (FcConfig *config, FcCache *cache,
 	for (i = 0; i < cache->dirs_count; i++)
 	{
 	    const FcChar8 *dir = FcCacheSubdir (cache, i);
+	    const FcChar8 *alias;
+	    FcChar8 *d = FcStrDirname (dir);
 	    FcChar8 *s = NULL;
-	    struct stat statb;
 
-	    if (FcStat (dir, &statb) < 0)
+	    if ((alias = FcDirCacheFindAliasPath (d)))
 	    {
-		const FcChar8 *alias;
-		FcChar8 *d = FcStrDirname (dir);
-
-		if ((alias = FcDirCacheFindAliasPath (dir)))
-		    dir = alias;
-		else if ((alias = FcDirCacheFindAliasPath (d)))
-		{
-		    FcChar8 *base = FcStrBasename (dir);
-		    dir = s = FcStrBuildFilename (alias, base, NULL);
-		    FcStrFree (base);
-		}
-		FcStrFree (d);
+		FcChar8 *base = FcStrBasename (dir);
+		dir = s = FcStrBuildFilename (alias, base, NULL);
+		FcStrFree (base);
 	    }
+	    FcStrFree (d);
 	    if (FcConfigAcceptFilename (config, dir))
 		FcStrSetAddFilename (dirSet, dir);
 	    if (s)
