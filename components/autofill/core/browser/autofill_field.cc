@@ -200,14 +200,17 @@ bool FillExpirationMonthSelectControl(const base::string16& value,
   if (!StringToInt(value, &month) || month <= 0 || month > 12)
     return false;
 
-  // We trim the whitespace and a specific prefix used in AngularJS from the
+  // Trim the whitespace and specific prefixes used in AngularJS from the
   // select values before attempting to convert them to months.
   std::vector<base::string16> trimmed_values(field->option_values.size());
   const base::string16 kNumberPrefix = ASCIIToUTF16("number:");
+  const base::string16 kStringPrefix = ASCIIToUTF16("string:");
   for (size_t i = 0; i < field->option_values.size(); ++i) {
     base::TrimWhitespace(field->option_values[i], base::TRIM_ALL,
                          &trimmed_values[i]);
     base::ReplaceFirstSubstringAfterOffset(&trimmed_values[i], 0, kNumberPrefix,
+                                           ASCIIToUTF16(""));
+    base::ReplaceFirstSubstringAfterOffset(&trimmed_values[i], 0, kStringPrefix,
                                            ASCIIToUTF16(""));
   }
 
