@@ -184,8 +184,7 @@ void CompositorView::SetLayoutBounds(JNIEnv* env,
 }
 
 void CompositorView::SetBackground(bool visible, SkColor color) {
-  if (overlay_video_mode_)
-    visible = false;
+  // TODO(crbug.com/770911): Set the background color on the compositor.
   root_layer_->SetBackgroundColor(color);
   root_layer_->SetIsDrawable(visible);
 }
