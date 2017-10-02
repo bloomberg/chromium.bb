@@ -583,6 +583,12 @@ void AXTreeSourceArc::Reset() {
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_ = -1;
   focused_node_id_ = -1;
+  if (focus_stealer_->parent()) {
+    views::View* parent = focus_stealer_->parent();
+    parent->RemoveChildView(focus_stealer_.get());
+    parent->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+  }
+  focus_stealer_.reset();
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
   if (!router)

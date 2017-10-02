@@ -922,6 +922,24 @@
           "keyCode": [119]
         }
       }
+    },
+    {
+      "command": "enableChromeVoxArcSupportForCurrentApp",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 219]
+        }
+      }
+    },
+    {
+      "command": "disableChromeVoxArcSupportForCurrentApp",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 221]
+        }
+      }
     }
   ]
 }
