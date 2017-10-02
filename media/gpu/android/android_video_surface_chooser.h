@@ -62,8 +62,9 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
 
   // Sets the client callbacks to be called when a new surface choice is made.
   // Must be called before UpdateState();
-  virtual void SetClientCallbacks(UseOverlayCB use_overlay_cb,
-                                  UseSurfaceTextureCB use_surface_texture_cb);
+  virtual void SetClientCallbacks(
+      UseOverlayCB use_overlay_cb,
+      UseSurfaceTextureCB use_surface_texture_cb) = 0;
 
   // Updates the current state and makes a new surface choice with the new
   // state. If |new_factory| is empty, the factory is left as-is. Otherwise,
