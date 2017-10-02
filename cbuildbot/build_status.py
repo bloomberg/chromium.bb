@@ -17,6 +17,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
+from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
 
@@ -147,10 +148,14 @@ class SlaveStatus(object):
     # Fetch experimental builders from tree status and update experimental
     # builders in metedata before querying and updating any slave status.
     if self.metadata is not None:
-      experimental_builders = tree_status.GetExperimentalBuilders()
-      self.metadata.UpdateWithDict({
-          constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
-      })
+      try:
+        experimental_builders = tree_status.GetExperimentalBuilders()
+        self.metadata.UpdateWithDict({
+            constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
+        })
+      except timeout_util.TimeoutError:
+        logging.error('Timeout getting experimental builders from the tree'
+                      'status. Not updating metadata.')
 
       # If a slave build was important in previous loop and got added to the
       # completed_builds because it completed, but in the current loop it's

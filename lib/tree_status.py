@@ -20,6 +20,7 @@ from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 
@@ -199,8 +200,10 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
 
   Returns:
     A list of strings, where each string is a builder. Returns an empty list if
-    there are no experimental builders listed in the tree status, or the query
-    operation times out.
+    there are no experimental builders listed in the tree status.
+
+  Raises:
+    TimeoutError if the request takes longer than |timeout| to complete.
   """
   if not status_url:
     status_url = CROS_TREE_STATUS_JSON_URL
@@ -230,11 +233,7 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
 
     return experimental
 
-  try:
-    return _get_status_dict()
-  except timeout_util.TimeoutError:
-    logging.error('Timeout getting experimental builders from the tree status.')
-    return []
+  return retry_util.GenericRetry(lambda _: True, 3, _get_status_dict, sleep=1)
 
 def _GetPassword():
   """Returns the password for updating tree status."""

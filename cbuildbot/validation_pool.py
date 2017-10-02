@@ -482,10 +482,14 @@ class ValidationPool(object):
       gerrit_query, ready_fn = query
       tree_was_open = (status == constants.TREE_OPEN)
 
-      experimental_builders = tree_status.GetExperimentalBuilders()
-      builder_run.attrs.metadata.UpdateWithDict({
-          constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
-      })
+      try:
+        experimental_builders = tree_status.GetExperimentalBuilders()
+        builder_run.attrs.metadata.UpdateWithDict({
+            constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
+        })
+      except timeout_util.TimeoutError:
+        logging.error('Timeout getting experimental builders from the tree'
+                      'status.')
 
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun, builder_run=builder_run,

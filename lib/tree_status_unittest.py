@@ -200,8 +200,8 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     """Tests timeout behavior of GetExperimentalBuilders."""
     with mock.patch.object(tree_status, '_GetStatusDict') as m:
       m.side_effect = lambda _: time.sleep(10)
-      builders = tree_status.GetExperimentalBuilders(self.status_url, timeout=1)
-      self.assertEqual(builders, [])
+      with self.assertRaises(timeout_util.TimeoutError):
+        tree_status.GetExperimentalBuilders(self.status_url, timeout=1)
 
   def testUpdateTreeStatusWithEpilogue(self):
     """Tests that epilogue is appended to the message."""
