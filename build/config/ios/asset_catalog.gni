@@ -54,18 +54,10 @@ template("asset_catalog") {
     }
   } else {
     _copy_target_name = target_name + "__copy"
-    _fake_target_name = target_name + "__fake"
     _data_target_name = target_name
 
     _sources = invoker.sources
-    _extension = invoker.asset_type
-
-    foreach(_source, invoker.sources) {
-      _dir = get_path_info(_source, "dir")
-
-      assert(get_path_info(_dir, "extension") == _extension,
-             "$_source dirname must have .$_extension extension")
-    }
+    _outputs = []
 
     # The compilation of resources into Assets.car is enabled automatically
     # by the "create_bundle" target if any of the "bundle_data" sources's
@@ -75,7 +67,15 @@ template("asset_catalog") {
     _output_dir = "$_xcassets_dir/" +
                   get_path_info(get_path_info(_sources[0], "dir"), "file")
 
-    copy(_copy_target_name) {
+    foreach(_source, invoker.sources) {
+      _dir = get_path_info(_source, "dir")
+      _outputs += [ "$_output_dir/" + get_path_info(_source, "file") ]
+
+      assert(get_path_info(_dir, "extension") == invoker.asset_type,
+             "$_source dirname must have .${invoker.asset_type} extension")
+    }
+
+    action(_copy_target_name) {
       # Forward "deps", "public_deps" and "testonly" in case some of the
       # source files are generated.
       forward_variables_from(invoker,
@@ -85,27 +85,16 @@ template("asset_catalog") {
                                "testonly",
                              ])
 
-      visibility = [ ":$_fake_target_name" ]
-      sources = _sources
-      outputs = [
-        "$_output_dir/{{source_file_part}}",
-      ]
-    }
-
-    action(_fake_target_name) {
-      forward_variables_from(invoker, [ "testonly" ])
+      script = "//build/config/ios/hardlink.py"
 
       visibility = [ ":$_data_target_name" ]
-      script = "//build/config/ios/dummy.py"
       sources = _sources
-      outputs = [
-        "$_xcassets_dir",
+      outputs = _outputs + [ _xcassets_dir ]
+
+      args = [
+        rebase_path(get_path_info(_sources[0], "dir"), root_out_dir),
+        rebase_path(_output_dir, root_out_dir),
       ]
-      public_deps = [
-        ":$_copy_target_name",
-      ]
-      args = rebase_path(sources, root_build_dir) +
-             rebase_path(outputs, root_build_dir)
     }
 
     bundle_data(_data_target_name) {
@@ -123,7 +112,7 @@ template("asset_catalog") {
         "{{bundle_resources_dir}}/{{source_file_part}}",
       ]
       public_deps = [
-        ":$_fake_target_name",
+        ":$_copy_target_name",
       ]
     }
   }
