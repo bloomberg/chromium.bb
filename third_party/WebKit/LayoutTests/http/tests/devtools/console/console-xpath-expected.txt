@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 1: complete
 Tests $x for iterator and non-iterator types.
 
 $x('42')
@@ -17,5 +16,5 @@ href="http://chromium.org"
 VM:1 Uncaught DOMException: Failed to execute '$x' on 'CommandLineAPI': The string './a@href' is not a valid XPath expression.
     at <anonymous>:1:1
 (anonymous) @ VM:1
-VM:1 complete
+console-xpath.js:25 complete
 

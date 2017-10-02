@@ -3061,7 +3061,7 @@ crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
 
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-functions.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-log-object-with-getter.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar-jquery1.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar-jquery2.html [ NeedsManualRebaseline ]
@@ -3075,7 +3075,7 @@ crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/persistence/automappi
 crbug.com/v8/4958 http/tests/devtools/persistence/automapping-sourcemap-nameclash.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/console/console-functions.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-log-object-with-getter.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/elements/event-listener-sidebar-jquery1.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/elements/event-listener-sidebar-jquery2.html [ NeedsManualRebaseline ]
@@ -3667,7 +3667,7 @@ crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Fai
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs-in-pre.html [ Failure ]
 
 # Sheriff failure 2017-09-06
-crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-warning.html [ Pass Crash ]
+crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-warning.js [ Pass Crash ]
 crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-document-range.html [ Pass Crash ]
 crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash ]
 crbug.com/762486 [ Win7 Debug ] virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-alias.html [ Pass Failure ]

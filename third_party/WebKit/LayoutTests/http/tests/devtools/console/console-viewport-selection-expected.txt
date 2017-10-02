@@ -1,153 +1,3 @@
-CONSOLE MESSAGE: line 9: Message #0
-CONSOLE MESSAGE: line 9: Message #1
-CONSOLE MESSAGE: line 9: Message #2
-CONSOLE MESSAGE: line 9: Message #3
-CONSOLE MESSAGE: line 9: Message #4
-CONSOLE MESSAGE: line 9: Message #5
-CONSOLE MESSAGE: line 9: Message #6
-CONSOLE MESSAGE: line 9: Message #7
-CONSOLE MESSAGE: line 9: Message #8
-CONSOLE MESSAGE: line 9: Message #9
-CONSOLE MESSAGE: line 9: Message #10
-CONSOLE MESSAGE: line 9: Message #11
-CONSOLE MESSAGE: line 9: Message #12
-CONSOLE MESSAGE: line 9: Message #13
-CONSOLE MESSAGE: line 9: Message #14
-CONSOLE MESSAGE: line 9: Message #15
-CONSOLE MESSAGE: line 9: Message #16
-CONSOLE MESSAGE: line 9: Message #17
-CONSOLE MESSAGE: line 9: Message #18
-CONSOLE MESSAGE: line 9: Message #19
-CONSOLE MESSAGE: line 9: Message #20
-CONSOLE MESSAGE: line 9: Message #21
-CONSOLE MESSAGE: line 9: Message #22
-CONSOLE MESSAGE: line 9: Message #23
-CONSOLE MESSAGE: line 9: Message #24
-CONSOLE MESSAGE: line 9: Message #25
-CONSOLE MESSAGE: line 9: Message #26
-CONSOLE MESSAGE: line 9: Message #27
-CONSOLE MESSAGE: line 9: Message #28
-CONSOLE MESSAGE: line 9: Message #29
-CONSOLE MESSAGE: line 9: Message #30
-CONSOLE MESSAGE: line 9: Message #31
-CONSOLE MESSAGE: line 9: Message #32
-CONSOLE MESSAGE: line 9: Message #33
-CONSOLE MESSAGE: line 9: Message #34
-CONSOLE MESSAGE: line 9: Message #35
-CONSOLE MESSAGE: line 9: Message #36
-CONSOLE MESSAGE: line 9: Message #37
-CONSOLE MESSAGE: line 9: Message #38
-CONSOLE MESSAGE: line 9: Message #39
-CONSOLE MESSAGE: line 9: Message #40
-CONSOLE MESSAGE: line 9: Message #41
-CONSOLE MESSAGE: line 9: Message #42
-CONSOLE MESSAGE: line 9: Message #43
-CONSOLE MESSAGE: line 9: Message #44
-CONSOLE MESSAGE: line 9: Message #45
-CONSOLE MESSAGE: line 9: Message #46
-CONSOLE MESSAGE: line 9: Message #47
-CONSOLE MESSAGE: line 9: Message #48
-CONSOLE MESSAGE: line 9: Message #49
-CONSOLE MESSAGE: line 9: Message #50
-CONSOLE MESSAGE: line 9: Message #51
-CONSOLE MESSAGE: line 9: Message #52
-CONSOLE MESSAGE: line 9: Message #53
-CONSOLE MESSAGE: line 9: Message #54
-CONSOLE MESSAGE: line 9: Message #55
-CONSOLE MESSAGE: line 9: Message #56
-CONSOLE MESSAGE: line 9: Message #57
-CONSOLE MESSAGE: line 9: Message #58
-CONSOLE MESSAGE: line 9: Message #59
-CONSOLE MESSAGE: line 9: Message #60
-CONSOLE MESSAGE: line 9: Message #61
-CONSOLE MESSAGE: line 9: Message #62
-CONSOLE MESSAGE: line 9: Message #63
-CONSOLE MESSAGE: line 9: Message #64
-CONSOLE MESSAGE: line 9: Message #65
-CONSOLE MESSAGE: line 9: Message #66
-CONSOLE MESSAGE: line 9: Message #67
-CONSOLE MESSAGE: line 9: Message #68
-CONSOLE MESSAGE: line 9: Message #69
-CONSOLE MESSAGE: line 9: Message #70
-CONSOLE MESSAGE: line 9: Message #71
-CONSOLE MESSAGE: line 9: Message #72
-CONSOLE MESSAGE: line 9: Message #73
-CONSOLE MESSAGE: line 9: Message #74
-CONSOLE MESSAGE: line 9: Message #75
-CONSOLE MESSAGE: line 9: Message #76
-CONSOLE MESSAGE: line 9: Message #77
-CONSOLE MESSAGE: line 9: Message #78
-CONSOLE MESSAGE: line 9: Message #79
-CONSOLE MESSAGE: line 9: Message #80
-CONSOLE MESSAGE: line 9: Message #81
-CONSOLE MESSAGE: line 9: Message #82
-CONSOLE MESSAGE: line 9: Message #83
-CONSOLE MESSAGE: line 9: Message #84
-CONSOLE MESSAGE: line 9: Message #85
-CONSOLE MESSAGE: line 9: Message #86
-CONSOLE MESSAGE: line 9: Message #87
-CONSOLE MESSAGE: line 9: Message #88
-CONSOLE MESSAGE: line 9: Message #89
-CONSOLE MESSAGE: line 9: Message #90
-CONSOLE MESSAGE: line 9: Message #91
-CONSOLE MESSAGE: line 9: Message #92
-CONSOLE MESSAGE: line 9: Message #93
-CONSOLE MESSAGE: line 9: Message #94
-CONSOLE MESSAGE: line 9: Message #95
-CONSOLE MESSAGE: line 9: Message #96
-CONSOLE MESSAGE: line 9: Message #97
-CONSOLE MESSAGE: line 9: Message #98
-CONSOLE MESSAGE: line 9: Message #99
-CONSOLE MESSAGE: line 9: Message #100
-CONSOLE MESSAGE: line 9: Message #101
-CONSOLE MESSAGE: line 9: Message #102
-CONSOLE MESSAGE: line 9: Message #103
-CONSOLE MESSAGE: line 9: Message #104
-CONSOLE MESSAGE: line 9: Message #105
-CONSOLE MESSAGE: line 9: Message #106
-CONSOLE MESSAGE: line 9: Message #107
-CONSOLE MESSAGE: line 9: Message #108
-CONSOLE MESSAGE: line 9: Message #109
-CONSOLE MESSAGE: line 9: Message #110
-CONSOLE MESSAGE: line 9: Message #111
-CONSOLE MESSAGE: line 9: Message #112
-CONSOLE MESSAGE: line 9: Message #113
-CONSOLE MESSAGE: line 9: Message #114
-CONSOLE MESSAGE: line 9: Message #115
-CONSOLE MESSAGE: line 9: Message #116
-CONSOLE MESSAGE: line 9: Message #117
-CONSOLE MESSAGE: line 9: Message #118
-CONSOLE MESSAGE: line 9: Message #119
-CONSOLE MESSAGE: line 9: Message #120
-CONSOLE MESSAGE: line 9: Message #121
-CONSOLE MESSAGE: line 9: Message #122
-CONSOLE MESSAGE: line 9: Message #123
-CONSOLE MESSAGE: line 9: Message #124
-CONSOLE MESSAGE: line 9: Message #125
-CONSOLE MESSAGE: line 9: Message #126
-CONSOLE MESSAGE: line 9: Message #127
-CONSOLE MESSAGE: line 9: Message #128
-CONSOLE MESSAGE: line 9: Message #129
-CONSOLE MESSAGE: line 9: Message #130
-CONSOLE MESSAGE: line 9: Message #131
-CONSOLE MESSAGE: line 9: Message #132
-CONSOLE MESSAGE: line 9: Message #133
-CONSOLE MESSAGE: line 9: Message #134
-CONSOLE MESSAGE: line 9: Message #135
-CONSOLE MESSAGE: line 9: Message #136
-CONSOLE MESSAGE: line 9: Message #137
-CONSOLE MESSAGE: line 9: Message #138
-CONSOLE MESSAGE: line 9: Message #139
-CONSOLE MESSAGE: line 9: Message #140
-CONSOLE MESSAGE: line 9: Message #141
-CONSOLE MESSAGE: line 9: Message #142
-CONSOLE MESSAGE: line 9: Message #143
-CONSOLE MESSAGE: line 9: Message #144
-CONSOLE MESSAGE: line 9: Message #145
-CONSOLE MESSAGE: line 9: Message #146
-CONSOLE MESSAGE: line 9: Message #147
-CONSOLE MESSAGE: line 9: Message #148
-CONSOLE MESSAGE: line 10: hello %cworld
 Tests that console viewport handles selection properly.
 
 
@@ -168,8 +18,8 @@ first visible message index: 75
 
 Running: testSelectionMultiLineText
 Selected text:<<<EOL
-ole-viewport-selection.html:5 Message #74
-console-viewport-selection.html:5 Message #75
+ole-viewport-selection.js:13 Message #74
+console-viewport-selection.js:13 Message #75
 console
 EOL
 first visible message index: 74
@@ -225,10 +75,10 @@ Running: testSelectAll
 Selected all 150 messages.
 
 Running: testSelectWithNonTextNodeContainer
-Selected text: console-viewport-selection.html:5 Message #1
+Selected text: console-viewport-selection.js:13 Message #1
 
-Selected text: console-viewport-selection.html:5 Message #1
+Selected text: console-viewport-selection.js:13 Message #1
 
-Selected text: console-viewport-selection.html:5 Message #1
+Selected text: console-viewport-selection.js:13 Message #1
 
 

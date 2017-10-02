@@ -1,6 +1,6 @@
 Tests a handling of a click on the link in a message, which had been shown before its originating script was added.
 
-:8000/devtools/resources/source2.js:1 hello?
+source2.js:1 hello?
 script was added
 Panel sources was opened
 

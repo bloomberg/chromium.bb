@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected identifier
 Tests that nested import scripts in worker show correct stack on syntax error.
 
 Message count: 1
