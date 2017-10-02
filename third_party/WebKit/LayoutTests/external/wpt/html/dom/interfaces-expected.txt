@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5298 tests; 5135 PASS, 163 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5298 tests; 5141 PASS, 157 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -5132,12 +5132,12 @@ PASS Storage interface object length
 PASS Storage interface object name
 PASS Storage interface: existence and properties of interface prototype object
 PASS Storage interface: existence and properties of interface prototype object's "constructor" property
-FAIL Storage interface: attribute length assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation key(unsigned long) assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation getItem(DOMString) assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation setItem(DOMString, DOMString) assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation removeItem(DOMString) assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation clear() assert_true: property should be enumerable expected true got false
+PASS Storage interface: attribute length
+PASS Storage interface: operation key(unsigned long)
+PASS Storage interface: operation getItem(DOMString)
+PASS Storage interface: operation setItem(DOMString, DOMString)
+PASS Storage interface: operation removeItem(DOMString)
+PASS Storage interface: operation clear()
 PASS StorageEvent interface: existence and properties of interface object
 PASS StorageEvent interface object length
 PASS StorageEvent interface object name
