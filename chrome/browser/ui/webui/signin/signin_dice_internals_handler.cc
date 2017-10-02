@@ -7,11 +7,16 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "google_apis/gaia/gaia_urls.h"
 
 SigninDiceInternalsHandler::SigninDiceInternalsHandler(Profile* profile)
     : profile_(profile) {
@@ -43,7 +48,7 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   std::vector<std::string> account_ids = token_service->GetAccounts();
   if (account_ids.empty()) {
-    VLOG(1) << "[Dice] No accounts available in the token service";
+    StartWebGaiaSigninAndStartSyncWhenDone();
     return;
   }
 
@@ -72,4 +77,15 @@ void SigninDiceInternalsHandler::HandleDisableSync(
   VLOG(2) << "[Dice] Sign out.";
   signin_manager->SignOut(signin_metrics::USER_TUNED_OFF_SYNC_FROM_DICE_UI,
                           signin_metrics::SignoutDelete::IGNORE_METRIC);
+}
+
+void SigninDiceInternalsHandler::StartWebGaiaSigninAndStartSyncWhenDone() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
+  chrome::ShowSingletonTab(displayer.browser(),
+                           GaiaUrls::GetInstance()->add_account_url());
+  content::WebContents* active_contents =
+      displayer.browser()->tab_strip_model()->GetActiveWebContents();
+  DCHECK_EQ(GaiaUrls::GetInstance()->add_account_url(),
+            active_contents->GetVisibleURL());
+  DiceTabHelper::CreateForWebContents(active_contents);
 }
