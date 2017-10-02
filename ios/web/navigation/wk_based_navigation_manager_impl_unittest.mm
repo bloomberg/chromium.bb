@@ -301,38 +301,84 @@ TEST_F(WKBasedNavigationManagerTest, DiscardNonCommittedItems) {
 }
 
 // Tests that in the absence of a transient item, going back is delegated to the
-// underlying WKWebView without any sanity checks such as whether any back
-// history exists.
+// underlying WKWebView.
 TEST_F(WKBasedNavigationManagerTest, GoBackWithoutTransientItem) {
+  ASSERT_FALSE(manager_->CanGoBack());
+
+  manager_->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.0.com"];
+
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"
+                  backListURLs:@[ @"http://www.0.com" ]
+               forwardListURLs:nil];
+
+  ASSERT_TRUE(manager_->CanGoBack());
+
   // The cast is necessary because without it, compiler cannot disambiguate
   // between UIWebView's goBack and WKWebView's goBack. Not using C++ style cast
   // because it doesn't work on id type.
-  [(WKWebView*)[mock_web_view_ expect] goBack];
+  [(WKWebView*)[mock_web_view_ expect]
+      goToBackForwardListItem:mock_wk_list_.backList[0]];
   manager_->GoBack();
   [mock_web_view_ verify];
 }
 
 // Tests that going back from a transient item will discard the transient item
-// without any navigations on the underlying WKBackForwardList.
+// and the pending item associated with it.
 TEST_F(WKBasedNavigationManagerTest, GoBackFromTransientItem) {
   manager_->AddPendingItem(
       GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::DESKTOP);
-  manager_->AddTransientItem(GURL("http://www.1.com"));
+  [mock_wk_list_ setCurrentURL:@"http://www.0.com"];
+  manager_->CommitPendingItem();
 
-  [(WKWebView*)[mock_web_view_ reject] goBack];
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  manager_->AddTransientItem(GURL("http://www.1.com/transient"));
+
+  ASSERT_TRUE(manager_->CanGoBack());
+  [(WKWebView*)[mock_web_view_ expect]
+      goToBackForwardListItem:mock_wk_list_.currentItem];
   manager_->GoBack();
   [mock_web_view_ verify];
 
-  EXPECT_NE(nullptr, manager_->GetPendingItem());
+  EXPECT_EQ(nullptr, manager_->GetPendingItem());
   EXPECT_EQ(nullptr, manager_->GetTransientItem());
 }
 
 // Tests that going forward is always delegated to the underlying WKWebView
 // without any sanity checks such as whether any forward history exists.
 TEST_F(WKBasedNavigationManagerTest, GoForward) {
-  [(WKWebView*)[mock_web_view_ expect] goForward];
+  manager_->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.0.com"];
+  manager_->CommitPendingItem();
+
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"
+                  backListURLs:@[ @"http://www.0.com" ]
+               forwardListURLs:nil];
+
+  [mock_wk_list_ moveCurrentToIndex:0];
+  ASSERT_TRUE(manager_->CanGoForward());
+
+  [(WKWebView*)[mock_web_view_ expect]
+      goToBackForwardListItem:mock_wk_list_.forwardList[0]];
   manager_->GoForward();
   [mock_web_view_ verify];
 }
@@ -343,12 +389,33 @@ TEST_F(WKBasedNavigationManagerTest, GoForwardShouldDiscardsUncommittedItems) {
       GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.0.com"];
+  manager_->CommitPendingItem();
+
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"
+                  backListURLs:@[ @"http://www.0.com" ]
+               forwardListURLs:nil];
+
+  [mock_wk_list_ moveCurrentToIndex:0];
+  ASSERT_TRUE(manager_->CanGoForward());
+
+  manager_->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
   manager_->AddTransientItem(GURL("http://www.1.com"));
 
   EXPECT_NE(nullptr, manager_->GetPendingItem());
   EXPECT_NE(nullptr, manager_->GetTransientItem());
 
+  [(WKWebView*)[mock_web_view_ expect]
+      goToBackForwardListItem:mock_wk_list_.forwardList[0]];
   manager_->GoForward();
+  [mock_web_view_ verify];
 
   EXPECT_EQ(nullptr, manager_->GetPendingItem());
   EXPECT_EQ(nullptr, manager_->GetTransientItem());
