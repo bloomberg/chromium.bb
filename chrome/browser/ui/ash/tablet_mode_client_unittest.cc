@@ -7,38 +7,11 @@
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-// Simulates the TabletModeController in ash.
-class TestTabletModeController : ash::mojom::TabletModeController {
- public:
-  TestTabletModeController() : binding_(this) {}
-
-  ~TestTabletModeController() override = default;
-
-  // Returns a mojo interface pointer bound to this object.
-  ash::mojom::TabletModeControllerPtr CreateInterfacePtr() {
-    ash::mojom::TabletModeControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // ash::mojom::TabletModeController:
-  void SetClient(ash::mojom::TabletModeClientPtr client) override {
-    set_client_ = true;
-  }
-
-  bool set_client_ = false;
-
- private:
-  mojo::Binding<ash::mojom::TabletModeController> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTabletModeController);
-};
 
 class TestTabletModeClientObserver : public TabletModeClientObserver {
  public:
@@ -70,7 +43,7 @@ class TabletModeClientTest : public testing::Test {
 
 TEST_F(TabletModeClientTest, Construction) {
   TabletModeClient client;
-  TestTabletModeController controller;
+  FakeTabletModeController controller;
   client.InitForTesting(controller.CreateInterfacePtr());
   client.FlushForTesting();
 
@@ -78,7 +51,7 @@ TEST_F(TabletModeClientTest, Construction) {
   EXPECT_EQ(&client, TabletModeClient::Get());
 
   // Object was set as client.
-  EXPECT_TRUE(controller.set_client_);
+  EXPECT_TRUE(controller.was_client_set());
 }
 
 TEST_F(TabletModeClientTest, Observers) {

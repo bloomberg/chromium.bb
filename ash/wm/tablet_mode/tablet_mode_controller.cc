@@ -387,6 +387,10 @@ void TabletModeController::LeaveTabletMode() {
   EnableTabletModeWindowManager(false);
 }
 
+void TabletModeController::FlushForTesting() {
+  bindings_.FlushForTesting();
+}
+
 void TabletModeController::OnShellInitialized() {
   force_ui_mode_ = GetTabletMode();
   if (force_ui_mode_ == UiMode::TABLETMODE)

@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
@@ -37,7 +37,7 @@ class ExclusiveAccessManager;
 class ChromeNativeAppWindowViewsAuraAsh
     : public ChromeNativeAppWindowViewsAura,
       public views::ContextMenuController,
-      public ash::TabletModeObserver,
+      public TabletModeClientObserver,
       public ui::AcceleratorProvider,
       public ExclusiveAccessContext,
       public ExclusiveAccessBubbleViewsContext {
@@ -81,8 +81,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   void SetActivateOnPointer(bool activate_on_pointer) override;
 
   // ash:TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletModeToggled(bool enabled) override;
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
@@ -153,6 +152,8 @@ class ChromeNativeAppWindowViewsAuraAsh
   // Used for displaying the toast with instructions on exiting fullscreen.
   std::unique_ptr<ExclusiveAccessManager> exclusive_access_manager_;
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
+
+  bool tablet_mode_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAsh);
 };

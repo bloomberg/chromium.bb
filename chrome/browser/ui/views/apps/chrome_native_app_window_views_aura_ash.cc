@@ -16,7 +16,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/panels/panel_frame_view.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -130,22 +130,13 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     : exclusive_access_manager_(
           std::make_unique<ExclusiveAccessManager>(this)) {
-  // TODO(crbug.com/756046): Remove this check once this class uses
-  // TouchViewObserver.
-  if (!ash_util::IsRunningInMash()) {
-    DCHECK(ash::Shell::HasInstance());
-    ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  }
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->AddObserver(this);
 }
 
 ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
-  // TODO(crbug.com/756046): Remove this check once this class uses
-  // TouchViewObserver.
-  if (!ash_util::IsRunningInMash()) {
-    DCHECK(ash::Shell::HasInstance());
-    if (ash::Shell::Get()->tablet_mode_controller())
-      ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  }
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -451,23 +442,26 @@ void ChromeNativeAppWindowViewsAuraAsh::SetActivateOnPointer(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash:TabletModeObserver implementation:
-void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeStarted() {
-  // Enter immersive mode if the widget can maximize and the hide titlebars
-  // in tablet mode feature is enabled.
-  if (immersive_fullscreen_controller_.get() &&
-      CanAutohideTitlebarsInTabletMode()) {
-    immersive_fullscreen_controller_->SetEnabled(
-        ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, true);
-  }
-}
+// TabletModeClientObserver implementation:
+void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeToggled(bool enabled) {
+  tablet_mode_enabled_ = enabled;
 
-void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeEnded() {
-  // Exit immersive mode if the widget is not in fullscreen and can maximize.
-  if (immersive_fullscreen_controller_.get() && !widget()->IsFullscreen() &&
-      CanMaximize()) {
-    immersive_fullscreen_controller_->SetEnabled(
-        ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, false);
+  if (!immersive_fullscreen_controller_)
+    return;
+
+  if (enabled) {
+    // Enter immersive mode if the widget can maximize and the hide titlebars
+    // in tablet mode feature is enabled.
+    if (CanAutohideTitlebarsInTabletMode()) {
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, true);
+    }
+  } else {
+    // Exit immersive mode if the widget is not in fullscreen and can maximize.
+    if (!widget()->IsFullscreen() && CanMaximize()) {
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, false);
+    }
   }
 }
 
@@ -598,8 +592,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
 
 bool ChromeNativeAppWindowViewsAuraAsh::CanAutohideTitlebarsInTabletMode()
     const {
-  return ash::Shell::Get()
-             ->tablet_mode_controller()
-             ->ShouldAutoHideTitlebars() &&
-         CanMaximize();
+  return CanMaximize() && tablet_mode_enabled_ &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ash::switches::kAshDisableTabletAutohideTitlebars);
 }

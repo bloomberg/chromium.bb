@@ -100,6 +100,9 @@ class ASH_EXPORT TabletModeController
 
   bool auto_hide_title_bars() const { return auto_hide_title_bars_; }
 
+  // Flushes the mojo message pipe to chrome.
+  void FlushForTesting();
+
   // ShellObserver:
   void OnShellInitialized() override;
 
