@@ -747,6 +747,7 @@ test("content_browsertests") {
     "../browser/site_per_process_browsertest.cc",
     "../browser/site_per_process_browsertest.h",
     "../browser/site_per_process_mac_browsertest.mm",
+    "../browser/snapshot_browsertest.cc",
     "../browser/storage_partition_impl_browsertest.cc",
     "../browser/top_document_isolation_browsertest.cc",
     "../browser/tracing/background_tracing_manager_browsertest.cc",
@@ -1080,6 +1081,11 @@ test("content_browsertests") {
       # The cast shell has plugin support but no pdf, causing data URL PDF tests
       # to fail.
       "../browser/frame_host/data_url_navigation_browsertest.cc",
+
+      # The multi-window tests don't work on cast_shell. Since there's little
+      # added value in running the single-window test on this platform, just
+      # exclude them all.
+      "../browser/snapshot_browsertest.cc",
     ]
   }
 }
