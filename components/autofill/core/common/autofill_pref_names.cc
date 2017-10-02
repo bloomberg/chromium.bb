@@ -26,6 +26,11 @@ const char kAutofillWalletImportEnabled[] = "autofill.wallet_import_enabled";
 // was run. This routine will be run once per version.
 const char kAutofillLastVersionDeduped[] = "autofill.last_version_deduped";
 
+// Integer that is set to the last version where disused addresses were
+// deleted. This deletion will be run once per version.
+const char kAutofillLastVersionDisusedAddressesDeleted[] =
+    "autofill.last_version_disused_addresses_deleted";
+
 // Integer that is set to the last version where disused credit cards were
 // deleted. This deletion will be run once per version.
 const char kAutofillLastVersionDisusedCreditCardsDeleted[] =

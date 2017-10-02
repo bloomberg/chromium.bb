@@ -787,6 +787,12 @@ class AutofillMetrics {
   // always offered, regardless of how recently they have been used.
   static void LogNumberOfAddressesSuppressedForDisuse(size_t num_profiles);
 
+  // Log the number of unverified autofill addresses deleted because they have
+  // not been used for a long time, and are not used as billing addresses of
+  // valid credit cards. Note the deletion only happens once per major version
+  // upgrade.
+  static void LogNumberOfAddressesDeletedForDisuse(size_t num_profiles);
+
   // Log the number of Autofill address suggestions presented to the user when
   // filling a form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);

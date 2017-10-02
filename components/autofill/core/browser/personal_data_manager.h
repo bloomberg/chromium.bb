@@ -230,6 +230,10 @@ class PersonalDataManager : public KeyedService,
       bool field_is_autofilled,
       const std::vector<ServerFieldType>& other_field_types);
 
+  // Tries to delete disused addresses once per major version if the
+  // feature is enabled.
+  bool DeleteDisusedAddresses();
+
   // Returns the credit cards to suggest to the user. Those have been deduped
   // and ordered by frecency with the expired cards put at the end of the
   // vector.
@@ -529,6 +533,10 @@ class PersonalDataManager : public KeyedService,
       const base::string16& field_contents,
       const std::vector<CreditCard*>& cards_to_suggest) const;
 
+  // Returns true if the given credit card can be deleted in a major version
+  // upgrade. The card will need to be local and disused, to be deletable.
+  bool IsCreditCardDeletable(CreditCard* card);
+
   // Runs the Autofill use date fix routine if it's never been done. Returns
   // whether the routine was run.
   void ApplyProfileUseDatesFix();
@@ -593,6 +601,20 @@ class PersonalDataManager : public KeyedService,
   std::string MergeServerAddressesIntoProfiles(
       const AutofillProfile& server_address,
       std::vector<AutofillProfile>* existing_profiles);
+
+  // Removes profile from web database according to |guid| and resets credit
+  // card's billing address if that address is used by any credit cards.
+  // The method does not refresh, this allows multiple removal with one
+  // refreshing in the end.
+  void RemoveAutofillProfileByGUIDAndBlankCreditCardReferecne(
+      const std::string& guid);
+
+  // Returns true if an address can be deleted in a major version upgrade.
+  // An address is deletable if it is unverified, and not used by a valid
+  // credit card as billing address, and not used for a long time(13 months).
+  bool IsAddressDeletable(
+      AutofillProfile* profile,
+      const std::unordered_set<std::string>& used_billing_address_guids);
 
   // If the AutofillCreateDataForTest feature is enabled, this helper creates
   // autofill address data that would otherwise be difficult to create

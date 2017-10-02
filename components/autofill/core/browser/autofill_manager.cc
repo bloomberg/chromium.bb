@@ -282,6 +282,9 @@ void AutofillManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDeduped, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAutofillLastVersionDisusedAddressesDeleted, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // These choices are made on a per-device basis, so they're not syncable.
   registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);
   registry->RegisterBooleanPref(
