@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/cdm_host_file.h"
+#include "content/common/media/cdm_host_file.h"
 
 #include <memory>
 
@@ -12,13 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 
-namespace media {
-
-CdmHostFilePath::CdmHostFilePath(const base::FilePath& file_path,
-                                 const base::FilePath& sig_file_path)
-    : file_path(file_path), sig_file_path(sig_file_path) {}
-
-CdmHostFilePath::~CdmHostFilePath() {}
+namespace content {
 
 // static
 std::unique_ptr<CdmHostFile> CdmHostFile::Create(
@@ -54,4 +48,4 @@ CdmHostFile::CdmHostFile(const base::FilePath& file_path,
   DCHECK(!file_path_.empty());
 }
 
-}  // namespace media
+}  // namespace content
