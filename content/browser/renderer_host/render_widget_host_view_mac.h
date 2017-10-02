@@ -357,6 +357,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                                       gfx::Point* transformed_point) override;
   // Returns true when we can do SurfaceHitTesting for the event type.
   bool ShouldRouteEvent(const blink::WebInputEvent& event) const;
+  // This method checks |event| to see if a GesturePinch event can be routed
+  // according to ShouldRouteEvent, and if not, sends it directly to the view's
+  // RenderWidgetHost.
+  // By not just defaulting to sending the GesturePinch events to the mainframe,
+  // we allow the events to be targeted to an oopif subframe, in case some
+  // consumer, such as PDF or maps, wants to intercept them and implement a
+  // custom behavior.
+  void SendGesturePinchEvent(blink::WebGestureEvent* event);
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
                          const ui::LatencyInfo& latency) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
