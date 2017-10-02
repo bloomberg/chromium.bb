@@ -79,6 +79,11 @@ struct BASE_EXPORT MemoryDumpRequestArgs {
 struct MemoryDumpArgs {
   // Specifies how detailed the dumps should be.
   MemoryDumpLevelOfDetail level_of_detail;
+
+  // Globally unique identifier. In multi-process dumps, all processes issue a
+  // local dump with the same guid. This allows the trace importers to
+  // reconstruct the global dump.
+  uint64_t dump_guid;
 };
 
 using ProcessMemoryDumpCallback = Callback<

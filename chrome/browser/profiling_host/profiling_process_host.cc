@@ -208,52 +208,48 @@ void ProfilingProcessHost::Observe(
 bool ProfilingProcessHost::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  // Attempt to dump all processes. Some of these processes will not be profiled
-  // [e.g. utility processes, including the profiling process]. The profiling
-  // process will gracefully handle these failures.
-  DCHECK_NE(GetCurrentMode(), Mode::kNone);
-  base::ProcessIterator process_iter(NULL);
-  while (const base::ProcessEntry* process_entry =
-             process_iter.NextProcessEntry()) {
-    memlog_->DumpProcessForTracing(
-        process_entry->pid(),
-        base::BindOnce(&ProfilingProcessHost::OnDumpProcessForTracingCallback,
-                       base::Unretained(this)));
-  }
+  memlog_->DumpProcessesForTracing(
+      base::BindOnce(&ProfilingProcessHost::OnDumpProcessesForTracingCallback,
+                     base::Unretained(this), args.dump_guid));
   return true;
 }
 
-void ProfilingProcessHost::OnDumpProcessForTracingCallback(
-    mojo::ScopedSharedBufferHandle buffer,
-    uint32_t size) {
-  if (!buffer->is_valid()) {
-    // The profiling process host will have logged error messages indicating the
-    // nature of the problem.
-    return;
+void ProfilingProcessHost::OnDumpProcessesForTracingCallback(
+    uint64_t guid,
+    std::vector<profiling::mojom::SharedBufferWithSizePtr> buffers) {
+  for (auto& buffer_ptr : buffers) {
+    mojo::ScopedSharedBufferHandle& buffer = buffer_ptr->buffer;
+    uint32_t size = buffer_ptr->size;
+
+    if (!buffer->is_valid())
+      return;
+
+    mojo::ScopedSharedBufferMapping mapping = buffer->Map(size);
+    if (!mapping) {
+      DLOG(ERROR) << "Failed to map buffer";
+      return;
+    }
+
+    const char* char_buffer = static_cast<const char*>(mapping.get());
+    std::string json(char_buffer, char_buffer + size);
+
+    const int kTraceEventNumArgs = 1;
+    const char* const kTraceEventArgNames[] = {"dumps"};
+    const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> wrapper(
+        new StringWrapper(std::move(json)));
+
+    // Using the same id merges all of the heap dumps into a single detailed
+    // dump node in the UI.
+    TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
+        TRACE_EVENT_PHASE_MEMORY_DUMP,
+        base::trace_event::TraceLog::GetCategoryGroupEnabled(
+            base::trace_event::MemoryDumpManager::kTraceCategory),
+        "periodic_interval", trace_event_internal::kGlobalScope, guid,
+        buffer_ptr->pid, kTraceEventNumArgs, kTraceEventArgNames,
+        kTraceEventArgTypes, nullptr /* arg_values */, &wrapper,
+        TRACE_EVENT_FLAG_HAS_ID);
   }
-
-  mojo::ScopedSharedBufferMapping mapping = buffer->Map(size);
-  if (!mapping) {
-    DLOG(ERROR) << "Failed to map buffer";
-    return;
-  }
-
-  const char* char_buffer = static_cast<const char*>(mapping.get());
-  std::string json(char_buffer, char_buffer + size);
-
-  const int kTraceEventNumArgs = 1;
-  const char* const kTraceEventArgNames[] = {"dumps"};
-  const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> wrapper(
-      new StringWrapper(std::move(json)));
-
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      TRACE_EVENT_PHASE_MEMORY_DUMP,
-      base::trace_event::TraceLog::GetCategoryGroupEnabled(
-          base::trace_event::MemoryDumpManager::kTraceCategory),
-      "periodic_interval", trace_event_internal::kGlobalScope, 0x0,
-      kTraceEventNumArgs, kTraceEventArgNames, kTraceEventArgTypes,
-      nullptr /* arg_values */, &wrapper, TRACE_EVENT_FLAG_HAS_ID);
 }
 
 void ProfilingProcessHost::SendPipeToProfilingService(

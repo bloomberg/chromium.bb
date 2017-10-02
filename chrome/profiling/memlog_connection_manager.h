@@ -65,10 +65,9 @@ class MemlogConnectionManager {
   // flushed before the dump is executed.
   void DumpProcess(DumpProcessArgs args, bool hop_to_connection_thread);
 
-  void DumpProcessForTracing(
-      base::ProcessId pid,
-      mojom::Memlog::DumpProcessForTracingCallback callback,
-      const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps);
+  void DumpProcessesForTracing(
+      mojom::Memlog::DumpProcessesForTracingCallback callback,
+      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
   void OnNewConnection(base::ScopedPlatformFile file, base::ProcessId pid);
 

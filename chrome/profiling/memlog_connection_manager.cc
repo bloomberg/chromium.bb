@@ -170,10 +170,9 @@ void MemlogConnectionManager::HopToConnectionThread(
                                 std::move(manager), std::move(args), false));
 }
 
-void MemlogConnectionManager::DumpProcessForTracing(
-    base::ProcessId pid,
-    mojom::Memlog::DumpProcessForTracingCallback callback,
-    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps) {
+void MemlogConnectionManager::DumpProcessesForTracing(
+    mojom::Memlog::DumpProcessesForTracingCallback callback,
+    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   base::AutoLock lock(connections_lock_);
 
   // Lock all connections to prevent deallocations of atoms from
@@ -186,42 +185,58 @@ void MemlogConnectionManager::DumpProcessForTracing(
         base::MakeUnique<base::AutoLock>(*connection->parser->GetLock()));
   }
 
-  auto it = connections_.find(pid);
-  if (it == connections_.end()) {
-    DLOG(ERROR) << "No connections found for memory dump for pid:" << pid;
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
-    return;
+  std::vector<profiling::mojom::SharedBufferWithSizePtr> results;
+  results.reserve(connections_.size());
+  for (auto& it : connections_) {
+    base::ProcessId pid = it.first;
+    Connection* connection = it.second.get();
+    memory_instrumentation::mojom::ProcessMemoryDump* process_dump = nullptr;
+    for (const auto& proc : dump->process_dumps) {
+      if (proc->pid == pid) {
+        process_dump = &*proc;
+        break;
+      }
+    }
+    if (!process_dump) {
+      DLOG(ERROR) << "Don't have a memory dump for PID " << pid;
+      continue;
+    }
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps =
+        process_dump->os_dump->memory_maps_for_heap_profiler;
+
+    std::ostringstream oss;
+    ExportParams params;
+    params.allocs = connection->tracker.GetCounts();
+    params.maps = &maps;
+    params.context_map = &connection->tracker.context();
+    params.min_size_threshold = kMinSizeThreshold;
+    params.min_count_threshold = kMinCountThreshold;
+    ExportMemoryMapsAndV2StackTraceToJSON(params, oss);
+    std::string reply = oss.str();
+
+    mojo::ScopedSharedBufferHandle buffer =
+        mojo::SharedBufferHandle::Create(reply.size());
+    if (!buffer.is_valid()) {
+      DLOG(ERROR) << "Could not create Mojo shared buffer";
+      continue;
+    }
+
+    mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
+    if (!mapping) {
+      DLOG(ERROR) << "Could not map Mojo shared buffer";
+      continue;
+    }
+
+    memcpy(mapping.get(), reply.c_str(), reply.size());
+
+    profiling::mojom::SharedBufferWithSizePtr result =
+        profiling::mojom::SharedBufferWithSize::New();
+    result->buffer = std::move(buffer);
+    result->size = reply.size();
+    result->pid = pid;
+    results.push_back(std::move(result));
   }
-
-  Connection* connection = it->second.get();
-  std::ostringstream oss;
-  ExportParams params;
-  params.allocs = connection->tracker.GetCounts();
-  params.maps = &maps;
-  params.context_map = &connection->tracker.context();
-  params.min_size_threshold = kMinSizeThreshold;
-  params.min_count_threshold = kMinCountThreshold;
-  ExportMemoryMapsAndV2StackTraceToJSON(params, oss);
-  std::string reply = oss.str();
-
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(reply.size());
-  if (!buffer.is_valid()) {
-    DLOG(ERROR) << "Could not create Mojo shared buffer";
-    std::move(callback).Run(std::move(buffer), 0);
-    return;
-  }
-
-  mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
-  if (!mapping) {
-    DLOG(ERROR) << "Could not map Mojo shared buffer";
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
-    return;
-  }
-
-  memcpy(mapping.get(), reply.c_str(), reply.size());
-
-  std::move(callback).Run(std::move(buffer), reply.size());
+  std::move(callback).Run(std::move(results));
 }
 
 MemlogConnectionManager::DumpProcessArgs::DumpProcessArgs() = default;

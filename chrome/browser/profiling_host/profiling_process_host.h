@@ -119,8 +119,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  void OnDumpProcessForTracingCallback(mojo::ScopedSharedBufferHandle buffer,
-                                       uint32_t size);
+  void OnDumpProcessesForTracingCallback(
+      uint64_t guid,
+      std::vector<profiling::mojom::SharedBufferWithSizePtr> buffers);
 
   // Starts the profiling process.
   void LaunchAsService();
