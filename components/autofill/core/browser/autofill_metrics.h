@@ -425,6 +425,16 @@ class AutofillMetrics {
     // submitted. If the submission is not interrupted by JavaScript, the "form
     // submitted" event above will also be logged.
     FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE,
+    // A dropdown with credit card suggestions was shown, but they were not used
+    // to fill the form. Depending on the user submitting a card known by the
+    // browser, submitting a card that the browser does not know about,
+    // or Autofill failing to detect the card, one of the following will be
+    // triggered. Only one of the following three metrics will be triggered per
+    // page load.
+    FORM_EVENT_SUBMIT_WITHOUT_SELECTING_SUGGESTIONS_KNOWN_CARD,
+    FORM_EVENT_SUBMIT_WITHOUT_SELECTING_SUGGESTIONS_UNKNOWN_CARD,
+    FORM_EVENT_SUBMIT_WITHOUT_SELECTING_SUGGESTIONS_NO_CARD,
+
     NUM_FORM_EVENTS,
   };
 
@@ -912,6 +922,10 @@ class AutofillMetrics {
 
     void SetBankNameAvailable();
 
+    void DetectedCardInSubmittedForm();
+
+    void SubmittedKnownCard();
+
    private:
     void Log(FormEvent event) const;
     void Log(BankNameDisplayedFormEvent event) const;
@@ -927,6 +941,8 @@ class AutofillMetrics {
     bool has_logged_will_submit_;
     bool has_logged_submitted_;
     bool has_logged_bank_name_available_;
+    bool has_logged_detected_card_in_submitted_form_;
+    bool has_logged_submitted_known_card;
     bool logged_suggestion_filled_was_server_data_;
     bool logged_suggestion_filled_was_masked_server_card_;
 

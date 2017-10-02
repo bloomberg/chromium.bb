@@ -3604,6 +3604,103 @@ TEST_F(PersonalDataManagerTest,
   }
 }
 
+TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
+  // Add a masked server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
+                          "2110" /* last 4 digits */, "12", "2999", "1");
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(base::ASCIIToUTF16("4234 5678 9012 2110") /* Visa */);
+  ASSERT_TRUE(personal_data_->IsKnownCard(cardToCompare));
+}
+
+TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesFullServerCard) {
+  // Add a full server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton",
+                          "4234567890122110" /* Visa */, "12", "2999", "1");
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(base::ASCIIToUTF16("4234 5678 9012 2110") /* Visa */);
+  ASSERT_TRUE(personal_data_->IsKnownCard(cardToCompare));
+}
+
+TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesLocalCard) {
+  EnableWalletCardImport();
+  // Add a local card.
+  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
+                          "4234 5678 9012 2110" /* Visa */, "04", "2999", "1");
+  personal_data_->AddCreditCard(credit_card0);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(base::ASCIIToUTF16("4234567890122110") /* Visa */);
+  ASSERT_TRUE(personal_data_->IsKnownCard(cardToCompare));
+}
+
+TEST_F(PersonalDataManagerTest, IsKnownCard_TypeDoesNotMatch) {
+  EnableWalletCardImport();
+  // Add a local card.
+  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
+                          "4234 5678 9012 2110" /* Visa */, "04", "2999", "1");
+  personal_data_->AddCreditCard(credit_card0);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(
+      base::ASCIIToUTF16("5105 1051 0510 2110") /* American Express */);
+  ASSERT_FALSE(personal_data_->IsKnownCard(cardToCompare));
+}
+
+TEST_F(PersonalDataManagerTest, IsKnownCard_LastFourDoesNotMatch) {
+  EnableWalletCardImport();
+  // Add a local card.
+  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
+                          "4234 5678 9012 2110" /* Visa */, "04", "2999", "1");
+  personal_data_->AddCreditCard(credit_card0);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  CreditCard cardToCompare;
+  cardToCompare.SetNumber(base::ASCIIToUTF16("4234 5678 9012 0000") /* Visa */);
+  ASSERT_FALSE(personal_data_->IsKnownCard(cardToCompare));
+}
+
 // Test that a masked server card is not suggested if more that six numbers have
 // been typed in the field.
 TEST_F(PersonalDataManagerTest,
