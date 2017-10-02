@@ -153,7 +153,7 @@ static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
 #if CONFIG_INTRABC
   assert(!is_intrabc_block(&mi->mbmi));
 #endif  // CONFIG_INTRABC
-  aom_write_symbol(w, av1_intra_mode_ind[mode],
+  aom_write_symbol(w, mode,
                    get_y_mode_cdf(frame_ctx, mi, above_mi, left_mi, block),
                    INTRA_MODES);
   (void)cm;
@@ -1628,8 +1628,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 
 static void write_intra_mode(FRAME_CONTEXT *frame_ctx, BLOCK_SIZE bsize,
                              PREDICTION_MODE mode, aom_writer *w) {
-  aom_write_symbol(w, av1_intra_mode_ind[mode],
-                   frame_ctx->y_mode_cdf[size_group_lookup[bsize]],
+  aom_write_symbol(w, mode, frame_ctx->y_mode_cdf[size_group_lookup[bsize]],
                    INTRA_MODES);
 }
 
@@ -1637,7 +1636,7 @@ static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
                                 UV_PREDICTION_MODE uv_mode,
                                 PREDICTION_MODE y_mode, aom_writer *w) {
 #if !CONFIG_CFL
-  uv_mode = av1_intra_mode_ind[get_uv_mode(uv_mode)];
+  uv_mode = get_uv_mode(uv_mode);
 #endif
   aom_write_symbol(w, uv_mode, frame_ctx->uv_mode_cdf[y_mode], UV_INTRA_MODES);
 }

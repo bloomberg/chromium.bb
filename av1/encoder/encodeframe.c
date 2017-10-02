@@ -5917,13 +5917,13 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
           const PREDICTION_MODE l = av1_left_block_mode(mi, left_mi, bidx);
           ++counts->kf_y_mode[a][l][bmode];
 #endif  // CONFIG_ENTROPY_STATS
-          update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, bidx),
-                     av1_intra_mode_ind[bmode], INTRA_MODES);
+          update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, bidx), bmode,
+                     INTRA_MODES);
         } else {
 #if CONFIG_ENTROPY_STATS
           ++counts->y_mode[0][bmode];
 #endif  // CONFIG_ENTROPY_STATS
-          update_cdf(fc->y_mode_cdf[0], av1_intra_mode_ind[bmode], INTRA_MODES);
+          update_cdf(fc->y_mode_cdf[0], bmode, INTRA_MODES);
         }
       }
   } else {
@@ -5933,14 +5933,13 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, 0);
       ++counts->kf_y_mode[above][left][y_mode];
 #endif  // CONFIG_ENTROPY_STATS
-      update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, 0),
-                 av1_intra_mode_ind[y_mode], INTRA_MODES);
+      update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, 0), y_mode,
+                 INTRA_MODES);
     } else {
 #if CONFIG_ENTROPY_STATS
       ++counts->y_mode[size_group_lookup[bsize]][y_mode];
 #endif  // CONFIG_ENTROPY_STATS
-      update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]],
-                 av1_intra_mode_ind[y_mode], INTRA_MODES);
+      update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
     }
 
 #if CONFIG_FILTER_INTRA
@@ -5984,8 +5983,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
 #if CONFIG_ENTROPY_STATS
   ++counts->uv_mode[y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
-  update_cdf(fc->uv_mode_cdf[y_mode], av1_intra_mode_ind[uv_mode],
-             UV_INTRA_MODES);
+  update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
 }
 
 #if CONFIG_VAR_TX
