@@ -58,7 +58,7 @@ libFuzzer.
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
 [Guide to libprotobuf-mutator]: libprotobuf-mutator.md
 [ClusterFuzz Integration]: clusterfuzz.md
-[Reproducing]: reproducing.md
+[Reproducing]: https://github.com/google/clusterfuzz-tools
 [Reference]: reference.md
 [ClusterFuzz Bugs]: https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label:Stability-LibFuzzer%20label:ClusterFuzz&sort=-modified&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified
 [Pdfium Bugs]: https://bugs.chromium.org/p/pdfium/issues/list?can=1&q=libfuzzer&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles
