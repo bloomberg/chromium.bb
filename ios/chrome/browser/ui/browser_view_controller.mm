@@ -3690,7 +3690,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // If there is no first responder, try to make the webview the first
   // responder.
   if (!GetFirstResponder()) {
-    [_model.currentTab.webController.webViewProxy becomeFirstResponder];
+    web::WebState* webState = _model.currentTab.webState;
+    if (webState)
+      [webState->GetWebViewProxy() becomeFirstResponder];
   }
 
   return YES;
