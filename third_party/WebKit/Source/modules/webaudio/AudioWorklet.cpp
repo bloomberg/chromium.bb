@@ -9,7 +9,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
-#include "modules/webaudio/AudioWorkletThread.h"
 #include "modules/webaudio/BaseAudioContext.h"
 
 namespace blink {
@@ -27,6 +26,11 @@ AudioWorklet::~AudioWorklet() {
 void AudioWorklet::RegisterContext(BaseAudioContext* context) {
   DCHECK(!contexts_.Contains(context));
   contexts_.insert(context);
+
+  // Check if AudioWorklet loads the script and has an active
+  // AudioWorkletGlobalScope before getting the messaging proxy.
+  if (IsWorkletMessagingProxyCreated())
+    context->SetWorkletMessagingProxy(FindAvailableMessagingProxy());
 }
 
 void AudioWorklet::UnregisterContext(BaseAudioContext* context) {
@@ -35,6 +39,14 @@ void AudioWorklet::UnregisterContext(BaseAudioContext* context) {
     return;
 
   contexts_.erase(context);
+}
+
+AudioWorkletMessagingProxy* AudioWorklet::FindAvailableMessagingProxy() {
+  return static_cast<AudioWorkletMessagingProxy*>(FindAvailableGlobalScope());
+}
+
+bool AudioWorklet::IsWorkletMessagingProxyCreated() const {
+  return GetNumberOfGlobalScopes() > 0;
 }
 
 bool AudioWorklet::NeedsToCreateGlobalScope() {
@@ -46,12 +58,20 @@ bool AudioWorklet::NeedsToCreateGlobalScope() {
 
 WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  AudioWorkletThread::EnsureSharedBackingThread();
 
   WorkerClients* worker_clients = WorkerClients::Create();
   AudioWorkletMessagingProxy* proxy =
       new AudioWorkletMessagingProxy(GetExecutionContext(), worker_clients);
   proxy->Initialize();
+
+  for (BaseAudioContext* context : contexts_) {
+    // TODO(hongchan): Currently all BaseAudioContexts shares a single
+    // AudioWorkletMessagingProxy. Fix this to support one messaging proxy for
+    // each BaseAudioContext.
+    if (!context->WorkletMessagingProxy())
+      context->SetWorkletMessagingProxy(proxy);
+  }
+
   return proxy;
 }
 

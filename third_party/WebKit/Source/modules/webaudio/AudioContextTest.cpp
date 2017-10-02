@@ -96,10 +96,6 @@ class AudioContextTest : public ::testing::Test {
     dummy_page_holder_ = DummyPageHolder::Create();
   }
 
-  void TearDown() override {
-    AudioWorkletThread::ClearSharedBackingThread();
-  }
-
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
  private:

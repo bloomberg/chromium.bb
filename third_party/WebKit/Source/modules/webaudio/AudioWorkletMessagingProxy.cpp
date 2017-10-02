@@ -39,6 +39,11 @@ AudioWorkletMessagingProxy::GetParamInfoListForProcessor(
   return processor_info_map_.at(name);
 }
 
+WebThread* AudioWorkletMessagingProxy::GetWorkletBackingThread() {
+  auto worklet_thread = static_cast<AudioWorkletThread*>(GetWorkerThread());
+  return worklet_thread->GetSharedBackingThread();
+}
+
 std::unique_ptr<ThreadedWorkletObjectProxy>
 AudioWorkletMessagingProxy::CreateObjectProxy(
     ThreadedWorkletMessagingProxy* messaging_proxy,

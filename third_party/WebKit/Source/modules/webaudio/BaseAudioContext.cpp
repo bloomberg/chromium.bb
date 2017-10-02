@@ -50,6 +50,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioWorklet.h"
+#include "modules/webaudio/AudioWorkletMessagingProxy.h"
 #include "modules/webaudio/BiquadFilterNode.h"
 #include "modules/webaudio/ChannelMergerNode.h"
 #include "modules/webaudio/ChannelSplitterNode.h"
@@ -160,10 +161,11 @@ void BaseAudioContext::Initialize() {
   }
 
   // Check if a document or a frame supports AudioWorklet. If not, AudioWorklet
-  // cannot be accssed.
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      WindowAudioWorklet::audioWorklet(this)) {
-    WindowAudioWorklet::audioWorklet(this)->RegisterContext(this);
+  // cannot be accessed.
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
+    AudioWorklet* audioWorklet = WindowAudioWorklet::audioWorklet(this);
+    if (audioWorklet)
+      audioWorklet->RegisterContext(this);
   }
 }
 
@@ -180,9 +182,12 @@ void BaseAudioContext::Uninitialize() {
 
   // AudioWorklet may be destroyed before the context goes away. So we have to
   // check the pointer. See: crbug.com/503845
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      WindowAudioWorklet::audioWorklet(this)) {
-    WindowAudioWorklet::audioWorklet(this)->UnregisterContext(this);
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
+    AudioWorklet* audioWorklet = WindowAudioWorklet::audioWorklet(this);
+    if (audioWorklet) {
+      audioWorklet->UnregisterContext(this);
+      worklet_messaging_proxy_.Clear();
+    }
   }
 
   if (!IsDestinationInitialized())
@@ -997,11 +1002,11 @@ DEFINE_TRACE(BaseAudioContext) {
   visitor->Trace(success_callbacks_);
   visitor->Trace(error_callbacks_);
   visitor->Trace(decode_audio_resolvers_);
-
   visitor->Trace(periodic_wave_sine_);
   visitor->Trace(periodic_wave_square_);
   visitor->Trace(periodic_wave_sawtooth_);
   visitor->Trace(periodic_wave_triangle_);
+  visitor->Trace(worklet_messaging_proxy_);
   EventTargetWithInlineData::Trace(visitor);
   SuspendableObject::Trace(visitor);
 }
@@ -1024,6 +1029,17 @@ SecurityOrigin* BaseAudioContext::GetSecurityOrigin() const {
     return GetExecutionContext()->GetSecurityOrigin();
 
   return nullptr;
+}
+
+void BaseAudioContext::SetWorkletMessagingProxy(
+    AudioWorkletMessagingProxy* proxy) {
+  DCHECK(!worklet_messaging_proxy_);
+  worklet_messaging_proxy_ = proxy;
+}
+
+AudioWorkletMessagingProxy* BaseAudioContext::WorkletMessagingProxy() {
+  DCHECK(!worklet_messaging_proxy_);
+  return worklet_messaging_proxy_;
 }
 
 }  // namespace blink
