@@ -1791,6 +1791,14 @@ test("browser_tests") {
       }
     }
 
+    if (enable_desktop_in_product_help) {
+      sources += [
+        "../browser/ui/views/feature_promos/bookmark_promo_dialog_browsertest.cc",
+        "../browser/ui/views/feature_promos/incognito_window_promo_dialog_browsertest.cc",
+        "../browser/ui/views/feature_promos/new_tab_promo_dialog_browsertest.cc",
+      ]
+    }
+
     if (enable_extensions) {
       sources += [
         "../browser/apps/app_browsertest_util.cc",
@@ -2135,9 +2143,6 @@ test("browser_tests") {
           "../browser/ui/views/extensions/extension_message_bubble_view_browsertest_nonmac.cc",
           "../browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc",
           "../browser/ui/views/extensions/media_galleries_dialog_views_browsertest.cc",
-          "../browser/ui/views/feature_promos/bookmark_promo_dialog_browsertest.cc",
-          "../browser/ui/views/feature_promos/incognito_window_promo_dialog_browsertest.cc",
-          "../browser/ui/views/feature_promos/new_tab_promo_dialog_browsertest.cc",
           "../browser/ui/views/frame/browser_non_client_frame_view_browsertest.cc",
           "../browser/ui/views/frame/browser_view_browsertest.cc",
           "../browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc",
@@ -2379,6 +2384,7 @@ test("browser_tests") {
       }
       if (is_win || is_linux) {
         sources += [
+          "../browser/feature_engagement/incognito_window/incognito_window_tracker_browsertest.cc",
           "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
           "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc",
         ]

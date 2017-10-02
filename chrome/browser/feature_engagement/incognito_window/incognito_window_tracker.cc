@@ -6,6 +6,11 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/feature_promos/incognito_window_promo_bubble_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -24,8 +29,8 @@ IncognitoWindowTracker::IncognitoWindowTracker(
     : FeatureTracker(profile,
                      session_duration_updater,
                      &kIPHIncognitoWindowFeature,
-                     base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
-}
+                     base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)),
+      incognito_promo_observer_(this) {}
 
 IncognitoWindowTracker::IncognitoWindowTracker(
     SessionDurationUpdater* session_duration_updater)
@@ -51,10 +56,35 @@ void IncognitoWindowTracker::OnSessionTimeMet() {
 }
 
 void IncognitoWindowTracker::ShowPromo() {
-  // TODO: Call the promo.
+  DCHECK(!incognito_promo_);
+  auto* browser = BrowserView::GetBrowserViewForBrowser(
+      BrowserList::GetInstance()->GetLastActive());
+  DCHECK(browser);
+  DCHECK(browser->IsActive());
+  DCHECK(browser->toolbar());
+  DCHECK(browser->toolbar()->app_menu_button());
+  auto* app_menu_button = browser->toolbar()->app_menu_button();
 
-  // Clears the flag for whether there is any in-product help being displayed.
-  GetTracker()->Dismissed(kIPHIncognitoWindowFeature);
+  // Owned by its native widget. Will be destroyed when its widget is destroyed.
+  incognito_promo_ =
+      IncognitoWindowPromoBubbleView::CreateOwned(app_menu_button);
+  views::Widget* widget = incognito_promo_->GetWidget();
+  incognito_promo_observer_.Add(widget);
+  app_menu_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  app_menu_button->SchedulePaint();
 }
 
+void IncognitoWindowTracker::OnWidgetDestroying(views::Widget* widget) {
+  OnPromoClosed();
+
+  auto* browser = BrowserView::GetBrowserViewForBrowser(
+      BrowserList::GetInstance()->GetLastActive());
+  auto* app_menu_button = browser->toolbar()->app_menu_button();
+
+  if (incognito_promo_observer_.IsObserving(widget)) {
+    incognito_promo_observer_.Remove(widget);
+    app_menu_button->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+    app_menu_button->SchedulePaint();
+  }
+}
 }  // namespace feature_engagement

@@ -28,12 +28,19 @@
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/feature_engagement/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/text/bytes_formatting.h"
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker.h"
+#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
+#endif
 
 using ImportantReason = ImportantSitesUtil::ImportantReason;
 using BrowsingDataType = browsing_data::BrowsingDataType;
@@ -135,6 +142,27 @@ void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
   sync_service_observer_.RemoveAll();
   weak_ptr_factory_.InvalidateWeakPtrs();
   counters_.clear();
+}
+
+void ClearBrowsingDataHandler::HandleClearBrowsingDataForTest() {
+  // HandleClearBrowsingData takes in a ListValue as its only parameter. The
+  // ListValue must contain four values: web_ui callback ID, a list of data
+  // types that the user cleared from the clear browsing data UI, time period of
+  // the data to be cleared, and important sites to remove.
+
+  std::unique_ptr<base::ListValue> data_types =
+      std::make_unique<base::ListValue>();
+  data_types->AppendString("browser.clear_data.browsing_history");
+
+  std::unique_ptr<base::ListValue> important_sites =
+      std::make_unique<base::ListValue>();
+
+  base::ListValue list_args;
+  list_args.AppendString("webui_callback_id");
+  list_args.Append(std::move(data_types));
+  list_args.AppendInteger(1u);
+  list_args.Append(std::move(important_sites));
+  HandleClearBrowsingData(&list_args);
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
@@ -260,6 +288,11 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   browsing_data_important_sites_util::Remove(
       remove_mask, origin_mask, time_period, std::move(filter_builder), remover,
       std::move(callback));
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
+      ->GetForProfile(profile_)
+      ->OnBrowsingDataCleared();
+#endif
 }
 
 std::unique_ptr<content::BrowsingDataFilterBuilder>

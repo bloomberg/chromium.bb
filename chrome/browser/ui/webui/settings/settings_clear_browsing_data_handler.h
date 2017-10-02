@@ -42,6 +42,9 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
+  // Calls |HandleClearBrowsingData| with test data for browser test.
+  void HandleClearBrowsingDataForTest();
+
  private:
   // Clears browsing data, called by Javascript.
   void HandleClearBrowsingData(const base::ListValue* value);
