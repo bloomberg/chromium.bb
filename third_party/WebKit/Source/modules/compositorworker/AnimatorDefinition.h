@@ -13,11 +13,11 @@
 
 namespace blink {
 
-// This class represents a valid registered Javascript animator. Note that it
-// assumed the argument passed to its constructor have been validated to have
-// proper type.
-// It can be used to instantiate new animators and also to call the Javascript
-// 'animate' callback on a given instance.
+// Represents a valid registered Javascript animator.  In particular it owns two
+// |v8::Function|s that are the "constructor" and "animate" functions of the
+// registered class. It does not do any validation itself and relies on
+// |AnimationWorkletGlobalScope::registerAnimator| to validate the provided
+// Javascript class before completing the registration.
 class MODULES_EXPORT AnimatorDefinition final
     : public GarbageCollectedFinalized<AnimatorDefinition>,
       public TraceWrapperBase {

@@ -15,6 +15,11 @@ class ExecutionContext;
 class WorkerClients;
 class WorkerThread;
 
+// Acts as a proxy for the animation worklet global scopes that live on the
+// worklet thread. The logic to actually proxy an off thread global scope is
+// implemented in its parent. The main contribution of this class is to
+// create an appropriate worklet thread type (in this case an
+// |AnimationWorkletThread|) as part of the the worklet initialization process.
 class AnimationWorkletMessagingProxy final
     : public ThreadedWorkletMessagingProxy {
  public:
