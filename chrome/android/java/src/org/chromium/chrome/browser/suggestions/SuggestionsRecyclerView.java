@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v7.view.ContextThemeWrapper;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.ScrollToLoadListener;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.ArrayList;
@@ -53,6 +55,9 @@ public class SuggestionsRecyclerView extends RecyclerView {
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
     private final SuggestionsMetrics.ScrollEventReporter mScrollEventReporter;
+
+    // The ScrollToLoadListener triggers loading more content when the user is near the end.
+    @Nullable private ScrollToLoadListener mScrollToLoadListener;
 
     /**
      * Total height of the items being dismissed.  Tracked to allow the bottom space to compensate
@@ -293,6 +298,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         getNewTabPageAdapter().dismissItem(position, removedItemTitle -> {
             announceForAccessibility(getResources().getString(
                     R.string.ntp_accessibility_item_removed, removedItemTitle));
+            if (mScrollToLoadListener != null) mScrollToLoadListener.onItemDismissed();
         });
     }
 
@@ -352,6 +358,24 @@ public class SuggestionsRecyclerView extends RecyclerView {
      */
     public static void resetForDismissCallback(NewTabPageViewHolder holder) {
         ((CardViewHolder) holder).getRecyclerView().updateViewStateForDismiss(0, holder);
+    }
+
+    /**
+     * Sets the ScrollToLoadListener for the RecyclerView.
+     */
+    public void setScrollToLoadListener(ScrollToLoadListener scrollToLoadListener) {
+        mScrollToLoadListener = scrollToLoadListener;
+        addOnScrollListener(mScrollToLoadListener);
+    }
+
+    /**
+     * Clears the currently registered ScrollToLoadListener.
+     */
+    public void clearScrollToLoadListener() {
+        if (mScrollToLoadListener == null) return;
+
+        removeOnScrollListener(mScrollToLoadListener);
+        mScrollToLoadListener = null;
     }
 
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
