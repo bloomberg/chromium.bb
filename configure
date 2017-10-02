@@ -345,6 +345,7 @@ EXPERIMENT_LIST="
     frame_marker
     jnt_comp
     frame_sign_bias
+    ext_skip
     obu
     amvr
     lpf_sb
@@ -581,6 +582,8 @@ post_process_cmdline() {
     enabled jnt_comp && enable_feature frame_marker
     enabled frame_sign_bias && enable_feature frame_marker
     enabled txmg && enable_feature highbitdepth
+    enabled ext_skip && enable_feature frame_marker
+    enabled ext_skip && enable_feature ext_refs
 
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"
