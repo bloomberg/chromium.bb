@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -62,9 +61,6 @@ const base::Feature kAutofillUpstreamShowNewUi{
 const base::Feature kAutofillUpstreamUseAutofillProfileComparator{
     "AutofillUpstreamUseAutofillProfileComparator",
     base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillUpstreamUseNotRecentlyUsedAutofillProfile{
-    "AutofillUpstreamUseNotRecentlyUsedAutofillProfile",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
@@ -77,8 +73,6 @@ const char kAutofillCreditCardPopupIsIconAtStartKey[] =
 const char kAutofillPopupMarginKey[] = "margin";
 const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
     "show_expiration_date";
-const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[] =
-    "max_minutes_since_autofill_profile_use";
 
 #if defined(OS_MACOSX)
 const base::Feature kCreditCardAutofillTouchBar{
@@ -298,16 +292,6 @@ bool IsAutofillUpstreamShowNewUiExperimentEnabled() {
 #else
   return base::FeatureList::IsEnabled(kAutofillUpstreamShowNewUi);
 #endif
-}
-
-base::TimeDelta GetMaxTimeSinceAutofillProfileUseForCardUpload() {
-  int value;
-  const std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillUpstreamUseNotRecentlyUsedAutofillProfile,
-      kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey);
-  if (!param_value.empty() && base::StringToInt(param_value, &value))
-    return base::TimeDelta::FromMinutes(value);
-  return base::TimeDelta();
 }
 
 #if defined(OS_MACOSX)
