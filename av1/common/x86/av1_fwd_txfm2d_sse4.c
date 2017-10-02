@@ -80,13 +80,3 @@ void av1_fwd_txfm2d_32x32_sse4_1(const int16_t *input, int32_t *output,
   (void)bd;
   fwd_txfm2d_sse4_1(input, output, stride, &cfg, txfm_buf);
 }
-
-#if CONFIG_TX64X64
-void av1_fwd_txfm2d_64x64_sse4_1(const int16_t *input, int32_t *output,
-                                 int stride, int tx_type, int bd) {
-  DECLARE_ALIGNED(16, int32_t, txfm_buf[4096]);
-  TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_64x64_cfg(tx_type);
-  (void)bd;
-  fwd_txfm2d_sse4_1(input, output, stride, &cfg, txfm_buf);
-}
-#endif  // CONFIG_TX64X64
