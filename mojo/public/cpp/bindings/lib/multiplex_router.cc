@@ -447,11 +447,7 @@ void MultiplexRouter::CloseEndpointHandle(
     return;
 
   MayAutoLock locker(&lock_);
-  // TODO(crbug.com/750267, crbug.com/754946): Change this to DCHECK after bug
-  // investigation.
-  CHECK(base::ContainsKey(endpoints_, id));
-  endpoints_[id].CheckObjectIsValid();
-
+  DCHECK(base::ContainsKey(endpoints_, id));
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   DCHECK(!endpoint->client());
   DCHECK(!endpoint->closed());
@@ -475,10 +471,7 @@ InterfaceEndpointController* MultiplexRouter::AttachEndpointClient(
   DCHECK(client);
 
   MayAutoLock locker(&lock_);
-  // TODO(crbug.com/750267, crbug.com/754946): Change this to DCHECK after bug
-  // investigation.
-  CHECK(base::ContainsKey(endpoints_, id));
-  endpoints_[id].CheckObjectIsValid();
+  DCHECK(base::ContainsKey(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->AttachClient(client, std::move(runner));
@@ -497,10 +490,7 @@ void MultiplexRouter::DetachEndpointClient(
   DCHECK(IsValidInterfaceId(id));
 
   MayAutoLock locker(&lock_);
-  // TODO(crbug.com/750267, crbug.com/754946): Change this to DCHECK after bug
-  // investigation.
-  CHECK(base::ContainsKey(endpoints_, id));
-  endpoints_[id].CheckObjectIsValid();
+  DCHECK(base::ContainsKey(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->DetachClient();
@@ -672,7 +662,7 @@ void MultiplexRouter::OnPipeConnectionError() {
   // Calling UpdateEndpointStateMayRemove() may remove the corresponding value
   // from |endpoints_| and invalidate any iterator of |endpoints_|. Therefore,
   // copy the endpoint pointers to a vector and iterate over it instead.
-  std::vector<TrackedScopedRefPtr<InterfaceEndpoint>> endpoint_vector;
+  std::vector<scoped_refptr<InterfaceEndpoint>> endpoint_vector;
   endpoint_vector.reserve(endpoints_.size());
   for (const auto& pair : endpoints_)
     endpoint_vector.push_back(pair.second);
