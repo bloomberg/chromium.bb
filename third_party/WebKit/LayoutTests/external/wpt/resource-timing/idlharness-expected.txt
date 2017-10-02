@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 51 tests; 49 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Performance interface: operation clearResourceTimings()
 PASS Performance interface: operation setResourceTimingBufferSize(unsigned long)
 PASS Performance interface: attribute onresourcetimingbufferfull
@@ -12,6 +13,8 @@ PASS PerformanceResourceTiming interface object name
 PASS PerformanceResourceTiming interface: existence and properties of interface prototype object
 PASS PerformanceResourceTiming interface: existence and properties of interface prototype object's "constructor" property
 PASS PerformanceResourceTiming interface: attribute initiatorType
+PASS PerformanceResourceTiming interface: attribute nextHopProtocol
+PASS PerformanceResourceTiming interface: attribute workerStart
 PASS PerformanceResourceTiming interface: attribute redirectStart
 PASS PerformanceResourceTiming interface: attribute redirectEnd
 PASS PerformanceResourceTiming interface: attribute fetchStart
@@ -23,6 +26,30 @@ PASS PerformanceResourceTiming interface: attribute secureConnectionStart
 PASS PerformanceResourceTiming interface: attribute requestStart
 PASS PerformanceResourceTiming interface: attribute responseStart
 PASS PerformanceResourceTiming interface: attribute responseEnd
+PASS PerformanceResourceTiming interface: attribute transferSize
+PASS PerformanceResourceTiming interface: attribute encodedBodySize
+PASS PerformanceResourceTiming interface: attribute decodedBodySize
 FAIL PerformanceResourceTiming interface: operation toJSON() assert_own_property: interface prototype object missing non-static operation expected property "toJSON" missing
+PASS PerformanceResourceTiming must be primary interface of window.performance.getEntriesByType('resource')[0]
+PASS Stringification of window.performance.getEntriesByType('resource')[0]
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "initiatorType" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "nextHopProtocol" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "workerStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "redirectStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "redirectEnd" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "fetchStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "domainLookupStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "domainLookupEnd" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "connectStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "connectEnd" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "secureConnectionStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "requestStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "responseStart" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "responseEnd" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "transferSize" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "encodedBodySize" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "decodedBodySize" with the proper type
+PASS PerformanceResourceTiming interface: window.performance.getEntriesByType('resource')[0] must inherit property "toJSON()" with the proper type
+FAIL Test default toJSON operation of PerformanceResourceTiming assert_unreached: property "serverTiming" should not be present in the output of PerformanceResourceTiming.prototype.toJSON() Reached unreachable code
 Harness: the test ran to completion.
 
