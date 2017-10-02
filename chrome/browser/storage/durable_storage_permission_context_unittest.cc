@@ -4,6 +4,8 @@
 
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +21,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,9 +93,9 @@ TEST_F(DurableStoragePermissionContextTest, Bookmarked) {
   MakeOriginImportant(url);
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -116,9 +119,9 @@ TEST_F(DurableStoragePermissionContextTest, BookmarkAndIncognitoMode) {
   MakeOriginImportant(url);
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -140,9 +143,9 @@ TEST_F(DurableStoragePermissionContextTest, NoBookmark) {
   GURL url("https://www.google.com");
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -171,9 +174,9 @@ TEST_F(DurableStoragePermissionContextTest, CookiesNotAllowed) {
 
   cookie_settings->SetCookieSetting(url, CONTENT_SETTING_BLOCK);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -197,9 +200,9 @@ TEST_F(DurableStoragePermissionContextTest, EmbeddedFrame) {
   MakeOriginImportant(url);
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
