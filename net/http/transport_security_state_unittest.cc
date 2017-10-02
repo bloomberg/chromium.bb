@@ -3399,4 +3399,46 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
   EXPECT_EQ(sct_list[0].sct, reporter.signed_certificate_timestamps()[0].sct);
 }
 
+// Tests that the dynamic Expect-CT UMA histogram is recorded correctly.
+TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
+  const char kHistogramName[] = "Net.ExpectCTHeader.ParseSuccess";
+  SSLInfo ssl;
+  ssl.is_issued_by_known_root = true;
+  ssl.ct_compliance_details_available = true;
+  ssl.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  // Test that the histogram is recorded correctly when the header successfully
+  // parses.
+  {
+    const char kHeader[] = "max-age=123,enforce,report-uri=\"http://foo.test\"";
+    base::HistogramTester histograms;
+    TransportSecurityState state;
+    MockExpectCTReporter reporter;
+    state.SetExpectCTReporter(&reporter);
+    state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443),
+                                ssl);
+    histograms.ExpectTotalCount(kHistogramName, 1);
+    histograms.ExpectBucketCount(kHistogramName, true, 1);
+  }
+
+  // Test that the histogram is recorded correctly when the header fails to
+  // parse (due to semi-colons instead of commas).
+  {
+    const char kHeader[] = "max-age=123;enforce;report-uri=\"http://foo.test\"";
+    base::HistogramTester histograms;
+    TransportSecurityState state;
+    MockExpectCTReporter reporter;
+    state.SetExpectCTReporter(&reporter);
+    state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443),
+                                ssl);
+    histograms.ExpectTotalCount(kHistogramName, 1);
+    histograms.ExpectBucketCount(kHistogramName, false, 1);
+  }
+}
+
 }  // namespace net

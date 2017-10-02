@@ -1495,7 +1495,9 @@ void TransportSecurityState::ProcessExpectCTHeader(
   base::TimeDelta max_age;
   bool enforce;
   GURL report_uri;
-  if (!ParseExpectCTHeader(value, &max_age, &enforce, &report_uri))
+  bool parsed = ParseExpectCTHeader(value, &max_age, &enforce, &report_uri);
+  UMA_HISTOGRAM_BOOLEAN("Net.ExpectCTHeader.ParseSuccess", parsed);
+  if (!parsed)
     return;
   // Do not persist Expect-CT headers if the connection was not chained to a
   // public root or did not comply with CT policy.
