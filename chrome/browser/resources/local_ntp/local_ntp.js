@@ -103,6 +103,26 @@ var IDS = {
 
 
 /**
+ * The different types of events that are logged from the NTP. This enum is
+ * used to transfer information from the NTP JavaScript to the renderer and is
+ * not used as a UMA enum histogram's logged value.
+ * Note: Keep in sync with common/ntp_logging_events.h
+ * @enum {number}
+ * @const
+ */
+var LOG_TYPE = {
+  // A static Doodle was shown, coming from cache.
+  NTP_STATIC_LOGO_SHOWN_FROM_CACHE: 30,
+  // A static Doodle was shown, coming from the network.
+  NTP_STATIC_LOGO_SHOWN_FRESH: 31,
+  // A call-to-action Doodle image was shown, coming from cache.
+  NTP_CTA_LOGO_SHOWN_FROM_CACHE: 32,
+  // A call-to-action Doodle image was shown, coming from the network.
+  NTP_CTA_LOGO_SHOWN_FRESH: 33,
+};
+
+
+/**
  * Background colors considered "white". Used to determine if it is possible
  * to display a Google Doodle, or if the notifier should be used instead.
  * @type {Array<string>}
@@ -617,12 +637,13 @@ function init() {
       if (ddl === null) {
         // Got no ddl object at all, the feature is probably disabled. Just show
         // the logo.
-        showLogoOrDoodle(null, null);
+        showLogoOrDoodle(null, null, /*fromCache=*/true);
         return;
       }
 
       // Got a (possibly empty) ddl object. Show logo or doodle.
-      showLogoOrDoodle(ddl.image || null, ddl.metadata || null);
+      showLogoOrDoodle(
+          ddl.image || null, ddl.metadata || null, /*fromCache=*/true);
       // If we got a valid ddl object (from cache), load a fresh one.
       if (ddl.v !== null) {
         loadDoodle(ddl.v, function(ddl) {
@@ -781,11 +802,19 @@ var isDoodleCurrentlyVisible = function(image, metadata) {
 };
 
 
-var showLogoOrDoodle = function(image, metadata) {
+var showLogoOrDoodle = function(image, metadata, fromCache) {
   if (metadata !== null) {
     applyDoodleMetadata(metadata);
     $(IDS.LOGO_DOODLE_IMAGE).src = image;
     $(IDS.LOGO_DOODLE).style.opacity = 1;
+
+    var isCta = !!metadata.animatedUrl;
+    var eventType = isCta ?
+        (fromCache ? LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
+                     LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :
+        (fromCache ? LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE :
+                     LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FRESH);
+    ntpApiHandle.logEvent(eventType);
   } else {
     $(IDS.LOGO_DEFAULT).style.opacity = 1;
   }
@@ -852,7 +881,8 @@ var onDoodleTransitionEnd = function(e) {
 
   if (isFadedOut(logoDoodle) && isFadedOut(logoDefault)) {
     // Fade-out finished. Start fading in the appropriate logo.
-    showLogoOrDoodle(targetDoodle.image, targetDoodle.metadata);
+    showLogoOrDoodle(
+        targetDoodle.image, targetDoodle.metadata, /*fromCache=*/false);
 
     logoDefault.removeEventListener('transitionend', onDoodleTransitionEnd);
     logoDoodle.removeEventListener('transitionend', onDoodleTransitionEnd);

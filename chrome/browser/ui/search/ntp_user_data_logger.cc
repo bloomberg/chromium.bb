@@ -132,6 +132,17 @@ VoiceError LoggingEventToVoiceError(NTPLoggingEventType event) {
   }
 }
 
+// This enum must match the numbering for NewTabPageLogoShown in enums.xml.
+// Do not reorder or remove items, only add new items before LOGO_TYPE_MAX.
+enum LogoType {
+  // Static Doodle image.
+  LOGO_TYPE_STATIC = 0,
+  // Call-to-action Doodle image.
+  LOGO_TYPE_CTA = 1,
+
+  LOGO_TYPE_MAX
+};
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
@@ -210,6 +221,18 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                 LoggingEventToVoiceError(event),
                                 VOICE_ERROR_MAX);
       break;
+    case NTP_STATIC_LOGO_SHOWN_FROM_CACHE:
+      RecordDoodleEvent(time, /*is_cta=*/false, /*from_cache=*/true);
+      break;
+    case NTP_STATIC_LOGO_SHOWN_FRESH:
+      RecordDoodleEvent(time, /*is_cta=*/false, /*from_cache=*/false);
+      break;
+    case NTP_CTA_LOGO_SHOWN_FROM_CACHE:
+      RecordDoodleEvent(time, /*is_cta=*/true, /*from_cache=*/true);
+      break;
+    case NTP_CTA_LOGO_SHOWN_FRESH:
+      RecordDoodleEvent(time, /*is_cta=*/true, /*from_cache=*/false);
+      break;
   }
 }
 
@@ -246,6 +269,7 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       impression_tile_source_(kNumMostVisited),
       impression_tile_type_(kNumMostVisited),
       has_emitted_(false),
+      should_record_doodle_load_time_(true),
       during_startup_(!AfterStartupTaskUtils::IsBrowserStartupComplete()) {
   // We record metrics about session data here because when this class typically
   // emits metrics it is too late. This session data would theoretically have
@@ -269,6 +293,7 @@ void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
     impression_was_logged_.reset();
     tiles_received_time_ = base::TimeDelta();
     has_emitted_ = false;
+    should_record_doodle_load_time_ = true;
   }
 }
 
@@ -362,4 +387,23 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
 
   has_emitted_ = true;
   during_startup_ = false;
+}
+
+void NTPUserDataLogger::RecordDoodleEvent(base::TimeDelta time,
+                                          bool is_cta,
+                                          bool from_cache) {
+  LogoType logo_type = is_cta ? LOGO_TYPE_CTA : LOGO_TYPE_STATIC;
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown", logo_type, LOGO_TYPE_MAX);
+  if (from_cache) {
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown.FromCache", logo_type,
+                              LOGO_TYPE_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown.Fresh", logo_type,
+                              LOGO_TYPE_MAX);
+  }
+
+  if (should_record_doodle_load_time_) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.LogoShownTime2", time);
+    should_record_doodle_load_time_ = false;
+  }
 }
