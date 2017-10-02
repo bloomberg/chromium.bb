@@ -4,7 +4,7 @@
 
 ### Linux
 
-Linux is fully supported by libFuzzer and ClusterFuzz with following sanitizer 
+Linux is fully supported by libFuzzer and ClusterFuzz with following sanitizer
 configurations:
 
 | GN Argument | Description |
@@ -22,8 +22,7 @@ gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true enable_nacl=false' 
 
 ### Mac
 
-Mac is experimentally supported by libFuzzer with `is_asan` configuration. Mac
-support is not provided by ClusterFuzz.
+Mac is supported by libFuzzer with `is_asan` configuration.
 
 Configuration example:
 
