@@ -300,6 +300,8 @@ const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDeclarativeNetRequestPermissionNeeded[] =
     "The extension requires '*' permission for the '*' manifest key.";
+const char kDeclarativeNetRequestListNotPassed[] =
+    "Declarative Net Request: Ruleset must be a list.";
 const char kExpectString[] = "Expect string value.";
 const char kFileNotFound[] = "File not found: *.";
 const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";

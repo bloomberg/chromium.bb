@@ -9,11 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/optional.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }  // namespace base
 
 namespace extensions {
@@ -74,6 +76,19 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
 // Returns a ListValue corresponding to a vector of strings.
 std::unique_ptr<base::ListValue> ToListValue(
     const std::vector<std::string>& vec);
+
+// Writes the declarative |rules| in the given |extension_dir| together with
+// the manifest file.
+void WriteManifestAndRuleset(
+    const base::FilePath& extension_dir,
+    const base::FilePath::CharType* json_rules_filepath,
+    const std::string& json_rules_filename,
+    const std::vector<TestRule>& rules);
+void WriteManifestAndRuleset(
+    const base::FilePath& extension_dir,
+    const base::FilePath::CharType* json_rules_filepath,
+    const std::string& json_rules_filename,
+    const base::Value& rules);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

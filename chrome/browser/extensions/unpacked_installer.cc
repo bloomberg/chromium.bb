@@ -39,6 +39,7 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -343,14 +344,18 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
   JSONFileValueDeserializer deserializer(resource->GetFilePath());
-  std::unique_ptr<base::Value> parsed_rules =
-      deserializer.Deserialize(nullptr, error);
-  if (!parsed_rules)
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, error);
+  if (!root)
     return false;
+
+  if (!root->is_list()) {
+    *error = manifest_errors::kDeclarativeNetRequestListNotPassed;
+    return false;
+  }
 
   std::vector<InstallWarning> warnings;
   const bool success = declarative_net_request::IndexAndPersistRules(
-      *parsed_rules, *extension(), error, &warnings);
+      *base::ListValue::From(std::move(root)), *extension(), error, &warnings);
   extension_->AddInstallWarnings(warnings);
   return success;
 }

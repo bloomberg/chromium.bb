@@ -9,7 +9,7 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_UTILS_H_
 
 namespace base {
-class Value;
+class ListValue;
 }  // namespace base
 
 namespace extensions {
@@ -21,7 +21,7 @@ namespace declarative_net_request {
 // Indexes and persists |rules| for |extension|. In case of an error, returns
 // false and populates |error|.
 // Note: This must be called on a thread where file IO is allowed.
-bool IndexAndPersistRules(const base::Value& rules,
+bool IndexAndPersistRules(const base::ListValue& rules,
                           const Extension& extension,
                           std::string* error,
                           std::vector<InstallWarning>* warnings);

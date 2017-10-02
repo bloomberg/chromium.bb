@@ -138,6 +138,7 @@ static_library("test_support") {
     "//content/public/common",
     "//content/test:test_support",
     "//extensions/browser",
+    "//extensions/browser:test_support",
     "//extensions/browser/api:api_registration",
     "//extensions/common",
     "//extensions/common/api",

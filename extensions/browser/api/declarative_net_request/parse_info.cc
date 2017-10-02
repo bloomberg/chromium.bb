@@ -19,11 +19,9 @@ ParseInfo& ParseInfo::operator=(const ParseInfo&) = default;
 
 std::string ParseInfo::GetErrorDescription(
     const base::StringPiece json_rules_filename) const {
-  // Every error except ERROR_PERSISTING_RULESET and ERROR_LIST_NOT_PASSED
-  // requires |rule_index_|.
+  // Every error except ERROR_PERSISTING_RULESET requires |rule_index_|.
   DCHECK_EQ(!rule_index_.has_value(),
-            result_ == ParseResult::ERROR_LIST_NOT_PASSED ||
-                result_ == ParseResult::ERROR_PERSISTING_RULESET);
+            result_ == ParseResult::ERROR_PERSISTING_RULESET);
 
   std::string error;
   switch (result_) {
@@ -80,10 +78,6 @@ std::string ParseInfo::GetErrorDescription(
       error = ErrorUtils::FormatErrorMessage(
           kErrorInvalidRedirectUrl, json_rules_filename,
           std::to_string(*rule_index_), kRedirectUrlKey);
-      break;
-    case ParseResult::ERROR_LIST_NOT_PASSED:
-      error = ErrorUtils::FormatErrorMessage(kErrorListNotPassed,
-                                             json_rules_filename);
       break;
     case ParseResult::ERROR_DUPLICATE_IDS:
       error = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,

@@ -22,6 +22,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/file_util.h"
 
 namespace extensions {
 
@@ -275,6 +276,10 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
 
     base::FilePath full_path =
         extension_root.Append(relative_unix_path.NormalizePathSeparators());
+
+    if (full_path == file_util::GetIndexedRulesetPath(extension_root))
+      continue;
+
     if (locales_dir.IsParent(full_path)) {
       if (!all_locales) {
         // TODO(asargent) - see if we can cache this list longer to avoid
