@@ -34,7 +34,7 @@ LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient() {}
 bool LayoutSVGResourceLinearGradient::CollectGradientAttributes() {
   DCHECK(GetElement());
   attributes_wrapper_->Set(LinearGradientAttributes());
-  return toSVGLinearGradientElement(GetElement())
+  return ToSVGLinearGradientElement(GetElement())
       ->CollectGradientAttributes(MutableAttributes());
 }
 

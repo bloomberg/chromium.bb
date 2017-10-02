@@ -56,7 +56,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceMasker::CreatePaintRecord(
     AffineTransform& content_transformation,
     const FloatRect& target_bounding_box,
     GraphicsContext& context) {
-  SVGUnitTypes::SVGUnitType content_units = toSVGMaskElement(GetElement())
+  SVGUnitTypes::SVGUnitType content_units = ToSVGMaskElement(GetElement())
                                                 ->maskContentUnits()
                                                 ->CurrentValue()
                                                 ->EnumValue();
@@ -114,7 +114,7 @@ void LayoutSVGResourceMasker::CalculateMaskContentVisualRect() {
 
 FloatRect LayoutSVGResourceMasker::ResourceBoundingBox(
     const LayoutObject* object) {
-  SVGMaskElement* mask_element = toSVGMaskElement(GetElement());
+  SVGMaskElement* mask_element = ToSVGMaskElement(GetElement());
   DCHECK(mask_element);
 
   FloatRect object_bounding_box = object->ObjectBoundingBox();

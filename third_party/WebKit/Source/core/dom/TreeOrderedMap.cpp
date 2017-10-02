@@ -67,13 +67,13 @@ inline bool KeyMatchesId(const AtomicString& key, const Element& element) {
 
 inline bool KeyMatchesMapName(const AtomicString& key, const Element& element) {
   return IsHTMLMapElement(element) &&
-         toHTMLMapElement(element).GetName() == key;
+         ToHTMLMapElement(element).GetName() == key;
 }
 
 inline bool KeyMatchesSlotName(const AtomicString& key,
                                const Element& element) {
   return IsHTMLSlotElement(element) &&
-         toHTMLSlotElement(element).GetName() == key;
+         ToHTMLSlotElement(element).GetName() == key;
 }
 
 void TreeOrderedMap::Add(const AtomicString& key, Element* element) {
@@ -194,7 +194,7 @@ Element* TreeOrderedMap::GetElementByMapName(const AtomicString& key,
 HTMLSlotElement* TreeOrderedMap::GetSlotByName(const AtomicString& key,
                                                const TreeScope& scope) const {
   if (Element* slot = Get<KeyMatchesSlotName>(key, scope))
-    return toHTMLSlotElement(slot);
+    return ToHTMLSlotElement(slot);
   return nullptr;
 }
 

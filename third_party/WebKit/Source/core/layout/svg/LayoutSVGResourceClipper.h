@@ -45,7 +45,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   bool HitTestClipContent(const FloatRect&, const FloatPoint&);
 
   SVGUnitTypes::SVGUnitType ClipPathUnits() const {
-    return toSVGClipPathElement(GetElement())
+    return ToSVGClipPathElement(GetElement())
         ->clipPathUnits()
         ->CurrentValue()
         ->EnumValue();

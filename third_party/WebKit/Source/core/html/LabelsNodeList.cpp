@@ -43,7 +43,7 @@ LabelsNodeList::~LabelsNodeList() {}
 
 bool LabelsNodeList::ElementMatches(const Element& element) const {
   return IsHTMLLabelElement(element) &&
-         toHTMLLabelElement(element).control() == ownerNode();
+         ToHTMLLabelElement(element).control() == ownerNode();
 }
 
 }  // namespace blink

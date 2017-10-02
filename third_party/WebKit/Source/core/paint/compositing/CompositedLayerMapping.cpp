@@ -116,7 +116,7 @@ static IntRect BackgroundRect(const LayoutObject& layout_object) {
 
 static inline bool IsCompositedCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
-    HTMLCanvasElement* canvas = toHTMLCanvasElement(layout_object.GetNode());
+    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     if (CanvasRenderingContext* context = canvas->RenderingContext())
       return context->IsComposited();
   }
@@ -125,7 +125,7 @@ static inline bool IsCompositedCanvas(const LayoutObject& layout_object) {
 
 static inline bool IsPlaceholderCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
-    HTMLCanvasElement* canvas = toHTMLCanvasElement(layout_object.GetNode());
+    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     return canvas->SurfaceLayerBridge();
   }
   return false;
@@ -404,7 +404,7 @@ void CompositedLayerMapping::
 void CompositedLayerMapping::UpdateContentsOpaque() {
   if (IsCompositedCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
-        toHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
+        ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
     WebLayer* layer = context ? context->PlatformLayer() : nullptr;
     // Determine whether the external texture layer covers the whole graphics
     // layer. This may not be the case if there are box decorations or
@@ -799,12 +799,12 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
         ToHTMLMediaElement(layout_object.GetNode());
     graphics_layer_->SetContentsToPlatformLayer(media_element->PlatformLayer());
   } else if (IsPlaceholderCanvas(layout_object)) {
-    HTMLCanvasElement* canvas = toHTMLCanvasElement(layout_object.GetNode());
+    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     graphics_layer_->SetContentsToPlatformLayer(
         canvas->SurfaceLayerBridge()->GetWebLayer());
     layer_config_changed = true;
   } else if (IsCompositedCanvas(layout_object)) {
-    HTMLCanvasElement* canvas = toHTMLCanvasElement(layout_object.GetNode());
+    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
     if (CanvasRenderingContext* context = canvas->RenderingContext())
       graphics_layer_->SetContentsToPlatformLayer(context->PlatformLayer());
     layer_config_changed = true;
@@ -1850,7 +1850,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
   bool in_overlay_fullscreen_video = false;
   if (GetLayoutObject().IsVideo()) {
     HTMLVideoElement* video_element =
-        toHTMLVideoElement(GetLayoutObject().GetNode());
+        ToHTMLVideoElement(GetLayoutObject().GetNode());
     if (video_element->IsFullscreen() &&
         video_element->UsesOverlayFullscreenVideo())
       in_overlay_fullscreen_video = true;
@@ -1874,7 +1874,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
 
   if (has_painted_content && IsCompositedCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
-        toHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
+        ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
     // Content layer may be null if context is lost.
     if (WebLayer* content_layer = context->PlatformLayer()) {
       Color bg_color(Color::kTransparent);

@@ -294,7 +294,7 @@ LocalDOMWindow* HTMLFrameSetElement::AnonymousNamedGetter(
   Element* frame_element = Children()->namedItem(name);
   if (!IsHTMLFrameElement(frame_element))
     return nullptr;
-  Document* document = toHTMLFrameElement(frame_element)->contentDocument();
+  Document* document = ToHTMLFrameElement(frame_element)->contentDocument();
   if (!document || !document->GetFrame())
     return nullptr;
   return document->domWindow();

@@ -12,7 +12,7 @@
 namespace blink {
 
 PaintInvalidationReason HTMLCanvasPaintInvalidator::InvalidatePaint() {
-  auto* element = toHTMLCanvasElement(html_canvas_.GetNode());
+  auto* element = ToHTMLCanvasElement(html_canvas_.GetNode());
   if (element->IsDirty())
     element->DoDeferredPaintInvalidation();
 

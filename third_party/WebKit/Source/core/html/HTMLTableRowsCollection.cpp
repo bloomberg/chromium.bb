@@ -153,8 +153,8 @@ HTMLTableRowsCollection* HTMLTableRowsCollection::Create(ContainerNode& table,
 }
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {
-  return RowAfter(toHTMLTableElement(ownerNode()),
-                  toHTMLTableRowElement(previous));
+  return RowAfter(ToHTMLTableElement(ownerNode()),
+                  ToHTMLTableRowElement(previous));
 }
 
 }  // namespace blink

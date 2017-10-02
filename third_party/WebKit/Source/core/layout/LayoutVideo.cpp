@@ -138,7 +138,7 @@ void LayoutVideo::UpdateLayout() {
 }
 
 HTMLVideoElement* LayoutVideo::VideoElement() const {
-  return toHTMLVideoElement(GetNode());
+  return ToHTMLVideoElement(GetNode());
 }
 
 void LayoutVideo::UpdateFromElement() {

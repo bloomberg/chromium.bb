@@ -1272,13 +1272,13 @@ Response InspectorDOMAgent::setFileInputFiles(
   if (!response.isSuccess())
     return response;
   if (!IsHTMLInputElement(*node) ||
-      toHTMLInputElement(*node).type() != InputTypeNames::file)
+      ToHTMLInputElement(*node).type() != InputTypeNames::file)
     return Response::Error("Node is not a file input element");
 
   Vector<String> paths;
   for (size_t index = 0; index < files->length(); ++index)
     paths.push_back(files->get(index));
-  toHTMLInputElement(node)->SetFilesFromPaths(paths);
+  ToHTMLInputElement(node)->SetFilesFromPaths(paths);
   return Response::OK();
 }
 

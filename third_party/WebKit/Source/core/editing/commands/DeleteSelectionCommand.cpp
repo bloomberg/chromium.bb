@@ -254,9 +254,9 @@ void DeleteSelectionCommand::InitializePositionData(
   end_root_ = RootEditableElementOf(end);
 
   start_table_row_ =
-      toHTMLTableRowElement(EnclosingNodeOfType(start, &IsHTMLTableRowElement));
+      ToHTMLTableRowElement(EnclosingNodeOfType(start, &IsHTMLTableRowElement));
   end_table_row_ =
-      toHTMLTableRowElement(EnclosingNodeOfType(end, &IsHTMLTableRowElement));
+      ToHTMLTableRowElement(EnclosingNodeOfType(end, &IsHTMLTableRowElement));
 
   // Don't move content out of a table cell.
   // If the cell is non-editable, enclosingNodeOfType won't return it by

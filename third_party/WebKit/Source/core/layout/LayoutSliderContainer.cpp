@@ -62,7 +62,7 @@ void LayoutSliderContainer::ComputeLogicalHeight(
     LayoutUnit logical_height,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
-  HTMLInputElement* input = toHTMLInputElement(GetNode()->OwnerShadowHost());
+  HTMLInputElement* input = ToHTMLInputElement(GetNode()->OwnerShadowHost());
   bool is_vertical = HasVerticalAppearance(input);
 
   if (input->GetLayoutObject()->IsSlider() && !is_vertical && input->list()) {
@@ -97,7 +97,7 @@ void LayoutSliderContainer::ComputeLogicalHeight(
 }
 
 void LayoutSliderContainer::UpdateLayout() {
-  HTMLInputElement* input = toHTMLInputElement(GetNode()->OwnerShadowHost());
+  HTMLInputElement* input = ToHTMLInputElement(GetNode()->OwnerShadowHost());
   bool is_vertical = HasVerticalAppearance(input);
   MutableStyleRef().SetFlexDirection(is_vertical ? EFlexDirection::kColumn
                                                  : EFlexDirection::kRow);

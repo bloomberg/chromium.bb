@@ -220,7 +220,7 @@ static bool IsMenuListOption(const Node* node) {
   if (!IsHTMLOptionElement(node))
     return false;
   const HTMLSelectElement* select =
-      toHTMLOptionElement(node)->OwnerSelectElement();
+      ToHTMLOptionElement(node)->OwnerSelectElement();
   if (!select)
     return false;
   const LayoutObject* layout_object = select->GetLayoutObject();
@@ -326,7 +326,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return AXListBoxOption::Create(layout_object, *this);
 
   if (IsHTMLInputElement(node) &&
-      toHTMLInputElement(node)->type() == InputTypeNames::radio)
+      ToHTMLInputElement(node)->type() == InputTypeNames::radio)
     return AXRadioInput::Create(layout_object, *this);
 
   if (layout_object->IsSVGRoot())
@@ -375,7 +375,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
 
 AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
   if (IsMenuListOption(node))
-    return AXMenuListOption::Create(toHTMLOptionElement(node), *this);
+    return AXMenuListOption::Create(ToHTMLOptionElement(node), *this);
 
   if (auto* area = ToHTMLAreaElementOrNull(node))
     return AXImageMapLink::Create(area, *this);
@@ -911,7 +911,7 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
 }
 
 void AXObjectCacheImpl::LabelChanged(Element* element) {
-  TextChanged(toHTMLLabelElement(element)->control());
+  TextChanged(ToHTMLLabelElement(element)->control());
 }
 
 void AXObjectCacheImpl::InlineTextBoxesUpdated(

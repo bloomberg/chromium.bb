@@ -114,7 +114,7 @@ static bool IsInterchangeHTMLBRElement(const Node* node) {
   DEFINE_STATIC_LOCAL(String, interchange_newline_class_string,
                       (AppleInterchangeNewline));
   if (!IsHTMLBRElement(node) ||
-      toHTMLBRElement(node)->getAttribute(classAttr) !=
+      ToHTMLBRElement(node)->getAttribute(classAttr) !=
           interchange_newline_class_string)
     return false;
   UseCounter::Count(node->GetDocument(),
@@ -804,7 +804,7 @@ VisiblePosition ReplaceSelectionCommand::PositionAtEndOfInsertedContent()
   // TODO(yosin): We should set |m_endOfInsertedContent| not in SELECT
   // element, since contents of SELECT elements, e.g. OPTION, OPTGROUP, are
   // not editable, or SELECT element is an atomic on editing.
-  HTMLSelectElement* enclosing_select = toHTMLSelectElement(
+  HTMLSelectElement* enclosing_select = ToHTMLSelectElement(
       EnclosingElementWithTag(end_of_inserted_content_, selectTag));
   if (enclosing_select) {
     return CreateVisiblePosition(
@@ -867,7 +867,7 @@ static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
   // Remove style spans to follow the styles of parent block element when
   // |fragment| becomes a part of it. See bugs http://crbug.com/226941 and
   // http://crbug.com/335955.
-  HTMLSpanElement* wrapping_style_span = toHTMLSpanElement(top_node);
+  HTMLSpanElement* wrapping_style_span = ToHTMLSpanElement(top_node);
   const Node* node = insertion_pos.AnchorNode();
   // |node| can be an inline element like <br> under <li>
   // e.g.) editing/execCommand/switch-list-type.html
@@ -1661,7 +1661,7 @@ bool ReplaceSelectionCommand::ShouldPerformSmartReplace() const {
   TextControlElement* text_control =
       EnclosingTextControl(PositionAtStartOfInsertedContent().DeepEquivalent());
   if (IsHTMLInputElement(text_control) &&
-      toHTMLInputElement(text_control)->type() == InputTypeNames::password)
+      ToHTMLInputElement(text_control)->type() == InputTypeNames::password)
     return false;  // Disable smart replace for password fields.
 
   return true;
@@ -2019,7 +2019,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
   if (node_after_insertion_pos && node_after_insertion_pos->parentNode() &&
       IsHTMLBRElement(*node_after_insertion_pos) &&
       ShouldRemoveEndBR(
-          toHTMLBRElement(node_after_insertion_pos),
+          ToHTMLBRElement(node_after_insertion_pos),
           VisiblePosition::BeforeNode(*node_after_insertion_pos))) {
     RemoveNodeAndPruneAncestors(node_after_insertion_pos, editing_state);
     if (editing_state->IsAborted())

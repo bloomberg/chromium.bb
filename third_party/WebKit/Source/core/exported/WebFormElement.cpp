@@ -83,7 +83,7 @@ WebFormElement& WebFormElement::operator=(HTMLFormElement* e) {
 }
 
 WebFormElement::operator HTMLFormElement*() const {
-  return toHTMLFormElement(private_.Get());
+  return ToHTMLFormElement(private_.Get());
 }
 
 }  // namespace blink

@@ -438,7 +438,7 @@ bool SVGLengthContext::DetermineViewport(FloatSize& viewport_size) const {
 
   // Root <svg> element lengths are resolved against the top level viewport.
   if (context_->IsOutermostSVGSVGElement()) {
-    viewport_size = toSVGSVGElement(context_)->CurrentViewportSize();
+    viewport_size = ToSVGSVGElement(context_)->CurrentViewportSize();
     return true;
   }
 
@@ -447,7 +447,7 @@ bool SVGLengthContext::DetermineViewport(FloatSize& viewport_size) const {
   if (!IsSVGSVGElement(viewport_element))
     return false;
 
-  const SVGSVGElement& svg = toSVGSVGElement(*viewport_element);
+  const SVGSVGElement& svg = ToSVGSVGElement(*viewport_element);
   viewport_size = svg.CurrentViewBoxRect().Size();
   if (viewport_size.IsEmpty())
     viewport_size = svg.CurrentViewportSize();

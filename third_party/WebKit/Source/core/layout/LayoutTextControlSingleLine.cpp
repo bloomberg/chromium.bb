@@ -412,7 +412,7 @@ void LayoutTextControlSingleLine::AddOverflowFromChildren() {
 }
 
 HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
-  return toHTMLInputElement(GetNode());
+  return ToHTMLInputElement(GetNode());
 }
 
 }  // namespace blink

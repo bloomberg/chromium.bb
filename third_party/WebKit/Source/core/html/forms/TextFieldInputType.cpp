@@ -61,7 +61,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
   inline DataListIndicatorElement(Document& document)
       : HTMLDivElement(document) {}
   inline HTMLInputElement* HostInput() const {
-    return toHTMLInputElement(OwnerShadowHost());
+    return ToHTMLInputElement(OwnerShadowHost());
   }
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override {

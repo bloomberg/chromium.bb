@@ -27,7 +27,7 @@ WebMetaElement& WebMetaElement::operator=(HTMLMetaElement* element) {
 }
 
 WebMetaElement::operator HTMLMetaElement*() const {
-  return toHTMLMetaElement(private_.Get());
+  return ToHTMLMetaElement(private_.Get());
 }
 
 }  // namespace blink

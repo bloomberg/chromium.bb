@@ -587,14 +587,12 @@ void SVGElement::UpdateRelativeLengthsInformation(
   }
 
   // Register root SVG elements for top level viewport change notifications.
-  if (IsSVGSVGElement(*client_element)) {
+  if (auto* svg = ToSVGSVGElementOrNull(*client_element)) {
     SVGDocumentExtensions& svg_extensions = GetDocument().AccessSVGExtensions();
     if (client_element->HasRelativeLengths())
-      svg_extensions.AddSVGRootWithRelativeLengthDescendents(
-          toSVGSVGElement(client_element));
+      svg_extensions.AddSVGRootWithRelativeLengthDescendents(svg);
     else
-      svg_extensions.RemoveSVGRootWithRelativeLengthDescendents(
-          toSVGSVGElement(client_element));
+      svg_extensions.RemoveSVGRootWithRelativeLengthDescendents(svg);
   }
 }
 
@@ -629,7 +627,7 @@ SVGSVGElement* SVGElement::ownerSVGElement() const {
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
     if (IsSVGSVGElement(*n))
-      return toSVGSVGElement(n);
+      return ToSVGSVGElement(n);
 
     n = n->ParentOrShadowHostNode();
   }
@@ -698,7 +696,7 @@ SVGElement* SVGElement::CorrespondingElement() const {
 SVGUseElement* SVGElement::CorrespondingUseElement() const {
   if (ShadowRoot* root = ContainingShadowRoot()) {
     if (IsSVGUseElement(root->host()))
-      return &toSVGUseElement(root->host());
+      return &ToSVGUseElement(root->host());
   }
   return nullptr;
 }

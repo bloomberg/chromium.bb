@@ -258,7 +258,7 @@ TEST_F(DocumentLoadingRenderingTest,
   // this by doing offsetTop in a setTimeout, or by a parent frame executing
   // script that touched offsetTop in the child frame.
   auto* child_frame =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   child_frame->contentDocument()
       ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -320,7 +320,7 @@ TEST_F(DocumentLoadingRenderingTest,
       "<body style='background: blue'>");
 
   auto* child_frame =
-      toHTMLIFrameElement(GetDocument().getElementById("frame"));
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
 
   // Frame while the child frame still has pending sheets.
   auto* frame1_callback = new CheckRafCallback();

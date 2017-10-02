@@ -61,7 +61,7 @@ WebOptionElement& WebOptionElement::operator=(HTMLOptionElement* elem) {
 }
 
 WebOptionElement::operator HTMLOptionElement*() const {
-  return toHTMLOptionElement(private_.Get());
+  return ToHTMLOptionElement(private_.Get());
 }
 
 }  // namespace blink

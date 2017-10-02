@@ -255,7 +255,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     if (data.has_image_contents &&
         IsHTMLImageElement(r.InnerNodeOrImageMapImage())) {
       HTMLImageElement* image_element =
-          toHTMLImageElement(r.InnerNodeOrImageMapImage());
+          ToHTMLImageElement(r.InnerNodeOrImageMapImage());
       if (image_element && image_element->CachedImage()) {
         data.image_response = WrappedResourceResponse(
             image_element->CachedImage()->GetResponse());
@@ -397,7 +397,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
 
     HTMLFormElement* form = CurrentForm(selected_frame->Selection());
     if (form && IsHTMLInputElement(*r.InnerNode())) {
-      HTMLInputElement& selected_element = toHTMLInputElement(*r.InnerNode());
+      HTMLInputElement& selected_element = ToHTMLInputElement(*r.InnerNode());
       WebSearchableFormData ws = WebSearchableFormData(
           WebFormElement(form), WebInputElement(&selected_element));
       if (ws.Url().IsValid())

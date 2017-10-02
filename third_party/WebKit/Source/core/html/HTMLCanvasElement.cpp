@@ -1444,7 +1444,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
   if (IsHTMLOptionElement(element) && element.parentNode() &&
       IsHTMLSelectElement(*element.parentNode())) {
     const HTMLSelectElement& select_element =
-        toHTMLSelectElement(*element.parentNode());
+        ToHTMLSelectElement(*element.parentNode());
     if (select_element.IsMultiple() || select_element.size() > 1)
       return true;
   }

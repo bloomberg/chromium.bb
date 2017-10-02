@@ -127,7 +127,7 @@ void LayoutSVGImage::UpdateLayout() {
   bool update_parent_boundaries = false;
   if (needs_transform_update_) {
     local_transform_ =
-        toSVGImageElement(GetElement())
+        ToSVGImageElement(GetElement())
             ->CalculateTransform(SVGElement::kIncludeMotionTransform);
     needs_transform_update_ = false;
     update_parent_boundaries = true;

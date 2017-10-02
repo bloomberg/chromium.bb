@@ -19,9 +19,9 @@ bool DocumentNameCollection::ElementMatches(const HTMLElement& element) const {
   // object by id, and images by id but only if they have
   // a name attribute (this very strange rule matches IE)
   if (IsHTMLFormElement(element) || IsHTMLIFrameElement(element) ||
-      (IsHTMLEmbedElement(element) && toHTMLEmbedElement(element).IsExposed()))
+      (IsHTMLEmbedElement(element) && ToHTMLEmbedElement(element).IsExposed()))
     return element.GetNameAttribute() == name_;
-  if (IsHTMLObjectElement(element) && toHTMLObjectElement(element).IsExposed())
+  if (IsHTMLObjectElement(element) && ToHTMLObjectElement(element).IsExposed())
     return element.GetNameAttribute() == name_ ||
            element.GetIdAttribute() == name_;
   if (IsHTMLImageElement(element)) {

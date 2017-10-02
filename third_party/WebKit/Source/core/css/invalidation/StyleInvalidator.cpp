@@ -407,7 +407,7 @@ bool StyleInvalidator::Invalidate(Element& element,
                                 StyleChangeReasonForTracing::Create(
                                     StyleChangeReason::kStyleInvalidator));
   if (recursion_data.InvalidatesSlotted() && IsHTMLSlotElement(element))
-    InvalidateSlotDistributedElements(toHTMLSlotElement(element),
+    InvalidateSlotDistributedElements(ToHTMLSlotElement(element),
                                       recursion_data);
 
   element.ClearChildNeedsStyleInvalidation();

@@ -239,7 +239,7 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
   if (IsHTMLImageElement(node))
     return true;
   if (IsHTMLInputElement(node) &&
-      toHTMLInputElement(node)->HasFallbackContent())
+      ToHTMLInputElement(node)->HasFallbackContent())
     return true;
   return false;
 }
@@ -1098,7 +1098,7 @@ TextStyle AXLayoutObject::GetTextStyle() const {
 
 KURL AXLayoutObject::Url() const {
   if (IsAnchor() && IsHTMLAnchorElement(layout_object_->GetNode())) {
-    if (HTMLAnchorElement* anchor = toHTMLAnchorElement(AnchorElement()))
+    if (HTMLAnchorElement* anchor = ToHTMLAnchorElement(AnchorElement()))
       return anchor->Href();
   }
 
@@ -1106,10 +1106,10 @@ KURL AXLayoutObject::Url() const {
     return layout_object_->GetDocument().Url();
 
   if (IsImage() && IsHTMLImageElement(layout_object_->GetNode()))
-    return toHTMLImageElement(*layout_object_->GetNode()).Src();
+    return ToHTMLImageElement(*layout_object_->GetNode()).Src();
 
   if (IsInputImage())
-    return toHTMLInputElement(layout_object_->GetNode())->Src();
+    return ToHTMLInputElement(layout_object_->GetNode())->Src();
 
   return KURL();
 }
@@ -1219,7 +1219,7 @@ String AXLayoutObject::StringValue() const {
     // This has to be overridden in the case where the selected item has an ARIA
     // label.
     HTMLSelectElement* select_element =
-        toHTMLSelectElement(layout_object_->GetNode());
+        ToHTMLSelectElement(layout_object_->GetNode());
     int selected_index = select_element->selectedIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
@@ -1252,7 +1252,7 @@ String AXLayoutObject::StringValue() const {
   // time controls, by returning the string value, with the exception of
   // checkboxes and radio buttons (which would return "on").
   if (GetNode() && IsHTMLInputElement(GetNode())) {
-    HTMLInputElement* input = toHTMLInputElement(GetNode());
+    HTMLInputElement* input = ToHTMLInputElement(GetNode());
     if (input->type() != InputTypeNames::checkbox &&
         input->type() != InputTypeNames::radio)
       return input->value();
@@ -2081,13 +2081,13 @@ bool AXLayoutObject::OnNativeSetValueAction(const String& string) {
 
   LayoutBoxModelObject* layout_object = ToLayoutBoxModelObject(layout_object_);
   if (layout_object->IsTextField() && IsHTMLInputElement(*GetNode())) {
-    toHTMLInputElement(*GetNode())
+    ToHTMLInputElement(*GetNode())
         .setValue(string, kDispatchInputAndChangeEvent);
     return true;
   }
 
   if (layout_object->IsTextArea() && IsHTMLTextAreaElement(*GetNode())) {
-    toHTMLTextAreaElement(*GetNode())
+    ToHTMLTextAreaElement(*GetNode())
         .setValue(string, kDispatchInputAndChangeEvent);
     return true;
   }
@@ -2473,7 +2473,7 @@ void AXLayoutObject::AddTextFieldChildren() {
   if (!IsHTMLInputElement(node))
     return;
 
-  HTMLInputElement& input = toHTMLInputElement(*node);
+  HTMLInputElement& input = ToHTMLInputElement(*node);
   Element* spin_button_element = input.UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SpinButton());
   if (!spin_button_element || !spin_button_element->IsSpinButtonElement())
@@ -2527,7 +2527,7 @@ void AXLayoutObject::AddCanvasChildren() {
 void AXLayoutObject::AddPopupChildren() {
   if (!IsHTMLInputElement(GetNode()))
     return;
-  if (AXObject* ax_popup = toHTMLInputElement(GetNode())->PopupRootAXObject())
+  if (AXObject* ax_popup = ToHTMLInputElement(GetNode())->PopupRootAXObject())
     children_.push_back(ax_popup);
 }
 

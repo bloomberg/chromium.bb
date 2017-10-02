@@ -45,13 +45,13 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   FloatRect ResourceBoundingBox(const LayoutObject*);
 
   SVGUnitTypes::SVGUnitType MaskUnits() const {
-    return toSVGMaskElement(GetElement())
+    return ToSVGMaskElement(GetElement())
         ->maskUnits()
         ->CurrentValue()
         ->EnumValue();
   }
   SVGUnitTypes::SVGUnitType MaskContentUnits() const {
-    return toSVGMaskElement(GetElement())
+    return ToSVGMaskElement(GetElement())
         ->maskContentUnits()
         ->CurrentValue()
         ->EnumValue();

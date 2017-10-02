@@ -597,7 +597,7 @@ AccessibilityCheckedState AXObject::CheckedState() const {
       return kCheckedStateMixed;
 
     if (IsHTMLInputElement(*node) &&
-        toHTMLInputElement(*node).ShouldAppearChecked()) {
+        ToHTMLInputElement(*node).ShouldAppearChecked()) {
       return kCheckedStateTrue;
     }
   }
@@ -609,7 +609,7 @@ bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
   if (!IsHTMLInputElement(node))
     return false;
 
-  const HTMLInputElement* input = toHTMLInputElement(node);
+  const HTMLInputElement* input = ToHTMLInputElement(node);
   const auto inputType = input->type();
   if (inputType != InputTypeNames::checkbox)
     return false;

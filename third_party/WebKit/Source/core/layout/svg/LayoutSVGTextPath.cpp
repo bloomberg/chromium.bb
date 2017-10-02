@@ -57,7 +57,7 @@ bool LayoutSVGTextPath::IsChildAllowed(LayoutObject* child,
 
 std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
   const SVGTextPathElement& text_path_element =
-      toSVGTextPathElement(*GetNode());
+      ToSVGTextPathElement(*GetNode());
   Element* target_element = SVGURIReference::TargetElementFromIRIString(
       text_path_element.HrefString(),
       text_path_element.TreeScopeForIdResolution());
@@ -65,7 +65,7 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
   if (!IsSVGPathElement(target_element))
     return nullptr;
 
-  SVGPathElement& path_element = toSVGPathElement(*target_element);
+  SVGPathElement& path_element = ToSVGPathElement(*target_element);
   Path path_data = path_element.AsPath();
   if (path_data.IsEmpty())
     return nullptr;
@@ -83,7 +83,7 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
 
 float LayoutSVGTextPath::CalculateStartOffset(float path_length) const {
   const SVGLength& start_offset =
-      *toSVGTextPathElement(GetNode())->startOffset()->CurrentValue();
+      *ToSVGTextPathElement(GetNode())->startOffset()->CurrentValue();
   float text_path_start_offset = start_offset.ValueAsPercentage();
   if (start_offset.TypeWithCalcResolved() ==
       CSSPrimitiveValue::UnitType::kPercentage)

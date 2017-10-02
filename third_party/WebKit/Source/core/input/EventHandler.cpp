@@ -321,7 +321,7 @@ IntPoint EventHandler::DragDataTransferLocationForTesting() {
 
 static bool IsSubmitImage(Node* node) {
   return IsHTMLInputElement(node) &&
-         toHTMLInputElement(node)->type() == InputTypeNames::image;
+         ToHTMLInputElement(node)->type() == InputTypeNames::image;
 }
 
 bool EventHandler::UseHandCursor(Node* node, bool is_over_link) {

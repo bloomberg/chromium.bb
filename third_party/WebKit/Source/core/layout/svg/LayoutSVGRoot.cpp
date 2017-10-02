@@ -49,7 +49,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
       has_box_decoration_background_(false),
       has_non_isolated_blending_descendants_(false),
       has_non_isolated_blending_descendants_dirty_(false) {
-  SVGSVGElement* svg = toSVGSVGElement(node);
+  SVGSVGElement* svg = ToSVGSVGElement(node);
   DCHECK(svg);
 
   LayoutSize intrinsic_size(svg->IntrinsicWidth(), svg->IntrinsicHeight());
@@ -66,7 +66,7 @@ void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   // https://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
 
-  SVGSVGElement* svg = toSVGSVGElement(GetNode());
+  SVGSVGElement* svg = ToSVGSVGElement(GetNode());
   DCHECK(svg);
 
   intrinsic_sizing_info.size =
@@ -89,7 +89,7 @@ void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
 }
 
 bool LayoutSVGRoot::IsEmbeddedThroughSVGImage() const {
-  return SVGImage::IsInSVGImage(toSVGSVGElement(GetNode()));
+  return SVGImage::IsInSVGImage(ToSVGSVGElement(GetNode()));
 }
 
 bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
@@ -188,7 +188,7 @@ void LayoutSVGRoot::UpdateLayout() {
     SetNeedsPaintPropertyUpdate();
   }
 
-  SVGSVGElement* svg = toSVGSVGElement(GetNode());
+  SVGSVGElement* svg = ToSVGSVGElement(GetNode());
   DCHECK(svg);
   // When hasRelativeLengths() is false, no descendants have relative lengths
   // (hence no one is interested in viewport size changes).
@@ -355,7 +355,7 @@ PositionWithAffinity LayoutSVGRoot::PositionForPoint(const LayoutPoint& point) {
 // relative to our borderBox origin.  This method gives us exactly that.
 SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform() {
   SVGTransformChangeDetector change_detector(local_to_border_box_transform_);
-  SVGSVGElement* svg = toSVGSVGElement(GetNode());
+  SVGSVGElement* svg = ToSVGSVGElement(GetNode());
   DCHECK(svg);
   float scale = Style()->EffectiveZoom();
   local_to_border_box_transform_ = svg->ViewBoxToViewTransform(

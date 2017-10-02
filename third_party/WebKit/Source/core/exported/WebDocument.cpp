@@ -162,7 +162,7 @@ void WebDocument::Forms(WebVector<WebFormElement>& results) const {
     Element* element = forms->item(i);
     // Strange but true, sometimes node can be 0.
     if (element && element->IsHTMLElement())
-      temp.push_back(WebFormElement(toHTMLFormElement(element)));
+      temp.push_back(WebFormElement(ToHTMLFormElement(element)));
   }
   results.Assign(temp);
 }

@@ -277,7 +277,7 @@ bool CompositeEditCommand::IsRemovableBlock(const Node* node) {
   if (!IsHTMLDivElement(*node))
     return false;
 
-  const HTMLDivElement& element = toHTMLDivElement(*node);
+  const HTMLDivElement& element = ToHTMLDivElement(*node);
   ContainerNode* parent_node = element.parentNode();
   if (parent_node && parent_node->firstChild() != parent_node->lastChild())
     return false;

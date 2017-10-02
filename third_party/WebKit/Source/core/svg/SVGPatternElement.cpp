@@ -207,7 +207,7 @@ void SVGPatternElement::CollectPatternAttributes(
     if (!IsSVGPatternElement(ref_node) || !ref_node->GetLayoutObject())
       break;
 
-    current = toSVGPatternElement(ref_node);
+    current = ToSVGPatternElement(ref_node);
 
     // Cycle detection
     if (processed_patterns.Contains(current))

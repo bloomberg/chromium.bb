@@ -1006,7 +1006,7 @@ TEST_P(ScrollingCoordinatorTest,
 
   // Remove fixed background-attachment should make the iframe
   // scroll on cc.
-  auto* iframe_doc = toHTMLIFrameElement(iframe)->contentDocument();
+  auto* iframe_doc = ToHTMLIFrameElement(iframe)->contentDocument();
   iframe = iframe_doc->getElementById("scrollable");
   ASSERT_TRUE(iframe);
 

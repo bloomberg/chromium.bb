@@ -50,7 +50,7 @@ bool StyleSheetCandidate::IsXSL() const {
 }
 
 bool StyleSheetCandidate::IsImport() const {
-  return type_ == kHTMLLink && toHTMLLinkElement(GetNode()).IsImport();
+  return type_ == kHTMLLink && ToHTMLLinkElement(GetNode()).IsImport();
 }
 
 bool StyleSheetCandidate::IsCSSStyle() const {
@@ -59,7 +59,7 @@ bool StyleSheetCandidate::IsCSSStyle() const {
 
 Document* StyleSheetCandidate::ImportedDocument() const {
   DCHECK(IsImport());
-  return toHTMLLinkElement(GetNode()).import();
+  return ToHTMLLinkElement(GetNode()).import();
 }
 
 bool StyleSheetCandidate::IsAlternate() const {
@@ -69,12 +69,12 @@ bool StyleSheetCandidate::IsAlternate() const {
 }
 
 bool StyleSheetCandidate::IsEnabledViaScript() const {
-  return IsHTMLLink() && toHTMLLinkElement(GetNode()).IsEnabledViaScript();
+  return IsHTMLLink() && ToHTMLLinkElement(GetNode()).IsEnabledViaScript();
 }
 
 bool StyleSheetCandidate::IsEnabledAndLoading() const {
-  return IsHTMLLink() && !toHTMLLinkElement(GetNode()).IsDisabled() &&
-         toHTMLLinkElement(GetNode()).StyleSheetIsLoading();
+  return IsHTMLLink() && !ToHTMLLinkElement(GetNode()).IsDisabled() &&
+         ToHTMLLinkElement(GetNode()).StyleSheetIsLoading();
 }
 
 bool StyleSheetCandidate::CanBeActivated(
@@ -124,11 +124,11 @@ StyleSheetCandidate::Type StyleSheetCandidate::TypeOf(Node& node) {
 StyleSheet* StyleSheetCandidate::Sheet() const {
   switch (type_) {
     case kHTMLLink:
-      return toHTMLLinkElement(GetNode()).sheet();
+      return ToHTMLLinkElement(GetNode()).sheet();
     case kHTMLStyle:
-      return toHTMLStyleElement(GetNode()).sheet();
+      return ToHTMLStyleElement(GetNode()).sheet();
     case kSVGStyle:
-      return toSVGStyleElement(GetNode()).sheet();
+      return ToSVGStyleElement(GetNode()).sheet();
     case kPi:
       return ToProcessingInstruction(GetNode()).sheet();
     default:

@@ -95,8 +95,8 @@ void HTMLSlotElement::ResolveDistributedNodes() {
   for (auto& node : assigned_nodes_) {
     DCHECK(node->IsSlotable());
     if (IsHTMLSlotElement(*node) &&
-        toHTMLSlotElement(*node).SupportsDistribution())
-      AppendDistributedNodesFrom(toHTMLSlotElement(*node));
+        ToHTMLSlotElement(*node).SupportsDistribution())
+      AppendDistributedNodesFrom(ToHTMLSlotElement(*node));
     else
       AppendDistributedNode(*node);
 

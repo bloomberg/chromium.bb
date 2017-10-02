@@ -73,7 +73,7 @@ int HTMLTableRowElement::rowIndex() const {
   }
   if (!(maybe_table && IsHTMLTableElement(maybe_table)))
     return -1;
-  return FindIndexInRowCollection(*toHTMLTableElement(maybe_table)->rows(),
+  return FindIndexInRowCollection(*ToHTMLTableElement(maybe_table)->rows(),
                                   *this);
 }
 

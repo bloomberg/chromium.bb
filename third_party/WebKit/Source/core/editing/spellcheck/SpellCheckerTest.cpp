@@ -78,7 +78,7 @@ TEST_F(SpellCheckerTest, AdvancedToNextMisspellingWrapSearchNoCrash) {
 TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   SetBodyContent("<input>");
   HTMLInputElement* input =
-      toHTMLInputElement(GetDocument().QuerySelector("input"));
+      ToHTMLInputElement(GetDocument().QuerySelector("input"));
   input->focus();
   input->setValue("Hello, input field");
   GetDocument().UpdateStyleAndLayout();

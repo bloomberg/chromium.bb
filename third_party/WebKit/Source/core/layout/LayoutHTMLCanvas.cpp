@@ -52,7 +52,7 @@ void LayoutHTMLCanvas::PaintReplaced(const PaintInfo& paint_info,
 }
 
 void LayoutHTMLCanvas::CanvasSizeChanged() {
-  IntSize canvas_size = toHTMLCanvasElement(GetNode())->Size();
+  IntSize canvas_size = ToHTMLCanvasElement(GetNode())->Size();
   LayoutSize zoomed_size(canvas_size.Width() * Style()->EffectiveZoom(),
                          canvas_size.Height() * Style()->EffectiveZoom());
 
@@ -89,7 +89,7 @@ PaintInvalidationReason LayoutHTMLCanvas::InvalidatePaint(
 }
 
 CompositingReasons LayoutHTMLCanvas::AdditionalCompositingReasons() const {
-  if (toHTMLCanvasElement(GetNode())->ShouldBeDirectComposited())
+  if (ToHTMLCanvasElement(GetNode())->ShouldBeDirectComposited())
     return kCompositingReasonCanvas;
   return kCompositingReasonNone;
 }
@@ -97,7 +97,7 @@ CompositingReasons LayoutHTMLCanvas::AdditionalCompositingReasons() const {
 void LayoutHTMLCanvas::StyleDidChange(StyleDifference diff,
                                       const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
-  toHTMLCanvasElement(GetNode())->StyleDidChange(old_style, StyleRef());
+  ToHTMLCanvasElement(GetNode())->StyleDidChange(old_style, StyleRef());
 }
 
 }  // namespace blink

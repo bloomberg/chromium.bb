@@ -8278,7 +8278,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenNestedExit) {
   Element* top_body = top_doc->body();
 
   HTMLIFrameElement* iframe =
-      toHTMLIFrameElement(top_doc->QuerySelector("iframe"));
+      ToHTMLIFrameElement(top_doc->QuerySelector("iframe"));
   Document* iframe_doc = iframe->contentDocument();
   Element* iframe_body = iframe_doc->body();
 
@@ -8581,7 +8581,7 @@ TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::CreateUserGesture(frame);
   HTMLVideoElement* video =
-      toHTMLVideoElement(frame->GetDocument()->getElementById("video"));
+      ToHTMLVideoElement(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_FALSE(layer_tree_view.has_transparent_background);

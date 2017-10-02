@@ -136,7 +136,7 @@ SVGPaintServer LayoutSVGResourcePattern::PreparePaintServer(
     const LayoutObject& object) {
   ClearInvalidationMask();
 
-  SVGPatternElement* pattern_element = toSVGPatternElement(GetElement());
+  SVGPatternElement* pattern_element = ToSVGPatternElement(GetElement());
   if (!pattern_element)
     return SVGPaintServer::Invalid();
 

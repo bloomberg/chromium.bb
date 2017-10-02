@@ -305,7 +305,7 @@ static void ConfigureRequest(
   if (client_hints_preferences.ShouldSend(
           mojom::WebClientHintsType::kResourceWidth) &&
       IsHTMLImageElement(element))
-    params.SetResourceWidth(toHTMLImageElement(element).GetResourceWidth());
+    params.SetResourceWidth(ToHTMLImageElement(element).GetResourceWidth());
 }
 
 inline void ImageLoader::DispatchErrorEvent() {

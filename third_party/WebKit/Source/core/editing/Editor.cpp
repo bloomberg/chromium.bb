@@ -573,7 +573,7 @@ static RefPtr<Image> ImageFromNode(const Node& node) {
     return nullptr;
 
   if (layout_object->IsCanvas()) {
-    return toHTMLCanvasElement(const_cast<Node&>(node))
+    return ToHTMLCanvasElement(const_cast<Node&>(node))
         .CopiedImage(kFrontBuffer, kPreferNoAcceleration,
                      kSnapshotReasonCopyToClipboard);
   }

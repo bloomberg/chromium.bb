@@ -42,7 +42,7 @@ class HTMLTableRowsCollection final : public HTMLCollection {
   static HTMLTableRowsCollection* Create(ContainerNode&, CollectionType);
 
   HTMLTableRowElement* Item(unsigned offset) const {
-    return toHTMLTableRowElement(HTMLCollection::item(offset));
+    return ToHTMLTableRowElement(HTMLCollection::item(offset));
   }
 
   static HTMLTableRowElement* RowAfter(HTMLTableElement&, HTMLTableRowElement*);

@@ -376,7 +376,7 @@ TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
       "  style='transform: translate3d(4px, 5px, 6px);'/>");
 
   // Move the child frame offscreen so it becomes available for throttling.
-  auto* iframe = toHTMLIFrameElement(GetDocument().getElementById("iframe"));
+  auto* iframe = ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
   iframe->setAttribute(HTMLNames::styleAttr, "transform: translateY(5555px)");
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Ensure intersection observer notifications get delivered.
@@ -819,7 +819,7 @@ TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
             select->FirstFragment()->PaintProperties()->OverflowClip());
 
   // Should not assert in FindPropertiesNeedingUpdate.
-  toHTMLSelectElement(select->GetNode())->setSelectedIndex(1);
+  ToHTMLSelectElement(select->GetNode())->setSelectedIndex(1);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_NE(nullptr,
             select->FirstFragment()->PaintProperties()->OverflowClip());

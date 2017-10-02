@@ -795,7 +795,7 @@ bool AXNodeObject::IsImageButton() const {
 bool AXNodeObject::IsInputImage() const {
   Node* node = this->GetNode();
   if (RoleValue() == kButtonRole && IsHTMLInputElement(node))
-    return toHTMLInputElement(*node).type() == InputTypeNames::image;
+    return ToHTMLInputElement(*node).type() == InputTypeNames::image;
 
   return false;
 }
@@ -857,7 +857,7 @@ bool AXNodeObject::IsMultiSelectable() const {
   }
 
   return IsHTMLSelectElement(GetNode()) &&
-         toHTMLSelectElement(*GetNode()).IsMultiple();
+         ToHTMLSelectElement(*GetNode()).IsMultiple();
 }
 
 bool AXNodeObject::IsNativeCheckboxOrRadio() const {
@@ -921,7 +921,7 @@ bool AXNodeObject::IsPasswordField() const {
   if (aria_role != kTextFieldRole && aria_role != kUnknownRole)
     return false;
 
-  return toHTMLInputElement(node)->type() == InputTypeNames::password;
+  return ToHTMLInputElement(node)->type() == InputTypeNames::password;
 }
 
 bool AXNodeObject::IsProgressIndicator() const {
@@ -1000,7 +1000,7 @@ AXRestriction AXNodeObject::Restriction() const {
   }
 
   // Only editable fields can be marked @readonly (unlike @aria-readonly).
-  if (IsHTMLTextAreaElement(*elem) && toHTMLTextAreaElement(*elem).IsReadOnly())
+  if (IsHTMLTextAreaElement(*elem) && ToHTMLTextAreaElement(*elem).IsReadOnly())
     return kReadOnly;
   if (auto* input = ToHTMLInputElementOrNull(*elem)) {
     if (input->IsTextField() && input->IsReadOnly())
@@ -1182,7 +1182,7 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   if (!node_ || !IsHTMLAnchorElement(node_) || !GetDocument())
     return AXObject::InPageLinkTarget();
 
-  HTMLAnchorElement* anchor = toHTMLAnchorElement(node_);
+  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_);
   DCHECK(anchor);
   KURL link_url = anchor->Href();
   if (!link_url.IsValid())
@@ -1324,7 +1324,7 @@ RGBA32 AXNodeObject::ColorValue() const {
   if (!IsHTMLInputElement(GetNode()) || !IsColorWell())
     return AXObject::ColorValue();
 
-  HTMLInputElement* input = toHTMLInputElement(GetNode());
+  HTMLInputElement* input = ToHTMLInputElement(GetNode());
   const AtomicString& type = input->getAttribute(typeAttr);
   if (!EqualIgnoringASCIICase(type, "color"))
     return AXObject::ColorValue();
@@ -1504,7 +1504,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
   }
 
   if (IsNativeSlider()) {
-    *out_value = toHTMLInputElement(*GetNode()).valueAsNumber();
+    *out_value = ToHTMLInputElement(*GetNode()).valueAsNumber();
     return true;
   }
 
@@ -1524,7 +1524,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
   }
 
   if (IsNativeSlider()) {
-    *out_value = toHTMLInputElement(*GetNode()).Maximum();
+    *out_value = ToHTMLInputElement(*GetNode()).Maximum();
     return true;
   }
 
@@ -1557,7 +1557,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   }
 
   if (IsNativeSlider()) {
-    *out_value = toHTMLInputElement(*GetNode()).Minimum();
+    *out_value = ToHTMLInputElement(*GetNode()).Minimum();
     return true;
   }
 
@@ -1574,7 +1574,7 @@ float AXNodeObject::StepValueForRange() const {
     return 0.0;
 
   Decimal step =
-      toHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
+      ToHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
   return step.ToString().ToFloat();
 }
 
@@ -2776,7 +2776,7 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->back().type = name_from;
       name_sources->back().native_source = kAXTextFromNativeHTMLLegend;
     }
-    HTMLElement* legend = toHTMLFieldSetElement(GetNode())->Legend();
+    HTMLElement* legend = ToHTMLFieldSetElement(GetNode())->Legend();
     if (legend) {
       AXObject* legend_ax_object = AxObjectCache().GetOrCreate(legend);
       // Avoid an infinite loop
@@ -2979,7 +2979,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
   // table caption, 5.9.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (name_from != kAXNameFromCaption && IsHTMLTableElement(GetNode())) {
-    HTMLTableElement* table_element = toHTMLTableElement(GetNode());
+    HTMLTableElement* table_element = ToHTMLTableElement(GetNode());
 
     description_from = kAXDescriptionFromRelatedElement;
     if (description_sources) {

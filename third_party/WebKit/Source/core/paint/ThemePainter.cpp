@@ -78,7 +78,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       UseCounter::Count(o.GetDocument(),
                         WebFeature::kCSSValueAppearanceButtonForButton);
     } else if (IsHTMLInputElement(o.GetNode()) &&
-               toHTMLInputElement(o.GetNode())->IsTextButton()) {
+               ToHTMLInputElement(o.GetNode())->IsTextButton()) {
       // Text buttons (type=button, reset, submit) has
       // -webkit-appearance:push-button by default.
       UseCounter::Count(o.GetNode()->GetDocument(),
@@ -253,7 +253,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   if (!IsHTMLInputElement(node))
     return;
 
-  HTMLInputElement* input = toHTMLInputElement(node);
+  HTMLInputElement* input = ToHTMLInputElement(node);
   if (input->type() != InputTypeNames::range ||
       !input->UserAgentShadowRoot()->HasChildren())
     return;

@@ -1124,7 +1124,7 @@ bool Node::CanParticipateInFlatTree() const {
 
 bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {
   return (IsHTMLSlotElement(*this) &&
-          toHTMLSlotElement(*this).SupportsDistribution()) ||
+          ToHTMLSlotElement(*this).SupportsDistribution()) ||
          IsActiveV0InsertionPoint(*this);
 }
 
@@ -2624,7 +2624,7 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
     // Checking for fallback content if the node is in a v1 shadow tree.
     Element* parent = parentElement();
     if (parent && IsHTMLSlotElement(parent)) {
-      HTMLSlotElement& parent_slot = toHTMLSlotElement(*parent);
+      HTMLSlotElement& parent_slot = ToHTMLSlotElement(*parent);
       DCHECK(parent_slot.SupportsDistribution());
       // The parent_slot's assigned nodes might not be calculated because they
       // are lazy evaluated later at UpdateDistribution() so we have to check it

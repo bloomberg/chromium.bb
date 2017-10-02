@@ -160,7 +160,7 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
     RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(false);
 
     GetDocument().write("<body><video></body>");
-    video_ = toHTMLVideoElement(*GetDocument().QuerySelector("video"));
+    video_ = ToHTMLVideoElement(*GetDocument().QuerySelector("video"));
   }
 
   void TearDown() override {

@@ -149,7 +149,7 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
       return nullptr;
 
     if (IsHTMLInputElement(control) && control.willValidate()) {
-      const HTMLInputElement& input = toHTMLInputElement(control);
+      const HTMLInputElement& input = ToHTMLInputElement(control);
 
       // Return nothing if a file upload field or a password field are
       // found.
@@ -164,7 +164,7 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
           // searchable.
           return nullptr;
         }
-        text_element = toHTMLInputElement(&control);
+        text_element = ToHTMLInputElement(&control);
       }
     }
   }

@@ -1256,8 +1256,8 @@ Node* Document::importNode(Node* imported_node,
           return nullptr;
         if (IsHTMLTemplateElement(*old_element) &&
             !EnsureTemplateDocument().ImportContainerNodeChildren(
-                toHTMLTemplateElement(old_element)->content(),
-                toHTMLTemplateElement(new_element)->content(), exception_state))
+                ToHTMLTemplateElement(old_element)->content(),
+                ToHTMLTemplateElement(new_element)->content(), exception_state))
           return nullptr;
       }
 

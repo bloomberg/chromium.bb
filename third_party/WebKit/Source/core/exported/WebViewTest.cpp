@@ -2884,7 +2884,7 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   web_view->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
-  HTMLTextAreaElement* text_area_element = toHTMLTextAreaElement(
+  HTMLTextAreaElement* text_area_element = ToHTMLTextAreaElement(
       web_view->MainFrameImpl()->GetDocument().GetElementById(
           blanklinestextbox));
   text_area_element->setValue("hello");
@@ -3508,7 +3508,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
 
   HTMLInputElement* input_element;
 
-  input_element = toHTMLInputElement(document->getElementById("date"));
+  input_element = ToHTMLInputElement(document->getElementById("date"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -3520,7 +3520,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->getElementById("datetimelocal"));
+  input_element = ToHTMLInputElement(document->getElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -3532,7 +3532,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->getElementById("month"));
+  input_element = ToHTMLInputElement(document->getElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -3544,7 +3544,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->getElementById("time"));
+  input_element = ToHTMLInputElement(document->getElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -3556,7 +3556,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   client.ClearChooserCompletion();
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
-  input_element = toHTMLInputElement(document->getElementById("week"));
+  input_element = ToHTMLInputElement(document->getElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
   client.ChooserCompletion()->DidChooseValue(0);
   client.ClearChooserCompletion();
@@ -3890,7 +3890,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
   Element* child_frame = document->getElementById("childframe");
   DCHECK(child_frame);
   Document* child_document =
-      toHTMLIFrameElement(child_frame)->contentDocument();
+      ToHTMLIFrameElement(child_frame)->contentDocument();
   Element* child_div = child_document->getElementById("childdiv");
   DCHECK(child_div);
   registry->DidAddEventHandler(*child_div, kTouchEvent);
@@ -3982,7 +3982,7 @@ TEST_P(WebViewTest, TextInputFlags) {
   // (A.1) Verifies autocorrect/autocomplete/spellcheck flags are Off and
   // autocapitalize is set to none.
   HTMLInputElement* input_element =
-      toHTMLInputElement(document->getElementById("input"));
+      ToHTMLInputElement(document->getElementById("input"));
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -3995,7 +3995,7 @@ TEST_P(WebViewTest, TextInputFlags) {
 
   // (A.2) Verifies autocorrect/autocomplete/spellcheck flags are On and
   // autocapitalize is set to sentences.
-  input_element = toHTMLInputElement(document->getElementById("input2"));
+  input_element = ToHTMLInputElement(document->getElementById("input2"));
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -4009,7 +4009,7 @@ TEST_P(WebViewTest, TextInputFlags) {
   // (B) <textarea> Verifies the default text input flags are
   // WebTextInputFlagAutocapitalizeSentences.
   HTMLTextAreaElement* text_area_element =
-      toHTMLTextAreaElement(document->getElementById("textarea"));
+      ToHTMLTextAreaElement(document->getElementById("textarea"));
   document->SetFocusedElement(
       text_area_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -4924,7 +4924,7 @@ TEST_P(WebViewTest, SetZoomLevelWhilePluginFocused) {
   // Verify the plugin is loaded.
   LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
   HTMLObjectElement* plugin_element =
-      toHTMLObjectElement(main_frame->GetDocument()->body()->firstChild());
+      ToHTMLObjectElement(main_frame->GetDocument()->body()->firstChild());
   EXPECT_TRUE(plugin_element->OwnedPlugin());
   // Focus the plugin element, and then change the zoom level on the WebView.
   plugin_element->focus();

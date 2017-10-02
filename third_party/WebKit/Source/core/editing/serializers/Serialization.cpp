@@ -224,14 +224,16 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   // tab span. If two or more tabs are selected, commonAncestor will be the tab
   // span. In either case, if there is a specialCommonAncestor already, it will
   // necessarily be above any tab span that needs to be included.
-  if (!special_common_ancestor && IsTabHTMLSpanElementTextNode(common_ancestor))
+  if (!special_common_ancestor &&
+      IsTabHTMLSpanElementTextNode(common_ancestor)) {
     special_common_ancestor =
-        toHTMLSpanElement(Strategy::Parent(*common_ancestor));
+        ToHTMLSpanElement(Strategy::Parent(*common_ancestor));
+  }
   if (!special_common_ancestor && IsTabHTMLSpanElement(common_ancestor))
-    special_common_ancestor = toHTMLSpanElement(common_ancestor);
+    special_common_ancestor = ToHTMLSpanElement(common_ancestor);
 
   if (HTMLAnchorElement* enclosing_anchor =
-          toHTMLAnchorElement(EnclosingElementWithTag(
+          ToHTMLAnchorElement(EnclosingElementWithTag(
               Position::FirstPositionInNode(special_common_ancestor
                                                 ? *special_common_ancestor
                                                 : *common_ancestor),
@@ -495,7 +497,7 @@ bool IsPlainTextMarkup(Node* node) {
   if (!IsHTMLDivElement(*node))
     return false;
 
-  HTMLDivElement& element = toHTMLDivElement(*node);
+  HTMLDivElement& element = ToHTMLDivElement(*node);
   if (!element.hasAttributes())
     return false;
 

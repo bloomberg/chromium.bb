@@ -72,7 +72,7 @@ namespace {
 
 inline bool IsShadowInsertionPointFocusScopeOwner(Element& element) {
   return IsActiveShadowInsertionPoint(element) &&
-         toHTMLShadowElement(element).OlderShadowRoot();
+         ToHTMLShadowElement(element).OlderShadowRoot();
 }
 
 class ScopedFocusNavigation {
@@ -266,11 +266,12 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(
     Element& element) {
   if (IsShadowHost(element))
     return ScopedFocusNavigation::OwnedByShadowHost(element);
-  if (IsShadowInsertionPointFocusScopeOwner(element))
+  if (IsShadowInsertionPointFocusScopeOwner(element)) {
     return ScopedFocusNavigation::OwnedByShadowInsertionPoint(
-        toHTMLShadowElement(element));
+        ToHTMLShadowElement(element));
+  }
   return ScopedFocusNavigation::OwnedByHTMLSlotElement(
-      toHTMLSlotElement(element));
+      ToHTMLSlotElement(element));
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByShadowHost(
@@ -322,9 +323,10 @@ bool ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
   Element* parent = current.parentElement();
   while (parent) {
     if (IsHTMLSlotElement(parent) &&
-        toHTMLSlotElement(parent)->AssignedNodes().IsEmpty())
+        ToHTMLSlotElement(parent)->AssignedNodes().IsEmpty()) {
       return !SlotScopedTraversal::IsSlotScoped(current) &&
-             toHTMLSlotElement(parent) == slot;
+             ToHTMLSlotElement(parent) == slot;
+    }
     parent = parent->parentElement();
   }
   return false;

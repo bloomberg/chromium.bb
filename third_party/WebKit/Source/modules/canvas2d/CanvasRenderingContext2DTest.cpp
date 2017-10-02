@@ -212,7 +212,7 @@ void CanvasRenderingContext2DTest::SetUp() {
   document_->documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
   document_->View()->UpdateAllLifecyclePhases();
-  canvas_element_ = toHTMLCanvasElement(document_->getElementById("c"));
+  canvas_element_ = ToHTMLCanvasElement(document_->getElementById("c"));
 
   full_image_data_ = ImageData::Create(IntSize(10, 10));
   partial_image_data_ = ImageData::Create(IntSize(2, 2));

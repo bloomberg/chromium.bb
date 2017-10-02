@@ -1706,7 +1706,7 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
 
   LocalDOMWindow* window =
       web_view_impl->MainFrameImpl()->GetFrame()->DomWindow();
-  HTMLElement* html = toHTMLHtmlElement(window->document()->documentElement());
+  HTMLElement* html = ToHTMLHtmlElement(window->document()->documentElement());
 
   ASSERT_EQ(200, window->innerWidth());
   ASSERT_EQ(300, window->innerHeight());

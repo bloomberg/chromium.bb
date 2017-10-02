@@ -53,7 +53,7 @@ RadioNodeList::~RadioNodeList() {}
 static inline HTMLInputElement* ToRadioButtonInputElement(Element& element) {
   if (!IsHTMLInputElement(element))
     return nullptr;
-  HTMLInputElement& input_element = toHTMLInputElement(element);
+  HTMLInputElement& input_element = ToHTMLInputElement(element);
   if (input_element.type() != InputTypeNames::radio ||
       input_element.value().IsEmpty())
     return nullptr;
@@ -110,7 +110,7 @@ bool RadioNodeList::ElementMatches(const Element& element) const {
     if (!IsHTMLImageElement(element))
       return false;
 
-    if (toHTMLImageElement(element).formOwner() != ownerNode())
+    if (ToHTMLImageElement(element).formOwner() != ownerNode())
       return false;
 
     return MatchesByIdOrName(element);
@@ -120,7 +120,7 @@ bool RadioNodeList::ElementMatches(const Element& element) const {
     return false;
 
   if (IsHTMLInputElement(element) &&
-      toHTMLInputElement(element).type() == InputTypeNames::image)
+      ToHTMLInputElement(element).type() == InputTypeNames::image)
     return false;
 
   return CheckElementMatchesRadioNodeListFilter(element);
