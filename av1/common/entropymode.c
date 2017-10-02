@@ -2009,12 +2009,22 @@ static const aom_cdf_prob
 #endif  // CONFIG_NEW_MULTISYMBOL
 
 #if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(
+    2)] = { { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(8192), AOM_ICDF(32768), 0 } };
+#endif  // CONFIG_EXT_SKIP
 static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
   { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
   { AOM_ICDF(8192), AOM_ICDF(32768), 0 }
 };
-#else
+#else  // !CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+static const aom_prob default_skip_mode_probs[SKIP_MODE_CONTEXTS] = { 192, 128,
+                                                                      64 };
+#endif  // CONFIG_EXT_SKIP
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
@@ -5993,9 +6003,15 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
 #if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+  av1_copy(fc->skip_mode_cdfs, default_skip_mode_cdfs);
+#endif  // CONFIG_EXT_SKIP
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
-#else
+#else  // !CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+  av1_copy(fc->skip_mode_probs, default_skip_mode_probs);
+#endif  // CONFIG_EXT_SKIP
   av1_copy(fc->skip_probs, default_skip_probs);
 #endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
@@ -6165,6 +6181,11 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   }
 
 #if !CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+  for (i = 0; i < SKIP_MODE_CONTEXTS; ++i)
+    fc->skip_mode_probs[i] = av1_mode_mv_merge_probs(pre_fc->skip_mode_probs[i],
+                                                     counts->skip_mode[i]);
+#endif  // CONFIG_EXT_SKIP
   for (i = 0; i < SKIP_CONTEXTS; ++i)
     fc->skip_probs[i] =
         av1_mode_mv_merge_probs(pre_fc->skip_probs[i], counts->skip[i]);

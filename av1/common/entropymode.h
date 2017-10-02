@@ -290,9 +290,15 @@ typedef struct frame_contexts {
   aom_prob compound_index_probs[COMP_INDEX_CONTEXTS];
 #endif  // CONFIG_JNT_COMP
 #if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+  aom_cdf_prob skip_mode_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
+#endif  // CONFIG_EXT_SKIP
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
-#else
+#else  // !CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EXT_SKIP
+  aom_prob skip_mode_probs[SKIP_CONTEXTS];
+#endif  // CONFIG_EXT_SKIP
   aom_prob skip_probs[SKIP_CONTEXTS];
 #endif  // CONFIG_NEW_MULTISYMBOL
   nmv_context nmvc[NMV_CONTEXTS];
@@ -475,6 +481,9 @@ typedef struct FRAME_COUNTS {
   unsigned int quarter_tx_size[2];
 #endif
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
+#if CONFIG_EXT_SKIP
+  unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
+#endif  // CONFIG_EXT_SKIP
   unsigned int skip[SKIP_CONTEXTS][2];
   nmv_context_counts mv[NMV_CONTEXTS];
 #if CONFIG_JNT_COMP

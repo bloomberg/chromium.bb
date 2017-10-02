@@ -1376,6 +1376,59 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
   }
 }
 #endif  // CONFIG_FRAME_SIGN_BIAS
+
+#if CONFIG_EXT_SKIP
+void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
+  cm->is_skip_mode_allowed = 0;
+  cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
+
+  if (cm->frame_type == KEY_FRAME || cm->intra_only) return;
+
+  BufferPool *const pool = cm->buffer_pool;
+  RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  int ref_frame_offset_0 = -1;
+  int ref_frame_offset_1 = INT_MAX;
+  int ref_idx_0 = INVALID_IDX;
+  int ref_idx_1 = INVALID_IDX;
+
+  // Identify the nearest forward and backward references
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    RefBuffer *const ref_frame = &cm->frame_refs[i];
+    const int buf_idx = ref_frame->idx;
+
+    // Invalid reference frame buffer
+    if (buf_idx == INVALID_IDX) continue;
+
+    const int ref_offset = frame_bufs[buf_idx].cur_frame_offset;
+    if (ref_offset < (int)cm->frame_offset) {
+      // Forward reference
+      if (ref_offset > ref_frame_offset_0) {
+        ref_frame_offset_0 = ref_offset;
+        ref_idx_0 = i;
+      }
+    } else if (ref_offset > (int)cm->frame_offset) {
+      // Backward reference
+      if (ref_offset < ref_frame_offset_1) {
+        ref_frame_offset_1 = ref_offset;
+        ref_idx_1 = i;
+      }
+    }
+  }
+
+  // Flag is set when and only when both forward and backward references
+  // are available and their distance is no greater than 3, i.e. as
+  // opposed to the current frame position, the reference distance pair are
+  // either: (1, 1), (1, 2), or (2, 1).
+  if (ref_idx_0 != INVALID_IDX && ref_idx_1 != INVALID_IDX) {
+    if ((ref_frame_offset_1 - ref_frame_offset_0) <= 3) {
+      cm->is_skip_mode_allowed = 1;
+      cm->ref_frame_idx_0 = ref_idx_0;
+      cm->ref_frame_idx_1 = ref_idx_1;
+    }
+  }
+}
+#endif  // CONFIG_EXT_SKIP
 #endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_MFMV
