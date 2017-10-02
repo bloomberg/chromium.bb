@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_type.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 class PrefRegistrySimple;
