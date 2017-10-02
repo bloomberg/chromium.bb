@@ -10,9 +10,9 @@
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
+#include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -26,7 +26,7 @@ namespace blink {
 
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
-  DedicatedWorkerThreadForTest(InProcessWorkerObjectProxy& worker_object_proxy)
+  DedicatedWorkerThreadForTest(DedicatedWorkerObjectProxy& worker_object_proxy)
       : DedicatedWorkerThread(nullptr /* ThreadableLoadingContext */,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::CreateForTest("Test thread");
@@ -75,27 +75,27 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   }
 };
 
-class InProcessWorkerObjectProxyForTest final
-    : public InProcessWorkerObjectProxy {
+class DedicatedWorkerObjectProxyForTest final
+    : public DedicatedWorkerObjectProxy {
  public:
-  InProcessWorkerObjectProxyForTest(
+  DedicatedWorkerObjectProxyForTest(
       DedicatedWorkerMessagingProxy* messaging_proxy,
       ParentFrameTaskRunners* parent_frame_task_runners)
-      : InProcessWorkerObjectProxy(messaging_proxy, parent_frame_task_runners),
+      : DedicatedWorkerObjectProxy(messaging_proxy, parent_frame_task_runners),
         reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
   void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
     EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
     reported_features_.QuickSet(static_cast<int>(feature));
-    InProcessWorkerObjectProxy::CountFeature(feature);
+    DedicatedWorkerObjectProxy::CountFeature(feature);
   }
 
   void CountDeprecation(WebFeature feature) override {
     // Any feature should be reported only one time.
     EXPECT_FALSE(reported_features_.QuickGet(static_cast<int>(feature)));
     reported_features_.QuickSet(static_cast<int>(feature));
-    InProcessWorkerObjectProxy::CountDeprecation(feature);
+    DedicatedWorkerObjectProxy::CountDeprecation(feature);
   }
 
  private:
@@ -109,7 +109,7 @@ class DedicatedWorkerMessagingProxyForTest
       : DedicatedWorkerMessagingProxy(execution_context,
                                       nullptr /* workerObject */,
                                       nullptr /* workerClients */) {
-    worker_object_proxy_ = WTF::MakeUnique<InProcessWorkerObjectProxyForTest>(
+    worker_object_proxy_ = WTF::MakeUnique<DedicatedWorkerObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
   }
 
@@ -229,7 +229,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
 
   // API use should be reported to the Document only one time. See comments in
-  // InProcessWorkerObjectProxyForTest::CountFeature.
+  // DedicatedWorkerObjectProxyForTest::CountFeature.
   TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
       ->PostTask(
           BLINK_FROM_HERE,
@@ -252,7 +252,7 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
 
   // API use should be reported to the Document only one time. See comments in
-  // InProcessWorkerObjectProxyForTest::CountDeprecation.
+  // DedicatedWorkerObjectProxyForTest::CountDeprecation.
   TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
       ->PostTask(
           BLINK_FROM_HERE,

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/InProcessWorkerObjectProxy.h"
+#include "core/workers/DedicatedWorkerObjectProxy.h"
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
@@ -50,17 +50,17 @@
 
 namespace blink {
 
-std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::Create(
+std::unique_ptr<DedicatedWorkerObjectProxy> DedicatedWorkerObjectProxy::Create(
     DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(messaging_proxy_weak_ptr);
-  return WTF::WrapUnique(new InProcessWorkerObjectProxy(
+  return WTF::WrapUnique(new DedicatedWorkerObjectProxy(
       messaging_proxy_weak_ptr, parent_frame_task_runners));
 }
 
-InProcessWorkerObjectProxy::~InProcessWorkerObjectProxy() {}
+DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() {}
 
-void InProcessWorkerObjectProxy::PostMessageToWorkerObject(
+void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
     RefPtr<SerializedScriptValue> message,
     Vector<MessagePortChannel> channels) {
   GetParentFrameTaskRunners()
@@ -72,7 +72,7 @@ void InProcessWorkerObjectProxy::PostMessageToWorkerObject(
                      WTF::Passed(std::move(channels))));
 }
 
-void InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject(
+void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
     RefPtr<SerializedScriptValue> message,
     Vector<MessagePortChannel> channels,
     WorkerThread* worker_thread) {
@@ -83,7 +83,7 @@ void InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject(
   global_scope->DispatchEvent(MessageEvent::Create(ports, std::move(message)));
 }
 
-void InProcessWorkerObjectProxy::ProcessUnhandledException(
+void DedicatedWorkerObjectProxy::ProcessUnhandledException(
     int exception_id,
     WorkerThread* worker_thread) {
   WorkerGlobalScope* global_scope =
@@ -91,7 +91,7 @@ void InProcessWorkerObjectProxy::ProcessUnhandledException(
   global_scope->ExceptionUnhandled(exception_id);
 }
 
-void InProcessWorkerObjectProxy::ReportException(
+void DedicatedWorkerObjectProxy::ReportException(
     const String& error_message,
     std::unique_ptr<SourceLocation> location,
     int exception_id) {
@@ -104,24 +104,24 @@ void InProcessWorkerObjectProxy::ReportException(
                           WTF::Passed(location->Clone()), exception_id));
 }
 
-void InProcessWorkerObjectProxy::DidCreateWorkerGlobalScope(
+void DedicatedWorkerObjectProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* global_scope) {
   DCHECK(!worker_global_scope_);
   worker_global_scope_ = ToWorkerGlobalScope(global_scope);
 }
 
-void InProcessWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
+void DedicatedWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
   worker_global_scope_ = nullptr;
 }
 
-InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
+DedicatedWorkerObjectProxy::DedicatedWorkerObjectProxy(
     DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners)
     : ThreadedObjectProxyBase(parent_frame_task_runners),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}
 
 CrossThreadWeakPersistent<ThreadedMessagingProxyBase>
-InProcessWorkerObjectProxy::MessagingProxyWeakPtr() {
+DedicatedWorkerObjectProxy::MessagingProxyWeakPtr() {
   return messaging_proxy_weak_ptr_;
 }
 

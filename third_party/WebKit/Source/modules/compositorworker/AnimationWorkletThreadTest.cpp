@@ -12,7 +12,6 @@
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"

@@ -36,9 +36,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/bindings/ScriptState.h"
 
@@ -98,7 +98,7 @@ void DedicatedWorkerGlobalScope::postMessage(
                                                 std::move(channels));
 }
 
-InProcessWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()
+DedicatedWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()
     const {
   return static_cast<DedicatedWorkerThread*>(GetThread())->WorkerObjectProxy();
 }
