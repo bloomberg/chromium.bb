@@ -52874,6 +52874,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OSX.Fullscreen.Enter.Source" enum="OSXFullscreenSource">
+  <owner>spqchan@chromium.org</owner>
+  <summary>
+    This event is recorded each time a user triggers fullscreen for a browser
+    window. It indicates if the fullscreen is triggered for the browser or the
+    tab content.
+  </summary>
+</histogram>
+
 <histogram name="OSX.Fullscreen.Enter.Style" enum="OSXFullscreenStyle">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -52890,6 +52899,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     This event is recorded each time a user triggers fullscreen for a browser
     window. It indicates the screen in which the window was fullscreened, and
     the number of screens available.
+  </summary>
+</histogram>
+
+<histogram name="OSX.Fullscreen.ToolbarStyle" enum="OSXFullscreenToolbarStyle">
+  <owner>spqchan@chromium.org</owner>
+  <summary>
+    This event is recorded each time a user triggers fullscreen and when the
+    fullscreen toolbar is updated with a new style.
   </summary>
 </histogram>
 

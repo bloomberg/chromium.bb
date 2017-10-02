@@ -29048,6 +29048,18 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="OSXFullscreenSource">
+  <int value="0" label="BROWSER">
+    The window entered fullscreen for the browser.
+  </int>
+  <int value="1" label="TAB_CONTENT">
+    The window entered fullscreen for the tab contents.
+  </int>
+  <int value="2" label="EXTENSION">
+    The window entered fullscreen for an extension.
+  </int>
+</enum>
+
 <enum name="OSXFullscreenStyle">
   <int value="0" label="IMMERSIVE">
     The window was fullscreened using the immersive mechanism.
@@ -29060,6 +29072,14 @@ from previous Chrome versions.
     The window was fullscreened using the AppKit mechanism, in Canonical
     Fullscreen.
   </int>
+</enum>
+
+<enum name="OSXFullscreenToolbarStyle">
+  <int value="0" label="PRESENT">The fullscreen toolbar is always shown.</int>
+  <int value="1" label="HIDDEN">
+    The fullscreen toolbar only appears when the menubar drops down.
+  </int>
+  <int value="2" label="NONE">The fullscreen toolbar is not visible.</int>
 </enum>
 
 <enum name="OSXFullscreenWindowLocation">
