@@ -22,6 +22,8 @@ void SetAccessibilityInfoFromImage(UIBarButtonItem* button);
 // Sets the a11y label of the UIButton according to the image it holds.
 void SetAccessibilityInfoFromImage(UIButton* button);
 
+void SetAccessibilityFocusElement(id element);
+
 }  // namespace remoting
 
 #endif  // REMOTING_IOS_APP_VIEW_UTILS_H_

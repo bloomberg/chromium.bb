@@ -208,7 +208,7 @@ ConnectionType GetConnectionType() {
   [super viewWillAppear:animated];
 
   // Just in case the view controller misses the host list state event before
-  // the listener is registered.
+  // gthe listener is registered.
   [self refreshContent];
 }
 
