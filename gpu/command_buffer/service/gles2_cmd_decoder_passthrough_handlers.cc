@@ -16,7 +16,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindAttribLocationBucket(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
@@ -38,10 +40,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleBufferData(
       *static_cast<const volatile gles2::cmds::BufferData*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
-  uint32_t data_shm_offset = static_cast<uint32_t>(c.data_shm_offset);
+  uint32_t data_shm_id = c.data_shm_id;
+  uint32_t data_shm_offset = c.data_shm_offset;
   GLenum usage = static_cast<GLenum>(c.usage);
-  const void* data = NULL;
+
+  const void* data = nullptr;
   if (data_shm_id != 0 || data_shm_offset != 0) {
     data = GetSharedMemoryAs<const void*>(data_shm_id, data_shm_offset, size);
     if (!data) {
@@ -63,9 +66,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleClientWaitSync(
   const GLuint sync = static_cast<GLuint>(c.sync);
   const GLbitfield flags = static_cast<GLbitfield>(c.flags);
   const GLuint64 timeout = c.timeout();
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::ClientWaitSync::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+      result_shm_id, result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
     return error::kOutOfBounds;
   }
@@ -82,6 +88,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCreateProgram(
   const volatile gles2::cmds::CreateProgram& c =
       *static_cast<const volatile gles2::cmds::CreateProgram*>(cmd_data);
   GLuint client_id = static_cast<GLuint>(c.client_id);
+
   error::Error error = DoCreateProgram(client_id);
   if (error != error::kNoError) {
     return error;
@@ -96,6 +103,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCreateShader(
       *static_cast<const volatile gles2::cmds::CreateShader*>(cmd_data);
   GLenum type = static_cast<GLenum>(c.type);
   GLuint client_id = static_cast<GLuint>(c.client_id);
+
   error::Error error = DoCreateShader(type, client_id);
   if (error != error::kNoError) {
     return error;
@@ -111,6 +119,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleFenceSync(
   GLenum condition = static_cast<GLenum>(c.condition);
   GLbitfield flags = static_cast<GLbitfield>(c.flags);
   GLuint client_id = static_cast<GLuint>(c.client_id);
+
   error::Error error = DoFenceSync(condition, flags, client_id);
   if (error != error::kNoError) {
     return error;
@@ -126,6 +135,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawArrays(
   GLenum mode = static_cast<GLenum>(c.mode);
   GLint first = static_cast<GLint>(c.first);
   GLsizei count = static_cast<GLsizei>(c.count);
+
   error::Error error = DoDrawArrays(mode, first, count);
   if (error != error::kNoError) {
     return error;
@@ -143,6 +153,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawElements(
   GLenum type = static_cast<GLenum>(c.type);
   const GLvoid* indices =
       reinterpret_cast<const GLvoid*>(static_cast<uintptr_t>(c.index_offset));
+
   error::Error error = DoDrawElements(mode, count, type, indices);
   if (error != error::kNoError) {
     return error;
@@ -158,9 +169,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveAttrib(
   GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
   uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::GetActiveAttrib::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -190,9 +204,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniform(
   GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
   uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::GetActiveUniform::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -223,12 +240,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformBlockiv(
   GLuint program = static_cast<GLuint>(c.program);
   GLuint uniformBlockIndex = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
+  uint32_t params_shm_id = c.params_shm_id;
+  uint32_t params_shm_offset = c.params_shm_offset;
+
   unsigned int buffer_size = 0;
   typedef cmds::GetActiveUniformBlockiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      params_shm_id, params_shm_offset, sizeof(Result), &buffer_size);
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -254,9 +274,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformBlockName(
   GLuint program = static_cast<GLuint>(c.program);
   GLuint uniformBlockIndex = static_cast<GLuint>(c.index);
   uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::GetActiveUniformBlockName::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -285,7 +308,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformsiv(
       *static_cast<const volatile gles2::cmds::GetActiveUniformsiv*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLenum pname = static_cast<GLenum>(c.pname);
-  Bucket* bucket = GetBucket(c.indices_bucket_id);
+  uint32_t params_shm_id = c.params_shm_id;
+  uint32_t params_shm_offset = c.params_shm_offset;
+  uint32_t indices_bucket_id = c.indices_bucket_id;
+
+  Bucket* bucket = GetBucket(indices_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -293,9 +320,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformsiv(
   const GLuint* indices = bucket->GetDataAs<const GLuint*>(0, bucket->size());
   typedef cmds::GetActiveUniformsiv::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(uniformCount));
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      params_shm_id, params_shm_offset, Result::ComputeSize(uniformCount));
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -319,10 +346,14 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttachedShaders(
   const volatile gles2::cmds::GetAttachedShaders& c =
       *static_cast<const volatile gles2::cmds::GetAttachedShaders*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
+  uint32_t result_size = c.result_size;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::GetAttachedShaders::Result Result;
-  uint32_t maxCount = Result::ComputeMaxResults(c.result_size);
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, Result::ComputeSize(maxCount));
+  uint32_t maxCount = Result::ComputeMaxResults(result_size);
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              Result::ComputeSize(maxCount));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -347,7 +378,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttribLocation(
   const volatile gles2::cmds::GetAttribLocation& c =
       *static_cast<const volatile gles2::cmds::GetAttribLocation*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t location_shm_id = c.location_shm_id;
+  uint32_t location_shm_offset = c.location_shm_offset;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -356,7 +391,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttribLocation(
     return error::kInvalidArguments;
   }
   GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+      location_shm_id, location_shm_offset, sizeof(GLint));
   if (!location) {
     return error::kOutOfBounds;
   }
@@ -379,10 +414,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetBufferSubDataAsyncCHROMIUM(
   GLenum target = static_cast<GLenum>(c.target);
   GLintptr offset = static_cast<GLintptr>(c.offset);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
+  uint32_t data_shm_id = c.data_shm_id;
+  uint32_t data_shm_offset = c.data_shm_offset;
 
   uint8_t* mem =
-      GetSharedMemoryAs<uint8_t*>(data_shm_id, c.data_shm_offset, size);
+      GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, size);
   if (!mem) {
     return error::kOutOfBounds;
   }
@@ -403,7 +439,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataLocation(
   const volatile gles2::cmds::GetFragDataLocation& c =
       *static_cast<const volatile gles2::cmds::GetFragDataLocation*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t location_shm_id = c.location_shm_id;
+  uint32_t location_shm_offset = c.location_shm_offset;
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -412,7 +452,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataLocation(
     return error::kInvalidArguments;
   }
   GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+      location_shm_id, location_shm_offset, sizeof(GLint));
   if (!location) {
     return error::kOutOfBounds;
   }
@@ -435,12 +475,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetInternalformativ(
   GLenum target = static_cast<GLenum>(c.target);
   GLenum internalformat = static_cast<GLenum>(c.format);
   GLenum pname = static_cast<GLenum>(c.pname);
+  uint32_t params_shm_id = c.params_shm_id;
+  uint32_t params_shm_offset = c.params_shm_offset;
+
   unsigned int buffer_size = 0;
   typedef cmds::GetInternalformativ::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      params_shm_id, params_shm_offset, sizeof(Result), &buffer_size);
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -463,7 +506,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetProgramInfoLog(
   const volatile gles2::cmds::GetProgramInfoLog& c =
       *static_cast<const volatile gles2::cmds::GetProgramInfoLog*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  uint32_t bucket_id = static_cast<uint32_t>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
 
   std::string infolog;
   error::Error error = DoGetProgramInfoLog(program, &infolog);
@@ -482,7 +525,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetShaderInfoLog(
   const volatile gles2::cmds::GetShaderInfoLog& c =
       *static_cast<const volatile gles2::cmds::GetShaderInfoLog*>(cmd_data);
   GLuint shader = static_cast<GLuint>(c.shader);
-  uint32_t bucket_id = static_cast<uint32_t>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
 
   std::string infolog;
   error::Error error = DoGetShaderInfoLog(shader, &infolog);
@@ -503,9 +546,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetShaderPrecisionFormat(
           cmd_data);
   GLenum shader_type = static_cast<GLenum>(c.shadertype);
   GLenum precision_type = static_cast<GLenum>(c.precisiontype);
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::GetShaderPrecisionFormat::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -536,7 +582,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetShaderSource(
   const volatile gles2::cmds::GetShaderSource& c =
       *static_cast<const volatile gles2::cmds::GetShaderSource*>(cmd_data);
   GLuint shader = static_cast<GLuint>(c.shader);
-  uint32_t bucket_id = static_cast<uint32_t>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
 
   std::string source;
   error::Error error = DoGetShaderSource(shader, &source);
@@ -556,6 +602,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetString(
   const volatile gles2::cmds::GetString& c =
       *static_cast<const volatile gles2::cmds::GetString*>(cmd_data);
   GLenum name = static_cast<GLenum>(c.name);
+  uint32_t bucket_id = c.bucket_id;
 
   const char* str = nullptr;
   error::Error error = DoGetString(name, &str);
@@ -565,7 +612,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetString(
   if (!str) {
     return error::kOutOfBounds;
   }
-  Bucket* bucket = CreateBucket(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetFromString(str);
 
   return error::kNoError;
@@ -580,9 +627,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTransformFeedbackVarying(
   GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
   uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
   typedef cmds::GetTransformFeedbackVarying::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -614,7 +664,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformBlockIndex(
   const volatile gles2::cmds::GetUniformBlockIndex& c =
       *static_cast<const volatile gles2::cmds::GetUniformBlockIndex*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t index_shm_id = c.index_shm_id;
+  uint32_t index_shm_offset = c.index_shm_offset;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -622,8 +676,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformBlockIndex(
   if (!bucket->GetAsString(&name_str)) {
     return error::kInvalidArguments;
   }
-  GLint* index = GetSharedMemoryAs<GLint*>(c.index_shm_id, c.index_shm_offset,
-                                           sizeof(GLint));
+  GLint* index =
+      GetSharedMemoryAs<GLint*>(index_shm_id, index_shm_offset, sizeof(GLint));
   if (!index) {
     return error::kOutOfBounds;
   }
@@ -644,12 +698,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformfv(
       *static_cast<const volatile gles2::cmds::GetUniformfv*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLint location = static_cast<GLint>(c.location);
+  uint32_t params_shm_id = c.params_shm_id;
+  uint32_t params_shm_offset = c.params_shm_offset;
+
   unsigned int buffer_size = 0;
   typedef cmds::GetUniformfv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLfloat* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      params_shm_id, params_shm_offset, sizeof(Result), &buffer_size);
+  GLfloat* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -673,12 +730,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformiv(
       *static_cast<const volatile gles2::cmds::GetUniformiv*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLint location = static_cast<GLint>(c.location);
+  uint32_t params_shm_id = c.params_shm_id;
+  uint32_t params_shm_offset = c.params_shm_offset;
+
   unsigned int buffer_size = 0;
   typedef cmds::GetUniformiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      params_shm_id, params_shm_offset, sizeof(Result), &buffer_size);
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -702,12 +762,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformuiv(
       *static_cast<const volatile gles2::cmds::GetUniformuiv*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLint location = static_cast<GLint>(c.location);
+  uint32_t params_shm_id = c.params_shm_id;
+  uint32_t params_shm_offset = c.params_shm_offset;
+
   unsigned int buffer_size = 0;
   typedef cmds::GetUniformuiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
-  GLuint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      params_shm_id, params_shm_offset, sizeof(Result), &buffer_size);
+  GLuint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -730,7 +793,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformIndices(
   const volatile gles2::cmds::GetUniformIndices& c =
       *static_cast<const volatile gles2::cmds::GetUniformIndices*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  Bucket* bucket = GetBucket(c.names_bucket_id);
+  uint32_t names_bucket_id = c.names_bucket_id;
+  uint32_t indices_shm_id = c.indices_shm_id;
+  uint32_t indices_shm_offset = c.indices_shm_offset;
+
+  Bucket* bucket = GetBucket(names_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -742,10 +809,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformIndices(
   }
   typedef cmds::GetUniformIndices::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
-      c.indices_shm_id, c.indices_shm_offset,
+      indices_shm_id, indices_shm_offset,
       Result::ComputeSize(static_cast<size_t>(count)));
-  GLuint* indices = result ? result->GetData() : NULL;
-  if (indices == NULL) {
+  GLuint* indices = result ? result->GetData() : nullptr;
+  if (indices == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -767,7 +834,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformLocation(
   const volatile gles2::cmds::GetUniformLocation& c =
       *static_cast<const volatile gles2::cmds::GetUniformLocation*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t location_shm_id = c.location_shm_id;
+  uint32_t location_shm_offset = c.location_shm_offset;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -776,7 +847,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformLocation(
     return error::kInvalidArguments;
   }
   GLint* location = GetSharedMemoryAs<GLint*>(
-      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+      location_shm_id, location_shm_offset, sizeof(GLint));
   if (!location) {
     return error::kOutOfBounds;
   }
@@ -799,12 +870,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribPointerv(
           cmd_data);
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
+  uint32_t pointer_shm_id = c.pointer_shm_id;
+  uint32_t pointer_shm_offset = c.pointer_shm_offset;
+
   unsigned int buffer_size = 0;
   typedef cmds::GetVertexAttribPointerv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.pointer_shm_id, c.pointer_shm_offset, sizeof(Result), &buffer_size);
-  GLuint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+      pointer_shm_id, pointer_shm_offset, sizeof(Result), &buffer_size);
+  GLuint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
@@ -828,6 +902,7 @@ error::Error GLES2DecoderPassthroughImpl::HandlePixelStorei(
       *static_cast<const volatile gles2::cmds::PixelStorei*>(cmd_data);
   GLenum pname = static_cast<GLuint>(c.pname);
   GLint param = static_cast<GLint>(c.param);
+
   error::Error error = DoPixelStorei(pname, param);
   if (error != error::kNoError) {
     return error;
@@ -912,16 +987,21 @@ error::Error GLES2DecoderPassthroughImpl::HandleShaderBinary(
       *static_cast<const volatile gles2::cmds::ShaderBinary*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   GLsizei length = static_cast<GLsizei>(c.length);
+  GLenum binaryformat = static_cast<GLenum>(c.binaryformat);
+  uint32_t shaders_shm_id = c.shaders_shm_id;
+  uint32_t shaders_shm_offset = c.shaders_shm_offset;
+  uint32_t binary_shm_id = c.binary_shm_id;
+  uint32_t binary_shm_offset = c.binary_shm_offset;
+
   uint32_t data_size;
   if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
     return error::kOutOfBounds;
   }
   const GLuint* shaders = GetSharedMemoryAs<const GLuint*>(
-      c.shaders_shm_id, c.shaders_shm_offset, data_size);
-  GLenum binaryformat = static_cast<GLenum>(c.binaryformat);
-  const void* binary = GetSharedMemoryAs<const void*>(
-      c.binary_shm_id, c.binary_shm_offset, length);
-  if (shaders == NULL || binary == NULL) {
+      shaders_shm_id, shaders_shm_offset, data_size);
+  const void* binary =
+      GetSharedMemoryAs<const void*>(binary_shm_id, binary_shm_offset, length);
+  if (shaders == nullptr || binary == nullptr) {
     return error::kOutOfBounds;
   }
 
@@ -1155,8 +1235,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleQueryCounterEXT(
       *static_cast<const volatile gles2::cmds::QueryCounterEXT*>(cmd_data);
   GLuint id = static_cast<GLuint>(c.id);
   GLenum target = static_cast<GLenum>(c.target);
-  int32_t sync_shm_id = static_cast<int32_t>(c.sync_data_shm_id);
-  uint32_t sync_shm_offset = static_cast<uint32_t>(c.sync_data_shm_offset);
+  uint32_t sync_shm_id = c.sync_data_shm_id;
+  uint32_t sync_shm_offset = c.sync_data_shm_offset;
   uint32_t submit_count = static_cast<GLuint>(c.submit_count);
 
   error::Error error =
@@ -1175,8 +1255,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleBeginQueryEXT(
       *static_cast<const volatile gles2::cmds::BeginQueryEXT*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLuint id = static_cast<GLuint>(c.id);
-  int32_t sync_shm_id = static_cast<int32_t>(c.sync_data_shm_id);
-  uint32_t sync_shm_offset = static_cast<uint32_t>(c.sync_data_shm_offset);
+  uint32_t sync_shm_id = c.sync_data_shm_id;
+  uint32_t sync_shm_offset = c.sync_data_shm_offset;
 
   error::Error error =
       DoBeginQueryEXT(target, id, sync_shm_id, sync_shm_offset);
@@ -1209,8 +1289,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetDisjointValueSyncCHROMIUM(
   const volatile gles2::cmds::SetDisjointValueSyncCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::SetDisjointValueSyncCHROMIUM*>(
           cmd_data);
+  uint32_t sync_data_shm_id = c.sync_data_shm_id;
+  uint32_t sync_data_shm_offset = c.sync_data_shm_offset;
+
   DisjointValueSync* sync = GetSharedMemoryAs<DisjointValueSync*>(
-      c.sync_data_shm_id, c.sync_data_shm_offset, sizeof(*sync));
+      sync_data_shm_id, sync_data_shm_offset, sizeof(*sync));
   if (!sync) {
     return error::kOutOfBounds;
   }
@@ -1226,7 +1309,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleInsertEventMarkerEXT(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::InsertEventMarkerEXT& c =
       *static_cast<const volatile gles2::cmds::InsertEventMarkerEXT*>(cmd_data);
-  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
@@ -1247,7 +1331,8 @@ error::Error GLES2DecoderPassthroughImpl::HandlePushGroupMarkerEXT(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::PushGroupMarkerEXT& c =
       *static_cast<const volatile gles2::cmds::PushGroupMarkerEXT*>(cmd_data);
-  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
@@ -1269,13 +1354,17 @@ error::Error GLES2DecoderPassthroughImpl::HandleEnableFeatureCHROMIUM(
   const volatile gles2::cmds::EnableFeatureCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::EnableFeatureCHROMIUM*>(
           cmd_data);
-  Bucket* bucket = GetBucket(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+
+  Bucket* bucket = GetBucket(bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
   typedef cmds::EnableFeatureCHROMIUM::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -1305,10 +1394,14 @@ error::Error GLES2DecoderPassthroughImpl::HandleMapBufferRange(
   GLbitfield access = static_cast<GLbitfield>(c.access);
   GLintptr offset = static_cast<GLintptr>(c.offset);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  uint32_t result_shm_id = c.result_shm_id;
+  uint32_t result_shm_offset = c.result_shm_offset;
+  uint32_t data_shm_id = c.data_shm_id;
+  uint32_t data_shm_offset = c.data_shm_offset;
 
   typedef cmds::MapBufferRange::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                              sizeof(*result));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -1317,14 +1410,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleMapBufferRange(
     return error::kInvalidArguments;
   }
   uint8_t* mem =
-      GetSharedMemoryAs<uint8_t*>(c.data_shm_id, c.data_shm_offset, size);
+      GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, size);
   if (!mem) {
     return error::kOutOfBounds;
   }
 
-  error::Error error =
-      DoMapBufferRange(target, offset, size, access, mem, c.data_shm_id,
-                       c.data_shm_offset, result);
+  error::Error error = DoMapBufferRange(target, offset, size, access, mem,
+                                        data_shm_id, data_shm_offset, result);
   if (error != error::kNoError) {
     DCHECK(*result == 0);
     return error;
@@ -1339,6 +1431,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleUnmapBuffer(
   const volatile gles2::cmds::UnmapBuffer& c =
       *static_cast<const volatile gles2::cmds::UnmapBuffer*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
+
   error::Error error = DoUnmapBuffer(target);
   if (error != error::kNoError) {
     return error;
@@ -1356,6 +1449,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleResizeCHROMIUM(
   GLfloat scale_factor = static_cast<GLfloat>(c.scale_factor);
   GLenum color_space = static_cast<GLenum>(c.color_space);
   GLboolean has_alpha = static_cast<GLboolean>(c.alpha);
+
   error::Error error =
       DoResizeCHROMIUM(width, height, scale_factor, color_space, has_alpha);
   if (error != error::kNoError) {
@@ -1372,6 +1466,8 @@ GLES2DecoderPassthroughImpl::HandleGetRequestableExtensionsCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::GetRequestableExtensionsCHROMIUM*>(
           cmd_data);
+  uint32_t bucket_id = c.bucket_id;
+
   const char* str = nullptr;
   error::Error error = DoGetRequestableExtensionsCHROMIUM(&str);
   if (error != error::kNoError) {
@@ -1380,7 +1476,7 @@ GLES2DecoderPassthroughImpl::HandleGetRequestableExtensionsCHROMIUM(
   if (!str) {
     return error::kOutOfBounds;
   }
-  Bucket* bucket = CreateBucket(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetFromString(str);
 
   return error::kNoError;
@@ -1392,7 +1488,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleRequestExtensionCHROMIUM(
   const volatile gles2::cmds::RequestExtensionCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::RequestExtensionCHROMIUM*>(
           cmd_data);
-  Bucket* bucket = GetBucket(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
+
+  Bucket* bucket = GetBucket(bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
@@ -1414,8 +1512,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetProgramInfoCHROMIUM(
       *static_cast<const volatile gles2::cmds::GetProgramInfoCHROMIUM*>(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-
   uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(ProgramInfoHeader));  // in case we fail.
 
@@ -1438,8 +1536,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformBlocksCHROMIUM(
       *static_cast<const volatile gles2::cmds::GetUniformBlocksCHROMIUM*>(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-
   uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(UniformBlocksHeader));  // in case we fail.
 
@@ -1464,8 +1562,8 @@ GLES2DecoderPassthroughImpl::HandleGetTransformFeedbackVaryingsCHROMIUM(
           const volatile gles2::cmds::GetTransformFeedbackVaryingsCHROMIUM*>(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-
   uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(TransformFeedbackVaryingsHeader));  // in case we fail.
 
@@ -1488,8 +1586,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformsES3CHROMIUM(
       *static_cast<const volatile gles2::cmds::GetUniformsES3CHROMIUM*>(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-
   uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(UniformsES3Header));  // in case we fail.
 
@@ -1512,6 +1610,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTranslatedShaderSourceANGLE(
       *static_cast<const volatile gles2::cmds::GetTranslatedShaderSourceANGLE*>(
           cmd_data);
   GLuint shader = static_cast<GLuint>(c.shader);
+  uint32_t bucket_id = c.bucket_id;
 
   std::string source;
   error::Error error = DoGetTranslatedShaderSourceANGLE(shader, &source);
@@ -1519,7 +1618,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetTranslatedShaderSourceANGLE(
     return error;
   }
 
-  Bucket* bucket = CreateBucket(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetFromString(source.c_str());
 
   return error::kNoError;
@@ -1535,6 +1634,7 @@ error::Error GLES2DecoderPassthroughImpl::HandlePostSubBufferCHROMIUM(
   GLint y = static_cast<GLint>(c.y);
   GLint width = static_cast<GLint>(c.width);
   GLint height = static_cast<GLint>(c.height);
+
   error::Error error = DoPostSubBufferCHROMIUM(x, y, width, height);
   if (error != error::kNoError) {
     return error;
@@ -1552,6 +1652,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawArraysInstancedANGLE(
   GLint first = static_cast<GLint>(c.first);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLsizei primcount = static_cast<GLsizei>(c.primcount);
+
   error::Error error =
       DoDrawArraysInstancedANGLE(mode, first, count, primcount);
   if (error != error::kNoError) {
@@ -1572,6 +1673,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawElementsInstancedANGLE(
   const GLvoid* indices =
       reinterpret_cast<const GLvoid*>(static_cast<uintptr_t>(c.index_offset));
   GLsizei primcount = static_cast<GLsizei>(c.primcount);
+
   error::Error error =
       DoDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
   if (error != error::kNoError) {
@@ -1588,6 +1690,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribDivisorANGLE(
           cmd_data);
   GLuint index = static_cast<GLuint>(c.index);
   GLuint divisor = static_cast<GLuint>(c.divisor);
+
   error::Error error = DoVertexAttribDivisorANGLE(index, divisor);
   if (error != error::kNoError) {
     return error;
@@ -1605,7 +1708,9 @@ GLES2DecoderPassthroughImpl::HandleBindUniformLocationCHROMIUMBucket(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLint location = static_cast<GLint>(c.location);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
@@ -1626,8 +1731,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleTraceBeginCHROMIUM(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::TraceBeginCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::TraceBeginCHROMIUM*>(cmd_data);
-  Bucket* category_bucket = GetBucket(c.category_bucket_id);
-  Bucket* name_bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+  uint32_t category_bucket_id = c.category_bucket_id;
+
+  Bucket* category_bucket = GetBucket(category_bucket_id);
+  Bucket* name_bucket = GetBucket(name_bucket_id);
   if (!category_bucket || category_bucket->size() == 0 || !name_bucket ||
       name_bucket->size() == 0) {
     return error::kInvalidArguments;
@@ -1665,6 +1773,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleInsertFenceSyncCHROMIUM(
       *static_cast<const volatile gles2::cmds::InsertFenceSyncCHROMIUM*>(
           cmd_data);
   GLuint64 release_count = c.release_count();
+
   error::Error error = DoInsertFenceSyncCHROMIUM(release_count);
   if (error != error::kNoError) {
     return error;
@@ -1680,9 +1789,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleWaitSyncTokenCHROMIUM(
           cmd_data);
   CommandBufferNamespace namespace_id =
       static_cast<gpu::CommandBufferNamespace>(c.namespace_id);
+  const uint64_t release_count = c.release_count();
   CommandBufferId command_buffer_id =
       CommandBufferId::FromUnsafeValue(c.command_buffer_id());
-  const uint64_t release_count = c.release_count();
 
   const CommandBufferNamespace kMinNamespaceId =
       CommandBufferNamespace::INVALID;
@@ -1728,6 +1837,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleOverlayPlaneCHROMIUM(
   GLfloat uv_y = static_cast<GLfloat>(c.uv_x);
   GLfloat uv_width = static_cast<GLfloat>(c.uv_x);
   GLfloat uv_height = static_cast<GLfloat>(c.uv_x);
+
   error::Error error = DoScheduleOverlayPlaneCHROMIUM(
       plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
       bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
@@ -1745,15 +1855,18 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerSharedStateCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::ScheduleCALayerSharedStateCHROMIUM*>(
           cmd_data);
-  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+  GLfloat opacity = static_cast<GLfloat>(c.opacity);
+  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
+  GLint sorting_context_id = static_cast<GLint>(c.sorting_context_id);
+  uint32_t shm_id = c.shm_id;
+  uint32_t shm_offset = c.shm_offset;
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(shm_id, shm_offset,
                                                          20 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
-  GLfloat opacity = static_cast<GLfloat>(c.opacity);
-  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
   const GLfloat* clip_rect = mem + 0;
-  GLint sorting_context_id = static_cast<GLint>(c.sorting_context_id);
   const GLfloat* transform = mem + 4;
   error::Error error = DoScheduleCALayerSharedStateCHROMIUM(
       opacity, is_clipped, clip_rect, sorting_context_id, transform);
@@ -1769,15 +1882,18 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleCALayerCHROMIUM(
   const volatile gles2::cmds::ScheduleCALayerCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::ScheduleCALayerCHROMIUM*>(
           cmd_data);
-  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+  GLuint contents_texture_id = static_cast<GLint>(c.contents_texture_id);
+  GLuint background_color = static_cast<GLuint>(c.background_color);
+  GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
+  uint32_t shm_id = c.shm_id;
+  uint32_t shm_offset = c.shm_offset;
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(shm_id, shm_offset,
                                                          8 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
-  GLuint contents_texture_id = static_cast<GLint>(c.contents_texture_id);
   const GLfloat* contents_rect = mem;
-  GLuint background_color = static_cast<GLuint>(c.background_color);
-  GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
   const GLfloat* bounds_rect = mem + 4;
   error::Error error =
       DoScheduleCALayerCHROMIUM(contents_texture_id, contents_rect,
@@ -1796,15 +1912,18 @@ GLES2DecoderPassthroughImpl::HandleScheduleDCLayerSharedStateCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM*>(
           cmd_data);
-  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
+  GLfloat opacity = static_cast<GLfloat>(c.opacity);
+  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
+  GLint z_order = static_cast<GLint>(c.z_order);
+  uint32_t shm_id = c.shm_id;
+  uint32_t shm_offset = c.shm_offset;
+
+  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(shm_id, shm_offset,
                                                          20 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
-  GLfloat opacity = static_cast<GLfloat>(c.opacity);
-  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
   const GLfloat* clip_rect = mem + 0;
-  GLint z_order = static_cast<GLint>(c.z_order);
   const GLfloat* transform = mem + 4;
   error::Error error = DoScheduleDCLayerSharedStateCHROMIUM(
       opacity, is_clipped, clip_rect, z_order, transform);
@@ -1820,13 +1939,19 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
       *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
           cmd_data);
+  GLuint background_color = static_cast<GLuint>(c.background_color);
+  GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
+  GLenum filter = static_cast<GLenum>(c.filter);
+  const GLsizei num_textures = c.num_textures;
+  uint32_t shm_id = c.shm_id;
+  uint32_t shm_offset = c.shm_offset;
+
   unsigned int size;
   const GLfloat* mem = GetSharedMemoryAndSizeAs<const GLfloat*>(
-      c.shm_id, c.shm_offset, 8 * sizeof(GLfloat), &size);
+      shm_id, shm_offset, 8 * sizeof(GLfloat), &size);
   if (!mem) {
     return error::kOutOfBounds;
   }
-  const GLsizei num_textures = c.num_textures;
   if (num_textures < 0 || (size - 8 * sizeof(GLfloat)) / sizeof(GLuint) <
                               static_cast<GLuint>(num_textures)) {
     return error::kOutOfBounds;
@@ -1834,9 +1959,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   const volatile GLuint* contents_texture_ids =
       reinterpret_cast<const volatile GLuint*>(mem + 8);
   const GLfloat* contents_rect = mem;
-  GLuint background_color = static_cast<GLuint>(c.background_color);
-  GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
-  GLenum filter = static_cast<GLenum>(c.filter);
   const GLfloat* bounds_rect = mem + 4;
   error::Error error = DoScheduleDCLayerCHROMIUM(
       num_textures, contents_texture_ids, contents_rect, background_color,
@@ -1861,6 +1983,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenPathsCHROMIUM(
       *static_cast<const volatile gles2::cmds::GenPathsCHROMIUM*>(cmd_data);
   GLuint path = static_cast<GLuint>(c.first_client_id);
   GLsizei range = static_cast<GLsizei>(c.range);
+
   error::Error error = DoGenPathsCHROMIUM(path, range);
   if (error != error::kNoError) {
     return error;
@@ -1875,6 +1998,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeletePathsCHROMIUM(
       *static_cast<const volatile gles2::cmds::DeletePathsCHROMIUM*>(cmd_data);
   GLuint path = static_cast<GLuint>(c.first_client_id);
   GLsizei range = static_cast<GLsizei>(c.range);
+
   error::Error error = DoDeletePathsCHROMIUM(path, range);
   if (error != error::kNoError) {
     return error;
@@ -1889,10 +2013,15 @@ error::Error GLES2DecoderPassthroughImpl::HandlePathCommandsCHROMIUM(
       *static_cast<const volatile gles2::cmds::PathCommandsCHROMIUM*>(cmd_data);
   GLuint path = static_cast<GLuint>(c.path);
   GLsizei num_commands = static_cast<GLsizei>(c.numCommands);
+  GLsizei num_coords = static_cast<GLsizei>(c.numCoords);
+  GLenum coord_type = static_cast<GLenum>(c.coordType);
+  uint32_t commands_shm_id = c.commands_shm_id;
+  uint32_t commands_shm_offset = c.commands_shm_offset;
+  uint32_t coords_shm_id = c.coords_shm_id;
+  uint32_t coords_shm_offset = c.coords_shm_offset;
+
   const GLubyte* commands = nullptr;
   if (num_commands > 0) {
-    uint32_t commands_shm_id = static_cast<uint32_t>(c.commands_shm_id);
-    uint32_t commands_shm_offset = static_cast<uint32_t>(c.commands_shm_offset);
     if (commands_shm_id != 0 || commands_shm_offset != 0) {
       commands = GetSharedMemoryAs<const GLubyte*>(
           commands_shm_id, commands_shm_offset, num_commands);
@@ -1901,13 +2030,9 @@ error::Error GLES2DecoderPassthroughImpl::HandlePathCommandsCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLsizei num_coords = static_cast<GLsizei>(c.numCoords);
-  GLenum coord_type = static_cast<GLenum>(c.coordType);
   const GLvoid* coords = nullptr;
   GLsizei coords_bufsize = 0;
   if (num_coords > 0) {
-    uint32_t coords_shm_id = static_cast<uint32_t>(c.coords_shm_id);
-    uint32_t coords_shm_offset = static_cast<uint32_t>(c.coords_shm_offset);
     if (coords_shm_id != 0 || coords_shm_offset != 0) {
       unsigned int memory_size = 0;
       coords = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -1939,6 +2064,7 @@ error::Error GLES2DecoderPassthroughImpl::HandlePathParameterfCHROMIUM(
   GLuint path = static_cast<GLuint>(c.path);
   GLenum pname = static_cast<GLenum>(c.pname);
   GLfloat value = static_cast<GLfloat>(c.value);
+
   error::Error error = DoPathParameterfCHROMIUM(path, pname, value);
   if (error != error::kNoError) {
     return error;
@@ -1955,6 +2081,7 @@ error::Error GLES2DecoderPassthroughImpl::HandlePathParameteriCHROMIUM(
   GLuint path = static_cast<GLuint>(c.path);
   GLenum pname = static_cast<GLenum>(c.pname);
   GLint value = static_cast<GLint>(c.value);
+
   error::Error error = DoPathParameteriCHROMIUM(path, pname, value);
   if (error != error::kNoError) {
     return error;
@@ -1971,6 +2098,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleStencilFillPathCHROMIUM(
   GLuint path = static_cast<GLuint>(c.path);
   GLenum fill_mode = static_cast<GLenum>(c.fillMode);
   GLuint mask = static_cast<GLuint>(c.mask);
+
   error::Error error = DoStencilFillPathCHROMIUM(path, fill_mode, mask);
   if (error != error::kNoError) {
     return error;
@@ -1987,6 +2115,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleStencilStrokePathCHROMIUM(
   GLuint path = static_cast<GLuint>(c.path);
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
+
   error::Error error = DoStencilStrokePathCHROMIUM(path, reference, mask);
   if (error != error::kNoError) {
     return error;
@@ -2002,6 +2131,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCoverFillPathCHROMIUM(
           cmd_data);
   GLuint path = static_cast<GLuint>(c.path);
   GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+
   error::Error error = DoCoverFillPathCHROMIUM(path, cover_mode);
   if (error != error::kNoError) {
     return error;
@@ -2017,6 +2147,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCoverStrokePathCHROMIUM(
           cmd_data);
   GLuint path = static_cast<GLuint>(c.path);
   GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+
   error::Error error = DoCoverStrokePathCHROMIUM(path, cover_mode);
   if (error != error::kNoError) {
     return error;
@@ -2036,6 +2167,7 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverFillPathCHROMIUM(
   GLenum fill_mode = static_cast<GLenum>(c.fillMode);
   GLuint mask = static_cast<GLuint>(c.mask);
   GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+
   error::Error error =
       DoStencilThenCoverFillPathCHROMIUM(path, fill_mode, mask, cover_mode);
   if (error != error::kNoError) {
@@ -2056,6 +2188,7 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverStrokePathCHROMIUM(
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
   GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+
   error::Error error =
       DoStencilThenCoverStrokePathCHROMIUM(path, reference, mask, cover_mode);
   if (error != error::kNoError) {
@@ -2074,11 +2207,18 @@ GLES2DecoderPassthroughImpl::HandleStencilFillPathInstancedCHROMIUM(
           cmd_data);
   GLsizei num_paths = static_cast<GLsizei>(c.numPaths);
   GLenum path_name_type = static_cast<GLuint>(c.pathNameType);
+  GLuint path_base = static_cast<GLuint>(c.pathBase);
+  GLenum fill_mode = static_cast<GLenum>(c.fillMode);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  GLenum transform_type = static_cast<GLuint>(c.transformType);
+  uint32_t paths_shm_id = c.paths_shm_id;
+  uint32_t paths_shm_offset = c.paths_shm_offset;
+  uint32_t transform_values_shm_id = c.transformValues_shm_id;
+  uint32_t transform_values_shm_offset = c.transformValues_shm_offset;
+
   const GLvoid* paths = nullptr;
   GLsizei paths_bufsize = 0;
   if (num_paths > 0) {
-    uint32_t paths_shm_id = static_cast<uint32_t>(c.paths_shm_id);
-    uint32_t paths_shm_offset = static_cast<uint32_t>(c.paths_shm_offset);
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -2090,17 +2230,12 @@ GLES2DecoderPassthroughImpl::HandleStencilFillPathInstancedCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLuint path_base = static_cast<GLuint>(c.pathBase);
-  GLenum fill_mode = static_cast<GLenum>(c.fillMode);
-  GLuint mask = static_cast<GLuint>(c.mask);
-  GLenum transform_type = static_cast<GLuint>(c.transformType);
   const GLfloat* transform_values = nullptr;
   GLsizei transform_values_bufsize = 0;
-  if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
+  if (transform_values_shm_id != 0 || transform_values_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
-        &memory_size);
+        transform_values_shm_id, transform_values_shm_offset, 0, &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2127,11 +2262,18 @@ GLES2DecoderPassthroughImpl::HandleStencilStrokePathInstancedCHROMIUM(
           cmd_data);
   GLsizei num_paths = static_cast<GLsizei>(c.numPaths);
   GLenum path_name_type = static_cast<GLuint>(c.pathNameType);
+  GLuint path_base = static_cast<GLuint>(c.pathBase);
+  GLint reference = static_cast<GLint>(c.reference);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  GLenum transform_type = static_cast<GLuint>(c.transformType);
+  uint32_t paths_shm_id = c.paths_shm_id;
+  uint32_t paths_shm_offset = c.paths_shm_offset;
+  uint32_t transform_values_shm_id = c.transformValues_shm_id;
+  uint32_t transform_values_shm_offset = c.transformValues_shm_offset;
+
   const GLvoid* paths = nullptr;
   GLsizei paths_bufsize = 0;
   if (num_paths > 0) {
-    uint32_t paths_shm_id = static_cast<uint32_t>(c.paths_shm_id);
-    uint32_t paths_shm_offset = static_cast<uint32_t>(c.paths_shm_offset);
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -2143,17 +2285,12 @@ GLES2DecoderPassthroughImpl::HandleStencilStrokePathInstancedCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLuint path_base = static_cast<GLuint>(c.pathBase);
-  GLint reference = static_cast<GLint>(c.reference);
-  GLuint mask = static_cast<GLuint>(c.mask);
-  GLenum transform_type = static_cast<GLuint>(c.transformType);
   const GLfloat* transform_values = nullptr;
   GLsizei transform_values_bufsize = 0;
-  if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
+  if (transform_values_shm_id != 0 || transform_values_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
-        &memory_size);
+        transform_values_shm_id, transform_values_shm_offset, 0, &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2178,11 +2315,17 @@ error::Error GLES2DecoderPassthroughImpl::HandleCoverFillPathInstancedCHROMIUM(
           cmd_data);
   GLsizei num_paths = static_cast<GLsizei>(c.numPaths);
   GLenum path_name_type = static_cast<GLuint>(c.pathNameType);
+  GLuint path_base = static_cast<GLuint>(c.pathBase);
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  GLenum transform_type = static_cast<GLuint>(c.transformType);
+  uint32_t paths_shm_id = c.paths_shm_id;
+  uint32_t paths_shm_offset = c.paths_shm_offset;
+  uint32_t transform_values_shm_id = c.transformValues_shm_id;
+  uint32_t transform_values_shm_offset = c.transformValues_shm_offset;
+
   const GLvoid* paths = nullptr;
   GLsizei paths_bufsize = 0;
   if (num_paths > 0) {
-    uint32_t paths_shm_id = static_cast<uint32_t>(c.paths_shm_id);
-    uint32_t paths_shm_offset = static_cast<uint32_t>(c.paths_shm_offset);
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -2194,16 +2337,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleCoverFillPathInstancedCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLuint path_base = static_cast<GLuint>(c.pathBase);
-  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
-  GLenum transform_type = static_cast<GLuint>(c.transformType);
   const GLfloat* transform_values = nullptr;
   GLsizei transform_values_bufsize = 0;
-  if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
+  if (transform_values_shm_id != 0 || transform_values_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
-        &memory_size);
+        transform_values_shm_id, transform_values_shm_offset, 0, &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2230,11 +2369,17 @@ GLES2DecoderPassthroughImpl::HandleCoverStrokePathInstancedCHROMIUM(
           cmd_data);
   GLsizei num_paths = static_cast<GLsizei>(c.numPaths);
   GLenum path_name_type = static_cast<GLuint>(c.pathNameType);
+  GLuint path_base = static_cast<GLuint>(c.pathBase);
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  GLenum transform_type = static_cast<GLuint>(c.transformType);
+  uint32_t paths_shm_id = c.paths_shm_id;
+  uint32_t paths_shm_offset = c.paths_shm_offset;
+  uint32_t transform_values_shm_id = c.transformValues_shm_id;
+  uint32_t transform_values_shm_offset = c.transformValues_shm_offset;
+
   const GLvoid* paths = nullptr;
   GLsizei paths_bufsize = 0;
   if (num_paths > 0) {
-    uint32_t paths_shm_id = static_cast<uint32_t>(c.paths_shm_id);
-    uint32_t paths_shm_offset = static_cast<uint32_t>(c.paths_shm_offset);
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -2246,16 +2391,12 @@ GLES2DecoderPassthroughImpl::HandleCoverStrokePathInstancedCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLuint path_base = static_cast<GLuint>(c.pathBase);
-  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
-  GLenum transform_type = static_cast<GLuint>(c.transformType);
   const GLfloat* transform_values = nullptr;
   GLsizei transform_values_bufsize = 0;
-  if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
+  if (transform_values_shm_id != 0 || transform_values_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
-        &memory_size);
+        transform_values_shm_id, transform_values_shm_offset, 0, &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2281,11 +2422,19 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
                        StencilThenCoverFillPathInstancedCHROMIUM*>(cmd_data);
   GLsizei num_paths = static_cast<GLsizei>(c.numPaths);
   GLenum path_name_type = static_cast<GLuint>(c.pathNameType);
+  GLuint path_base = static_cast<GLuint>(c.pathBase);
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  GLenum fill_mode = static_cast<GLenum>(c.fillMode);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  GLenum transform_type = static_cast<GLuint>(c.transformType);
+  uint32_t paths_shm_id = c.paths_shm_id;
+  uint32_t paths_shm_offset = c.paths_shm_offset;
+  uint32_t transform_values_shm_id = c.transformValues_shm_id;
+  uint32_t transform_values_shm_offset = c.transformValues_shm_offset;
+
   const GLvoid* paths = nullptr;
   GLsizei paths_bufsize = 0;
   if (num_paths > 0) {
-    uint32_t paths_shm_id = static_cast<uint32_t>(c.paths_shm_id);
-    uint32_t paths_shm_offset = static_cast<uint32_t>(c.paths_shm_offset);
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -2297,18 +2446,12 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLuint path_base = static_cast<GLuint>(c.pathBase);
-  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
-  GLenum fill_mode = static_cast<GLenum>(c.fillMode);
-  GLuint mask = static_cast<GLuint>(c.mask);
-  GLenum transform_type = static_cast<GLuint>(c.transformType);
   const GLfloat* transform_values = nullptr;
   GLsizei transform_values_bufsize = 0;
-  if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
+  if (transform_values_shm_id != 0 || transform_values_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
-        &memory_size);
+        transform_values_shm_id, transform_values_shm_offset, 0, &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2335,11 +2478,19 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
                        StencilThenCoverStrokePathInstancedCHROMIUM*>(cmd_data);
   GLsizei num_paths = static_cast<GLsizei>(c.numPaths);
   GLenum path_name_type = static_cast<GLuint>(c.pathNameType);
+  GLuint path_base = static_cast<GLuint>(c.pathBase);
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  GLint reference = static_cast<GLint>(c.reference);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  GLenum transform_type = static_cast<GLuint>(c.transformType);
+  uint32_t paths_shm_id = c.paths_shm_id;
+  uint32_t paths_shm_offset = c.paths_shm_offset;
+  uint32_t transform_values_shm_id = c.transformValues_shm_id;
+  uint32_t transform_values_shm_offset = c.transformValues_shm_offset;
+
   const GLvoid* paths = nullptr;
   GLsizei paths_bufsize = 0;
   if (num_paths > 0) {
-    uint32_t paths_shm_id = static_cast<uint32_t>(c.paths_shm_id);
-    uint32_t paths_shm_offset = static_cast<uint32_t>(c.paths_shm_offset);
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
@@ -2351,18 +2502,12 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
       return error::kOutOfBounds;
     }
   }
-  GLuint path_base = static_cast<GLuint>(c.pathBase);
-  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
-  GLint reference = static_cast<GLint>(c.reference);
-  GLuint mask = static_cast<GLuint>(c.mask);
-  GLenum transform_type = static_cast<GLuint>(c.transformType);
   const GLfloat* transform_values = nullptr;
   GLsizei transform_values_bufsize = 0;
-  if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
+  if (transform_values_shm_id != 0 || transform_values_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
-        &memory_size);
+        transform_values_shm_id, transform_values_shm_offset, 0, &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2390,7 +2535,9 @@ GLES2DecoderPassthroughImpl::HandleBindFragmentInputLocationCHROMIUMBucket(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLint location = static_cast<GLint>(c.location);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
@@ -2418,12 +2565,15 @@ GLES2DecoderPassthroughImpl::HandleProgramPathFragmentInputGenCHROMIUM(
   GLint location = static_cast<GLint>(c.location);
   GLenum gen_mode = static_cast<GLint>(c.genMode);
   GLint components = static_cast<GLint>(c.components);
+  uint32_t coeffs_shm_id = c.coeffs_shm_id;
+  uint32_t coeffs_shm_offset = c.coeffs_shm_offset;
+
   const GLfloat* coeffs = nullptr;
   GLsizei coeffs_bufsize = 0;
-  if (c.coeffs_shm_id != 0 || c.coeffs_shm_offset != 0) {
+  if (coeffs_shm_id != 0 || coeffs_shm_offset != 0) {
     unsigned int memory_size = 0;
     coeffs = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.coeffs_shm_id, c.coeffs_shm_offset, 0, &memory_size);
+        coeffs_shm_id, coeffs_shm_offset, 0, &memory_size);
     coeffs_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!coeffs) {
@@ -2448,7 +2598,9 @@ GLES2DecoderPassthroughImpl::HandleBindFragDataLocationIndexedEXTBucket(
   GLuint program = static_cast<GLuint>(c.program);
   GLuint colorNumber = static_cast<GLuint>(c.colorNumber);
   GLuint index = static_cast<GLuint>(c.index);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
@@ -2472,7 +2624,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleBindFragDataLocationEXTBucket(
           cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
   GLuint colorNumber = static_cast<GLuint>(c.colorNumber);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket || bucket->size() == 0) {
     return error::kInvalidArguments;
   }
@@ -2494,7 +2648,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataIndexEXT(
   const volatile gles2::cmds::GetFragDataIndexEXT& c =
       *static_cast<const volatile gles2::cmds::GetFragDataIndexEXT*>(cmd_data);
   GLuint program = static_cast<GLuint>(c.program);
-  Bucket* bucket = GetBucket(c.name_bucket_id);
+  uint32_t index_shm_id = c.index_shm_id;
+  uint32_t index_shm_offset = c.index_shm_offset;
+  uint32_t name_bucket_id = c.name_bucket_id;
+
+  Bucket* bucket = GetBucket(name_bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
   }
@@ -2502,8 +2660,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataIndexEXT(
   if (!bucket->GetAsString(&name_str)) {
     return error::kInvalidArguments;
   }
-  GLint* index = GetSharedMemoryAs<GLint*>(c.index_shm_id, c.index_shm_offset,
-                                           sizeof(GLint));
+  GLint* index =
+      GetSharedMemoryAs<GLint*>(index_shm_id, index_shm_offset, sizeof(GLint));
   if (!index) {
     return error::kOutOfBounds;
   }
@@ -2528,11 +2686,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage2DBucket(
   GLenum internal_format = static_cast<GLenum>(c.internalformat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
-  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
   GLint border = static_cast<GLint>(c.border);
+
   Bucket* bucket = GetBucket(bucket_id);
-  if (!bucket)
+  if (!bucket) {
     return error::kInvalidArguments;
+  }
   uint32_t image_size = bucket->size();
   const void* data = bucket->GetData(0, image_size);
   DCHECK(data || !image_size);
@@ -2583,10 +2743,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexSubImage2DBucket(
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
-  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = GetBucket(bucket_id);
-  if (!bucket)
+  if (!bucket) {
     return error::kInvalidArguments;
+  }
   uint32_t image_size = bucket->size();
   const void* data = bucket->GetData(0, image_size);
   DCHECK(data || !image_size);
@@ -2639,11 +2801,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexImage3DBucket(
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLsizei depth = static_cast<GLsizei>(c.depth);
-  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
   GLint border = static_cast<GLint>(c.border);
+
   Bucket* bucket = GetBucket(bucket_id);
-  if (!bucket)
+  if (!bucket) {
     return error::kInvalidArguments;
+  }
   GLsizei image_size = bucket->size();
   const void* data = bucket->GetData(0, image_size);
   DCHECK(data || !image_size);
@@ -2697,10 +2861,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleCompressedTexSubImage3DBucket(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLsizei depth = static_cast<GLsizei>(c.depth);
   GLenum format = static_cast<GLenum>(c.format);
-  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  uint32_t bucket_id = c.bucket_id;
+
   Bucket* bucket = GetBucket(bucket_id);
-  if (!bucket)
+  if (!bucket) {
     return error::kInvalidArguments;
+  }
   uint32_t image_size = bucket->size();
   const void* data = bucket->GetData(0, image_size);
   DCHECK(data || !image_size);
