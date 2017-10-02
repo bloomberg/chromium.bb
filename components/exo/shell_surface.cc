@@ -370,6 +370,9 @@ ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   if (resizer_)
     EndDrag(false /* revert */);
+  // Remove activation observer before hiding widget to prevent it from
+  // casuing the configure callback to be called.
+  WMHelper::GetInstance()->RemoveActivationObserver(this);
   if (widget_) {
     ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
     widget_->GetNativeWindow()->RemoveObserver(this);
@@ -380,7 +383,6 @@ ShellSurface::~ShellSurface() {
       widget_->Hide();
     widget_->CloseNow();
   }
-  WMHelper::GetInstance()->RemoveActivationObserver(this);
   WMHelper::GetInstance()->RemoveDisplayConfigurationObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (parent_)
