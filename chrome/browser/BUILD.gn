@@ -2467,8 +2467,6 @@ split_static_library("browser") {
       "notifications/notifier_controller.h",
       "notifications/profile_notification.cc",
       "notifications/profile_notification.h",
-      "notifications/system_component_notifier_controller_chromeos.cc",
-      "notifications/system_component_notifier_controller_chromeos.h",
       "notifications/web_page_notifier_controller.cc",
       "notifications/web_page_notifier_controller.h",
       "obsolete_system/obsolete_system.h",

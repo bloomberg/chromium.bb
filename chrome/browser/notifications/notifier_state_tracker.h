@@ -29,7 +29,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Tracks whether a given NotifierId can send notifications.
+// Tracks whether a given NotifierId can send notifications. Presently only used
+// for extensions.
 class NotifierStateTracker : public KeyedService
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                            , public extensions::ExtensionRegistryObserver
@@ -73,14 +74,8 @@ class NotifierStateTracker : public KeyedService
   // Prefs listener for disabled_extension_id.
   StringListPrefMember disabled_extension_id_pref_;
 
-  // Prefs listener for disabled_system_component_id.
-  StringListPrefMember disabled_system_component_id_pref_;
-
   // On-memory data for the availability of extensions.
   std::set<std::string> disabled_extension_ids_;
-
-  // On-memory data for the availability of system_component.
-  std::set<std::string> disabled_system_component_ids_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // An observer to listen when extension is uninstalled.

@@ -31,7 +31,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_application_notifier_controller_chromeos.h"
-#include "chrome/browser/notifications/system_component_notifier_controller_chromeos.h"
 #endif
 
 using message_center::Notifier;
@@ -115,10 +114,6 @@ MessageCenterSettingsController::MessageCenterSettingsController(
   // UserManager may not exist in some tests.
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->AddSessionStateObserver(this);
-  // For system components.
-  sources_.insert(std::make_pair(
-      NotifierId::SYSTEM_COMPONENT,
-      std::make_unique<SystemComponentNotifierControllerChromeOS>(this)));
   sources_.insert(std::make_pair(
       NotifierId::ARC_APPLICATION,
       std::make_unique<arc::ArcApplicationNotifierControllerChromeOS>(this)));
