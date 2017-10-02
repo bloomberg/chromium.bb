@@ -4,9 +4,14 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -14,6 +19,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -34,6 +41,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -181,6 +189,7 @@ public class BottomSheetContentController extends BottomNavigationView
     private Integer mHighlightItemId;
     private View mHighlightedView;
     private boolean mNavItemSelectedWhileOmniboxFocused;
+    private int mConsecutiveBookmarkTaps;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -311,6 +320,13 @@ public class BottomSheetContentController extends BottomNavigationView
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        mConsecutiveBookmarkTaps =
+                item.getItemId() == R.id.action_bookmarks ? mConsecutiveBookmarkTaps + 1 : 0;
+        if (mConsecutiveBookmarkTaps >= 5) {
+            mConsecutiveBookmarkTaps = 0;
+            doStarExplosion((ViewGroup) getRootView(), findViewById(R.id.action_bookmarks));
+        }
+
         if (mOmniboxHasFocus) mNavItemSelectedWhileOmniboxFocused = true;
 
         if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK
@@ -438,6 +454,133 @@ public class BottomSheetContentController extends BottomNavigationView
 
             entry.getValue().destroy();
             contentIterator.remove();
+        }
+    }
+
+    /**
+     * Explode some stars from the center of the bookmarks icon.
+     * @param rootView The root view to run in.
+     * @param selectedItemView The item that was selected.
+     */
+    private void doStarExplosion(ViewGroup rootView, View selectedItemView) {
+        if (rootView == null || selectedItemView == null) return;
+
+        Drawable starFull =
+                ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.btn_star_filled);
+        Drawable starEmpty = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.btn_star);
+
+        int[] outPosition = new int[2];
+        ViewUtils.getRelativeDrawPosition(rootView, selectedItemView, outPosition);
+
+        // Center the star's start position over the icon in the middle of the button.
+        outPosition[0] += selectedItemView.getWidth() / 2.f - starFull.getIntrinsicWidth() / 2.f;
+        outPosition[1] += selectedItemView.getHeight() / 2.f - starFull.getIntrinsicHeight() / 2.f;
+
+        for (int i = 0; i < 5; i++) {
+            MagicStar star = new MagicStar(getContext(), outPosition[0], outPosition[1], 100 * i,
+                    Math.random() > 0.5f ? starFull : starEmpty);
+            rootView.addView(star);
+        }
+    }
+
+    /**
+     * This is an image view that runs a simple animation before detaching itself from the window.
+     */
+    private static class MagicStar extends ImageView {
+        /** The starting position of the star. */
+        private PointF mStartPosition;
+
+        /** The direction of the star. */
+        private PointF mVector;
+
+        /** The velocity of the star. */
+        private float mVelocity;
+
+        /** The speed and direction that the star is rotating. Negative is counter-clockwise. */
+        private float mRotationVelocity;
+
+        /** The animation delay for the star. */
+        private long mStartDelay;
+
+        public MagicStar(
+                Context context, float startX, float startY, long startDelay, Drawable drawable) {
+            super(context);
+
+            mStartPosition = new PointF(startX, startY);
+            mStartDelay = startDelay;
+
+            // Fire stars within 45 degrees of 'up'.
+            float minAngle = (float) Math.toRadians(45.f);
+            float maxAngle = (float) Math.toRadians(135.f);
+            mVector = new PointF((float) Math.cos(getRandomInInterval(minAngle, maxAngle)),
+                    (float) Math.sin(getRandomInInterval(minAngle, maxAngle)));
+
+            mVelocity = getRandomInInterval(10.f, 15.f);
+            mRotationVelocity = getRandomInInterval(-2.f, 2.f);
+
+            setImageDrawable(drawable);
+        }
+
+        /**
+         * Get a random number between min and max.
+         * @param min The minimum value of the float.
+         * @param max The maximum value of the float.
+         * @return A random number between min and max.
+         */
+        private float getRandomInInterval(float min, float max) {
+            return (float) (Math.random() * (max - min)) + min;
+        }
+
+        @Override
+        public void onAttachedToWindow() {
+            super.onAttachedToWindow();
+
+            setAlpha(0.f);
+
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+            setLayoutParams(params);
+
+            setTranslationX(mStartPosition.x);
+            setTranslationY(mStartPosition.y);
+
+            doAnimation();
+        }
+
+        /**
+         * Run the star's animation and detach it from the window when complete.
+         */
+        private void doAnimation() {
+            ValueAnimator animator = ValueAnimator.ofFloat(0.f, 1.f);
+            animator.setDuration(500);
+            animator.setStartDelay(mStartDelay);
+
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    float value = (float) valueAnimator.getAnimatedValue();
+                    setAlpha(1.f - value);
+                    setTranslationX(getTranslationX() - mVector.x * mVelocity);
+                    setTranslationY(getTranslationY() - mVector.y * mVelocity);
+                    setScaleX(0.4f + value);
+                    setScaleY(0.4f + value);
+                    setRotation((getRotation() + mRotationVelocity) % 360);
+                }
+            });
+
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    setAlpha(1.f);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    ((ViewGroup) getParent()).removeView(MagicStar.this);
+                }
+            });
+
+            animator.start();
         }
     }
 }
