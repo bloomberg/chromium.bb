@@ -28,13 +28,6 @@ class AddressNormalizer : public autofill::LoadRulesListener {
     virtual ~Delegate() {}
   };
 
-  // The interface for the normalization request.
-  class Request {
-   public:
-    virtual void OnRulesLoaded(bool success) = 0;
-    virtual ~Request() {}
-  };
-
   // Start loading the validation rules for the specified |region_code|.
   virtual void LoadRulesForRegion(const std::string& region_code) = 0;
 
