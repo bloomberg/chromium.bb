@@ -19,12 +19,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/gpu/v4l2_image_processor.h"
 
-#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str)      \
-  do {                                                               \
-    if (device_->Ioctl(type, arg) != 0) {                            \
-      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << type_str; \
-      return value;                                                  \
-    }                                                                \
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#define VLOGF(level) VLOG(level) << __func__ << "(): "
+#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
+
+#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str) \
+  do {                                                          \
+    if (device_->Ioctl(type, arg) != 0) {                       \
+      VPLOGF(1) << "ioctl() failed: " << type_str;              \
+      return value;                                             \
+    }                                                           \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN(type, arg) \
@@ -33,10 +37,10 @@
 #define IOCTL_OR_ERROR_RETURN_FALSE(type, arg) \
   IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false, #type)
 
-#define IOCTL_OR_LOG_ERROR(type, arg)                             \
-  do {                                                            \
-    if (device_->Ioctl(type, arg) != 0)                           \
-      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+#define IOCTL_OR_LOG_ERROR(type, arg)           \
+  do {                                          \
+    if (device_->Ioctl(type, arg) != 0)         \
+      VPLOGF(1) << "ioctl() failed: " << #type; \
   } while (0)
 
 namespace media {
@@ -85,7 +89,7 @@ V4L2ImageProcessor::~V4L2ImageProcessor() {
 }
 
 void V4L2ImageProcessor::NotifyError() {
-  LOG(ERROR) << __func__;
+  VLOGF(1);
   DCHECK(!child_task_runner_->BelongsToCurrentThread());
   child_task_runner_->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::NotifyErrorOnChildThread,
@@ -108,6 +112,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
                                     gfx::Size output_allocated_size,
                                     int num_buffers,
                                     const base::Closure& error_cb) {
+  VLOGF(2);
   DCHECK(!error_cb.is_null());
   DCHECK_GT(num_buffers, 0);
   DCHECK(input_memory_type == V4L2_MEMORY_USERPTR ||
@@ -124,7 +129,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   num_buffers_ = num_buffers;
 
   if (!input_format_fourcc_ || !output_format_fourcc_) {
-    LOG(ERROR) << "Unrecognized format(s)";
+    VLOGF(1) << "Unrecognized format(s)";
     return false;
   }
 
@@ -136,9 +141,9 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   output_allocated_size_ = output_allocated_size;
 
   if (!device_->Open(V4L2Device::Type::kImageProcessor, input_format_fourcc_)) {
-    LOG(ERROR) << "Failed to open device for input format: "
-               << VideoPixelFormatToString(input_format)
-               << " fourcc: " << std::hex << "0x" << input_format_fourcc_;
+    VLOGF(1) << "Failed to open device for input format: "
+             << VideoPixelFormatToString(input_format)
+             << " fourcc: " << std::hex << "0x" << input_format_fourcc_;
     return false;
   }
 
@@ -148,8 +153,8 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
-               << "caps check failed: 0x" << std::hex << caps.capabilities;
+    VLOGF(1) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
+             << "caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -157,7 +162,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
     return false;
 
   if (!device_thread_.Start()) {
-    LOG(ERROR) << "Initialize(): device thread failed to start";
+    VLOGF(1) << "Initialize(): device thread failed to start";
     return false;
   }
 
@@ -166,7 +171,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
       FROM_HERE,
       base::Bind(&V4L2ImageProcessor::StartDevicePoll, base::Unretained(this)));
 
-  DVLOG(1) << "V4L2ImageProcessor initialized for "
+  VLOGF(2) << "V4L2ImageProcessor initialized for "
            << " input_format:" << VideoPixelFormatToString(input_format)
            << ", output_format:" << VideoPixelFormatToString(output_format)
            << ", input_visible_size: " << input_visible_size.ToString()
@@ -222,7 +227,7 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
                                          uint32_t output_pixelformat,
                                          gfx::Size* size,
                                          size_t* num_planes) {
-  DVLOG(1) << __func__ << ": size=" << size->ToString();
+  VLOGF(2) << "size=" << size->ToString();
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device ||
       !device->Open(V4L2Device::Type::kImageProcessor, input_pixelformat))
@@ -239,7 +244,7 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
 
   *num_planes = format.fmt.pix_mp.num_planes;
   *size = V4L2Device::CodedSizeFromV4L2Format(format);
-  DVLOG(1) << __func__ << ": adjusted output coded size=" << size->ToString()
+  VLOGF(2) << "adjusted output coded size=" << size->ToString()
            << ", num_planes=" << *num_planes;
   return true;
 }
@@ -248,12 +253,12 @@ bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
                                  int output_buffer_index,
                                  std::vector<base::ScopedFD> output_dmabuf_fds,
                                  const FrameReadyCB& cb) {
-  DVLOG(3) << __func__ << ": ts=" << frame->timestamp().InMilliseconds();
+  DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
   size_t expected_num_fds =
       (output_memory_type_ == V4L2_MEMORY_DMABUF ? output_planes_count_ : 0);
   if (expected_num_fds != output_dmabuf_fds.size()) {
-    LOG(ERROR) << __func__ << ": wrong number of output fds. Expected "
-               << expected_num_fds << ", actual " << output_dmabuf_fds.size();
+    VLOGF(1) << "wrong number of output fds. Expected " << expected_num_fds
+             << ", actual " << output_dmabuf_fds.size();
     return false;
   }
 
@@ -271,7 +276,7 @@ bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
 
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   int index = job_record->output_buffer_index;
-  DVLOG(3) << __func__ << ": Reusing output buffer, index=" << index;
+  DVLOGF(4) << "Reusing output buffer, index=" << index;
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(output_buffer_map_[index].dmabuf_fds.empty());
   output_buffer_map_[index].dmabuf_fds =
@@ -283,7 +288,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
 }
 
 bool V4L2ImageProcessor::Reset() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(device_thread_.IsRunning());
 
@@ -295,7 +300,7 @@ bool V4L2ImageProcessor::Reset() {
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
   if (!device_thread_.Start()) {
-    LOG(ERROR) << "Reset(): device thread failed to start";
+    VLOGF(1) << "device thread failed to start";
     return false;
   }
   device_thread_.task_runner()->PostTask(
@@ -305,7 +310,7 @@ bool V4L2ImageProcessor::Reset() {
 }
 
 void V4L2ImageProcessor::Destroy() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   weak_this_factory_.InvalidateWeakPtrs();
@@ -326,7 +331,7 @@ void V4L2ImageProcessor::Destroy() {
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
@@ -377,7 +382,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   selection_arg.target = V4L2_SEL_TGT_CROP;
   selection_arg.r = visible_rect;
   if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) != 0) {
-    DVLOG(2) << "Fallback to VIDIOC_S_CROP for input buffers.";
+    VLOGF(2) << "Fallback to VIDIOC_S_CROP for input buffers.";
     struct v4l2_crop crop;
     memset(&crop, 0, sizeof(crop));
     crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -392,8 +397,8 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   reqbufs.memory = input_memory_type_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
   if (static_cast<int>(reqbufs.count) != num_buffers_) {
-    LOG(ERROR) << "Failed to allocate input buffers. reqbufs.count="
-               << reqbufs.count << ", num_buffers=" << num_buffers_;
+    VLOGF(1) << "Failed to allocate input buffers. reqbufs.count="
+             << reqbufs.count << ", num_buffers=" << num_buffers_;
     return false;
   }
 
@@ -407,7 +412,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 }
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
-  DVLOG(3) << __func__;
+  VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
@@ -440,7 +445,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   selection_arg.target = V4L2_SEL_TGT_COMPOSE;
   selection_arg.r = visible_rect;
   if (device_->Ioctl(VIDIOC_S_SELECTION, &selection_arg) != 0) {
-    DVLOG(2) << "Fallback to VIDIOC_S_CROP for output buffers.";
+    VLOGF(2) << "Fallback to VIDIOC_S_CROP for output buffers.";
     struct v4l2_crop crop;
     memset(&crop, 0, sizeof(crop));
     crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -455,8 +460,8 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   reqbufs.memory = output_memory_type_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
   if (static_cast<int>(reqbufs.count) != num_buffers_) {
-    LOG(ERROR) << "Failed to allocate output buffers. reqbufs.count="
-               << reqbufs.count << ", num_buffers=" << num_buffers_;
+    VLOGF(1) << "Failed to allocate output buffers. reqbufs.count="
+             << reqbufs.count << ", num_buffers=" << num_buffers_;
     return false;
   }
 
@@ -467,6 +472,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 }
 
 void V4L2ImageProcessor::DestroyInputBuffers() {
+  VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
@@ -482,6 +488,7 @@ void V4L2ImageProcessor::DestroyInputBuffers() {
 }
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
+  VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
@@ -496,6 +503,7 @@ void V4L2ImageProcessor::DestroyOutputBuffers() {
 }
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
+  DVLOGF(4);
   DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
 
   bool event_pending;
@@ -512,6 +520,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 }
 
 void V4L2ImageProcessor::ServiceDeviceTask() {
+  DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
@@ -536,15 +545,16 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
       FROM_HERE, base::Bind(&V4L2ImageProcessor::DevicePollTask,
                             base::Unretained(this), poll_device));
 
-  DVLOG(2) << __func__ << ": buffer counts: INPUT[" << input_queue_.size()
-           << "] => DEVICE[" << free_input_buffers_.size() << "+"
-           << input_buffer_queued_count_ << "/" << input_buffer_map_.size()
-           << "->" << output_buffer_map_.size() - output_buffer_queued_count_
-           << "+" << output_buffer_queued_count_ << "/"
-           << output_buffer_map_.size() << "]";
+  DVLOGF(3) << __func__ << ": buffer counts: INPUT[" << input_queue_.size()
+            << "] => DEVICE[" << free_input_buffers_.size() << "+"
+            << input_buffer_queued_count_ << "/" << input_buffer_map_.size()
+            << "->" << output_buffer_map_.size() - output_buffer_queued_count_
+            << "+" << output_buffer_queued_count_ << "/"
+            << output_buffer_map_.size() << "]";
 }
 
 void V4L2ImageProcessor::EnqueueInput() {
+  DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   const int old_inputs_queued = input_buffer_queued_count_;
@@ -569,6 +579,7 @@ void V4L2ImageProcessor::EnqueueInput() {
 }
 
 void V4L2ImageProcessor::EnqueueOutput(int index) {
+  DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   const int old_outputs_queued = output_buffer_queued_count_;
@@ -592,6 +603,7 @@ void V4L2ImageProcessor::EnqueueOutput(int index) {
 }
 
 void V4L2ImageProcessor::Dequeue() {
+  DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
@@ -611,7 +623,7 @@ void V4L2ImageProcessor::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+      VPLOGF(1) << "ioctl() failed: VIDIOC_DQBUF";
       NotifyError();
       return;
     }
@@ -638,7 +650,7 @@ void V4L2ImageProcessor::Dequeue() {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
       }
-      PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
+      VPLOGF(1) << "ioctl() failed: VIDIOC_DQBUF";
       NotifyError();
       return;
     }
@@ -653,7 +665,7 @@ void V4L2ImageProcessor::Dequeue() {
     linked_ptr<JobRecord> job_record = running_jobs_.front();
     running_jobs_.pop();
 
-    DVLOG(3) << "Processing finished, returning frame, index=" << dqbuf.index;
+    DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
 
     child_task_runner_->PostTask(
         FROM_HERE, base::Bind(&V4L2ImageProcessor::FrameReady, weak_this_,
@@ -662,6 +674,7 @@ void V4L2ImageProcessor::Dequeue() {
 }
 
 bool V4L2ImageProcessor::EnqueueInputRecord() {
+  DVLOGF(4);
   DCHECK(!input_queue_.empty());
   DCHECK(!free_input_buffers_.empty());
 
@@ -700,13 +713,14 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   free_input_buffers_.pop_back();
   input_buffer_queued_count_++;
 
-  DVLOG(3) << __func__ << ": enqueued frame ts="
-           << job_record->frame->timestamp().InMilliseconds() << " to device.";
+  DVLOGF(4) << "enqueued frame ts="
+            << job_record->frame->timestamp().InMilliseconds() << " to device.";
 
   return true;
 }
 
 bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
+  DVLOGF(4);
   DCHECK_GE(index, 0);
   DCHECK_LT(static_cast<size_t>(index), output_buffer_map_.size());
   // Enqueue an output (VIDEO_CAPTURE) buffer.
@@ -732,13 +746,13 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
 }
 
 void V4L2ImageProcessor::StartDevicePoll() {
-  DVLOG(3) << __func__ << ": starting device poll";
+  DVLOGF(3) << "starting device poll";
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!device_poll_thread_.IsRunning());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
-    LOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
+    VLOGF(1) << "StartDevicePoll(): Device thread failed to start";
     NotifyError();
     return;
   }
@@ -750,7 +764,7 @@ void V4L2ImageProcessor::StartDevicePoll() {
 }
 
 void V4L2ImageProcessor::StopDevicePoll() {
-  DVLOG(3) << __func__ << ": stopping device poll";
+  DVLOGF(3) << "stopping device poll";
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
