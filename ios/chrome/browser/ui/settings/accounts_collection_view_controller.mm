@@ -507,8 +507,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   __weak AccountsCollectionViewController* weakSelf = self;
   [_signinInteractionController addAccountWithCompletion:^(BOOL success) {
     [weakSelf handleDidAddAccount:success];
-  }
-                                          viewController:self];
+  }];
 }
 
 - (void)handleDidAddAccount:(BOOL)success {

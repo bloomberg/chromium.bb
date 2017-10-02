@@ -999,12 +999,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                     dispatcher:self.dispatcher];
 
   __weak SettingsCollectionViewController* weakSelf = self;
-  [_signinInteractionController
-      signInWithViewController:self
-                      identity:identity
-                    completion:^(BOOL success) {
-                      [weakSelf didFinishSignin:success];
-                    }];
+  [_signinInteractionController signInWithIdentity:identity
+                                        completion:^(BOOL success) {
+                                          [weakSelf didFinishSignin:success];
+                                        }];
 }
 
 - (void)didFinishSignin:(BOOL)signedIn {
