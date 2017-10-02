@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 5: console.trace
 Tests that when console.trace is called in eval'ed script ending with //# sourceURL=url it will dump a stack trace that will have the url as the script source. Bug 47252.
 
 evalURL.js:5 console.trace
@@ -6,8 +5,8 @@ b @ evalURL.js:5
 a @ evalURL.js:10
 evalSource @ evalURL.js:13
 (anonymous) @ evalURL.js:14
-(anonymous) @ console-trace-in-eval.html:26
+(anonymous) @ console-trace-in-eval.js:29
 setTimeout (async)
-doEvalSource @ console-trace-in-eval.html:25
-(anonymous) @ VM:1
+doEvalSource @ console-trace-in-eval.js:28
+(anonymous) @ console-trace-in-eval.js:39
 

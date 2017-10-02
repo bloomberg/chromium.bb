@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 1: Uncaught (in promise) Error: Handled error
 Tests that console revokes lazily handled promise rejections.
 
 Creating worker with promise

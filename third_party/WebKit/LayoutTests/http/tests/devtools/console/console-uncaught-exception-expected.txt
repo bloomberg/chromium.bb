@@ -1,8 +1,4 @@
-CONSOLE ERROR: line 18: Uncaught Error: Exception in inline script.
-CONSOLE ERROR: line 11: Uncaught Error: Exception in 'load' event listener.
-CONSOLE ERROR: line 6: Uncaught Error: Exception in setTimeout callback.
 Tests that uncaught exceptions are logged into console.Bug 47250.
-
 
 uncaught-in-iframe.html:18 Uncaught Error: Exception in inline script.
     at a (uncaught-in-iframe.html:18)

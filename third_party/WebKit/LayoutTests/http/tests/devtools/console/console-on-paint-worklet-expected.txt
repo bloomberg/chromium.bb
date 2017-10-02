@@ -1,9 +1,3 @@
-CONSOLE MESSAGE: line 1: Information
-CONSOLE MESSAGE: line 2: Log
-CONSOLE WARNING: line 3: Warning
-CONSOLE MESSAGE: line 1: Information
-CONSOLE MESSAGE: line 2: Log
-CONSOLE WARNING: line 3: Warning
 Tests console output from PaintWorklet.
 
 Message count: 3

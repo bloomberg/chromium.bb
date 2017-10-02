@@ -1,0 +1,34 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that uncaught exceptions are logged into console.Bug 47250.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that uncaught exceptions are logged into console.<a href="https://bugs.webkit.org/show_bug.cgi?id=47250">Bug 47250.</a>
+      </p>
+  `);
+  await TestRunner.evaluateInPagePromise(`
+      function loadIframe()
+      {
+          var iframe = document.createElement("iframe");
+          iframe.src = relativeToTest("resources/uncaught-in-iframe.html");
+          document.body.appendChild(iframe);
+      }
+  `);
+
+  ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
+  TestRunner.evaluateInPage('loadIframe()');
+  function addMessage(viewMessage) {
+    if (viewMessage.element().deepTextContent().indexOf('setTimeout') !== -1)
+      ConsoleTestRunner.expandConsoleMessages(onExpanded);
+  }
+
+  function onExpanded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();
