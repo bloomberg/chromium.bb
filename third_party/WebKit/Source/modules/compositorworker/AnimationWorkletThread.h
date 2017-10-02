@@ -34,14 +34,13 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
 
   static void CreateSharedBackingThreadForTest();
 
- protected:
+ private:
+  AnimationWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
+
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) final;
 
   bool IsOwningBackingThread() const override { return false; }
-
- private:
-  AnimationWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 };
 
 }  // namespace blink

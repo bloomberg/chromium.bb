@@ -57,13 +57,12 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   }
   void ClearWorkerBackingThread() override;
 
- protected:
+ private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 
   InstalledScriptsManager* GetInstalledScriptsManager() override;
 
- private:
   Persistent<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
