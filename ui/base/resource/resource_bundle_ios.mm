@@ -161,8 +161,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
       return GetEmptyImage();
     }
 
-    // The gfx::Image takes ownership.
-    image = gfx::Image(ui_image, base::scoped_policy::RETAIN);
+    image = gfx::Image(ui_image);
   }
 
   DCHECK(sequence_checker_.CalledOnValidSequence());

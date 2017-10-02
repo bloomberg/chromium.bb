@@ -93,10 +93,7 @@ void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
     // "Most likely" always returns 1x images.
     UIImage* ui_image = [UIImage imageWithData:image_data scale:1];
     if (ui_image) {
-      // This constructor does not retain the image, but expects to take the
-      // ownership, therefore, |ui_image| is retained here, but not released
-      // afterwards.
-      gfx::Image gfx_image(ui_image, base::scoped_policy::RETAIN);
+      gfx::Image gfx_image(ui_image);
       callback.Run(gfx_image);
       return;
     }

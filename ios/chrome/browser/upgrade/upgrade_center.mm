@@ -93,8 +93,7 @@ class UpgradeInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   gfx::Image GetIcon() const override {
     if (icon_.IsEmpty()) {
-      icon_ = gfx::Image([UIImage imageNamed:@"infobar_update"],
-                         base::scoped_policy::RETAIN);
+      icon_ = gfx::Image([UIImage imageNamed:@"infobar_update"]);
     }
     return icon_;
   }
