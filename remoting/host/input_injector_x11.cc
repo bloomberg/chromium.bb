@@ -21,6 +21,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "build/build_config.h"
@@ -126,7 +127,8 @@ class InputInjectorX11 : public InputInjector {
     bool IsLockKey(KeyCode keycode);
 
     // Sets the keyboard lock states to those provided.
-    void SetLockStates(uint32_t states);
+    void SetLockStates(base::Optional<bool> caps_lock,
+                       base::Optional<bool> num_lock);
 
     void InjectScrollWheelClicks(int button, int count);
     // Compensates for global button mappings and resets the XTest device
@@ -283,8 +285,27 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
       XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
     }
 
-    if (event.has_lock_states() && !IsLockKey(keycode)) {
-      SetLockStates(event.lock_states());
+    if (!IsLockKey(keycode)) {
+      base::Optional<bool> caps_lock;
+      base::Optional<bool> num_lock;
+
+      // For caps lock, check both the new caps_lock field and the old
+      // lock_states field.
+      if (event.has_caps_lock_state()) {
+        caps_lock = event.caps_lock_state();
+      } else if (event.has_lock_states()) {
+        caps_lock = (event.lock_states() &
+                     protocol::KeyEvent::LOCK_STATES_CAPSLOCK) != 0;
+      }
+
+      // Not all clients have a concept of num lock. Since there's no way to
+      // distinguish these clients using the legacy lock_states field, only
+      // update if the new num_lock field is specified.
+      if (event.has_num_lock_state()) {
+        num_lock = event.num_lock_state();
+      }
+
+      SetLockStates(caps_lock, num_lock);
     }
 
     if (pressed_keys_.empty()) {
@@ -370,15 +391,32 @@ bool InputInjectorX11::Core::IsLockKey(KeyCode keycode) {
   }
 }
 
-void InputInjectorX11::Core::SetLockStates(uint32_t states) {
-  // TODO(jamiewalch): Reinstate NumLock synchronization when the protocol
-  //     supports the client reporting it as "unknown".
+void InputInjectorX11::Core::SetLockStates(base::Optional<bool> caps_lock,
+                                           base::Optional<bool> num_lock) {
+  // The lock bits associated with each lock key.
   unsigned int caps_lock_mask = XkbKeysymToModifiers(display_, XK_Caps_Lock);
-  unsigned int lock_values = 0;
-  if (states & protocol::KeyEvent::LOCK_STATES_CAPSLOCK) {
-    lock_values |= caps_lock_mask;
+  unsigned int num_lock_mask = XkbKeysymToModifiers(display_, XK_Num_Lock);
+
+  unsigned int update_mask = 0;  // The lock bits we want to update
+  unsigned int lock_values = 0;  // The value of those bits
+
+  if (caps_lock) {
+    update_mask |= caps_lock_mask;
+    if (*caps_lock) {
+      lock_values |= caps_lock_mask;
+    }
   }
-  XkbLockModifiers(display_, XkbUseCoreKbd, caps_lock_mask, lock_values);
+
+  if (num_lock) {
+    update_mask |= num_lock_mask;
+    if (*num_lock) {
+      lock_values |= num_lock_mask;
+    }
+  }
+
+  if (update_mask) {
+    XkbLockModifiers(display_, XkbUseCoreKbd, update_mask, lock_values);
+  }
 }
 
 void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {

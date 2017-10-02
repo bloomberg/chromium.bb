@@ -233,8 +233,11 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   // In addition to the modifier keys pressed right now, we also need to set
   // AlphaShift if caps lock was active at the client (Mac ignores NumLock).
   uint64_t flags = left_modifiers_ | right_modifiers_;
-  if (event.lock_states() & protocol::KeyEvent::LOCK_STATES_CAPSLOCK)
+  if ((event.has_caps_lock_state() && event.caps_lock_state()) ||
+      (event.has_lock_states() &&
+       (event.lock_states() & protocol::KeyEvent::LOCK_STATES_CAPSLOCK) != 0)) {
     flags |= kCGEventFlagMaskAlphaShift;
+  }
 
   CreateAndPostKeyEvent(keycode, event.pressed(), flags, base::string16());
 }

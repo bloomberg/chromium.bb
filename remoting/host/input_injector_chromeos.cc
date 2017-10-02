@@ -45,9 +45,8 @@ ui::EventFlags MouseButtonToUIFlags(MouseEvent::MouseButton button) {
   }
 }
 
-bool shouldSetLockStates(ui::DomCode dom_code, bool key_pressed) {
-  if (!key_pressed)
-    return false;
+// Check if the given key could be mapped to caps lock
+bool IsLockKey(ui::DomCode dom_code) {
   switch (dom_code) {
     // Ignores all the keys that could possibly be mapped to Caps Lock in event
     // rewriter. Please refer to ui::EventRewriterChromeOS::RewriteModifierKeys.
@@ -61,10 +60,17 @@ bool shouldSetLockStates(ui::DomCode dom_code, bool key_pressed) {
     case ui::DomCode::ALT_RIGHT:
     case ui::DomCode::ESCAPE:
     case ui::DomCode::BACKSPACE:
-      return false;
-    default:
       return true;
+    default:
+      return false;
   }
+}
+
+// If caps_lock is specified, sets local keyboard state to match.
+void SetCapsLockState(bool caps_lock) {
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  ime->GetImeKeyboard()->SetCapsLockEnabled(caps_lock);
 }
 
 }  // namespace
@@ -82,7 +88,6 @@ class InputInjectorChromeos::Core {
   void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
-  // Sets the caps lock state to match states
   void SetLockStates(uint32_t states);
 
   std::unique_ptr<ui::SystemInputInjector> delegate_;
@@ -115,9 +120,13 @@ void InputInjectorChromeos::Core::InjectKeyEvent(const KeyEvent& event) {
   ui::DomCode dom_code =
       ui::KeycodeConverter::UsbKeycodeToDomCode(event.usb_keycode());
 
-  if (event.has_lock_states() &&
-      shouldSetLockStates(dom_code, event.pressed())) {
-    SetLockStates(event.lock_states());
+  if (event.pressed() && !IsLockKey(dom_code)) {
+    if (event.has_caps_lock_state()) {
+      SetCapsLockState(event.caps_lock_state());
+    } else if (event.has_lock_states()) {
+      SetCapsLockState((event.lock_states() &
+                        protocol::KeyEvent::LOCK_STATES_CAPSLOCK) != 0);
+    }
   }
 
   // Ignore events which can't be mapped.
@@ -156,13 +165,6 @@ void InputInjectorChromeos::Core::Start(
   clipboard_ = Clipboard::Create();
   clipboard_->Start(std::move(client_clipboard));
   point_transformer_.reset(new PointTransformer());
-}
-
-void InputInjectorChromeos::Core::SetLockStates(uint32_t states) {
-  chromeos::input_method::InputMethodManager* ime =
-      chromeos::input_method::InputMethodManager::Get();
-  ime->GetImeKeyboard()->SetCapsLockEnabled(
-      states & protocol::KeyEvent::LOCK_STATES_CAPSLOCK);
 }
 
 InputInjectorChromeos::InputInjectorChromeos(

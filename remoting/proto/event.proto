@@ -27,8 +27,14 @@ message KeyEvent {
   // The lower 16-bits are the USB Usage ID (which identifies the actual key).
   optional uint32 usb_keycode = 3;
 
-  // The keyboard lock states.
+  // Legacy keyboard lock states. Prefer the discrete entries below.
   optional uint32 lock_states = 4 [default = 0];
+
+  // Keyboard lock states. The field should be specified only if the state can
+  // be reliably determined by the client. E.g., OS X does not have num lock, so
+  // only caps_lock should be provided by a client running on OS X.
+  optional bool caps_lock_state = 5;
+  optional bool num_lock_state = 6;
 }
 
 // Text input event for input method different from physical keyboards,

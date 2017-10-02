@@ -70,17 +70,25 @@ protocol::TouchEvent MakeTouchEvent(const pp::TouchInputEvent& pp_touch_event) {
 }
 
 // Builds the Chromotocol lock states flags for the PPAPI |event|.
-uint32_t MakeLockStates(const pp::InputEvent& event) {
-  uint32_t modifiers = event.GetModifiers();
+void SetLockStates(protocol::KeyEvent* key_event,
+                   const pp::InputEvent& pp_key_event) {
+  uint32_t modifiers = pp_key_event.GetModifiers();
+  bool caps_lock = (modifiers & PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY) != 0;
+  bool num_lock = (modifiers & PP_INPUTEVENT_MODIFIER_NUMLOCKKEY) != 0;
+
+  // Set the new discrete lock state fields
+  key_event->set_caps_lock_state(caps_lock);
+  key_event->set_num_lock_state(num_lock);
+
+  // Also set the legacy lock_states field to support older hosts.
   uint32_t lock_states = 0;
-
-  if (modifiers & PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY)
+  if (caps_lock) {
     lock_states |= protocol::KeyEvent::LOCK_STATES_CAPSLOCK;
-
-  if (modifiers & PP_INPUTEVENT_MODIFIER_NUMLOCKKEY)
+  }
+  if (num_lock) {
     lock_states |= protocol::KeyEvent::LOCK_STATES_NUMLOCK;
-
-  return lock_states;
+  }
+  key_event->set_lock_states(lock_states);
 }
 
 // Builds a protocol::KeyEvent from the supplied PPAPI event.
@@ -100,7 +108,7 @@ protocol::KeyEvent MakeKeyEvent(const pp::KeyboardInputEvent& pp_key_event) {
   key_event.set_usb_keycode(
       ui::KeycodeConverter::CodeStringToUsbKeycode(dom_code));
   key_event.set_pressed(pp_key_event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
-  key_event.set_lock_states(MakeLockStates(pp_key_event));
+  SetLockStates(&key_event, pp_key_event);
   return key_event;
 }
 
