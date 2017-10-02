@@ -16,7 +16,6 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget_observer.h"
 
 class AppMenu;
 class AppMenuModel;
@@ -31,9 +30,7 @@ class ToolbarView;
 // The app menu button lives in the top right of the main browser window. It
 // shows three dots and animates to a hamburger-ish icon when there's a need to
 // alert the user. Clicking displays the app menu.
-class AppMenuButton : public views::MenuButton,
-                      public TabStripModelObserver,
-                      public views::WidgetObserver {
+class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
  public:
   explicit AppMenuButton(ToolbarView* toolbar_view);
   ~AppMenuButton() override;
@@ -83,10 +80,6 @@ class AppMenuButton : public views::MenuButton,
   // level is none, |animation_| is nullptr or |should_use_new_icon_| is false.
   void AnimateIconIfPossible();
 
-  // Shows the IncognitoWindowPromo when the
-  // IncognitoWindowFeatureEngagementTracker calls for it.
-  void ShowPromo();
-
   // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
   static bool g_open_app_immediately_for_testing;
@@ -106,9 +99,6 @@ class AppMenuButton : public views::MenuButton,
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
-
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
 
   AppMenuIconController::Severity severity_ =
       AppMenuIconController::Severity::NONE;
@@ -137,11 +127,6 @@ class AppMenuButton : public views::MenuButton,
   // Any trailing margin to be applied. Used when the browser is in
   // a maximized state to extend to the full window width.
   int margin_trailing_ = 0;
-
-  // Observes the IncognitoWindowPromo's Widget.  Used to tell whether the promo
-  // is open and get called back when it closes.
-  ScopedObserver<views::Widget, WidgetObserver>
-      incognito_window_promo_observer_{this};
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<AppMenuButton> weak_factory_{this};

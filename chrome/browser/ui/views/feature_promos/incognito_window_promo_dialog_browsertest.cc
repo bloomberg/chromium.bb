@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker.h"
+#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+
+namespace feature_engagement {
+
+namespace {
 
 class IncognitoWindowPromoDialogTest : public DialogBrowserTest {
  public:
@@ -13,14 +17,16 @@ class IncognitoWindowPromoDialogTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(browser());
-    browser_view->toolbar()->app_menu_button()->ShowPromo();
+    feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
+        ->GetForProfile(browser()->profile())
+        ->ShowPromo();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IncognitoWindowPromoDialogTest);
 };
+
+}  // namespace
 
 // Test that calls ShowDialog("default"). Interactive when run via
 // ../browser_tests --gtest_filter=BrowserDialogTest.Invoke
@@ -30,3 +36,5 @@ IN_PROC_BROWSER_TEST_F(IncognitoWindowPromoDialogTest,
                        InvokeDialog_IncognitoWindowPromo) {
   RunDialog();
 }
+
+}  // namespace feature_engagement
