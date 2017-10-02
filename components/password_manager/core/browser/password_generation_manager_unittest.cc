@@ -235,13 +235,13 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   // NEW_PASSWORD = 88
   // CONFIRMATION_PASSWORD = 95
   autofill::AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(9);
-  response.add_field()->set_autofill_type(75);
-  response.add_field()->set_autofill_type(9);
-  response.add_field()->set_autofill_type(76);
-  response.add_field()->set_autofill_type(75);
-  response.add_field()->set_autofill_type(88);
-  response.add_field()->set_autofill_type(95);
+  response.add_field()->set_overall_type_prediction(9);
+  response.add_field()->set_overall_type_prediction(75);
+  response.add_field()->set_overall_type_prediction(9);
+  response.add_field()->set_overall_type_prediction(76);
+  response.add_field()->set_overall_type_prediction(75);
+  response.add_field()->set_overall_type_prediction(88);
+  response.add_field()->set_overall_type_prediction(95);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
