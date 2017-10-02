@@ -133,15 +133,46 @@ VoiceError LoggingEventToVoiceError(NTPLoggingEventType event) {
 }
 
 // This enum must match the numbering for NewTabPageLogoShown in enums.xml.
-// Do not reorder or remove items, only add new items before LOGO_TYPE_MAX.
-enum LogoType {
+// Do not reorder or remove items, and only add new items before
+// LOGO_IMPRESSION_TYPE_MAX.
+enum LogoImpressionType {
   // Static Doodle image.
-  LOGO_TYPE_STATIC = 0,
+  LOGO_IMPRESSION_TYPE_STATIC = 0,
   // Call-to-action Doodle image.
-  LOGO_TYPE_CTA = 1,
+  LOGO_IMPRESSION_TYPE_CTA = 1,
 
-  LOGO_TYPE_MAX
+  LOGO_IMPRESSION_TYPE_MAX
 };
+
+// This enum must match the numbering for NewTabPageLogoClick in enums.xml.
+// Do not reorder or remove items, and only add new items before
+// LOGO_CLICK_TYPE_MAX.
+enum LogoClickType {
+  // Static Doodle image.
+  LOGO_CLICK_TYPE_STATIC = 0,
+  // Call-to-action Doodle image.
+  LOGO_CLICK_TYPE_CTA = 1,
+  // Animated Doodle image.
+  LOGO_CLICK_TYPE_ANIMATED = 2,
+
+  LOGO_CLICK_TYPE_MAX
+};
+
+// Converts |NTPLoggingEventType| to a |LogoClickType|, if the value
+// is an error value. Otherwise, |LOGO_CLICK_TYPE_MAX| is returned.
+LogoClickType LoggingEventToLogoClick(NTPLoggingEventType event) {
+  switch (event) {
+    case NTP_STATIC_LOGO_CLICKED:
+      return LOGO_CLICK_TYPE_STATIC;
+    case NTP_CTA_LOGO_CLICKED:
+      return LOGO_CLICK_TYPE_CTA;
+    case NTP_ANIMATED_LOGO_CLICKED:
+      return LOGO_CLICK_TYPE_ANIMATED;
+    default:
+      NOTREACHED();
+      return LOGO_CLICK_TYPE_MAX;
+  }
+}
 
 }  // namespace
 
@@ -222,16 +253,23 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                 VOICE_ERROR_MAX);
       break;
     case NTP_STATIC_LOGO_SHOWN_FROM_CACHE:
-      RecordDoodleEvent(time, /*is_cta=*/false, /*from_cache=*/true);
+      RecordDoodleImpression(time, /*is_cta=*/false, /*from_cache=*/true);
       break;
     case NTP_STATIC_LOGO_SHOWN_FRESH:
-      RecordDoodleEvent(time, /*is_cta=*/false, /*from_cache=*/false);
+      RecordDoodleImpression(time, /*is_cta=*/false, /*from_cache=*/false);
       break;
     case NTP_CTA_LOGO_SHOWN_FROM_CACHE:
-      RecordDoodleEvent(time, /*is_cta=*/true, /*from_cache=*/true);
+      RecordDoodleImpression(time, /*is_cta=*/true, /*from_cache=*/true);
       break;
     case NTP_CTA_LOGO_SHOWN_FRESH:
-      RecordDoodleEvent(time, /*is_cta=*/true, /*from_cache=*/false);
+      RecordDoodleImpression(time, /*is_cta=*/true, /*from_cache=*/false);
+      break;
+    case NTP_STATIC_LOGO_CLICKED:
+    case NTP_CTA_LOGO_CLICKED:
+    case NTP_ANIMATED_LOGO_CLICKED:
+      UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoClick",
+                                LoggingEventToLogoClick(event),
+                                LOGO_CLICK_TYPE_MAX);
       break;
   }
 }
@@ -389,17 +427,19 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   during_startup_ = false;
 }
 
-void NTPUserDataLogger::RecordDoodleEvent(base::TimeDelta time,
-                                          bool is_cta,
-                                          bool from_cache) {
-  LogoType logo_type = is_cta ? LOGO_TYPE_CTA : LOGO_TYPE_STATIC;
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown", logo_type, LOGO_TYPE_MAX);
+void NTPUserDataLogger::RecordDoodleImpression(base::TimeDelta time,
+                                               bool is_cta,
+                                               bool from_cache) {
+  LogoImpressionType logo_type =
+      is_cta ? LOGO_IMPRESSION_TYPE_CTA : LOGO_IMPRESSION_TYPE_STATIC;
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown", logo_type,
+                            LOGO_IMPRESSION_TYPE_MAX);
   if (from_cache) {
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown.FromCache", logo_type,
-                              LOGO_TYPE_MAX);
+                              LOGO_IMPRESSION_TYPE_MAX);
   } else {
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.LogoShown.Fresh", logo_type,
-                              LOGO_TYPE_MAX);
+                              LOGO_IMPRESSION_TYPE_MAX);
   }
 
   if (should_record_doodle_load_time_) {
