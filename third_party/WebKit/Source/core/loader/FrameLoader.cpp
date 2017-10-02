@@ -381,17 +381,14 @@ void FrameLoader::DidExplicitOpen() {
 void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     const String& source,
     Document* owner_document) {
-  DocumentLoader* document_loader = frame_->GetDocument()->Loader();
-
-  if (!document_loader ||
-      frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
-          Document::kNoDismissal)
+  Document* document = frame_->GetDocument();
+  if (!document_loader_ ||
+      document->PageDismissalEventBeingDispatched() != Document::kNoDismissal)
     return;
 
-  UseCounter::Count(*frame_->GetDocument(),
-                    WebFeature::kReplaceDocumentViaJavaScriptURL);
+  UseCounter::Count(*document, WebFeature::kReplaceDocumentViaJavaScriptURL);
 
-  const KURL& url = frame_->GetDocument()->Url();
+  const KURL& url = document->Url();
 
   // Compute this before clearing the frame, because it may need to inherit an
   // aliased security context.
@@ -401,17 +398,17 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   // Don't allow any new child frames to load in this frame: attaching a new
   // child frame during or after detaching children results in an attached
   // frame on a detached DOM tree, which is bad.
-  SubframeLoadingDisabler disabler(frame_->GetDocument());
+  SubframeLoadingDisabler disabler(document);
   frame_->DetachChildren();
-  frame_->GetDocument()->Shutdown();
 
-  // detachChildren() potentially detaches the frame from the document. The
-  // loading cannot continue in that case.
-  if (!frame_->GetPage())
+  // detachChildren() potentially detaches or navigates this frame. The load
+  // cannot continue in those cases.
+  if (!frame_->IsAttached() || document != frame_->GetDocument())
     return;
 
+  frame_->GetDocument()->Shutdown();
   Client()->TransitionToCommittedForNewPage();
-  document_loader->ReplaceDocumentWhileExecutingJavaScriptURL(
+  document_loader_->ReplaceDocumentWhileExecutingJavaScriptURL(
       url, owner_document, should_reuse_default_view, source);
 }
 
