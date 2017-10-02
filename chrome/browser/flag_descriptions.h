@@ -1028,6 +1028,9 @@ extern const char kContextualSearchDescription[];
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 
+extern const char kDownloadsForegroundName[];
+extern const char kDownloadsForegroundDescription[];
+
 extern const char kEnableAndroidPayIntegrationV1Name[];
 extern const char kEnableAndroidPayIntegrationV1Description[];
 
