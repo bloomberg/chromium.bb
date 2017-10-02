@@ -660,6 +660,24 @@
             ]
         }
     ],
+    "ChromeHomePromo": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Default"
+                },
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeHomePromo"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClearOldOnDemandFavicons": [
         {
             "platforms": [
