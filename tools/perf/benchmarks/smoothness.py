@@ -182,6 +182,9 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
         self.DisableStory('https://mail.google.com/mail/',
                           [story_module.expectations.ALL_WIN],
                           'crbug.com/750131')
+        self.DisableStory('https://mail.google.com/mail/',
+                          [story_module.expectations.ALL_MAC],
+                          'crbug.com/770904')
     return StoryExpectations()
 
 
