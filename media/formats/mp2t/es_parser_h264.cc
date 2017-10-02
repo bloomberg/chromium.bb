@@ -511,6 +511,12 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
       coded_size.value(), visible_rect.value(), natural_size, EmptyExtraData(),
       scheme);
 
+  if (!video_decoder_config.IsValidConfig()) {
+    DVLOG(1) << "Invalid video config: "
+             << video_decoder_config.AsHumanReadableString();
+    return false;
+  }
+
   if (!video_decoder_config.Matches(last_video_decoder_config_)) {
     DVLOG(1) << "Profile IDC: " << sps->profile_idc;
     DVLOG(1) << "Level IDC: " << sps->level_idc;
