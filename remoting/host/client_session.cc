@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -242,9 +243,17 @@ void ClientSession::OnConnectionAuthenticated() {
   // Notify EventHandler.
   event_handler_->OnSessionAuthenticated(this);
 
+  const HostSessionOptions host_session_options(
+      host_experiment_session_plugin_.configuration());
+
+  base::Optional<std::string> video_codec =
+      host_session_options.Get("Video-Codec");
+  if (video_codec) {
+    connection_->SetPreferredVideoCodec(*video_codec);
+  }
+
   DesktopEnvironmentOptions options = desktop_environment_options_;
-  options.ApplyHostSessionOptions(HostSessionOptions(
-      host_experiment_session_plugin_.configuration()));
+  options.ApplyHostSessionOptions(host_session_options);
   // Create the desktop environment. Drop the connection if it could not be
   // created for any reason (for instance the curtain could not initialize).
   desktop_environment_ =

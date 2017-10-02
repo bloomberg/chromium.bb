@@ -4,6 +4,10 @@
 
 #include "remoting/protocol/sdp_message.h"
 
+#include <algorithm>
+
+#include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
@@ -11,8 +15,8 @@ namespace remoting {
 namespace protocol {
 
 SdpMessage::SdpMessage(const std::string& sdp) {
-  sdp_lines_ =
-      SplitString(sdp, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  sdp_lines_ = base::SplitString(
+      sdp, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const auto& line : sdp_lines_) {
     if (base::StartsWith(line, "m=audio", base::CompareCase::SENSITIVE))
       has_audio_ = true;
@@ -40,6 +44,52 @@ bool SdpMessage::AddCodecParameter(const std::string& codec,
   return true;
 }
 
+bool SdpMessage::PreferVideoCodec(const std::string& codec) {
+  if (!has_video_) {
+    return false;
+  }
+  std::string payload_type;
+  if (!FindCodec(codec, nullptr, &payload_type)) {
+    return false;
+  }
+
+  for (size_t i = 0; i < sdp_lines_.size(); i++) {
+    if (!base::StartsWith(sdp_lines_[i],
+                          "m=video",
+                          base::CompareCase::SENSITIVE)) {
+      continue;
+    }
+
+    // A valid SDP contains only one "m=video" line. So instead of continue, if
+    // this line is invalid, we should return false immediately.
+    std::vector<base::StringPiece> fields = base::SplitStringPiece(
+        sdp_lines_[i], " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    // The first three fields are "m=video", port and proto.
+    static constexpr int kSkipFields = 3;
+    if (fields.size() <= kSkipFields) {
+      return false;
+    }
+
+    const auto first_codec_pos = fields.begin() + kSkipFields;
+    auto pos = std::find(first_codec_pos,
+                         fields.end(),
+                         base::StringPiece(payload_type));
+    // The codec has not been found in codec list.
+    if (pos == fields.end()) {
+      return false;
+    }
+
+    std::rotate(first_codec_pos, pos, pos + 1);
+    sdp_lines_[i] = base::JoinString(fields, " ");
+    return true;
+  }
+
+  // If has_video_ is true (tested at the very beginning of the function), we
+  // should always return within the for-loop above.
+  NOTREACHED();
+  return false;
+}
+
 bool SdpMessage::FindCodec(const std::string& codec,
                            int* line_num,
                            std::string* payload_type) const {
@@ -53,9 +103,13 @@ bool SdpMessage::FindCodec(const std::string& codec,
       continue;
     if (line.substr(space_pos + 1, codec.size()) == codec &&
         line[space_pos + 1 + codec.size()] == '/') {
-      *line_num = i;
-      *payload_type =
-          line.substr(kRtpMapPrefix.size(), space_pos - kRtpMapPrefix.size());
+      if (line_num) {
+        *line_num = i;
+      }
+      if (payload_type) {
+        *payload_type =
+            line.substr(kRtpMapPrefix.size(), space_pos - kRtpMapPrefix.size());
+      }
       return true;
     }
   }

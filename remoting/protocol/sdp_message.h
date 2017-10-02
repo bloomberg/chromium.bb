@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-
 namespace remoting {
 namespace protocol {
 
@@ -38,6 +36,10 @@ class SdpMessage {
   bool AddCodecParameter(const std::string& codec,
                          const std::string& parameters_to_add);
 
+  // Prefers |codec| in current session description. Returns false if |codec| is
+  // not found.
+  bool PreferVideoCodec(const std::string& codec);
+
  private:
   // Finds the line of the form "a=rtpmap:<payload_type> <codec>/.." with the
   // specified |codec|. Sets |line_num| to line number and |payload_type| to the
@@ -50,8 +52,6 @@ class SdpMessage {
 
   bool has_audio_ = false;
   bool has_video_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SdpMessage);
 };
 
 }  // namespace protocol

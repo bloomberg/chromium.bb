@@ -483,6 +483,9 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
 
   SdpMessage sdp_message(description_sdp);
   UpdateCodecParameters(&sdp_message, /*incoming=*/false);
+  if (!preferred_video_codec_.empty()) {
+    sdp_message.PreferVideoCodec(preferred_video_codec_);
+  }
   description_sdp = sdp_message.ToString();
   webrtc::SdpParseError parse_error;
   description.reset(webrtc::CreateSessionDescription(
@@ -726,6 +729,10 @@ void WebrtcTransport::Close(ErrorCode error) {
 
   if (error != OK)
     event_handler_->OnWebrtcTransportError(error);
+}
+
+void WebrtcTransport::SetPreferredVideoCodec(const std::string& codec) {
+  preferred_video_codec_ = codec;
 }
 
 }  // namespace protocol

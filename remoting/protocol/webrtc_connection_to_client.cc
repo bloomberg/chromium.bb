@@ -122,6 +122,12 @@ void WebrtcConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
   event_dispatcher_->set_input_stub(input_stub);
 }
 
+void WebrtcConnectionToClient::SetPreferredVideoCodec(
+    const std::string& codec) {
+  DCHECK(transport_);
+  transport_->SetPreferredVideoCodec(codec);
+}
+
 void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
