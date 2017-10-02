@@ -27,6 +27,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "base/guid.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
@@ -46,7 +47,7 @@ MediaInterfaceProxy::MediaInterfaceProxy(
 
   binding_.set_connection_error_handler(error_handler);
 
-  // |interface_factory_ptr_| and |cdm_interface_factory_ptr_| will be lazily
+  // |interface_factory_ptr_| and |cdm_interface_factory_map_| will be lazily
   // connected in GetMediaInterfaceFactory() and GetCdmInterfaceFactory().
 }
 
@@ -58,7 +59,7 @@ MediaInterfaceProxy::~MediaInterfaceProxy() {
 void MediaInterfaceProxy::CreateAudioDecoder(
     media::mojom::AudioDecoderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media::mojom::InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
     factory->CreateAudioDecoder(std::move(request));
 }
@@ -66,7 +67,7 @@ void MediaInterfaceProxy::CreateAudioDecoder(
 void MediaInterfaceProxy::CreateVideoDecoder(
     media::mojom::VideoDecoderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media::mojom::InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
     factory->CreateVideoDecoder(std::move(request));
 }
@@ -75,7 +76,7 @@ void MediaInterfaceProxy::CreateRenderer(
     const std::string& audio_device_id,
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media::mojom::InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
     factory->CreateRenderer(audio_device_id, std::move(request));
 }
@@ -84,46 +85,16 @@ void MediaInterfaceProxy::CreateCdm(
     const std::string& key_system,
     media::mojom::ContentDecryptionModuleRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  media::mojom::InterfaceFactory* factory = GetCdmInterfaceFactory(key_system);
+
+  InterfaceFactory* factory =
+#if !BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
+      GetMediaInterfaceFactory();
+#else
+      GetCdmInterfaceFactory(key_system);
+#endif
+
   if (factory)
     factory->CreateCdm(key_system, std::move(request));
-}
-
-media::mojom::InterfaceFactory*
-MediaInterfaceProxy::GetMediaInterfaceFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!interface_factory_ptr_)
-    ConnectToMediaService();
-
-  return interface_factory_ptr_.get();
-}
-
-media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
-    const std::string& key_system) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-#if !BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
-  return GetMediaInterfaceFactory();
-#else
-  if (!cdm_interface_factory_ptr_)
-    ConnectToCdmService(key_system);
-
-  return cdm_interface_factory_ptr_.get();
-#endif
-}
-
-void MediaInterfaceProxy::OnMediaServiceConnectionError() {
-  DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  interface_factory_ptr_.reset();
-}
-
-void MediaInterfaceProxy::OnCdmServiceConnectionError() {
-  DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  cdm_interface_factory_ptr_.reset();
 }
 
 service_manager::mojom::InterfaceProviderPtr
@@ -154,6 +125,16 @@ MediaInterfaceProxy::GetFrameServices() {
   return interfaces;
 }
 
+media::mojom::InterfaceFactory*
+MediaInterfaceProxy::GetMediaInterfaceFactory() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!interface_factory_ptr_)
+    ConnectToMediaService();
+
+  return interface_factory_ptr_.get();
+}
+
 void MediaInterfaceProxy::ConnectToMediaService() {
   DVLOG(1) << __func__;
   DCHECK(!interface_factory_ptr_);
@@ -173,7 +154,18 @@ void MediaInterfaceProxy::ConnectToMediaService() {
                      base::Unretained(this)));
 }
 
+void MediaInterfaceProxy::OnMediaServiceConnectionError() {
+  DVLOG(1) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  interface_factory_ptr_.reset();
+}
+
+#if BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+// Returns CdmInfo registered for |key_system|. Returns null if no CdmInfo is
+// registered for |key_system|, or if the CdmInfo registered is invalid.
 static std::unique_ptr<CdmInfo> GetCdmInfoForKeySystem(
     const std::string& key_system) {
   DVLOG(2) << __func__ << ": key_system = " << key_system;
@@ -189,45 +181,84 @@ static std::unique_ptr<CdmInfo> GetCdmInfoForKeySystem(
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-void MediaInterfaceProxy::ConnectToCdmService(const std::string& key_system) {
-  DVLOG(1) << __func__ << ": key_system = " << key_system;
-  DCHECK(!cdm_interface_factory_ptr_);
+media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
+    const std::string& key_system) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Set the CDM GUID to be the default user ID used when connecting to mojo
+  // services. This is needed when ENABLE_STANDALONE_CDM_SERVICE is true but
+  // ENABLE_LIBRARY_CDMS is false.
+  std::string cdm_guid = service_manager::mojom::kInheritUserID;
+
+  base::FilePath cdm_path;
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  // The |key_system| comes from the render process which we cannot fully trust.
-  // Handle failure cases gracefully!
-  auto cdm_info = GetCdmInfoForKeySystem(key_system);
+  std::unique_ptr<CdmInfo> cdm_info = GetCdmInfoForKeySystem(key_system);
   if (!cdm_info) {
-    NOTREACHED() << "Key system " << key_system << " not registered.";
-    return;
+    NOTREACHED() << "No valid CdmInfo for " << key_system;
+    return nullptr;
   }
-  base::FilePath cdm_path = cdm_info->path;
-  if (cdm_path.empty()) {
+  if (cdm_info->path.empty()) {
     NOTREACHED() << "CDM path for " << key_system << " is empty.";
-    return;
+    return nullptr;
   }
+  if (!base::IsValidGUID(cdm_info->guid)) {
+    NOTREACHED() << "Invalid CDM GUID " << cdm_info->guid;
+    return nullptr;
+  }
+  cdm_guid = cdm_info->guid;
+  cdm_path = cdm_info->path;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  auto found = cdm_interface_factory_map_.find(cdm_guid);
+  if (found != cdm_interface_factory_map_.end())
+    return found->second.get();
+
+  return ConnectToCdmService(cdm_guid, cdm_path);
+}
+
+media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
+    const std::string& cdm_guid,
+    const base::FilePath& cdm_path) {
+  DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid;
+
+  DCHECK(!cdm_interface_factory_map_.count(cdm_guid));
+  service_manager::Identity identity(media::mojom::kCdmServiceName, cdm_guid);
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
 
-  // TODO(crbug.com/510604): Use different "User ID" for different CDM types to
-  // run each type of CDM in its own process.
   media::mojom::MediaServicePtr media_service;
-  connector->BindInterface(media::mojom::kCdmServiceName, &media_service);
+  connector->BindInterface(identity, &media_service);
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // LoadCdm() should always be called before CreateInterfaceFactory().
   media_service->LoadCdm(cdm_path);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  media_service->CreateInterfaceFactory(
-      MakeRequest(&cdm_interface_factory_ptr_), GetFrameServices());
-
-  cdm_interface_factory_ptr_.set_connection_error_handler(
+  InterfaceFactoryPtr interface_factory_ptr;
+  media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr),
+                                        GetFrameServices());
+  interface_factory_ptr.set_connection_error_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
-                     base::Unretained(this)));
+                     base::Unretained(this), cdm_guid));
+
+  InterfaceFactory* cdm_interface_factory = interface_factory_ptr.get();
+  cdm_interface_factory_map_.emplace(cdm_guid,
+                                     std::move(interface_factory_ptr));
+  return cdm_interface_factory;
 }
+
+void MediaInterfaceProxy::OnCdmServiceConnectionError(
+    const std::string& cdm_guid) {
+  DVLOG(1) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  DCHECK(cdm_interface_factory_map_.count(cdm_guid));
+  cdm_interface_factory_map_.erase(cdm_guid);
+}
+
+#endif  // BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
 
 }  // namespace content

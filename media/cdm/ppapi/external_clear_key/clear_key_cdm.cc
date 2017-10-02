@@ -70,6 +70,8 @@ const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
     "org.chromium.externalclearkey.verifycdmhosttest";
 const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
+const char kExternalClearKeyDifferentGuidTestKeySystem[] =
+    "org.chromium.externalclearkey.differentguid";
 
 const int64_t kSecondsPerMinute = 60;
 const int64_t kMsPerSecond = 1000;
@@ -256,7 +258,8 @@ void* CreateCdmInstance(int cdm_interface_version,
       key_system_string != kExternalClearKeyPlatformVerificationTestKeySystem &&
       key_system_string != kExternalClearKeyCrashKeySystem &&
       key_system_string != kExternalClearKeyVerifyCdmHostTestKeySystem &&
-      key_system_string != kExternalClearKeyStorageIdTestKeySystem) {
+      key_system_string != kExternalClearKeyStorageIdTestKeySystem &&
+      key_system_string != kExternalClearKeyDifferentGuidTestKeySystem) {
     DVLOG(1) << "Unsupported key system:" << key_system_string;
     return nullptr;
   }
@@ -693,7 +696,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
   // that the session is properly closed.
   if (!last_session_id_.empty() &&
       key_system_ == kExternalClearKeyCrashKeySystem) {
-    CHECK(false);
+    CHECK(false) << "Crash in decrypt-and-decode with crash key system.";
   }
 
   scoped_refptr<media::DecoderBuffer> buffer;
@@ -856,6 +859,13 @@ void ClearKeyCdm::OnSessionKeysChange(const std::string& session_id,
                                       bool has_additional_usable_key,
                                       CdmKeysInfo keys_info) {
   DVLOG(1) << __func__ << ": size = " << keys_info.size();
+
+  // Crash if the special key ID "crash" is present.
+  const std::vector<uint8_t> kCrashKeyId{'c', 'r', 'a', 's', 'h'};
+  for (const auto& key_info : keys_info) {
+    if (key_info->key_id == kCrashKeyId)
+      CHECK(false) << "Crash on special crash key ID.";
+  }
 
   std::vector<cdm::KeyInformation> keys_vector;
   ConvertCdmKeysInfo(keys_info, &keys_vector);
