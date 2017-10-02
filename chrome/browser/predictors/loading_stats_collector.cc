@@ -191,21 +191,29 @@ void ReportPreconnectAccuracy(
     preconnect_misses_count += preconnect && !hit;
   }
 
+  int total_preresolves = preresolve_hits_count + preresolve_misses_count;
+  int total_preconnects = preconnect_hits_count + preconnect_misses_count;
+  DCHECK_EQ(static_cast<int>(stats.requests_stats.size()),
+            preresolve_hits_count + preresolve_misses_count);
+  DCHECK_GT(total_preresolves, 0);
+
   size_t preresolve_hits_percentage =
-      (100 * preresolve_hits_count) /
-      (preresolve_hits_count + preresolve_misses_count);
-  size_t preconnect_hits_percentage =
-      (100 * preconnect_hits_count) /
-      (preconnect_hits_count + preconnect_misses_count);
+      (100 * preresolve_hits_count) / total_preresolves;
+
+  if (total_preconnects > 0) {
+    size_t preconnect_hits_percentage =
+        (100 * preconnect_hits_count) / total_preconnects;
+    UMA_HISTOGRAM_PERCENTAGE(
+        internal::kLoadingPredictorPreconnectHitsPercentage,
+        preconnect_hits_percentage);
+  }
 
   UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreresolveHitsPercentage,
                            preresolve_hits_percentage);
-  UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreconnectHitsPercentage,
-                           preconnect_hits_percentage);
   UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreresolveCount,
-                           preresolve_hits_count + preresolve_misses_count);
+                           total_preresolves);
   UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreconnectCount,
-                           preconnect_hits_count + preconnect_hits_count);
+                           total_preconnects);
 }
 
 void ReportPageLoadStats(const PageRequestSummary& summary) {
