@@ -5,18 +5,19 @@
 // windows.h must be first otherwise Win8 SDK breaks.
 #include <windows.h>
 #include <LM.h>
+#include <ntsecapi.h>
 #include <objbase.h>  // For CoTaskMemFree()
 #include <stddef.h>
 #include <stdint.h>
 #include <wincred.h>
-
-#include <memory>
 
 // SECURITY_WIN32 must be defined in order to get
 // EXTENDED_NAME_FORMAT enumeration.
 #define SECURITY_WIN32 1
 #include <security.h>
 #undef SECURITY_WIN32
+
+#include <memory>
 
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 
@@ -74,22 +75,107 @@ struct PasswordCheckPrefs {
   bool blank_password_;
 };
 
-// A WCHAR string buffer that securely zeros itself out on desctruction.
-class SecureStringBuffer {
+// Validates whether a credential buffer contains the credentials for the
+// currently signed in user.
+class CredentialBufferValidator {
  public:
-  // Allocates a WCHAR string buffer of |length| characters.
-  explicit SecureStringBuffer(DWORD length)
-      : buffer_(new WCHAR[length]), length_(length) {}
-  ~SecureStringBuffer() {
-    SecureZeroMemory(buffer_.get(), length_ * sizeof(WCHAR));
-  }
+  CredentialBufferValidator();
+  ~CredentialBufferValidator();
 
-  WCHAR* get() { return buffer_.get(); }
+  // Returns ERROR_SUCCESS if the credential buffer given matches the
+  // credentials of the user running Chrome.  Otherwise an error describing
+  // the issue.
+  DWORD IsValid(ULONG auth_package, void* cred_buffer, ULONG cred_length);
 
  private:
-  std::unique_ptr<WCHAR[]> buffer_;
-  DWORD length_;
+  std::unique_ptr<char[]> GetTokenInformation(HANDLE token);
+
+  // Name of app calling LsaLogonUser().  In this case, "chrome".
+  LSA_STRING name_;
+
+  // Handle to LSA server.
+  HANDLE lsa_ = INVALID_HANDLE_VALUE;
+
+  // Buffer holding information about the current process token.
+  std::unique_ptr<char[]> cur_token_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(CredentialBufferValidator);
 };
+
+CredentialBufferValidator::CredentialBufferValidator() {
+  cur_token_info_ = GetTokenInformation(GetCurrentProcessToken());
+  if (!cur_token_info_) {
+    DLOG(ERROR) << "Unable to obtain current token info " << GetLastError();
+    return;
+  }
+
+  NTSTATUS sts = LsaConnectUntrusted(&lsa_);
+  if (sts != ERROR_SUCCESS) {
+    lsa_ = INVALID_HANDLE_VALUE;
+    return;
+  }
+
+  name_.Buffer = const_cast<PCHAR>("Chrome");
+  name_.Length = strlen(name_.Buffer);
+  name_.MaximumLength = name_.Length + 1;
+}
+
+CredentialBufferValidator::~CredentialBufferValidator() {
+  if (lsa_ != INVALID_HANDLE_VALUE)
+    LsaDeregisterLogonProcess(lsa_);
+}
+
+DWORD CredentialBufferValidator::IsValid(ULONG auth_package,
+                                         void* auth_buffer,
+                                         ULONG auth_length) {
+  if (lsa_ == INVALID_HANDLE_VALUE)
+    return ERROR_LOGON_FAILURE;
+
+  NTSTATUS sts;
+  NTSTATUS substs;
+  TOKEN_SOURCE source;
+  void* profile_buffer = nullptr;
+  ULONG profile_buffer_length = 0;
+  QUOTA_LIMITS limits;
+  LUID luid;
+  HANDLE token;
+
+  strcpy_s(source.SourceName, arraysize(source.SourceName), "Chrome");
+  if (!AllocateLocallyUniqueId(&source.SourceIdentifier))
+    return GetLastError();
+
+  sts = LsaLogonUser(lsa_, &name_, Interactive, auth_package, auth_buffer,
+                     auth_length, nullptr, &source, &profile_buffer,
+                     &profile_buffer_length, &luid, &token, &limits, &substs);
+  LsaFreeReturnBuffer(profile_buffer);
+  std::unique_ptr<char[]> logon_token_info = GetTokenInformation(token);
+  CloseHandle(token);
+  if (sts != S_OK)
+    return LsaNtStatusToWinError(sts);
+  if (!logon_token_info)
+    return ERROR_NOT_ENOUGH_MEMORY;
+
+  PSID cur_sid = reinterpret_cast<TOKEN_USER*>(cur_token_info_.get())->User.Sid;
+  PSID logon_sid =
+      reinterpret_cast<TOKEN_USER*>(logon_token_info.get())->User.Sid;
+  return EqualSid(cur_sid, logon_sid) ? ERROR_SUCCESS : ERROR_LOGON_FAILURE;
+}
+
+std::unique_ptr<char[]> CredentialBufferValidator::GetTokenInformation(
+    HANDLE token) {
+  DWORD token_info_length = 0;
+  ::GetTokenInformation(token, TokenUser, nullptr, 0, &token_info_length);
+  if (ERROR_INSUFFICIENT_BUFFER != GetLastError())
+    return nullptr;
+
+  std::unique_ptr<char[]> token_info_buffer(new char[token_info_length]);
+  if (!::GetTokenInformation(token, TokenUser, token_info_buffer.get(),
+                             token_info_length, &token_info_length)) {
+    return nullptr;
+  }
+
+  return token_info_buffer;
+}
 
 // TODO(crbug.com/574581) Remove this feature once this is confirmed to work
 // as expected.
@@ -114,7 +200,8 @@ int64_t GetPasswordLastChanged(const WCHAR* username) {
   LPUSER_INFO_1 user_info = NULL;
   DWORD age = 0;
 
-  NET_API_STATUS ret = NetUserGetInfo(NULL, username, 1, (LPBYTE*) &user_info);
+  NET_API_STATUS ret = NetUserGetInfo(NULL, username, 1,
+                                      reinterpret_cast<LPBYTE*>(&user_info));
 
   if (ret == NERR_Success) {
     // Returns seconds since last password change.
@@ -350,16 +437,13 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
   WCHAR cur_username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
   DWORD cur_username_length = arraysize(cur_username);
 
-  // The SAM compatible username works on both standalone workstations and
-  // domain joined machines.  The form is "DOMAIN\username", where DOMAIN is the
-  // the name of the machine for standalone workstations.
+  // If this is a standlone workstation, it's possible the current user has no
+  // password, so check here and allow it.
   if (!GetUserNameEx(NameSamCompatible, cur_username, &cur_username_length)) {
     DLOG(ERROR) << "Unable to obtain username " << GetLastError();
     return false;
   }
 
-  // If this is a standlone workstation, it's possible the current user has no
-  // password, so check here and allow it.
   if (!base::win::IsEnrolledToDomain() && CheckBlankPassword(cur_username))
     return true;
 
@@ -375,6 +459,8 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
   cui.pszMessageText = password_prompt.c_str();
   cui.pszCaptionText = product_name.c_str();
   cui.hbmBanner = nullptr;
+
+  CredentialBufferValidator validator;
 
   DWORD err = 0;
   size_t tries = 0;
@@ -392,92 +478,15 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
     if (err != ERROR_SUCCESS)
       break;
 
-    // Get the length of the required output buffers.  Note that the length
-    // returned includes the null terminator.
-    DWORD cred_username_length = 0;
-    DWORD cred_domain_length = 0;
-    DWORD cred_password_length = 0;
-    BOOL ret = CredUnPackAuthenticationBuffer(
-        0, cred_buffer, cred_buffer_size, nullptr, &cred_username_length,
-        nullptr, &cred_domain_length, nullptr, &cred_password_length);
-    DCHECK(!ret);
-    err = GetLastError();
-    if (ERROR_INSUFFICIENT_BUFFER != err) {
-      SecureZeroMemory(cred_buffer, cred_buffer_size);
-      CoTaskMemFree(cred_buffer);
-      continue;
-    }
-
-    // Try to unpack the authentication buffer.  If this fails, try again.
-    // By not using the flag CRED_PACK_PROTECTED_CREDENTIALS, the password
-    // in |cred_password| remains encrypted.  That's OK though, the call to
-    // LogonUser() below handles that correctly.
-    std::unique_ptr<WCHAR[]> cred_username(new WCHAR[cred_username_length]);
-    std::unique_ptr<WCHAR[]> cred_domain(new WCHAR[cred_domain_length]);
-    SecureStringBuffer cred_password(cred_password_length);
-    ret = CredUnPackAuthenticationBuffer(
-        0, cred_buffer, cred_buffer_size, cred_username.get(),
-        &cred_username_length, cred_domain.get(), &cred_domain_length,
-        cred_password.get(), &cred_password_length);
-    SecureZeroMemory(cred_buffer, cred_buffer_size);
-    CoTaskMemFree(cred_buffer);
-    if (!ret) {
-      err = GetLastError();
-      continue;
-    }
-
     // While CredUIPromptForWindowsCredentials() shows the currently logged
     // on user by default, it can be changed at runtime.  This is important,
     // as it allows users to change to a different type of authentication
-    // mechanism, such as PIN or smartcard.  However, this also allows the user
-    // to change to a completely different account on the machine.  Make sure
-    // the user authenticated with the credentials of the currently logged on
-    // user.
-    //
-    // When the buffer returned by CredUIPromptForWindowsCredentials() is
-    // unpacked, |cred_username| is of the form "DOMAIN\username" and
-    // |cred_domain| is empty.  I have tested this on both standalone
-    // workstations and domain joined machines.  This seems to be different
-    // behaviour than CredUIPromptForCredentials().  This makes |cred_username|
-    // comparable to |cur_username| above.
-    if (wcsicmp(cred_username.get(), cur_username) != 0) {
-      err = ERROR_LOGON_FAILURE;
-      continue;
-    }
-
-    // As explained above, extract the domain from |cred_username|.
-    // TODO(rogerta): Figure out when |cred_domain| buffer is actually used,
-    // I could not find a case where it was.
-    LPWSTR username = nullptr;
-    LPWSTR domain = nullptr;
-    LPWSTR backslash = wcschr(cred_username.get(), L'\\');
-    if ((cred_domain_length == 0 || wcslen(cred_domain.get()) == 0) &&
-        backslash != nullptr) {
-      *backslash = 0;
-      domain = cred_username.get();
-      username = backslash + 1;
-    } else {
-      DLOG(ERROR) << "Unexpected domain and/or username";
-      break;
-    }
-
-    // Validate the returned credentials by trying to logon.
-    HANDLE handle = INVALID_HANDLE_VALUE;
-    if (LogonUser(username, domain, cred_password.get(),
-                  LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT,
-                  &handle)) {
-      retval = true;
-      CloseHandle(handle);
-    } else {
-      err = GetLastError();
-      if (err == ERROR_ACCOUNT_RESTRICTION) {
-        // Password is blank, or there is some other restriction imposed on the
-        // account.  However, the password has been validated, so permit.
-        retval = true;
-      } else {
-        DLOG(ERROR) << "Unable to authenticate " << GetLastError();
-      }
-    }
+    // mechanism, such as PIN or smartcard.  However, this also allows the
+    // user to change to a completely different account on the machine.  Make
+    // sure the user authenticated with the credentials of the currently
+    // logged on user.
+    err = validator.IsValid(auth_package, cred_buffer, cred_buffer_size);
+    retval = err == ERROR_SUCCESS;
   } while (!retval && tries < kMaxPasswordRetries);
 
   return retval;
