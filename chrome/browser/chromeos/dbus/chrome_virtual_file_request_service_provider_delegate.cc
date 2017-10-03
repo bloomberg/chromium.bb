@@ -4,7 +4,25 @@
 
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
 
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
+#include "chrome/browser/profiles/profile.h"
+
 namespace chromeos {
+
+namespace {
+
+arc::ArcFileSystemBridge* GetArcFileSystemBridge() {
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  if (!session_manager)
+    return nullptr;
+  Profile* profile = session_manager->profile();
+  if (!profile)
+    return nullptr;
+  return arc::ArcFileSystemBridge::GetForBrowserContext(profile);
+}
+
+}  // namespace
 
 ChromeVirtualFileRequestServiceProviderDelegate::
     ChromeVirtualFileRequestServiceProviderDelegate() = default;
@@ -17,8 +35,10 @@ bool ChromeVirtualFileRequestServiceProviderDelegate::HandleReadRequest(
     int64_t offset,
     int64_t size,
     base::ScopedFD pipe_write_end) {
-  NOTIMPLEMENTED();
-  return true;
+  arc::ArcFileSystemBridge* bridge = GetArcFileSystemBridge();
+  if (!bridge)
+    return false;
+  return bridge->HandleReadRequest(id, offset, size, std::move(pipe_write_end));
 }
 
 }  // namespace chromeos
