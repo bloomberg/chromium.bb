@@ -501,10 +501,6 @@ const DataResource kDataResources[] = {
     // Not limited to Android since it's used for mobile layouts in inspector.
     {"fullscreenAndroid.css", IDR_UASTYLE_FULLSCREEN_ANDROID_CSS,
      ui::SCALE_FACTOR_NONE, true},
-    // Not limited to Android since it's used for mobile layouts in inspector.
-    {"legacyMediaControlsAndroid.css",
-     IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS, ui::SCALE_FACTOR_NONE,
-     true},
     // Not limited to Linux since it's used for mobile layouts in inspector.
     {"themeChromiumLinux.css", IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS,
      ui::SCALE_FACTOR_NONE, true},
@@ -518,10 +514,6 @@ const DataResource kDataResources[] = {
      ui::SCALE_FACTOR_NONE, true},
     {"svg.css", IDR_UASTYLE_SVG_CSS, ui::SCALE_FACTOR_NONE, true},
     {"mathml.css", IDR_UASTYLE_MATHML_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"legacyMediaControls.css", IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS,
-     ui::SCALE_FACTOR_NONE, false},
-    {"modernMediaControls.css", IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS,
-     ui::SCALE_FACTOR_NONE, false},
     {"fullscreen.css", IDR_UASTYLE_FULLSCREEN_CSS, ui::SCALE_FACTOR_NONE, true},
     {"xhtmlmp.css", IDR_UASTYLE_XHTMLMP_CSS, ui::SCALE_FACTOR_NONE, true},
     {"viewportAndroid.css", IDR_UASTYLE_VIEWPORT_ANDROID_CSS,

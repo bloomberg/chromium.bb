@@ -24,8 +24,10 @@
 #ifndef CSSDefaultStyleSheets_h
 #define CSSDefaultStyleSheets_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -33,11 +35,12 @@ class Element;
 class RuleSet;
 class StyleSheetContents;
 
-class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
+class CSSDefaultStyleSheets
+    : public GarbageCollectedFinalized<CSSDefaultStyleSheets> {
   WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
 
  public:
-  static CSSDefaultStyleSheets& Instance();
+  CORE_EXPORT static CSSDefaultStyleSheets& Instance();
 
   bool EnsureDefaultStyleSheetsForElement(const Element&);
   void EnsureDefaultStyleSheetForFullscreen();
@@ -62,6 +65,22 @@ class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
     return fullscreen_style_sheet_.Get();
   }
 
+  // Media Controls UA stylesheet loading is handled by the media_controls
+  // module.
+  class CORE_EXPORT UAStyleSheetLoader {
+   public:
+    UAStyleSheetLoader(){};
+    virtual ~UAStyleSheetLoader() = default;
+    virtual String GetUAStyleSheet() = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(UAStyleSheetLoader);
+  };
+  CORE_EXPORT void SetMediaControlsStyleSheetLoader(
+      std::unique_ptr<UAStyleSheetLoader>);
+  CORE_EXPORT bool HasMediaControlsStyleSheetLoader() {
+    return media_controls_style_sheet_loader_.get();
+  }
+
   DECLARE_TRACE();
 
  private:
@@ -81,6 +100,8 @@ class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
   Member<StyleSheetContents> mathml_style_sheet_;
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
+
+  std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
 };
 
 }  // namespace blink
