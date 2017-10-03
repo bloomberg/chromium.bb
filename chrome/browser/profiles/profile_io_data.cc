@@ -143,6 +143,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
@@ -283,16 +284,14 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
 void DidGetTPMInfoForUserOnUIThread(
     std::unique_ptr<chromeos::TPMTokenInfoGetter> getter,
     const std::string& username_hash,
-    const chromeos::TPMTokenInfo& info) {
+    base::Optional<chromeos::CryptohomeClient::TpmTokenInfo> token_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (info.tpm_is_enabled && info.token_slot_id != -1) {
+  if (token_info.has_value() && token_info->slot != -1) {
     DVLOG(1) << "Got TPM slot for " << username_hash << ": "
-             << info.token_slot_id;
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&crypto::InitializeTPMForChromeOSUser,
-                   username_hash, info.token_slot_id));
+             << token_info->slot;
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&crypto::InitializeTPMForChromeOSUser,
+                                       username_hash, token_info->slot));
   } else {
     NOTREACHED() << "TPMTokenInfoGetter reported invalid token.";
   }
@@ -314,10 +313,9 @@ void GetTPMInfoForUserOnUIThread(const AccountId& account_id,
   // before TPM token info is fetched.
   // TODO(tbarzic, pneubeck): Handle this in a nicer way when this logic is
   //     moved to a separate profile service.
-  token_info_getter->Start(
-      base::Bind(&DidGetTPMInfoForUserOnUIThread,
-                 base::Passed(&scoped_token_info_getter),
-                 username_hash));
+  token_info_getter->Start(base::BindOnce(&DidGetTPMInfoForUserOnUIThread,
+                                          std::move(scoped_token_info_getter),
+                                          username_hash));
 }
 
 void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
