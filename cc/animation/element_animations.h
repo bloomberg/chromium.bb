@@ -137,7 +137,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   bool needs_push_properties() const { return needs_push_properties_; }
 
   void UpdateClientAnimationState();
-  void SetNeedsUpdateImplClientState();
 
   void NotifyClientFloatAnimated(float opacity,
                                  int target_property_id,
@@ -188,8 +187,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   PropertyAnimationState active_state_;
   PropertyAnimationState pending_state_;
-
-  mutable bool needs_update_impl_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };
