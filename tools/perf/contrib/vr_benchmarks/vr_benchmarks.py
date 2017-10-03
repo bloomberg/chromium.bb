@@ -5,6 +5,7 @@
 from benchmarks import memory
 from core import perf_benchmark
 from telemetry import benchmark
+from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
@@ -28,6 +29,8 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
 @benchmark.Owner(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
 class XrWebVrStatic(_BaseVRBenchmark):
   """Measures WebVR performance with sample pages."""
+
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
@@ -64,6 +67,8 @@ class XrWebVrStatic(_BaseVRBenchmark):
 @benchmark.Owner(emails=['tiborg@chromium.org'])
 class XrBrowsingStatic(_BaseVRBenchmark):
   """Benchmark for testing the VR performance in VR Browsing Mode."""
+
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
   def CreateTimelineBasedMeasurementOptions(self):
     custom_categories = ['gpu']
