@@ -83,49 +83,41 @@ struct UiInitialState;
 //
 // TODO(vollick): The above hierarchy is complex, brittle, and would be easier
 // to manage if it were specified in a declarative format.
-class UiSceneManager : public UiInterface, public BrowserUiInterface {
+class UiSceneManager {
  public:
   UiSceneManager(UiBrowserInterface* browser,
                  UiScene* scene,
                  ContentInputDelegate* content_input_delegate,
                  Model* model,
                  const UiInitialState& ui_initial_state);
-  ~UiSceneManager() override;
+  ~UiSceneManager();
 
-  // UiBrowserInterface.
-  void SetFullscreen(bool fullscreen) override;
-  void SetIncognito(bool incognito) override;
-  void SetToolbarState(const ToolbarState& state) override;
-  void SetWebVrSecureOrigin(bool secure) override;
-  void SetWebVrMode(bool web_vr, bool show_toast) override;
-  void SetIsExiting() override;
-  void SetVideoCapturingIndicator(bool enabled) override;
-  void SetScreenCapturingIndicator(bool enabled) override;
-  void SetAudioCapturingIndicator(bool enabled) override;
-  void SetLocationAccessIndicator(bool enabled) override;
-  void SetBluetoothConnectedIndicator(bool enabled) override;
-  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
+  // BrowserUiInterface support methods.
+  void SetFullscreen(bool fullscreen);
+  void SetIncognito(bool incognito);
+  void SetToolbarState(const ToolbarState& state);
+  void SetWebVrSecureOrigin(bool secure);
+  void SetWebVrMode(bool web_vr, bool show_toast);
+  void SetIsExiting();
+  void SetVideoCapturingIndicator(bool enabled);
+  void SetScreenCapturingIndicator(bool enabled);
+  void SetAudioCapturingIndicator(bool enabled);
+  void SetLocationAccessIndicator(bool enabled);
+  void SetBluetoothConnectedIndicator(bool enabled);
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
+  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason);
 
-  // TODO(vollick): once we have migrated to a model, these methods can be
-  // removed. They will be left here for now as BrowserUiInterface is an
-  // abstract base class. The Set.. methods above are all on the chopping block.
-  void SetLoading(bool loading) override;
-  void SetLoadProgress(float progress) override;
-
-  // UiInterface.
-  bool ShouldRenderWebVr() override;
-  void OnGlInitialized(
-      unsigned int content_texture_id,
-      UiElementRenderer::TextureLocation content_location) override;
-  void OnAppButtonClicked() override;
-  void OnAppButtonGesturePerformed(UiInterface::Direction direction) override;
-  void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
-  void OnWebVrFrameAvailable() override;
-  void OnWebVrTimedOut() override;
+  // UiInterface support methods.
+  bool ShouldRenderWebVr();
+  void OnGlInitialized(unsigned int content_texture_id,
+                       UiElementRenderer::TextureLocation content_location);
+  void OnAppButtonClicked();
+  void OnAppButtonGesturePerformed(UiInterface::Direction direction);
+  void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
+  void OnWebVrFrameAvailable();
+  void OnWebVrTimedOut();
 
   void OnSplashScreenHidden(TransientElementHideReason);
-  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
-
   void OnSecurityIconClickedForTesting();
   void OnExitPromptChoiceForTesting(bool chose_exit);
 
