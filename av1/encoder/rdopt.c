@@ -4468,7 +4468,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                    a, l, 1);
   } else {
     rd_stats->rate += rd_stats->zero_rate;
-    rd_stats->dist += RIGHT_SIGNED_SHIFT(tmp_sse, shift);
+    rd_stats->dist += tmp << 4;
     rd_stats->skip = 1;
     rd_stats->invalid_rate = 1;
     return;
