@@ -80,14 +80,6 @@ struct Options : public leveldb::Options {
   Options();
 };
 
-enum class SharedReadCache {
-  // Use for databases whose access pattern is dictated by browser code.
-  Default,
-  // Use for databases whose access pattern is directly influenced by Web APIs,
-  // like Indexed DB, etc.
-  Web,
-};
-
 const char* MethodIDToString(MethodID method);
 
 leveldb::Status MakeIOError(leveldb::Slice filename,
