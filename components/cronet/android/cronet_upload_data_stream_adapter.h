@@ -19,6 +19,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace cronet {
+class ByteBufferWithIOBuffer;
 
 // The Adapter holds onto a reference to the IOBuffer that is currently being
 // written to in Java, so may not be deleted until any read operation in Java
@@ -66,9 +67,8 @@ class CronetUploadDataStreamAdapter : public CronetUploadDataStream::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   base::WeakPtr<CronetUploadDataStream> upload_data_stream_;
 
-  // Used to keep the read buffer alive until the callback from Java has been
-  // received.
-  scoped_refptr<net::IOBuffer> buffer_;
+  // Keeps the net::IOBuffer and Java ByteBuffer alive until the next Read().
+  std::unique_ptr<ByteBufferWithIOBuffer> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStreamAdapter);
 };
