@@ -41,7 +41,8 @@ class NotificationCommon {
     NON_PERSISTENT = 1,
     EXTENSION = 2,
     PRODUCT_EOL = 3,
-    TYPE_MAX = PRODUCT_EOL,
+    DOWNLOAD = 4,
+    TYPE_MAX = DOWNLOAD,
   };
 
   // A struct that contains extra data about a notification specific to one of

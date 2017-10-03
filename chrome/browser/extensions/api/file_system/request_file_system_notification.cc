@@ -43,7 +43,6 @@ std::unique_ptr<Notification> CreateAutoGrantedNotification(
   const std::string notification_id =
       extension.id() + "-" + volume->volume_id();
   message_center::RichNotificationData data;
-  data.clickable = false;
 
   // TODO(mtomasz): Share this code with RequestFileSystemDialogView.
   const base::string16 display_name =

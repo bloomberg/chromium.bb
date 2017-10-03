@@ -48,7 +48,6 @@ void DelegateImpl::ShowManagedProvisionNotification() {
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
   notifier_id.profile_id = account_id.GetUserEmail();
   message_center::RichNotificationData optional_fields;
-  optional_fields.clickable = false;
   optional_fields.never_timeout = true;
 
   message_center::MessageCenter::Get()->AddNotification(

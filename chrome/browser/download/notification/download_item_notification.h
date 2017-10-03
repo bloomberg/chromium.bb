@@ -13,8 +13,6 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/native_theme/native_theme.h"
 
@@ -43,6 +41,11 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
   // Disables popup by setting low priority.
   void DisablePopup();
 
+  // Called back from the NotificationHandler.
+  void OnNotificationClose();
+  void OnNotificationClick();
+  void OnNotificationButtonClick(int button_index);
+
  private:
   class DownloadItemNotificationDelegate;
   friend class test::DownloadItemNotificationTest;
@@ -55,18 +58,11 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
     UPDATE_AND_POPUP
   };
 
-  // This block of functions implements NotificationDelegate. They're called
-  // from DownloadItemNotificationDelegate.
-  bool HasNotificationClickedListener() const;
-  void OnNotificationClose();
-  void OnNotificationClick();
-  void OnNotificationButtonClick(int button_index);
   std::string GetNotificationId() const;
 
-  void CloseNotificationByUser();
-  void CloseNotificationByNonUser();
+  void CloseNotification();
   void Update();
-  void UpdateNotificationData(NotificationUpdateType type);
+  void UpdateNotificationData(bool display, bool bump_priority);
   void UpdateNotificationIcon();
 
   // Set icon of the notification.
@@ -127,12 +123,6 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
 
   // Status of the preview image decode.
   ImageDecodeStatus image_decode_status_ = NOT_STARTED;
-
-  // Pointer to the message center instance.
-  message_center::MessageCenter* message_center_;
-
-  void SetMessageCenterForTest(
-      message_center::MessageCenter* message_center);
 
   base::WeakPtrFactory<DownloadItemNotification> weak_factory_;
 

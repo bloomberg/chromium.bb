@@ -145,7 +145,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   bool should_make_spoken_feedback_for_popup_updates = true;
 
   // Whether it should be possible for the user to click on the notification.
-  bool clickable = true;
+  bool clickable = false;
 
 #if defined(OS_CHROMEOS)
   // Flag if the notification is pinned. If true, the notification is pinned

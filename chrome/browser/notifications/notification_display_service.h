@@ -77,6 +77,9 @@ class NotificationDisplayService : public KeyedService {
   void AddNotificationHandler(NotificationCommon::Type notification_type,
                               std::unique_ptr<NotificationHandler> handler);
 
+  // Removes an implementation object added via AddNotificationHandler.
+  void RemoveNotificationHandler(NotificationCommon::Type notification_type);
+
  private:
   std::map<NotificationCommon::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
