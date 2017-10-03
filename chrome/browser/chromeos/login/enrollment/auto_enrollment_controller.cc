@@ -299,18 +299,16 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters() {
       ->GetCryptohomeClient()
       ->RemoveFirmwareManagementParametersFromTpm(
           request,
-          base::Bind(
+          base::BindOnce(
               &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
-    chromeos::DBusMethodCallStatus call_status,
-    bool result,
-    const cryptohome::BaseReply& reply) {
-  if (!result) {
+    base::Optional<cryptohome::BaseReply> reply) {
+  if (!reply.has_value()) {
     LOG(ERROR) << "Failed to remove firmware management parameters, error: "
-               << reply.error();
+               << reply->error();
   }
 
   progress_callbacks_.Notify(state_);

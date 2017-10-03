@@ -118,8 +118,8 @@ class HomedirMethodsImpl : public HomedirMethods {
 
     DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
         id, kEmptyAuthProto, request,
-        base::Bind(&HomedirMethodsImpl::OnGetKeyDataExCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&HomedirMethodsImpl::OnGetKeyDataExCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void CheckKeyEx(const Identification& id,
@@ -132,8 +132,8 @@ class HomedirMethodsImpl : public HomedirMethods {
 
     DBusThreadManager::Get()->GetCryptohomeClient()->CheckKeyEx(
         id, auth_proto, request,
-        base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void MountEx(const Identification& id,
@@ -145,8 +145,8 @@ class HomedirMethodsImpl : public HomedirMethods {
     FillAuthorizationProtobuf(auth, &auth_proto);
     DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
         id, auth_proto, request,
-        base::Bind(&HomedirMethodsImpl::OnMountExCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&HomedirMethodsImpl::OnMountExCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void AddKeyEx(const Identification& id,
@@ -163,8 +163,8 @@ class HomedirMethodsImpl : public HomedirMethods {
 
     DBusThreadManager::Get()->GetCryptohomeClient()->AddKeyEx(
         id, auth_proto, request,
-        base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RemoveKeyEx(const Identification& id,
@@ -179,8 +179,8 @@ class HomedirMethodsImpl : public HomedirMethods {
 
     DBusThreadManager::Get()->GetCryptohomeClient()->RemoveKeyEx(
         id, auth_proto, request,
-        base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void UpdateKeyEx(const Identification& id,
@@ -197,24 +197,25 @@ class HomedirMethodsImpl : public HomedirMethods {
 
     DBusThreadManager::Get()->GetCryptohomeClient()->UpdateKeyEx(
         id, auth_proto, pb_update_key,
-        base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RenameCryptohome(const Identification& id_from,
                         const Identification& id_to,
                         const Callback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->RenameCryptohome(
-        id_from, id_to, base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
-                                   weak_ptr_factory_.GetWeakPtr(), callback));
+        id_from, id_to,
+        base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetAccountDiskUsage(
       const Identification& id,
       const GetAccountDiskUsageCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
-        id, base::Bind(&HomedirMethodsImpl::OnGetAccountDiskUsageCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        id, base::BindOnce(&HomedirMethodsImpl::OnGetAccountDiskUsageCallback,
+                           weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void MigrateToDircrypto(const Identification& id,
@@ -230,30 +231,25 @@ class HomedirMethodsImpl : public HomedirMethods {
 
  private:
   void OnGetKeyDataExCallback(const GetKeyDataCallback& callback,
-                              chromeos::DBusMethodCallStatus call_status,
-                              bool result,
-                              const BaseReply& reply) {
-    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+                              base::Optional<BaseReply> reply) {
+    if (!reply.has_value()) {
       callback.Run(false, MOUNT_ERROR_FATAL, std::vector<KeyDefinition>());
       return;
     }
-    if (reply.has_error()) {
-      if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
-        callback.Run(false,
-                     MapError(reply.error()),
-                     std::vector<KeyDefinition>());
-        return;
-      }
+    if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
+      callback.Run(false, MapError(reply->error()),
+                   std::vector<KeyDefinition>());
+      return;
     }
 
-    if (!reply.HasExtension(GetKeyDataReply::reply)) {
+    if (!reply->HasExtension(GetKeyDataReply::reply)) {
       callback.Run(false, MOUNT_ERROR_FATAL, std::vector<KeyDefinition>());
       return;
     }
 
     // Extract the contents of the |KeyData| protos returned.
     const RepeatedPtrField<KeyData>& key_data =
-        reply.GetExtension(GetKeyDataReply::reply).key_data();
+        reply->GetExtension(GetKeyDataReply::reply).key_data();
     std::vector<KeyDefinition> key_definitions;
     for (RepeatedPtrField<KeyData>::const_iterator it = key_data.begin();
          it != key_data.end(); ++it) {
@@ -324,69 +320,56 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
   void OnMountExCallback(const MountCallback& callback,
-                         chromeos::DBusMethodCallStatus call_status,
-                         bool result,
-                         const BaseReply& reply) {
-    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+                         base::Optional<BaseReply> reply) {
+    if (!reply.has_value()) {
       callback.Run(false, MOUNT_ERROR_FATAL, std::string());
       return;
     }
-    if (reply.has_error()) {
-      if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
-        LOGIN_LOG(ERROR)
-            << "HomedirMethods MountEx error (CryptohomeErrorCode): "
-            << reply.error();
-        callback.Run(false, MapError(reply.error()), std::string());
-        return;
-      }
+    if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
+      LOGIN_LOG(ERROR) << "HomedirMethods MountEx error (CryptohomeErrorCode): "
+                       << reply->error();
+      callback.Run(false, MapError(reply->error()), std::string());
+      return;
     }
-    if (!reply.HasExtension(MountReply::reply)) {
+    if (!reply->HasExtension(MountReply::reply)) {
       callback.Run(false, MOUNT_ERROR_FATAL, std::string());
       return;
     }
 
     std::string mount_hash;
-    mount_hash = reply.GetExtension(MountReply::reply).sanitized_username();
+    mount_hash = reply->GetExtension(MountReply::reply).sanitized_username();
     callback.Run(true, MOUNT_ERROR_NONE, mount_hash);
   }
 
   void OnGetAccountDiskUsageCallback(
       const GetAccountDiskUsageCallback& callback,
-      chromeos::DBusMethodCallStatus call_status,
-      bool result,
-      const BaseReply& reply) {
-    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+      base::Optional<BaseReply> reply) {
+    if (!reply.has_value()) {
       callback.Run(false, -1);
       return;
     }
-    if (reply.has_error()) {
-      if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
-        callback.Run(false, -1);
-        return;
-      }
+    if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
+      callback.Run(false, -1);
+      return;
     }
-    if (!reply.HasExtension(GetAccountDiskUsageReply::reply)) {
+    if (!reply->HasExtension(GetAccountDiskUsageReply::reply)) {
       callback.Run(false, -1);
       return;
     }
 
-    int64_t size = reply.GetExtension(GetAccountDiskUsageReply::reply).size();
+    int64_t size = reply->GetExtension(GetAccountDiskUsageReply::reply).size();
     callback.Run(true, size);
   }
 
   void OnBaseReplyCallback(const Callback& callback,
-                           chromeos::DBusMethodCallStatus call_status,
-                           bool result,
-                           const BaseReply& reply) {
-    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+                           base::Optional<BaseReply> reply) {
+    if (!reply.has_value()) {
       callback.Run(false, MOUNT_ERROR_FATAL);
       return;
     }
-    if (reply.has_error()) {
-      if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
-        callback.Run(false, MapError(reply.error()));
-        return;
-      }
+    if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
+      callback.Run(false, MapError(reply->error()));
+      return;
     }
     callback.Run(true, MOUNT_ERROR_NONE);
   }
