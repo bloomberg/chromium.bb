@@ -41,6 +41,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A robolectric test for {@link AutocompleteEditText} class.
@@ -94,6 +95,7 @@ public class AutocompleteEditTextTest {
     private class TestAutocompleteEditText extends AutocompleteEditText {
         private AtomicInteger mVerifierCallCount = new AtomicInteger();
         private AtomicInteger mAccessibilityVerifierCallCount = new AtomicInteger();
+        private AtomicReference<String> mKeyboardPackageName = new AtomicReference<>("dummy.ime");
 
         public TestAutocompleteEditText(Context context, AttributeSet attrs) {
             super(context, attrs);
@@ -145,6 +147,15 @@ public class AutocompleteEditTextTest {
 
         public int getAndResetAccessibilityVerifierCallCount() {
             return mAccessibilityVerifierCallCount.getAndSet(0);
+        }
+
+        @Override
+        public String getKeyboardPackageName() {
+            return mKeyboardPackageName.get();
+        }
+
+        public void setKeyboardPackageName(String packageName) {
+            mKeyboardPackageName.set(packageName);
         }
     }
 
@@ -833,6 +844,29 @@ public class AutocompleteEditTextTest {
         mInOrder.verifyNoMoreInteractions();
         assertFalse(mAutocomplete.shouldAutocomplete());
         assertTexts("hello", "");
+    }
+
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testDelete_SamsungKeyboardWithSpannableModel() {
+        mAutocomplete.setKeyboardPackageName("com.sec.android.inputmethod");
+        // User types "hello".
+        assertTrue(mInputConnection.setComposingText("hello", 1));
+        assertTrue(isComposing());
+        assertTrue(mAutocomplete.shouldAutocomplete());
+        // The controller kicks in.
+        mAutocomplete.setAutocompleteText("hello", " world");
+        assertTexts("hello", " world");
+
+        // User deletes autocomplete.
+        assertTrue(mInputConnection.setComposingText("hell", 1));
+        // Remove autocomplete.
+        assertFalse(mAutocomplete.shouldAutocomplete());
+        assertTexts("hello", "");
+        // Make sure that we do not finish composing text for Samsung keyboard - it does not update
+        // its internal states when we ask this. (crbug.com/766888).
+        assertTrue(isComposing());
     }
 
     @Test

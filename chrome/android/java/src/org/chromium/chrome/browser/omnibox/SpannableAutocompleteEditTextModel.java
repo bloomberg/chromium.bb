@@ -336,10 +336,27 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     @Override
     public boolean shouldAutocomplete() {
         boolean retVal = mBatchEditNestCount == 0 && mLastEditWasTyping
-                && mCurrentState.isCursorAtEndOfUserText()
+                && mCurrentState.isCursorAtEndOfUserText() && !isKeyboardBlacklisted()
                 && isNonCompositionalText(getTextWithoutAutocomplete());
         if (DEBUG) Log.i(TAG, "shouldAutocomplete: " + retVal);
         return retVal;
+    }
+
+    private boolean isKeyboardBlacklisted() {
+        String pkgName = mDelegate.getKeyboardPackageName();
+        return pkgName.contains(".iqqi"); // crbug.com/767016
+    }
+
+    private boolean shouldFinishCompositionOnDeletion() {
+        // crbug.com/758443, crbug.com/766888: Japanese keyboard does not finish composition when we
+        // restore the deleted text, and later typing will make Japanese keyboard move before the
+        // restored character. Most keyboards accept finishComposingText and update their internal
+        // states. One exception is the recent version of Samsung keyboard which works goofily only
+        // when we finish composing text here. Since it is more difficult to blacklist all Japanese
+        // keyboards, instead we call finishComposingText() for all the keyboards except for Samsung
+        // keyboard.
+        String pkgName = mDelegate.getKeyboardPackageName();
+        return !pkgName.contains("com.sec.android.inputmethod");
     }
 
     @VisibleForTesting
@@ -525,9 +542,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
                 mDeletePostfixOnNextBeginImeCommand = diff.length();
             }
             if (mBatchEditNestCount == 0) { // only at the outermost batch edit
-                // crbug.com/758443: Japanese keyboard does not finish composition when we restore
-                // the deleted text.
-                super.finishComposingText();
+                if (shouldFinishCompositionOnDeletion()) super.finishComposingText();
             }
             incrementBatchEditCount(); // avoids additional notifyAutocompleteTextStateChanged()
             Editable editable = mDelegate.getEditableText();
