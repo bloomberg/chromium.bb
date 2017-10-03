@@ -11,6 +11,8 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/i18n/time_formatting.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -24,10 +26,10 @@ namespace ash {
 namespace {
 
 // Default start time at 6:00 PM as an offset from 00:00.
-const int kDefaultStartTimeOffsetMinutes = 18 * 60;
+constexpr int kDefaultStartTimeOffsetMinutes = 18 * 60;
 
 // Default end time at 6:00 AM as an offset from 00:00.
-const int kDefaultEndTimeOffsetMinutes = 6 * 60;
+constexpr int kDefaultEndTimeOffsetMinutes = 6 * 60;
 
 constexpr float kDefaultColorTemperature = 0.5f;
 
@@ -57,6 +59,8 @@ class NightLightControllerDelegateImpl : public NightLightController::Delegate {
  private:
   base::Time GetSunRiseSet(bool sunrise) const {
     if (!ValidatePosition()) {
+      LOG(ERROR) << "Invalid geoposition. Using default time for "
+                 << (sunrise ? "sunrise." : "sunset.");
       return sunrise ? TimeOfDay(kDefaultEndTimeOffsetMinutes).ToTimeToday()
                      : TimeOfDay(kDefaultStartTimeOffsetMinutes).ToTimeToday();
     }
@@ -255,6 +259,7 @@ void NightLightController::OnActiveUserPrefServiceChanged(
 
 void NightLightController::SetCurrentGeoposition(
     mojom::SimpleGeopositionPtr position) {
+  VLOG(1) << "Received new geoposition.";
   delegate_->SetGeoposition(std::move(position));
 
   // If the schedule type is sunset to sunrise, then a potential change in the
@@ -479,10 +484,14 @@ void NightLightController::RefreshScheduleTimer(base::Time start_time,
 }
 
 void NightLightController::ScheduleNextToggle(base::TimeDelta delay) {
+  const bool new_status = !GetEnabled();
+  VLOG(1) << "Setting Night Light to toggle to "
+          << (new_status ? "enabled" : "disabled") << " at "
+          << base::TimeFormatTimeOfDay(delegate_->GetNow() + delay);
   timer_.Start(
       FROM_HERE, delay,
       base::Bind(&NightLightController::SetEnabled, base::Unretained(this),
-                 !GetEnabled(), AnimationDuration::kLong));
+                 new_status, AnimationDuration::kLong));
 }
 
 }  // namespace ash

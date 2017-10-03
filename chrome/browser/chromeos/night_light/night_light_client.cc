@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/logging.h"
 #include "base/time/clock.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -66,6 +67,8 @@ void NightLightClient::OnScheduleTypeChanged(
   base::Time now = GetNow();
   if ((now - last_successful_geo_request_time_) <
       kNextRequestDelayAfterSuccess) {
+    VLOG(1) << "Already has a recent valid geoposition. Using it instead of "
+            << "requesting a new one.";
     // Use the current valid position to update NightLightController.
     SendCurrentGeoposition();
   }
@@ -112,6 +115,7 @@ void NightLightClient::OnGeoposition(const chromeos::Geoposition& position,
 
   if (server_error || !position.Valid() ||
       elapsed > kGeolocationRequestTimeout) {
+    VLOG(1) << "Failed to get a valid geoposition. Trying again later.";
     // Don't send invalid positions to ash.
     // On failure, we schedule another request after the current backoff delay.
     ScheduleNextRequest(backoff_delay_);
@@ -147,6 +151,7 @@ void NightLightClient::ScheduleNextRequest(base::TimeDelta delay) {
 }
 
 void NightLightClient::RequestGeoposition() {
+  VLOG(1) << "Requesting a new geoposition";
   provider_.RequestGeolocation(
       kGeolocationRequestTimeout, false /* send_wifi_access_points */,
       false /* send_cell_towers */,
