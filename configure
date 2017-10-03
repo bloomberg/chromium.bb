@@ -533,6 +533,8 @@ post_process_cmdline() {
       soft_enable dist_8x8
       soft_enable cdef_singlepass
       soft_enable loop_restoration
+      soft_enable ext_partition
+      soft_enable ext_partition_types
 
       # Provisional adopted
       soft_enable reference_buffer
