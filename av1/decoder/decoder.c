@@ -50,14 +50,6 @@ static void initialize_dec(void) {
     av1_init_intra_predictors();
     av1_init_wedge_masks();
     init_done = 1;
-#if CONFIG_EXT_TX
-    for (int s = 1; s < EXT_TX_SET_TYPES; ++s) {
-      av1_indices_from_tree(av1_ext_tx_ind[s], av1_ext_tx_inv[s],
-                            av1_ext_tx_tree[s]);
-    }
-#else
-    av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, av1_ext_tx_tree);
-#endif
   }
 }
 

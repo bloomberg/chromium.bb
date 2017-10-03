@@ -115,18 +115,6 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        int *const tile_col_size_bytes);
 #endif
 void av1_encode_token_init(void) {
-#if CONFIG_EXT_TX
-  for (int s = 1; s < EXT_TX_SET_TYPES; ++s) {
-    av1_indices_from_tree(av1_ext_tx_ind[s], av1_ext_tx_inv[s],
-                          av1_ext_tx_tree[s]);
-  }
-#else
-  /* This hack is necessary because the four TX_TYPES are not consecutive,
-      e.g., 0, 1, 2, 3, when doing an in-order traversal of the av1_ext_tx_tree
-      structure. */
-  av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, av1_ext_tx_tree);
-#endif  // CONFIG_EXT_TX
-
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   av1_tokens_from_tree(intra_filter_encodings, av1_intra_filter_tree);
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP

@@ -558,9 +558,80 @@ extern const aom_prob
     av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS];
 
 #if CONFIG_EXT_TX
-extern int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES];
-extern int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES];
-#endif
+static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
+  {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+#if CONFIG_MRC_TX
+  {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  },
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+  },
+#endif  // CONFIG_MRC_TX
+  {
+      1, 3, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 5, 6, 4, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0,
+  },
+  {
+      3, 4, 5, 8, 6, 7, 9, 10, 11, 0, 1, 2, 0, 0, 0, 0,
+  },
+  {
+      7, 8, 9, 12, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6,
+  },
+};
+
+static const int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES] = {
+  {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+#if CONFIG_MRC_TX
+  {
+      0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      9, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+#endif  // CONFIG_MRC_TX
+  {
+      9, 0, 3, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      9, 0, 10, 11, 3, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      9, 10, 11, 0, 1, 2, 4, 5, 3, 6, 7, 8, 0, 0, 0, 0,
+  },
+  {
+      9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 4, 5, 3, 6, 7, 8,
+  },
+};
+#else
+#if CONFIG_MRC_TX
+static const int av1_ext_tx_ind[TX_TYPES] = {
+  0, 3, 4, 2, 1,
+};
+static const int av1_ext_tx_inv[TX_TYPES] = {
+  0, 4, 3, 1, 2,
+};
+#else
+static const int av1_ext_tx_ind[TX_TYPES] = {
+  0, 2, 3, 1,
+};
+static const int av1_ext_tx_inv[TX_TYPES] = {
+  0, 3, 1, 2,
+};
+#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_EXT_TX
 
 #if CONFIG_INTERINTRA
 extern const aom_tree_index
@@ -611,10 +682,6 @@ void av1_setup_past_independence(struct AV1Common *cm);
 
 void av1_adapt_intra_frame_probs(struct AV1Common *cm);
 void av1_adapt_inter_frame_probs(struct AV1Common *cm);
-#if !CONFIG_EXT_TX
-extern int av1_ext_tx_ind[TX_TYPES];
-extern int av1_ext_tx_inv[TX_TYPES];
-#endif
 
 static INLINE int av1_ceil_log2(int n) {
   int i = 1, p = 2;
