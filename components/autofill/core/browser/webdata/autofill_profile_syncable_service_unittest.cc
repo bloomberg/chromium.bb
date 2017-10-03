@@ -40,6 +40,7 @@ const char kGuid3[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44D";
 const char kGuid4[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44E";
 const char kHttpOrigin[] = "http://www.example.com/";
 const char kHttpsOrigin[] = "https://www.example.com/";
+const int kValidityStateBitfield = 1984;
 
 class MockAutofillProfileSyncableService
     : public AutofillProfileSyncableService {
@@ -169,6 +170,7 @@ std::unique_ptr<AutofillProfile> ConstructCompleteProfile() {
   profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                       ASCIIToUTF16("Santa Clara"));
   profile->set_language_code("en");
+  profile->SetValidityFromBitfieldValue(kValidityStateBitfield);
   return profile;
 }
 
@@ -206,6 +208,7 @@ syncer::SyncData ConstructCompleteSyncData() {
   specifics->set_address_home_sorting_code("CEDEX");
   specifics->set_address_home_dependent_locality("Santa Clara");
   specifics->set_address_home_language_code("en");
+  specifics->set_validity_state_bitfield(kValidityStateBitfield);
 
   return syncer::SyncData::CreateLocalData(kGuid1, kGuid1, entity_specifics);
 }
@@ -1070,6 +1073,196 @@ TEST_F(AutofillProfileSyncableServiceTest, LanguageCodePropagates) {
   EXPECT_EQ(kGuid1, specifics.guid());
   EXPECT_EQ(kHttpsOrigin, specifics.origin());
   EXPECT_EQ("en", specifics.address_home_language_code());
+}
+
+// Missing validity state bitifield should not generate sync events.
+TEST_F(AutofillProfileSyncableServiceTest, DefaultValidityStateNoSync) {
+  std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
+
+  // Local autofill profile has a default validity state bitfield.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  EXPECT_EQ(0, profile.GetValidityBitfieldValue());
+  profiles_from_web_db.push_back(base::MakeUnique<AutofillProfile>(profile));
+
+  // Remote data does not have a validity state bitfield value.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string());
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_use_count(profile.use_count());
+  autofill_specifics->set_use_date(profile.use_date().ToTimeT());
+  EXPECT_FALSE(autofill_specifics->has_validity_state_bitfield());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(syncer::SyncData::CreateLocalData(
+      profile.guid(), profile.guid(), specifics));
+
+  // Expect no changes to local and remote data.
+  MockAutofillProfileSyncableService::DataBundle expected_empty_bundle;
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(std::move(profiles_from_web_db), data_list,
+                           expected_empty_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Default validity state bitfield should be overwritten by sync.
+TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesDefaultValidityBitfield) {
+  std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
+
+  // Local autofill profile has a default validity state.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  EXPECT_EQ(0, profile.GetValidityBitfieldValue());
+  profiles_from_web_db.push_back(base::MakeUnique<AutofillProfile>(profile));
+
+  // Remote data has a non default validity state bitfield value.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string());
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_validity_state_bitfield(kValidityStateBitfield);
+  EXPECT_TRUE(autofill_specifics->has_validity_state_bitfield());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(syncer::SyncData::CreateLocalData(
+      profile.guid(), profile.guid(), specifics));
+
+  // Expect the local autofill profile to have the non default validity state
+  // bitfield after sync.
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  AutofillProfile expected_profile(kGuid1, kHttpsOrigin);
+  expected_profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_bundle.profiles_to_update.push_back(&expected_profile);
+
+  // Expect no changes to remote data.
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(std::move(profiles_from_web_db), data_list,
+                           expected_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Local validity state bitfield should be overwritten by sync.
+TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesLocalValidityBitfield) {
+  std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
+
+  // Local autofill profile has a non default validity state bitfield value.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetValidityFromBitfieldValue(kValidityStateBitfield + 1);
+  profiles_from_web_db.push_back(base::MakeUnique<AutofillProfile>(profile));
+
+  // Remote data has a different non default validity state bitfield value.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string());
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_validity_state_bitfield(kValidityStateBitfield);
+  EXPECT_TRUE(autofill_specifics->has_validity_state_bitfield());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(syncer::SyncData::CreateLocalData(
+      profile.guid(), profile.guid(), specifics));
+
+  // Expect the local autofill profile to have the remote validity state
+  // bitfield value after sync.
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  AutofillProfile expected_profile(kGuid1, kHttpsOrigin);
+  expected_profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_bundle.profiles_to_update.push_back(&expected_profile);
+
+  // Expect no changes to remote data.
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(std::move(profiles_from_web_db), data_list,
+                           expected_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Sync data without a default validity state bitfield should not overwrite
+// an existing validity state bitfield in local autofill profile.
+TEST_F(AutofillProfileSyncableServiceTest,
+       DefaultSyncPreservesLocalValidityBitfield) {
+  std::vector<std::unique_ptr<AutofillProfile>> profiles_from_web_db;
+
+  // Local autofill profile has a non default validity state bitfield value.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profiles_from_web_db.push_back(base::MakeUnique<AutofillProfile>(profile));
+
+  // Remote data does not has no validity state bitfield value.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first("John");
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_name_full(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  EXPECT_FALSE(autofill_specifics->has_validity_state_bitfield());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(syncer::SyncData::CreateLocalData(
+      profile.guid(), profile.guid(), specifics));
+
+  // Expect local autofill profile to still have the kValidityStateBitfield
+  // language code after sync.
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  AutofillProfile expected_profile(profile.guid(), profile.origin());
+  expected_profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  expected_bundle.profiles_to_update.push_back(&expected_profile);
+
+  // Expect no changes to remote data.
+  syncer::SyncChangeList expected_empty_change_list;
+
+  MergeDataAndStartSyncing(std::move(profiles_from_web_db), data_list,
+                           expected_bundle, expected_empty_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Validity state bitfield in autofill profiles should be synced to the server.
+TEST_F(AutofillProfileSyncableServiceTest, LocalValidityBitfieldPropagates) {
+  TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
+  autofill_syncable_service_.set_sync_processor(sync_change_processor);
+
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  AutofillProfileChange change(AutofillProfileChange::ADD, kGuid1, &profile);
+  autofill_syncable_service_.AutofillProfileChanged(change);
+
+  ASSERT_EQ(1U, sync_change_processor->changes().size());
+  syncer::SyncChange result = sync_change_processor->changes()[0];
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, result.change_type());
+
+  sync_pb::AutofillProfileSpecifics specifics =
+      result.sync_data().GetSpecifics().autofill_profile();
+  EXPECT_EQ(kGuid1, specifics.guid());
+  EXPECT_EQ(kHttpsOrigin, specifics.origin());
+  EXPECT_EQ(kValidityStateBitfield, specifics.validity_state_bitfield());
 }
 
 // Missing full name field should not generate sync events.
