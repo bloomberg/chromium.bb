@@ -72,6 +72,9 @@ public interface AutocompleteEditTextModelBase {
          * @param selEnd Selection end.
          */
         void onUpdateSelectionForTesting(int selStart, int selEnd);
+
+        /** @return The package name of the current keyboard app. */
+        String getKeyboardPackageName();
     }
 
     /**
