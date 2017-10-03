@@ -18,8 +18,6 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -435,8 +433,6 @@ gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
 bool OpaqueBrowserFrameView::ShouldRenderNativeNavButtons() const {
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   if (!nav_button_provider_)
-    return false;
-  if (!base::FeatureList::IsEnabled(features::kNativeWindowNavButtons))
     return false;
   return ThemeServiceFactory::GetForProfile(
              browser_view()->browser()->profile())
