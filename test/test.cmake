@@ -219,11 +219,12 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/av1_fht16x16_test.cc"
         "${AOM_ROOT}/test/av1_fht32x32_test.cc"
         "${AOM_ROOT}/test/av1_fht8x8_test.cc"
-        "${AOM_ROOT}/test/av1_inv_txfm_test.cc"
         "${AOM_ROOT}/test/av1_fwd_txfm1d_test.cc"
         "${AOM_ROOT}/test/av1_fwd_txfm2d_test.cc"
         "${AOM_ROOT}/test/av1_inv_txfm1d_test.cc"
         "${AOM_ROOT}/test/av1_inv_txfm2d_test.cc"
+        "${AOM_ROOT}/test/av1_inv_txfm_test.cc"
+        "${AOM_ROOT}/test/av1_wedge_utils_test.cc"
         "${AOM_ROOT}/test/avg_test.cc"
         "${AOM_ROOT}/test/blend_a64_mask_1d_test.cc"
         "${AOM_ROOT}/test/blend_a64_mask_test.cc"
@@ -231,6 +232,8 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/test/fdct4x4_test.cc"
         "${AOM_ROOT}/test/fdct8x8_test.cc"
         "${AOM_ROOT}/test/hadamard_test.cc"
+        "${AOM_ROOT}/test/masked_sad_test.cc"
+        "${AOM_ROOT}/test/masked_variance_test.cc"
         "${AOM_ROOT}/test/minmax_test.cc"
         "${AOM_ROOT}/test/subtract_test.cc"
         "${AOM_ROOT}/test/sum_squares_test.cc"
@@ -254,12 +257,6 @@ if (CONFIG_AV1_ENCODER)
             "${AOM_ROOT}/test/av1_convolve_2d_test_util.h")
       endif ()
     endif ()
-
-      set(AOM_UNIT_TEST_ENCODER_SOURCES
-          ${AOM_UNIT_TEST_ENCODER_SOURCES}
-          "${AOM_ROOT}/test/av1_wedge_utils_test.cc"
-          "${AOM_ROOT}/test/masked_sad_test.cc"
-          "${AOM_ROOT}/test/masked_variance_test.cc")
 
     if (CONFIG_EXT_TX)
       set(AOM_UNIT_TEST_ENCODER_SOURCES
