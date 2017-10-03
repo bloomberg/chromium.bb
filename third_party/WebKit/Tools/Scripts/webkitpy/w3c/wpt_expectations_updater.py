@@ -16,7 +16,6 @@ import logging
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.path_finder import PathFinder
-from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
@@ -222,7 +221,6 @@ class WPTExpectationsUpdater(object):
         return merged_dict
 
     def get_expectations(self, results, test_name=''):
-
         """Returns a set of test expectations to use based on results.
 
         Returns a set of one or more test expectations based on the expected
@@ -423,10 +421,6 @@ class WPTExpectationsUpdater(object):
         expectations_file_path = self.port.path_to_generic_test_expectations_file()
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
 
-        line_list = [line for line in line_list if self._test_name_from_expectation_string(line) not in file_contents]
-        if not line_list:
-            return
-
         marker_comment_index = file_contents.find(MARKER_COMMENT)
         if marker_comment_index == -1:
             file_contents += '\n%s\n' % MARKER_COMMENT
@@ -436,10 +430,6 @@ class WPTExpectationsUpdater(object):
             file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(line_list) + file_contents[end_of_marker_line:]
 
         self.host.filesystem.write_text_file(expectations_file_path, file_contents)
-
-    @staticmethod
-    def _test_name_from_expectation_string(expectation_string):
-        return TestExpectationLine.tokenize_line(filename='', expectation_string=expectation_string, line_number=0).name
 
     def download_text_baselines(self, test_results):
         """Fetches new baseline files for tests that should be rebaselined.
