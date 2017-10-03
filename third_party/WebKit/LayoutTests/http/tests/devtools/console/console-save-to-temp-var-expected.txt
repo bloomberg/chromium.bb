@@ -20,7 +20,7 @@ temp12
 temp13
 {foo: "bar"}
 temp14
-(4) [1, 2, 3, 4, callee: ƒ, Symbol(Symbol.iterator): ƒ]
+Arguments(4) [1, 2, 3, 4, callee: ƒ, Symbol(Symbol.iterator): ƒ]
 temp15
 ƒ func() {}
 temp16
