@@ -72,8 +72,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     static final String POST_NATIVE_SETUP_NEEDED = "PostNativeSetupNeeded";
 
     // Outgoing results:
-    public static final String RESULT_SIGNIN_ACCOUNT_NAME = "ResultSignInTo";
-    public static final String RESULT_SHOW_SIGNIN_SETTINGS = "ResultShowSignInSettings";
     public static final String EXTRA_FIRST_RUN_ACTIVITY_RESULT = "Extra.FreActivityResult";
     public static final String EXTRA_FIRST_RUN_COMPLETE = "Extra.FreComplete";
 
@@ -392,9 +390,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             recordFreProgressHistogram(FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN);
         }
 
-        mFreProperties.putString(RESULT_SIGNIN_ACCOUNT_NAME, mResultSignInAccountName);
-        mFreProperties.putBoolean(RESULT_SHOW_SIGNIN_SETTINGS, mResultShowSignInSettings);
-        FirstRunFlowSequencer.markFlowAsCompleted(mFreProperties);
+        FirstRunFlowSequencer.markFlowAsCompleted(
+                mResultSignInAccountName, mResultShowSignInSettings);
 
         if (DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo()) {
             if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {

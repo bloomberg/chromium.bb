@@ -205,11 +205,8 @@ public class FirstRunTest {
      */
     private Preferences processFirstRun(String account, ShowSettings showSettings) {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(false);
-        Bundle data = new Bundle();
-        data.putString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME, account);
-        data.putBoolean(
-                FirstRunActivity.RESULT_SHOW_SIGNIN_SETTINGS, showSettings == ShowSettings.YES);
-        FirstRunSignInProcessor.finalizeFirstRunFlowState(data);
+        FirstRunSignInProcessor.finalizeFirstRunFlowState(
+                account, showSettings == ShowSettings.YES);
 
         Preferences prefActivity = null;
         if (showSettings == ShowSettings.YES) {

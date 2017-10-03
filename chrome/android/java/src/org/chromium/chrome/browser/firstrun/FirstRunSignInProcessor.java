@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.firstrun;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -187,13 +186,14 @@ public final class FirstRunSignInProcessor {
 
     /**
      * Finalize the state of the FRE flow (mark is as "complete" and finalize parameters).
-     * @param data Resulting FRE properties bundle
+     * @param signInAccountName The account name for the pending sign-in request. (Or null)
+     * @param showSignInSettings Whether the user selected to see the settings once signed in.
      */
-    public static void finalizeFirstRunFlowState(Bundle data) {
+    public static void finalizeFirstRunFlowState(
+            String signInAccountName, boolean showSignInSettings) {
         FirstRunStatus.setFirstRunFlowComplete(true);
-        setFirstRunFlowSignInAccountName(
-                data.getString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME));
-        setFirstRunFlowSignInSetup(data.getBoolean(FirstRunActivity.RESULT_SHOW_SIGNIN_SETTINGS));
+        setFirstRunFlowSignInAccountName(signInAccountName);
+        setFirstRunFlowSignInSetup(showSignInSettings);
     }
 
     /**
