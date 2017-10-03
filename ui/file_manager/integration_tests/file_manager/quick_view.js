@@ -4,12 +4,10 @@
 
 'use strict';
 
-function openQuickViewSteps(appId) {
+function openQuickViewSteps(appId, filename) {
   return [
     function(results) {
-      // Select an image file.
-      remoteCall.callRemoteTestUtil(
-          'selectFile', appId, ['My Desktop Background.png'], this.next);
+      remoteCall.callRemoteTestUtil('selectFile', appId, [filename], this.next);
     },
     function(results) {
       chrome.test.assertTrue(results);
@@ -40,24 +38,7 @@ function openQuickViewSteps(appId) {
       chrome.test.assertEq(1, results.length);
       // Check Quick View dialog is displayed.
       chrome.test.assertEq('block', results[0].styles.display);
-
       checkIfNoErrorsOccured(this.next);
-    },
-    function() {
-      // Wait until Quick View is displayed.
-      repeatUntil(function() {
-        return remoteCall
-            .callRemoteTestUtil(
-                'deepQueryAllElements', appId,
-                [['#quick-view', '#dialog'], null, ['display']])
-            .then(function(results) {
-              if (results.length === 0 ||
-                  results[0].styles.display === 'none') {
-                return pending('Quick View is not opened yet.');
-              };
-              return results;
-            });
-      }).then(this.next);
     },
   ];
 }
@@ -93,7 +74,8 @@ function closeQuickViewSteps(appId) {
  */
 testcase.openQuickView = function() {
   setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(function(results) {
-    StepsRunner.run(openQuickViewSteps(results.windowId));
+    StepsRunner.run(
+        openQuickViewSteps(results.windowId, 'My Desktop Background.png'));
   });
 };
 
@@ -102,7 +84,20 @@ testcase.openQuickView = function() {
  */
 testcase.closeQuickView = function() {
   setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(function(results) {
-    StepsRunner.run(openQuickViewSteps(results.windowId)
-                        .concat(closeQuickViewSteps(results.windowId)));
+    StepsRunner.run(
+        openQuickViewSteps(results.windowId, 'My Desktop Background.png')
+            .concat(closeQuickViewSteps(results.windowId)));
+  });
+};
+
+/**
+ * Open quick view, close it again, and try to open it again for folders.
+ */
+testcase.openQuickViewForFoldersAfterClose = function() {
+  setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(function(results) {
+    StepsRunner.run(
+        openQuickViewSteps(results.windowId, 'My Desktop Background.png')
+            .concat(closeQuickViewSteps(results.windowId))
+            .concat(openQuickViewSteps(results.windowId, 'photos')));
   });
 };
