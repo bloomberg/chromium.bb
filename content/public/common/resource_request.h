@@ -156,10 +156,6 @@ struct CONTENT_EXPORT ResourceRequest {
   // True if |frame_id| is the main frame of a RenderView.
   bool is_main_frame = false;
 
-  // Identifies the parent frame of the frame that sent the request.
-  // -1 if unknown / invalid.
-  int parent_render_frame_id = -1;
-
   ui::PageTransition transition_type = ui::PAGE_TRANSITION_LINK;
 
   // For navigations, whether this navigation should replace the current session
