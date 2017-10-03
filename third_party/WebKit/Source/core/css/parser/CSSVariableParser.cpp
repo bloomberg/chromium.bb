@@ -34,10 +34,11 @@ bool ClassifyBlock(CSSParserTokenRange range,
     // token accordingly.
     if (range.Peek().GetBlockType() == CSSParserToken::kBlockStart &&
         range.Peek().FunctionId() == CSSValueVar) {
-      CSSParserTokenRange copy = range;
-      if (!IsValidVariableReference(copy.ConsumeBlock(), has_at_apply_rule))
+      CSSParserTokenRange block = range.ConsumeBlock();
+      if (!IsValidVariableReference(block, has_at_apply_rule))
         return false;  // Bail if any references are invalid
       has_references = true;
+      continue;
     }
 
     const CSSParserToken& token = range.Consume();
