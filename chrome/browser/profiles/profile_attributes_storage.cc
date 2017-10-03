@@ -333,8 +333,14 @@ void ProfileAttributesStorage::RemoveObserver(Observer* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-void ProfileAttributesStorage::CallOnProfileHighResAvatarLoaded(
-    base::FilePath profile_path) const {
+void ProfileAttributesStorage::NotifyOnProfileAvatarChanged(
+    const base::FilePath& profile_path) const {
+  for (auto& observer : observer_list_)
+    observer.OnProfileAvatarChanged(profile_path);
+}
+
+void ProfileAttributesStorage::NotifyOnProfileHighResAvatarLoaded(
+    const base::FilePath& profile_path) const {
   for (auto& observer : observer_list_)
     observer.OnProfileHighResAvatarLoaded(profile_path);
 }
@@ -378,14 +384,14 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
   if (avatar_images_downloads_in_progress_.count(file_name))
     return;
 
-  // Start the download for this file. The cache takes ownership of the
-  // avatar downloader, which will be deleted when the download completes, or
-  // if that never happens, when the ProfileInfoCache is destroyed.
+  // Start the download for this file. The profile attributes storage takes
+  // ownership of the avatar downloader, which will be deleted when the download
+  // completes, or if that never happens, when the storage is destroyed.
   std::unique_ptr<ProfileAvatarDownloader>& current_downloader =
       avatar_images_downloads_in_progress_[file_name];
   current_downloader.reset(new ProfileAvatarDownloader(
       icon_index, base::Bind(&ProfileAttributesStorage::SaveAvatarImageAtPath,
-                             base::Unretained(this), profile_path)));
+                             AsWeakPtr(), profile_path)));
 
   current_downloader->Start();
 }
@@ -439,7 +445,7 @@ void ProfileAttributesStorage::OnAvatarPictureLoaded(
   }
   delete image;
 
-  CallOnProfileHighResAvatarLoaded(profile_path);
+  NotifyOnProfileHighResAvatarLoaded(profile_path);
 }
 
 void ProfileAttributesStorage::OnAvatarPictureSaved(
@@ -447,5 +453,5 @@ void ProfileAttributesStorage::OnAvatarPictureSaved(
     const base::FilePath& profile_path) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  CallOnProfileHighResAvatarLoaded(profile_path);
+  NotifyOnProfileHighResAvatarLoaded(profile_path);
 }

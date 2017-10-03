@@ -5,18 +5,22 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
 const char kShortcutNameKey[] = "shortcut_name";
 const char kActiveTimeKey[] = "active_time";
 const char kUserNameKey[] = "user_name";
+const char kAvatarIconKey[] = "avatar_icon";
 const char kAuthCredentialsKey[] = "local_auth_credentials";
 const char kPasswordTokenKey[] = "gaia_password_token";
 const char kBackgroundAppsKey[] = "background_apps";
@@ -78,7 +82,23 @@ base::string16 ProfileAttributesEntry::GetUserName() const {
 }
 
 const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() const {
-  return profile_info_cache_->GetAvatarIconOfProfileAtIndex(profile_index());
+  if (IsUsingGAIAPicture()) {
+    const gfx::Image* image = GetGAIAPicture();
+    if (image)
+      return *image;
+  }
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  // Use the high resolution version of the avatar if it exists. Mobile and
+  // ChromeOS don't need the high resolution version so no need to fetch it.
+  const gfx::Image* image = GetHighResAvatar();
+  if (image)
+    return *image;
+#endif
+
+  int resource_id =
+      profiles::GetDefaultAvatarIconResourceIDAtIndex(GetAvatarIconIndex());
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
 std::string ProfileAttributesEntry::GetLocalAuthCredentials() const {
@@ -171,8 +191,12 @@ bool ProfileAttributesEntry::IsAuthError() const {
 }
 
 size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
-  return profile_info_cache_->GetAvatarIconIndexOfProfileAtIndex(
-      profile_index());
+  std::string icon_url = GetString(kAvatarIconKey);
+  size_t icon_index = 0;
+  if (!profiles::IsDefaultAvatarIconUrl(icon_url, &icon_index))
+    DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
+
+  return icon_index;
 }
 
 void ProfileAttributesEntry::SetName(const base::string16& name) {
@@ -262,8 +286,20 @@ void ProfileAttributesEntry::SetIsAuthError(bool value) {
 }
 
 void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
-  profile_info_cache_->SetAvatarIconOfProfileAtIndex(
-      profile_index(), icon_index);
+  if (!profiles::IsDefaultAvatarIconIndex(icon_index)) {
+    DLOG(WARNING) << "Unknown avatar icon index: " << icon_index;
+    // switch to generic avatar
+    icon_index = 0;
+  }
+  SetString(kAvatarIconKey, profiles::GetDefaultAvatarIconUrl(icon_index));
+
+  base::FilePath profile_path = GetPath();
+
+  if (!profile_info_cache_->GetDisableAvatarDownloadForTesting())
+    profile_info_cache_->DownloadHighResAvatarIfNeeded(icon_index,
+                                                       profile_path);
+
+  profile_info_cache_->NotifyOnProfileAvatarChanged(profile_path);
 }
 
 void ProfileAttributesEntry::SetAuthInfo(
@@ -276,6 +312,24 @@ size_t ProfileAttributesEntry::profile_index() const {
   size_t index = profile_info_cache_->GetIndexOfProfileWithPath(profile_path_);
   DCHECK(index < profile_info_cache_->GetNumberOfProfiles());
   return index;
+}
+
+const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
+  const size_t avatar_index = GetAvatarIconIndex();
+
+  // If this is the placeholder avatar, it is already included in the
+  // resources, so it doesn't need to be downloaded.
+  if (avatar_index == profiles::GetPlaceholderAvatarIndex()) {
+    return &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        profiles::GetPlaceholderAvatarIconResourceID());
+  }
+
+  const std::string key =
+      profiles::GetDefaultAvatarIconFileNameAtIndex(avatar_index);
+  const base::FilePath image_path =
+      profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
+  return profile_info_cache_->LoadAvatarPictureFromPath(GetPath(), key,
+                                                        image_path);
 }
 
 const base::Value* ProfileAttributesEntry::GetEntryData() const {
