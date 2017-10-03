@@ -1,6 +1,6 @@
 Name: binutils
 URL: http://www.gnu.org/software/binutils/
-Version: 2.26
+Version: 2.28
 License: GPL v2
 License File: NOT_SHIPPED
 Security Critical: no
@@ -9,27 +9,15 @@ Description:
 This directory contains i386 and amd64 binaries of the binutils tools
 (including gold linker).
 
-They were built from binutils-2.26 using the "build-all.sh" script on a
+They were built from binutils-2.28 using the "build-all.sh" script on a
 Ubuntu Trusty.
 
 The script creates chroots for 32bit and 64bit Ubuntu Precise and then builds
 binutils inside the roots.
 
-Version 2.26 was released on Mon, 25 Jan 2016
+Version 2.28 was released on Thu, 02 Mar 2017
 
 Local patches:
- * long-plt.patch for http://crbug.com/554017 from upstream change
-   https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=ce3e49806d505721e0875e704de0b6fcba7660ed
-   (Landed upstream Thu, 17 Dec 2015 - should be in 2.27)
- * icf-rel.patch for https://sourceware.org/bugzilla/show_bug.cgi?id=19047
-   from upstream change
-   https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=d114b830426300f80302ca03ff4322942f63c615
-   (Landed upstream on 2.26 branch Thu, 5 May 2016,
-   and on trunk Fri, 5 Feb 2016 - will be in 2.27)
- * icf-align.patch for https://sourceware.org/bugzilla/show_bug.cgi?id=17704
-   from upstream change
-   https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=ac423761af22f7858a1413cda5df3e1d5e88d4e4
-   (Landed upstream Fri, 21 Oct 2016 - is in 2.28)
 
  * (build-all.sh|build-one.sh|upload.sh) scripts for building the binutils
    binaries and uploading them to Google storage.
