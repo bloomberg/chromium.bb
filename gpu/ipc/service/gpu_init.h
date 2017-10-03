@@ -37,20 +37,25 @@ class GPU_EXPORT GpuInit {
     sandbox_helper_ = helper;
   }
 
-  bool InitializeAndStartSandbox(base::CommandLine* command_line,
-                                 bool in_process_gpu);
+  bool InitializeAndStartSandbox(base::CommandLine* command_line);
+  void InitializeInProcess(
+      base::CommandLine* command_line,
+      const gpu::GPUInfo* gpu_info = nullptr,
+      const gpu::GpuFeatureInfo* gpu_feature_info = nullptr);
 
   const GPUInfo& gpu_info() const { return gpu_info_; }
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
   std::unique_ptr<GpuWatchdogThread> TakeWatchdogThread() {
     return std::move(watchdog_thread_);
   }
+  bool init_successful() const { return init_successful_; }
 
  private:
   GpuSandboxHelper* sandbox_helper_ = nullptr;
   std::unique_ptr<GpuWatchdogThread> watchdog_thread_;
   GPUInfo gpu_info_;
   GpuFeatureInfo gpu_feature_info_;
+  bool init_successful_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GpuInit);
 };

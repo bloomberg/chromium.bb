@@ -102,8 +102,7 @@ GpuInit::~GpuInit() {
   gpu::StopForceDiscreteGPU();
 }
 
-bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
-                                        bool in_process_gpu) {
+bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line) {
 #if defined(OS_ANDROID)
   // Android doesn't have PCI vendor/device IDs, so collecting GL strings early
   // is necessary.
@@ -122,7 +121,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
     return false;
 #endif
-  gpu_info_.in_process_gpu = in_process_gpu;
+  gpu_info_.in_process_gpu = false;
 
   // Compute blacklist and driver bug workaround decisions based on basic GPU
   // info.
@@ -192,7 +191,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
-  params.single_process = in_process_gpu;
+  params.single_process = false;
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
@@ -257,7 +256,49 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       gl::UsePassthroughCommandDecoder(command_line) &&
       gles2::PassthroughCommandDecoderSupported();
 
+  init_successful_ = true;
   return true;
+}
+
+void GpuInit::InitializeInProcess(base::CommandLine* command_line,
+                                  const gpu::GPUInfo* gpu_info,
+                                  const gpu::GpuFeatureInfo* gpu_feature_info) {
+  init_successful_ = true;
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
+  if (gpu_info && gpu_feature_info) {
+    gpu_info_ = *gpu_info;
+    gpu_feature_info_ = *gpu_feature_info;
+  } else {
+#if defined(OS_ANDROID)
+    gpu::CollectContextGraphicsInfo(&gpu_info_);
+#else
+    // TODO(zmo): Collect basic GPU info here instead.
+    gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
+#endif
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  }
+
+  if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
+    return;
+  }
+
+#if !defined(OS_ANDROID)
+  gpu::CollectContextGraphicsInfo(&gpu_info_);
+  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+#endif
+  if (!gpu_feature_info_.disabled_extensions.empty()) {
+    gl::init::SetDisabledExtensionsPlatform(
+        gpu_feature_info_.disabled_extensions);
+  }
+  if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
+    VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
+  }
 }
 
 }  // namespace gpu
