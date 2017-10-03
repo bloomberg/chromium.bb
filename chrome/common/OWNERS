@@ -11,10 +11,6 @@ per-file url_constants.h=*
 # structural changes, use usual OWNERS rules.
 per-file BUILD.gn=*
 
-# Mac Sandbox profiles.
-per-file nacl_loader.sb=set noparent
-per-file nacl_loader.sb=rsesek@chromium.org
-
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 

@@ -22,10 +22,10 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "content/common/sandbox_mac.h"
-#include "content/grit/content_resources.h"
 #include "content/test/test_content_client.h"
 #include "sandbox/mac/sandbox_compiler.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -84,11 +84,8 @@ class SandboxV2Test : public base::MultiProcessTest {};
 
 MULTIPROCESS_TEST_MAIN(SandboxProfileProcess) {
   TestContentClient content_client;
-  base::StringPiece renderer_sb = content_client.GetDataResource(
-      IDR_RENDERER_SANDBOX_V2_PROFILE, ui::SCALE_FACTOR_NONE);
-  std::string profile = renderer_sb.as_string();
-
-  sandbox::SandboxCompiler compiler(profile);
+  sandbox::SandboxCompiler compiler(
+      service_manager::kSeatbeltPolicyString_renderer_v2);
 
   // Create the logging file and pass /bin/ls as the executable path.
   base::ScopedTempDir temp_dir;

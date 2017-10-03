@@ -9,9 +9,6 @@
   <release seq="1">
     <includes>
       <include name="IDR_CHROME_EXTENSION_API_FEATURES" file="extensions\api\_api_features.json" type="BINDATA" />
-      <if expr="is_macosx">
-        <include name="IDR_NACL_SANDBOX_PROFILE" file="nacl_loader.sb" type="BINDATA" />
-      </if>
     </includes>
   </release>
 </grit>

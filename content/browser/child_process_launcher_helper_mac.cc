@@ -21,6 +21,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
 
 namespace content {
 namespace internal {
@@ -58,11 +59,8 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   if (base::FeatureList::IsEnabled(features::kMacV2Sandbox) &&
       GetProcessType() == switches::kRendererProcess && !no_sandbox) {
     seatbelt_exec_client_ = base::MakeUnique<sandbox::SeatbeltExecClient>();
-    base::StringPiece renderer_sb = GetContentClient()->GetDataResource(
-        IDR_RENDERER_SANDBOX_V2_PROFILE, ui::SCALE_FACTOR_NONE);
-    std::string profile = renderer_sb.as_string();
-
-    seatbelt_exec_client_->SetProfile(profile);
+    seatbelt_exec_client_->SetProfile(
+        service_manager::kSeatbeltPolicyString_renderer_v2);
 
     SetupRendererSandboxParameters(seatbelt_exec_client_.get());
 

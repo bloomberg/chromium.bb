@@ -93,7 +93,7 @@ class ChromeContentClient : public content::ContentClient {
 #if defined(OS_MACOSX)
   bool GetSandboxProfileForSandboxType(
       int sandbox_type,
-      int* sandbox_profile_resource_id) const override;
+      const char** sandbox_profile) const override;
 #endif
 
   bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;

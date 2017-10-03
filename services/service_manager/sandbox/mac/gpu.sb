@@ -4,7 +4,7 @@
 ;; found in the LICENSE file.
 ;;
 
-; *** The contents of content/common/common.sb are implicitly included here. ***
+; *** The contents of common.sb are implicitly included here. ***
 
 ; Allow communication between the GPU process and the UI server.
 (allow mach-lookup (global-name "com.apple.tsm.uiserver"))
