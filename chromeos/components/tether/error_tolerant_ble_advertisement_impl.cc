@@ -32,7 +32,7 @@ std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleSynchronizer* ble_synchronizer) {
+    BleSynchronizerBase* ble_synchronizer) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
@@ -50,7 +50,7 @@ std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleSynchronizer* ble_synchronizer) {
+    BleSynchronizerBase* ble_synchronizer) {
   return base::MakeUnique<ErrorTolerantBleAdvertisementImpl>(
       device_id, std::move(advertisement_data), ble_synchronizer);
 }
@@ -60,7 +60,7 @@ ErrorTolerantBleAdvertisementImpl::Factory::~Factory() {}
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleSynchronizer* ble_synchronizer)
+    BleSynchronizerBase* ble_synchronizer)
     : ErrorTolerantBleAdvertisement(device_id),
       advertisement_data_(std::move(advertisement_data)),
       ble_synchronizer_(ble_synchronizer),

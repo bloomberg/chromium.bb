@@ -21,6 +21,8 @@ static_library("tether") {
     "ble_scanner.h",
     "ble_synchronizer.cc",
     "ble_synchronizer.h",
+    "ble_synchronizer_base.cc",
+    "ble_synchronizer_base.h",
     "connect_tethering_operation.cc",
     "connect_tethering_operation.h",
     "crash_recovery_manager.cc",

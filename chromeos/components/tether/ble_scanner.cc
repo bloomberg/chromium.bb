@@ -43,7 +43,7 @@ BleScanner::ServiceDataProviderImpl::GetServiceDataForUUID(
 BleScanner::BleScanner(
     scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    BleSynchronizer* ble_synchronizer)
+    BleSynchronizerBase* ble_synchronizer)
     : adapter_(adapter),
       local_device_data_provider_(local_device_data_provider),
       ble_synchronizer_(ble_synchronizer),
