@@ -170,10 +170,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Changes the app list state.
   void SetState(AppListState new_state);
 
-  // Kicks off the proper animation for the state change. If an animation is
-  // in progress it will be interrupted.
-  void StartAnimationForState(AppListState new_state);
-
   // Starts the close animation.
   void StartCloseAnimation(base::TimeDelta animation_duration);
 
@@ -185,6 +181,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
 
+  // Layouts the app list during dragging.
+  void DraggingLayout();
+
+  // Sets |is_in_drag_| and updates the visibility of app list items.
+  void SetIsInDrag(bool is_in_drag);
+
+  void set_short_animation_for_testing() {
+    short_animations_for_testing_ = true;
+  }
+
   // Gets the PaginationModel owned by this view's apps grid.
   PaginationModel* GetAppsPaginationModel() const;
 
@@ -192,14 +198,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // screen coordinates.
   gfx::Rect GetAppInfoDialogBounds() const;
 
-  // Sets |is_in_drag_| and updates the visibility of app list items.
-  void SetIsInDrag(bool is_in_drag);
-
   // Gets current work area bottom.
   int GetWorkAreaBottom();
-
-  // Layouts the app list during dragging.
-  void DraggingLayout();
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
@@ -224,10 +224,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   int app_list_y_position_in_screen() const {
     return app_list_y_position_in_screen_;
-  }
-
-  void set_short_animation_for_testing() {
-    short_animations_for_testing_ = true;
   }
 
   bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
@@ -271,11 +267,21 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
 
+  // Set child views for FULLSCREEN_ALL_APPS and PEEKING.
+  void SetChildViewsForStateTransition(AppListState new_state);
+
+  // Converts |state| to the fullscreen equivalent.
+  void ConvertAppListStateToFullscreenEquivalent(AppListState* state);
+
+  // Kicks off the proper animation for the state change. If an animation is
+  // in progress it will be interrupted.
+  void StartAnimationForState(AppListState new_state);
+
   // Records the state transition for UMA.
   void RecordStateTransitionForUma(AppListState new_state);
 
   // Creates an Accessibility Event if the state transition warrants one.
-  void CreateAccessibilityEvent(AppListState new_state);
+  void MaybeCreateAccessibilityEvent(AppListState new_state);
 
   // Gets the display nearest to the parent window.
   display::Display GetDisplayNearestView() const;
