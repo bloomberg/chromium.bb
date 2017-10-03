@@ -18,7 +18,6 @@
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
-#include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -32,6 +31,7 @@ class VRDeviceManager {
 
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
+  static bool HasInstance();
 
   // Adds a listener for device manager events. VRDeviceManager does not own
   // this object.
@@ -41,25 +41,19 @@ class VRDeviceManager {
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  unsigned int GetNumberOfConnectedDevices();
-
   device::VRDevice* GetDevice(unsigned int index);
 
- private:
-  // TODO(mthiesse): Make testable parts protected and have the test expose them
-  // through getters in a subclass.
-  friend class VRDeviceManagerTest;
-  friend class VRDisplayImplTest;
-  friend class VRServiceImplTest;
-
-  VRDeviceManager();
-  // Constructor for testing.
-  explicit VRDeviceManager(std::unique_ptr<device::VRDeviceProvider> provider);
-
-  void InitializeProviders();
-  void RegisterProvider(std::unique_ptr<device::VRDeviceProvider> provider);
-
+ protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
+
+  // Used by tests to supply providers.
+  explicit VRDeviceManager(ProviderList providers);
+
+  size_t NumberOfConnectedServices();
+
+ private:
+  void InitializeProviders();
+
   ProviderList providers_;
 
   // Devices are owned by their providers.
@@ -69,9 +63,6 @@ class VRDeviceManager {
   bool vr_initialized_ = false;
 
   std::set<VRServiceImpl*> services_;
-
-  // For testing. If true will not delete self when consumer count reaches 0.
-  bool keep_alive_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -26,21 +26,29 @@ namespace {
 VRDeviceManager* g_vr_device_manager = nullptr;
 }
 
-VRDeviceManager::VRDeviceManager() : keep_alive_(false) {
-// Register VRDeviceProviders for the current platform
+VRDeviceManager* VRDeviceManager::GetInstance() {
+  if (!g_vr_device_manager) {
+    // Register VRDeviceProviders for the current platform
+    ProviderList providers;
 #if defined(OS_ANDROID)
-  RegisterProvider(std::make_unique<device::GvrDeviceProvider>());
+    providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  RegisterProvider(std::make_unique<OpenVRDeviceProvider>());
+    providers.emplace_back(std::make_unique<OpenVRDeviceProvider>());
 #endif
+    new VRDeviceManager(std::move(providers));
+  }
+  return g_vr_device_manager;
 }
 
-VRDeviceManager::VRDeviceManager(
-    std::unique_ptr<device::VRDeviceProvider> provider)
-    : keep_alive_(true) {
-  RegisterProvider(std::move(provider));
+bool VRDeviceManager::HasInstance() {
+  return g_vr_device_manager != nullptr;
+}
+
+VRDeviceManager::VRDeviceManager(ProviderList providers)
+    : providers_(std::move(providers)) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK(!g_vr_device_manager);
   g_vr_device_manager = this;
 }
@@ -48,12 +56,6 @@ VRDeviceManager::VRDeviceManager(
 VRDeviceManager::~VRDeviceManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   g_vr_device_manager = nullptr;
-}
-
-VRDeviceManager* VRDeviceManager::GetInstance() {
-  if (!g_vr_device_manager)
-    g_vr_device_manager = new VRDeviceManager();
-  return g_vr_device_manager;
 }
 
 void VRDeviceManager::AddService(VRServiceImpl* service) {
@@ -65,18 +67,15 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
   InitializeProviders();
 
   std::vector<device::VRDevice*> devices;
-  for (const auto& provider : providers_) {
+  for (const auto& provider : providers_)
     provider->GetDevices(&devices);
-  }
 
   for (auto* device : devices) {
-    if (device->id() == device::VR_DEVICE_LAST_ID) {
+    if (device->id() == device::VR_DEVICE_LAST_ID)
       continue;
-    }
 
-    if (devices_.find(device->id()) == devices_.end()) {
+    if (devices_.find(device->id()) == devices_.end())
       devices_[device->id()] = device;
-    }
 
     service->ConnectDevice(device);
   }
@@ -87,16 +86,10 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
 void VRDeviceManager::RemoveService(VRServiceImpl* service) {
   services_.erase(service);
 
-  if (services_.empty() && !keep_alive_) {
+  if (services_.empty()) {
     // Delete the device manager when it has no active connections.
     delete g_vr_device_manager;
   }
-}
-
-unsigned int VRDeviceManager::GetNumberOfConnectedDevices() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  return static_cast<unsigned int>(devices_.size());
 }
 
 device::VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
@@ -106,27 +99,24 @@ device::VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
     return nullptr;
 
   DeviceMap::iterator iter = devices_.find(index);
-  if (iter == devices_.end()) {
+  if (iter == devices_.end())
     return nullptr;
-  }
+
   return iter->second;
 }
 
 void VRDeviceManager::InitializeProviders() {
-  if (vr_initialized_) {
+  if (vr_initialized_)
     return;
-  }
 
-  for (const auto& provider : providers_) {
+  for (const auto& provider : providers_)
     provider->Initialize();
-  }
 
   vr_initialized_ = true;
 }
 
-void VRDeviceManager::RegisterProvider(
-    std::unique_ptr<device::VRDeviceProvider> provider) {
-  providers_.push_back(std::move(provider));
+size_t VRDeviceManager::NumberOfConnectedServices() {
+  return services_.size();
 }
 
 }  // namespace vr
