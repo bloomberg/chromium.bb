@@ -139,7 +139,7 @@ bool BackForwardMenuModel::GetIconAt(int index, gfx::Image* icon) {
     return false;
 
   if (index == GetItemCount() - 1) {
-    *icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+    *icon = ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
         IDR_HISTORY_FAVICON);
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);

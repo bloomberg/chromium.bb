@@ -218,8 +218,8 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
     } else {
       NSString* text = base::SysUTF16ToNSString(
           labels.first + base::ASCIIToUTF16("\n") + labels.second);
-      NSFont* font = ResourceBundle::GetSharedInstance()
-                         .GetFontList(ResourceBundle::SmallFont)
+      NSFont* font = ui::ResourceBundle::GetSharedInstance()
+                         .GetFontList(ui::ResourceBundle::SmallFont)
                          .GetPrimaryFont()
                          .GetNativeFont();
       NSDictionary* attrsDictionary =

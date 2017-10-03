@@ -211,7 +211,7 @@ void MaybeApplyChromeBadge(content::BrowserContext* context,
     return;
 
   const gfx::ImageSkia* badge_image =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_ARC_DUAL_ICON_BADGE);
   DCHECK(badge_image);
 

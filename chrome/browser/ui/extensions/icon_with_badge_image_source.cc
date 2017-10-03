@@ -110,8 +110,8 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
           ? gfx::kGoogleBlue500
           : SkColorSetA(badge_->background_color, SK_AlphaOPAQUE);
 
-  ResourceBundle* rb = &ResourceBundle::GetSharedInstance();
-  gfx::FontList base_font = rb->GetFontList(ResourceBundle::BaseFont)
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  gfx::FontList base_font = rb->GetFontList(ui::ResourceBundle::BaseFont)
                                 .DeriveWithHeightUpperBound(kBadgeHeight);
   base::string16 utf16_text = base::UTF8ToUTF16(badge_->text);
 
@@ -187,8 +187,9 @@ void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
 void IconWithBadgeImageSource::PaintBlockedActionDecoration(
     gfx::Canvas* canvas) {
   canvas->Save();
-  gfx::ImageSkia img = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_BLOCKED_EXTENSION_SCRIPT);
+  gfx::ImageSkia img =
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_BLOCKED_EXTENSION_SCRIPT);
   canvas->DrawImageInt(img, size().width() - img.width(), 0);
   canvas->Restore();
 }

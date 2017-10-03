@@ -22,11 +22,11 @@ class ResourcesTest : public ::testing::Test {
   ResourcesTest() {
     ui::RegisterPathProvider();
     ui::MaterialDesignController::Initialize();
-    ResourceBundle::InitSharedInstanceWithLocale(
-        "en-US", nullptr, ResourceBundle::LOAD_COMMON_RESOURCES);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   }
 
-  ~ResourcesTest() override { ResourceBundle::CleanupSharedInstance(); }
+  ~ResourcesTest() override { ui::ResourceBundle::CleanupSharedInstance(); }
 };
 
 // Trailing whitespace has been the cause of a bug in the past. Make sure this
@@ -45,9 +45,9 @@ TEST_F(ResourcesTest, CriticalMessagesContainNoExtraWhitespaces) {
   for (base::FilePath locale_file_path = file_enumerator.Next();
        !locale_file_path.empty(); locale_file_path = file_enumerator.Next()) {
     // Load the current locale file.
-    ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(
+    ui::ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(
         locale_file_path);
-    ResourceBundle::GetSharedInstance().ReloadLocaleResources("");
+    ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("");
 
     for (int message : messages_to_check) {
       base::string16 message_str = l10n_util::GetStringUTF16(message);

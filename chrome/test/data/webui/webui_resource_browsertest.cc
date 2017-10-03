@@ -23,7 +23,7 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
     base::FilePath pak_path;
     ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &pak_path));
     pak_path = pak_path.AppendASCII("browser_tests.pak");
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path, ui::SCALE_FACTOR_NONE);
   }
 
@@ -34,7 +34,7 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
   }
 
   void LoadResource(int idr) {
-    ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     scoped_refptr<base::RefCountedMemory> resource =
         bundle.LoadDataResourceBytes(idr);
     RunTest(GURL(std::string("data:text/html,") +

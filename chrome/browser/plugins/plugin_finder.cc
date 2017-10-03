@@ -181,7 +181,7 @@ void PluginFinder::Init() {
 // static
 base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
   base::StringPiece json_resource(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PLUGIN_DB_JSON));
   std::string error_str;
   int error_code = base::JSONReader::JSON_NO_ERROR;

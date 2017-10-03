@@ -220,7 +220,7 @@ int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
   constexpr int kTemplateStyle = views::style::STYLE_PRIMARY;
 
   // TODO(tapted): These statics should be cleared out when something invokes
-  // ResourceBundle::ReloadFonts(). Currently that only happens on ChromeOS.
+  // ui::ResourceBundle::ReloadFonts(). Currently that only happens on ChromeOS.
   // See http://crbug.com/708943.
   static const int headline_height =
       GetFont(CONTEXT_HEADLINE, kTemplateStyle).GetHeight() -

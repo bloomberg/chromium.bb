@@ -29,8 +29,8 @@ namespace {
 gfx::ImageSkia* g_default_icon = nullptr;
 
 gfx::ImageSkia* GetDefaultIcon() {
-  if (!g_default_icon && ResourceBundle::HasSharedInstance()) {
-    g_default_icon = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  if (!g_default_icon && ui::ResourceBundle::HasSharedInstance()) {
+    g_default_icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_PLUGINS_FAVICON);
   }
 

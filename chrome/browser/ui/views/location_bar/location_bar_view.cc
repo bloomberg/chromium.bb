@@ -154,8 +154,8 @@ void LocationBarView::Init() {
   layer()->SetMasksToBounds(true);
 
   // Determine the main font.
-  gfx::FontList font_list = ResourceBundle::GetSharedInstance().GetFontList(
-      ResourceBundle::BaseFont);
+  gfx::FontList font_list = ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::BaseFont);
   const int current_font_size = font_list.GetFontSize();
   constexpr int kDesiredFontSize = 14;
   if (current_font_size != kDesiredFontSize) {

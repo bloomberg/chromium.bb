@@ -69,8 +69,8 @@ scoped_refptr<base::RefCountedMemory> LoadUserImageFrameForScaleFactor(
     ui::ScaleFactor scale_factor) {
   // Load all frames.
   if (frame == -1) {
-    return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-        resource_id, scale_factor);
+    return ui::ResourceBundle::GetSharedInstance()
+        .LoadDataResourceBytesForScale(resource_id, scale_factor);
   }
   // TODO(reveman): Add support frames beyond 0 (crbug.com/750064).
   if (frame) {
@@ -78,7 +78,7 @@ scoped_refptr<base::RefCountedMemory> LoadUserImageFrameForScaleFactor(
     return nullptr;
   }
   gfx::ImageSkia* image =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   float scale = ui::GetScaleForScaleFactor(scale_factor);
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes);
   gfx::PNGCodec::EncodeBGRASkBitmap(image->GetRepresentation(scale).sk_bitmap(),

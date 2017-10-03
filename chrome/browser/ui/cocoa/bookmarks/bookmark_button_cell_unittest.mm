@@ -71,7 +71,7 @@ TEST_F(BookmarkButtonCellTest, IconOnlySqueeze) {
   [view setCell:cell.get()];
   [[test_window() contentView] addSubview:view];
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::scoped_nsobject<NSImage> image(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   EXPECT_TRUE(image.get());
@@ -230,7 +230,7 @@ TEST_F(BookmarkButtonCellTest, CellWidthForNode) {
       model->AddURL(bar, bar->child_count(),
                     base::ASCIIToUTF16("This cell has a longer title "),
                     GURL("http://www.google.com/a"));
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::scoped_nsobject<NSImage> image(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   CGFloat width_for_node_a =

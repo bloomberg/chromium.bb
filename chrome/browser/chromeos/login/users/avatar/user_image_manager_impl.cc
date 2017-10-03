@@ -442,7 +442,7 @@ void UserImageManagerImpl::Job::UpdateUser(
   } else {
     user->SetStubImage(
         base::MakeUnique<user_manager::UserImage>(
-            *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                 IDR_LOGIN_DEFAULT_USER)),
         image_index_, false);
   }
@@ -617,10 +617,11 @@ void UserImageManagerImpl::LoadUserImage() {
   image_properties->GetString(kImagePathNodeName, &image_path);
 
   user->SetImageURL(image_url);
-  user->SetStubImage(base::MakeUnique<user_manager::UserImage>(
-                         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_LOGIN_DEFAULT_USER)),
-                     image_index, true);
+  user->SetStubImage(
+      base::MakeUnique<user_manager::UserImage>(
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_LOGIN_DEFAULT_USER)),
+      image_index, true);
   DCHECK(!image_path.empty() ||
          image_index == user_manager::User::USER_IMAGE_PROFILE);
   if (image_path.empty()) {

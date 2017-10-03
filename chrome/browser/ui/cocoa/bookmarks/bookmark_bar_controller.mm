@@ -281,7 +281,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
                                                  profile:browser_->profile()]);
     didCreateExtraButtons_ = NO;
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     folderImage_.reset(
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).CopyNSImage());
     folderImageWhite_.reset(
@@ -664,13 +664,13 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 
   if (forADarkTheme) {
     if (node == managedBookmarkService_->managed_node()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       return rb.GetNativeImageNamed(
           IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE).ToNSImage();
     }
 
     if (node == managedBookmarkService_->supervised_node()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       return rb.GetNativeImageNamed(
           IDR_BOOKMARK_BAR_FOLDER_SUPERVISED_WHITE).ToNSImage();
     }
@@ -680,14 +680,14 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
   } else {
     if (node == managedBookmarkService_->managed_node()) {
       // Most users never see this node, so the image is only loaded if needed.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       return rb.GetNativeImageNamed(
           IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
     }
 
     if (node == managedBookmarkService_->supervised_node()) {
       // Most users never see this node, so the image is only loaded if needed.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       return rb.GetNativeImageNamed(
           IDR_BOOKMARK_BAR_FOLDER_SUPERVISED).ToNSImage();
     }
@@ -1221,7 +1221,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
     return;
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSString* text = l10n_util::GetNSString(IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME);
   NSImage* image = rb.GetNativeImageNamed(
       IDR_BOOKMARK_BAR_APPS_SHORTCUT).ToNSImage();

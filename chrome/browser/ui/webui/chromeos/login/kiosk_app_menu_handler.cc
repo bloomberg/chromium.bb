@@ -118,7 +118,7 @@ void KioskAppMenuHandler::SendKioskApps() {
     std::string icon_url;
     if (app_data.icon.isNull()) {
       icon_url =
-          webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
+          webui::GetBitmapDataUrl(*ui::ResourceBundle::GetSharedInstance()
                                        .GetImageNamed(IDR_APP_DEFAULT_ICON)
                                        .ToSkBitmap());
     } else {
@@ -144,7 +144,7 @@ void KioskAppMenuHandler::SendKioskApps() {
     std::string icon_url;
     if (arc_apps[i]->icon().isNull()) {
       icon_url =
-          webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
+          webui::GetBitmapDataUrl(*ui::ResourceBundle::GetSharedInstance()
                                        .GetImageNamed(IDR_APP_DEFAULT_ICON)
                                        .ToSkBitmap());
     } else {

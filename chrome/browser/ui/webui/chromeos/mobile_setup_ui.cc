@@ -345,12 +345,12 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
   std::string full_html;
   if (activation_state == shill::kActivationStateActivated) {
     static const base::StringPiece html_for_activated(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_MOBILE_SETUP_PORTAL_PAGE_HTML));
     full_html = webui::GetI18nTemplateHtml(html_for_activated, &strings);
   } else {
     static const base::StringPiece html_for_non_activated(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_MOBILE_SETUP_PAGE_HTML));
     full_html = webui::GetI18nTemplateHtml(html_for_non_activated, &strings);
   }

@@ -411,8 +411,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
 // static
 v8::Extension* SearchBoxExtension::Get() {
-  return new SearchBoxExtensionWrapper(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_SEARCHBOX_API));
+  return new SearchBoxExtensionWrapper(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_SEARCHBOX_API));
 }
 
 // static

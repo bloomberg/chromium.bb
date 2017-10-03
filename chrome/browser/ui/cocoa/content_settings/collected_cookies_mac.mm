@@ -137,7 +137,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 }
 
 - (void)awakeFromNib {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSImage* infoIcon = rb.GetNativeImageNamed(IDR_INFO).ToNSImage();
   [infoBarIcon_ setImage:infoIcon];
 
@@ -370,7 +370,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   }
 
   // Default icon will be the last item in the array.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // TODO(rsesek): Rename this resource now that it's in multiple places.
   [icons_ addObject:
       rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).ToNSImage()];

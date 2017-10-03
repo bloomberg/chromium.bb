@@ -33,7 +33,7 @@ namespace {
 class SpriteViewTest : public CocoaTest {
  public:
   SpriteViewTest() {
-    image_.reset(ResourceBundle::GetSharedInstance()
+    image_.reset(ui::ResourceBundle::GetSharedInstance()
                      .GetNativeImageNamed(IDR_THROBBER)
                      .CopyNSImage());
     view_.reset([[SpriteView alloc] init]);

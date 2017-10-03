@@ -239,7 +239,7 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
           message_center::kSmallImageSizeMD, notification_->accent_color())));
     }
   } else {
-    ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     switch (print_job_->state()) {
       case CupsPrintJob::State::STATE_WAITING:
       case CupsPrintJob::State::STATE_STARTED:
@@ -354,7 +354,7 @@ base::string16 CupsPrintJobNotification::GetButtonLabel(
 }
 
 gfx::Image CupsPrintJobNotification::GetButtonIcon(ButtonCommand button) const {
-  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   gfx::Image icon;
   switch (button) {
     case ButtonCommand::CANCEL_PRINTING:

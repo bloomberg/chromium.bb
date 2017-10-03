@@ -22,11 +22,11 @@ gfx::ImageSkia* GetPrerenderIcon() {
   if (g_prerender_icon)
     return g_prerender_icon;
 
-  if (!ResourceBundle::HasSharedInstance())
+  if (!ui::ResourceBundle::HasSharedInstance())
     return nullptr;
 
   g_prerender_icon =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_PRERENDER);
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_PRERENDER);
   return g_prerender_icon;
 }
 

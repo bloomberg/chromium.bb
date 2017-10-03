@@ -421,7 +421,7 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
   extension_info_.id = extension->id();
   extension_info_.name = extension->name();
 
-  ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia& default_extension_icon_image =
       *rb.GetImageSkiaNamed(IDR_EXTENSIONS_FAVICON);
   int icon_size = gfx::kFaviconSize;

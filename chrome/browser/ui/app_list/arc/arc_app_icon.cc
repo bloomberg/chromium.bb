@@ -148,8 +148,8 @@ gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
   if (it != default_icons_cache_.Get().end())
     return it->second.GetRepresentation(scale);
 
-  const gfx::ImageSkia* default_image = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(resource_id);
+  const gfx::ImageSkia* default_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   CHECK(default_image);
   gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
       *default_image, skia::ImageOperations::RESIZE_BEST,

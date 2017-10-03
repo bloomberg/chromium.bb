@@ -367,7 +367,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   int default_avatar_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(kDefaultAvatarIndex);
   const gfx::Image& default_avatar_image(
-      ResourceBundle::GetSharedInstance().GetImageNamed(default_avatar_id));
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(default_avatar_id));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       default_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
@@ -393,7 +393,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   int other_avatar_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(kOtherAvatarIndex);
   const gfx::Image& other_avatar_image(
-      ResourceBundle::GetSharedInstance().GetImageNamed(other_avatar_id));
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(other_avatar_id));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
@@ -461,7 +461,7 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   base::string16 profile_name = ASCIIToUTF16("name_1");
   int id = profiles::GetDefaultAvatarIconResourceIDAtIndex(0);
   const gfx::Image& profile_image(
-      ResourceBundle::GetSharedInstance().GetImageNamed(id));
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(id));
 
   GetCache()->AddProfileToCache(
       GetProfilePath("path_1"), profile_name, std::string(), base::string16(),

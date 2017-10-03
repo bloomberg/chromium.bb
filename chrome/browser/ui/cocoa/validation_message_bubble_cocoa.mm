@@ -70,8 +70,9 @@ anchoredAt:(NSPoint)anchorPoint
   NSRect contentFrame = NSMakeRect(kWindowPadding, kWindowPadding, 0, 0);
   FlippedView* contentView = [[FlippedView alloc] initWithFrame:contentFrame];
 
-  NSImage* image = ResourceBundle::GetSharedInstance()
-      .GetNativeImageNamed(IDR_INPUT_ALERT).ToNSImage();
+  NSImage* image = ui::ResourceBundle::GetSharedInstance()
+                       .GetNativeImageNamed(IDR_INPUT_ALERT)
+                       .ToNSImage();
   base::scoped_nsobject<NSImageView> imageView([[NSImageView alloc]
       initWithFrame:NSMakeRect(0, 0, image.size.width, image.size.height)]);
   [imageView setImageFrameStyle:NSImageFrameNone];

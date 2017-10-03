@@ -355,8 +355,9 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
 #endif
   std::string seed;
 #if defined(GOOGLE_CHROME_BUILD)
-  seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_PREF_HASH_SEED_BIN).as_string();
+  seed = ui::ResourceBundle::GetSharedInstance()
+             .GetRawDataResource(IDR_PREF_HASH_SEED_BIN)
+             .as_string();
 #endif
   return base::MakeUnique<ProfilePrefStoreManager>(profile_path, seed,
                                                    legacy_device_id);

@@ -73,7 +73,8 @@ void IframeSource::SendResource(
     int resource_id,
     const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedMemory> response(
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id));
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          resource_id));
   callback.Run(response.get());
 }
 
@@ -88,7 +89,7 @@ void IframeSource::SendJSWithOrigin(
   }
 
   base::StringPiece template_js =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   std::string response(template_js.as_string());
   base::ReplaceFirstSubstringAfterOffset(&response, 0, "{{ORIGIN}}", origin);
   callback.Run(base::RefCountedString::TakeString(&response));

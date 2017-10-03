@@ -25,7 +25,7 @@ PDFPluginPlaceholder* PDFPluginPlaceholder::CreatePDFPlaceholder(
     content::RenderFrame* render_frame,
     const blink::WebPluginParams& params) {
   const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PDF_PLUGIN_HTML));
   base::DictionaryValue values;
   values.SetString("fileName", GURL(params.url).ExtractFileName());

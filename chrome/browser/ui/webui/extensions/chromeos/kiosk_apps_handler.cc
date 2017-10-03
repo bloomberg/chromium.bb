@@ -46,7 +46,7 @@ void PopulateAppDict(const KioskAppManager::App& app_data,
                      base::DictionaryValue* app_dict) {
   std::string icon_url;
   if (app_data.icon.isNull()) {
-    icon_url = webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
+    icon_url = webui::GetBitmapDataUrl(*ui::ResourceBundle::GetSharedInstance()
                                             .GetImageNamed(IDR_APP_DEFAULT_ICON)
                                             .ToSkBitmap());
   } else {

@@ -57,7 +57,7 @@ class LayoutProviderTest : public testing::Test {
 // changed by mistake.
 // Disabled since this relies on machine configuration. http://crbug.com/701241.
 TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
-  ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList label_font = rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
 
   EXPECT_EQ(12, label_font.GetFontSize());
@@ -111,13 +111,13 @@ TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
   EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
 #endif
 
-  gfx::FontList small_font = rb.GetFontList(ResourceBundle::SmallFont);
-  gfx::FontList base_font = rb.GetFontList(ResourceBundle::BaseFont);
-  gfx::FontList bold_font = rb.GetFontList(ResourceBundle::BoldFont);
-  gfx::FontList medium_font = rb.GetFontList(ResourceBundle::MediumFont);
+  gfx::FontList small_font = rb.GetFontList(ui::ResourceBundle::SmallFont);
+  gfx::FontList base_font = rb.GetFontList(ui::ResourceBundle::BaseFont);
+  gfx::FontList bold_font = rb.GetFontList(ui::ResourceBundle::BoldFont);
+  gfx::FontList medium_font = rb.GetFontList(ui::ResourceBundle::MediumFont);
   gfx::FontList medium_bold_font =
-      rb.GetFontList(ResourceBundle::MediumBoldFont);
-  gfx::FontList large_font = rb.GetFontList(ResourceBundle::LargeFont);
+      rb.GetFontList(ui::ResourceBundle::MediumBoldFont);
+  gfx::FontList large_font = rb.GetFontList(ui::ResourceBundle::LargeFont);
 
 #if defined(OS_MACOSX)
   EXPECT_EQ(12, small_font.GetFontSize());
@@ -163,7 +163,7 @@ TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
   constexpr gfx::Font::Weight kButtonWeight = gfx::Font::Weight::MEDIUM;
 #endif
 
-  ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   gfx::FontList headline_font = rb.GetFontListWithDelta(kHeadline - kBase);
   gfx::FontList title_font = rb.GetFontListWithDelta(kTitle - kBase);

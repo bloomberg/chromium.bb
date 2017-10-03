@@ -34,7 +34,7 @@ const gfx::Point kPatchesLocations[] = {{}, {5, 5}, {47, 165}, {47, 234}};
 
 sk_sp<SkImage> LoadPng(int resource_id) {
   base::StringPiece data =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   SkBitmap bitmap;
   bool decoded =
       gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(data.data()),
@@ -147,7 +147,7 @@ const vr::gltf::Accessor* VrControllerModel::Accessor(
 std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromResources() {
   TRACE_EVENT0("gpu", "VrControllerModel::LoadFromResources");
   std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers;
-  auto model_data = ResourceBundle::GetSharedInstance().GetRawDataResource(
+  auto model_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_VR_SHELL_DDCONTROLLER_MODEL);
   std::unique_ptr<vr::gltf::Asset> asset =
       vr::BinaryGltfParser::Parse(model_data, &buffers);

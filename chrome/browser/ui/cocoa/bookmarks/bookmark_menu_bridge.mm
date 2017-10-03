@@ -68,7 +68,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     return;
 
   if (!folder_image_) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     folder_image_.reset(
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).CopyNSImage());
     [folder_image_ setTemplate:YES];
@@ -87,14 +87,14 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
   if (!managedNode->empty()) {
     // Most users never see this node, so the image is only loaded if needed.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     NSImage* image =
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
     AddNodeAsSubmenu(bookmark_menu, managedNode, image, !is_submenu);
   }
   if (!supervisedNode->empty()) {
     // Most users never see this node, so the image is only loaded if needed.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     NSImage* image =
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_SUPERVISED).ToNSImage();
     AddNodeAsSubmenu(bookmark_menu, supervisedNode, image, !is_submenu);
@@ -304,7 +304,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   }
   // If we do not have a loaded favicon, use the default site image instead.
   if (!favicon) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();
     [favicon setTemplate:YES];
   }

@@ -1041,7 +1041,7 @@ bool CreateAppListDesktopShortcut(
   }
 
   gfx::ImageFamily icon_images;
-  ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_16));
   icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_32));
   icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_48));

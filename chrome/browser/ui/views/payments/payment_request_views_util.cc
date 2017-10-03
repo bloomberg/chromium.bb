@@ -245,7 +245,7 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
   if (img != nullptr) {
     icon_view->SetImage(*img);
   } else {
-    icon_view->SetImage(ResourceBundle::GetSharedInstance()
+    icon_view->SetImage(ui::ResourceBundle::GetSharedInstance()
                             .GetImageNamed(icon_resource_id)
                             .AsImageSkia());
   }
@@ -270,7 +270,7 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
   std::unique_ptr<views::ImageView> chrome_logo =
       base::MakeUnique<views::ImageView>();
   chrome_logo->set_can_process_events_within_subtree(false);
-  chrome_logo->SetImage(ResourceBundle::GetSharedInstance()
+  chrome_logo->SetImage(ui::ResourceBundle::GetSharedInstance()
                             .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
                             .AsImageSkia());
   chrome_logo->SetTooltipText(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
@@ -351,8 +351,10 @@ std::unique_ptr<views::Label> CreateMediumLabel(const base::string16& text) {
   // Also, it needs to handle user setups where the default font is BOLD already
   // since asking for a MEDIUM font will give a lighter font.
   std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(text);
-  label->SetFontList(ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      ui::kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+  label->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL,
+          gfx::Font::Weight::MEDIUM));
   return label;
 }
 
