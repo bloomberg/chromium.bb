@@ -1494,6 +1494,17 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   process_host->sink().ClearMessages();
 
   host->ShutdownAndDestroyWidget(true);
+
+  // Wait for the mouse_wheel_end_dispatch_timer_ to expire after host is
+  // destroyed. The pending wheel end event won't get dispatched since the
+  // render_widget_host_ is null. This waiting confirms that no crash happens
+  // because of an attempt to send the pending wheel end event.
+  // https://crbug.com/770057
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  run_loop.Run();
 }
 
 TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,

@@ -1078,6 +1078,8 @@ void RenderWidgetHostViewMac::Destroy() {
   if (text_input_manager_)
     text_input_manager_->RemoveObserver(this);
 
+  mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
+
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
   // by some other code.  Examples are WebContentsViewMac's
