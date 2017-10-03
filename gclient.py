@@ -1160,13 +1160,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     (DEPS file contents with applied custom_vars overrides)."""
     # Provide some built-in variables.
     result = {
-        'checkout_android': repr('android' in self.target_os),
-        'checkout_fuchsia': repr('fuchsia' in self.target_os),
-        'checkout_ios': repr('ios' in self.target_os),
-        'checkout_linux': repr('unix' in self.target_os),
-        'checkout_mac': repr('mac' in self.target_os),
-        'checkout_win': repr('win' in self.target_os),
-        'host_os': repr(_detect_host_os()),
+        'checkout_android': 'android' in self.target_os,
+        'checkout_fuchsia': 'fuchsia' in self.target_os,
+        'checkout_ios': 'ios' in self.target_os,
+        'checkout_linux': 'unix' in self.target_os,
+        'checkout_mac': 'mac' in self.target_os,
+        'checkout_win': 'win' in self.target_os,
+        'host_os': _detect_host_os(),
     }
     # Variables defined in DEPS file override built-in ones.
     result.update(self._vars)
