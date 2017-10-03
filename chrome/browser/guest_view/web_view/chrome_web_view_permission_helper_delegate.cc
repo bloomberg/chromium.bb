@@ -5,6 +5,7 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 
 #include <map>
+#include <utility>
 
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -153,17 +154,14 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
   // It is safe to hold an unretained pointer to
   // ChromeWebViewPermissionHelperDelegate because this callback is called from
   // ChromeWebViewPermissionHelperDelegate::SetPermission.
-  const WebViewPermissionHelper::PermissionResponseCallback
-      permission_callback =
-          base::Bind(&ChromeWebViewPermissionHelperDelegate::
+  WebViewPermissionHelper::PermissionResponseCallback permission_callback =
+      base::BindOnce(&ChromeWebViewPermissionHelperDelegate::
                          OnGeolocationPermissionResponse,
                      weak_factory_.GetWeakPtr(), bridge_id, user_gesture,
                      base::Bind(&CallbackWrapper, callback));
   int request_id = web_view_permission_helper()->RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
-      request_info,
-      permission_callback,
-      false /* allowed_by_default */);
+      WEB_VIEW_PERMISSION_TYPE_GEOLOCATION, request_info,
+      std::move(permission_callback), false /* allowed_by_default */);
   bridge_id_to_request_id_map_[bridge_id] = request_id;
 }
 

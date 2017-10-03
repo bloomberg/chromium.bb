@@ -300,7 +300,7 @@ void WebViewPermissionHelper::FileSystemAccessedAsync(int render_process_id,
 int WebViewPermissionHelper::RequestPermission(
     WebViewPermissionType permission_type,
     const base::DictionaryValue& request_info,
-    const PermissionResponseCallback& callback,
+    PermissionResponseCallback callback,
     bool allowed_by_default) {
   // If there are too many pending permission requests then reject this request.
   if (pending_permission_requests_.size() >=
@@ -310,13 +310,14 @@ int WebViewPermissionHelper::RequestPermission(
     // after creation. This is to allow those same objects to be accessed again
     // in the same scope without fear of use after freeing.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, allowed_by_default, std::string()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), allowed_by_default, std::string()));
     return webview::kInvalidPermissionRequestID;
   }
 
   int request_id = next_permission_request_id_++;
-  pending_permission_requests_[request_id] =
-      PermissionResponseInfo(callback, permission_type, allowed_by_default);
+  pending_permission_requests_[request_id] = PermissionResponseInfo(
+      std::move(callback), permission_type, allowed_by_default);
   std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetKey(webview::kRequestInfo, request_info.Clone());
   args->SetInteger(webview::kRequestId, request_id);
@@ -347,17 +348,16 @@ WebViewPermissionHelper::SetPermission(
     int request_id,
     PermissionResponseAction action,
     const std::string& user_input) {
-  RequestMap::iterator request_itr =
-      pending_permission_requests_.find(request_id);
+  auto request_itr = pending_permission_requests_.find(request_id);
 
   if (request_itr == pending_permission_requests_.end())
     return SET_PERMISSION_INVALID;
 
-  const PermissionResponseInfo& info = request_itr->second;
+  PermissionResponseInfo& info = request_itr->second;
   bool allow = (action == ALLOW) ||
       ((action == DEFAULT) && info.allowed_by_default);
 
-  info.callback.Run(allow, user_input);
+  std::move(info.callback).Run(allow, user_input);
 
   // Only record user initiated (i.e. non-default) actions.
   if (action != DEFAULT)
@@ -369,8 +369,7 @@ WebViewPermissionHelper::SetPermission(
 }
 
 void WebViewPermissionHelper::CancelPendingPermissionRequest(int request_id) {
-  RequestMap::iterator request_itr =
-      pending_permission_requests_.find(request_id);
+  auto request_itr = pending_permission_requests_.find(request_id);
 
   if (request_itr == pending_permission_requests_.end())
     return;
@@ -384,18 +383,17 @@ WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo()
 }
 
 WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo(
-    const PermissionResponseCallback& callback,
+    PermissionResponseCallback callback,
     WebViewPermissionType permission_type,
     bool allowed_by_default)
-    : callback(callback),
+    : callback(std::move(callback)),
       permission_type(permission_type),
-      allowed_by_default(allowed_by_default) {
-}
+      allowed_by_default(allowed_by_default) {}
 
-WebViewPermissionHelper::PermissionResponseInfo::PermissionResponseInfo(
-    const PermissionResponseInfo& other) = default;
+WebViewPermissionHelper::PermissionResponseInfo&
+WebViewPermissionHelper::PermissionResponseInfo::operator=(
+    WebViewPermissionHelper::PermissionResponseInfo&& other) = default;
 
-WebViewPermissionHelper::PermissionResponseInfo::~PermissionResponseInfo() {
-}
+WebViewPermissionHelper::PermissionResponseInfo::~PermissionResponseInfo() {}
 
 }  // namespace extensions
