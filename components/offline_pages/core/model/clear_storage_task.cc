@@ -75,7 +75,7 @@ PageInfo MakePageInfo(sql::Statement* statement) {
 bool ShouldClearPages(const base::Time& last_start_time,
                       const base::Time& start_time,
                       const ArchiveManager::StorageStats& storage_stats) {
-  int64_t total_size = storage_stats.total_archives_size;
+  int64_t total_size = storage_stats.temporary_archives_size;
   int64_t free_space = storage_stats.free_disk_space;
   if (total_size == 0)
     return false;
@@ -125,7 +125,7 @@ std::unique_ptr<std::vector<PageInfo>> GetPageInfosToClear(
   std::vector<PageInfo> pages_remaining;
   int64_t remaining_size = 0;
   int64_t max_allowed_size =
-      (stats.total_archives_size + stats.free_disk_space) *
+      (stats.temporary_archives_size + stats.free_disk_space) *
       kOfflinePageStorageClearThreshold;
 
   // Initialize the counting map with 0s.

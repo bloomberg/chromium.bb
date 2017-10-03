@@ -50886,12 +50886,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of servicing requests that may contain offline page.</summary>
 </histogram>
 
-<histogram name="OfflinePages.ArchiveManager.ArchiveDirsCreationResult"
+<histogram base="true"
+    name="OfflinePages.ArchiveManager.ArchiveDirsCreationResult"
     enum="PlatformFileError">
+  <obsolete>
+    Deprecated 2017-10, and replaced by
+    OfflinePages.ArchiveManager.ArchiveDirsCreationResult2 with suffixes for
+    temporary and persistent pages.
+  </obsolete>
   <owner>romax@chromium.org</owner>
   <summary>
     This is recorded every time the archive directory is being created. It
     doesn't include the case which the archive directory exists.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.ArchiveManager.ArchiveDirsCreationResult2"
+    enum="PlatformFileError">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    This is recorded every time the archive directory is being created. It
+    doesn't include the case which the archive directory exists. It has suffixes
+    indicating results for temporary or persistent archives directories.
   </summary>
 </histogram>
 
@@ -100286,6 +100302,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              asynchronous nature of the analysis)."/>
   <affected-histogram name="SBOffDomainInclusion.Abort"/>
   <affected-histogram name="SBOffDomainInclusion2.Abort"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OfflinePagesArchiveDirectoryType" separator=".">
+  <suffix name="Temporary" label="Temporary archive directory"/>
+  <suffix name="Persistent" label="Persistent archive directory"/>
+  <affected-histogram
+      name="OfflinePages.ArchiveManager.ArchiveDirsCreationResult2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OfflinePagesNamespace" separator=".">

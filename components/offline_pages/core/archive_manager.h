@@ -18,17 +18,31 @@ class SequencedTaskRunner;
 
 namespace offline_pages {
 
-// Class that manages all archive files for offline pages. They are all stored
-// in a specific archive directory.
+// Class that manages all archive files for offline pages. They are stored in
+// different archive directories based on their lifetime types (persistent or
+// temporary).
 // All tasks are performed using |task_runner_|.
+// TODO(romax): When P2P sharing comes and pages saved in internal storage get
+// moved out to external storage, make sure nothing breaks (and it's necessary
+// to check if both internal/external are on the volume, in case any logic
+// breaks.)
 class ArchiveManager {
  public:
+  // Used by metrics collection and clearing storage of temporary pages. The
+  // |free_disk_space| will be the free disk space of the volume that contains
+  // temporary archives directory. Another field may be added if the free disk
+  // space of persistent archives is needed in future.
   struct StorageStats {
+    int64_t total_archives_size() const {
+      return temporary_archives_size + persistent_archives_size;
+    }
     int64_t free_disk_space;
-    int64_t total_archives_size;
+    int64_t temporary_archives_size;
+    int64_t persistent_archives_size;
   };
 
-  ArchiveManager(const base::FilePath& archives_dir,
+  ArchiveManager(const base::FilePath& temporary_archives_dir,
+                 const base::FilePath& persistent_archives_dir_,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~ArchiveManager();
 
@@ -52,27 +66,34 @@ class ArchiveManager {
       const std::vector<base::FilePath>& archive_paths,
       const base::Callback<void(bool)>& callback);
 
-  // Lists all archive files in the archive directory.
+  // Lists all archive files in both temporary and persistent archive
+  // directories.
   virtual void GetAllArchives(
       const base::Callback<void(const std::set<base::FilePath>&)>& callback)
       const;
 
-  // Gets stats about archive storage, i.e. total archive sizes and free disk
-  // space.
+  // Gets stats about archive storage, i.e. sizes of temporary and persistent
+  // archive files and free disk space.
   virtual void GetStorageStats(
       const base::Callback<void(const StorageStats& storage_sizes)>& callback)
       const;
 
-  // Gets the archive directory.
-  const base::FilePath& GetArchivesDir() const;
+  // Gets the archive directories.
+  const base::FilePath& GetTemporaryArchivesDir() const;
+  const base::FilePath& GetPersistentArchivesDir() const;
 
  protected:
   ArchiveManager();
 
  private:
-  // Path under which all of the managed archives should be stored.
-  base::FilePath archives_dir_;
+  // Path under which all of the temporary archives should be stored.
+  base::FilePath temporary_archives_dir_;
+  // Path under which all of the persistent archives should be stored.
+  base::FilePath persistent_archives_dir_;
   // Task runner for running file operations.
+  // Since the task_runner is a SequencedTaskRunner, it's guaranteed that the
+  // second task will start after the first one. This is an important assumption
+  // for |ArchiveManager::EnsureArchivesDirCreated|.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ArchiveManager);

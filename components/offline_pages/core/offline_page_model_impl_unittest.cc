@@ -25,6 +25,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
@@ -171,6 +172,10 @@ class OfflinePageModelImplTest
     model()->DeletePagesByOfflineId(offline_ids, callback);
   }
 
+  void SetTemporaryDirSameWithPersistent(bool is_same) {
+    temporary_dir_same_with_persistent_ = is_same;
+  }
+
   bool HasPages(std::string name_space);
 
   CheckPagesExistOfflineResult CheckPagesExistOffline(std::set<GURL>);
@@ -181,8 +186,6 @@ class OfflinePageModelImplTest
 
   MultipleOfflinePageItemResult GetPagesByFinalURL(const GURL& url);
   MultipleOfflinePageItemResult GetPagesByAllURLS(const GURL& url);
-
-  const base::FilePath& temp_path() const { return temp_dir_.GetPath(); }
 
   OfflinePageModelImpl* model() { return model_.get(); }
 
@@ -216,10 +219,21 @@ class OfflinePageModelImplTest
 
   const base::HistogramTester& histograms() const { return histogram_tester_; }
 
+  const base::FilePath& temporary_dir_path() const {
+    if (temporary_dir_same_with_persistent_)
+      return persistent_dir_.GetPath();
+    return temporary_dir_.GetPath();
+  }
+
+  const base::FilePath& persistent_dir_path() const {
+    return persistent_dir_.GetPath();
+  }
+
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir temporary_dir_;
+  base::ScopedTempDir persistent_dir_;
 
   std::unique_ptr<OfflinePageModelImpl> model_;
   SavePageResult last_save_result_;
@@ -235,6 +249,7 @@ class OfflinePageModelImplTest
   int last_cleared_pages_count_;
   DeletePageResult last_clear_page_result_;
   bool last_expire_page_result_;
+  bool temporary_dir_same_with_persistent_;
 
   base::HistogramTester histogram_tester_;
 };
@@ -247,12 +262,14 @@ OfflinePageModelImplTest::OfflinePageModelImplTest()
       last_add_result_(AddPageResult::STORE_FAILURE),
       last_add_offline_id_(-1),
       last_delete_result_(DeletePageResult::CANCELLED),
-      last_deleted_offline_id_(-1) {}
+      last_deleted_offline_id_(-1),
+      temporary_dir_same_with_persistent_(false) {}
 
 OfflinePageModelImplTest::~OfflinePageModelImplTest() {}
 
 void OfflinePageModelImplTest::SetUp() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
   model_ = BuildModel(BuildStore());
   model_->GetPolicyController()->AddPolicyForTest(
       kOriginalTabNamespace,
@@ -335,8 +352,10 @@ OfflinePageModelImplTest::BuildStore() {
 
 std::unique_ptr<OfflinePageModelImpl> OfflinePageModelImplTest::BuildModel(
     std::unique_ptr<OfflinePageMetadataStore> store) {
-  std::unique_ptr<ArchiveManager> archive_manager(new ArchiveManager(
-      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get()));
+  std::unique_ptr<ArchiveManager> archive_manager = nullptr;
+  archive_manager = base::MakeUnique<ArchiveManager>(
+      temporary_dir_path(), persistent_dir_path(),
+      base::ThreadTaskRunnerHandle::Get());
   return std::unique_ptr<OfflinePageModelImpl>(
       new OfflinePageModelImpl(std::move(store), std::move(archive_manager),
                                base::ThreadTaskRunnerHandle::Get()));
@@ -811,7 +830,7 @@ TEST_F(OfflinePageModelImplTest, SavePageOnBackground) {
 
 TEST_F(OfflinePageModelImplTest, AddPage) {
   base::FilePath file_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_path(), &file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temporary_dir_path(), &file_path));
   int64_t offline_id =
       base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 
@@ -1052,7 +1071,6 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissing) {
 TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissingAfterLoad) {
   // Save a page.
   SavePage(kTestUrl, kTestClientId1);
-  PumpLoop();
   int64_t offline_id = last_save_offline_id();
 
   ResetResults();
@@ -1071,7 +1089,6 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissingAfterLoad) {
 TEST_F(OfflinePageModelImplTest, DetectThatHeadlessPageIsDeleted) {
   // Save a page.
   SavePage(kTestUrl, kTestClientId1);
-  PumpLoop();
   int64_t offline_id = last_save_offline_id();
 
   ResetResults();
@@ -1089,6 +1106,48 @@ TEST_F(OfflinePageModelImplTest, DetectThatHeadlessPageIsDeleted) {
 
   EXPECT_EQ(0UL, GetAllPages().size());
   EXPECT_FALSE(base::PathExists(path));
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_DeleteTemporaryPagesInWrongDir \
+  DISABLED_DeleteTemporaryPagesInWrongDir
+#else
+#define MAYBE_DeleteTemporaryPagesInWrongDir DeleteTemporaryPagesInWrongDir
+#endif
+TEST_F(OfflinePageModelImplTest, MAYBE_DeleteTemporaryPagesInWrongDir) {
+  // Set temporary directory same with persistent one.
+  SetTemporaryDirSameWithPersistent(true);
+  ResetModel();
+  PumpLoop();
+
+  // Save a temporary page.
+  SavePage(kTestUrl, kTestClientId1);
+  int64_t temporary_id = last_save_offline_id();
+  // Save a persistent page.
+  SavePage(kTestUrl2, kTestUserRequestedClientId);
+  int64_t persistent_id = last_save_offline_id();
+
+  EXPECT_EQ(2UL, GetAllPages().size());
+  std::unique_ptr<OfflinePageItem> temporary_page =
+      GetPageByOfflineId(temporary_id);
+  std::unique_ptr<OfflinePageItem> persistent_page =
+      GetPageByOfflineId(persistent_id);
+
+  EXPECT_EQ(temporary_page->file_path.DirName(),
+            persistent_page->file_path.DirName());
+
+  // Reset model to trigger consistency check, and let temporary directory be
+  // different with the persistent one. The previously saved temporary page will
+  // be treated as 'saved in persistent location'.
+  SetTemporaryDirSameWithPersistent(false);
+  ResetModel();
+  PumpLoop();
+
+  // Check the temporary page is deleted.
+  EXPECT_EQ(1UL, GetAllPages().size());
+  EXPECT_EQ(persistent_id, GetAllPages()[0].offline_id);
 }
 
 TEST_F(OfflinePageModelImplTest, DeleteMultiplePages) {
@@ -1556,6 +1615,38 @@ TEST_F(OfflinePageModelImplTest, GetPagesSupportedByDownloads) {
   EXPECT_EQ(kTestTitle, offline_pages[ntp_suggestions_index].title);
   EXPECT_EQ(GURL(), offline_pages[ntp_suggestions_index].original_url);
   EXPECT_EQ("", offline_pages[ntp_suggestions_index].request_origin);
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_CheckPagesSavedInSeparateDirs \
+  DISABLED_CheckPagesSavedInSeparateDirs
+#else
+#define MAYBE_CheckPagesSavedInSeparateDirs CheckPagesSavedInSeparateDirs
+#endif
+TEST_F(OfflinePageModelImplTest, MAYBE_CheckPagesSavedInSeparateDirs) {
+  // Save a temporary page.
+  SavePage(kTestUrl, kTestClientId1);
+  int64_t temporary_id = last_save_offline_id();
+  // Save a persistent page.
+  SavePage(kTestUrl2, kTestUserRequestedClientId);
+  int64_t persistent_id = last_save_offline_id();
+
+  std::unique_ptr<OfflinePageItem> temporary_page =
+      GetPageByOfflineId(temporary_id);
+  std::unique_ptr<OfflinePageItem> persistent_page =
+      GetPageByOfflineId(persistent_id);
+
+  ASSERT_TRUE(temporary_page);
+  ASSERT_TRUE(persistent_page);
+
+  base::FilePath temporary_page_path = temporary_page->file_path;
+  base::FilePath persistent_page_path = persistent_page->file_path;
+
+  EXPECT_TRUE(temporary_dir_path().IsParent(temporary_page_path));
+  EXPECT_TRUE(persistent_dir_path().IsParent(persistent_page_path));
+  EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {

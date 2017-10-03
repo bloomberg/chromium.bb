@@ -8,11 +8,11 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
+#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/offline_pages/android/cct_origin_observer.h"
 #include "chrome/browser/offline_pages/fresh_offline_content_observer.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -50,10 +50,17 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStoreSQL(background_task_runner, store_path));
 
-  base::FilePath archives_dir =
+  base::FilePath persistent_archives_dir =
       profile->GetPath().Append(chrome::kOfflinePageArchivesDirname);
-  std::unique_ptr<ArchiveManager> archive_manager(
-      new ArchiveManager(archives_dir, background_task_runner));
+  // If PathService::Get returns false, the temporary_archives_dir will be
+  // empty, and no temporary pages will be saved during this chrome lifecycle.
+  base::FilePath temporary_archives_dir;
+  if (PathService::Get(base::DIR_CACHE, &temporary_archives_dir)) {
+    temporary_archives_dir =
+        temporary_archives_dir.Append(chrome::kOfflinePageArchivesDirname);
+  }
+  std::unique_ptr<ArchiveManager> archive_manager(new ArchiveManager(
+      temporary_archives_dir, persistent_archives_dir, background_task_runner));
 
   OfflinePageModelImpl* model = new OfflinePageModelImpl(
       std::move(metadata_store), std::move(archive_manager),
