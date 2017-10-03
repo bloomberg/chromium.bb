@@ -35,15 +35,10 @@ bool DrawingDisplayItem::DrawsContent() const {
 }
 
 #ifndef NDEBUG
-void DrawingDisplayItem::DumpPropertiesAsDebugString(
-    StringBuilder& string_builder) const {
-  DisplayItem::DumpPropertiesAsDebugString(string_builder);
-  if (record_) {
-    string_builder.Append(String::Format(
-        ", rect: [%f,%f %fx%f], opaque: %s", record_bounds_.X(),
-        record_bounds_.Y(), record_bounds_.Width(), record_bounds_.Height(),
-        known_to_be_opaque_ ? "true" : "false"));
-  }
+void DrawingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  DisplayItem::PropertiesAsJSON(json);
+  json.SetString("rect", record_bounds_.ToString());
+  json.SetBoolean("opaque", known_to_be_opaque_);
 }
 #endif
 

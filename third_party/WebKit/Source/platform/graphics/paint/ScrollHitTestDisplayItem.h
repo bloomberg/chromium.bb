@@ -40,7 +40,7 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
                                   WebDisplayItemList*) const override;
   bool Equals(const DisplayItem&) const override;
 #ifndef NDEBUG
-  void DumpPropertiesAsDebugString(StringBuilder&) const override;
+  void PropertiesAsJSON(JSONObject&) const override;
 #endif
 
   // Create and append a ScrollHitTestDisplayItem onto the context. This is

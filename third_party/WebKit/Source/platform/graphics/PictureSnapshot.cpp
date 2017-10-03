@@ -198,8 +198,7 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::Profile(
 }
 
 std::unique_ptr<JSONArray> PictureSnapshot::SnapshotCommandLog() const {
-  const SkIRect bounds = picture_->cullRect().roundOut();
-  LoggingCanvas canvas(bounds.width(), bounds.height());
+  LoggingCanvas canvas;
   picture_->playback(&canvas);
   return canvas.Log();
 }

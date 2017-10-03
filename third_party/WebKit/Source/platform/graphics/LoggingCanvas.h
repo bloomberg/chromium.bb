@@ -39,7 +39,7 @@ namespace blink {
 
 class LoggingCanvas : public InterceptingCanvasBase {
  public:
-  LoggingCanvas(int width, int height);
+  LoggingCanvas();
 
   // Returns a snapshot of the current log data.
   std::unique_ptr<JSONArray> Log();
@@ -120,8 +120,9 @@ class LoggingCanvas : public InterceptingCanvasBase {
 };
 
 #ifndef NDEBUG
-String RecordAsDebugString(const PaintRecord*, const SkRect& bounds);
-void ShowPaintRecord(const PaintRecord*, const SkRect& bounds);
+std::unique_ptr<JSONArray> RecordAsJSON(const PaintRecord&);
+String RecordAsDebugString(const PaintRecord&);
+void ShowPaintRecord(const PaintRecord&);
 #endif
 
 }  // namespace blink

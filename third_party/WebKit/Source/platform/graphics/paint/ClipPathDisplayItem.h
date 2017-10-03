@@ -26,7 +26,7 @@ class PLATFORM_EXPORT BeginClipPathDisplayItem final
 
  private:
 #ifndef NDEBUG
-  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void PropertiesAsJSON(JSONObject&) const override;
 #endif
   bool Equals(const DisplayItem& other) const final {
     return DisplayItem::Equals(other) &&
