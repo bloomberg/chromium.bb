@@ -108,7 +108,7 @@ def normalize_and_sort_includes(include_paths, snake_case):
             if match:
                 name = match.group(1)
                 if name.lower() != name and name not in \
-                   ['OriginTrials', 'HTMLNames', 'SVGNames']:
+                   ['HTMLNames', 'SVGNames']:
                     include_path = include_path[0:match.start(1)] + to_snake_case(name) + '.h'
         normalized_include_paths.append(include_path)
     return sorted(normalized_include_paths)

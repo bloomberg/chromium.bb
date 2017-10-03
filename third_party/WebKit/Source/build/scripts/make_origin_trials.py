@@ -38,23 +38,23 @@ import template_expander
 # We want exactly the same parsing as RuntimeFeatureWriter
 # but generate different files.
 class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
-    class_name = 'OriginTrials'
+    file_basename = 'origin_trials'
 
     def __init__(self, json5_file_path):
         super(OriginTrialsWriter, self).__init__(json5_file_path)
         self._outputs = {
-            (self.class_name + '.cpp'): self.generate_implementation,
-            (self.class_name + '.h'): self.generate_header,
+            (self.file_basename + '.cc'): self.generate_implementation,
+            (self.file_basename + '.h'): self.generate_header,
         }
 
-    @template_expander.use_jinja('templates/' + class_name + '.cpp.tmpl')
+    @template_expander.use_jinja('templates/' + file_basename + '.cc.tmpl')
     def generate_implementation(self):
         return {
             'features': self._features,
             'input_files': self._input_files,
         }
 
-    @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
+    @template_expander.use_jinja('templates/' + file_basename + '.h.tmpl')
     def generate_header(self):
         return {
             'features': self._features,

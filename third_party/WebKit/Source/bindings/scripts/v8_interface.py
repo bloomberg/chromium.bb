@@ -142,7 +142,7 @@ def origin_trial_features(interface, constants, attributes, methods):
 
     if features:
         includes.add('platform/bindings/ScriptState.h')
-        includes.add('core/origin_trials/OriginTrials.h')
+        includes.add('core/origin_trials/origin_trials.h')
     return features
 
 

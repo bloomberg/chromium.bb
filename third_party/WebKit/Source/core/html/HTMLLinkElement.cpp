@@ -39,7 +39,7 @@
 #include "core/html/imports/LinkImport.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/NetworkHintsInterface.h"
-#include "core/origin_trials/OriginTrials.h"
+#include "core/origin_trials/origin_trials.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebIconSizesParser.h"
 #include "public/platform/WebSize.h"

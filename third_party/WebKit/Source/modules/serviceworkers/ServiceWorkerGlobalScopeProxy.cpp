@@ -38,7 +38,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/origin_trials/OriginTrials.h"
+#include "core/origin_trials/origin_trials.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/background_fetch/BackgroundFetchClickEvent.h"

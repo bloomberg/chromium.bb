@@ -195,7 +195,7 @@
 #include "core/loader/PrerendererClient.h"
 #include "core/loader/TextResourceDecoderBuilder.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/origin_trials/OriginTrials.h"
+#include "core/origin_trials/origin_trials.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/FocusController.h"
