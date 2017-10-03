@@ -138,8 +138,14 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
       DCHECK(!overscroll) << "Unexpected overscroll for un-acked event";
     }
 
-    for (auto&& callback : blocking_coalesced_callbacks_)
-      std::move(callback).Run(ack_result, latency_info, nullptr, base::nullopt);
+    if (!blocking_coalesced_callbacks_.empty()) {
+      ui::LatencyInfo coalesced_latency_info = latency_info;
+      coalesced_latency_info.set_coalesced();
+      for (auto&& callback : blocking_coalesced_callbacks_) {
+        std::move(callback).Run(ack_result, coalesced_latency_info, nullptr,
+                                base::nullopt);
+      }
+    }
 
     size_t num_events_handled = 1 + blocking_coalesced_callbacks_.size();
     if (queue->renderer_scheduler_) {
