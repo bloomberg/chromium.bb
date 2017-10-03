@@ -1554,6 +1554,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/ntp/NtpUiCaptureTestData.java",
   "javatests/src/org/chromium/chrome/browser/ntp/RecentTabsPageTest.java",
   "javatests/src/org/chromium/chrome/browser/ntp/cards/NewTabPageRecyclerViewTest.java",
+  "javatests/src/org/chromium/chrome/browser/ntp/cards/AllDismissedItemTest.java",
   "javatests/src/org/chromium/chrome/browser/ntp/snippets/ArticleSnippetsTest.java",
   "javatests/src/org/chromium/chrome/browser/infobar/InfoBarAppearanceTest.java",
   "javatests/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridgeTest.java",
