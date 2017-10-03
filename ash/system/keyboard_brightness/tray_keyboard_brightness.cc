@@ -158,7 +158,7 @@ void TrayKeyboardBrightness::KeyboardBrightnessChanged(int level,
   if (brightness_view_ && brightness_view_->visible())
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
   else
-    ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+    ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
 }
 
 }  // namespace ash

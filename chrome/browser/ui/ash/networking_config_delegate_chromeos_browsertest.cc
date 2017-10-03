@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
   // Show the network detail view.
   ash::TrayNetwork* tray_network =
       ash::SystemTrayTestApi(system_tray).tray_network();
-  system_tray->ShowDetailedView(tray_network, 0, false, ash::BUBBLE_CREATE_NEW);
+  system_tray->ShowDetailedView(tray_network, 0, ash::BUBBLE_CREATE_NEW);
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(tray_network->detailed());
 

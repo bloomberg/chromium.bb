@@ -115,7 +115,7 @@ class TrayAccessibilityTest
   }
 
   void TearDownOnMainThread() override {
-    AccessibilityManager::SetBrailleControllerForTest(NULL);
+    AccessibilityManager::SetBrailleControllerForTest(nullptr);
   }
 
   void SetShowAccessibilityOptionsInSystemTrayMenu(bool value) {
@@ -156,7 +156,7 @@ class TrayAccessibilityTest
   bool CanCreateMenuItem() {
     views::View* menu_item_view = CreateMenuItem();
     DestroyMenuItem();
-    return menu_item_view != NULL;
+    return menu_item_view != nullptr;
   }
 
   void SetLoginStatus(ash::LoginStatus status) {
@@ -166,8 +166,8 @@ class TrayAccessibilityTest
   ash::LoginStatus GetLoginStatus() { return tray()->login_; }
 
   bool CreateDetailedMenu() {
-    tray()->ShowDetailedView(0, false);
-    return tray()->detailed_menu_ != NULL;
+    tray()->ShowDetailedView(0);
+    return tray()->detailed_menu_ != nullptr;
   }
 
   void CloseDetailMenu() {

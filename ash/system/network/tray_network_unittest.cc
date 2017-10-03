@@ -70,8 +70,7 @@ TEST_F(TrayNetworkTest, Basics) {
   // Show network details.
   TrayNetwork* tray_network = SystemTrayTestApi(system_tray).tray_network();
   const int close_delay_in_seconds = 0;
-  bool activate = true;
-  system_tray->ShowDetailedView(tray_network, close_delay_in_seconds, activate,
+  system_tray->ShowDetailedView(tray_network, close_delay_in_seconds,
                                 BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
 

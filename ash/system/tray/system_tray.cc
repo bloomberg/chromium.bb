@@ -357,25 +357,23 @@ void SystemTray::ShowDefaultView(BubbleCreationType creation_type,
   if (creation_type != BUBBLE_USE_EXISTING)
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_MENU_OPENED);
-  ShowItems(GetTrayItems(), false, true, creation_type, false, show_by_click);
+  ShowItems(GetTrayItems(), false, creation_type, false, show_by_click);
 }
 
 void SystemTray::ShowPersistentDefaultView() {
-  ShowItems(GetTrayItems(), false, false, BUBBLE_CREATE_NEW, true, false);
+  ShowItems(GetTrayItems(), false, BUBBLE_CREATE_NEW, true, false);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   int close_delay,
-                                  bool activate,
                                   BubbleCreationType creation_type) {
   std::vector<SystemTrayItem*> items;
   // The detailed view with timeout means a UI to show the current system state,
   // like the audio level or brightness. Such UI should behave as persistent and
   // keep its own logic for the appearance.
-  bool persistent =
-      (!activate && close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
+  bool persistent = (close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type, persistent, false);
+  ShowItems(items, true, creation_type, persistent, false);
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
@@ -481,7 +479,6 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
 
 void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
-                           bool can_activate,
                            BubbleCreationType creation_type,
                            bool persistent,
                            bool show_by_click) {

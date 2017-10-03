@@ -505,7 +505,7 @@ TEST_F(SystemTrayTest, VisibleDetailedViewsIsNotRecorded) {
 
   base::HistogramTester histogram_tester;
 
-  tray->ShowDetailedView(test_item, 0, false, BUBBLE_CREATE_NEW);
+  tray->ShowDetailedView(test_item, 0, BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
 
   histogram_tester.ExpectTotalCount(kVisibleRowsHistogramName, 0);
@@ -531,7 +531,7 @@ TEST_F(SystemTrayTest, VisibleDefaultViewIsNotRecordedOnReshow) {
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 1);
 
-  tray->ShowDetailedView(test_item, 0, false, BUBBLE_USE_EXISTING);
+  tray->ShowDetailedView(test_item, 0, BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
                                      SystemTrayItem::UMA_TEST, 1);
@@ -693,7 +693,7 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   ASSERT_TRUE(detailed_item->default_view() != NULL);
 
   // Show the detailed view, ensure it's created and the default view destroyed.
-  tray->ShowDetailedView(detailed_item, 0, false, BUBBLE_CREATE_NEW);
+  tray->ShowDetailedView(detailed_item, 0, BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() == NULL);
   ASSERT_TRUE(detailed_item->detailed_view() != NULL);
@@ -714,7 +714,7 @@ TEST_F(SystemTrayTest, SystemTrayNoViewItems) {
   no_view_item->set_has_views(false);
   tray->AddTrayItem(base::WrapUnique(no_view_item));
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-  tray->ShowDetailedView(no_view_item, 0, false, BUBBLE_USE_EXISTING);
+  tray->ShowDetailedView(no_view_item, 0, BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
 }
 
@@ -765,7 +765,7 @@ TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
   views::Widget* widget = test_item->default_view()->GetWidget();
   gfx::Rect bubble_bounds = widget->GetWindowBoundsInScreen();
 
-  tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
+  tray->ShowDetailedView(test_item, 0, BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
 
   EXPECT_FALSE(test_item->default_view());
