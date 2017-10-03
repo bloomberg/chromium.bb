@@ -651,8 +651,13 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
 #endif  // CONFIG_SUPERTX
   if (cm->delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
-    const int delta_lf_idx = delta_lf_id_lut[plane][dir_idx];
-    const int delta_lf = mbmi->curr_delta_lf[delta_lf_idx];
+    int delta_lf;
+    if (cm->delta_lf_multi) {
+      const int delta_lf_idx = delta_lf_id_lut[plane][dir_idx];
+      delta_lf = mbmi->curr_delta_lf[delta_lf_idx];
+    } else {
+      delta_lf = mbmi->current_delta_lf_from_base;
+    }
     int lvl_seg =
         clamp(delta_lf + cm->lf.filter_level[dir_idx], 0, MAX_LOOP_FILTER);
 #else

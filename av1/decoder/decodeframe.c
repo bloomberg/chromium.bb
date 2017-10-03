@@ -5048,6 +5048,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_EXT_DELTA_Q
     cm->delta_lf_res = 1;
     cm->delta_lf_present_flag = 0;
+#if CONFIG_LOOPFILTER_LEVEL
+    cm->delta_lf_multi = 0;
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
     if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
       cm->delta_q_present_flag = aom_rb_read_bit(rb);
@@ -5061,12 +5064,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       assert(!segment_quantizer_active);
       cm->delta_lf_present_flag = aom_rb_read_bit(rb);
       if (cm->delta_lf_present_flag) {
+        xd->prev_delta_lf_from_base = 0;
+        cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
 #if CONFIG_LOOPFILTER_LEVEL
+        cm->delta_lf_multi = aom_rb_read_bit(rb);
         for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
           xd->prev_delta_lf[lf_id] = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
-        xd->prev_delta_lf_from_base = 0;
-        cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
       }
 #endif  // CONFIG_EXT_DELTA_Q
     }

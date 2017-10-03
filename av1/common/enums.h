@@ -86,6 +86,7 @@ extern "C" {
 // 4 frame filter levels: y plane vertical, y plane horizontal,
 // u plane, and v plane
 #define FRAME_LF_COUNT 4
+#define DEFAULT_DELTA_LF_MULTI 0
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
 #if CONFIG_LPF_SB

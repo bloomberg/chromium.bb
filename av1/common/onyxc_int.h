@@ -513,6 +513,12 @@ typedef struct AV1Common {
   int delta_lf_present_flag;
   // Resolution of delta lf level
   int delta_lf_res;
+#if CONFIG_LOOPFILTER_LEVEL
+  // This is a flag for number of deltas of loop filter level
+  // 0: use 1 delta, for y_vertical, y_horizontal, u, and v
+  // 1: use separate deltas for each filter level
+  int delta_lf_multi;
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
   int num_tg;
 #if CONFIG_REFERENCE_BUFFER

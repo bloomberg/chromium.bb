@@ -5552,6 +5552,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_EXT_DELTA_Q
   cm->delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
   cm->delta_lf_present_flag = cpi->oxcf.deltaq_mode == DELTA_Q_LF;
+#if CONFIG_LOOPFILTER_LEVEL
+  cm->delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
