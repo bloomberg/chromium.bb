@@ -46,7 +46,6 @@ class PLATFORM_EXPORT MIMETypeRegistry {
 
   static String GetMIMETypeForExtension(const String& extension);
   static String GetWellKnownMIMETypeForExtension(const String& extension);
-  static String GetMIMETypeForPath(const String& path);
 
   // Checks to see if the given mime type is supported.
   static bool IsSupportedMIMEType(const String& mime_type);
