@@ -68,7 +68,6 @@ bool AXARIAGridRow::AddCell(AXObject* possible_cell) {
   if (role != kCellRole && role != kRowHeaderRole && role != kColumnHeaderRole)
     return false;
 
-  DCHECK(possible_cell->IsTableCell());
   cells_.push_back(possible_cell);
   return true;
 }

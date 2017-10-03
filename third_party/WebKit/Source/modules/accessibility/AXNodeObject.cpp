@@ -2228,6 +2228,19 @@ bool AXNodeObject::OnNativeFocusAction() {
   if (document->FocusedElement() == element)
     document->ClearFocusedElement();
 
+  // If the object is not natively focusable but can be focused using an ARIA
+  // active descendant, perform a native click instead. This will enable Web
+  // apps that set accessibility focus using an active descendant to capture and
+  // act on the click event. Otherwise, there is no other way to inform the app
+  // that an AT has requested the focus to be changed, except if the app is
+  // using AOM. To be extra safe, exclude objects that are clickable themselves.
+  // This won't prevent anyone from having a click handler on the object's
+  // container.
+  if (!IsClickable() && element->FastHasAttribute(idAttr) &&
+      AncestorExposesActiveDescendant()) {
+    return OnNativeClickAction();
+  }
+
   element->focus();
   return true;
 }
