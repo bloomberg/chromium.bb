@@ -17,7 +17,6 @@ RequestExtraData::RequestExtraData()
     : visibility_state_(blink::kWebPageVisibilityStateVisible),
       render_frame_id_(MSG_ROUTING_NONE),
       is_main_frame_(false),
-      parent_is_main_frame_(false),
       parent_render_frame_id_(-1),
       allow_download_(true),
       transition_type_(ui::PAGE_TRANSITION_LINK),
@@ -40,7 +39,6 @@ void RequestExtraData::CopyToResourceRequest(ResourceRequest* request) const {
   request->render_frame_id = render_frame_id_;
   request->is_main_frame = is_main_frame_;
 
-  request->parent_is_main_frame = parent_is_main_frame_;
   request->parent_render_frame_id = parent_render_frame_id_;
   request->allow_download = allow_download_;
   request->transition_type = transition_type_;

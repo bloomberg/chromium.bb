@@ -83,7 +83,6 @@ class ChromeDataUseAscriberTest : public testing::Test {
                       : content::RESOURCE_TYPE_SCRIPT,
         resource_context(), render_process_id,
         /*render_view_id=*/-1, render_frame_id, is_main_frame,
-        /*parent_is_main_frame=*/false,
         /*allow_download=*/false,
         /*is_async=*/true, content::PREVIEWS_OFF);
     return request;

@@ -165,7 +165,6 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
         sensitive_request.get(), content::RESOURCE_TYPE_SCRIPT, NULL,
         process_id, view_id, MSG_ROUTING_NONE,
         /*is_main_frame=*/false,
-        /*parent_is_main_frame=*/false,
         /*allow_download=*/true,
         /*is_async=*/false, content::PREVIEWS_OFF);
     extension_info_map_->RegisterExtensionProcess(extensions::kWebStoreAppId,

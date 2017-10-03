@@ -700,7 +700,6 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   request.do_not_prompt_for_login = true;
   request.render_frame_id = original_info->GetRenderFrameID();
   request.is_main_frame = original_info->IsMainFrame();
-  request.parent_is_main_frame = original_info->ParentIsMainFrame();
   request.enable_load_timing = original_info->is_load_timing_enabled();
   request.report_raw_headers = original_info->ShouldReportRawHeaders();
 

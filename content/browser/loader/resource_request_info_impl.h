@@ -55,7 +55,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       int request_id,
       int render_frame_id,
       bool is_main_frame,
-      bool parent_is_main_frame,
       ResourceType resource_type,
       ui::PageTransition transition_type,
       bool should_replace_current_entry,
@@ -88,7 +87,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int GetRenderFrameID() const override;
   int GetFrameTreeNodeId() const override;
   bool IsMainFrame() const override;
-  bool ParentIsMainFrame() const override;
   ResourceType GetResourceType() const override;
   int GetProcessType() const override;
   blink::WebReferrerPolicy GetReferrerPolicy() const override;
@@ -221,7 +219,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int request_id_;
   int render_frame_id_;
   bool is_main_frame_;
-  bool parent_is_main_frame_;
   bool should_replace_current_entry_;
   bool is_download_;
   bool is_stream_;

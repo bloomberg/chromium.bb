@@ -104,7 +104,6 @@ class ResourceRequestDetectorTest : public testing::Test {
         /*render_view_id=*/0,
         /*render_frame_id=*/MSG_ROUTING_NONE,
         /*is_main_frame=*/true,
-        /*parent_is_main_frame=*/false,
         /*allow_download=*/true,
         /*is_async=*/false, content::PREVIEWS_OFF);
 

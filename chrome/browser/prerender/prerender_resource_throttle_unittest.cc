@@ -212,7 +212,6 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
       request.get(), content::RESOURCE_TYPE_IMAGE, NULL, kDefaultChildId,
       kDefaultRouteId, MSG_ROUTING_NONE,
       /*is_main_frame=*/false,
-      /*parent_is_main_frame=*/false,
       /*allow_download=*/true,
       /*is_async=*/true, content::PREVIEWS_OFF);
 
@@ -250,7 +249,6 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
       request.get(), content::RESOURCE_TYPE_MAIN_FRAME, NULL, kDefaultChildId,
       kDefaultRouteId, MSG_ROUTING_NONE,
       /*is_main_frame=*/true,
-      /*parent_is_main_frame=*/false,
       /*allow_download=*/true,
       /*is_async=*/true, content::PREVIEWS_OFF);
 
@@ -286,7 +284,6 @@ TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
       request.get(), content::RESOURCE_TYPE_XHR, NULL, kDefaultChildId,
       kDefaultRouteId, MSG_ROUTING_NONE,
       /*is_main_frame=*/false,
-      /*parent_is_main_frame=*/false,
       /*allow_download=*/true,
       /*is_async=*/false, content::PREVIEWS_OFF);
 
