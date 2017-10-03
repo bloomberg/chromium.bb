@@ -31,6 +31,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -214,8 +215,15 @@ Path* LayoutSVGShape::NonScalingStrokePath(
 }
 
 AffineTransform LayoutSVGShape::NonScalingStrokeTransform() const {
-  AffineTransform t =
-      ToSVGGraphicsElement(GetElement())->ComputeCTM(SVGElement::kScreenScope);
+  // Compute the CTM to the SVG root. This should probably be the CTM all the
+  // way to the "canvas" of the page ("host" coordinate system), but with our
+  // current approach of applying/painting non-scaling-stroke, that can break in
+  // unpleasant ways (see crbug.com/747708 for an example.) Maybe it would be
+  // better to apply this effect during rasterization?
+  const LayoutSVGRoot* svg_root = SVGLayoutSupport::FindTreeRootObject(this);
+  AffineTransform t;
+  t.Scale(1 / StyleRef().EffectiveZoom())
+      .Multiply(LocalToAncestorTransform(svg_root).ToAffineTransform());
   // Width of non-scaling stroke is independent of translation, so zero it out
   // here.
   t.SetE(0);
