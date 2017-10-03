@@ -70640,7 +70640,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The elapsed time to upload a safe browsing incident report.</summary>
 </histogram>
 
-<histogram name="SBIRS.StateStoreInitResult" enum="StateStoreInitResult">
+<histogram name="SBIRS.StateStoreInit" enum="StateStoreInitResult">
   <owner>proberge@google.com</owner>
   <summary>
     The result of initializing the state store and comparing the preferences to
