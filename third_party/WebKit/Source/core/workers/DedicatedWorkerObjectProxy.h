@@ -49,7 +49,7 @@ class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 class WorkerThread;
 
-// A proxy class to talk to a Worker object on the main thread via the
+// A proxy class to talk to a DedicatedWorker object on the main thread via the
 // DedicatedWorkerMessagingProxy from a worker thread. See class comments on
 // ThreadedObjectProxyBase.h for the lifetime and thread affinity.
 class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {

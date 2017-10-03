@@ -1,35 +1,61 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/InProcessWorkerBase.h"
+#include "core/workers/DedicatedWorker.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/CoreInitializer.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
+#include "core/frame/UseCounter.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
+#include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerContentSettingsClient.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "public/platform/WebContentSettingsClient.h"
+#include "public/web/WebFrameClient.h"
 
 namespace blink {
 
-InProcessWorkerBase::InProcessWorkerBase(ExecutionContext* context)
+DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
+                                         const String& url,
+                                         ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  Document* document = ToDocument(context);
+  UseCounter::Count(context, WebFeature::kWorkerStart);
+  if (!document->GetPage()) {
+    exception_state.ThrowDOMException(kInvalidAccessError,
+                                      "The context provided is invalid.");
+    return nullptr;
+  }
+  DedicatedWorker* worker = new DedicatedWorker(context);
+  if (worker->Initialize(context, url, exception_state))
+    return worker;
+  return nullptr;
+}
+
+DedicatedWorker::DedicatedWorker(ExecutionContext* context)
     : AbstractWorker(context), context_proxy_(nullptr) {}
 
-InProcessWorkerBase::~InProcessWorkerBase() {
+DedicatedWorker::~DedicatedWorker() {
   DCHECK(IsMainThread());
   if (!context_proxy_)
     return;
   context_proxy_->ParentObjectDestroyed();
 }
 
-void InProcessWorkerBase::postMessage(ScriptState* script_state,
-                                      RefPtr<SerializedScriptValue> message,
-                                      const MessagePortArray& ports,
-                                      ExceptionState& exception_state) {
+void DedicatedWorker::postMessage(ScriptState* script_state,
+                                  RefPtr<SerializedScriptValue> message,
+                                  const MessagePortArray& ports,
+                                  ExceptionState& exception_state) {
   DCHECK(context_proxy_);
   // Disentangle the port in preparation for sending it to the remote context.
   auto channels = MessagePort::DisentanglePorts(
@@ -40,11 +66,9 @@ void InProcessWorkerBase::postMessage(ScriptState* script_state,
                                                  std::move(channels));
 }
 
-bool InProcessWorkerBase::Initialize(ExecutionContext* context,
-                                     const String& url,
-                                     ExceptionState& exception_state) {
-  // TODO(mkwst): Revisit the context as
-  // https://drafts.css-houdini.org/worklets/ evolves.
+bool DedicatedWorker::Initialize(ExecutionContext* context,
+                                 const String& url,
+                                 ExceptionState& exception_state) {
   KURL script_url =
       ResolveURL(url, exception_state, WebURLRequest::kRequestContextScript);
   if (script_url.IsEmpty())
@@ -64,38 +88,54 @@ bool InProcessWorkerBase::Initialize(ExecutionContext* context,
       *context, script_url, WebURLRequest::kRequestContextWorker,
       fetch_request_mode, fetch_credentials_mode,
       context->GetSecurityContext().AddressSpace(),
-      WTF::Bind(&InProcessWorkerBase::OnResponse, WrapPersistent(this)),
-      WTF::Bind(&InProcessWorkerBase::OnFinished, WrapPersistent(this)));
+      WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
+      WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)));
 
   context_proxy_ = CreateMessagingProxy(context);
 
   return true;
 }
 
-void InProcessWorkerBase::terminate() {
+void DedicatedWorker::terminate() {
   if (context_proxy_)
     context_proxy_->TerminateGlobalScope();
 }
 
-void InProcessWorkerBase::ContextDestroyed(ExecutionContext*) {
+void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
   if (script_loader_)
     script_loader_->Cancel();
   terminate();
 }
 
-bool InProcessWorkerBase::HasPendingActivity() const {
+bool DedicatedWorker::HasPendingActivity() const {
   // The worker context does not exist while loading, so we must ensure that the
   // worker object is not collected, nor are its event listeners.
   return (context_proxy_ && context_proxy_->HasPendingActivity()) ||
          script_loader_;
 }
 
-void InProcessWorkerBase::OnResponse() {
+DedicatedWorkerMessagingProxy* DedicatedWorker::CreateMessagingProxy(
+    ExecutionContext* context) {
+  Document* document = ToDocument(context);
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
+
+  WorkerClients* worker_clients = WorkerClients::Create();
+  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
+      *worker_clients);
+  CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
+      *worker_clients);
+  ProvideContentSettingsClientToWorker(
+      worker_clients, web_frame->Client()->CreateWorkerContentSettingsClient());
+  return new DedicatedWorkerMessagingProxy(context, this, worker_clients);
+}
+
+void DedicatedWorker::OnResponse() {
   probe::didReceiveScriptResponse(GetExecutionContext(),
                                   script_loader_->Identifier());
 }
 
-void InProcessWorkerBase::OnFinished() {
+void DedicatedWorker::OnFinished() {
   if (script_loader_->Canceled()) {
     // Do nothing.
   } else if (script_loader_->Failed()) {
@@ -110,7 +150,11 @@ void InProcessWorkerBase::OnFinished() {
   script_loader_ = nullptr;
 }
 
-DEFINE_TRACE(InProcessWorkerBase) {
+const AtomicString& DedicatedWorker::InterfaceName() const {
+  return EventTargetNames::Worker;
+}
+
+DEFINE_TRACE(DedicatedWorker) {
   visitor->Trace(context_proxy_);
   AbstractWorker::Trace(visitor);
 }

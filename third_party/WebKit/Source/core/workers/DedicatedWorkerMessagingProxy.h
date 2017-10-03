@@ -17,8 +17,8 @@
 
 namespace blink {
 
+class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
-class InProcessWorkerBase;
 class SerializedScriptValue;
 class WorkerClients;
 
@@ -31,7 +31,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
  public:
   DedicatedWorkerMessagingProxy(ExecutionContext*,
-                                InProcessWorkerBase*,
+                                DedicatedWorker*,
                                 WorkerClients*);
   ~DedicatedWorkerMessagingProxy() override;
 
@@ -78,7 +78,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   // persistent reference, this worker object needs to call a cleanup function
   // in its dtor. If this is a strong reference, the dtor is never called
   // because the worker object is reachable from the persistent reference.
-  WeakMember<InProcessWorkerBase> worker_object_;
+  WeakMember<DedicatedWorker> worker_object_;
 
   // Tasks are queued here until there's a thread object created.
   struct QueuedTask;

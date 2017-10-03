@@ -15,8 +15,8 @@ namespace blink {
 class ParentFrameTaskRunners;
 class ThreadedMessagingProxyBase;
 
-// The base proxy class to talk to a Worker or *Worklet object on the main
-// thread via the ThreadedMessagingProxyBase from a worker thread. This is
+// The base proxy class to talk to a DedicatedWorker or *Worklet object on the
+// main thread via the ThreadedMessagingProxyBase from a worker thread. This is
 // created and destroyed on the main thread, and used on the worker thread.
 // ThreadedMessagingProxyBase always outlives this proxy.
 class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
