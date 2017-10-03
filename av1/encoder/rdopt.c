@@ -1752,25 +1752,22 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_HIGHBITDEPTH
     const int bd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd : 8;
     *out_dist = av1_highbd_block_error2_c(coeff, dqcoeff, ref_coeff,
-                                          buffer_length, &this_sse, bd) >>
-                shift;
+                                          buffer_length, &this_sse, bd);
 #else
-    *out_dist = av1_block_error2_c(coeff, dqcoeff, ref_coeff, buffer_length,
-                                   &this_sse) >>
-                shift;
+    *out_dist =
+        av1_block_error2_c(coeff, dqcoeff, ref_coeff, buffer_length, &this_sse);
 #endif  // CONFIG_HIGHBITDEPTH
 #else   // !CONFIG_PVQ
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length,
-                                         &this_sse, xd->bd) >>
-                  shift;
+                                         &this_sse, xd->bd);
     else
 #endif
-      *out_dist =
-          av1_block_error(coeff, dqcoeff, buffer_length, &this_sse) >> shift;
+      *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
 #endif  // CONFIG_PVQ
-    *out_sse = this_sse >> shift;
+    *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
+    *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
   } else {
     const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
 #if !CONFIG_PVQ || CONFIG_DIST_8X8
@@ -1951,11 +1948,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     tmp_dist =
-        av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp, xd->bd) >>
-        shift;
+        av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp, xd->bd);
   else
 #endif
-    tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp) >> shift;
+    tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp);
+  tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
 
   if (
 #if CONFIG_DIST_8X8
@@ -4442,13 +4439,13 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    tmp_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse,
-                                      xd->bd) >>
-               shift;
+    tmp_dist =
+        av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse, xd->bd);
   else
 #endif
-    tmp_dist =
-        av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse) >> shift;
+    tmp_dist = av1_block_error(coeff, dqcoeff, buffer_length, &tmp_sse);
+
+  tmp_dist = RIGHT_SIGNED_SHIFT(tmp_dist, shift);
 
 #if CONFIG_MRC_TX
   if (tx_type == MRC_DCT && !xd->mi[0]->mbmi.valid_mrc_mask) {
@@ -4465,8 +4462,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                    a, l, 1);
   } else {
     rd_stats->rate += rd_stats->zero_rate;
-    rd_stats->dist += tmp_sse >> shift;
-    rd_stats->sse += tmp_sse >> shift;
+    rd_stats->dist += RIGHT_SIGNED_SHIFT(tmp_sse, shift);
+    rd_stats->sse += RIGHT_SIGNED_SHIFT(tmp_sse, shift);
     rd_stats->skip = 1;
     rd_stats->invalid_rate = 1;
     return;
