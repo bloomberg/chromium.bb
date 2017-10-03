@@ -880,7 +880,7 @@ class LocalePolicyTest : public PolicyTest {
     // The "en-US" ResourceBundle is always loaded before this step for tests,
     // but in this test we want the browser to load the bundle as it
     // normally would.
-    ResourceBundle::CleanupSharedInstance();
+    ui::ResourceBundle::CleanupSharedInstance();
   }
 };
 

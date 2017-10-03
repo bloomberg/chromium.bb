@@ -517,7 +517,7 @@ void LocalNtpSource::StartDataRequest(
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
   if (stripped_path == kMainHtmlFilename) {
-    std::string html = ResourceBundle::GetSharedInstance()
+    std::string html = ui::ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_LOCAL_NTP_HTML)
                            .as_string();
     std::string config_integrity = base::StringPrintf(
@@ -549,7 +549,7 @@ void LocalNtpSource::StartDataRequest(
   for (size_t i = 0; i < arraysize(kResources); ++i) {
     if (filename == kResources[i].filename) {
       scoped_refptr<base::RefCountedMemory> response(
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
               kResources[i].identifier, scale_factor));
       callback.Run(response.get());
       return;

@@ -63,7 +63,7 @@ const CGFloat kMaxTopMargin = 130;
         [NSColor colorWithCalibratedWhite:245.0f / 255.0f alpha:1.0].CGColor;
     container_ = [[SadTabContainerView new] autorelease];
 
-    NSImage* iconImage = ResourceBundle::GetSharedInstance()
+    NSImage* iconImage = ui::ResourceBundle::GetSharedInstance()
                              .GetNativeImageNamed(IDR_CRASH_SAD_TAB)
                              .ToNSImage();
     NSImageView* icon = [[NSImageView new] autorelease];

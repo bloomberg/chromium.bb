@@ -231,7 +231,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
 
   int resource_id = IDR_NET_ERROR_HTML;
   const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
   if (template_html.empty()) {
     NOTREACHED() << "unable to load template.";
   } else {

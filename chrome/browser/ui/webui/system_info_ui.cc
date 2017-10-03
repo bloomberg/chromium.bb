@@ -165,7 +165,7 @@ void SystemInfoUIHTMLSource::RequestComplete() {
     strings.Set("details", std::move(details));
   }
   static const base::StringPiece systeminfo_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_SYS_HTML));
   std::string full_html = webui::GetI18nTemplateHtml(systeminfo_html, &strings);
   callback_.Run(base::RefCountedString::TakeString(&full_html));

@@ -758,7 +758,7 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
   // http://crosbug.com/230859
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
-          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
@@ -865,7 +865,7 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
   active_user_ = user;
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
-          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
@@ -919,7 +919,7 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
   active_user_ = user;
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
-          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
@@ -938,7 +938,7 @@ void ChromeUserManagerImpl::DemoAccountLoggedIn() {
       user_manager::User::CreateKioskAppUser(user_manager::DemoAccountId());
   active_user_->SetStubImage(
       base::MakeUnique<user_manager::UserImage>(
-          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_INVALID, false);
   WallpaperManager::Get()->SetUserWallpaperNow(user_manager::DemoAccountId());
@@ -1354,7 +1354,7 @@ bool ChromeUserManagerImpl::HasBrowserRestarted() const {
 
 const gfx::ImageSkia& ChromeUserManagerImpl::GetResourceImagekiaNamed(
     int id) const {
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
 base::string16 ChromeUserManagerImpl::GetResourceStringUTF16(

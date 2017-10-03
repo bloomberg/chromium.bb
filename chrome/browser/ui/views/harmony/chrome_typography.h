@@ -34,9 +34,9 @@ enum ChromeTextContext {
   // mimic the native Windows 10 look and feel.
   CONTEXT_WINDOWS10_NATIVE,
 
-  // ResourceBundle::SmallFont (11 pt). There is no equivalent in the Harmony
-  // spec, so new code should not be using this. It is only provided to avoid
-  // changing existing UI and it will eventually be removed.
+  // ui::ResourceBundle::SmallFont (11 pt). There is no equivalent in the
+  // Harmony spec, so new code should not be using this. It is only provided to
+  // avoid changing existing UI and it will eventually be removed.
   CONTEXT_DEPRECATED_SMALL,
 };
 

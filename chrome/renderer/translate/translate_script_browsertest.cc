@@ -80,8 +80,9 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
  protected:
   void InjectElementLibrary() {
     std::string script;
-    base::StringPiece translate_js = ResourceBundle::GetSharedInstance().
-        GetRawDataResource(IDR_TRANSLATE_JS);
+    base::StringPiece translate_js =
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_TRANSLATE_JS);
     translate_js.CopyToString(&script);
     script += kElementJs;
     ExecuteScript(script);

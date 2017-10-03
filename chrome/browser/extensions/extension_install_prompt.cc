@@ -440,7 +440,7 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
     rating_fractional = 0;
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int i;
   for (i = 0; i < rating_integer; i++) {
     appender(rb.GetImageSkiaNamed(IDR_EXTENSIONS_RATING_STAR_ON), data);

@@ -675,17 +675,19 @@ base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {
 base::StringPiece ChromeContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
     int resource_id) const {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
-  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      resource_id);
 }
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {

@@ -1877,7 +1877,7 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(
 }
 
 const gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToImageSkia();
 }
 
@@ -3087,7 +3087,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
 std::unique_ptr<base::Value>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;

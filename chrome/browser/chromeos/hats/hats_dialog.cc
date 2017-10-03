@@ -55,7 +55,7 @@ enum class DeviceInfoKey : unsigned int {
 std::string LoadLocalHtmlAsString(std::string site_id,
                                   std::string site_context) {
   std::string html_data;
-  ResourceBundle::GetSharedInstance()
+  ui::ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_HATS_HTML)
       .CopyToString(&html_data);
 

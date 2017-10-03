@@ -313,7 +313,7 @@ class ChromeOSCreditsHandler
   void StartOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (path_ == kKeyboardUtilsPath) {
-      contents_ = ResourceBundle::GetSharedInstance()
+      contents_ = ui::ResourceBundle::GetSharedInstance()
                       .GetRawDataResource(IDR_KEYBOARD_UTILS_JS)
                       .as_string();
       ResponseOnUIThread();
@@ -339,7 +339,7 @@ class ChromeOSCreditsHandler
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS credits from disk, load it from resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
-      contents_ = ResourceBundle::GetSharedInstance()
+      contents_ = ui::ResourceBundle::GetSharedInstance()
                       .GetRawDataResource(IDR_OS_CREDITS_HTML)
                       .as_string();
     }
@@ -718,7 +718,7 @@ void AboutUIHTMLSource::StartDataRequest(
     if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
       response = about_ui::GetCredits(true /*include_scripts*/);
     } else {
-      response = ResourceBundle::GetSharedInstance()
+      response = ui::ResourceBundle::GetSharedInstance()
                      .GetRawDataResource(idr)
                      .as_string();
     }

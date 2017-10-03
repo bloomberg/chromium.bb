@@ -27,11 +27,11 @@ namespace {
 gfx::ImageSkia* g_default_icon = nullptr;
 
 gfx::ImageSkia* GetDefaultIcon() {
-  if (!ResourceBundle::HasSharedInstance())
+  if (!ui::ResourceBundle::HasSharedInstance())
     return nullptr;
 
   if (!g_default_icon) {
-    g_default_icon = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+    g_default_icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_EXTENSIONS_FAVICON);
   }
 

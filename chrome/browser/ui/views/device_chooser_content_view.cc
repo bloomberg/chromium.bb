@@ -170,7 +170,7 @@ gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
   DCHECK_GE(level, 0);
   DCHECK_LT(level, static_cast<int>(arraysize(kSignalStrengthLevelImageIds)));
 
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       kSignalStrengthLevelImageIds[level]);
 }
 

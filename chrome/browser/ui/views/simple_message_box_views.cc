@@ -107,7 +107,7 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
 #if defined(OS_WIN)
   if (!base::MessageLoopForUI::IsCurrent() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
-      !ResourceBundle::HasSharedInstance()) {
+      !ui::ResourceBundle::HasSharedInstance()) {
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
     int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
                                 title, GetMessageBoxFlagsFromType(type));
@@ -118,7 +118,7 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
   }
 #else
   if (!base::MessageLoopForUI::IsCurrent() ||
-      !ResourceBundle::HasSharedInstance()) {
+      !ui::ResourceBundle::HasSharedInstance()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "
                << title << " - " << message;
     std::move(callback).Run(chrome::MESSAGE_BOX_RESULT_NO);

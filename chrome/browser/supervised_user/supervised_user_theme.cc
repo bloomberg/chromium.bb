@@ -61,7 +61,7 @@ gfx::Image SupervisedUserTheme::GetImageNamed(int id) {
     return gfx::Image();
 
   id = MapToSupervisedUserResourceIds(id);
-  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
 }
 
 bool SupervisedUserTheme::HasCustomImage(int id) const {

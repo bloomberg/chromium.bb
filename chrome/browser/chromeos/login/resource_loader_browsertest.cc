@@ -45,10 +45,10 @@ class ResourceLoaderBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &resources_pack_path));
     resources_pack_path =
         resources_pack_path.AppendASCII("gen/ui/login/login_resources.pak");
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
     const base::StringPiece resource_loader_js =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_OOBE_RESOURCE_LOADER_JS);
     EXPECT_FALSE(resource_loader_js.empty());
 

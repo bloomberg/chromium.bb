@@ -188,7 +188,7 @@ TEST_F(AppMenuControllerTest, RecentTabsFavIcon) {
   EXPECT_EQ(6, [recent_tabs_menu numberOfItems]);
 
   // Send a icon changed event and verify that the icon is updated.
-  gfx::Image icon(ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+  gfx::Image icon(ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_BOOKMARKS_FAVICON));
   recent_tabs_sub_menu_model.SetIcon(3, icon);
   EXPECT_NSNE(icon.ToNSImage(), [[recent_tabs_menu itemAtIndex:3] image]);

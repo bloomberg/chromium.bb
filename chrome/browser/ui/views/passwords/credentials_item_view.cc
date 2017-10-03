@@ -75,7 +75,7 @@ CredentialsItemView::CredentialsItemView(
   // the parent can receive the events instead.
   image_view_ = new CircularImageView;
   image_view_->set_can_process_events_within_subtree(false);
-  gfx::Image image = ResourceBundle::GetSharedInstance().GetImageNamed(
+  gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE);
   DCHECK(image.Width() >= kAvatarImageSize &&
          image.Height() >= kAvatarImageSize);

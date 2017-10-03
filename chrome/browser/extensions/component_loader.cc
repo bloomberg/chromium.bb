@@ -186,7 +186,7 @@ std::string ComponentLoader::Add(int manifest_resource_id,
     return std::string();
 
   base::StringPiece manifest_contents =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id);
   return Add(manifest_contents, root_directory, true);
 }
@@ -406,7 +406,7 @@ void ComponentLoader::AddWithNameAndDescription(
     return;
 
   base::StringPiece manifest_contents =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id);
 
   // The Value is kept for the lifetime of the ComponentLoader. This is

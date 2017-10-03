@@ -26,7 +26,7 @@ chrome::MessageBoxResult ShowMessageBoxImpl(
   // back to native Cocoa message boxes.
   if (base::MessageLoopForUI::IsCurrent() &&
       base::RunLoop::IsRunningOnCurrentThread() &&
-      ResourceBundle::HasSharedInstance() &&
+      ui::ResourceBundle::HasSharedInstance() &&
       ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     return SimpleMessageBoxViews::Show(parent, title, message, type, yes_text,
                                        no_text, checkbox_text);

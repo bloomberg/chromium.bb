@@ -309,7 +309,7 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
   DCHECK(out_imes);
   for (size_t i = 0; i < arraysize(whitelisted_component_extension); ++i) {
     ComponentExtensionIME component_ime;
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     component_ime.manifest =
         rb.GetRawDataResource(
                whitelisted_component_extension[i].manifest_resource_id)

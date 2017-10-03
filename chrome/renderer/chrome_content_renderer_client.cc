@@ -657,13 +657,15 @@ void ChromeContentRendererClient::RenderViewCreated(
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
-  return const_cast<SkBitmap*>(ResourceBundle::GetSharedInstance().
-      GetImageNamed(IDR_SAD_PLUGIN).ToSkBitmap());
+  return const_cast<SkBitmap*>(ui::ResourceBundle::GetSharedInstance()
+                                   .GetImageNamed(IDR_SAD_PLUGIN)
+                                   .ToSkBitmap());
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
-  return const_cast<SkBitmap*>(ResourceBundle::GetSharedInstance().
-      GetImageNamed(IDR_SAD_WEBVIEW).ToSkBitmap());
+  return const_cast<SkBitmap*>(ui::ResourceBundle::GetSharedInstance()
+                                   .GetImageNamed(IDR_SAD_WEBVIEW)
+                                   .ToSkBitmap());
 }
 
 bool ChromeContentRendererClient::OverrideCreatePlugin(

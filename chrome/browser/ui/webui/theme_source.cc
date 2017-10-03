@@ -58,7 +58,7 @@ void ProcessResourceOnUiThread(int resource_id,
                                scoped_refptr<base::RefCountedBytes> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ProcessImageOnUiThread(
-      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
       scale, data);
 }
 
@@ -132,7 +132,7 @@ void ThemeSource::StartDataRequest(
   // use 2x scale without 2x data packs, as well as omnibox requests for larger
   // (but still reasonable) scales (see below).
   const float max_scale = ui::GetScaleForScaleFactor(
-      ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
+      ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
   const float unreasonable_scale = max_scale * 32;
   // TODO(reveman): Add support frames beyond 0 (crbug.com/750064).
   if ((resource_id == -1) || (scale >= unreasonable_scale) || (frame > 0)) {
@@ -209,7 +209,7 @@ void ThemeSource::SendThemeBitmap(
     callback.Run(image_data.get());
   } else {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     callback.Run(rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
   }
 }

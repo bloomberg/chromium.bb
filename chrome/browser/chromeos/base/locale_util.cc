@@ -47,7 +47,7 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   data->result.loaded_locale =
-      ResourceBundle::GetSharedInstance().ReloadLocaleResources(
+      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(
           data->result.requested_locale);
 
   data->result.success = !data->result.loaded_locale.empty();
@@ -94,7 +94,7 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
 
   // The font clean up of ResourceBundle should be done on UI thread, since the
   // cached fonts are thread unsafe.
-  ResourceBundle::GetSharedInstance().ReloadFonts();
+  ui::ResourceBundle::GetSharedInstance().ReloadFonts();
   gfx::PlatformFontLinux::ReloadDefaultFont();
   if (!data->callback.is_null())
     data->callback.Run(data->result);

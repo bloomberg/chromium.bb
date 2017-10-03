@@ -302,7 +302,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   webui::SetLoadTimeDataDefaults(app_locale, &replacements);
 
   static const base::StringPiece incognito_tab_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           is_md_incognito_ntp_enabled ? IDR_MD_INCOGNITO_TAB_HTML
                                       : IDR_INCOGNITO_TAB_HTML));
 
@@ -368,7 +368,8 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
 
   static const base::StringPiece guest_tab_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(guest_tab_ids));
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          guest_tab_ids));
 
   ui::TemplateReplacements replacements;
   ui::TemplateReplacementsFromDictionaryValue(localized_strings, &replacements);
@@ -474,8 +475,9 @@ void NTPResourceCache::CreateNewTabHTML() {
       SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
 
   // Load the new tab page appropriate for this build.
-  base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_TAB_4_HTML));
+  base::StringPiece new_tab_html(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_NEW_TAB_4_HTML));
   std::string full_html =
       webui::GetI18nTemplateHtml(new_tab_html, &load_time_data);
   new_tab_html_ = base::RefCountedString::TakeString(&full_html);
@@ -510,7 +512,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
@@ -586,7 +588,7 @@ void NTPResourceCache::CreateNewTabCSS() {
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_NEW_TAB_4_THEME_CSS));
 
   // Create the string from our template and the replacements.

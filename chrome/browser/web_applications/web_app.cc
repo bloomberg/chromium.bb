@@ -92,7 +92,8 @@ void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
   // use the standard application icon.
   if (image_family.empty()) {
     gfx::Image default_icon =
-        ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_APP_DEFAULT_ICON);
     int size = kDesiredSizes[kNumDesiredSizes - 1];
     SkBitmap bmp = skia::ImageOperations::Resize(
           *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,

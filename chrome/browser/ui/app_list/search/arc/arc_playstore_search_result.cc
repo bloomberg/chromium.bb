@@ -102,7 +102,7 @@ gfx::ImageSkiaRep IconSource::GetImageForScale(float scale) {
     int resource_id =
         scale >= 1.5f ? IDR_ARC_SUPPORT_ICON_96 : IDR_ARC_SUPPORT_ICON_48;
     icon_to_scale =
-        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   } else {
     icon_to_scale = &decoded_icon_;
   }

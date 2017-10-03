@@ -94,7 +94,7 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->avatar = user.GetImage();
   if (session->user_info->avatar.isNull()) {
     session->user_info->avatar =
-        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGIN_DEFAULT_USER);
   }
 

@@ -86,7 +86,7 @@ void ArcKioskSplashScreenHandler::PopulateAppInfo(
   out_info->SetString("name", l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
   out_info->SetString(
       "iconURL",
-      webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
+      webui::GetBitmapDataUrl(*ui::ResourceBundle::GetSharedInstance()
                                    .GetImageSkiaNamed(IDR_PRODUCT_LOGO_128)
                                    ->bitmap()));
 }

@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
 
   // Check that the task manager uses the default favicon for the page.
   gfx::Image default_favicon_image =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_DEFAULT_FAVICON);
   EXPECT_TRUE(gfx::test::AreImagesEqual(default_favicon_image,
                                         gfx::Image(task->icon())));

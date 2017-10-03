@@ -44,7 +44,7 @@ struct LazyDirectoryListerCacher {
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
     value.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
     html_data = webui::GetI18nTemplateHtml(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_DIR_HEADER_HTML),
         &value);
   }
@@ -62,7 +62,7 @@ base::StringPiece NetResourceProvider(int key) {
   if (IDR_DIR_HEADER_HTML == key)
     return base::StringPiece(lazy_dir_lister.html_data);
 
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(key);
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(key);
 }
 
 }  // namespace chrome_common_net

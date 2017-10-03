@@ -475,7 +475,7 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
-    html = ResourceBundle::GetSharedInstance()
+    html = ui::ResourceBundle::GetSharedInstance()
                .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_UI_HTML)
                .as_string();
   }

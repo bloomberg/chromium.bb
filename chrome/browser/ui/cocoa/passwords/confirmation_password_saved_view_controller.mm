@@ -71,10 +71,10 @@
 
   // Text.
   confirmationText_.reset([[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
-  NSFont* font = ResourceBundle::GetSharedInstance()
-      .GetFontList(ResourceBundle::SmallFont)
-      .GetPrimaryFont()
-      .GetNativeFont();
+  NSFont* font = ui::ResourceBundle::GetSharedInstance()
+                     .GetFontList(ui::ResourceBundle::SmallFont)
+                     .GetPrimaryFont()
+                     .GetNativeFont();
   NSColor* textColor = [NSColor blackColor];
   [confirmationText_ setMessage:base::SysUTF16ToNSString(
                                     self.model->save_confirmation_text())

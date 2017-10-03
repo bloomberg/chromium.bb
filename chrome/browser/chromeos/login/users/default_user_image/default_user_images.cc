@@ -322,7 +322,7 @@ bool IsDefaultImageUrl(const std::string& url, int* image_id) {
 
 const gfx::ImageSkia& GetDefaultImage(int index) {
   DCHECK(index >= 0 && index < kDefaultImagesCount);
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       kDefaultImageResourceIDs[index]);
 }
 

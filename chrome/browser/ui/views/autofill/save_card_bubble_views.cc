@@ -323,7 +323,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   const CreditCard& card = controller_->GetCard();
   views::ImageView* card_type_icon = new views::ImageView();
   card_type_icon->SetImage(
-      ResourceBundle::GetSharedInstance()
+      ui::ResourceBundle::GetSharedInstance()
           .GetImageNamed(CreditCard::IconResourceId(card.network()))
           .AsImageSkia());
   card_type_icon->SetTooltipText(card.NetworkForDisplay());

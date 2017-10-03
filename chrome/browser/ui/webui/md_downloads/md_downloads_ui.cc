@@ -163,6 +163,6 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 // static
 base::RefCountedMemory* MdDownloadsUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
-  return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_DOWNLOADS_FAVICON, scale_factor);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+      IDR_DOWNLOADS_FAVICON, scale_factor);
 }

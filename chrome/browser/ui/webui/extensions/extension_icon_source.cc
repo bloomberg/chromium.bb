@@ -92,7 +92,7 @@ GURL ExtensionIconSource::GetIconURL(const Extension* extension,
 // static
 SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
   base::StringPiece contents =
-      ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
           resource_id, ui::SCALE_FACTOR_100P);
 
   // Convert and return it.
