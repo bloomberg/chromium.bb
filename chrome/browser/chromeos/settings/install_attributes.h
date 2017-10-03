@@ -73,9 +73,8 @@ class InstallAttributes {
   // Updates the firmware management parameters from TPM, storing the devmode
   // flag according to |block_devmode|. Invokes |callback| when done. Must be
   // called before LockDevice is done. Used to update TPM on enrollment.
-  void SetBlockDevmodeInTpm(
-      bool block_devmode,
-      const CryptohomeClient::ProtobufMethodCallback& callback);
+  void SetBlockDevmodeInTpm(bool block_devmode,
+                            DBusMethodCallback<cryptohome::BaseReply> callback);
 
   // Locks the device into |device_mode|.  Depending on |device_mode|, a
   // specific subset of |domain|, |realm| and |device_id| must be set.  Can also

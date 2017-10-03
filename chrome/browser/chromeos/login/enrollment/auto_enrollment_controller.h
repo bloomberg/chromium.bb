@@ -12,6 +12,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -114,9 +115,7 @@ class AutoEnrollmentController {
   // here, it is logged only, without changing the flow after that, because
   // the FWMP is used only for newer devices.
   void OnFirmwareManagementParametersRemoved(
-      chromeos::DBusMethodCallStatus call_status,
-      bool result,
-      const cryptohome::BaseReply& reply);
+      base::Optional<cryptohome::BaseReply> reply);
 
   // Handles timeout of the safeguard timer and stops waiting for a result.
   void Timeout();

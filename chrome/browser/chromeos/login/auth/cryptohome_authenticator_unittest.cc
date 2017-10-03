@@ -149,7 +149,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
   void MountEx(const cryptohome::Identification& cryptohome_id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
-               const ProtobufMethodCallback& callback) override {
+               DBusMethodCallback<cryptohome::BaseReply> callback) override {
     EXPECT_EQ(is_create_attempt_expected_, request.has_create());
     if (is_create_attempt_expected_) {
       EXPECT_EQ(expected_authorization_secret_,
@@ -165,7 +165,7 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
         ->set_sanitized_username(
             cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, reply));
+        FROM_HERE, base::BindOnce(std::move(callback), reply));
   }
 
  private:
@@ -319,9 +319,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     fake_cryptohome_client_->AddKeyEx(
         cryptohome::Identification(user_context_.GetAccountId()),
         cryptohome::AuthorizationRequest(), request,
-        base::Bind(
-            [](DBusMethodCallStatus call_status, bool result,
-               const cryptohome::BaseReply& reply) { EXPECT_TRUE(result); }));
+        base::BindOnce([](base::Optional<cryptohome::BaseReply> reply) {
+          EXPECT_TRUE(reply.has_value());
+        }));
     base::RunLoop().RunUntilIdle();
   }
 

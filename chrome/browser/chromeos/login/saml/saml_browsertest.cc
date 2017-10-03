@@ -289,7 +289,7 @@ class SecretInterceptingFakeCryptohomeClient : public FakeCryptohomeClient {
   void MountEx(const cryptohome::Identification& id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
-               const ProtobufMethodCallback& callback) override;
+               DBusMethodCallback<cryptohome::BaseReply> callback) override;
 
   const std::string& salted_hashed_secret() { return salted_hashed_secret_; }
 
@@ -307,9 +307,9 @@ void SecretInterceptingFakeCryptohomeClient::MountEx(
     const cryptohome::Identification& id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::MountRequest& request,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   salted_hashed_secret_ = auth.key().secret();
-  FakeCryptohomeClient::MountEx(id, auth, request, callback);
+  FakeCryptohomeClient::MountEx(id, auth, request, std::move(callback));
 }
 
 }  // namespace

@@ -123,20 +123,19 @@ void FakeCryptohomeClient::AsyncRemove(
 void FakeCryptohomeClient::RenameCryptohome(
     const cryptohome::Identification& cryptohome_id_from,
     const cryptohome::Identification& cryptohome_id_to,
-    const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::GetAccountDiskUsage(
     const cryptohome::Identification& account_id,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   cryptohome::BaseReply reply;
   cryptohome::GetAccountDiskUsageReply* get_account_disk_usage_reply =
       reply.MutableExtension(cryptohome::GetAccountDiskUsageReply::reply);
   // Sets 100 MB as a fake usage.
   get_account_disk_usage_reply->set_size(100 * 1024 * 1024);
-  ReturnProtobufMethodCallback(reply, callback);
+  ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
 void FakeCryptohomeClient::GetSystemSalt(
@@ -576,7 +575,7 @@ void FakeCryptohomeClient::GetKeyDataEx(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::GetKeyDataRequest& request,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   cryptohome::BaseReply reply;
   const auto it = key_data_map_.find(cryptohome_id);
   if (it == key_data_map_.end()) {
@@ -586,23 +585,22 @@ void FakeCryptohomeClient::GetKeyDataEx(
         reply.MutableExtension(cryptohome::GetKeyDataReply::reply);
     *key_data_reply->add_key_data() = it->second;
   }
-  ReturnProtobufMethodCallback(reply, callback);
+  ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
 void FakeCryptohomeClient::CheckKeyEx(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::CheckKeyRequest& request,
-    const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::MountEx(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::MountRequest& request,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   cryptohome::BaseReply reply;
   cryptohome::MountReply* mount =
       reply.MutableExtension(cryptohome::MountReply::reply);
@@ -612,59 +610,54 @@ void FakeCryptohomeClient::MountEx(
       !request.to_migrate_from_ecryptfs()) {
     reply.set_error(cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION);
   }
-  ReturnProtobufMethodCallback(reply, callback);
+  ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
 void FakeCryptohomeClient::AddKeyEx(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::AddKeyRequest& request,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   key_data_map_.insert(std::make_pair(cryptohome_id, request.key().data()));
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::RemoveKeyEx(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::RemoveKeyRequest& request,
-    const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::UpdateKeyEx(
     const cryptohome::Identification& cryptohome_id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::UpdateKeyRequest& request,
-    const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::GetBootAttribute(
     const cryptohome::GetBootAttributeRequest& request,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   cryptohome::BaseReply reply;
   cryptohome::GetBootAttributeReply* attr_reply =
       reply.MutableExtension(cryptohome::GetBootAttributeReply::reply);
   attr_reply->set_value("");
-  ReturnProtobufMethodCallback(reply, callback);
+  ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
 void FakeCryptohomeClient::SetBootAttribute(
     const cryptohome::SetBootAttributeRequest& request,
-    const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::FlushAndSignBootAttributes(
     const cryptohome::FlushAndSignBootAttributesRequest& request,
-    const ProtobufMethodCallback& callback) {
-  cryptohome::BaseReply reply;
-  ReturnProtobufMethodCallback(reply, callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::MigrateToDircrypto(
@@ -682,14 +675,14 @@ void FakeCryptohomeClient::MigrateToDircrypto(
 
 void FakeCryptohomeClient::RemoveFirmwareManagementParametersFromTpm(
     const cryptohome::RemoveFirmwareManagementParametersRequest& request,
-    const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(cryptohome::BaseReply(), callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::SetFirmwareManagementParametersInTpm(
     const cryptohome::SetFirmwareManagementParametersRequest& request,
-    const ProtobufMethodCallback& callback) {
-  ReturnProtobufMethodCallback(cryptohome::BaseReply(), callback);
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::NeedsDircryptoMigration(
@@ -747,9 +740,9 @@ std::vector<uint8_t> FakeCryptohomeClient::GetStubSystemSalt() {
 
 void FakeCryptohomeClient::ReturnProtobufMethodCallback(
     const cryptohome::BaseReply& reply,
-    const ProtobufMethodCallback& callback) {
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, reply));
+      FROM_HERE, base::BindOnce(std::move(callback), reply));
 }
 
 void FakeCryptohomeClient::ReturnAsyncMethodResult(

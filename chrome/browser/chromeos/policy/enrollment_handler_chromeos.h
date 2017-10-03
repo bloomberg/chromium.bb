@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -167,9 +168,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Invoked after the firmware management partition in TPM is updated.
   void OnFirmwareManagementParametersDataSet(
-      chromeos::DBusMethodCallStatus call_status,
-      bool result,
-      const cryptohome::BaseReply& reply);
+      base::Optional<cryptohome::BaseReply> reply);
 
   // Calls InstallAttributes::LockDevice() for enterprise enrollment and
   // DeviceSettingsService::SetManagementSettings() for consumer

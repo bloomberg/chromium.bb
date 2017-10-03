@@ -83,12 +83,6 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
                               bool result,
                               const std::string& data)> DataMethodCallback;
 
-  // A callback for methods which return both a bool and a protobuf as reply.
-  typedef base::Callback<
-      void(DBusMethodCallStatus call_status,
-           bool result,
-           const cryptohome::BaseReply& reply)> ProtobufMethodCallback;
-
   // A callback to handle DircryptoMigrationProgress signals.
   typedef base::Callback<void(cryptohome::DircryptoMigrationStatus status,
                               uint64_t current,
@@ -170,12 +164,13 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void RenameCryptohome(
       const cryptohome::Identification& cryptohome_id_from,
       const cryptohome::Identification& cryptohome_id_to,
-      const ProtobufMethodCallback& callback) = 0;
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls GetAccountDiskUsage method. |callback| is called after the method
   // call succeeds
-  virtual void GetAccountDiskUsage(const cryptohome::Identification& account_id,
-                                   const ProtobufMethodCallback& callback) = 0;
+  virtual void GetAccountDiskUsage(
+      const cryptohome::Identification& account_id,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls GetSystemSalt method.  |callback| is called after the method call
   // succeeds.
@@ -501,18 +496,20 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // GetKeyDataEx returns information about the key specified in |request|. At
   // present, this does not include any secret information and the call should
   // not be authenticated (|auth| should be empty).
-  virtual void GetKeyDataEx(const cryptohome::Identification& cryptohome_id,
-                            const cryptohome::AuthorizationRequest& auth,
-                            const cryptohome::GetKeyDataRequest& request,
-                            const ProtobufMethodCallback& callback) = 0;
+  virtual void GetKeyDataEx(
+      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::GetKeyDataRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls CheckKeyEx method. |callback| is called after method
   // call, and with reply protobuf.
   // CheckKeyEx just checks if authorization information is valid.
-  virtual void CheckKeyEx(const cryptohome::Identification& cryptohome_id,
-                          const cryptohome::AuthorizationRequest& auth,
-                          const cryptohome::CheckKeyRequest& request,
-                          const ProtobufMethodCallback& callback) = 0;
+  virtual void CheckKeyEx(
+      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::CheckKeyRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls MountEx method. |callback| is called after method
   // call, and with reply protobuf.
@@ -521,7 +518,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void MountEx(const cryptohome::Identification& cryptohome_id,
                        const cryptohome::AuthorizationRequest& auth,
                        const cryptohome::MountRequest& request,
-                       const ProtobufMethodCallback& callback) = 0;
+                       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls AddKeyEx method. |callback| is called after method
   // call, and with reply protobuf.
@@ -530,32 +527,34 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void AddKeyEx(const cryptohome::Identification& cryptohome_id,
                         const cryptohome::AuthorizationRequest& auth,
                         const cryptohome::AddKeyRequest& request,
-                        const ProtobufMethodCallback& callback) = 0;
+                        DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls UpdateKeyEx method. |callback| is called after method
   // call, and with reply protobuf. Reply will contain MountReply extension.
   // UpdateKeyEx replaces key used for authorization, without affecting any
   // other keys. If specified at home dir creation time, new key may have
   // to be signed and/or encrypted.
-  virtual void UpdateKeyEx(const cryptohome::Identification& cryptohome_id,
-                           const cryptohome::AuthorizationRequest& auth,
-                           const cryptohome::UpdateKeyRequest& request,
-                           const ProtobufMethodCallback& callback) = 0;
+  virtual void UpdateKeyEx(
+      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::UpdateKeyRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls RemoveKeyEx method. |callback| is called after method
   // call, and with reply protobuf.
   // RemoveKeyEx removes key from the given key set.
-  virtual void RemoveKeyEx(const cryptohome::Identification& cryptohome_id,
-                           const cryptohome::AuthorizationRequest& auth,
-                           const cryptohome::RemoveKeyRequest& request,
-                           const ProtobufMethodCallback& callback) = 0;
+  virtual void RemoveKeyEx(
+      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::RemoveKeyRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls GetBootAttribute method. |callback| is called after
   // method call, and with reply protobuf.
   // GetBootAttribute gets the value of the specified boot attribute.
   virtual void GetBootAttribute(
       const cryptohome::GetBootAttributeRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls SetBootAttribute method. |callback| is called after
   // method call, and with reply protobuf.
@@ -563,7 +562,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // won't be available unitl FlushAndSignBootAttributes() is called.
   virtual void SetBootAttribute(
       const cryptohome::SetBootAttributeRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls FlushAndSignBootAttributes method. |callback| is
   // called after method call, and with reply protobuf.
@@ -572,7 +571,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // fails after any user, publuc, or guest session starts.
   virtual void FlushAndSignBootAttributes(
       const cryptohome::FlushAndSignBootAttributesRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls MigrateToDircrypto method. It tells cryptohomed to
   // start migration, and is immediately called back by |callback|. The actual
@@ -591,7 +590,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // is called after method call, and with reply protobuf.
   virtual void RemoveFirmwareManagementParametersFromTpm(
       const cryptohome::RemoveFirmwareManagementParametersRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls SetFirmwareManagementParameters method. |callback|
   // is called after method call, and with reply protobuf. |request| contains
@@ -599,7 +598,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // management parameters in TPM and sets flags included in the request.
   virtual void SetFirmwareManagementParametersInTpm(
       const cryptohome::SetFirmwareManagementParametersRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls NeedsDircryptoMigration to find out whether the given user needs
   // dircrypto migration.

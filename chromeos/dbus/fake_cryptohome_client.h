@@ -46,11 +46,13 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                        AsyncMethodCallback callback) override;
   void AsyncRemove(const cryptohome::Identification& cryptohome_id,
                    AsyncMethodCallback callback) override;
-  void RenameCryptohome(const cryptohome::Identification& cryptohome_id_from,
-                        const cryptohome::Identification& cryptohome_id_to,
-                        const ProtobufMethodCallback& callback) override;
-  void GetAccountDiskUsage(const cryptohome::Identification& account_id,
-                           const ProtobufMethodCallback& callback) override;
+  void RenameCryptohome(
+      const cryptohome::Identification& cryptohome_id_from,
+      const cryptohome::Identification& cryptohome_id_to,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void GetAccountDiskUsage(
+      const cryptohome::Identification& account_id,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void GetSystemSalt(
       DBusMethodCallback<std::vector<uint8_t>> callback) override;
   void GetSanitizedUsername(const cryptohome::Identification& cryptohome_id,
@@ -167,37 +169,40 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                                 const std::string& key_prefix,
                                 DBusMethodCallback<bool> callback) override;
   void TpmGetVersion(DBusMethodCallback<TpmVersionInfo> callback) override;
-  void GetKeyDataEx(const cryptohome::Identification& cryptohome_id,
-                    const cryptohome::AuthorizationRequest& auth,
-                    const cryptohome::GetKeyDataRequest& request,
-                    const ProtobufMethodCallback& callback) override;
+  void GetKeyDataEx(
+      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::GetKeyDataRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void CheckKeyEx(const cryptohome::Identification& cryptohome_id,
                   const cryptohome::AuthorizationRequest& auth,
                   const cryptohome::CheckKeyRequest& request,
-                  const ProtobufMethodCallback& callback) override;
+                  DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void MountEx(const cryptohome::Identification& cryptohome_id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
-               const ProtobufMethodCallback& callback) override;
+               DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void AddKeyEx(const cryptohome::Identification& cryptohome_id,
                 const cryptohome::AuthorizationRequest& auth,
                 const cryptohome::AddKeyRequest& request,
-                const ProtobufMethodCallback& callback) override;
+                DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void UpdateKeyEx(const cryptohome::Identification& cryptohome_id,
                    const cryptohome::AuthorizationRequest& auth,
                    const cryptohome::UpdateKeyRequest& request,
-                   const ProtobufMethodCallback& callback) override;
+                   DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void RemoveKeyEx(const cryptohome::Identification& cryptohome_id,
                    const cryptohome::AuthorizationRequest& auth,
                    const cryptohome::RemoveKeyRequest& request,
-                   const ProtobufMethodCallback& callback) override;
-  void GetBootAttribute(const cryptohome::GetBootAttributeRequest& request,
-                        const ProtobufMethodCallback& callback) override;
-  void SetBootAttribute(const cryptohome::SetBootAttributeRequest& request,
-                        const ProtobufMethodCallback& callback) override;
+                   DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void GetBootAttribute(
+      const cryptohome::GetBootAttributeRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void SetBootAttribute(
+      const cryptohome::SetBootAttributeRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void FlushAndSignBootAttributes(
       const cryptohome::FlushAndSignBootAttributesRequest& request,
-      const ProtobufMethodCallback& callback) override;
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
                           const cryptohome::MigrateToDircryptoRequest& request,
                           VoidDBusMethodCallback callback) override;
@@ -205,10 +210,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const DircryptoMigrationProgessHandler& handler) override;
   void RemoveFirmwareManagementParametersFromTpm(
       const cryptohome::RemoveFirmwareManagementParametersRequest& request,
-      const ProtobufMethodCallback& callback) override;
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void SetFirmwareManagementParametersInTpm(
       const cryptohome::SetFirmwareManagementParametersRequest& request,
-      const ProtobufMethodCallback& callback) override;
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void NeedsDircryptoMigration(const cryptohome::Identification& cryptohome_id,
                                DBusMethodCallback<bool> callback) override;
 
@@ -270,7 +275,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
  private:
   void ReturnProtobufMethodCallback(
       const cryptohome::BaseReply& reply,
-      const ProtobufMethodCallback& callback);
+      DBusMethodCallback<cryptohome::BaseReply> callback);
 
   // Posts tasks which return fake results to the UI thread.
   void ReturnAsyncMethodResult(AsyncMethodCallback callback);
