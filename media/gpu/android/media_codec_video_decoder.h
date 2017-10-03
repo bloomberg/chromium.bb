@@ -79,9 +79,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
-  // Updates the current overlay info.
-  void OnOverlayInfoChanged(const OverlayInfo& overlay_info);
-
  protected:
   // Protected for testing.
   ~MediaCodecVideoDecoder() override;
@@ -120,8 +117,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // accept buffers.
   void OnKeyAdded();
 
-  // Initializes |surface_chooser_|.
-  void InitializeSurfaceChooser();
+  // Updates |surface_chooser_| with the new overlay info.
+  void OnOverlayInfoChanged(const OverlayInfo& overlay_info);
   void OnSurfaceChosen(std::unique_ptr<AndroidOverlay> overlay);
   void OnSurfaceDestroyed(AndroidOverlay* overlay);
 
@@ -170,6 +167,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Sets |state_| and does common teardown for the terminal states. |state_|
   // must be either kSurfaceDestroyed or kError.
   void EnterTerminalState(State state);
+  bool InTerminalState();
 
   // Releases |codec_| if it's not null.
   void ReleaseCodec();
@@ -242,8 +240,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // The factory for creating VideoFrames from CodecOutputBuffers.
   std::unique_ptr<VideoFrameFactory> video_frame_factory_;
 
-  // An optional factory callback for creating mojo AndroidOverlays. This must
-  // only be called on the GPU thread.
+  // An optional factory callback for creating mojo AndroidOverlays.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   DeviceInfo* device_info_;
