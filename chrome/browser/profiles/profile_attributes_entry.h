@@ -123,10 +123,16 @@ class ProfileAttributesEntry {
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
                            EntryInternalAccessors);
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest, ProfileActiveTime);
+  FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
+                           DownloadHighResAvatarTest);
 
   void Initialize(ProfileInfoCache* cache,
                   const base::FilePath& path,
                   PrefService* prefs);
+
+  // Loads or uses an already loaded high resolution image of the generic
+  // profile avatar.
+  const gfx::Image* GetHighResAvatar() const;
 
   // Loads and saves the data to the local state.
   const base::Value* GetEntryData() const;

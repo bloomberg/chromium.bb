@@ -643,12 +643,12 @@ TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
 
 TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
   signin_util::SetForceSigninForTesting(true);
-  ProfileAttributesEntry* entry;
 
   AddTestingProfile();
 
   base::FilePath path = GetProfilePath("testing_profile_path0");
 
+  ProfileAttributesEntry* entry;
   ASSERT_TRUE(storage()->GetProfileAttributesWithPath(path, &entry));
   ASSERT_FALSE(entry->IsSigninRequired());
 
@@ -666,43 +666,76 @@ TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
   ASSERT_FALSE(entry->IsSigninRequired());
 }
 
+TEST_F(ProfileAttributesStorageTest, AvatarIconIndex) {
+  AddTestingProfile();
+
+  base::FilePath profile_path = GetProfilePath("testing_profile_path0");
+
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(profile_path, &entry));
+  ASSERT_EQ(0U, entry->GetAvatarIconIndex());
+
+  EXPECT_CALL(observer(), OnProfileAvatarChanged(profile_path)).Times(1);
+  entry->SetAvatarIconIndex(2U);
+  VerifyAndResetCallExpectations();
+  ASSERT_EQ(2U, entry->GetAvatarIconIndex());
+
+  EXPECT_CALL(observer(), OnProfileAvatarChanged(profile_path)).Times(1);
+  entry->SetAvatarIconIndex(3U);
+  VerifyAndResetCallExpectations();
+  ASSERT_EQ(3U, entry->GetAvatarIconIndex());
+}
+
 // High res avatar downloading is only supported on desktop.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
-  // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
-  ProfileInfoCache profile_info_cache(
-      g_browser_process->local_state(),
-      testing_profile_manager_.profile_manager()->user_data_dir());
+  storage()->set_disable_avatar_download_for_testing(false);
 
-  // Make sure there are no avatars already on disk.
   const size_t kIconIndex = 0;
   base::FilePath icon_path =
       profiles::GetPathOfHighResAvatarAtIndex(kIconIndex);
+
+  ASSERT_EQ(0U, storage()->GetNumberOfProfiles());
+  base::FilePath profile_path = GetProfilePath("path_1");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+  storage()->AddProfile(profile_path, base::ASCIIToUTF16("name_1"),
+                        std::string(), base::string16(), kIconIndex,
+                        std::string());
+  ASSERT_EQ(1U, storage()->GetNumberOfProfiles());
+  VerifyAndResetCallExpectations();
+
+  // Make sure there are no avatars already on disk.
+  content::RunAllTasksUntilIdle();
   ASSERT_FALSE(base::PathExists(icon_path));
 
-  EXPECT_EQ(0U, profile_info_cache.GetNumberOfProfiles());
-  base::FilePath path_1 = GetProfilePath("path_1");
-  profile_info_cache.AddProfile(path_1, base::ASCIIToUTF16("name_1"),
-                                std::string(), base::string16(), kIconIndex,
-                                std::string());
-  EXPECT_EQ(1U, profile_info_cache.GetNumberOfProfiles());
-  content::RunAllTasksUntilIdle();
-
   // We haven't downloaded any high-res avatars yet.
-  EXPECT_EQ(0U, profile_info_cache.cached_avatar_images_.size());
+  EXPECT_EQ(0U, storage()->cached_avatar_images_.size());
 
   // After adding a new profile, the download of high-res avatar will be
-  // triggered if the flag kNewAvatarMenu has been set. But the downloader
-  // won't ever call OnFetchComplete in the test.
-  EXPECT_EQ(1U, profile_info_cache.avatar_images_downloads_in_progress_.size());
+  // triggered. But the downloader won't ever call OnFetchComplete in the test.
+  EXPECT_EQ(1U, storage()->avatar_images_downloads_in_progress_.size());
 
-  EXPECT_FALSE(profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
+  // |GetHighResAvater| does not contain a cached avatar, so it should return
+  // null.
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(profile_path, &entry));
+  EXPECT_FALSE(entry->GetHighResAvatar());
+
+  // The previous |GetHighResAvater| starts |LoadAvatarPictureFromPath| async.
+  // The async code will end up at |OnAvatarPictureLoaded| storing an empty
+  // image in the cache.
+  EXPECT_CALL(observer(), OnProfileHighResAvatarLoaded(profile_path)).Times(1);
+  content::RunAllTasksUntilIdle();
+  VerifyAndResetCallExpectations();
+  std::string icon_filename =
+      profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
+  EXPECT_EQ(1U, storage()->cached_avatar_images_.size());
+  EXPECT_TRUE(storage()->cached_avatar_images_[icon_filename]->IsEmpty());
 
   // Simulate downloading a high-res avatar.
   ProfileAvatarDownloader avatar_downloader(
       kIconIndex, base::Bind(&ProfileAttributesStorage::SaveAvatarImageAtPath,
-                             base::Unretained(&profile_info_cache),
-                             profile_info_cache.GetPathOfProfileAtIndex(0)));
+                             base::Unretained(storage()), entry->GetPath()));
 
   // Put a real bitmap into "bitmap": a 2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
@@ -713,47 +746,49 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
                                     &bitmap);
 
   // Now the download should not be in progress anymore.
-  EXPECT_EQ(0U, profile_info_cache.avatar_images_downloads_in_progress_.size());
+  EXPECT_EQ(0U, storage()->avatar_images_downloads_in_progress_.size());
 
-  std::string file_name =
-      profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
+  // The image should have been cached.
+  EXPECT_EQ(1U, storage()->cached_avatar_images_.size());
+  EXPECT_FALSE(storage()->cached_avatar_images_[icon_filename]->IsEmpty());
+  EXPECT_EQ(storage()->cached_avatar_images_[icon_filename].get(),
+            entry->GetHighResAvatar());
 
-  // The file should have been cached and saved.
-  EXPECT_EQ(1U, profile_info_cache.cached_avatar_images_.size());
-  EXPECT_TRUE(profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
-  EXPECT_EQ(profile_info_cache.cached_avatar_images_[file_name].get(),
-            profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
+  // Since we are not using GAIA image, |GetAvatarIcon| should return the same
+  // image as |GetHighResAvatar| in desktop.
+  EXPECT_EQ(storage()->cached_avatar_images_[icon_filename].get(),
+            &entry->GetAvatarIcon());
 
-  // Make sure everything has completed, and the file has been written to disk.
+  // Finish the async calls that save the image to the disk.
+  EXPECT_CALL(observer(), OnProfileHighResAvatarLoaded(profile_path)).Times(1);
   content::RunAllTasksUntilIdle();
+  VerifyAndResetCallExpectations();
 
   // Clean up.
-  EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(file_name));
-  EXPECT_TRUE(base::PathExists(icon_path));
+  EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(icon_filename));
+  ASSERT_TRUE(base::PathExists(icon_path));
   EXPECT_TRUE(base::DeleteFile(icon_path, false));
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 
 TEST_F(ProfileAttributesStorageTest, NothingToDownloadHighResAvatarTest) {
-  // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
-  ProfileInfoCache profile_info_cache(
-      g_browser_process->local_state(),
-      testing_profile_manager_.profile_manager()->user_data_dir());
+  storage()->set_disable_avatar_download_for_testing(false);
 
   const size_t kIconIndex = profiles::GetPlaceholderAvatarIndex();
 
-  EXPECT_EQ(0U, profile_info_cache.GetNumberOfProfiles());
-  base::FilePath path_1 = GetProfilePath("path_1");
-  profile_info_cache.AddProfile(path_1, base::ASCIIToUTF16("name_1"),
-                                std::string(), base::string16(), kIconIndex,
-                                std::string());
-  EXPECT_EQ(1U, profile_info_cache.GetNumberOfProfiles());
+  EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
+  base::FilePath profile_path = GetProfilePath("path_1");
+  EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+  storage()->AddProfile(profile_path, base::ASCIIToUTF16("name_1"),
+                        std::string(), base::string16(), kIconIndex,
+                        std::string());
+  EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
   content::RunAllTasksUntilIdle();
 
   // We haven't tried to download any high-res avatars as the specified icon is
   // just a placeholder.
-  EXPECT_EQ(0U, profile_info_cache.cached_avatar_images_.size());
-  EXPECT_EQ(0U, profile_info_cache.avatar_images_downloads_in_progress_.size());
+  EXPECT_EQ(0U, storage()->cached_avatar_images_.size());
+  EXPECT_EQ(0U, storage()->avatar_images_downloads_in_progress_.size());
 }
 
 TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
@@ -773,11 +808,13 @@ TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
   ASSERT_TRUE(base::PathExists(icon_path));
 
   // Add a new profile.
+  ASSERT_EQ(0U, storage()->GetNumberOfProfiles());
   base::FilePath profile_path = GetProfilePath("path_1");
   EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
   storage()->AddProfile(profile_path, base::ASCIIToUTF16("name_1"),
                         std::string(), base::string16(), kIconIndex,
                         std::string());
+  EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
   VerifyAndResetCallExpectations();
 
   // Load the avatar image.
@@ -793,7 +830,7 @@ TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
   VerifyAndResetCallExpectations();
 
   // Clean up.
-  base::DeleteFile(icon_path, false);
+  EXPECT_TRUE(base::DeleteFile(icon_path, false));
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 #endif

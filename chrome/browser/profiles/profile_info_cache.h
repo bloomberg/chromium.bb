@@ -76,6 +76,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   base::string16 GetUserNameOfProfileAtIndex(size_t index) const override;
+  // Will be removed SOON with ProfileInfoCache tests. Do not use!
   const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const override;
   // Note that a return value of false could mean an error in collection or
   // that there are currently no background apps running. However, the action
@@ -102,7 +103,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Returns true if a GAIA picture has been loaded or has failed to load for
   // profile at |index|.
   bool IsGAIAPictureOfProfileAtIndexLoaded(size_t index) const;
-
+  // Will be removed SOON with ProfileInfoCache tests. Do not use!
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
   // Warning: This will re-sort profiles and thus may change indices!
@@ -110,6 +111,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetAuthInfoOfProfileAtIndex(size_t index,
                                    const std::string& gaia_id,
                                    const base::string16& user_name);
+  // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
   void SetSupervisedUserIdOfProfileAtIndex(size_t index, const std::string& id);
@@ -164,6 +166,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // of profiles is still sorted.
   void UpdateSortForProfileIndex(size_t index);
 
+  // Will be removed SOON with ProfileInfoCache tests. Do not use!
   // Loads or uses an already loaded high resolution image of the
   // generic profile avatar.
   const gfx::Image* GetHighResAvatarOfProfileAtIndex(size_t index) const;

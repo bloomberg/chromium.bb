@@ -92,13 +92,26 @@ class ProfileAttributesStorage
       const std::string& key,
       const base::FilePath& image_path) const;
 
+  // Checks whether the high res avatar at index |icon_index| exists, and if it
+  // does not, calls |DownloadHighResAvatar|.
+  void DownloadHighResAvatarIfNeeded(size_t icon_index,
+                                     const base::FilePath& profile_path);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  bool GetDisableAvatarDownloadForTesting() {
+    return disable_avatar_download_for_testing_;
+  }
 
   void set_disable_avatar_download_for_testing(
       bool disable_avatar_download_for_testing) {
     disable_avatar_download_for_testing_ = disable_avatar_download_for_testing;
   }
+
+  // Notifies observers. The following methods are accessed by
+  // ProfileAttributesEntry.
+  void NotifyOnProfileAvatarChanged(const base::FilePath& profile_path) const;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, EntriesInAttributesStorage);
@@ -106,11 +119,6 @@ class ProfileAttributesStorage
                            DownloadHighResAvatarTest);
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
                            NothingToDownloadHighResAvatarTest);
-
-  // Checks whether the high res avatar at index |icon_index| exists, and if it
-  // does not, calls |DownloadHighResAvatar|.
-  void DownloadHighResAvatarIfNeeded(size_t icon_index,
-                                     const base::FilePath& profile_path);
 
   // Starts downloading the high res avatar at index |icon_index| for profile
   // with path |profile_path|.
@@ -169,8 +177,9 @@ class ProfileAttributesStorage
   void OnAvatarPictureSaved(const std::string& file_name,
                             const base::FilePath& profile_path) const;
 
-  // Calls observers.
-  void CallOnProfileHighResAvatarLoaded(base::FilePath profile_path) const;
+  // Notifies observers.
+  void NotifyOnProfileHighResAvatarLoaded(
+      const base::FilePath& profile_path) const;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileAttributesStorage);
 };
