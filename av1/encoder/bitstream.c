@@ -381,8 +381,13 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                      tx_size_cat + 2);
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
+#if CONFIG_NEW_MULTISYMBOL
+      aom_write_symbol(w, tx_size == quarter_txsize_lookup[bsize],
+                       cm->fc->quarter_tx_size_cdf, 2);
+#else
       aom_write(w, tx_size == quarter_txsize_lookup[bsize],
                 cm->fc->quarter_tx_size_prob);
+#endif
 #endif
   }
 }
@@ -1791,8 +1796,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           quarter_txsize_lookup[bsize] != max_tx_size &&
           (mbmi->tx_size == quarter_txsize_lookup[bsize] ||
            mbmi->tx_size == max_tx_size)) {
+#if CONFIG_NEW_MULTISYMBOL
+        aom_write_symbol(w, mbmi->tx_size != max_tx_size,
+                         cm->fc->quarter_tx_size_cdf, 2);
+#else
         aom_write(w, mbmi->tx_size != max_tx_size,
                   cm->fc->quarter_tx_size_prob);
+#endif
       }
 #endif
     } else {

@@ -309,6 +309,9 @@ typedef struct frame_contexts {
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   aom_prob quarter_tx_size_prob;
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob quarter_tx_size_cdf[CDF_SIZE(2)];
+#endif
 #endif
 #if CONFIG_VAR_TX
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];

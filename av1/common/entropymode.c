@@ -2484,6 +2484,11 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
 
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 static const aom_prob default_quarter_tx_size_prob = 192;
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob default_quarter_tx_size_cdf[CDF_SIZE(2)] = {
+  AOM_ICDF(192 * 128), AOM_ICDF(32768), 0
+};
+#endif
 #endif
 
 #if CONFIG_LOOP_RESTORATION
@@ -5583,6 +5588,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   fc->quarter_tx_size_prob = default_quarter_tx_size_prob;
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->quarter_tx_size_cdf, default_quarter_tx_size_cdf);
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif
 #if CONFIG_VAR_TX
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);

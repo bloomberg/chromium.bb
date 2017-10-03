@@ -551,10 +551,14 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
           int quarter_tx;
 
           if (quarter_txsize_lookup[bsize] != max_txsize_lookup[bsize]) {
+#if CONFIG_NEW_MULTISYMBOL
+            quarter_tx =
+                aom_read_symbol(r, cm->fc->quarter_tx_size_cdf, 2, ACCT_STR);
+#else
             quarter_tx = aom_read(r, cm->fc->quarter_tx_size_prob, ACCT_STR);
             FRAME_COUNTS *counts = xd->counts;
-
             if (counts) ++counts->quarter_tx_size[quarter_tx];
+#endif
           } else {
             quarter_tx = 1;
           }
@@ -2970,8 +2974,13 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
         int quarter_tx;
 
         if (quarter_txsize_lookup[bsize] != max_tx_size) {
+#if CONFIG_NEW_MULTISYMBOL
+          quarter_tx =
+              aom_read_symbol(r, cm->fc->quarter_tx_size_cdf, 2, ACCT_STR);
+#else
           quarter_tx = aom_read(r, cm->fc->quarter_tx_size_prob, ACCT_STR);
           if (xd->counts) ++xd->counts->quarter_tx_size[quarter_tx];
+#endif
         } else {
           quarter_tx = 1;
         }
