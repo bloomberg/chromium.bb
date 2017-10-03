@@ -75,6 +75,7 @@ repack("repack_unscaled_resources") {
 appiconset("chromium_icons") {
   sources = [
     "chromium/AppIcon.appiconset/Contents.json",
+    "chromium/AppIcon.appiconset/Icon-1024.png",
     "chromium/AppIcon.appiconset/Icon-120.png",
     "chromium/AppIcon.appiconset/Icon-152.png",
     "chromium/AppIcon.appiconset/Icon-167.png",
