@@ -1094,6 +1094,8 @@ def Main():
   _GenerateLineByLineFileCoverageInHtml(args.targets, profdata_file_path,
                                         file_line_coverage_report,
                                         output_dir_abspath)
+
+  print 'Generating per directory code coverage breakdown in html'
   _GeneratePerDirectoryCoverageHtmlReport(
       dir_line_coverage_report, file_line_coverage_report, output_dir_abspath)
 
