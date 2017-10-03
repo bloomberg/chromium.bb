@@ -381,19 +381,19 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   void Pkcs11GetTpmTokenInfo(
-      const Pkcs11GetTpmTokenInfoCallback& callback) override {
+      DBusMethodCallback<TpmTokenInfo> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
   void Pkcs11GetTpmTokenInfoForUser(
       const cryptohome::Identification& cryptohome_id,
-      const Pkcs11GetTpmTokenInfoCallback& callback) override {
+      DBusMethodCallback<TpmTokenInfo> callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomePkcs11GetTpmTokenInfoForUser);
@@ -402,7 +402,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -1149,23 +1149,22 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // Handles responses for Pkcs11GetTpmTokenInfo and
   // Pkcs11GetTpmTokenInfoForUser.
-  void OnPkcs11GetTpmTokenInfo(const Pkcs11GetTpmTokenInfoCallback& callback,
+  void OnPkcs11GetTpmTokenInfo(DBusMethodCallback<TpmTokenInfo> callback,
                                dbus::Response* response) {
     if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string(), -1);
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
-    std::string label;
-    std::string user_pin;
-    int slot = 0;
-    if (!reader.PopString(&label) || !reader.PopString(&user_pin) ||
-        !reader.PopInt32(&slot)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string(), std::string(), -1);
+    TpmTokenInfo token_info;
+    if (!reader.PopString(&token_info.label) ||
+        !reader.PopString(&token_info.user_pin) ||
+        !reader.PopInt32(&token_info.slot)) {
+      std::move(callback).Run(base::nullopt);
       LOG(ERROR) << "Invalid response: " << response->ToString();
       return;
     }
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, label, user_pin, slot);
+    std::move(callback).Run(std::move(token_info));
   }
 
   // Handles responses for TpmGetVersion.

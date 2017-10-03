@@ -139,24 +139,21 @@ void TPMTokenInfoGetter::OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled) {
 }
 
 void TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo(
-    DBusMethodCallStatus call_status,
-    const std::string& token_name,
-    const std::string& user_pin,
-    int token_slot_id) {
-  if (call_status == DBUS_METHOD_CALL_FAILURE || token_slot_id == -1) {
+    base::Optional<CryptohomeClient::TpmTokenInfo> token_info) {
+  if (!token_info.has_value() || token_info->slot == -1) {
     RetryLater();
     return;
   }
 
   state_ = STATE_DONE;
 
-  TPMTokenInfo token_info;
-  token_info.tpm_is_enabled = true;
-  token_info.token_name = token_name;
-  token_info.user_pin = user_pin;
-  token_info.token_slot_id = token_slot_id;
+  TPMTokenInfo out_token_info;
+  out_token_info.tpm_is_enabled = true;
+  out_token_info.token_name = token_info->label;
+  out_token_info.user_pin = token_info->user_pin;
+  out_token_info.token_slot_id = token_info->slot;
 
-  callback_.Run(token_info);
+  callback_.Run(out_token_info);
 }
 
 }  // namespace chromeos

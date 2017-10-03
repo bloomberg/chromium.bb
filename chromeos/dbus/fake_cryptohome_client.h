@@ -84,10 +84,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   bool CallTpmClearStoredPasswordAndBlock() override;
   void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) override;
   void Pkcs11GetTpmTokenInfo(
-      const Pkcs11GetTpmTokenInfoCallback& callback) override;
+      DBusMethodCallback<TpmTokenInfo> callback) override;
   void Pkcs11GetTpmTokenInfoForUser(
       const cryptohome::Identification& cryptohome_id,
-      const Pkcs11GetTpmTokenInfoCallback& callback) override;
+      DBusMethodCallback<TpmTokenInfo> callback) override;
   bool InstallAttributesGet(const std::string& name,
                             std::vector<uint8_t>* value,
                             bool* successful) override;

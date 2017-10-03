@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace base {
@@ -23,14 +23,12 @@ class TaskRunner;
 }
 
 namespace chromeos {
-class CryptohomeClient;
-}
-
-namespace chromeos {
 
 // Information retrieved from cryptohome by TPMTokenInfoGetter.
 // For invalid token |token_name| and |user_pin| will be empty, while
 // |token_slot_id| will be set to -1.
+// TODO(hidehiko): This struct is conceptually as same as
+// base::Optional<CryptohomeClient::TpmTokenInfo>. Migrate into it.
 struct TPMTokenInfo {
   // Default constructor creates token info for disabled TPM.
   TPMTokenInfo();
@@ -97,10 +95,8 @@ class CHROMEOS_EXPORT TPMTokenInfoGetter {
 
   // Cryptohome methods callbacks.
   void OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled);
-  void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
-                               const std::string& token_name,
-                               const std::string& user_pin,
-                               int token_slot_id);
+  void OnPkcs11GetTpmTokenInfo(
+      base::Optional<CryptohomeClient::TpmTokenInfo> token_info);
 
   // The task runner used to run delayed tasks when retrying failed Cryptohome
   // calls.

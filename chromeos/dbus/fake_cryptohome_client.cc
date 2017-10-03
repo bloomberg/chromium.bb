@@ -255,20 +255,20 @@ void FakeCryptohomeClient::Pkcs11IsTpmTokenReady(
 }
 
 void FakeCryptohomeClient::Pkcs11GetTpmTokenInfo(
-    const Pkcs11GetTpmTokenInfoCallback& callback) {
+    DBusMethodCallback<TpmTokenInfo> callback) {
   const char kStubTPMTokenName[] = "StubTPMTokenName";
   const char kStubUserPin[] = "012345";
   const int kStubSlot = 0;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS,
-                            std::string(kStubTPMTokenName),
-                            std::string(kStubUserPin), kStubSlot));
+      FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     TpmTokenInfo{kStubTPMTokenName, kStubUserPin, kStubSlot}));
 }
 
 void FakeCryptohomeClient::Pkcs11GetTpmTokenInfoForUser(
     const cryptohome::Identification& cryptohome_id,
-    const Pkcs11GetTpmTokenInfoCallback& callback) {
-  Pkcs11GetTpmTokenInfo(callback);
+    DBusMethodCallback<TpmTokenInfo> callback) {
+  Pkcs11GetTpmTokenInfo(std::move(callback));
 }
 
 bool FakeCryptohomeClient::InstallAttributesGet(const std::string& name,
