@@ -597,14 +597,14 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      * @return The current alpha value at which the tab border is drawn.
      */
     public float getBorderAlpha() {
-        return mBorderAlpha;
+        return Math.min(mBorderAlpha, mAlpha);
     }
 
     /**
      * @return The current alpha value at which the tab border inner shadow is drawn.
      */
     public float getBorderInnerShadowAlpha() {
-        return mBorderAlpha * (1.0f - mToolbarAlpha);
+        return Math.min(mBorderAlpha * (1.0f - mToolbarAlpha), mAlpha);
     }
 
     /**
