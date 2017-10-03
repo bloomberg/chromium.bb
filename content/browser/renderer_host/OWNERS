@@ -26,7 +26,6 @@ tdresser@chromium.org
 fsamuel@chromium.org
 
 # DelegatedFrame*
-per-file *delegated_frame*=jbauman@chromium.org
 per-file *delegated_frame*=fsamuel@chromium.org
 
 # WebSQL
