@@ -41,17 +41,16 @@
     boolean getModifierState(DOMString keyArg);
 
     // https://w3c.github.io/uievents/#idl-interface-KeyboardEvent-initializers
-    // FIXME: this does not match the version in the spec.
-    [CallWith=ScriptState, Measure] void initKeyboardEvent([Default=Undefined] optional DOMString type,
-                                                           [Default=Undefined] optional boolean bubbles,
-                                                           [Default=Undefined] optional boolean cancelable,
-                                                           [Default=Undefined] optional Window? view,
-                                                           [Default=Undefined] optional DOMString keyIdentifier,
-                                                           [Default=Undefined] optional unsigned long location,
-                                                           [Default=Undefined] optional boolean ctrlKey,
-                                                           [Default=Undefined] optional boolean altKey,
-                                                           [Default=Undefined] optional boolean shiftKey,
-                                                           [Default=Undefined] optional boolean metaKey);
+    [CallWith=ScriptState, Measure] void initKeyboardEvent(DOMString type,
+                                                           optional boolean bubbles = false,
+                                                           optional boolean cancelable = false,
+                                                           optional Window? view = null,
+                                                           optional DOMString keyIdentifier = "",
+                                                           optional unsigned long location = 0,
+                                                           optional boolean ctrlKey = false,
+                                                           optional boolean altKey = false,
+                                                           optional boolean shiftKey = false,
+                                                           optional boolean metaKey = false);
 
     // https://w3c.github.io/uievents/#KeyboardEvent-supplemental-interface
     readonly attribute long charCode;
