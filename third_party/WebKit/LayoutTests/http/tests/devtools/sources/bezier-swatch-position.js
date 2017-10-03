@@ -1,0 +1,43 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that bezier swatches are updated properly in CSS Sources.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addStylesheetTag('resources/bezier.css');
+
+  SourcesTestRunner.showScriptSource('bezier.css', onSourceFrame);
+
+  function onSourceFrame(sourceFrame) {
+    TestRunner.addResult('Initial swatch positions:');
+    SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+
+    TestRunner.runTestSuite([
+      function testEditBezier(next) {
+        var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector('span[is=bezier-swatch]');
+        swatch.shadowRoot.querySelector('.bezier-swatch-icon').click();
+        sourceFrame._bezierEditor.setBezier(UI.Geometry.CubicBezier.parse('linear'));
+        sourceFrame._bezierEditor._onchange();
+        sourceFrame._swatchPopoverHelper.hide(true);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        next();
+      },
+
+      function testAddBezier(next) {
+        var bodyLineEnd = new TextUtils.TextRange(1, 37, 1, 37);
+        sourceFrame.textEditor.editRange(bodyLineEnd, ' transition: height 1s cubic-bezier(0, 0.5, 1, 1);');
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        next();
+      },
+
+      function testInvalidateBezier(next) {
+        var startParenthesis = new TextUtils.TextRange(1, 67, 1, 68);
+        sourceFrame.textEditor.editRange(startParenthesis, '[');
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        next();
+      }
+    ]);
+  }
+})();
