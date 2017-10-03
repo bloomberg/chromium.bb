@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("scheduler") {
+import("//build/config/jumbo.gni")
+
+jumbo_source_set("scheduler") {
   sources = [
     "base/cancelable_closure_holder.cc",
     "base/cancelable_closure_holder.h",
@@ -135,7 +137,7 @@ source_set("scheduler") {
   ]
 }
 
-source_set("test_support") {
+jumbo_source_set("test_support") {
   testonly = true
 
   sources = [
@@ -165,7 +167,7 @@ source_set("test_support") {
   configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
