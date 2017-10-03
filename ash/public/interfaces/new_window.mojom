@@ -7,6 +7,10 @@ module ash.mojom;
 // An exported object in ash which lets an ash consumer set a client interface.
 interface NewWindowController {
   SetClient(associated NewWindowClient client);
+
+  // Shows the keyboard shortcut overlay. TODO(mash): this calls the client
+  // function of the same name below, but it should be implemented inside ash.
+  ShowKeyboardOverlay();
 };
 
 // A delegate interface that an ash user sends to ash to handle certain window
