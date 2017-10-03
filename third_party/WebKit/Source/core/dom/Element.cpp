@@ -1464,7 +1464,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     }
   }
 
-  InvalidateNodeListCachesInAncestors(&name, this);
+  InvalidateNodeListCachesInAncestors(&name, this, nullptr);
 
   if (isConnected()) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
