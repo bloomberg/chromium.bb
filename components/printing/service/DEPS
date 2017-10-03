@@ -1,5 +1,6 @@
 include_rules = [
   "+components/discardable_memory/client",
+  "+content/public/child",  # Windows direct write proxy access.
   "+content/public/utility",
   "+mojo/public/cpp",
   "+printing/common",

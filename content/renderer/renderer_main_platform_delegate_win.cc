@@ -14,7 +14,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_impl_win.h"
 #include "content/child/font_warmup_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/injection_test_win.h"
