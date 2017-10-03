@@ -64,9 +64,10 @@
 
       #cameraVideo {
         height: var(--cr-camera-image-size, 228px);
-        /* Center image for 4:3 aspect ratio. */
-        left: -16.6%;
+        object-fit: cover;
+        object-position: center;
         position: absolute;
+        width: var(--cr-camera-image-size, 228px);
       }
 
       #cameraControls {
