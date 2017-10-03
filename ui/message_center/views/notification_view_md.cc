@@ -9,6 +9,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -530,7 +531,14 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   }
 #endif
 
-  header_row_->SetAppName(notification.display_source());
+  if (notification.origin_url().is_valid() &&
+      notification.origin_url().SchemeIsHTTPOrHTTPS()) {
+    header_row_->SetAppName(url_formatter::FormatUrlForSecurityDisplay(
+        notification.origin_url(),
+        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+  } else {
+    header_row_->SetAppName(notification.display_source());
+  }
   header_row_->SetAccentColor(
       notification.accent_color() == SK_ColorTRANSPARENT
           ? message_center::kNotificationDefaultAccentColor
