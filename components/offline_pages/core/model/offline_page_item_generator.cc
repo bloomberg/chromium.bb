@@ -29,11 +29,13 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   return item;
 }
 
-OfflinePageItem OfflinePageItemGenerator::CreateItemWithTempFileInDir(
-    const base::FilePath& temp_dir) {
+OfflinePageItem OfflinePageItemGenerator::CreateItemWithTempFile() {
+  // If hitting this DCHECK, please call SetTempDirectory before calling this
+  // method for creating files with page.
+  DCHECK(!archive_dir_.empty());
   OfflinePageItem item = CreateItem();
   base::FilePath path;
-  base::CreateTemporaryFileInDir(temp_dir, &path);
+  base::CreateTemporaryFileInDir(archive_dir_, &path);
   item.file_path = path;
   return item;
 }
@@ -62,6 +64,11 @@ void OfflinePageItemGenerator::SetFileSize(int64_t file_size) {
 void OfflinePageItemGenerator::SetLastAccessTime(
     const base::Time& last_access_time) {
   last_access_time_ = last_access_time;
+}
+
+void OfflinePageItemGenerator::SetArchiveDirectory(
+    const base::FilePath& archive_dir) {
+  archive_dir_ = archive_dir;
 }
 
 }  // namespace offline_pages
