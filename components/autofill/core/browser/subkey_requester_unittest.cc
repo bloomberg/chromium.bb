@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/subkey_requester.h"
+#include "components/autofill/core/browser/subkey_requester.h"
 
 #include <utility>
 
@@ -15,7 +15,8 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 #include "third_party/libaddressinput/src/cpp/test/testdata_source.h"
 
-namespace payments {
+namespace autofill {
+
 namespace {
 
 using ::i18n::addressinput::NullStorage;
@@ -198,4 +199,4 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesNotLoaded_WillLoad) {
   EXPECT_EQ(subkey_receiver_->subkeys_size(), kCorrectSize);
 }
 
-}  // namespace payments
+}  // namespace autofill

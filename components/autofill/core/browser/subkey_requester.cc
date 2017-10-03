@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/subkey_requester.h"
+#include "components/autofill/core/browser/subkey_requester.h"
 
 #include <memory>
 #include <utility>
@@ -18,7 +18,8 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
-namespace payments {
+
+namespace autofill {
 
 namespace {
 
@@ -31,15 +32,15 @@ class SubKeyRequest : public SubKeyRequester::Request {
   SubKeyRequest(const std::string& region_code,
                 const std::string& language,
                 int timeout_seconds,
-                autofill::AddressValidator* address_validator,
+                AddressValidator* address_validator,
                 SubKeyReceiverCallback on_subkeys_received)
       : region_code_(region_code),
         language_(language),
         address_validator_(address_validator),
         on_subkeys_received_(std::move(on_subkeys_received)),
         has_responded_(false),
-        on_timeout_(base::Bind(&::payments::SubKeyRequest::OnRulesLoaded,
-                               base::Unretained(this))) {
+        on_timeout_(
+            base::Bind(&SubKeyRequest::OnRulesLoaded, base::Unretained(this))) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, on_timeout_.callback(),
         base::TimeDelta::FromSeconds(timeout_seconds));
@@ -69,7 +70,7 @@ class SubKeyRequest : public SubKeyRequester::Request {
   std::string region_code_;
   std::string language_;
   // Not owned. Never null. Outlive this object.
-  autofill::AddressValidator* address_validator_;
+  AddressValidator* address_validator_;
 
   SubKeyReceiverCallback on_subkeys_received_;
 
@@ -139,4 +140,4 @@ void SubKeyRequester::CancelPendingGetSubKeys() {
   pending_subkey_request_.reset();
 }
 
-}  // namespace payments
+}  // namespace autofill

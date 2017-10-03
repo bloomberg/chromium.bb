@@ -12,7 +12,6 @@ include_rules = [
   "+net",
   "+services/metrics/public",
   "+third_party/libaddressinput",
-  "+third_party/libphonenumber",
   "+third_party/re2",
   "+ui/base",
 ]

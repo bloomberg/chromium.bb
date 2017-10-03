@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/payments/core/subkey_requester.h"
+#include "components/autofill/core/browser/subkey_requester.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
 namespace autofill {
@@ -387,7 +387,7 @@ class PersonalDataManagerAndroid
   AddressNormalizerImpl address_normalizer_;
 
   // Used for subkey request.
-  payments::SubKeyRequester subkey_requester_;
+  SubKeyRequester subkey_requester_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerAndroid);
 };
