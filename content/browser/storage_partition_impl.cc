@@ -588,7 +588,7 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
 
 mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   // Create the NetworkContext as needed, when the network service is disabled.
-  if (!network_context_.get()) {
+  if (!network_context_) {
     DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
     DCHECK(!network_context_owner_);
     network_context_owner_ = base::MakeUnique<NetworkContextOwner>();
@@ -599,6 +599,17 @@ mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
                        MakeRequest(&network_context_), url_request_context_));
   }
   return network_context_.get();
+}
+
+mojom::URLLoaderFactory*
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
+  // Create the URLLoaderFactory as needed.
+  if (!url_loader_factory_for_browser_process_) {
+    GetNetworkContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_for_browser_process_),
+        base::GetUniqueIdForProcess());
+  }
+  return url_loader_factory_for_browser_process_.get();
 }
 
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {

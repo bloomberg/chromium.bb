@@ -85,29 +85,36 @@ class NetworkContextConfigurationBrowserTest
   void SetUpOnMainThread() override {
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem: {
-        network_context_ =
-            g_browser_process->system_network_context_manager()->GetContext();
+        SystemNetworkContextManager* system_network_context_manager =
+            g_browser_process->system_network_context_manager();
+        network_context_ = system_network_context_manager->GetContext();
+        loader_factory_ = system_network_context_manager->GetURLLoaderFactory();
         break;
       }
       case NetworkContextType::kProfile: {
-        network_context_ = content::BrowserContext::GetDefaultStoragePartition(
-                               browser()->profile())
-                               ->GetNetworkContext();
+        content::StoragePartition* storage_partition =
+            content::BrowserContext::GetDefaultStoragePartition(
+                browser()->profile());
+        network_context_ = storage_partition->GetNetworkContext();
+        loader_factory_ =
+            storage_partition->GetURLLoaderFactoryForBrowserProcess();
         break;
       }
       case NetworkContextType::kIncognitoProfile: {
         Browser* incognito = CreateIncognitoBrowser();
-        network_context_ = content::BrowserContext::GetDefaultStoragePartition(
-                               incognito->profile())
-                               ->GetNetworkContext();
+        content::StoragePartition* storage_partition =
+            content::BrowserContext::GetDefaultStoragePartition(
+                incognito->profile());
+        network_context_ = storage_partition->GetNetworkContext();
+        loader_factory_ =
+            storage_partition->GetURLLoaderFactoryForBrowserProcess();
         break;
       }
     }
-    network_context_->CreateURLLoaderFactory(MakeRequest(&loader_factory_), 0);
   }
 
   content::mojom::URLLoaderFactory* loader_factory() const {
-    return loader_factory_.get();
+    return loader_factory_;
   }
 
   content::mojom::NetworkContext* network_context() const {
@@ -129,7 +136,7 @@ class NetworkContextConfigurationBrowserTest
 
  private:
   content::mojom::NetworkContext* network_context_ = nullptr;
-  content::mojom::URLLoaderFactoryPtr loader_factory_;
+  content::mojom::URLLoaderFactory* loader_factory_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 };
 

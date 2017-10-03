@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/process/process_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -83,6 +84,15 @@ content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
         CreateNetworkContextParams());
   }
   return network_service_network_context_.get();
+}
+
+content::mojom::URLLoaderFactory*
+SystemNetworkContextManager::GetURLLoaderFactory() {
+  if (!url_loader_factory_) {
+    GetContext()->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_), base::GetUniqueIdForProcess());
+  }
+  return url_loader_factory_.get();
 }
 
 void SystemNetworkContextManager::SetUp(
