@@ -635,6 +635,11 @@ void BookmarkAppHelper::OnDidGetManifest(const GURL& manifest_url,
       new FaviconDownloader(contents_, web_app_info_icon_urls,
                             base::Bind(&BookmarkAppHelper::OnIconsDownloaded,
                                        weak_factory_.GetWeakPtr())));
+
+  // If the manifest specified icons, don't use the page icons.
+  if (!manifest.icons.empty())
+    favicon_downloader_->SkipPageFavicons();
+
   favicon_downloader_->Start();
 }
 
