@@ -3626,7 +3626,6 @@ class ColorTransformPixelTest
       public testing::WithParamInterface<ColorSpacePair> {
  public:
   ColorTransformPixelTest() {
-    renderer_settings_.enable_color_correct_rendering = true;
     // Note that this size of 17 is not random -- it is chosen to match the
     // size of LUTs that are created. If we did not match the LUT size exactly,
     // then the error for LUT based transforms is much larger.

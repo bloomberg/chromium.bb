@@ -27,7 +27,7 @@ class FakeResourceProvider : public ResourceProvider {
     resource_settings.high_bit_for_testing = high_bit_for_testing;
     return base::WrapUnique(
         new FakeResourceProvider(context_provider, shared_bitmap_manager,
-                                 nullptr, true, false, resource_settings));
+                                 nullptr, true, resource_settings));
   }
 
   template <typename T>
@@ -39,7 +39,7 @@ class FakeResourceProvider : public ResourceProvider {
     resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();
     return base::WrapUnique(new T(context_provider, shared_bitmap_manager,
-                                  nullptr, true, false, resource_settings));
+                                  nullptr, true, resource_settings));
   }
 
   static std::unique_ptr<FakeResourceProvider> Create(
@@ -54,7 +54,7 @@ class FakeResourceProvider : public ResourceProvider {
     resource_settings.high_bit_for_testing = high_bit_for_testing;
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
-        true, false, resource_settings));
+        true, resource_settings));
   }
 
   template <typename T>
@@ -67,7 +67,7 @@ class FakeResourceProvider : public ResourceProvider {
     resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();
     return base::WrapUnique(new T(context_provider, shared_bitmap_manager,
-                                  gpu_memory_buffer_manager, true, false,
+                                  gpu_memory_buffer_manager, true,
                                   resource_settings));
   }
 
@@ -76,13 +76,11 @@ class FakeResourceProvider : public ResourceProvider {
                        viz::SharedBitmapManager* shared_bitmap_manager,
                        gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                        bool delegated_sync_points_required,
-                       bool enable_color_corect_rasterization,
                        const viz::ResourceSettings resource_settings)
       : ResourceProvider(context_provider,
                          shared_bitmap_manager,
                          gpu_memory_buffer_manager,
                          delegated_sync_points_required,
-                         enable_color_corect_rasterization,
                          resource_settings) {}
 };
 

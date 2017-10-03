@@ -10,11 +10,6 @@
 namespace gfx {
 
 // static
-ICCProfile ICCProfile::FromBestMonitor() {
-  return FromCGColorSpace(base::mac::GetSystemColorSpace());
-}
-
-// static
 ICCProfile ICCProfile::FromCGColorSpace(CGColorSpaceRef cg_color_space) {
   base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
       CGColorSpaceCopyICCProfile(cg_color_space));

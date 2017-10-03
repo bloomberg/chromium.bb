@@ -92,8 +92,6 @@ class CC_EXPORT LayerTreeSettings {
   int max_preraster_distance_in_screen_pixels = 1000;
   viz::ResourceFormat preferred_tile_format;
 
-  bool enable_color_correct_rasterization = true;
-
   bool enable_mask_tiling = false;
 
   // If set to true, the compositor may selectively defer image decodes to the

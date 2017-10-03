@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
-#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -86,10 +85,6 @@ Display BuildDisplayForScreen(NSScreen* screen) {
     // IOSurfaces do not opt-out of color correction.
     // https://crbug.com/654488
     CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
-    static bool color_correct_rendering_enabled =
-        base::FeatureList::IsEnabled(features::kColorCorrectRendering);
-    if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
-      color_space = base::mac::GetSystemColorSpace();
     gfx::ICCProfile icc_profile =
         gfx::ICCProfile::FromCGColorSpace(color_space);
     icc_profile.HistogramDisplay(display.id());

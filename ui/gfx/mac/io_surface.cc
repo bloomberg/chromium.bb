@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/color_space_switches.h"
 
 namespace gfx {
 
@@ -209,22 +208,11 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   if (base::mac::IsAtLeastOS10_12())
     force_color_space = true;
 
-  // Ensure that all IOSurfaces start as sRGB when color correct rendering
-  // is enabled.
-  static bool color_correct_rendering_enabled =
-      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
-  if (color_correct_rendering_enabled)
-    force_color_space = true;
-
-  if (force_color_space) {
-    CGColorSpaceRef color_space = color_correct_rendering_enabled
-                                      ? base::mac::GetSRGBColorSpace()
-                                      : base::mac::GetSystemColorSpace();
-    base::ScopedCFTypeRef<CFDataRef> color_space_icc(
-        CGColorSpaceCopyICCProfile(color_space));
-    // Note that nullptr is an acceptable input to IOSurfaceSetValue.
-    IOSurfaceSetValue(surface, CFSTR("IOSurfaceColorSpace"), color_space_icc);
-  }
+  // Ensure that all IOSurfaces start as sRGB.
+  CGColorSpaceRef color_space = base::mac::GetSRGBColorSpace();
+  base::ScopedCFTypeRef<CFDataRef> color_space_icc(
+      CGColorSpaceCopyICCProfile(color_space));
+  IOSurfaceSetValue(surface, CFSTR("IOSurfaceColorSpace"), color_space_icc);
 
   UMA_HISTOGRAM_TIMES("GPU.IOSurface.CreateTime",
                       base::TimeTicks::Now() - start_time);
