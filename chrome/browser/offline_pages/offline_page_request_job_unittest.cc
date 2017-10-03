@@ -528,7 +528,6 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
       /*render_view_id=*/-1,
       /*render_frame_id=*/1,
       /*is_main_frame=*/true,
-      /*parent_is_main_frame=*/false,
       /*allow_download=*/true,
       /*is_async=*/true, content::PREVIEWS_OFF);
 

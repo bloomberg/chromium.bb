@@ -409,8 +409,7 @@ class ResourceLoaderTest : public testing::Test,
     ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type, &resource_context_,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
-        rfh->GetRoutingID(), belongs_to_main_frame,
-        false /* parent_is_main_frame */, true /* allow_download */,
+        rfh->GetRoutingID(), belongs_to_main_frame, true /* allow_download */,
         false /* is_async */, PREVIEWS_OFF /* previews_state */);
     std::unique_ptr<TestResourceHandler> resource_handler(
         new TestResourceHandler(nullptr, nullptr));

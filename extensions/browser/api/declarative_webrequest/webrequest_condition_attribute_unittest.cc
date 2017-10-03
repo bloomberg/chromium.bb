@@ -114,7 +114,6 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       -1,     // render_view_id
       -1,     // render_frame_id
       false,  // is_main_frame
-      false,  // parent_is_main_frame
       true,   // allow_download
       false,  // is_async
       content::PREVIEWS_OFF);
@@ -131,7 +130,6 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       -1,     // render_view_id
       -1,     // render_frame_id
       true,   // is_main_frame
-      false,  // parent_is_main_frame
       true,   // allow_download
       false,  // is_async
       content::PREVIEWS_OFF);

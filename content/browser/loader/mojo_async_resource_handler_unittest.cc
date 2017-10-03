@@ -343,7 +343,6 @@ class MojoAsyncResourceHandlerTestBase {
         kRouteId,                                // render_view_id
         0,                                       // render_frame_id
         true,                                    // is_main_frame
-        false,                                   // parent_is_main_frame
         false,                                   // allow_download
         true,                                    // is_async
         PREVIEWS_OFF                             // previews_state

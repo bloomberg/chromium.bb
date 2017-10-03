@@ -49,14 +49,9 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
                                              int render_view_id,
                                              int render_frame_id,
                                              bool is_main_frame,
-                                             bool parent_is_main_frame,
                                              bool allow_download,
                                              bool is_async,
                                              PreviewsState previews_state) {
-  // Make sure both |is_main_frame| and |parent_is_main_frame| aren't set at the
-  // same time.
-  DCHECK(!(is_main_frame && parent_is_main_frame));
-
   // Make sure RESOURCE_TYPE_MAIN_FRAME is declared as being fetched as part of
   // the main frame.
   DCHECK(resource_type != RESOURCE_TYPE_MAIN_FRAME || is_main_frame);
@@ -70,7 +65,6 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
       0,                                      // request_id
       render_frame_id,                        // render_frame_id
       is_main_frame,                          // is_main_frame
-      parent_is_main_frame,                   // parent_is_main_frame
       resource_type,                          // resource_type
       ui::PAGE_TRANSITION_LINK,               // transition_type
       false,                                  // should_replace_current_entry
@@ -138,7 +132,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     int request_id,
     int render_frame_id,
     bool is_main_frame,
-    bool parent_is_main_frame,
     ResourceType resource_type,
     ui::PageTransition transition_type,
     bool should_replace_current_entry,
@@ -166,7 +159,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       request_id_(request_id),
       render_frame_id_(render_frame_id),
       is_main_frame_(is_main_frame),
-      parent_is_main_frame_(parent_is_main_frame),
       should_replace_current_entry_(should_replace_current_entry),
       is_download_(is_download),
       is_stream_(is_stream),
@@ -264,10 +256,6 @@ int ResourceRequestInfoImpl::GetFrameTreeNodeId() const {
 
 bool ResourceRequestInfoImpl::IsMainFrame() const {
   return is_main_frame_;
-}
-
-bool ResourceRequestInfoImpl::ParentIsMainFrame() const {
-  return parent_is_main_frame_;
 }
 
 ResourceType ResourceRequestInfoImpl::GetResourceType() const {

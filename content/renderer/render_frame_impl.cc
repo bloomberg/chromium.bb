@@ -4425,7 +4425,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(url::Origin(frame_document.GetSecurityOrigin()));
-  extra_data->set_parent_is_main_frame(parent && !parent->Parent());
   extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(
       navigation_state->common_params().allow_download);

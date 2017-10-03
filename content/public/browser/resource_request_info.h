@@ -47,7 +47,6 @@ class ResourceRequestInfo {
                                                 int render_view_id,
                                                 int render_frame_id,
                                                 bool is_main_frame,
-                                                bool parent_is_main_frame,
                                                 bool allow_download,
                                                 bool is_async,
                                                 PreviewsState previews_state);
@@ -127,9 +126,6 @@ class ResourceRequestInfo {
 
   // True if GetRenderFrameID() represents a main frame in the RenderView.
   virtual bool IsMainFrame() const = 0;
-
-  // True if the frame's parent represents a main frame in the RenderView.
-  virtual bool ParentIsMainFrame() const = 0;
 
   // Returns the associated resource type.
   virtual ResourceType GetResourceType() const = 0;

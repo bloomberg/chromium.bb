@@ -1356,9 +1356,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       requester_info, route_id,
       -1,  // frame_tree_node_id
       request_data.origin_pid, request_id, request_data.render_frame_id,
-      request_data.is_main_frame, request_data.parent_is_main_frame,
-      request_data.resource_type, request_data.transition_type,
-      request_data.should_replace_current_entry,
+      request_data.is_main_frame, request_data.resource_type,
+      request_data.transition_type, request_data.should_replace_current_entry,
       false,  // is download
       false,  // is stream
       allow_download, request_data.has_user_gesture,
@@ -1702,7 +1701,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       -1,  // frame_tree_node_id
       0, MakeRequestID(), render_frame_route_id,
       false,  // is_main_frame
-      false,  // parent_is_main_frame
       RESOURCE_TYPE_SUB_RESOURCE, ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
       download,  // is_download
@@ -2126,8 +2124,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // request_data.origin_pid,
       MakeRequestID(),
       -1,  // request_data.render_frame_id,
-      info.is_main_frame, info.parent_is_main_frame, resource_type,
-      info.common_params.transition,
+      info.is_main_frame, resource_type, info.common_params.transition,
       // should_replace_current_entry. This was only maintained at layer for
       // request transfers and isn't needed for browser-side navigations.
       false,

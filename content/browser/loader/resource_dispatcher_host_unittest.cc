@@ -175,7 +175,6 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.download_to_file = false;
   request.should_reset_appcache = false;
   request.is_main_frame = true;
-  request.parent_is_main_frame = false;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
   request.keepalive = (type == RESOURCE_TYPE_PING);

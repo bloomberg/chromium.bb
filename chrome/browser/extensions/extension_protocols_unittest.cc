@@ -229,7 +229,6 @@ class ExtensionProtocolsTest : public testing::Test {
         /*render_view_id=*/-1,
         /*render_frame_id=*/-1,
         /*is_main_frame=*/resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
-        /*parent_is_main_frame=*/false,
         /*allow_download=*/true,
         /*is_async=*/false, content::PREVIEWS_OFF);
     request->Start();

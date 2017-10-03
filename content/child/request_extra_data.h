@@ -44,9 +44,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   void set_frame_origin(const url::Origin& frame_origin) {
     frame_origin_ = frame_origin;
   }
-  void set_parent_is_main_frame(bool parent_is_main_frame) {
-    parent_is_main_frame_ = parent_is_main_frame;
-  }
   void set_parent_render_frame_id(int parent_render_frame_id) {
     parent_render_frame_id_ = parent_render_frame_id;
   }
@@ -156,7 +153,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   int render_frame_id_;
   bool is_main_frame_;
   url::Origin frame_origin_;
-  bool parent_is_main_frame_;
   int parent_render_frame_id_;
   bool allow_download_;
   ui::PageTransition transition_type_;

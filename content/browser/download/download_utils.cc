@@ -181,7 +181,6 @@ std::unique_ptr<ResourceRequest> CreateResourceRequest(
     RenderFrameHost* parent_frame = render_frame_host->GetParent();
     if (parent_frame) {
       request->parent_render_frame_id = parent_frame->GetRoutingID();
-      request->parent_is_main_frame = (parent_frame->GetParent() == nullptr);
     } else {
       request->is_main_frame = true;
     }
