@@ -138,10 +138,12 @@ std::string ParseUserPopulation(const base::DictionaryValue* match) {
     return population_id;
 }
 
-bool ParseExperimental(const base::DictionaryValue* match) {
-  bool experimental = false;
-  match->GetBoolean("experimental", &experimental);
-  return experimental;
+bool ParseWarning(const base::DictionaryValue* match) {
+  if (const base::Value* value =
+          match->FindPathOfType({"warning"}, base::Value::Type::STRING)) {
+    return value->GetString() == "true";
+  }
+  return false;
 }
 
 // Returns the severity level for a given SafeBrowsing list. The lowest value is
@@ -240,7 +242,7 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
   metadata->threat_pattern_type =
       ParseThreatSubType(worst_match, *worst_sb_threat_type);
   metadata->population_id = ParseUserPopulation(worst_match);
-  metadata->experimental = ParseExperimental(worst_match);
+  metadata->warning = ParseWarning(worst_match);
 
   return UMA_STATUS_MATCH;  // success
 }

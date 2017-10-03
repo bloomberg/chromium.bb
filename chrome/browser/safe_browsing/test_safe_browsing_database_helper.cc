@@ -116,12 +116,12 @@ TestSafeBrowsingDatabaseHelper::~TestSafeBrowsingDatabaseHelper() {
   safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
 }
 
-void TestSafeBrowsingDatabaseHelper::MarkUrlAsMatchingListWithId(
+void TestSafeBrowsingDatabaseHelper::MarkUrlAsMatchingListIdWithMetadata(
     const GURL& bad_url,
     const safe_browsing::ListIdentifier& list_id,
-    safe_browsing::ThreatPatternType threat_pattern_type) {
+    const safe_browsing::ThreatMetadata& threat_metadata) {
   safe_browsing::FullHashInfo full_hash_info =
-      GetFullHashInfoWithMetadata(bad_url, list_id, threat_pattern_type);
+      GetFullHashInfoWithMetadata(bad_url, list_id, threat_metadata);
   v4_db_factory_->MarkPrefixAsBad(list_id, full_hash_info.full_hash);
   v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
 }

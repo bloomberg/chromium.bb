@@ -514,11 +514,11 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseSubresourceFilterMetadata) {
       sf->mutable_threat_entry_metadata()->add_entries();
   sf_pattern_meta->set_key("sf_pattern_type");
   sf_pattern_meta->set_value("ALL_ADS");
-  // experimental
-  ThreatEntryMetadata::MetadataEntry* sf_experimental_meta =
+  // warning
+  ThreatEntryMetadata::MetadataEntry* sf_warning_meta =
       sf->mutable_threat_entry_metadata()->add_entries();
-  sf_experimental_meta->set_key("experimental");
-  sf_experimental_meta->set_value("true");
+  sf_warning_meta->set_key("warning");
+  sf_warning_meta->set_value("true");
 
   std::string sf_data;
   sf_res.SerializeToString(&sf_data);
@@ -535,7 +535,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseSubresourceFilterMetadata) {
   EXPECT_EQ(list_id, fhi.list_id);
   EXPECT_EQ(ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS,
             fhi.metadata.threat_pattern_type);
-  EXPECT_TRUE(fhi.metadata.experimental);
+  EXPECT_TRUE(fhi.metadata.warning);
 }
 
 // Adds metadata with a key value that is not "permission".

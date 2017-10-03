@@ -101,7 +101,7 @@ FullHashInfo GetFullHashInfo(const GURL& url, const ListIdentifier& list_id);
 // object.
 FullHashInfo GetFullHashInfoWithMetadata(const GURL& url,
                                          const ListIdentifier& list_id,
-                                         ThreatPatternType threat_pattern_type);
+                                         const ThreatMetadata& threat_metadata);
 
 }  // namespace safe_browsing
 
