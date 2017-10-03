@@ -143,8 +143,6 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
     root_surface_ = root_surface;
     root_surface_->SetSurfaceDelegate(this);
     host_window_->AddChild(root_surface_->window());
-    host_window_->SetBounds(gfx::Rect(host_window_->bounds().origin(),
-                                      root_surface_->content_size()));
     root_surface_->window()->Show();
   }
 }
@@ -202,13 +200,14 @@ void SurfaceTreeHost::UpdateNeedsBeginFrame() {
 // SurfaceDelegate overrides:
 
 void SurfaceTreeHost::OnSurfaceCommit() {
-  root_surface_->CommitSurfaceHierarchy(gfx::Point(), &frame_callbacks_,
-                                        &presentation_callbacks_);
-}
+  gfx::Rect bounds = root_surface_->CommitSurfaceHierarchy(
+      &frame_callbacks_, &presentation_callbacks_);
 
-void SurfaceTreeHost::OnSurfaceContentSizeChanged() {
-  host_window_->SetBounds(gfx::Rect(host_window_->bounds().origin(),
-                                    root_surface_->content_size()));
+  host_window_->SetBounds(
+      gfx::Rect(host_window_->bounds().origin(), bounds.size()));
+  host_window_->layer()->SetFillsBoundsOpaquely(
+      bounds.size() == root_surface_->content_size() &&
+      root_surface_->FillsBoundsOpaquely());
 }
 
 bool SurfaceTreeHost::IsSurfaceSynchronized() const {
@@ -307,24 +306,17 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
     current_begin_frame_ack_.has_damage = true;
   }
   frame.metadata.begin_frame_ack = current_begin_frame_ack_;
+  frame.render_pass_list.push_back(viz::RenderPass::Create());
+  const std::unique_ptr<viz::RenderPass>& render_pass =
+      frame.render_pass_list.back();
   const int kRenderPassId = 1;
-  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   render_pass->SetNew(kRenderPassId, gfx::Rect(), gfx::Rect(),
                       gfx::Transform());
-  frame.render_pass_list.push_back(std::move(render_pass));
   float device_scale_factor = host_window()->layer()->device_scale_factor();
+  frame.metadata.device_scale_factor = device_scale_factor;
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
       gfx::Point(), device_scale_factor, layer_tree_frame_sink_holder_.get(),
       &frame);
-  // Surface uses DIP, but the |output_rect| uses pixels, so we need
-  // scale it beased on the |device_scale_factor|.
-  frame.render_pass_list.back()->output_rect =
-      gfx::Rect(gfx::ConvertSizeToPixel(device_scale_factor,
-                                        root_surface_->content_size()));
-
-  host_window_->layer()->SetFillsBoundsOpaquely(
-      root_surface_->FillsBoundsOpaquely());
-  frame.metadata.device_scale_factor = device_scale_factor;
   layer_tree_frame_sink_holder_->frame_sink()->SubmitCompositorFrame(
       std::move(frame));
 

@@ -156,11 +156,12 @@ gfx::NativeCursor Pointer::GetCursor() {
 
 void Pointer::OnSurfaceCommit() {
   SurfaceTreeHost::OnSurfaceCommit();
-  SubmitCompositorFrame();
 
   // Capture new cursor to reflect result of commit.
-  if (focus_surface_)
+  if (focus_surface_ && !host_window()->bounds().IsEmpty())
     CaptureCursor(hotspot_);
+
+  SubmitCompositorFrame();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
