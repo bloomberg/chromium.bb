@@ -286,7 +286,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
       options.setPassive(false);
   }
 
-  if (!options.passive()) {
+  if (!options.passive() && !options.PassiveSpecified()) {
     String message_text = String::Format(
         "Added non-passive event listener to a scroll-blocking '%s' event. "
         "Consider marking event handler as 'passive' to make the page more "
