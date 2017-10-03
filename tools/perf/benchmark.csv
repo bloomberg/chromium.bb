@@ -52,8 +52,6 @@ rasterize_and_record_micro.partial_invalidation,"vmpstr@chromium.org, wkorman@ch
 rasterize_and_record_micro.top_25,"vmpstr@chromium.org, wkorman@chromium.org",Internals>Compositing>Rasterization
 resource_sizes,"agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org",
 scheduler.tough_scheduling_cases,"skyostil@chromium.org, brianderson@chromium.org",
-service_worker.service_worker,horo@chromium.org,
-service_worker.service_worker_micro_benchmark,horo@chromium.org,
 sizes (linux),thestig@chromium.org,
 sizes (mac),tapted@chromium.org,
 sizes (win),grt@chromium.org,
