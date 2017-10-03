@@ -90,7 +90,6 @@ void ElementAnimations::RestartAnimationOnCompositor() {
 
 DEFINE_TRACE(ElementAnimations) {
   visitor->Trace(css_animations_);
-  visitor->Trace(custom_compositor_animations_);
   visitor->Trace(effect_stack_);
   visitor->Trace(animations_);
 }

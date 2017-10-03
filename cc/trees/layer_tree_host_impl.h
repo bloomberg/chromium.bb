@@ -484,8 +484,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   const gfx::Transform& DrawTransform() const;
 
-  std::unique_ptr<BeginFrameCallbackList> ProcessLayerTreeMutations();
-
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
   FrameRateCounter* fps_counter() { return fps_counter_.get(); }
   MemoryHistory* memory_history() { return memory_history_.get(); }

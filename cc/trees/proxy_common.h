@@ -22,7 +22,6 @@ struct CC_EXPORT BeginMainFrameAndCommitState {
 
   unsigned int begin_frame_id = 0;
   viz::BeginFrameArgs begin_frame_args;
-  std::unique_ptr<BeginFrameCallbackList> begin_frame_callbacks;
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
   size_t memory_allocation_limit_bytes = 0;
   bool evicted_ui_resources = false;

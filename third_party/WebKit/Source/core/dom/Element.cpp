@@ -36,7 +36,6 @@
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"
-#include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -147,8 +146,6 @@
 #include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/bindings/V8DOMWrapper.h"
 #include "platform/bindings/V8PerContextData.h"
-#include "platform/graphics/CompositorMutableProperties.h"
-#include "platform/graphics/CompositorMutation.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/SmoothScrollSequencer.h"
@@ -1131,14 +1128,6 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
         frame->PageZoomFactor();
   viewport->SetScrollOffset(ScrollOffset(scaled_left, scaled_top),
                             kProgrammaticScroll, scroll_behavior);
-}
-
-void Element::UpdateFromCompositorMutation(const CompositorMutation& mutation) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc"),
-               "Element::updateFromCompositorMutation");
-  if (mutation.IsOpacityMutated() || mutation.IsTransformMutated())
-    EnsureElementAnimations().GetCustomCompositorAnimations().ApplyUpdate(
-        *this, mutation);
 }
 
 bool Element::HasNonEmptyLayoutSize() const {

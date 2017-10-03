@@ -177,11 +177,6 @@ void ProxyMain::BeginMainFrame(
   layer_tree_host_->ApplyScrollAndScale(
       begin_main_frame_state->scroll_info.get());
 
-  if (begin_main_frame_state->begin_frame_callbacks) {
-    for (auto& callback : *begin_main_frame_state->begin_frame_callbacks)
-      callback.Run();
-  }
-
   layer_tree_host_->WillBeginMainFrame();
 
   // See LayerTreeHostClient::BeginMainFrame for more documentation on

@@ -3840,15 +3840,6 @@ void LayerTreeHostImpl::PinchGestureEnd() {
   SetNeedsRedraw();
 }
 
-std::unique_ptr<BeginFrameCallbackList>
-LayerTreeHostImpl::ProcessLayerTreeMutations() {
-  std::unique_ptr<BeginFrameCallbackList> callbacks(new BeginFrameCallbackList);
-  const base::Closure& callback = mutator_host_->TakeMutations();
-  if (!callback.is_null())
-    callbacks->push_back(callback);
-  return callbacks;
-}
-
 static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                                 LayerTreeImpl* tree_impl) {
   if (tree_impl->LayerListIsEmpty())
