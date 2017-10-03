@@ -223,6 +223,8 @@ static_library("arc_test_support") {
     "test/fake_policy_instance.h",
     "test/fake_voice_interaction_framework_instance.cc",
     "test/fake_voice_interaction_framework_instance.h",
+    "test/fake_wallpaper_instance.cc",
+    "test/fake_wallpaper_instance.h",
   ]
 
   public_deps = [

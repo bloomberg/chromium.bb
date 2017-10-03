@@ -1689,6 +1689,7 @@ source_set("unit_tests") {
     "arc/process/arc_process_unittest.cc",
     "arc/tts/arc_tts_service_unittest.cc",
     "arc/voice_interaction/arc_voice_interaction_framework_service_unittest.cc",
+    "arc/wallpaper/arc_wallpaper_service_unittest.cc",
     "attestation/attestation_ca_client_unittest.cc",
     "attestation/attestation_policy_observer_unittest.cc",
     "attestation/fake_certificate.cc",
