@@ -52,16 +52,13 @@ function historyResult(info, results) {
 /**
  * Called by the history backend after receiving results and after discovering
  * the existence of other forms of browsing history.
- * @param {boolean} hasSyncedResults Whether there are synced results.
  * @param {boolean} includeOtherFormsOfBrowsingHistory Whether to include
  *     a sentence about the existence of other forms of browsing history.
  */
-function showNotification(
-    hasSyncedResults, includeOtherFormsOfBrowsingHistory) {
+function showNotification(includeOtherFormsOfBrowsingHistory) {
   waitForAppUpgrade().then(function() {
     var app = /** @type {HistoryAppElement} */ ($('history-app'));
     app.showSidebarFooter = includeOtherFormsOfBrowsingHistory;
-    app.hasSyncedResults = hasSyncedResults;
   });
 }
 

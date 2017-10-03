@@ -377,8 +377,6 @@ void BrowsingHistoryHandler::OnQueryComplete(
   // results_info_value_.
   results_info.SetString("term", query_results_info.search_text);
   results_info.SetBoolean("finished", query_results_info.reached_beginning);
-  results_info.SetBoolean("hasSyncedResults",
-                          query_results_info.has_synced_results);
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);
@@ -400,7 +398,6 @@ void BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms,
     bool has_synced_results) {
   web_ui()->CallJavascriptFunctionUnsafe("showNotification",
-                                         base::Value(has_synced_results),
                                          base::Value(has_other_forms));
 }
 
