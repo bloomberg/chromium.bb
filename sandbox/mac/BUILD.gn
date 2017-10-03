@@ -34,11 +34,27 @@ component("seatbelt") {
   defines = [ "SEATBELT_IMPLEMENTATION" ]
 }
 
+component("seatbelt_extension") {
+  sources = [
+    "seatbelt_extension.cc",
+    "seatbelt_extension.h",
+    "seatbelt_extension_token.cc",
+    "seatbelt_extension_token.h",
+  ]
+  libs = [ "sandbox" ]
+  public_deps = [
+    "//base",
+  ]
+  defines = [ "SEATBELT_IMPLEMENTATION" ]
+}
+
 test("sandbox_mac_unittests") {
   sources = [
+    "mojom/struct_traits_unittest.cc",
     "sandbox_mac_compiler_unittest.mm",
     "sandbox_mac_compiler_v2_unittest.mm",
     "sandbox_mac_seatbelt_exec_unittest.cc",
+    "seatbelt_extension_unittest.cc",
   ]
 
   libs = [
@@ -48,9 +64,11 @@ test("sandbox_mac_unittests") {
 
   deps = [
     ":seatbelt",
+    ":seatbelt_extension",
     ":seatbelt_proto",
+    "mojom:test_interfaces",
     "//base",
-    "//base/test:run_all_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//testing/gtest",
   ]
 }
