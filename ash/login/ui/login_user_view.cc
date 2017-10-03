@@ -10,8 +10,10 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -94,8 +96,8 @@ class LoginUserView::UserImage : public NonAccessibleView {
   }
   ~UserImage() override = default;
 
-  void UpdateForUser(const mojom::UserInfoPtr& user) {
-    image_->SetImage(user->avatar, gfx::Size(size_, size_));
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
+    image_->SetImage(user->basic_user_info->avatar, gfx::Size(size_, size_));
   }
 
  private:
@@ -140,11 +142,11 @@ class LoginUserView::UserLabel : public NonAccessibleView {
   }
   ~UserLabel() override = default;
 
-  void UpdateForUser(const mojom::UserInfoPtr& user) {
-    std::string display_name = user->display_name;
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
+    std::string display_name = user->basic_user_info->display_name;
     // display_name can be empty in debug builds with stub users.
     if (display_name.empty())
-      display_name = user->display_email;
+      display_name = user->basic_user_info->display_email;
     user_name_->SetText(base::UTF8ToUTF16(display_name));
   }
 
@@ -271,7 +273,7 @@ LoginUserView::~LoginUserView() {
   RemovePreTargetHandler(opacity_input_handler_.get());
 }
 
-void LoginUserView::UpdateForUser(const mojom::UserInfoPtr& user,
+void LoginUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user,
                                   bool animate) {
   current_user_ = user->Clone();
 
@@ -363,13 +365,17 @@ void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (user_dropdown_ && sender == user_dropdown_) {
     if (!user_menu_ || !user_menu_->IsVisible()) {
       user_menu_ = base::MakeUnique<LoginBubble>();
-      // TODO: Use mojom::LoginUserInfo for current_user_ which has
-      // is_device_owner information. See crbug.com/762343.
-      user_menu_->ShowUserMenu(base::UTF8ToUTF16(current_user_->display_name),
-                               base::UTF8ToUTF16(current_user_->display_email),
-                               user_dropdown_ /*anchor_view*/,
-                               user_dropdown_ /*bubble_opener*/,
-                               false /*show_remove_user*/);
+      base::string16 display_name =
+          base::UTF8ToUTF16(current_user_->basic_user_info->display_name);
+
+      user_menu_->ShowUserMenu(
+          current_user_->is_device_owner
+              ? l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_POD_OWNER_USER,
+                                           display_name)
+              : display_name,
+          base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
+          user_dropdown_ /*anchor_view*/, user_dropdown_ /*bubble_opener*/,
+          false /*show_remove_user*/);
     } else {
       user_menu_->Close();
     }
@@ -377,7 +383,8 @@ void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 void LoginUserView::UpdateCurrentUserState() {
-  SetAccessibleName(base::UTF8ToUTF16(current_user_->display_email));
+  SetAccessibleName(
+      base::UTF8ToUTF16(current_user_->basic_user_info->display_email));
   user_image_->UpdateForUser(current_user_);
   user_label_->UpdateForUser(current_user_);
   Layout();

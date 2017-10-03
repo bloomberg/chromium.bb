@@ -6,7 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_TEST_BASE_H_
 
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 
@@ -30,12 +30,12 @@ class LoginTestBase : public AshTestBase {
   views::Widget* widget() const { return widget_; }
 
   // Utility method to create a new |mojom::UserInfoPtr| instance.
-  mojom::UserInfoPtr CreateUser(const std::string& name) const;
+  mojom::LoginUserInfoPtr CreateUser(const std::string& name) const;
 
   // Changes the active number of users. Fires an event on |data_dispatcher()|.
   void SetUserCount(size_t count);
 
-  const std::vector<mojom::UserInfoPtr>& users() const { return users_; }
+  const std::vector<mojom::LoginUserInfoPtr>& users() const { return users_; }
 
   LoginDataDispatcher* data_dispatcher() { return &data_dispatcher_; }
 
@@ -49,7 +49,7 @@ class LoginTestBase : public AshTestBase {
   views::Widget* widget_ = nullptr;
   std::unique_ptr<WidgetDelegate> delegate_;
 
-  std::vector<mojom::UserInfoPtr> users_;
+  std::vector<mojom::LoginUserInfoPtr> users_;
 
   LoginDataDispatcher data_dispatcher_;
 

@@ -80,7 +80,9 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLockScreenClient) {
   // Password submit runs mojo.
   std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUser_(users()[0]->account_id, _, false, _));
+  EXPECT_CALL(
+      *client,
+      AuthenticateUser_(users()[0]->basic_user_info->account_id, _, false, _));
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);

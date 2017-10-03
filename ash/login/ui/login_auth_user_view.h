@@ -51,7 +51,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
   // |on_auth| is executed whenever an authentication result is available;
   // cannot be null.
-  LoginAuthUserView(const mojom::UserInfoPtr& user,
+  LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
                     const OnAuthCallback& on_auth,
                     const LoginUserView::OnTap& on_tap);
   ~LoginAuthUserView() override;
@@ -69,9 +69,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   void ApplyAnimationPostLayout();
 
   // Update the displayed name, icon, etc to that of |user|.
-  void UpdateForUser(const mojom::UserInfoPtr& user);
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user);
 
-  const mojom::UserInfoPtr& current_user() const;
+  const mojom::LoginUserInfoPtr& current_user() const;
 
   LoginPasswordView* password_view() { return password_view_; }
 

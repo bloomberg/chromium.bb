@@ -9,7 +9,7 @@ namespace ash {
 LoginDataDispatcher::Observer::~Observer() {}
 
 void LoginDataDispatcher::Observer::OnUsersChanged(
-    const std::vector<mojom::UserInfoPtr>& users) {}
+    const std::vector<mojom::LoginUserInfoPtr>& users) {}
 
 void LoginDataDispatcher::Observer::OnPinEnabledForUserChanged(
     const AccountId& user,
@@ -31,7 +31,7 @@ void LoginDataDispatcher::RemoveObserver(Observer* observer) {
 }
 
 void LoginDataDispatcher::NotifyUsers(
-    const std::vector<mojom::UserInfoPtr>& users) {
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
   for (auto& observer : observers_)
     observer.OnUsersChanged(users);
 }

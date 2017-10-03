@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
-#include "ash/public/interfaces/user_info.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -38,7 +38,8 @@ class ASH_EXPORT LoginDataDispatcher {
     virtual ~Observer();
 
     // Called when the displayed set of users has changed.
-    virtual void OnUsersChanged(const std::vector<mojom::UserInfoPtr>& users);
+    virtual void OnUsersChanged(
+        const std::vector<mojom::LoginUserInfoPtr>& users);
 
     // Called when pin should be enabled or disabled for |user|. By default, pin
     // should be disabled.
@@ -55,7 +56,7 @@ class ASH_EXPORT LoginDataDispatcher {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void NotifyUsers(const std::vector<mojom::UserInfoPtr>& users);
+  void NotifyUsers(const std::vector<mojom::LoginUserInfoPtr>& users);
 
   void SetPinEnabledForUser(const AccountId& user, bool enabled);
 
