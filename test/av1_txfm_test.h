@@ -90,13 +90,17 @@ static const Fwd_Txfm2d_Func fwd_txfm_func_ls[TX_SIZES_ALL] = {
   av1_fwd_txfm2d_32x32_c,
 #if CONFIG_TX64X64
   av1_fwd_txfm2d_64x64_c,
-#endif
+#endif  // CONFIG_TX64X64
   av1_fwd_txfm2d_4x8_c,
   av1_fwd_txfm2d_8x4_c,
   av1_fwd_txfm2d_8x16_c,
   av1_fwd_txfm2d_16x8_c,
   av1_fwd_txfm2d_16x32_c,
   av1_fwd_txfm2d_32x16_c,
+#if CONFIG_TX64X64
+  av1_fwd_txfm2d_32x64_c,
+  av1_fwd_txfm2d_64x32_c,
+#endif  // CONFIG_TX64X64
   NULL,
   NULL,
   NULL,
@@ -114,13 +118,17 @@ static const Inv_Txfm2d_Func inv_txfm_func_ls[TX_SIZES_ALL] = {
   av1_inv_txfm2d_add_32x32_c,
 #if CONFIG_TX64X64
   av1_inv_txfm2d_add_64x64_c,
-#endif
+#endif  // CONFIG_TX64X64
   av1_inv_txfm2d_add_4x8_c,
   av1_inv_txfm2d_add_8x4_c,
   av1_inv_txfm2d_add_8x16_c,
   av1_inv_txfm2d_add_16x8_c,
   av1_inv_txfm2d_add_16x32_c,
   av1_inv_txfm2d_add_32x16_c,
+#if CONFIG_TX64X64
+  av1_inv_txfm2d_add_32x64_c,
+  av1_inv_txfm2d_add_64x32_c,
+#endif  // CONFIG_TX64X64
   NULL,
   NULL,
   NULL,
