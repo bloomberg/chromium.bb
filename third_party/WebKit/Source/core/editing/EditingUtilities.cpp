@@ -741,9 +741,8 @@ PositionTemplate<Strategy> LastEditablePositionBeforePositionInRootAlgorithm(
     if (!shadow_ancestor)
       return PositionTemplate<Strategy>();
 
-    editable_position =
-        PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(
-            shadow_ancestor);
+    editable_position = PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(
+        *shadow_ancestor);
   }
 
   while (editable_position.AnchorNode() &&
@@ -851,8 +850,7 @@ PositionTemplate<Strategy> PreviousPositionOfAlgorithm(
     if (EditingIgnoresContent(*node))
       return PositionTemplate<Strategy>::BeforeNode(*node);
     if (Node* child = Strategy::ChildAt(*node, offset - 1)) {
-      return PositionTemplate<Strategy>::LastPositionInOrAfterNodeDeprecated(
-          child);
+      return PositionTemplate<Strategy>::LastPositionInOrAfterNode(*child);
     }
 
     // There are two reasons child might be 0:
@@ -910,8 +908,7 @@ PositionTemplate<Strategy> NextPositionOfAlgorithm(
   const int offset = position.ComputeEditingOffset();
 
   if (Node* child = Strategy::ChildAt(*node, offset)) {
-    return PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(
-        child);
+    return PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(*child);
   }
 
   // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
@@ -1226,7 +1223,7 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
 VisiblePosition VisiblePositionBeforeNode(Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(FirstPositionInOrBeforeNodeDeprecated(&node));
+    return CreateVisiblePosition(FirstPositionInOrBeforeNode(node));
   DCHECK(node.parentNode()) << node;
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
   return VisiblePosition::InParentBeforeNode(node);
@@ -1236,7 +1233,7 @@ VisiblePosition VisiblePositionBeforeNode(Node& node) {
 VisiblePosition VisiblePositionAfterNode(Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(LastPositionInOrAfterNodeDeprecated(&node));
+    return CreateVisiblePosition(LastPositionInOrAfterNode(node));
   DCHECK(node.parentNode()) << node.parentNode();
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
   return VisiblePosition::InParentAfterNode(node);
@@ -1402,8 +1399,7 @@ HTMLElement* EnclosingList(Node* node) {
   if (!node)
     return 0;
 
-  ContainerNode* root =
-      HighestEditableRoot(FirstPositionInOrBeforeNodeDeprecated(node));
+  ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(*node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
@@ -1421,8 +1417,7 @@ Node* EnclosingListChild(Node* node) {
   // Check for a list item element, or for a node whose parent is a list
   // element. Such a node will appear visually as a list item (but without a
   // list marker)
-  ContainerNode* root =
-      HighestEditableRoot(FirstPositionInOrBeforeNodeDeprecated(node));
+  ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(*node));
 
   // FIXME: This function is inappropriately named if it starts with node
   // instead of node->parentNode()
@@ -1449,10 +1444,10 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
       !IsEndOfParagraph(visible_pos))
     return 0;
 
-  VisiblePosition first_in_list_child = CreateVisiblePosition(
-      FirstPositionInOrBeforeNodeDeprecated(list_child_node));
-  VisiblePosition last_in_list_child = CreateVisiblePosition(
-      LastPositionInOrAfterNodeDeprecated(list_child_node));
+  VisiblePosition first_in_list_child =
+      CreateVisiblePosition(FirstPositionInOrBeforeNode(*list_child_node));
+  VisiblePosition last_in_list_child =
+      CreateVisiblePosition(LastPositionInOrAfterNode(*list_child_node));
 
   if (first_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent() ||
       last_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent())
