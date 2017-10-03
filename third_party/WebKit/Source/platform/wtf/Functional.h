@@ -224,9 +224,21 @@ class Function<R(Args...), threadAffinity> {
     return *this;
   }
 
+  // TODO(tzik): Remove operator() once we finished to update all call sites
+  // to use Run() instead.
   R operator()(Args... args) const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return callback_.Run(std::forward<Args>(args)...);
+  }
+
+  R Run(Args... args) const & {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return callback_.Run(std::forward<Args>(args)...);
+  }
+
+  R Run(Args... args) && {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return std::move(callback_).Run(std::forward<Args>(args)...);
   }
 
   bool IsCancelled() const { return callback_.IsCancelled(); }
