@@ -125,7 +125,7 @@ class BuildSettings {
 
   std::unique_ptr<std::set<SourceFile>> exec_script_whitelist_;
 
-  BuildSettings& operator=(const BuildSettings& other);  // Disallow.
+  DISALLOW_ASSIGN(BuildSettings);
 };
 
 #endif  // TOOLS_GN_BUILD_SETTINGS_H_
