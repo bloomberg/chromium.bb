@@ -132,10 +132,6 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 virtual/threaded/printing/setPrinting.html [ WontFix ]
 virtual/threaded/printing/width-overflow.html [ WontFix ]
 
-# These tests are flaky/fail when threaded and add little value (they're just
-# reading back Blink's current animation value).
-virtual/threaded/transitions/transition-end-event-multiple-04.html [ WontFix ]
-
 # See crbug.com/522326
 external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
 # We don't allow to access external hosts in layout tests.
