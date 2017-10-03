@@ -241,6 +241,13 @@ if (CONFIG_MFMV)
   endif()
 endif()
 
+if (CONFIG_NEW_MULTISYMBOL)
+  if (NOT CONFIG_RESTRICT_COMPRESSED_HDR)
+    change_config_and_warn(CONFIG_RESTRICT_COMPRESSED_HDR 1
+                           CONFIG_NEW_MULTISYMBOL)
+  endif ()
+endif ()
+
 if (CONFIG_JNT_COMP)
   if (NOT CONFIG_FRAME_MARKER)
     change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_JNT_COMP)
