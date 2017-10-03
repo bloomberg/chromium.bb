@@ -1,0 +1,46 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_IMPL_H_
+#define SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_IMPL_H_
+
+#include <map>
+#include <memory>
+
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "net/proxy/proxy_resolver.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+
+namespace net {
+class ProxyResolverV8Tracing;
+}  // namespace net
+
+namespace proxy_resolver {
+
+class MojoProxyResolverImpl : public mojom::ProxyResolver {
+ public:
+  explicit MojoProxyResolverImpl(
+      std::unique_ptr<net::ProxyResolverV8Tracing> resolver);
+
+  ~MojoProxyResolverImpl() override;
+
+ private:
+  class Job;
+
+  // mojom::ProxyResolver overrides.
+  void GetProxyForUrl(const GURL& url,
+                      mojom::ProxyResolverRequestClientPtr client) override;
+
+  void DeleteJob(Job* job);
+
+  std::unique_ptr<net::ProxyResolverV8Tracing> resolver_;
+  std::map<Job*, std::unique_ptr<Job>> resolve_jobs_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverImpl);
+};
+
+}  // namespace proxy_resolver
+
+#endif  // SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_IMPL_H_

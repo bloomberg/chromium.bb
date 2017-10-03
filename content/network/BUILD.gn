@@ -60,6 +60,7 @@ source_set("network_sources") {
     "//content/common",
     "//content/common:mojo_bindings",
     "//content/public/common:common_sources",
+    "//content/public/network:network_sources",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network/public/cpp",
