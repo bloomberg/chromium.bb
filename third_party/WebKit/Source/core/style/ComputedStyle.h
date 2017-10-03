@@ -492,7 +492,6 @@ class ComputedStyle : public ComputedStyleBase,
     SetHasAutoClipInternal(false);
     SetClipInternal(box);
   }
-  bool HasAutoClip() const { return HasAutoClipInternal(); }
   void SetHasAutoClip() {
     SetHasAutoClipInternal(true);
     SetClipInternal(ComputedStyle::InitialClip());
@@ -502,23 +501,21 @@ class ComputedStyle : public ComputedStyleBase,
   // column-count (aka -webkit-column-count)
   static unsigned short InitialColumnCount() { return 1; }
   void SetColumnCount(unsigned short c) {
-    SetColumnAutoCountInternal(false);
+    SetHasAutoColumnCountInternal(false);
     SetColumnCountInternal(c);
   }
-  bool HasAutoColumnCount() const { return ColumnAutoCountInternal(); }
   void SetHasAutoColumnCount() {
-    SetColumnAutoCountInternal(true);
+    SetHasAutoColumnCountInternal(true);
     SetColumnCountInternal(InitialColumnCount());
   }
 
   // column-gap (aka -webkit-column-gap)
   void SetColumnGap(float f) {
-    SetColumnNormalGapInternal(false);
+    SetHasNormalColumnGapInternal(false);
     SetColumnGapInternal(f);
   }
-  bool HasNormalColumnGap() const { return ColumnNormalGapInternal(); }
   void SetHasNormalColumnGap() {
-    SetColumnNormalGapInternal(true);
+    SetHasNormalColumnGapInternal(true);
     SetColumnGapInternal(0);
   }
 
@@ -544,12 +541,11 @@ class ComputedStyle : public ComputedStyleBase,
 
   // column-width (aka -webkit-column-width)
   void SetColumnWidth(float f) {
-    SetColumnAutoWidthInternal(false);
+    SetHasAutoColumnWidthInternal(false);
     SetColumnWidthInternal(f);
   }
-  bool HasAutoColumnWidth() const { return ColumnAutoWidthInternal(); }
   void SetHasAutoColumnWidth() {
-    SetColumnAutoWidthInternal(true);
+    SetHasAutoColumnWidthInternal(true);
     SetColumnWidthInternal(0);
   }
 
@@ -830,9 +826,6 @@ class ComputedStyle : public ComputedStyleBase,
     return EVerticalAlign::kBaseline;
   }
   EVerticalAlign VerticalAlign() const { return static_cast<EVerticalAlign>(VerticalAlignInternal()); }
-  const Length& GetVerticalAlignLength() const {
-    return VerticalAlignLengthInternal();
-  }
   void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(static_cast<unsigned>(v)); }
   void SetVerticalAlignLength(const Length& length) {
     SetVerticalAlignInternal(static_cast<unsigned>(EVerticalAlign::kLength));
@@ -840,7 +833,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // z-index
-  bool HasAutoZIndex() const { return HasAutoZIndexInternal(); }
   void SetZIndex(int v) {
     SetHasAutoZIndexInternal(false);
     SetZIndexInternal(v);
@@ -851,7 +843,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // zoom
-  float EffectiveZoom() const { return EffectiveZoomInternal(); }
   bool SetZoom(float);
   bool SetEffectiveZoom(float);
 
@@ -940,11 +931,6 @@ class ComputedStyle : public ComputedStyleBase,
     SetTextEmphasisColorInternal(color.Resolve(Color()));
     SetTextEmphasisColorIsCurrentColorInternal(color.IsCurrentColor());
   }
-
-  // -webkit-line-clamp
-  static LineClampValue InitialLineClamp() { return LineClampValue(); }
-  const LineClampValue& LineClamp() const { return LineClampInternal(); }
-  void SetLineClamp(LineClampValue c) { SetLineClampInternal(c); }
 
   // -webkit-text-fill-color
   void SetTextFillColor(const StyleColor& color) {
@@ -1122,7 +1108,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool InheritedDataShared(const ComputedStyle&) const;
 
   bool HasChildDependentFlags() const {
-    return EmptyStateInternal() || HasExplicitlyInheritedProperties();
+    return EmptyState() || HasExplicitlyInheritedProperties();
   }
   void CopyChildDependentFlagsFrom(const ComputedStyle&);
 
@@ -1197,15 +1183,11 @@ class ComputedStyle : public ComputedStyleBase,
   void AddCallbackSelector(const String& selector);
 
   // Non-property flags.
-  bool EmptyState() const { return EmptyStateInternal(); }
   void SetEmptyState(bool b) {
     SetUnique();
     SetEmptyStateInternal(b);
   }
 
-  float TextAutosizingMultiplier() const {
-    return TextAutosizingMultiplierInternal();
-  }
   CORE_EXPORT void SetTextAutosizingMultiplier(float);
 
   // Column utility functions.
@@ -2627,7 +2609,7 @@ inline bool ComputedStyle::SetEffectiveZoom(float f) {
   // Clamp the effective zoom value to a smaller (but hopeful still large
   // enough) range, to avoid overflow in derived computations.
   float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
-  if (EffectiveZoomInternal() == clamped_effective_zoom)
+  if (EffectiveZoom() == clamped_effective_zoom)
     return false;
   SetEffectiveZoomInternal(clamped_effective_zoom);
   return true;
