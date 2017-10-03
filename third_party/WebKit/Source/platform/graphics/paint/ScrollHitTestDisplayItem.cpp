@@ -41,9 +41,10 @@ bool ScrollHitTestDisplayItem::Equals(const DisplayItem& other) const {
 }
 
 #ifndef NDEBUG
-void ScrollHitTestDisplayItem::DumpPropertiesAsDebugString(
-    StringBuilder& string_builder) const {
-  DisplayItem::DumpPropertiesAsDebugString(string_builder);
+void ScrollHitTestDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  DisplayItem::PropertiesAsJSON(json);
+  json.SetString("scrollOffsetNode",
+                 String::Format("%p", scroll_offset_node_.get()));
 }
 #endif  // NDEBUG
 

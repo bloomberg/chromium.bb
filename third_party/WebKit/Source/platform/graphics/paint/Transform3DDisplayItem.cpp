@@ -27,27 +27,10 @@ void BeginTransform3DDisplayItem::AppendToWebDisplayItemList(
 }
 
 #ifndef NDEBUG
-void BeginTransform3DDisplayItem::DumpPropertiesAsDebugString(
-    StringBuilder& string_builder) const {
-  PairedBeginDisplayItem::DumpPropertiesAsDebugString(string_builder);
-  TransformationMatrix::DecomposedType decomposition;
-  if (transform_.Decompose(decomposition)) {
-    string_builder.Append(String::Format(
-        ", translate: [%lf,%lf,%lf], scale: [%lf,%lf,%lf], skew: "
-        "[%lf,%lf,%lf], quaternion: [%lf,%lf,%lf,%lf], perspective: "
-        "[%lf,%lf,%lf,%lf]",
-        decomposition.translate_x, decomposition.translate_y,
-        decomposition.translate_z, decomposition.scale_x, decomposition.scale_y,
-        decomposition.scale_z, decomposition.skew_xy, decomposition.skew_xz,
-        decomposition.skew_yz, decomposition.quaternion_x,
-        decomposition.quaternion_y, decomposition.quaternion_z,
-        decomposition.quaternion_w, decomposition.perspective_x,
-        decomposition.perspective_y, decomposition.perspective_z,
-        decomposition.perspective_w));
-  }
-  string_builder.Append(
-      String::Format(", transformOrigin: [%f,%f,%f]", transform_origin_.X(),
-                     transform_origin_.Y(), transform_origin_.Z()));
+void BeginTransform3DDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  PairedBeginDisplayItem::PropertiesAsJSON(json);
+  json.SetString("transform", transform_.ToString());
+  json.SetString("origin", transform_origin_.ToString());
 }
 #endif
 

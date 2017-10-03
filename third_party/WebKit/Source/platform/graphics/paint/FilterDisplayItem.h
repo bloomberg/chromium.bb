@@ -37,7 +37,7 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
 
  private:
 #ifndef NDEBUG
-  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void PropertiesAsJSON(JSONObject&) const override;
 #endif
   bool Equals(const DisplayItem& other) const final {
     if (!DisplayItem::Equals(other))

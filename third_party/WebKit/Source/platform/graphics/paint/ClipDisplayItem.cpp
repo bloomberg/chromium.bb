@@ -46,12 +46,9 @@ void EndClipDisplayItem::AppendToWebDisplayItemList(
 }
 
 #ifndef NDEBUG
-void ClipDisplayItem::DumpPropertiesAsDebugString(
-    WTF::StringBuilder& string_builder) const {
-  DisplayItem::DumpPropertiesAsDebugString(string_builder);
-  string_builder.Append(WTF::String::Format(
-      ", clipRect: [%d,%d,%d,%d]", clip_rect_.X(), clip_rect_.Y(),
-      clip_rect_.Width(), clip_rect_.Height()));
+void ClipDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  DisplayItem::PropertiesAsJSON(json);
+  json.SetString("clipRect", clip_rect_.ToString());
 }
 #endif
 

@@ -34,14 +34,14 @@ void EndClipPathDisplayItem::AppendToWebDisplayItemList(
 }
 
 #ifndef NDEBUG
-void BeginClipPathDisplayItem::DumpPropertiesAsDebugString(
-    WTF::StringBuilder& string_builder) const {
-  DisplayItem::DumpPropertiesAsDebugString(string_builder);
-  string_builder.Append(WTF::String::Format(
-      ", pathVerbs: %d, pathPoints: %d, windRule: \"%s\"",
-      clip_path_.countVerbs(), clip_path_.countPoints(),
-      clip_path_.getFillType() == SkPath::kWinding_FillType ? "nonzero"
-                                                            : "evenodd"));
+void BeginClipPathDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  DisplayItem::PropertiesAsJSON(json);
+  json.SetInteger("pathVerbs", clip_path_.countVerbs());
+  json.SetInteger("pathPoints", clip_path_.countPoints());
+  json.SetString("windRule",
+                 clip_path_.getFillType() == SkPath::kWinding_FillType
+                     ? "nonzero"
+                     : "evenodd");
 }
 
 #endif

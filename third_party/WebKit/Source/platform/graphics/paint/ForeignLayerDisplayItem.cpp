@@ -50,10 +50,9 @@ bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
 }
 
 #ifndef NDEBUG
-void ForeignLayerDisplayItem::DumpPropertiesAsDebugString(
-    StringBuilder& string_builder) const {
-  DisplayItem::DumpPropertiesAsDebugString(string_builder);
-  string_builder.Append(String::Format(", layer: %d", layer_->id()));
+void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  DisplayItem::PropertiesAsJSON(json);
+  json.SetInteger("layer", layer_->id());
 }
 #endif  // NDEBUG
 

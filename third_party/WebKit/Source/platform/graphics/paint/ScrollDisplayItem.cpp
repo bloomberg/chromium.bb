@@ -23,12 +23,9 @@ void BeginScrollDisplayItem::AppendToWebDisplayItemList(
 }
 
 #ifndef NDEBUG
-void BeginScrollDisplayItem::DumpPropertiesAsDebugString(
-    WTF::StringBuilder& string_builder) const {
-  PairedBeginDisplayItem::DumpPropertiesAsDebugString(string_builder);
-  string_builder.Append(WTF::String::Format(", currentOffset: [%d,%d]",
-                                            current_offset_.Width(),
-                                            current_offset_.Height()));
+void BeginScrollDisplayItem::PropertiesAsJSON(JSONObject& json) const {
+  PairedBeginDisplayItem::PropertiesAsJSON(json);
+  json.SetString("currentOffset", current_offset_.ToString());
 }
 #endif
 

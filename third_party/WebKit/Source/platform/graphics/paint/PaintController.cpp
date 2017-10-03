@@ -1012,10 +1012,10 @@ void PaintController::ShowUnderInvalidationError(
         static_cast<const DrawingDisplayItem&>(new_item).GetPaintRecordBounds();
   }
   LOG(INFO) << "new record:\n"
-            << (new_record ? RecordAsDebugString(new_record, new_bounds)
+            << (new_record ? RecordAsDebugString(*new_record).Utf8().data()
                            : "None");
   LOG(INFO) << "old record:\n"
-            << (old_record ? RecordAsDebugString(old_record, old_bounds)
+            << (old_record ? RecordAsDebugString(*old_record).Utf8().data()
                            : "None");
 
   ShowDebugData();
