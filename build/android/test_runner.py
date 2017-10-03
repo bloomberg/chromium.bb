@@ -621,10 +621,6 @@ def AddPerfTestOptions(parser):
       action='store_true',
       help='Cache the telemetry chartjson output from each step for later use.')
   parser.add_argument(
-      '--collect-json-data',
-      action='store_true',
-      help='Cache the telemetry JSON output from each step for later use.')
-  parser.add_argument(
       '--dry-run',
       action='store_true',
       help='Just print the steps without executing.')
@@ -668,10 +664,6 @@ def AddPerfTestOptions(parser):
       metavar='FILENAME', type=os.path.realpath,
       help='Write the cached output directory archived by a step into the'
       ' given ZIP file.')
-  parser.add_argument(
-      '--output-json-data',
-      type=os.path.realpath,
-      help='Writes telemetry JSON formatted output into the given file.')
   parser.add_argument(
       '--output-json-list',
       type=os.path.realpath,
