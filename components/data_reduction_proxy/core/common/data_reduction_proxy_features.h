@@ -14,6 +14,7 @@ extern const base::Feature kDataReductionMainMenu;
 extern const base::Feature kDataReductionSiteBreakdown;
 extern const base::Feature kDataReductionProxyDecidesTransform;
 extern const base::Feature kDataReductionProxyLowMemoryDevicePromo;
+extern const base::Feature kMissingViaHeaderShortDuration;
 
 }  // namespace features
 }  // namespace data_reduction_proxy
