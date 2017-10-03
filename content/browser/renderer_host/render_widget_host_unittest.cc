@@ -147,7 +147,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   // Allow poking at a few private members.
   using RenderWidgetHostImpl::GetResizeParams;
-  using RenderWidgetHostImpl::OnUpdateRect;
+  using RenderWidgetHostImpl::OnResizeOrRepaintACK;
   using RenderWidgetHostImpl::RendererExited;
   using RenderWidgetHostImpl::SetInitialRenderSizeParams;
   using RenderWidgetHostImpl::old_resize_params_;
@@ -955,10 +955,10 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
-  ViewHostMsg_UpdateRect_Params params;
-  params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+  params.flags = ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
   params.view_size = original_size.size();
-  host_->OnUpdateRect(params);
+  host_->OnResizeOrRepaintACK(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
 
   // Send out a update that's not a resize ack after setting resize ack pending
@@ -971,7 +971,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_TRUE(host_->resize_ack_pending_);
   params.flags = 0;
   params.view_size = gfx::Size(100, 100);
-  host_->OnUpdateRect(params);
+  host_->OnResizeOrRepaintACK(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
 
@@ -989,18 +989,18 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // this isn't the second_size, the message handler should immediately send
   // a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
-  params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
+  params.flags = ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
   params.view_size = original_size.size();
-  host_->OnUpdateRect(params);
+  host_->OnResizeOrRepaintACK(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
-  params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
+  params.flags = ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
   params.view_size = third_size.size();
-  host_->OnUpdateRect(params);
+  host_->OnResizeOrRepaintACK(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
@@ -1152,9 +1152,9 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 
   // Send it an update as from the renderer.
   process_->sink().ClearMessages();
-  ViewHostMsg_UpdateRect_Params params;
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(100, 100);
-  host_->OnUpdateRect(params);
+  host_->OnResizeOrRepaintACK(params);
 
   // Now unhide.
   process_->sink().ClearMessages();

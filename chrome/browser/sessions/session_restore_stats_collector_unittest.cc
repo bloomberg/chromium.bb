@@ -273,7 +273,7 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
     content::RenderWidgetHost* host =
         contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
     stats_collector_->Observe(
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
         content::Source<content::RenderWidgetHost>(host),
         content::NotificationService::NoDetails());
   }

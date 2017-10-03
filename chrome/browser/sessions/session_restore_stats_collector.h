@@ -91,10 +91,10 @@ class SessionRestoreStatsCollector
     base::TimeDelta foreground_tab_first_loaded;
 
     // The time elapsed between |restore_started| and reception of the first
-    // NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE event for any of
-    // the tabs involved in the session restore. If this is zero it is because
-    // it has not been recorded (all visible tabs were closed or switched away
-    // from before they were painted). Corresponds to
+    // NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT event for
+    // any of the tabs involved in the session restore. If this is zero it is
+    // because it has not been recorded (all visible tabs were closed or
+    // switched away from before they were painted). Corresponds to
     // "SessionRestore.ForegroundTabFirstPaint3" and its _XX variants.
     base::TimeDelta foreground_tab_first_paint;
 

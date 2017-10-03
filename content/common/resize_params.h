@@ -53,8 +53,9 @@ struct CONTENT_EXPORT ResizeParams {
   // The display mode.
   blink::WebDisplayMode display_mode;
 
-  // If set, requests the renderer to reply with a ViewHostMsg_UpdateRect
-  // with the ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK bit set in flags.
+  // If set, requests the renderer to reply with a
+  // ViewHostMsg_ResizeOrRepaint_ACK with the
+  // ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK bit set in flags.
   bool needs_resize_ack;
 };
 

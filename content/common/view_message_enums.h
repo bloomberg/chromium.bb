@@ -8,8 +8,8 @@
 #include "ipc/ipc_message_macros.h"
 
 // Values that may be OR'd together to form the 'flags' parameter of a
-// ViewHostMsg_UpdateRect_Params structure.
-struct ViewHostMsg_UpdateRect_Flags {
+// ViewHostMsg_ResizeOrRepaint_ACK_Params structure.
+struct ViewHostMsg_ResizeOrRepaint_ACK_Flags {
   enum {
     IS_RESIZE_ACK = 1 << 0,
     IS_REPAINT_ACK = 1 << 2,
