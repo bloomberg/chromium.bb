@@ -159,6 +159,7 @@ class StateMachine : public SchedulerStateMachine {
     return needs_impl_side_invalidation_;
   }
 
+  using SchedulerStateMachine::ShouldPrepareTiles;
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
   using SchedulerStateMachine::ProactiveBeginFrameWanted;
   using SchedulerStateMachine::WillCommit;
@@ -2432,11 +2433,22 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
   // Start clean and set commit.
   state.SetNeedsBeginMainFrame();
 
+  // While we are waiting for an main frame or pending tree activation, we
+  // should even block while we can't draw.
+  state.SetCanDraw(false);
+
   // Begin the frame.
   state.OnBeginImplFrame(0, 10);
-  // Deadline immediately enters blocking mode, because we need a main frame.
+  // We are blocking because we need a main frame.
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
+
+  // Even if main thread defers commits, we still need to wait for it.
+  state.SetDeferCommits(true);
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+  state.SetDeferCommits(false);
+
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
@@ -2459,14 +2471,28 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
   // We are blocking on activation.
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // We should prepare tiles even though we are not in the deadline, otherwise
+  // we would get stuck here.
+  EXPECT_FALSE(state.ShouldPrepareTiles());
+  state.SetNeedsPrepareTiles();
+  EXPECT_TRUE(state.ShouldPrepareTiles());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_PREPARE_TILES);
 
   // Ready to activate, but not draw.
   state.NotifyReadyToActivate();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  // We are blocking on ready to draw.
+  // We should no longer block, because can_draw is still false, and we are no
+  // longer waiting for activation.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // However, we should continue to block on ready to draw if we can draw.
+  state.SetCanDraw(true);
   EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Ready to draw triggers immediate deadline.
   state.NotifyReadyToDraw();
