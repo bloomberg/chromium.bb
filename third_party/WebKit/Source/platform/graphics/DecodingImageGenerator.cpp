@@ -209,9 +209,11 @@ SkISize DecodingImageGenerator::GetSupportedDecodeSize(
 
 PaintImage::ContentId DecodingImageGenerator::GetContentIdForFrame(
     size_t frame_index) const {
+  DCHECK_LT(frame_index, GetFrameMetadata().size());
+
   // If we have all the data for the image, or this particular frame, we can
   // consider the decoded frame constant.
-  if (all_data_received_ || GetFrameMetadata()[frame_index].complete)
+  if (all_data_received_ || GetFrameMetadata().at(frame_index).complete)
     return complete_frame_content_id_;
 
   return PaintImageGenerator::GetContentIdForFrame(frame_index);
