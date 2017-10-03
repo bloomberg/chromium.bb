@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "device/base/device_client.h"
 
 namespace device {
@@ -18,11 +19,15 @@ class TestDeviceClient : public DeviceClient {
   // Must be destroyed when tasks can still be posted to |task_runner|.
   ~TestDeviceClient() override;
 
+#if !defined(OS_ANDROID)
   HidService* GetHidService() override;
+#endif
   UsbService* GetUsbService() override;
 
  private:
+#if !defined(OS_ANDROID)
   std::unique_ptr<HidService> hid_service_;
+#endif
   std::unique_ptr<UsbService> usb_service_;
 };
 
