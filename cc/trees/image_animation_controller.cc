@@ -5,6 +5,7 @@
 #include "cc/trees/image_animation_controller.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/image_animation_count.h"
 
@@ -156,6 +157,13 @@ ImageAnimationController::GetDriversForTesting(
   return it->second.drivers_for_testing();
 }
 
+size_t ImageAnimationController::GetLastNumOfFramesSkippedForTesting(
+    PaintImage::Id paint_image_id) const {
+  const auto& it = animation_state_map_.find(paint_image_id);
+  DCHECK(it != animation_state_map_.end());
+  return it->second.last_num_frames_skipped_for_testing();
+}
+
 ImageAnimationController::AnimationState::AnimationState() = default;
 
 ImageAnimationController::AnimationState::AnimationState(
@@ -246,7 +254,9 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
   // TODO(khushalsagar): Avoid unnecessary iterations for skipping whole loops
   // in the animations.
   size_t last_frame_index = frames_.size() - 1;
+  size_t num_of_frames_advanced = 0u;
   while (next_desired_frame_time_ <= now && ShouldAnimate()) {
+    num_of_frames_advanced++;
     size_t next_frame_index = NextFrameIndex();
     base::TimeTicks next_desired_frame_time =
         next_desired_frame_time_ + frames_[next_frame_index].duration;
@@ -278,6 +288,13 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
     if (pending_index_ == last_frame_index && is_complete())
       repetitions_completed_++;
   }
+
+  // We should have advanced a single frame, anything more than that are frames
+  // skipped trying to catch up.
+  DCHECK_GT(num_of_frames_advanced, 0u);
+  last_num_frames_skipped_ = num_of_frames_advanced - 1u;
+  UMA_HISTOGRAM_COUNTS_100000("AnimatedImage.NumOfFramesSkipped.Compositor",
+                              last_num_frames_skipped_);
 
   return pending_index_ != active_index_;
 }

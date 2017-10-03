@@ -457,12 +457,15 @@ TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
 TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   RuntimeEnabledFeatures::SetCompositorImageAnimationsEnabled(false);
 
-  repetition_count_ = kAnimationLoopInfinite;
-  frame_count_ = 5u;
-  last_frame_complete_ = true;
+  repetition_count_ = kAnimationLoopOnce;
+  frame_count_ = 7u;
+  last_frame_complete_ = false;
   duration_ = TimeDelta::FromSeconds(10);
   now_ = 10;
-  image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
+
+  // Start with an image that is incomplete, and the last frame is not fully
+  // received.
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
 
   RefPtr<scheduler::FakeWebTaskRunner> task_runner =
       WTF::AdoptRef(new scheduler::FakeWebTaskRunner);
@@ -475,7 +478,7 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 0u);
 
   // No frames skipped since we just started the animation.
-  EXPECT_EQ(image_->last_num_frames_skipped_for_testing(), 0u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
 
   // Advance the time to 15s. The frame is still at 0u because the posted task
   // should run at 20s.
@@ -486,6 +489,7 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   // to 1u.
   task_runner->AdvanceTimeAndRun(5);
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 1u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
 
   // Set now_ to 41 seconds. Since the animation started at 10s, and each frame
   // has a duration of 10s, we should see the fourth frame at 41 seconds.
@@ -493,17 +497,42 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   task_runner->SetTime(41);
   StartAnimation();
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 3u);
-  EXPECT_EQ(image_->last_num_frames_skipped_for_testing(), 2u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 1u);
 
-  // We should have scheduled a task to move to the last frame in
+  // We should have scheduled a task to move to the fifth frame in
   // StartAnimation above, at 50s.
   // Advance by 5s, not time for the next frame yet.
   task_runner->AdvanceTimeAndRun(5);
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 3u);
 
+  // Advance to the fifth frame.
   task_runner->SetTime(50);
   task_runner->AdvanceTimeAndRun(0);
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 4u);
+
+  // At 70s, we would want to display the last frame and would skip 1 frame.
+  // But because its incomplete, we advanced to the sixth frame and did not need
+  // to skip anything.
+  now_ = 71;
+  task_runner->SetTime(71);
+  StartAnimation();
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 5u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
+
+  // Run any pending tasks and try to animate again. Can't advance the animation
+  // because the last frame is not complete.
+  task_runner->AdvanceTimeAndRun(0);
+  StartAnimation();
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 5u);
+  EXPECT_FALSE(image_->last_num_frames_skipped_for_testing().has_value());
+
+  // Finish the load and kick the animation again. It finishes during catch up.
+  // But no frame skipped because we just advanced to the last frame.
+  last_frame_complete_ = true;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
+  StartAnimation();
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 6u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
 }
 
 TEST_F(BitmapImageTestWithMockDecoder, ResetAnimation) {

@@ -100,6 +100,12 @@ class ImageAnimationControllerTest : public testing::Test {
 
       // Animate the image on the sync tree.
       auto animated_images = controller_->AnimateForSyncTree(now_);
+
+      // No frames should have been skipped since we add no delay in advancing
+      // the animation.
+      EXPECT_EQ(
+          controller_->GetLastNumOfFramesSkippedForTesting(paint_image_id), 0u);
+
       EXPECT_EQ(controller_->GetFrameIndexForImage(paint_image_id,
                                                    WhichTree::PENDING_TREE),
                 i);
@@ -154,7 +160,8 @@ TEST_F(ImageAnimationControllerTest, AnimationWithDelays) {
   std::vector<FrameMetadata> frames = {
       FrameMetadata(true, base::TimeDelta::FromMilliseconds(5)),
       FrameMetadata(true, base::TimeDelta::FromMilliseconds(3)),
-      FrameMetadata(true, base::TimeDelta::FromMilliseconds(4))};
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(4)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(3))};
 
   DiscardableImageMap::AnimatedImageMetadata data(
       PaintImage::GetNextId(), PaintImage::CompletionState::DONE, frames,
@@ -175,15 +182,18 @@ TEST_F(ImageAnimationControllerTest, AnimationWithDelays) {
   auto animated_images = controller_->AnimateForSyncTree(now_);
   EXPECT_EQ(animated_images.size(), 1u);
   EXPECT_EQ(animated_images.count(data.paint_image_id), 1u);
+  EXPECT_EQ(
+      controller_->GetLastNumOfFramesSkippedForTesting(data.paint_image_id),
+      1u);
 
   // The pending tree displays the second frame while the active tree has the
-  // third frame.
+  // last frame.
   EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
                                                WhichTree::PENDING_TREE),
             1u);
   EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
                                                WhichTree::ACTIVE_TREE),
-            2u);
+            3u);
 
   // Invalidation delay is based on the duration of the second frame and the
   // delay in creating this sync tree.
@@ -192,15 +202,19 @@ TEST_F(ImageAnimationControllerTest, AnimationWithDelays) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(invalidation_count_, 1);
 
-  // Activate and animate with a delay that causes us to skip another frame.
+  // Activate and animate with a delay that causes us to skip another 2 frames.
   controller_->DidActivate();
   EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
                                                WhichTree::ACTIVE_TREE),
             1u);
-  AdvanceNow(data.frames[1].duration + data.frames[2].duration);
+  AdvanceNow(data.frames[1].duration + data.frames[2].duration +
+             data.frames[3].duration);
   animated_images = controller_->AnimateForSyncTree(now_);
   EXPECT_EQ(animated_images.size(), 1u);
   EXPECT_EQ(animated_images.count(data.paint_image_id), 1u);
+  EXPECT_EQ(
+      controller_->GetLastNumOfFramesSkippedForTesting(data.paint_image_id),
+      2u);
 
   // The pending tree displays the first frame, while the active tree has the
   // second frame.
