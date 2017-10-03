@@ -13,6 +13,7 @@
 #define AOM_DSP_TXFM_COMMON_H_
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "av1/common/enums.h"
 
 // Constants and Macros used by all idct/dct functions
 #define DCT_CONST_BITS 14
@@ -23,8 +24,8 @@
 
 typedef struct txfm_param {
   // for both forward and inverse transforms
-  int tx_type;
-  int tx_size;
+  TX_TYPE tx_type;
+  TX_SIZE tx_size;
   int lossless;
   int bd;
 #if CONFIG_MRC_TX || CONFIG_LGT

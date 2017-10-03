@@ -1189,7 +1189,7 @@ static void copy_fliplrud(const int16_t *src, int src_stride, int l, int w,
 }
 
 static void maybe_flip_input(const int16_t **src, int *src_stride, int l, int w,
-                             int16_t *buff, int tx_type) {
+                             int16_t *buff, TX_TYPE tx_type) {
   switch (tx_type) {
 #if CONFIG_MRC_TX
     case MRC_DCT:
@@ -1229,7 +1229,7 @@ static void maybe_flip_input(const int16_t **src, int *src_stride, int l, int w,
 
 void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
                   TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -1341,7 +1341,7 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht4x8_c(const int16_t *input, tran_low_t *output, int stride,
                   TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1417,7 +1417,7 @@ void av1_fht4x8_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht8x4_c(const int16_t *input, tran_low_t *output, int stride,
                   TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1493,7 +1493,7 @@ void av1_fht8x4_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht4x16_c(const int16_t *input, tran_low_t *output, int stride,
                    TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1560,7 +1560,7 @@ void av1_fht4x16_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht16x4_c(const int16_t *input, tran_low_t *output, int stride,
                    TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1627,7 +1627,7 @@ void av1_fht16x4_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
                    TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1696,7 +1696,7 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
                    TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1765,7 +1765,7 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht8x32_c(const int16_t *input, tran_low_t *output, int stride,
                    TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1832,7 +1832,7 @@ void av1_fht8x32_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
                    TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1899,7 +1899,7 @@ void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -1958,7 +1958,7 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -2017,7 +2017,7 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
                   TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -2183,7 +2183,7 @@ void av1_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
 
 void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -2281,7 +2281,7 @@ void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
 
 void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_DCT_ONLY
   assert(tx_type == DCT_DCT);
 #endif
@@ -2420,7 +2420,7 @@ static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
 
 void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -2509,7 +2509,7 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -2568,7 +2568,7 @@ void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
 
 void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif  // CONFIG_MRC_TX
@@ -2628,7 +2628,7 @@ void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
 #if CONFIG_EXT_TX
 // Forward identity transform.
 void av1_fwd_idtx_c(const int16_t *src_diff, tran_low_t *coeff, int stride,
-                    int bsx, int bsy, int tx_type) {
+                    int bsx, int bsy, TX_TYPE tx_type) {
   int r, c;
   const int pels = bsx * bsy;
   const int shift = 3 - ((pels > 256) + (pels > 1024));

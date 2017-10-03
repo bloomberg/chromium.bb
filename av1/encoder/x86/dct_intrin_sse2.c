@@ -205,7 +205,7 @@ static void fidtx4_sse2(__m128i *in) {
 void av1_fht4x4_sse2(const int16_t *input, tran_low_t *output, int stride,
                      TxfmParam *txfm_param) {
   __m128i in[4];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -866,7 +866,7 @@ static void fidtx8_sse2(__m128i *in) {
 void av1_fht8x8_sse2(const int16_t *input, tran_low_t *output, int stride,
                      TxfmParam *txfm_param) {
   __m128i in[8];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -1903,7 +1903,7 @@ static void fidtx16_sse2(__m128i *in0, __m128i *in1) {
 void av1_fht16x16_sse2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
   __m128i in0[16], in1[16];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -2123,7 +2123,7 @@ static INLINE void write_buffer_4x8(tran_low_t *output, __m128i *res) {
 void av1_fht4x8_sse2(const int16_t *input, tran_low_t *output, int stride,
                      TxfmParam *txfm_param) {
   __m128i in[8];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -2301,7 +2301,7 @@ static INLINE void write_buffer_8x4(tran_low_t *output, __m128i *res) {
 void av1_fht8x4_sse2(const int16_t *input, tran_low_t *output, int stride,
                      TxfmParam *txfm_param) {
   __m128i in[8];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -2445,7 +2445,7 @@ static void row_8x16_rounding(__m128i *in, int bits) {
 void av1_fht8x16_sse2(const int16_t *input, tran_low_t *output, int stride,
                       TxfmParam *txfm_param) {
   __m128i in[16];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -2630,7 +2630,7 @@ static INLINE void load_buffer_16x8(const int16_t *input, __m128i *in,
 void av1_fht16x8_sse2(const int16_t *input, tran_low_t *output, int stride,
                       TxfmParam *txfm_param) {
   __m128i in[16];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -2944,7 +2944,7 @@ static INLINE void fhalfright32_16col(__m128i *tl, __m128i *tr, __m128i *bl,
 void av1_fht16x32_sse2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
   __m128i intl[16], intr[16], inbl[16], inbr[16];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -3137,7 +3137,7 @@ static INLINE void write_buffer_32x16(tran_low_t *output, __m128i *res0,
 void av1_fht32x16_sse2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
   __m128i in0[16], in1[16], in2[16], in3[16];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
 #endif
@@ -3381,7 +3381,7 @@ static INLINE void write_buffer_32x32(__m128i *in0, __m128i *in1, __m128i *in2,
 void av1_fht32x32_sse2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
   __m128i in0[32], in1[32], in2[32], in3[32];
-  int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
 #if CONFIG_MRC_TX
   assert(tx_type != MRC_DCT && "No 32x32 sse2 MRC_DCT implementation");
 #endif

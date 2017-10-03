@@ -26,10 +26,10 @@ using std::tr1::tuple;
 using libaom_test::ACMRandom;
 
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
-                          int tx_type, int bd);
+                          TX_TYPE tx_type, int bd);
 
 typedef void (*IHbdHtFunc)(const int32_t *coeff, uint16_t *output, int stride,
-                           int tx_type, int bd);
+                           TX_TYPE tx_type, int bd);
 
 // Test parameter argument list:
 //   <transform reference function,
@@ -38,7 +38,7 @@ typedef void (*IHbdHtFunc)(const int32_t *coeff, uint16_t *output, int stride,
 //    num_coeffs,
 //    tx_type,
 //    bit_depth>
-typedef tuple<HbdHtFunc, IHbdHtFunc, IHbdHtFunc, int, int, int> IHbdHtParam;
+typedef tuple<HbdHtFunc, IHbdHtFunc, IHbdHtFunc, int, TX_TYPE, int> IHbdHtParam;
 
 class AV1HighbdInvHTNxN : public ::testing::TestWithParam<IHbdHtParam> {
  public:
@@ -97,7 +97,7 @@ class AV1HighbdInvHTNxN : public ::testing::TestWithParam<IHbdHtParam> {
   IHbdHtFunc inv_txfm_;
   IHbdHtFunc inv_txfm_ref_;
   int num_coeffs_;
-  int tx_type_;
+  TX_TYPE tx_type_;
   int bit_depth_;
 
   int16_t *input_;

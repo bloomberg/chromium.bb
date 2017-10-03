@@ -185,7 +185,8 @@ TEST(AV1FwdTxfm2d, CfgTest) {
     // TODO(angiebird): include rect txfm in this test
     for (int tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-        TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_cfg(tx_type, tx_size);
+        TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_cfg(
+            static_cast<TX_TYPE>(tx_type), static_cast<TX_SIZE>(tx_size));
         int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
         int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
         av1_gen_fwd_stage_range(stage_range_col, stage_range_row, &cfg, bd);

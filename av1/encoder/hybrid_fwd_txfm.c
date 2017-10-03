@@ -235,7 +235,7 @@ static void highbd_fwd_txfm_2x2(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   if (txfm_param->lossless) {
     assert(tx_type == DCT_DCT);
@@ -320,7 +320,7 @@ static void highbd_fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
@@ -358,7 +358,7 @@ static void highbd_fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
@@ -396,7 +396,7 @@ static void highbd_fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
@@ -435,7 +435,7 @@ static void highbd_fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_32x64(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
@@ -475,7 +475,7 @@ static void highbd_fwd_txfm_32x64(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
@@ -514,7 +514,7 @@ static void highbd_fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
 static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
-  const int tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:

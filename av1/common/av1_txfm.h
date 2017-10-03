@@ -154,7 +154,7 @@ typedef struct TXFM_2D_FLIP_CFG {
   const TXFM_1D_CFG *row_cfg;
 } TXFM_2D_FLIP_CFG;
 
-static INLINE void set_flip_cfg(int tx_type, TXFM_2D_FLIP_CFG *cfg) {
+static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
   switch (tx_type) {
     case DCT_DCT:
     case ADST_DCT:
@@ -225,7 +225,7 @@ static INLINE int av1_rotate_tx_size(int tx_size) {
   }
 }
 
-static INLINE int av1_rotate_tx_type(int tx_type) {
+static INLINE TX_TYPE av1_rotate_tx_type(TX_TYPE tx_type) {
   switch (tx_type) {
     case DCT_DCT: return DCT_DCT;
     case ADST_DCT: return DCT_ADST;
@@ -354,13 +354,13 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
                              int bd);
 
-TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(int tx_type, int tx_size);
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(TX_TYPE tx_type, int tx_size);
 #if CONFIG_TX64X64
-TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x64_cfg(int tx_type);
-TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x32_cfg(int tx_type);
-TXFM_2D_FLIP_CFG av1_get_fwd_txfm_32x64_cfg(int tx_type);
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x64_cfg(TX_TYPE tx_type);
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x32_cfg(TX_TYPE tx_type);
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_32x64_cfg(TX_TYPE tx_type);
 #endif  // CONFIG_TX64X64
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(int tx_type, int tx_size);
+TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, int tx_size);
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
