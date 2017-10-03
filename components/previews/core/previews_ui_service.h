@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_io_data.h"
+#include "components/previews/core/previews_log.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;
@@ -33,7 +34,8 @@ class PreviewsUIService {
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-      const PreviewsIsEnabledCallback& is_enabled_callback);
+      const PreviewsIsEnabledCallback& is_enabled_callback,
+      std::unique_ptr<PreviewsLogger> logger);
   virtual ~PreviewsUIService();
 
   // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO
@@ -46,6 +48,12 @@ class PreviewsUIService {
   // Clears the history of the black list between |begin_time| and |end_time|.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
 
+  // Log the navigation to PreviewsLogger. Virtualized in testing.
+  virtual void LogPreviewNavigation(const GURL& url,
+                                    PreviewsType type,
+                                    bool opt_out,
+                                    base::Time time);
+
  private:
   // The IO thread portion of the inter-thread communication for previews/.
   base::WeakPtr<previews::PreviewsIOData> io_data_;
@@ -55,6 +63,9 @@ class PreviewsUIService {
   // The IO thread task runner. Used to post tasks to |io_data_|.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
+  // A log object to keep track of events such as previews navigations,
+  // blacklist actions, etc.
+  std::unique_ptr<PreviewsLogger> logger_;
   base::WeakPtrFactory<PreviewsUIService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsUIService);

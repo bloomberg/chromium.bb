@@ -95,11 +95,22 @@ void PreviewsIOData::InitializeOnIOThread(
                             weak_factory_.GetWeakPtr()));
 }
 
+void PreviewsIOData::LogPreviewNavigation(const GURL& url,
+                                          bool opt_out,
+                                          PreviewsType type,
+                                          base::Time time) {
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PreviewsUIService::LogPreviewNavigation,
+                            previews_ui_service_, url, type, opt_out, time));
+}
+
 void PreviewsIOData::AddPreviewNavigation(const GURL& url,
                                           bool opt_out,
                                           PreviewsType type) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  previews_black_list_->AddPreviewNavigation(url, opt_out, type);
+  base::Time time =
+      previews_black_list_->AddPreviewNavigation(url, opt_out, type);
+  LogPreviewNavigation(url, opt_out, type, time);
 }
 
 void PreviewsIOData::ClearBlackList(base::Time begin_time,

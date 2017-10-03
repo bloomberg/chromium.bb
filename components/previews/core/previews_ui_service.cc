@@ -14,8 +14,12 @@ PreviewsUIService::PreviewsUIService(
     PreviewsIOData* previews_io_data,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
-    const PreviewsIsEnabledCallback& is_enabled_callback)
-    : io_task_runner_(io_task_runner), weak_factory_(this) {
+    const PreviewsIsEnabledCallback& is_enabled_callback,
+    std::unique_ptr<PreviewsLogger> logger)
+    : io_task_runner_(io_task_runner),
+      logger_(std::move(logger)),
+      weak_factory_(this) {
+  DCHECK(logger_);
   previews_io_data->Initialize(weak_factory_.GetWeakPtr(),
                                std::move(previews_opt_out_store),
                                is_enabled_callback);
@@ -37,6 +41,15 @@ void PreviewsUIService::AddPreviewNavigation(const GURL& url,
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsIOData::AddPreviewNavigation, io_data_,
                             url, opt_out, type));
+}
+
+void PreviewsUIService::LogPreviewNavigation(const GURL& url,
+                                             PreviewsType type,
+                                             bool opt_out,
+                                             base::Time time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  logger_->LogPreviewNavigation(
+      PreviewsLogger::PreviewNavigation(url, type, opt_out, time));
 }
 
 void PreviewsUIService::ClearBlackList(base::Time begin_time,

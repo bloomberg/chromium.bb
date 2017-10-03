@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_io_data.h"
+#include "components/previews/core/previews_log.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_opt_out_store_sql.h"
 #include "components/previews/core/previews_ui_service.h"
@@ -108,5 +109,6 @@ void PreviewsService::Initialize(
           io_task_runner, background_task_runner,
           profile_path.Append(chrome::kPreviewsOptOutDBFilename),
           GetEnabledPreviews()),
-      base::Bind(&IsPreviewsTypeEnabled));
+      base::Bind(&IsPreviewsTypeEnabled),
+      base::MakeUnique<previews::PreviewsLogger>());
 }

@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_log.h"
 #include "net/nqe/effective_connection_type.h"
 
 class GURL;
@@ -48,6 +49,12 @@ class PreviewsIOData : public PreviewsDecider {
       base::WeakPtr<PreviewsUIService> previews_ui_service,
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
       const PreviewsIsEnabledCallback& is_enabled_callback);
+
+  // Adds log message of the navigation asynchronously.
+  void LogPreviewNavigation(const GURL& url,
+                            bool opt_out,
+                            PreviewsType type,
+                            base::Time time);
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
