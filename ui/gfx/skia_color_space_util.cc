@@ -14,94 +14,6 @@ namespace gfx {
 
 namespace {
 
-// Evaluate the gradient of the linear component of fn
-void SkTransferFnEvalGradientLinear(const SkColorSpaceTransferFn& fn,
-                                    float x,
-                                    float* d_fn_d_fC_at_x,
-                                    float* d_fn_d_fF_at_x) {
-  *d_fn_d_fC_at_x = x;
-  *d_fn_d_fF_at_x = 1.f;
-}
-
-// Solve for the parameters fC and fF, given the parameter fD.
-void SkTransferFnSolveLinear(SkColorSpaceTransferFn* fn,
-                             const float* x,
-                             const float* t,
-                             size_t n) {
-  // If this has no linear segment, don't try to solve for one.
-  if (fn->fD <= 0) {
-    fn->fC = 1;
-    fn->fF = 0;
-    return;
-  }
-
-  // Let ne_lhs be the left hand side of the normal equations, and let ne_rhs
-  // be the right hand side. This is a 4x4 matrix, but we will only update the
-  // upper-left 2x2 sub-matrix.
-  SkMatrix44 ne_lhs;
-  SkVector4 ne_rhs;
-  for (int row = 0; row < 2; ++row) {
-    for (int col = 0; col < 2; ++col) {
-      ne_lhs.set(row, col, 0);
-    }
-  }
-  for (int row = 0; row < 4; ++row)
-    ne_rhs.fData[row] = 0;
-
-  // Add the contributions from each sample to the normal equations.
-  float x_linear_max = 0;
-  for (size_t i = 0; i < n; ++i) {
-    // Ignore points in the nonlinear segment.
-    if (x[i] >= fn->fD)
-      continue;
-    x_linear_max = std::max(x_linear_max, x[i]);
-
-    // Let J be the gradient of fn with respect to parameters C and F, evaluated
-    // at this point.
-    float J[2];
-    SkTransferFnEvalGradientLinear(*fn, x[i], &J[0], &J[1]);
-
-    // Let r be the residual at this point.
-    float r = t[i];
-
-    // Update the normal equations left hand side with the outer product of J
-    // with itself.
-    for (int row = 0; row < 2; ++row) {
-      for (int col = 0; col < 2; ++col) {
-        ne_lhs.set(row, col, ne_lhs.get(row, col) + J[row] * J[col]);
-      }
-      // Update the normal equations right hand side the product of J with the
-      // residual
-      ne_rhs.fData[row] += J[row] * r;
-    }
-  }
-
-  // If we only have a single x point at 0, that isn't enough to construct a
-  // linear segment, so add an additional point connecting to the nonlinear
-  // segment.
-  if (x_linear_max == 0) {
-    float J[2];
-    SkTransferFnEvalGradientLinear(*fn, fn->fD, &J[0], &J[1]);
-    float r = SkTransferFnEval(*fn, fn->fD);
-    for (int row = 0; row < 2; ++row) {
-      for (int col = 0; col < 2; ++col) {
-        ne_lhs.set(row, col, ne_lhs.get(row, col) + J[row] * J[col]);
-      }
-      ne_rhs.fData[row] += J[row] * r;
-    }
-  }
-
-  // Solve the normal equations.
-  SkMatrix44 ne_lhs_inv;
-  bool invert_result = ne_lhs.invert(&ne_lhs_inv);
-  DCHECK(invert_result);
-  SkVector4 solution = ne_lhs_inv * ne_rhs;
-
-  // Update the transfer function.
-  fn->fC = solution.fData[0];
-  fn->fF = solution.fData[1];
-}
-
 // Evaluate the gradient of the nonlinear component of fn
 void SkTransferFnEvalGradientNonlinear(const SkColorSpaceTransferFn& fn,
                                        float x,
@@ -282,9 +194,10 @@ bool SkApproximateTransferFnInternal(const float* x,
                                      size_t n,
                                      SkColorSpaceTransferFn* fn) {
   // First, guess at a value of fD. Assume that the nonlinear segment applies
-  // to all x >= 0.25. This is generally a safe assumption (fD is usually less
+  // to all x >= 0.15. This is generally a safe assumption (fD is usually less
   // than 0.1).
-  fn->fD = 0.25f;
+  const float kLinearSegmentMaximum = 0.15f;
+  fn->fD = kLinearSegmentMaximum;
 
   // Do a nonlinear regression on the nonlinear segment. Use a number of guesses
   // for the initial value of fG, because not all values will converge.
@@ -322,21 +235,32 @@ bool SkApproximateTransferFnInternal(const float* x,
     }
 
     // Now find the maximum x value where this nonlinear fit is no longer
-    // accurate or no longer defined.
+    // accurate, no longer defined, or no longer nonnegative.
     fn->fD = 0.f;
     float max_x_where_nonlinear_does_not_fit = -1.f;
     for (size_t i = 0; i < n; ++i) {
+      if (x[i] >= kLinearSegmentMaximum)
+        continue;
+
+      // The nonlinear segment is only undefined when fA * x + fB is
+      // nonnegative.
+      float fn_at_xi = -1;
+      if (fn->fA * x[i] + fn->fB >= 0)
+        fn_at_xi = SkTransferFnEvalUnclamped(*fn, x[i]);
+
+      // If the value is negative (or undefined), say that the fit was bad.
       bool nonlinear_fits_xi = true;
-      if (fn->fA * x[i] + fn->fB < 0) {
-        // The nonlinear segment is undefined when fA * x + fB is less than 0.
+      if (fn_at_xi < 0)
         nonlinear_fits_xi = false;
-      } else {
-        // Define "no longer accurate" as "has more than 10% more error than
-        // the maximum error in the fit segment".
-        float error_at_xi = std::abs(t[i] - SkTransferFnEval(*fn, x[i]));
+
+      // Compute the error, and define "no longer accurate" as "has more than
+      // 10% more error than the maximum error in the fit segment".
+      if (nonlinear_fits_xi) {
+        float error_at_xi = std::abs(t[i] - fn_at_xi);
         if (error_at_xi > 1.1f * max_error_in_nonlinear_fit)
           nonlinear_fits_xi = false;
       }
+
       if (!nonlinear_fits_xi) {
         max_x_where_nonlinear_does_not_fit =
             std::max(max_x_where_nonlinear_does_not_fit, x[i]);
@@ -353,7 +277,17 @@ bool SkApproximateTransferFnInternal(const float* x,
   }
 
   // Compute the linear segment, now that we have our definitive fD.
-  SkTransferFnSolveLinear(fn, x, t, n);
+  if (fn->fD <= 0) {
+    // If this has no linear segment, don't try to solve for one.
+    fn->fC = 1;
+    fn->fF = 0;
+  } else {
+    // Set the linear portion such that it go through the origin and be
+    // continuous with the nonlinear segment.
+    float fn_at_fD = SkTransferFnEval(*fn, fn->fD);
+    fn->fC = fn_at_fD / fn->fD;
+    fn->fF = 0;
+  }
   return true;
 }
 
