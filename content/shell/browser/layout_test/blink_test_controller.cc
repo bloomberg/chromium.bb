@@ -5,6 +5,7 @@
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include <iostream>
 #include <set>
@@ -21,10 +22,15 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/nullable_string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/common/page_state_serialization.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -58,6 +64,7 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "content/shell/test_runner/test_common.h"
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_MACOSX)
@@ -83,6 +90,64 @@ base::FilePath GetBuildDirectory() {
     result = result.DirName().DirName().DirName();
   }
 #endif
+  return result;
+}
+
+std::string DumpFrameState(const ExplodedFrameState& frame_state,
+                           size_t indent,
+                           bool is_current_index) {
+  std::string result;
+  if (is_current_index) {
+    constexpr const char kCurrentMarker[] = "curr->";
+    result.append(kCurrentMarker);
+    result.append(indent - strlen(kCurrentMarker), ' ');
+  } else {
+    result.append(indent, ' ');
+  }
+
+  std::string url = test_runner::NormalizeLayoutTestURL(
+      base::UTF16ToUTF8(frame_state.url_string.string()));
+  result.append(url);
+  const base::string16& target = frame_state.target.string();
+  if (!target.empty()) {
+    result.append(" (in frame \"");
+    result.append(base::UTF16ToUTF8(target));
+    result.append("\")");
+  }
+  result.append("\n");
+
+  std::vector<ExplodedFrameState> sorted_children = frame_state.children;
+  std::sort(sorted_children.begin(), sorted_children.end(),
+            [](const ExplodedFrameState& lhs, const ExplodedFrameState& rhs) {
+              // Child nodes should always have a target (aka unique name).
+              DCHECK(!lhs.target.string().empty());
+              DCHECK(!rhs.target.string().empty());
+              return base::CompareCaseInsensitiveASCII(lhs.target.string(),
+                                                       rhs.target.string()) < 0;
+            });
+  for (const auto& child : sorted_children)
+    result += DumpFrameState(child, indent + 4, false);
+
+  return result;
+}
+
+std::string DumpNavigationEntry(NavigationEntry* navigation_entry,
+                                bool is_current_index) {
+  // This is silly, but it's currently the best way to extract the information.
+  PageState page_state = navigation_entry->GetPageState();
+  ExplodedPageState exploded_page_state;
+  CHECK(DecodePageState(page_state.ToEncodedData(), &exploded_page_state));
+  return DumpFrameState(exploded_page_state.top, 8, is_current_index);
+}
+
+std::string DumpHistoryForWebContents(WebContents* web_contents) {
+  std::string result;
+  const int current_index =
+      web_contents->GetController().GetCurrentEntryIndex();
+  for (int i = 0; i < web_contents->GetController().GetEntryCount(); ++i) {
+    result += DumpNavigationEntry(
+        web_contents->GetController().GetEntryAtIndex(i), i == current_index);
+  }
   return result;
 }
 
@@ -510,8 +575,6 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CaptureSessionHistory,
-                        OnCaptureSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
                         OnCloseRemainingWindows)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ResetDone, OnResetDone)
@@ -782,9 +845,30 @@ void BlinkTestController::OnAudioDump(const std::vector<unsigned char>& dump) {
   printer_->PrintAudioFooter();
 }
 
-void BlinkTestController::OnTextDump(const std::string& dump) {
+void BlinkTestController::OnTextDump(const std::string& dump,
+                                     bool should_dump_history) {
   printer_->PrintTextHeader();
   printer_->PrintTextBlock(dump);
+  if (should_dump_history) {
+    RenderFrameHost* main_rfh = main_window_->web_contents()->GetMainFrame();
+    for (auto* window : Shell::windows()) {
+      WebContents* web_contents = window->web_contents();
+      // Only capture the history from windows in the same process as the main
+      // window. During layout tests, we only use two processes when a devtools
+      // window is open.
+      // TODO(https://crbug.com/771003): Dump history for all WebContentses, not
+      // just ones that happen to be in the same process as the main test
+      // window's main frame.
+      if (main_rfh->GetProcess() != web_contents->GetMainFrame()->GetProcess())
+        continue;
+
+      printer_->PrintTextBlock(
+          "\n============== Back Forward List ==============\n");
+      printer_->PrintTextBlock(DumpHistoryForWebContents(web_contents));
+      printer_->PrintTextBlock(
+          "===============================================\n");
+    }
+  }
   printer_->PrintTextFooter();
 }
 
@@ -922,46 +1006,6 @@ void BlinkTestController::OnReload() {
 void BlinkTestController::OnLoadURLForFrame(const GURL& url,
                                             const std::string& frame_name) {
   main_window_->LoadURLForFrame(url, frame_name);
-}
-
-void BlinkTestController::OnCaptureSessionHistory() {
-  std::vector<int> routing_ids;
-  std::vector<std::vector<PageState> > session_histories;
-  std::vector<unsigned> current_entry_indexes;
-
-  RenderFrameHost* render_frame_host =
-      main_window_->web_contents()->GetMainFrame();
-
-  for (auto* window : Shell::windows()) {
-    WebContents* web_contents = window->web_contents();
-    // Only capture the history from windows in the same process as the main
-    // window. During layout tests, we only use two processes when an
-    // devtools window is open.
-    auto* process = web_contents->GetMainFrame()->GetProcess();
-    if (render_frame_host->GetProcess() != process)
-      continue;
-
-    routing_ids.push_back(web_contents->GetRenderViewHost()->GetRoutingID());
-    current_entry_indexes.push_back(
-        web_contents->GetController().GetCurrentEntryIndex());
-    std::vector<PageState> history;
-    for (int entry = 0; entry < web_contents->GetController().GetEntryCount();
-         ++entry) {
-      PageState state = web_contents->GetController().GetEntryAtIndex(entry)->
-          GetPageState();
-      if (!state.IsValid()) {
-        state = PageState::CreateFromURL(
-            web_contents->GetController().GetEntryAtIndex(entry)->GetURL());
-      }
-      history.push_back(state);
-    }
-    session_histories.push_back(history);
-  }
-
-  RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-  rvh->Send(new ShellViewMsg_SessionHistory(rvh->GetRoutingID(), routing_ids,
-                                            session_histories,
-                                            current_entry_indexes));
 }
 
 void BlinkTestController::OnCloseRemainingWindows() {

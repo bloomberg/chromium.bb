@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "cc/layers/texture_layer.h"
@@ -44,7 +43,6 @@ class WebWidgetTestProxyBase;
 
 namespace content {
 
-class PageState;
 class RenderFrame;
 class RendererGamepadProvider;
 class RenderView;
@@ -118,9 +116,6 @@ void SetMockDeviceOrientationData(const device::OrientationData& data);
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);
 
-// Sync the current session history to the browser process.
-void SyncNavigationState(RenderView* render_view);
-
 // Sets the focus of the render view depending on |enable|. This only overrides
 // the state of the renderer, and does not sync the focus to the browser
 // process.
@@ -168,10 +163,6 @@ void EnableAutoResizeMode(RenderView* render_view,
                           const blink::WebSize& max_size);
 void DisableAutoResizeMode(RenderView* render_view,
                            const blink::WebSize& new_size);
-
-// Provides a text dump of the contents of the given page state.
-std::string DumpBackForwardList(std::vector<PageState>& page_state,
-                                size_t current_index);
 
 // Run all pending idle tasks immediately, and then invoke callback.
 void SchedulerRunIdleTasks(const base::Closure& callback);

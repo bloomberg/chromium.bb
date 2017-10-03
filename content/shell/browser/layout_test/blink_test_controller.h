@@ -200,7 +200,7 @@ class BlinkTestController : public WebContentsObserver,
   // Message handlers.
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
-  void OnTextDump(const std::string& dump);
+  void OnTextDump(const std::string& dump, bool should_dump_history);
   void OnInitiateLayoutDump();
   void OnDumpFrameLayoutResponse(int frame_tree_node_id,
                                  const std::string& dump);

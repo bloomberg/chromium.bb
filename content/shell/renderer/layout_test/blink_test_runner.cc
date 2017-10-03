@@ -125,19 +125,6 @@ namespace content {
 
 namespace {
 
-class SyncNavigationStateVisitor : public RenderViewVisitor {
- public:
-  SyncNavigationStateVisitor() {}
-  ~SyncNavigationStateVisitor() override {}
-
-  bool Visit(RenderView* render_view) override {
-    SyncNavigationState(render_view);
-    return true;
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncNavigationStateVisitor);
-};
-
 class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
  public:
   explicit UseSynchronousResizeModeVisitor(bool enable) : enable_(enable) {}
@@ -591,21 +578,15 @@ void BlinkTestRunner::TestFinished() {
     return;
   }
 
-  if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
-    SyncNavigationStateVisitor visitor;
-    RenderView::ForEach(&visitor);
-    Send(new ShellViewHostMsg_CaptureSessionHistory(routing_id()));
-  } else {
-    // clean out the lifecycle if needed before capturing the layout tree
-    // dump and pixels from the compositor.
-    render_view()
-        ->GetWebView()
-        ->MainFrame()
-        ->ToWebLocalFrame()
-        ->FrameWidget()
-        ->UpdateAllLifecyclePhases();
-    CaptureDump();
-  }
+  // Clean out the lifecycle if needed before capturing the layout tree
+  // dump and pixels from the compositor.
+  render_view()
+      ->GetWebView()
+      ->MainFrame()
+      ->ToWebLocalFrame()
+      ->FrameWidget()
+      ->UpdateAllLifecyclePhases();
+  CaptureDump();
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {
@@ -636,27 +617,6 @@ void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
 
 bool BlinkTestRunner::AllowExternalPages() {
   return test_config_->allow_external_pages;
-}
-
-std::string BlinkTestRunner::DumpHistoryForWindow(blink::WebView* web_view) {
-  size_t pos = 0;
-  std::vector<int>::iterator id;
-  for (id = routing_ids_.begin(); id != routing_ids_.end(); ++id, ++pos) {
-    RenderView* render_view = RenderView::FromRoutingID(*id);
-    if (!render_view) {
-      NOTREACHED();
-      continue;
-    }
-    if (render_view->GetWebView() == web_view)
-      break;
-  }
-
-  if (id == routing_ids_.end()) {
-    NOTREACHED();
-    return std::string();
-  }
-  return DumpBackForwardList(session_histories_[pos],
-                             current_entry_indexes_[pos]);
 }
 
 void BlinkTestRunner::FetchManifest(
@@ -778,7 +738,6 @@ void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
 bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestRunner, message)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(ShellViewMsg_TestFinishedInSecondaryRenderer,
                         OnTestFinishedInSecondaryRenderer)
@@ -813,9 +772,6 @@ void BlinkTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
 
 void BlinkTestRunner::Reset(bool for_new_test) {
   prefs_.Reset();
-  routing_ids_.clear();
-  session_histories_.clear();
-  current_entry_indexes_.clear();
 
   render_view()->ClearEditCommands();
   if (for_new_test) {
@@ -851,7 +807,8 @@ void BlinkTestRunner::CaptureDump() {
 
   std::string custom_text_dump;
   if (interfaces->TestRunner()->HasCustomTextDump(&custom_text_dump)) {
-    Send(new ShellViewHostMsg_TextDump(routing_id(), custom_text_dump + "\n"));
+    Send(new ShellViewHostMsg_TextDump(routing_id(), custom_text_dump + "\n",
+                                       false));
     CaptureDumpContinued();
     return;
   }
@@ -870,14 +827,9 @@ void BlinkTestRunner::CaptureDump() {
 void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
-    for (WebView* web_view : interfaces->GetWindowList())
-      completed_layout_dump.append(DumpHistoryForWindow(web_view));
-  }
-
-  Send(new ShellViewHostMsg_TextDump(routing_id(),
-                                     std::move(completed_layout_dump)));
-
+  Send(new ShellViewHostMsg_TextDump(
+      routing_id(), std::move(completed_layout_dump),
+      interfaces->TestRunner()->ShouldDumpBackForwardList()));
   CaptureDumpContinued();
 }
 
@@ -986,16 +938,6 @@ void BlinkTestRunner::OnSetTestConfiguration(
       ->test_interfaces()
       ->TestRunner()
       ->SetFocus(render_view()->GetWebView(), true);
-}
-
-void BlinkTestRunner::OnSessionHistory(
-    const std::vector<int>& routing_ids,
-    const std::vector<std::vector<PageState>>& session_histories,
-    const std::vector<unsigned>& current_entry_indexes) {
-  routing_ids_ = routing_ids;
-  session_histories_ = session_histories;
-  current_entry_indexes_ = current_entry_indexes;
-  CaptureDump();
 }
 
 void BlinkTestRunner::OnReset() {
