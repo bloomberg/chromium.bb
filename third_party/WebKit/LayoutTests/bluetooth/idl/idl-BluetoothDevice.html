@@ -2,8 +2,6 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 const test_desc_idl = 'BluetoothDevice IDL test.';
@@ -16,7 +14,7 @@ test(() => {
 
 const test_desc_attr = 'BluetoothDevice attributes.';
 let device;
-promise_test(() => getHealthThermometerDevice()
+bluetooth_test(() => getHealthThermometerDevice()
   .then(_ => ({device} = _))
   .then(() => {
     assert_equals(device.constructor.name, 'BluetoothDevice');

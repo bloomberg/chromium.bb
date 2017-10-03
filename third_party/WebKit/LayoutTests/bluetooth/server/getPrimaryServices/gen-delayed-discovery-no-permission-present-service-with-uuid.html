@@ -3,8 +3,6 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 let expected = new DOMException('Origin is not allowed to access the ' +
@@ -12,7 +10,7 @@ let expected = new DOMException('Origin is not allowed to access the ' +
                                 '\'optionalServices\' in requestDevice() ' +
                                 'options. https://goo.gl/HxfxSQ',
                                 'SecurityError');
-promise_test(() => {
+bluetooth_test(() => {
   return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}]

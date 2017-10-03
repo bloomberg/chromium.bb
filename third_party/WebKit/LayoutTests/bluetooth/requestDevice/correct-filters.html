@@ -4,7 +4,7 @@
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   // The work of this test is done in the ScanFilterCheckingAdapter. It asserts
   // that this requestDevice() call tells the platform to scan for only devices
   // that include the Battery, Glucose, or Heart Rate services.

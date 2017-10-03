@@ -1,5 +1,5 @@
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   let fake_peripheral, characteristic, fake_characteristic;
   return getMeasurementIntervalCharacteristic()
     .then(_ => ({fake_peripheral, characteristic, fake_characteristic} = _))

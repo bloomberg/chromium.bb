@@ -1,6 +1,6 @@
 // TODO(672127) Use this test case to test the rest of characteristic functions.
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['health_thermometer']}]}))

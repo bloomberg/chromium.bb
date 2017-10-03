@@ -46,7 +46,7 @@ let test_specs = [{
   }]
 }];
 
-promise_test(() => {
+bluetooth_test(() => {
     return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
       .then(() => {
         let test_promises = Promise.resolve();

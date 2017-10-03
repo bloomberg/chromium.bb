@@ -4,7 +4,7 @@ let expected = new DOMException('Origin is not allowed to access the ' +
                                 '\'optionalServices\' in requestDevice() ' +
                                 'options. https://goo.gl/HxfxSQ',
                                 'SecurityError');
-promise_test(() => {
+bluetooth_test(() => {
   return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}]

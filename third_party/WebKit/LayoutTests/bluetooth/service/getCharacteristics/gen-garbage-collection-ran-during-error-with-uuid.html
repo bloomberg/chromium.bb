@@ -3,14 +3,12 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 let test_desc = 'Garbage Collection ran during getCharacteristics call that ' +
    'fails. Should not crash';
 let func_promise;
-promise_test(() => getHealthThermometerService()
+bluetooth_test(() => getHealthThermometerService()
   .then(({service}) => {
     func_promise = assert_promise_rejects_with_message(
         service.getCharacteristics('measurement_interval'),

@@ -2,8 +2,6 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 const test_desc = 'Concurrent requestDevice calls in iframes work.';
@@ -12,7 +10,7 @@ for (let i = 0; i < 5; i++) {
   iframes.push(document.createElement('iframe'));
 }
 
-promise_test(() => setUpHealthThermometerAndHeartRateDevices()
+bluetooth_test(() => setUpHealthThermometerAndHeartRateDevices()
   // 1. Load the iframes.
   .then(() => new Promise(resolve => {
     let numMessages = 0;

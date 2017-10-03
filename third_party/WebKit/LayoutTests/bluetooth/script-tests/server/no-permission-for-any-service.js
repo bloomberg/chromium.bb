@@ -1,5 +1,5 @@
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   return getHealthThermometerDevice({acceptAllDevices: true})
     .then(({device}) => assert_promise_rejects_with_message(
         device.gatt.CALLS([

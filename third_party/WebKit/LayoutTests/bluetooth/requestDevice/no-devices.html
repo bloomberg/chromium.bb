@@ -4,7 +4,7 @@
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   return setBluetoothFakeAdapter('EmptyAdapter')
     .then(() => assert_promise_rejects_with_message(
       requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
