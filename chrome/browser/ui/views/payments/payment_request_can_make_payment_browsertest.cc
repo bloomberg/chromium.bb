@@ -152,10 +152,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest, QueryQuota) {
   ExpectBodyContains({"NotAllowedError"});
 }
 
-// canMakePayment() always returns true for credit cards in incognito mode,
-// regardless of the query quota.
+// canMakePayment() always returns true for all cards in incognito mode, even if
+// the user does not have any cards on file. However, the query quota is still
+// enforced to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
-                       NoQueryQuotaInIncognito) {
+                       QueryQuotaInIncognito) {
   SetIncognito();
 
   // Query "visa" payment method.
@@ -166,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
   // Query "mastercard" payment method.
   CallCanMakePayment(/*visa=*/false);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // visa
 
@@ -178,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
   // Query "mastercard" payment method.
   CallCanMakePayment(/*visa=*/false);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 }
 
 class PaymentRequestCanMakePaymentQueryPMITest
@@ -249,10 +250,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   ExpectBodyContains({"NotAllowedError"});
 }
 
-// canMakePayment() always returns true for credit cards in incognito mode,
-// regardless of the query quota.
+// canMakePayment() always returns true for cards in incognito mode, even if the
+// user does not have any credit cards. However, query quota is still enforced
+// to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
-                       NoQueryQuotaForBasicCardsInIncognito) {
+                       QueryQuotaForBasicCardsInIncognito) {
   SetIncognito();
 
   // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
@@ -264,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   // Query "basic-card" payment method without "supportedNetworks" parameter.
   CallCanMakePayment(CheckFor::BASIC_CARD);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // visa
 
@@ -277,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
   // Query "basic-card" payment method without "supportedNetworks" parameter.
   CallCanMakePayment(CheckFor::BASIC_CARD);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 }
 
 // If the device does not have any payment apps installed, canMakePayment()
@@ -332,10 +334,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 }
 
 // If the device does not have any payment apps installed, canMakePayment()
-// should return false for them in the incognito mode regardless of the query
-// quota.
+// should return false for them in the incognito mode. However, the query quota
+// is still enforced to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
-                       NoQueryQuotaForPaymentAppsInIncognitoMode) {
+                       QueryQuotaForPaymentAppsInIncognitoMode) {
   SetIncognito();
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
@@ -344,12 +346,21 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY);
 
+  ExpectBodyContains({"NotAllowedError"});
+
+  CallCanMakePayment(CheckFor::ALICE_PAY);
+
   ExpectBodyContains({"false"});
+
+  CallCanMakePayment(CheckFor::BOB_PAY);
+
+  ExpectBodyContains({"NotAllowedError"});
 }
 
 // If the device does not have any payment apps installed, canMakePayment()
-// queries for both payment apps and basic-card always return true, regardless
-// of the query quota.
+// queries for both payment apps and basic-card always return true, even if the
+// user does not have any cards on file. However, the query quota is still
+// enforced to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        NoQueryQuotaForPaymentAppsAndCardsInIncognito) {
   SetIncognito();
@@ -360,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard2());  // Amex
 
@@ -370,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 
   AddCreditCard(autofill::test::GetCreditCard());  // Visa
 
@@ -380,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_BASIC_CARD);
 
-  ExpectBodyContains({"true"});
+  ExpectBodyContains({"NotAllowedError"});
 }
 
 }  // namespace payments
