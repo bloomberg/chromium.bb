@@ -26,14 +26,9 @@ class ChromeBrowserState;
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Presents the bookmark UI for a single bookmark. The |parentView| and |origin|
-// are hints that may or may not be used in how the UI for a single bookmark
-// will appear.
-// Subclasses must override this method.
-- (void)presentBookmarkForTab:(Tab*)tab
-          currentlyBookmarked:(BOOL)bookmarked
-                       inView:(UIView*)parentView
-                   originRect:(CGRect)origin;
+// Presents the bookmark UI for a single bookmark. Subclasses must override this
+// method.
+- (void)presentBookmarkForTab:(Tab*)tab currentlyBookmarked:(BOOL)bookmarked;
 
 // Presents the bookmarks browser modally. Subclasses must override this method.
 - (void)presentBookmarks;
