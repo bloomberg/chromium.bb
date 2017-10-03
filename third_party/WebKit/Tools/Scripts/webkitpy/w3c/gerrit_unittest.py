@@ -49,3 +49,14 @@ class GerritCLTest(unittest.TestCase):
             ['git', 'rev-parse', 'FETCH_HEAD'],
             ['git', 'footers', '--position', '4de71d0ce799af441c1f106c5432c7fa7256be45']
         ])
+
+    def test_empty_cl_is_not_exportable(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': 638250,
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        # It's important that this does not throw!
+        self.assertFalse(gerrit_cl.is_exportable())
