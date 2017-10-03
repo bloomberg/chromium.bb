@@ -33,7 +33,7 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     ShowWidgetWithContent(container_);
   }
 
-  mojom::UserInfoPtr user_;
+  mojom::LoginUserInfoPtr user_;
   views::View* container_ = nullptr;   // Owned by test widget view hierarchy.
   LoginAuthUserView* view_ = nullptr;  // Owned by test widget view hierarchy.
   base::Optional<int> value_;

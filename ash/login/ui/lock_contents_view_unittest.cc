@@ -60,8 +60,8 @@ TEST_F(LockContentsViewUnitTest, DisplayMode) {
       LoginUserView::TestApi user_test_api(test_api.user_views()[i]);
       EXPECT_EQ(expected_style, user_test_api.display_style());
 
-      const mojom::UserInfoPtr& user = users()[i + 1];
-      EXPECT_EQ(base::UTF8ToUTF16(user->display_name),
+      const mojom::LoginUserInfoPtr& user = users()[i + 1];
+      EXPECT_EQ(base::UTF8ToUTF16(user->basic_user_info->display_name),
                 user_test_api.displayed_name());
     }
   }
@@ -169,9 +169,11 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   ShowWidgetWithContent(contents);
 
   // Capture user info to validate it did not change during the swap.
-  AccountId primary_user = test_api.primary_auth()->current_user()->account_id;
-  AccountId secondary_user =
-      test_api.opt_secondary_auth()->current_user()->account_id;
+  AccountId primary_user =
+      test_api.primary_auth()->current_user()->basic_user_info->account_id;
+  AccountId secondary_user = test_api.opt_secondary_auth()
+                                 ->current_user()
+                                 ->basic_user_info->account_id;
   EXPECT_NE(primary_user, secondary_user);
 
   auto has_auth = [](LoginAuthUserView* view) -> bool {
@@ -190,9 +192,12 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   generator.ClickLeftButton();
 
   // User info is not swapped.
-  EXPECT_EQ(primary_user, test_api.primary_auth()->current_user()->account_id);
-  EXPECT_EQ(secondary_user,
-            test_api.opt_secondary_auth()->current_user()->account_id);
+  EXPECT_EQ(
+      primary_user,
+      test_api.primary_auth()->current_user()->basic_user_info->account_id);
+  EXPECT_EQ(secondary_user, test_api.opt_secondary_auth()
+                                ->current_user()
+                                ->basic_user_info->account_id);
 
   // Active auth user (ie, which user is showing password) is swapped.
   EXPECT_FALSE(has_auth(test_api.primary_auth()));
@@ -213,8 +218,9 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
 
   for (const LoginUserView* const list_user_view : test_api.user_views()) {
     // Capture user info to validate it did not change during the swap.
-    AccountId auth_id = auth_view->current_user()->account_id;
-    AccountId list_user_id = list_user_view->current_user()->account_id;
+    AccountId auth_id = auth_view->current_user()->basic_user_info->account_id;
+    AccountId list_user_id =
+        list_user_view->current_user()->basic_user_info->account_id;
     EXPECT_NE(auth_id, list_user_id);
 
     // Send event to swap users.
@@ -223,13 +229,16 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
     generator.ClickLeftButton();
 
     // User info is swapped.
-    EXPECT_EQ(list_user_id, auth_view->current_user()->account_id);
-    EXPECT_EQ(auth_id, list_user_view->current_user()->account_id);
+    EXPECT_EQ(list_user_id,
+              auth_view->current_user()->basic_user_info->account_id);
+    EXPECT_EQ(auth_id,
+              list_user_view->current_user()->basic_user_info->account_id);
 
     // Validate that every user is still unique.
     std::unordered_set<std::string> emails;
     for (const LoginUserView* const view : test_api.user_views()) {
-      std::string email = view->current_user()->account_id.GetUserEmail();
+      std::string email =
+          view->current_user()->basic_user_info->account_id.GetUserEmail();
       EXPECT_TRUE(emails.insert(email).second);
     }
   }

@@ -148,10 +148,10 @@ void LoginPasswordView::Init(
   on_password_text_changed_ = on_password_text_changed;
 }
 
-void LoginPasswordView::UpdateForUser(const mojom::UserInfoPtr& user) {
+void LoginPasswordView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
   textfield_->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
-      base::UTF8ToUTF16(user->display_email)));
+      base::UTF8ToUTF16(user->basic_user_info->display_email)));
 }
 
 void LoginPasswordView::SetFocusEnabledForChildViews(bool enable) {

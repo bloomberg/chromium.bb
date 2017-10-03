@@ -6,7 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_PASSWORD_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -62,7 +62,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
             const OnPasswordTextChanged& on_password_text_changed);
 
   // Updates accessibility information for |user|.
-  void UpdateForUser(const mojom::UserInfoPtr& user);
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user);
 
   // Enable or disable focus on the child elements (ie, password field and
   // submit button).

@@ -66,11 +66,15 @@ void LoginTestBase::ShowWidgetWithContent(views::View* content) {
   ASSERT_TRUE(widget()->IsActive());
 }
 
-mojom::UserInfoPtr LoginTestBase::CreateUser(const std::string& name) const {
-  auto user = mojom::UserInfo::New();
-  user->account_id = AccountId::FromUserEmail(name + "@foo.com");
-  user->display_name = "User " + name;
-  user->display_email = user->account_id.GetUserEmail();
+mojom::LoginUserInfoPtr LoginTestBase::CreateUser(
+    const std::string& name) const {
+  auto user = mojom::LoginUserInfo::New();
+  user->basic_user_info = mojom::UserInfo::New();
+  user->basic_user_info->account_id =
+      AccountId::FromUserEmail(name + "@foo.com");
+  user->basic_user_info->display_name = "User " + name;
+  user->basic_user_info->display_email =
+      user->basic_user_info->account_id.GetUserEmail();
   return user;
 }
 

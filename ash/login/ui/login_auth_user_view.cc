@@ -99,7 +99,7 @@ LoginPasswordView* LoginAuthUserView::TestApi::password_view() const {
   return view_->password_view_;
 }
 
-LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
+LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
                                      const OnAuthCallback& on_auth,
                                      const LoginUserView::OnTap& on_tap)
     : NonAccessibleView(kLoginAuthUserViewClassName), on_auth_(on_auth) {
@@ -317,12 +317,12 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
   cached_animation_state_.reset();
 }
 
-void LoginAuthUserView::UpdateForUser(const mojom::UserInfoPtr& user) {
+void LoginAuthUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
   user_view_->UpdateForUser(user, true /*animate*/);
   password_view_->UpdateForUser(user);
 }
 
-const mojom::UserInfoPtr& LoginAuthUserView::current_user() const {
+const mojom::LoginUserInfoPtr& LoginAuthUserView::current_user() const {
   return user_view_->current_user();
 }
 
@@ -340,7 +340,7 @@ void LoginAuthUserView::RequestFocus() {
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   Shell::Get()->lock_screen_controller()->AuthenticateUser(
-      current_user()->account_id, base::UTF16ToUTF8(password),
+      current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
       (auth_methods_ & AUTH_PIN) != 0,
       base::BindOnce([](OnAuthCallback on_auth,
                         bool auth_success) { on_auth.Run(auth_success); },

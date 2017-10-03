@@ -233,7 +233,7 @@ void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 }
 
 void LockContentsView::OnUsersChanged(
-    const std::vector<mojom::UserInfoPtr>& users) {
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   main_view_->RemoveAllChildViews(true /*delete_children*/);
@@ -244,8 +244,8 @@ void LockContentsView::OnUsersChanged(
 
   // Build user state list.
   users_.clear();
-  for (const mojom::UserInfoPtr& user : users)
-    users_.push_back(UserState{user->account_id});
+  for (const mojom::LoginUserInfoPtr& user : users)
+    users_.push_back(UserState{user->basic_user_info->account_id});
 
   main_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal);
   main_layout_->set_main_axis_alignment(
@@ -292,11 +292,12 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
 
   // We need to update the auth display if |user| is currently shown in either
   // |primary_auth_| or |opt_secondary_auth_|.
-  if (primary_auth_->current_user()->account_id == state->account_id &&
+  if (primary_auth_->current_user()->basic_user_info->account_id ==
+          state->account_id &&
       primary_auth_->auth_methods() != LoginAuthUserView::AUTH_NONE) {
     LayoutAuth(primary_auth_, nullptr, true /*animate*/);
   } else if (opt_secondary_auth_ &&
-             opt_secondary_auth_->current_user()->account_id ==
+             opt_secondary_auth_->current_user()->basic_user_info->account_id ==
                  state->account_id &&
              opt_secondary_auth_->auth_methods() !=
                  LoginAuthUserView::AUTH_NONE) {
@@ -335,7 +336,7 @@ void LockContentsView::FocusNextWidget(bool reverse) {
 }
 
 void LockContentsView::CreateLowDensityLayout(
-    const std::vector<mojom::UserInfoPtr>& users) {
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
   DCHECK_EQ(users.size(), 2u);
 
   // Space between auth user and alternative user.
@@ -354,7 +355,7 @@ void LockContentsView::CreateLowDensityLayout(
 }
 
 void LockContentsView::CreateMediumDensityLayout(
-    const std::vector<mojom::UserInfoPtr>& users) {
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
   // Insert spacing before (left of) auth.
   main_view_->AddChildViewAt(MakeOrientationViewWithWidths(
                                  kMediumDensityMarginLeftOfAuthUserLandscapeDp,
@@ -403,7 +404,7 @@ void LockContentsView::CreateMediumDensityLayout(
 }
 
 void LockContentsView::CreateHighDensityLayout(
-    const std::vector<mojom::UserInfoPtr>& users) {
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
   // TODO: Finish 7+ user layout.
 
   // Insert spacing before and after the auth view.
@@ -521,7 +522,8 @@ void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
 
   // Update auth methods for |to_update|. Disable auth on |opt_to_hide|.
   uint32_t to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
-  if (FindStateForUser(to_update->current_user()->account_id)->show_pin)
+  if (FindStateForUser(to_update->current_user()->basic_user_info->account_id)
+          ->show_pin)
     to_update_auth |= LoginAuthUserView::AUTH_PIN;
   to_update->SetAuthMethods(to_update_auth);
   if (opt_to_hide)
@@ -539,9 +541,9 @@ void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
 
 void LockContentsView::SwapToAuthUser(int user_index) {
   auto* view = user_views_[user_index];
-  mojom::UserInfoPtr previous_auth_user =
+  mojom::LoginUserInfoPtr previous_auth_user =
       primary_auth_->current_user()->Clone();
-  mojom::UserInfoPtr new_auth_user = view->current_user()->Clone();
+  mojom::LoginUserInfoPtr new_auth_user = view->current_user()->Clone();
 
   view->UpdateForUser(previous_auth_user, true /*animate*/);
   primary_auth_->UpdateForUser(new_auth_user);
@@ -551,7 +553,7 @@ void LockContentsView::SwapToAuthUser(int user_index) {
 
 void LockContentsView::OnAuthUserChanged() {
   Shell::Get()->lock_screen_controller()->OnFocusPod(
-      CurrentAuthUserView()->current_user()->account_id);
+      CurrentAuthUserView()->current_user()->basic_user_info->account_id);
 
   // Reset unlock attempt when the auth user changes.
   unlock_attempt_ = 0;

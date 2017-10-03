@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_display_style.h"
-#include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -54,12 +54,12 @@ class ASH_EXPORT LoginUserView : public views::Button,
   ~LoginUserView() override;
 
   // Update the user view to display the given user information.
-  void UpdateForUser(const mojom::UserInfoPtr& user, bool animate);
+  void UpdateForUser(const mojom::LoginUserInfoPtr& user, bool animate);
 
   // Set if the view must be opaque.
   void SetForceOpaque(bool force_opaque);
 
-  const mojom::UserInfoPtr& current_user() const { return current_user_; }
+  const mojom::LoginUserInfoPtr& current_user() const { return current_user_; }
 
   // views::Button:
   const char* GetClassName() const override;
@@ -89,7 +89,7 @@ class ASH_EXPORT LoginUserView : public views::Button,
 
   // The user that is currently being displayed (or will be displayed when an
   // animation completes).
-  mojom::UserInfoPtr current_user_;
+  mojom::LoginUserInfoPtr current_user_;
 
   // Used to dispatch opacity update events.
   std::unique_ptr<OpacityInputHandler> opacity_input_handler_;

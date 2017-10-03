@@ -75,23 +75,27 @@ class LockDebugView::DebugDataDispatcherTransformer
       debug_users_.erase(debug_users_.begin() + count, debug_users_.end());
 
     // Build |users|, add any new users to |debug_users|.
-    std::vector<mojom::UserInfoPtr> users;
+    std::vector<mojom::LoginUserInfoPtr> users;
     for (size_t i = 0; i < size_t{count}; ++i) {
-      const mojom::UserInfoPtr& root_user = root_users_[i % root_users_.size()];
+      const mojom::LoginUserInfoPtr& root_user =
+          root_users_[i % root_users_.size()];
       users.push_back(root_user->Clone());
       if (i >= root_users_.size()) {
-        users[i]->account_id = AccountId::FromUserEmailGaiaId(
-            users[i]->account_id.GetUserEmail() + std::to_string(i),
-            users[i]->account_id.GetGaiaId() + std::to_string(i));
+        users[i]->basic_user_info->account_id = AccountId::FromUserEmailGaiaId(
+            users[i]->basic_user_info->account_id.GetUserEmail() +
+                std::to_string(i),
+            users[i]->basic_user_info->account_id.GetGaiaId() +
+                std::to_string(i));
       }
       if (i >= debug_users_.size())
-        debug_users_.push_back(UserMetadata(users[i]));
+        debug_users_.push_back(UserMetadata(users[i]->basic_user_info));
     }
 
     // Set debug user names. Useful for the stub user, which does not have a
     // name set.
     for (size_t i = 0; i < users.size(); ++i)
-      users[i]->display_name = kDebugUserNames[i % arraysize(kDebugUserNames)];
+      users[i]->basic_user_info->display_name =
+          kDebugUserNames[i % arraysize(kDebugUserNames)];
 
     // User notification resets PIN state.
     for (UserMetadata& user : debug_users_)
@@ -120,7 +124,8 @@ class LockDebugView::DebugDataDispatcherTransformer
   }
 
   // LoginDataDispatcher::Observer:
-  void OnUsersChanged(const std::vector<mojom::UserInfoPtr>& users) override {
+  void OnUsersChanged(
+      const std::vector<mojom::LoginUserInfoPtr>& users) override {
     // Update root_users_ to new source data.
     root_users_.clear();
     for (auto& user : users)
@@ -153,7 +158,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   LoginDataDispatcher debug_dispatcher_;
 
   // Original set of users from |root_dispatcher_|.
-  std::vector<mojom::UserInfoPtr> root_users_;
+  std::vector<mojom::LoginUserInfoPtr> root_users_;
 
   // Metadata for users that the UI is displaying.
   std::vector<UserMetadata> debug_users_;
