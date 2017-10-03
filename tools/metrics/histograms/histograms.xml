@@ -32048,7 +32048,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.FallbackToHighLatencyAudioPath" enum="BooleanSuccess">
+<histogram name="Media.FallbackToHighLatencyAudioPath"
+    enum="BooleanDidFallBack">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
     Whether Chrome had to fallback to the high latency audio path or not.
