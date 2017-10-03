@@ -64,7 +64,7 @@ int64_t ComputeCurrentTicks() {
   // iOS 10 supports clock_gettime(CLOCK_MONOTONIC, ...), which is
   // around 15 times faster than sysctl() call. Use it if possible;
   // otherwise, fall back to sysctl().
-  if (base::ios::IsRunningOnIOS10OrLater()) {
+  if (__builtin_available(iOS 10, *)) {
     struct timespec tp;
     if (clock_gettime(CLOCK_MONOTONIC, &tp) == 0) {
       return (int64_t)tp.tv_sec * 1000000 + tp.tv_nsec / 1000;

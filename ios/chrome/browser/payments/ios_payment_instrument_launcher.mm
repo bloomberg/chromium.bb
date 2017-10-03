@@ -123,15 +123,22 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
   universal_link = net::AppendQueryParameter(
       universal_link, web::kPaymentRequestDataExternal, base_64_params);
   NSURL* url = net::NSURLWithGURL(universal_link);
-  [[UIApplication sharedApplication]
-      openURL:url
-      options:(base::ios::IsRunningOnIOS10OrLater()
-                   ? @{ UIApplicationOpenURLOptionUniversalLinksOnly : @YES }
-                   : nil)completionHandler:^(BOOL success) {
-        if (!success) {
-          CompleteLaunchRequest("", "");
+
+  if (@available(iOS 10, *)) {
+    [[UIApplication sharedApplication] openURL:url
+        options:@{
+          UIApplicationOpenURLOptionUniversalLinksOnly : @YES
         }
-      }];
+        completionHandler:^(BOOL success) {
+          if (!success) {
+            CompleteLaunchRequest("", "");
+          }
+        }];
+  } else {
+    if (![[UIApplication sharedApplication] openURL:url]) {
+      CompleteLaunchRequest("", "");
+    }
+  }
 
   return true;
 }

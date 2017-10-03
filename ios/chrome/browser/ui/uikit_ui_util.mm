@@ -562,7 +562,7 @@ UIResponder* GetFirstResponder() {
 // On iOS10 and above, trigger a haptic vibration for the user selecting an
 // action. This is a no-op for devices that do not support it.
 void TriggerHapticFeedbackForAction() {
-  if (base::ios::IsRunningOnIOS10OrLater()) {
+  if (@available(iOS 10, *)) {
     UIImpactFeedbackGenerator* generator =
         [[UIImpactFeedbackGenerator alloc] init];
     [generator impactOccurred];
@@ -572,7 +572,7 @@ void TriggerHapticFeedbackForAction() {
 // On iOS10 and above, trigger a haptic vibration for the change in selection.
 // This is a no-op for devices that do not support it.
 void TriggerHapticFeedbackForSelectionChange() {
-  if (base::ios::IsRunningOnIOS10OrLater()) {
+  if (@available(iOS 10, *)) {
     UISelectionFeedbackGenerator* generator =
         [[UISelectionFeedbackGenerator alloc] init];
     [generator selectionChanged];
@@ -582,7 +582,7 @@ void TriggerHapticFeedbackForSelectionChange() {
 // On iOS10 and above, trigger a haptic vibration for a notification.
 // This is a no-op for devices that do not support it.
 void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type) {
-  if (base::ios::IsRunningOnIOS10OrLater()) {
+  if (@available(iOS 10, *)) {
     UINotificationFeedbackGenerator* generator =
         [[UINotificationFeedbackGenerator alloc] init];
     [generator notificationOccurred:type];

@@ -237,13 +237,12 @@ enum BeaconType {
 }
 
 - (BOOL)bluetoothEnabled {
-// TODO(crbug.com/619982): The CBManager base class appears to still be in
-// flux.  Unwind this #ifdef once the APIs settle.
-#if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
-  return [centralManager_ state] == CBManagerStatePoweredOn;
-#else
-  return [centralManager_ state] == CBCentralManagerStatePoweredOn;
-#endif
+  if (@available(iOS 10, *)) {
+    return [centralManager_ state] == CBManagerStatePoweredOn;
+  } else {
+    return (CBCentralManagerState)[centralManager_ state] ==
+           CBCentralManagerStatePoweredOn;
+  }
 }
 
 - (void)reallyStart {
