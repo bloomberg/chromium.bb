@@ -306,24 +306,18 @@ function test() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
             InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
-        function nodeFilter(node) {
-          return node.type() === 'object' && node.name() !== 'B' && node.name() !== 'D';
-        }
-
         var allNodeIndexes = [];
         for (var i = 0; i < snapshot.nodes.length; i += snapshot._nodeFieldCount)
           allNodeIndexes.push(i);
-        var provider = new HeapSnapshotWorker.HeapSnapshotNodesProvider(snapshot, nodeFilter, allNodeIndexes);
+        var provider = new HeapSnapshotWorker.HeapSnapshotNodesProvider(snapshot, allNodeIndexes);
         // Sort by names in reverse order.
         provider.sortAndRewind({fieldName1: 'name', ascending1: false, fieldName2: 'id', ascending2: false});
-        var range = provider.serializeItemsRange(0, 3);
-        InspectorTest.assertEquals(3, range.totalLength, 'Node range total length');
+        var range = provider.serializeItemsRange(0, 6);
+        InspectorTest.assertEquals(6, range.totalLength, 'Node range total length');
         InspectorTest.assertEquals(0, range.startPosition, 'Node range start position');
-        InspectorTest.assertEquals(3, range.endPosition, 'Node range end position');
-        var names = range.items.map(function(item) {
-          return item.name;
-        });
-        InspectorTest.assertEquals('E,C,A', names.join(','), 'nodes provider names');
+        InspectorTest.assertEquals(6, range.endPosition, 'Node range end position');
+        var names = range.items.map(item => item.name);
+        InspectorTest.assertEquals('E,D,C,B,A,', names.join(','), 'nodes provider names');
       },
 
       function heapSnapshotEdgesProviderTest() {
