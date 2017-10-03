@@ -36,9 +36,6 @@ Polymer({
       value: '',
     },
 
-    /** @private */
-    confirmationDeleteMsg_: String,
-
     /** @type {!Map<string, string>} */
     focusConfig: {
       type: Object,
@@ -60,7 +57,6 @@ Polymer({
   favicon_: function(url) {
     return cr.icon.getFavicon(url);
   },
-
 
   /**
    * @param {!Map<string, string>} newConfig
@@ -135,8 +131,6 @@ Polymer({
    */
   onRemoveShowingSitesTap_: function(e) {
     e.preventDefault();
-    this.confirmationDeleteMsg_ =
-        loadTimeData.getString('siteSettingsCookieRemoveMultipleConfirmation');
     this.$.confirmDeleteDialog.showModal();
   },
 
