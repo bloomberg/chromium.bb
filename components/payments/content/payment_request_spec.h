@@ -143,6 +143,10 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
     return method_data_;
   }
 
+  // Returns whether any of the payment method names are "basic-card" or one of
+  // the networks ("visa", "amex", "mastercard", etc).
+  bool HasBasicCardMethodName() const;
+
  private:
   // Returns the first applicable modifier in the Payment Request for the
   // |selected_instrument|.
