@@ -236,7 +236,13 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SyncMultiWindowTest) {
+// This test is flaky Mac10.9 Tests (dbg). See crbug.com/771119.
+#if defined(OS_MACOSX)
+#define MAYBE_SyncMultiWindowTest DISABLED_SyncMultiWindowTest
+#else
+#define MAYBE_SyncMultiWindowTest SyncMultiWindowTest
+#endif
+IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {
@@ -289,7 +295,13 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SyncMultiWindowTest) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, AsyncMultiWindowTest) {
+// This test is flaky Mac10.9 Tests (dbg). See crbug.com/771119.
+#if defined(OS_MACOSX)
+#define MAYBE_AsyncMultiWindowTest DISABLED_AsyncMultiWindowTest
+#else
+#define MAYBE_AsyncMultiWindowTest AsyncMultiWindowTest
+#endif
+IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {
