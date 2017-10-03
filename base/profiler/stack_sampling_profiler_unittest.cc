@@ -343,17 +343,19 @@ Optional<StackSamplingProfiler::SamplingParams> SaveProfilesAndSignalEvent(
   return Optional<StackSamplingProfiler::SamplingParams>();
 }
 
-// Similar to SaveProfilesAndSignalEvent(), but will schedule a second
-// collection after the first call back.
+// Similar to SaveProfilesAndSignalEvent(), but will schedule subsequent
+// |extra_collection_count| collections.
 Optional<StackSamplingProfiler::SamplingParams> SaveProfilesAndReschedule(
     std::vector<CallStackProfiles>* profiles,
     WaitableEvent* event,
+    size_t extra_collection_count,
     CallStackProfiles pending_profiles) {
   profiles->push_back(std::move(pending_profiles));
 
   event->Signal();
 
-  if (profiles->size() == 2)
+  // Note: size() is guaranted to be >= 1 due to the push_back() call above.
+  if (profiles->size() - 1 == extra_collection_count)
     return Optional<StackSamplingProfiler::SamplingParams>();
 
   StackSamplingProfiler::SamplingParams sampling_params;
@@ -1059,7 +1061,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, RescheduledByCallback) {
                                      WaitableEvent::InitialState::NOT_SIGNALED);
     const StackSamplingProfiler::CompletedCallback callback =
         Bind(&SaveProfilesAndReschedule, Unretained(&profiles),
-             Unretained(&sampling_completed));
+             Unretained(&sampling_completed), 1);
     StackSamplingProfiler profiler(target_thread_id, params, callback);
 
     // Start once and wait for it to be completed.
@@ -1073,6 +1075,32 @@ PROFILER_TEST_F(StackSamplingProfilerTest, RescheduledByCallback) {
     profiler.Stop();
     ASSERT_EQ(2u, profiles.size());
     ASSERT_EQ(1u, profiles[1].size());
+  });
+}
+
+PROFILER_TEST_F(StackSamplingProfilerTest, RescheduledByCallback_Shutdown) {
+  WithTargetThread([](PlatformThreadId target_thread_id) {
+    SamplingParams params;
+    params.sampling_interval = TimeDelta::FromMilliseconds(0);
+    params.samples_per_burst = 1;
+
+    std::vector<CallStackProfiles> profiles;
+    WaitableEvent sampling_completed(WaitableEvent::ResetPolicy::AUTOMATIC,
+                                     WaitableEvent::InitialState::NOT_SIGNALED);
+    const StackSamplingProfiler::CompletedCallback callback =
+        Bind(&SaveProfilesAndReschedule, Unretained(&profiles),
+             Unretained(&sampling_completed), 1000000);
+    StackSamplingProfiler profiler(target_thread_id, params, callback);
+
+    // Start once and wait for it to be completed.
+    profiler.Start();
+    sampling_completed.Wait();
+    ASSERT_EQ(1u, profiles.size());
+    ASSERT_EQ(1u, profiles[0].size());
+
+    // Now, instead of waiting for more callback calls, simply let the sampling
+    // profiler object go out of scope, running its destructor. This should
+    // work gracefully without crashing or hanging.
   });
 }
 
