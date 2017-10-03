@@ -36,6 +36,12 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// By default, this controller "hooks" long touches to suppress the system
+// default behavior (which shows the system context menu) and show its own
+// context menu instead. This method disables the hook for the current on-going
+// touch i.e., triggers the system default behavior.
+- (void)allowSystemUIForCurrentGesture;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_CONTEXT_MENU_CONTROLLER_H_
