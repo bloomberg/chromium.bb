@@ -17,7 +17,11 @@ namespace {
 const char kResourceLoadSchedulerTrial[] = "ResourceLoadScheduler";
 
 // Field trial parameter names.
-const char kOutstandingLimitForBackgroundFrameName[] = "bg_limit";
+// Note: bg_limit is supported on m61+, but bg_sub_limit is only on m63+.
+// If bg_sub_limit param is not found, we should use bg_limit to make the
+// study result statistically correct.
+const char kOutstandingLimitForBackgroundMainFrameName[] = "bg_limit";
+const char kOutstandingLimitForBackgroundSubFrameName[] = "bg_sub_limit";
 
 // Field trial default parameters.
 constexpr size_t kOutstandingLimitForBackgroundFrameDefault = 16u;
@@ -40,18 +44,30 @@ uint32_t GetFieldTrialUint32Param(const char* name, uint32_t default_param) {
   return param;
 }
 
+uint32_t GetOutstandingThrottledLimit(FetchContext* context) {
+  DCHECK(context);
+
+  uint32_t main_frame_limit =
+      GetFieldTrialUint32Param(kOutstandingLimitForBackgroundMainFrameName,
+                               kOutstandingLimitForBackgroundFrameDefault);
+  if (context->IsMainFrame())
+    return main_frame_limit;
+
+  // We do not have a fixed default limit for sub-frames, but use the limit for
+  // the main frame so that it works as how previous versions that haven't
+  // consider sub-frames' specific limit work.
+  return GetFieldTrialUint32Param(kOutstandingLimitForBackgroundSubFrameName,
+                                  main_frame_limit);
+}
+
 }  // namespace
 
 constexpr ResourceLoadScheduler::ClientId
     ResourceLoadScheduler::kInvalidClientId;
 
 ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
-    : outstanding_throttled_limit_(
-          GetFieldTrialUint32Param(kOutstandingLimitForBackgroundFrameName,
-                                   kOutstandingLimitForBackgroundFrameDefault)),
+    : outstanding_throttled_limit_(GetOutstandingThrottledLimit(context)),
       context_(context) {
-  DCHECK(context);
-
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
     return;
 
