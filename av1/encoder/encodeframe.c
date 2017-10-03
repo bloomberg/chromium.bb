@@ -4219,11 +4219,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     abort_flag =
         (sum_rdc.rdcost >= best_rd && (bsize > BLOCK_8X8 || unify_bsize)) ||
         (sum_rdc.rate == INT_MAX && bsize == BLOCK_8X8);
-    if (sum_rdc.rdcost < INT64_MAX &&
+    const int64_t vert_max_rdcost = INT64_MAX;
 #else
-    if (sum_rdc.rdcost < best_rdc.rdcost &&
+    const int64_t vert_max_rdcost = best_rdc.rdcost;
 #endif  // CONFIG_SUPERTX
-        !force_vert_split && (bsize > BLOCK_8X8 || unify_bsize)) {
+    if (sum_rdc.rdcost < vert_max_rdcost && !force_vert_split &&
+        (bsize > BLOCK_8X8 || unify_bsize)) {
       update_state(cpi, td, &pc_tree->vertical[0], mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col, subsize,
                         NULL);
