@@ -431,7 +431,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
     quad->SetNew(shared_quad_state, surface_quad->rect,
                  surface_quad->visible_rect, remapped_pass_id, 0, gfx::RectF(),
                  gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-                 gfx::RectF(surface_quad->rect));
+                 gfx::RectF(surface_quad->rect),
+                 /*force_anti_aliasing_off=*/false);
   }
 
   // Need to re-query since referenced_surfaces_ iterators are not stable.
@@ -472,7 +473,8 @@ void SurfaceAggregator::AddColorConversionPass() {
       color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect));
+               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               /*force_anti_aliasing_off=*/false);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
 }
 

@@ -71,11 +71,15 @@ bool StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad>::Read(
   // RenderPass ids are never zero.
   if (!quad->render_pass_id)
     return false;
-  return data.ReadMaskUvRect(&quad->mask_uv_rect) &&
-         data.ReadMaskTextureSize(&quad->mask_texture_size) &&
-         data.ReadFiltersScale(&quad->filters_scale) &&
-         data.ReadFiltersOrigin(&quad->filters_origin) &&
-         data.ReadTexCoordRect(&quad->tex_coord_rect);
+  if (!data.ReadMaskUvRect(&quad->mask_uv_rect) ||
+      !data.ReadMaskTextureSize(&quad->mask_texture_size) ||
+      !data.ReadFiltersScale(&quad->filters_scale) ||
+      !data.ReadFiltersOrigin(&quad->filters_origin) ||
+      !data.ReadTexCoordRect(&quad->tex_coord_rect)) {
+    return false;
+  }
+  quad->force_anti_aliasing_off = data.force_anti_aliasing_off();
+  return true;
 }
 
 // static
@@ -183,6 +187,7 @@ bool StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad>::Read(
 
   quad->swizzle_contents = data.swizzle_contents();
   quad->nearest_neighbor = data.nearest_neighbor();
+  quad->force_anti_aliasing_off = data.force_anti_aliasing_off();
   quad->resources.ids[viz::TileDrawQuad::kResourceIdIndex] = data.resource_id();
   quad->resources.count = 1;
   return true;

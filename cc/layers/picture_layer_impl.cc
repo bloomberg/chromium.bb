@@ -219,7 +219,9 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     SolidColorLayerImpl::AppendSolidQuads(
         render_pass, draw_properties().occlusion_in_content_space,
         shared_quad_state, visible_layer_rect(),
-        raster_source_->GetSolidColor(), append_quads_data);
+        raster_source_->GetSolidColor(),
+        !layer_tree_impl()->settings().enable_edge_anti_aliasing,
+        append_quads_data);
     return;
   }
 
@@ -398,11 +400,12 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
           auto* quad =
               render_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
-          quad->SetNew(shared_quad_state, offset_geometry_rect,
-                       offset_visible_geometry_rect, needs_blending,
-                       draw_info.resource_id(), texture_rect,
-                       draw_info.resource_size(), draw_info.contents_swizzled(),
-                       nearest_neighbor_);
+          quad->SetNew(
+              shared_quad_state, offset_geometry_rect,
+              offset_visible_geometry_rect, needs_blending,
+              draw_info.resource_id(), texture_rect, draw_info.resource_size(),
+              draw_info.contents_swizzled(), nearest_neighbor_,
+              !layer_tree_impl()->settings().enable_edge_anti_aliasing);
           ValidateQuadResources(quad);
           has_draw_quad = true;
           break;
@@ -415,9 +418,10 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
               alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-            quad->SetNew(shared_quad_state, offset_geometry_rect,
-                         offset_visible_geometry_rect, draw_info.solid_color(),
-                         false);
+            quad->SetNew(
+                shared_quad_state, offset_geometry_rect,
+                offset_visible_geometry_rect, draw_info.solid_color(),
+                !layer_tree_impl()->settings().enable_edge_anti_aliasing);
             ValidateQuadResources(quad);
           }
           has_draw_quad = true;

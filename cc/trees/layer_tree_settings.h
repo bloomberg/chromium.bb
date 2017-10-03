@@ -148,6 +148,9 @@ class CC_EXPORT LayerTreeSettings {
 
   // Whether images should be animated in the compositor.
   bool enable_image_animations = false;
+
+  // Whether to use edge anti-aliasing for all layer types that supports it.
+  bool enable_edge_anti_aliasing = true;
 };
 
 }  // namespace cc

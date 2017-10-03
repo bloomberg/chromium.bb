@@ -145,7 +145,8 @@ viz::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
         shared_state, bounds, bounds, render_pass_id, 0 /* mask_resource_id */,
         gfx::RectF() /* mask_uv_rect */, gfx::Size() /* mask_texture_size */,
         gfx::Vector2dF() /* filters_scale */,
-        gfx::PointF() /* filters_origin */, gfx::RectF() /* tex_coord_rect */);
+        gfx::PointF() /* filters_origin */, gfx::RectF() /* tex_coord_rect */,
+        false /* force_anti_aliasing_off */);
     frame.render_pass_list.push_back(std::move(invert_pass));
   }
   frame.metadata.device_scale_factor = device_scale_factor_;
