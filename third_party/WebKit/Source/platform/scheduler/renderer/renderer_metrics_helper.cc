@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "public/platform/scheduler/renderer_process_type.h"
 
@@ -17,6 +18,7 @@ namespace scheduler {
 #define MAIN_THREAD_LOAD_METRIC_NAME "RendererScheduler.RendererMainThreadLoad5"
 #define EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME \
   MAIN_THREAD_LOAD_METRIC_NAME ".Extension"
+#define PER_FRAME_TYPE_METRIC_NAME "RendererScheduler.TaskDurationPerFrameType"
 
 namespace {
 
@@ -30,7 +32,54 @@ constexpr base::TimeDelta kLongTaskDiscardingThreshold =
 constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
     base::TimeDelta::FromMinutes(3);
 
+enum class FrameThrottlingState {
+  VISIBLE = 0,
+  HIDDEN = 1,
+  BACKGROUND = 2,
+  BACKGROUND_EXEMPT = 3,
+
+  COUNT = 4
+};
+
+enum class FrameOriginState {
+  MAIN_FRAME = 0,
+  SAME_ORIGIN = 1,
+  CROSS_ORIGIN = 2,
+
+  COUNT = 3
+};
+
+FrameThrottlingState GetFrameThrottlingState(
+    const WebFrameScheduler& frame_scheduler) {
+  if (frame_scheduler.IsPageVisible()) {
+    if (frame_scheduler.IsFrameVisible())
+      return FrameThrottlingState::VISIBLE;
+    return FrameThrottlingState::HIDDEN;
+  }
+
+  if (frame_scheduler.IsExemptFromThrottling())
+    return FrameThrottlingState::BACKGROUND_EXEMPT;
+
+  return FrameThrottlingState::BACKGROUND;
+}
+
+FrameOriginState GetFrameOriginState(const WebFrameScheduler& frame_scheduler) {
+  if (frame_scheduler.IsCrossOrigin())
+    return FrameOriginState::CROSS_ORIGIN;
+  return FrameOriginState::SAME_ORIGIN;
+}
+
 }  // namespace
+
+FrameType GetFrameType(const WebFrameScheduler& frame_scheduler) {
+  FrameThrottlingState throttling_state =
+      GetFrameThrottlingState(frame_scheduler);
+  FrameOriginState origin_state = GetFrameOriginState(frame_scheduler);
+  return static_cast<FrameType>(
+      static_cast<int>(origin_state) *
+          static_cast<int>(FrameThrottlingState::COUNT) +
+      static_cast<int>(throttling_state));
+}
 
 RendererMetricsHelper::RendererMetricsHelper(
     RendererSchedulerImpl* renderer_scheduler,
@@ -80,7 +129,8 @@ RendererMetricsHelper::RendererMetricsHelper(
       hidden_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Hidden"),
       visible_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Visible"),
       hidden_music_task_duration_reporter(TASK_DURATION_METRIC_NAME
-                                          ".HiddenMusic") {
+                                          ".HiddenMusic"),
+      frame_type_duration_reporter(PER_FRAME_TYPE_METRIC_NAME) {
   main_thread_load_tracker.Resume(now);
   if (renderer_backgrounded) {
     background_main_thread_load_tracker.Resume(now);
@@ -122,10 +172,10 @@ base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
 
 }  // namespace
 
-void RendererMetricsHelper::RecordTaskMetrics(
-    MainThreadTaskQueue::QueueType queue_type,
-    base::TimeTicks start_time,
-    base::TimeTicks end_time) {
+void RendererMetricsHelper::RecordTaskMetrics(MainThreadTaskQueue* queue,
+                                              base::TimeTicks start_time,
+                                              base::TimeTicks end_time) {
+  MainThreadTaskQueue::QueueType queue_type = queue->queue_type();
   base::TimeDelta duration = end_time - start_time;
   if (duration > kLongTaskDiscardingThreshold)
     return;
@@ -273,6 +323,11 @@ void RendererMetricsHelper::RecordTaskMetrics(
     }
   } else {
     visible_task_duration_reporter.RecordTask(queue_type, duration);
+  }
+
+  if (queue->GetFrameScheduler()) {
+    frame_type_duration_reporter.RecordTask(
+        GetFrameType(*queue->GetFrameScheduler()), duration);
   }
 }
 

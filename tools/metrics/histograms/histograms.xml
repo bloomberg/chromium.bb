@@ -66271,6 +66271,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskDurationPerFrameType" units="ms">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Total duration of renderer per-frame tasks split per frame type. Used to
+    monitor workload coming from different frames. Reported each time when task
+    is completed and current accumulated duration is longer than 1ms.
+
+    This metric is susceptible to problematic outliers and should be analyzed
+    with custom scripts accounting for that rather than from a dashboard.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskDurationPerQueueType"
     enum="RendererSchedulerTaskQueueType" units="ms">
   <obsolete>

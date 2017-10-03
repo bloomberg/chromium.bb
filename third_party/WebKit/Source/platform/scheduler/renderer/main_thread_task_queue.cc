@@ -91,11 +91,15 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_paused_(params.can_be_paused),
       can_be_stopped_(params.can_be_stopped),
       used_for_control_tasks_(params.used_for_control_tasks),
-      renderer_scheduler_(renderer_scheduler) {
-  GetTaskQueueImpl()->SetOnTaskStartedHandler(
-      base::Bind(&MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
-  GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
-      &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
+      renderer_scheduler_(renderer_scheduler),
+      web_frame_scheduler_(nullptr) {
+  if (GetTaskQueueImpl()) {
+    // TaskQueueImpl may be null for tests.
+    GetTaskQueueImpl()->SetOnTaskStartedHandler(base::Bind(
+        &MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
+    GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
+        &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
+  }
 }
 
 MainThreadTaskQueue::~MainThreadTaskQueue() {}
