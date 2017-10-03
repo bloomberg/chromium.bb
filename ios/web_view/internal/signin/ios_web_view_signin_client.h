@@ -7,18 +7,16 @@
 
 #include "components/signin/ios/browser/ios_signin_client.h"
 
-namespace ios_web_view {
-class WebViewBrowserState;
-}
-
 // iOS WebView specific signin client.
 class IOSWebViewSigninClient : public IOSSigninClient {
  public:
-  IOSWebViewSigninClient(ios_web_view::WebViewBrowserState* browser_state,
-                         SigninErrorController* signin_error_controller,
-                         content_settings::CookieSettings* cookie_settings,
-                         HostContentSettingsMap* host_content_settings_map,
-                         scoped_refptr<TokenWebData> token_web_data);
+  IOSWebViewSigninClient(
+      PrefService* pref_service,
+      net::URLRequestContextGetter* url_request_context,
+      SigninErrorController* signin_error_controller,
+      scoped_refptr<content_settings::CookieSettings> cookie_settings,
+      scoped_refptr<HostContentSettingsMap> host_content_settings_map,
+      scoped_refptr<TokenWebData> token_web_data);
 
   // SigninClient implementation.
   void OnSignedOut() override;

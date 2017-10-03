@@ -27,7 +27,7 @@ class WebViewBrowserState;
 class WebViewCookieSettingsFactory
     : public RefcountedBrowserStateKeyedServiceFactory {
  public:
-  static content_settings::CookieSettings* GetForBrowserState(
+  static scoped_refptr<content_settings::CookieSettings> GetForBrowserState(
       ios_web_view::WebViewBrowserState* browser_state);
   static WebViewCookieSettingsFactory* GetInstance();
 

@@ -43,9 +43,9 @@ WebViewHostContentSettingsMapFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);
-  return make_scoped_refptr(new HostContentSettingsMap(
+  return base::MakeRefCounted<HostContentSettingsMap>(
       browser_state->GetPrefs(), browser_state->IsOffTheRecord(),
-      false /* guest_profile */, false /* store_last_modified */));
+      false /* guest_profile */, false /* store_last_modified */);
 }
 
 web::BrowserState* WebViewHostContentSettingsMapFactory::GetBrowserStateToUse(
