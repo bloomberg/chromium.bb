@@ -43,8 +43,8 @@ class VideoRendererSink;
 
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
-  // Currently using the same signature as VideoFrame::ReleaseMailboxCB.
-  using ReleaseMailboxCB = base::Callback<void(const gpu::SyncToken&)>;
+  // Similar to VideoFrame::ReleaseMailboxCB for now.
+  using ReleaseMailboxCB = base::OnceCallback<void(const gpu::SyncToken&)>;
 
   using OutputWithReleaseMailboxCB =
       base::Callback<void(ReleaseMailboxCB, const scoped_refptr<VideoFrame>&)>;

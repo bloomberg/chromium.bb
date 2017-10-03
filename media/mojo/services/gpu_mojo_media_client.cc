@@ -107,16 +107,17 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     OutputWithReleaseMailboxCB output_cb,
     RequestOverlayInfoCB request_overlay_info_cb) {
 #if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
-  return base::MakeUnique<MediaCodecVideoDecoder>(
-      gpu_task_runner_,
+  auto get_stub_cb =
       base::Bind(&GetGpuCommandBufferStub, media_gpu_channel_manager_,
-                 command_buffer_id->channel_token, command_buffer_id->route_id),
+                 command_buffer_id->channel_token, command_buffer_id->route_id);
+  return base::MakeUnique<MediaCodecVideoDecoder>(
       std::move(output_cb), DeviceInfo::GetInstance(),
       AVDACodecAllocator::GetInstance(),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
-      base::MakeUnique<VideoFrameFactoryImpl>(),
+      base::MakeUnique<VideoFrameFactoryImpl>(gpu_task_runner_,
+                                              std::move(get_stub_cb)),
       context_ref_factory_->CreateRef());
 #else
   return nullptr;

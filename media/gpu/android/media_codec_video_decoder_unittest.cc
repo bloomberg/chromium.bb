@@ -42,10 +42,6 @@ std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
   return nullptr;
 }
 
-gpu::GpuCommandBufferStub* GetStubCb() {
-  return nullptr;
-}
-
 // Make MCVD's destruction observable for teardown tests.
 struct DestructionObservableMCVD : public DestructionObservable,
                                    public MediaCodecVideoDecoder {
@@ -63,16 +59,16 @@ class MockServiceContextRef : public service_manager::ServiceContextRef {
 
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
-  MOCK_METHOD3(Initialize,
-               void(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-                    GetStubCb get_stub_cb,
-                    InitCb init_cb));
+  MOCK_METHOD1(Initialize, void(InitCb init_cb));
   MOCK_METHOD5(MockCreateVideoFrame,
                void(CodecOutputBuffer* raw_output_buffer,
                     scoped_refptr<SurfaceTextureGLOwner> surface_texture,
                     base::TimeDelta timestamp,
                     gfx::Size natural_size,
                     OutputWithReleaseMailboxCB output_cb));
+  MOCK_METHOD1(MockRunAfterPendingVideoFrames,
+               void(base::OnceClosure* closure));
+  MOCK_METHOD0(CancelPendingCallbacks, void());
 
   void CreateVideoFrame(std::unique_ptr<CodecOutputBuffer> output_buffer,
                         scoped_refptr<SurfaceTextureGLOwner> surface_texture,
@@ -84,7 +80,13 @@ class MockVideoFrameFactory : public VideoFrameFactory {
     last_output_buffer_ = std::move(output_buffer);
   }
 
+  void RunAfterPendingVideoFrames(base::OnceClosure closure) override {
+    last_closure_ = std::move(closure);
+    MockRunAfterPendingVideoFrames(&last_closure_);
+  }
+
   std::unique_ptr<CodecOutputBuffer> last_output_buffer_;
+  base::OnceClosure last_closure_;
 };
 
 class MediaCodecVideoDecoderTest : public testing::Test {
@@ -107,11 +109,10 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         base::MakeUnique<NiceMock<MockVideoFrameFactory>>();
     video_frame_factory_ = video_frame_factory.get();
     // Set up VFF to pass |surface_texture_| via its InitCb.
-    ON_CALL(*video_frame_factory_, Initialize(_, _, _))
-        .WillByDefault(RunCallback<2>(surface_texture));
+    ON_CALL(*video_frame_factory_, Initialize(_))
+        .WillByDefault(RunCallback<0>(surface_texture));
 
     auto* observable_mcvd = new DestructionObservableMCVD(
-        base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
         base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
         codec_allocator_.get(), std::move(surface_chooser),
         base::Bind(&CreateAndroidOverlayCb),
@@ -220,7 +221,7 @@ TEST_F(MediaCodecVideoDecoderTest, SmallVp8IsRejected) {
 }
 
 TEST_F(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
-  EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _)).Times(0);
+  EXPECT_CALL(*video_frame_factory_, Initialize(_)).Times(0);
   EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, _)).Times(0);
   Initialize();
@@ -228,7 +229,7 @@ TEST_F(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
 
 TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersFrameFactoryInit) {
   Initialize();
-  EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _));
+  EXPECT_CALL(*video_frame_factory_, Initialize(_));
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
 }
 
@@ -266,8 +267,8 @@ TEST_F(MediaCodecVideoDecoderTest, CodecIsCreatedAfterSurfaceChosen) {
 
 TEST_F(MediaCodecVideoDecoderTest, FrameFactoryInitFailureIsAnError) {
   Initialize();
-  ON_CALL(*video_frame_factory_, Initialize(_, _, _))
-      .WillByDefault(RunCallback<2>(nullptr));
+  ON_CALL(*video_frame_factory_, Initialize(_))
+      .WillByDefault(RunCallback<0>(nullptr));
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR)).Times(1);
   EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
@@ -596,12 +597,14 @@ TEST_F(MediaCodecVideoDecoderTest, EosDecodeCbIsRunAfterEosIsDequeued) {
   codec->AcceptOneInput(MockMediaCodecBridge::kEos);
   PumpCodec();
 
+  // On dequeueing EOS, MCVD will post a closure to run eos_decode_cb after
+  // pending video frames.
+  EXPECT_CALL(*video_frame_factory_, MockRunAfterPendingVideoFrames(_));
   codec->ProduceOneOutput(MockMediaCodecBridge::kEos);
   PumpCodec();
-  // eos_codec_cb is posted to the gpu thread, but in the tests the MCVD thread
-  // and gpu thread are the same so it will be posted to this thread.
-  EXPECT_CALL(eos_decode_cb, Run(_));
-  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(eos_decode_cb, Run(DecodeStatus::OK));
+  std::move(video_frame_factory_->last_closure_).Run();
 }
 
 TEST_F(MediaCodecVideoDecoderTest, TeardownBeforeInitWorks) {

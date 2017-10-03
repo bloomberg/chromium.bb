@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
-#include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
@@ -54,8 +53,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
       public AVDACodecAllocatorClient {
  public:
   MediaCodecVideoDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb,
       VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
@@ -151,8 +148,12 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   void StartTimer();
   void StopTimerIfIdle();
 
-  // Forwards |frame| via |output_cb_| if there hasn't been a Reset() since the
-  // frame was created (i.e., |reset_generation| matches |reset_generation_|).
+  // Runs |eos_decode_cb_| if it's valid and |reset_generation| matches
+  // |reset_generation_|.
+  void RunEosDecodeCb(int reset_generation);
+
+  // Forwards |frame| via |output_cb_| if |reset_generation| matches
+  // |reset_generation_|.
   void ForwardVideoFrame(int reset_generation,
                          VideoFrameFactory::ReleaseMailboxCB release_cb,
                          const scoped_refptr<VideoFrame>& frame);
@@ -161,8 +162,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // if possible.
   void StartDrainingCodec(DrainType drain_type);
   void OnCodecDrained();
-
-  void ClearPendingDecodes(DecodeStatus status);
+  void CancelPendingDecodes(DecodeStatus status);
 
   // Sets |state_| and does common teardown for the terminal states. |state_|
   // must be either kSurfaceDestroyed or kError.
@@ -175,7 +175,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Creates an overlay factory cb based on the value of overlay_info_.
   AndroidOverlayFactoryCB CreateOverlayFactoryCb();
 
-  State state_;
+  State state_ = State::kInitializing;
 
   // Whether initialization still needs to be done on the first decode call.
   bool lazy_init_pending_ = true;
@@ -210,8 +210,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   std::unique_ptr<CodecWrapper> codec_;
   base::ElapsedTimer idle_timer_;
   base::RepeatingTimer pump_codec_timer_;
-  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
-  base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb_;
   AVDACodecAllocator* codec_allocator_;
 
   // The current target surface that |codec_| should be rendering to. It
