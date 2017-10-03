@@ -122,7 +122,7 @@ enum NotificationType {
 
   // Sent after the backing store has been updated but before the widget has
   // painted. The source is the RenderWidgetHost, the details are not used.
-  NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+  NOTIFICATION_RENDER_WIDGET_HOST_DID_COMPLETE_RESIZE_OR_REPAINT,
 
   // Indicates a RenderWidgetHost has been hidden or restored. The source is
   // the RWH whose visibility changed, the details is a bool set to true if

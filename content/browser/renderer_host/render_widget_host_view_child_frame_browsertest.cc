@@ -100,11 +100,11 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   // Fake an auto-resize update from the parent renderer.
   int routing_id =
       root->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
-  ViewHostMsg_UpdateRect_Params params;
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
   params.flags = 0;
   root->current_frame_host()->GetRenderWidgetHost()->OnMessageReceived(
-      ViewHostMsg_UpdateRect(routing_id, params));
+      ViewHostMsg_ResizeOrRepaint_ACK(routing_id, params));
 
   // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
   // let it complete.

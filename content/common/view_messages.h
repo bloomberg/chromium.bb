@@ -284,7 +284,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(bool, is_anchor_first)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
+IPC_STRUCT_BEGIN(ViewHostMsg_ResizeOrRepaint_ACK_Params)
   // The size of the RenderView when this message was generated.  This is
   // included so the host knows how large the view is from the perspective of
   // the renderer process.  This is necessary in case a resize operation is in
@@ -294,10 +294,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
 
   // The following describes the various bits that may be set in flags:
   //
-  //   ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK
+  //   ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK
   //     Indicates that this is a response to a ViewMsg_Resize message.
   //
-  //   ViewHostMsg_UpdateRect_Flags::IS_REPAINT_ACK
+  //   ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_REPAINT_ACK
   //     Indicates that this is a response to a ViewMsg_Repaint message.
   //
   // If flags is zero, then this message corresponds to an unsolicited paint
@@ -343,11 +343,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
-// Tells the render view to change its size.  A ViewHostMsg_UpdateRect message
-// is generated in response provided new_size is not empty and not equal to
-// the view's current size.  The generated ViewHostMsg_UpdateRect message will
-// have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
-// we don't have to fetch it every time WebKit asks for it.
+// Tells the render view to change its size.  A ViewHostMsg_ResizeOrRepaint_ACK
+// message is generated in response provided new_size is not empty and not equal
+// to the view's current size.  The generated ViewHostMsg_ResizeOrRepaint_ACK
+// message will have the IS_RESIZE_ACK flag set. It also receives the resizer
+// rect so that we don't have to fetch it every time WebKit asks for it.
 IPC_MESSAGE_ROUTED1(ViewMsg_Resize, content::ResizeParams /* params */)
 
 // Tells the widget to use the provided viz::LocalSurfaceId to submit
@@ -621,10 +621,11 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentAvailableInMainFrame,
                     bool /* uses_temporary_zoom_level */)
 
-// Sent to update part of the view.  In response to this message, the host
-// generates a ViewMsg_UpdateRect_ACK message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
-                    ViewHostMsg_UpdateRect_Params)
+// Sent as an acknowledgement to a previous resize request. This indicates that
+// the compositor has received a frame from the renderer corresponding to the
+// previous reszie request.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ResizeOrRepaint_ACK,
+                    ViewHostMsg_ResizeOrRepaint_ACK_Params)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 

@@ -36437,6 +36437,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The time spent inside RenderWidgetHost::OnMsgPaintRect.</summary>
 </histogram>
 
+<histogram name="MPArch.RWH_OnMsgResizeOrRepaintACK">
+  <owner>fsamuel@chromium.org</owner>
+  <owner>piman@chromium.org</owner>
+  <summary>
+    The time delta for processing a paint message. On platforms that don't
+    support asynchronous painting, this is equivalent to
+    MPArch.RWH_TotalPaintTime.
+  </summary>
+</histogram>
+
 <histogram name="MPArch.RWH_OnMsgScrollRect" units="ms">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
@@ -36446,6 +36456,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MPArch.RWH_OnMsgUpdateRect">
+  <obsolete>
+    Deprecated 10/2017. Replaced with MPArch.RWH_OnMsgResizeOrRepaintACK.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD</summary>
 </histogram>

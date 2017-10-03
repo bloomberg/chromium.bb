@@ -457,7 +457,7 @@ class CONTENT_EXPORT RenderWidget
     TTFAP_5MIN_AFTER_BACKGROUNDED,
   };
 
-  void DidResizeAck();
+  void DidResizeOrRepaintAck();
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -685,7 +685,7 @@ class CONTENT_EXPORT RenderWidget
   // The size of the visible viewport in DPI-adjusted pixels.
   gfx::Size visible_viewport_size_;
 
-  // Flags for the next ViewHostMsg_UpdateRect message.
+  // Flags for the next ViewHostMsg_ResizeOrRepaint_ACK message.
   int next_paint_flags_;
 
   // Whether the WebWidget is in auto resize mode, which is used for example
