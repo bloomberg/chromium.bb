@@ -82,6 +82,27 @@ def extract_certificates_from_pem(pem_bytes):
   return certificates_der
 
 
+def extract_certificates_from_der_ascii(input_text):
+  certificates_der = []
+
+  # Look for beginning and end of Certificate SEQUENCE. The indentation is
+  # significant. (The SEQUENCE must be non-indented, and the rest of the DER
+  # ASCII must be indented until the closing } which again is non-indented.)
+  # The output of der2ascii meets this, but it is not a requirement of the DER
+  # ASCII language.
+  # TODO(mattm): consider alternate approach of doing ascii2der on entire
+  # input, and handling the multiple concatenated DER certificates.
+  regex = re.compile(r'^(SEQUENCE {.*?^})', re.DOTALL | re.MULTILINE)
+
+  for match in regex.finditer(input_text):
+    der_ascii_bytes = match.group(1)
+    der_bytes = process_data_with_command(["ascii2der"], der_ascii_bytes)
+    if der_bytes:
+      certificates_der.append(der_bytes)
+
+  return certificates_der
+
+
 def decode_netlog_hexdump(netlog_text):
   lines = netlog_text.splitlines()
 
@@ -174,6 +195,9 @@ def extract_certificates(source_bytes):
   if "BEGIN CERTIFICATE" in source_bytes:
     return extract_certificates_from_pem(source_bytes)
 
+  if "SEQUENCE {" in source_bytes:
+    return extract_certificates_from_der_ascii(source_bytes)
+
   if "SSL_HANDSHAKE_MESSAGE_RECEIVED" in source_bytes:
     return extract_tls_certificate_message(source_bytes)
 
@@ -181,7 +205,7 @@ def extract_certificates(source_bytes):
   return [source_bytes]
 
 
-def pretty_print_certificate(command, certificate_der):
+def process_data_with_command(command, data):
   try:
     p = subprocess.Popen(command,
                          stdin=subprocess.PIPE,
@@ -193,7 +217,7 @@ def pretty_print_certificate(command, certificate_der):
       return ""
     raise
 
-  result = p.communicate(certificate_der)
+  result = p.communicate(data)
 
   if p.returncode == 0:
     return result[0]
@@ -204,17 +228,17 @@ def pretty_print_certificate(command, certificate_der):
 
 
 def openssl_text_pretty_printer(certificate_der, unused_certificate_number):
-  return pretty_print_certificate(["openssl", "x509", "-text", "-inform",
+  return process_data_with_command(["openssl", "x509", "-text", "-inform",
                                    "DER", "-noout"], certificate_der)
 
 
 def pem_pretty_printer(certificate_der, unused_certificate_number):
-  return pretty_print_certificate(["openssl", "x509", "-inform", "DER",
+  return process_data_with_command(["openssl", "x509", "-inform", "DER",
                                    "-outform", "PEM"], certificate_der)
 
 
 def der2ascii_pretty_printer(certificate_der, unused_certificate_number):
-  return pretty_print_certificate(["der2ascii"], certificate_der)
+  return process_data_with_command(["der2ascii"], certificate_der)
 
 
 def header_pretty_printer(unused_certificate_der, certificate_number):
@@ -273,14 +297,14 @@ def main():
   parser = argparse.ArgumentParser(
       description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
 
-  # TODO(mattm): support der2ascii as an input format too.
   parser.add_argument('sources', metavar='SOURCE', nargs='*',
                       help='''Each SOURCE can be one of:
   (1) A server name such as www.google.com.
   (2) A PEM [*] file containing one or more CERTIFICATE blocks
-  (3) A text NetLog dump of a TLS certificate message
+  (3) A file containing one or more DER ASCII certificates
+  (4) A text NetLog dump of a TLS certificate message
       (must include the SSL_HANDSHAKE_MESSAGE_RECEIVED line)
-  (4) A binary file containing DER-encoded certificate
+  (5) A binary file containing DER-encoded certificate
 
 When multiple SOURCEs are listed, all certificates in them
 are concatenated. If no SOURCE is given then data will be
