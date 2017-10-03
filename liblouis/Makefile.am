@@ -47,10 +47,8 @@ liblouis_la_SOURCES =				\
 nodist_liblouis_la_SOURCES = \
 	liblouis.h
 
-SOURCE_FORMATTER = clang-format -i
-
-.PHONY : format-sources
-format-sources :
-	for file in $(SOURCES); do $(SOURCE_FORMATTER) $$file; done
-	$(SOURCE_FORMATTER) liblouis.h.in
-
+if HAVE_SOURCE_FORMATTER
+format-sources-local:
+	for file in $(SOURCES); do $(SOURCE_FORMATTER) -i $$file; done
+	$(SOURCE_FORMATTER) -i liblouis.h.in
+endif

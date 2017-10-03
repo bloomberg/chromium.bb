@@ -76,6 +76,12 @@ AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
+# define an additional recursive make target to format the sources.
+# Also check if clang-format is installed
+AM_EXTRA_RECURSIVE_TARGETS([format-sources])
+AC_CHECK_PROG([SOURCE_FORMATTER], [clang-format], [clang-format])
+AM_CONDITIONAL([HAVE_SOURCE_FORMATTER], [test x$SOURCE_FORMATTER = xclang-format])
+
 # GNU help2man creates man pages from --help output; in many cases,
 # this is sufficient, and obviates the need to maintain man pages
 # separately. However, some developers do not have it so we do not
