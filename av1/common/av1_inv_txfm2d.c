@@ -129,7 +129,7 @@ TXFM_2D_FLIP_CFG av1_get_inv_txfm_64x64_cfg(TX_TYPE tx_type) {
   return cfg;
 }
 
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_32x64_cfg(int tx_type) {
+TXFM_2D_FLIP_CFG av1_get_inv_txfm_32x64_cfg(TX_TYPE tx_type) {
   TXFM_2D_FLIP_CFG cfg = { 0, 0, NULL, NULL };
   switch (tx_type) {
     case DCT_DCT:
@@ -142,7 +142,7 @@ TXFM_2D_FLIP_CFG av1_get_inv_txfm_32x64_cfg(int tx_type) {
   return cfg;
 }
 
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_64x32_cfg(int tx_type) {
+TXFM_2D_FLIP_CFG av1_get_inv_txfm_64x32_cfg(TX_TYPE tx_type) {
   TXFM_2D_FLIP_CFG cfg = { 0, 0, NULL, NULL };
   switch (tx_type) {
     case DCT_DCT:

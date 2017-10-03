@@ -176,8 +176,15 @@ template void flipud<double>(double *dest, int stride, int length);
 template void fliplrud<double>(double *dest, int stride, int length);
 
 int bd_arr[BD_NUM] = { 8, 10, 12 };
+
+#if CONFIG_TX64X64
+int8_t low_range_arr[BD_NUM] = { 18, 32, 32 };
+// TODO(urvang): Try reducing cos bit by 1 for TX64X64 to get it back to 32.
+int8_t high_range_arr[BD_NUM] = { 33, 33, 33 };
+#else
 int8_t low_range_arr[BD_NUM] = { 16, 32, 32 };
 int8_t high_range_arr[BD_NUM] = { 32, 32, 32 };
+#endif  // CONFIG_TX64X64
 
 void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
                             const int8_t *cos_bit, int low_range,

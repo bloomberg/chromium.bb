@@ -21,7 +21,12 @@ using libaom_test::input_base;
 
 namespace {
 const int txfm_type_num = 2;
-const int txfm_size_ls[5] = { 4, 8, 16, 32, 64 };
+const int txfm_size_ls[] = {
+  4,  8, 16, 32,
+#if CONFIG_TX64X64
+  64,
+#endif  // CONFIG_TX64X64
+};
 
 const TxfmFunc fwd_txfm_func_ls[][2] = {
   { av1_fdct4_new, av1_fadst4_new },
@@ -54,8 +59,11 @@ void reference_idct_1d_int(const int32_t *in, int32_t *out, int size) {
   double output[64];
   libaom_test::reference_idct_1d(input, output, size);
 
-  for (int i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i) {
+    ASSERT_GE(output[i], INT32_MIN);
+    ASSERT_LE(output[i], INT32_MAX);
     out[i] = static_cast<int32_t>(round(output[i]));
+  }
 }
 
 void random_matrix(int32_t *dst, int len, ACMRandom *rnd) {
@@ -73,24 +81,42 @@ void random_matrix(int32_t *dst, int len, ACMRandom *rnd) {
 TEST(av1_inv_txfm1d, InvAccuracyCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = 20000;
-  const int max_error[] = { 6, 10, 19, 28 };
+  const int max_error[] = {
+    6,
+    10,
+    19,
+    31,
+#if CONFIG_TX64X64
+    40,
+#endif  // CONFIG_TX64X64
+  };
+  ASSERT_EQ(NELEMENTS(max_error), TX_SIZES);
+  ASSERT_EQ(NELEMENTS(inv_txfm_func_ls), TX_SIZES);
   for (int k = 0; k < count_test_block; ++k) {
     // choose a random transform to test
-    const int txfm_type = rnd.Rand8() % NELEMENTS(inv_txfm_func_ls);
-    const int txfm_size = txfm_size_ls[txfm_type];
-    const TxfmFunc txfm_func = inv_txfm_func_ls[txfm_type][0];
+    const TX_SIZE tx_size = static_cast<TX_SIZE>(rnd.Rand8() % TX_SIZES);
+    const int tx_size_pix = txfm_size_ls[tx_size];
+    const TxfmFunc inv_txfm_func = inv_txfm_func_ls[tx_size][0];
 
     int32_t input[64];
-    random_matrix(input, txfm_size, &rnd);
+    random_matrix(input, tx_size_pix, &rnd);
+
+#if CONFIG_TX64X64
+    // 64x64 transform assumes last 32 values are zero.
+    memset(input + 32, 0, 32 * sizeof(input[0]));
+#endif  // CONFIG_TX64X64
 
     int32_t ref_output[64];
-    reference_idct_1d_int(input, ref_output, txfm_size);
+    reference_idct_1d_int(input, ref_output, tx_size_pix);
 
     int32_t output[64];
-    txfm_func(input, output, cos_bit, range_bit);
+    inv_txfm_func(input, output, cos_bit, range_bit);
 
-    for (int i = 0; i < txfm_size; ++i) {
-      EXPECT_LE(abs(output[i] - ref_output[i]), max_error[txfm_type]);
+    for (int i = 0; i < tx_size_pix; ++i) {
+      EXPECT_LE(abs(output[i] - ref_output[i]), max_error[tx_size])
+          << "tx_size = " << tx_size << ", i = " << i
+          << ", output[i] = " << output[i]
+          << ", ref_output[i] = " << ref_output[i];
     }
   }
 }
