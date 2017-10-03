@@ -106,8 +106,14 @@ class PaymentRequest : public mojom::PaymentRequest,
   // the first one being the most precise.
   void RecordFirstAbortReason(JourneyLogger::AbortReason completion_status);
 
-  // The PaymentRequestState::CanMakePaymentCallback.
+  // The PaymentRequestState::CanMakePaymentCallback. Checks for incognito mode
+  // and query quota and so may send QUERY_QUOTA_EXCEEDED.
   void CanMakePaymentCallback(bool can_make_payment);
+
+  // Sends either CAN_MAKE_PAYMENT or CANNOT_MAKE_PAYMENT to the renderer,
+  // depending on |can_make_payment| value. Never sends QUERY_QUOTA_EXCEEDED.
+  // Does not check quota or incognito mode.
+  void RespondToCanMakePaymentQuery(bool can_make_payment);
 
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;

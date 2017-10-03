@@ -208,6 +208,10 @@ PaymentRequestSpec::GetShippingOptions() const {
   return details_->shipping_options;
 }
 
+bool PaymentRequestSpec::HasBasicCardMethodName() const {
+  return !supported_card_networks_set_.empty();
+}
+
 const mojom::PaymentDetailsModifierPtr*
 PaymentRequestSpec::GetApplicableModifier(
     PaymentInstrument* selected_instrument) const {

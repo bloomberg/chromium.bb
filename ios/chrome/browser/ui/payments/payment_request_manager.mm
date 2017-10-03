@@ -716,9 +716,15 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   }
 
   if (paymentRequest->IsIncognito()) {
-    [_paymentRequestJsManager resolveCanMakePaymentPromiseWithValue:YES
-                                                  completionHandler:nil];
-    paymentRequest->journey_logger().SetCanMakePaymentValue(true);
+    BOOL privacyPreservingResponse =
+        !paymentRequest->supported_card_networks_set().empty() ||
+        base::FeatureList::IsEnabled(
+            payments::features::kWebPaymentsNativeApps);
+    [_paymentRequestJsManager
+        resolveCanMakePaymentPromiseWithValue:privacyPreservingResponse
+                            completionHandler:nil];
+    paymentRequest->journey_logger().SetCanMakePaymentValue(
+        privacyPreservingResponse);
     return YES;
   }
 

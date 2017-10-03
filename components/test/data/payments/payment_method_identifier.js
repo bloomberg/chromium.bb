@@ -99,6 +99,48 @@ function checkVisa() {  // eslint-disable-line no-unused-vars
 }
 
 /**
+ * Merchant checks for ability to pay using "https://alicepay.com/webpay".
+ */
+function checkAlicePay() {  // eslint-disable-line no-unused-vars
+  canMakePaymentHelper([{
+    supportedMethods: ['https://alicepay.com/webpay'],
+  }]);
+}
+
+/**
+ * Merchant checks for ability to pay using "https://bobpay.com/webpay".
+ */
+function checkBobPay() {  // eslint-disable-line no-unused-vars
+  canMakePaymentHelper([{
+    supportedMethods: ['https://bobpay.com/webpay'],
+  }]);
+}
+
+/**
+ * Merchant checks for ability to pay using "https://bobpay.com/webpay" or
+ * "basic-card".
+ */
+function checkBobPayAndBasicCard() {  // eslint-disable-line no-unused-vars
+  canMakePaymentHelper([{
+    supportedMethods: ['https://bobpay.com/webpay'],
+  }, {
+    supportedMethods: ['basic-card'],
+  }]);
+}
+
+/**
+ * Merchant checks for ability to pay using "https://bobpay.com/webpay" or
+ * "visa".
+ */
+function checkBobPayAndVisa() {  // eslint-disable-line no-unused-vars
+  canMakePaymentHelper([{
+    supportedMethods: ['https://bobpay.com/webpay'],
+  }, {
+    supportedMethods: ['visa'],
+  }]);
+}
+
+/**
  * Calls PaymentRequest.show() and prints out the result.
  * @param {sequence<PaymentMethodData>} methodData The supported methods.
  * @private
