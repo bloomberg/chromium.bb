@@ -188,9 +188,9 @@ class VoiceInteractionIcon : public ui::Layer {
    */
   void InitMoleculeShape() {
     for (int i = 0; i < DOT_COUNT; ++i) {
-      dot_layer_delegates_[i] = base::MakeUnique<views::CircleLayerDelegate>(
+      dot_layer_delegates_[i] = std::make_unique<views::CircleLayerDelegate>(
           kMoleculeColors[i], kMoleculeRadiusDip[i]);
-      dot_layers_[i] = base::MakeUnique<ui::Layer>();
+      dot_layers_[i] = std::make_unique<ui::Layer>();
 
       dot_layers_[i]->SetBounds(gfx::Rect(
           kIconInitSizeDip / 2 + kMoleculeOffsetXDip[i] - kMoleculeRadiusDip[i],
@@ -225,10 +225,10 @@ class VoiceInteractionIconBackground : public ui::Layer,
         small_size_(gfx::Size(kBackgroundSizeDip, kBackgroundSizeDip)),
         center_point_(
             gfx::PointF(kBackgroundSizeDip / 2, kBackgroundSizeDip / 2)),
-        circle_layer_delegate_(base::MakeUnique<views::CircleLayerDelegate>(
+        circle_layer_delegate_(std::make_unique<views::CircleLayerDelegate>(
             SK_ColorWHITE,
             kBackgroundSizeDip / 2)),
-        rect_layer_delegate_(base::MakeUnique<views::RectangleLayerDelegate>(
+        rect_layer_delegate_(std::make_unique<views::RectangleLayerDelegate>(
             SK_ColorWHITE,
             gfx::SizeF(small_size_))) {
     set_name("VoiceInteractionOverlay:BACKGROUND_LAYER");
@@ -236,15 +236,26 @@ class VoiceInteractionIconBackground : public ui::Layer,
     SetFillsBoundsOpaquely(false);
     SetMasksToBounds(false);
 
-    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
-      AddPaintLayer(static_cast<PaintedShape>(i));
-
     shadow_values_ =
         gfx::ShadowValue::MakeMdShadowValues(kBackgroundShadowElevationDip);
     const gfx::Insets shadow_margin =
         gfx::ShadowValue::GetMargin(shadow_values_);
 
-    shadow_layer_.reset(new ui::Layer());
+    border_shadow_delegate_ =
+        std::make_unique<views::BorderShadowLayerDelegate>(
+            shadow_values_, gfx::Rect(large_size_), SK_ColorWHITE,
+            kBackgroundCornerRadiusDip);
+
+    large_shadow_layer_ = std::make_unique<ui::Layer>();
+    large_shadow_layer_->set_delegate(border_shadow_delegate_.get());
+    large_shadow_layer_->SetFillsBoundsOpaquely(false);
+    large_shadow_layer_->SetBounds(
+        gfx::Rect(shadow_margin.left(), shadow_margin.top(),
+                  kBackgroundLargeWidthDip - shadow_margin.width(),
+                  kBackgroundLargeHeightDip - shadow_margin.height()));
+    Add(large_shadow_layer_.get());
+
+    shadow_layer_ = std::make_unique<ui::Layer>();
     shadow_layer_->set_delegate(this);
     shadow_layer_->SetFillsBoundsOpaquely(false);
     shadow_layer_->SetBounds(
@@ -252,8 +263,18 @@ class VoiceInteractionIconBackground : public ui::Layer,
                   kBackgroundInitSizeDip - shadow_margin.width(),
                   kBackgroundInitSizeDip - shadow_margin.height()));
     Add(shadow_layer_.get());
+
+    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
+      AddPaintLayer(static_cast<PaintedShape>(i));
   }
   ~VoiceInteractionIconBackground() override{};
+
+  void MoveLargeShadow(const gfx::PointF& new_center) {
+    gfx::Transform transform;
+    transform.Translate(new_center.x() - kBackgroundLargeWidthDip / 2,
+                        new_center.y() - kBackgroundLargeHeightDip / 2);
+    large_shadow_layer_->SetTransform(transform);
+  }
 
   void AnimateToLarge(const gfx::PointF& new_center,
                       ui::LayerAnimationObserver* animation_observer) {
@@ -265,6 +286,10 @@ class VoiceInteractionIconBackground : public ui::Layer,
 
     // Hide the shadow layer
     shadow_layer_->SetVisible(false);
+    // Also hide the large shadow layer, it will be shown when animation ends.
+    large_shadow_layer_->SetVisible(false);
+    // Move the shadow to the right place.
+    MoveLargeShadow(new_center);
 
     center_point_ = new_center;
     // Animate the painted layers to the large rectangle size
@@ -283,6 +308,10 @@ class VoiceInteractionIconBackground : public ui::Layer,
     SetPaintedLayersVisible(true);
     // Hide the shadow layer
     shadow_layer_->SetVisible(false);
+    // Show the large shadow behind
+    large_shadow_layer_->SetVisible(true);
+    // Move the shadow to the right place.
+    MoveLargeShadow(new_center);
 
     center_point_ = new_center;
     // Set the painted layers to the large rectangle size
@@ -294,6 +323,7 @@ class VoiceInteractionIconBackground : public ui::Layer,
   void ResetShape() {
     // This reverts to the original small round shape.
     shadow_layer_->SetVisible(true);
+    large_shadow_layer_->SetVisible(false);
     SetPaintedLayersVisible(false);
     center_point_.SetPoint(small_size_.width() / 2.f,
                            small_size_.height() / 2.f);
@@ -467,6 +497,15 @@ class VoiceInteractionIconBackground : public ui::Layer,
 
       animator->StartAnimation(sequence);
     }
+
+    {
+      ui::ScopedLayerAnimationSettings animation(
+          large_shadow_layer_->GetAnimator());
+      animation.SetTweenType(tween);
+      animation.SetTransitionDuration(duration);
+
+      large_shadow_layer_->SetVisible(true);
+    }
   }
 
   std::string ToLayerName(PaintedShape painted_shape) {
@@ -531,17 +570,24 @@ class VoiceInteractionIconBackground : public ui::Layer,
   // ui::LayerDelegate to paint rectangles for all the rectangle layers.
   std::unique_ptr<views::RectangleLayerDelegate> rect_layer_delegate_;
 
+  // ui::LayerDelegate to paint rounded rectangle with shadow.
+  std::unique_ptr<views::BorderShadowLayerDelegate> border_shadow_delegate_;
+
   gfx::ShadowValues shadow_values_;
 
+  // This layer shows the small circle with shadow.
   std::unique_ptr<ui::Layer> shadow_layer_;
+
+  // This layer shows the large rounded rectangle with shadow.
+  std::unique_ptr<ui::Layer> large_shadow_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIconBackground);
 };
 
 VoiceInteractionOverlay::VoiceInteractionOverlay(AppListButton* host_view)
-    : ripple_layer_(base::MakeUnique<ui::Layer>()),
-      icon_layer_(base::MakeUnique<VoiceInteractionIcon>()),
-      background_layer_(base::MakeUnique<VoiceInteractionIconBackground>()),
+    : ripple_layer_(std::make_unique<ui::Layer>()),
+      icon_layer_(std::make_unique<VoiceInteractionIcon>()),
+      background_layer_(std::make_unique<VoiceInteractionIconBackground>()),
       host_view_(host_view),
       circle_layer_delegate_(kRippleColor, kRippleCircleInitRadiusDip) {
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
