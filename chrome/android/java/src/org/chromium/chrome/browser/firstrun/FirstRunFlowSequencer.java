@@ -237,9 +237,10 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * Marks a given flow as completed.
-     * @param data Resulting FRE properties bundle.
+     * @param signInAccountName The account name for the pending sign-in request. (Or null)
+     * @param showSignInSettings Whether the user selected to see the settings once signed in.
      */
-    public static void markFlowAsCompleted(Bundle data) {
+    public static void markFlowAsCompleted(String signInAccountName, boolean showSignInSettings) {
         // When the user accepts ToS in the Setup Wizard (see ToSAckedReceiver), we do not
         // show the ToS page to the user because the user has already accepted one outside FRE.
         if (!PrefServiceBridge.getInstance().isFirstRunEulaAccepted()) {
@@ -247,7 +248,7 @@ public abstract class FirstRunFlowSequencer  {
         }
 
         // Mark the FRE flow as complete and set the sign-in flow preferences if necessary.
-        FirstRunSignInProcessor.finalizeFirstRunFlowState(data);
+        FirstRunSignInProcessor.finalizeFirstRunFlowState(signInAccountName, showSignInSettings);
     }
 
     /**
