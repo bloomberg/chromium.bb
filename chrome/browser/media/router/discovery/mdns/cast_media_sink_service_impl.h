@@ -115,6 +115,13 @@ class CastMediaSinkServiceImpl
                            TestInitRetryParameters);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithDefaultValue);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestCreateCastSocketOpenParams);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestInitRetryParametersWithFeatureDisabled);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestInitParameters);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestInitRetryParametersWithDefaultValue);
 
   // CastSocket::Observer implementation.
   void OnError(const cast_channel::CastSocket& socket,
@@ -124,6 +131,13 @@ class CastMediaSinkServiceImpl
 
   // DiscoveryNetworkMonitor::Observer implementation
   void OnNetworksChanged(const std::string& network_id) override;
+
+  // Returns cast socket open parameters. Parameters are read from Finch.
+  // Connect / liveness timeout value are dynamically calculated
+  // based on the channel's last error status.
+  // |ip_endpoint|: ip endpoint of cast channel to be connected to.
+  cast_channel::CastSocketOpenParams CreateCastSocketOpenParams(
+      const net::IPEndPoint& ip_endpoint);
 
   // Opens cast channel.
   // |ip_endpoint|: cast channel's target IP endpoint.
@@ -173,19 +187,57 @@ class CastMediaSinkServiceImpl
   // |ip_endpoint|: ip endpoint of cast channel failing to connect to.
   void OnChannelOpenFailed(const net::IPEndPoint& ip_endpoint);
 
+  // Holds Finch field trial parameters controlling Cast channel retry strategy.
+  struct RetryParams {
+    // Initial delay (in ms) once backoff starts.
+    int initial_delay_in_milliseconds;
+
+    // Max retry attempts allowed when opening a Cast socket.
+    int max_retry_attempts;
+
+    // Factor by which the delay will be multiplied on each subsequent failure.
+    // This must be >= 1.0.
+    double multiply_factor;
+
+    RetryParams();
+    ~RetryParams();
+
+    bool Validate();
+
+    static RetryParams GetFromFieldTrialParam();
+  };
+
+  // Holds Finch field trial parameters controlling Cast channel open.
+  struct OpenParams {
+    // Connect timeout value when opening a Cast socket.
+    int connect_timeout_in_seconds;
+
+    // Amount of idle time to wait before pinging the Cast device.
+    int ping_interval_in_seconds;
+
+    // Amount of idle time to wait before disconnecting.
+    int liveness_timeout_in_seconds;
+
+    // Dynamic time out delta for connect timeout and liveness timeout. If
+    // previous channel open operation with opening parameters (liveness
+    // timeout, connect timeout) fails, next channel open will have parameters
+    // (liveness timeout + delta, connect timeout + delta).
+    int dynamic_timeout_delta_in_seconds;
+
+    OpenParams();
+    ~OpenParams();
+
+    bool Validate();
+
+    static OpenParams GetFromFieldTrialParam();
+  };
+
   // Set of IP endpoints pending to be connected to.
   std::set<net::IPEndPoint> pending_for_open_ip_endpoints_;
 
   // Set of IP endpoints found in current round of mDNS service. Used by
   // RecordDeviceCounts().
   std::set<net::IPEndPoint> known_ip_endpoints_;
-
-  // Initializes |backoff_policy| and |max_retry_attempts| according to feature
-  // parameters. Sets |max_retry_attempts| to 0 if cast channel retry feature is
-  // not enabled; Sets |backoff_policy| and |max_retry_attempts| to default
-  // value if parsing parameter fails.
-  static void InitRetryParameters(net::BackoffEntry::Policy* backoff_policy,
-                                  int* max_retry_attempts);
 
   using MediaSinkInternalMap = std::map<net::IPAddress, MediaSinkInternal>;
 
@@ -207,22 +259,16 @@ class CastMediaSinkServiceImpl
 
   CastDeviceCountMetrics metrics_;
 
-  // Default backoff policy to reopen Cast Socket when channel error occurs.
-  static const net::BackoffEntry::Policy kDefaultBackoffPolicy;
+  RetryParams retry_params_;
 
-  // TODO(zhaobin): Remove this when we switch to use max delay instead of max
-  // number of retry attempts to decide when to stop retry.
-  static constexpr int kDefaultMaxRetryAttempts = 3;
-
-  // Parameter name const for kEnableCastDiscovery feature.
-  static constexpr char const kParamNameInitialDelayMS[] = "initial_delay_ms";
-  static constexpr char const kParamNameMaxRetryAttempts[] =
-      "max_retry_attempts";
-  static constexpr char const kParamNameExponential[] = "exponential";
+  OpenParams open_params_;
 
   net::BackoffEntry::Policy backoff_policy_;
 
-  int max_retry_attempts_;
+  // Map of consecutive failure count keyed by IP endpoint. Keeps track of
+  // failure counts for each IP endpoint. Used to dynamically adjust timeout
+  // values. If a Cast channel opens successfully, it is removed from the map.
+  std::map<net::IPEndPoint, int> failure_count_map_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

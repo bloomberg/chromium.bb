@@ -11,17 +11,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// Ping interval
-const int kPingIntervalInSecs = 5;
-
-// Liveness timeout for connect calls, in milliseconds. If no message is
-// received from the receiver during kConnectLivenessTimeoutSecs, it is
-// considered gone.
-const int kConnectLivenessTimeoutSecs = kPingIntervalInSecs * 2;
-}  // namespace
-
 namespace cast_channel {
 
 int CastSocketService::last_channel_id_ = 0;
@@ -107,20 +96,6 @@ int CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
   socket->Connect(std::move(open_cb));
 
   return socket->id();
-}
-
-int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
-                                  net::NetLog* net_log,
-                                  base::TimeDelta connect_timeout,
-                                  CastSocket::OnOpenCallback open_cb) {
-  auto ping_interval = base::TimeDelta::FromSeconds(kPingIntervalInSecs);
-  auto liveness_timeout =
-      base::TimeDelta::FromSeconds(kConnectLivenessTimeoutSecs);
-  CastSocketOpenParams open_params(ip_endpoint, net_log, connect_timeout,
-                                   liveness_timeout, ping_interval,
-                                   CastDeviceCapability::NONE);
-
-  return OpenSocket(open_params, std::move(open_cb));
 }
 
 void CastSocketService::AddObserver(CastSocket::Observer* observer) {
