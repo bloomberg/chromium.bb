@@ -270,12 +270,12 @@ typedef enum {
 
 // frame transform mode
 typedef enum {
-  ONLY_4X4 = 0,     // only 4x4 transform used
-  ALLOW_8X8 = 1,    // allow block transform size up to 8x8
-  ALLOW_16X16 = 2,  // allow block transform size up to 16x16
-  ALLOW_32X32 = 3,  // allow block transform size up to 32x32
+  ONLY_4X4,     // only 4x4 transform used
+  ALLOW_8X8,    // allow block transform size up to 8x8
+  ALLOW_16X16,  // allow block transform size up to 16x16
+  ALLOW_32X32,  // allow block transform size up to 32x32
 #if CONFIG_TX64X64
-  ALLOW_64X64 = 4,  // allow block transform size up to 64x64
+  ALLOW_64X64,  // allow block transform size up to 64x64
 #endif
   TX_MODE_SELECT,  // transform specified for each block
   TX_MODES,
@@ -283,33 +283,33 @@ typedef enum {
 
 // 1D tx types
 typedef enum {
-  DCT_1D = 0,
-  ADST_1D = 1,
-  FLIPADST_1D = 2,
-  IDTX_1D = 3,
+  DCT_1D,
+  ADST_1D,
+  FLIPADST_1D,
+  IDTX_1D,
   // TODO(sarahparker) need to eventually put something here for the
   // mrc experiment to make this work with the ext-tx pruning functions
-  TX_TYPES_1D = 4,
+  TX_TYPES_1D,
 } TX_TYPE_1D;
 
 typedef enum {
-  DCT_DCT = 0,    // DCT  in both horizontal and vertical
-  ADST_DCT = 1,   // ADST in vertical, DCT in horizontal
-  DCT_ADST = 2,   // DCT  in vertical, ADST in horizontal
-  ADST_ADST = 3,  // ADST in both directions
+  DCT_DCT,    // DCT  in both horizontal and vertical
+  ADST_DCT,   // ADST in vertical, DCT in horizontal
+  DCT_ADST,   // DCT  in vertical, ADST in horizontal
+  ADST_ADST,  // ADST in both directions
 #if CONFIG_EXT_TX
-  FLIPADST_DCT = 4,
-  DCT_FLIPADST = 5,
-  FLIPADST_FLIPADST = 6,
-  ADST_FLIPADST = 7,
-  FLIPADST_ADST = 8,
-  IDTX = 9,
-  V_DCT = 10,
-  H_DCT = 11,
-  V_ADST = 12,
-  H_ADST = 13,
-  V_FLIPADST = 14,
-  H_FLIPADST = 15,
+  FLIPADST_DCT,
+  DCT_FLIPADST,
+  FLIPADST_FLIPADST,
+  ADST_FLIPADST,
+  FLIPADST_ADST,
+  IDTX,
+  V_DCT,
+  H_DCT,
+  V_ADST,
+  H_ADST,
+  V_FLIPADST,
+  H_FLIPADST,
 #endif  // CONFIG_EXT_TX
 #if CONFIG_MRC_TX
   MRC_DCT,  // DCT in both directions with mrc based bitmask
@@ -320,7 +320,7 @@ typedef enum {
 #if CONFIG_EXT_TX
 typedef enum {
   // DCT only
-  EXT_TX_SET_DCTONLY = 0,
+  EXT_TX_SET_DCTONLY,
   // DCT + Identity only
   EXT_TX_SET_DCT_IDTX,
 #if CONFIG_MRC_TX
@@ -398,15 +398,15 @@ typedef enum {
 #define USE_UNI_COMP_REFS 1
 
 typedef enum {
-  UNIDIR_COMP_REFERENCE = 0,
-  BIDIR_COMP_REFERENCE = 1,
-  COMP_REFERENCE_TYPES = 2,
+  UNIDIR_COMP_REFERENCE,
+  BIDIR_COMP_REFERENCE,
+  COMP_REFERENCE_TYPES,
 } COMP_REFERENCE_TYPE;
 #else  // !CONFIG_EXT_COMP_REFS
 #define USE_UNI_COMP_REFS 0
 #endif  // CONFIG_EXT_COMP_REFS
 
-typedef enum { PLANE_TYPE_Y = 0, PLANE_TYPE_UV = 1, PLANE_TYPES } PLANE_TYPE;
+typedef enum { PLANE_TYPE_Y, PLANE_TYPE_UV, PLANE_TYPES } PLANE_TYPE;
 
 #if CONFIG_CFL
 #define CFL_ALPHABET_SIZE_LOG2 4
@@ -415,12 +415,12 @@ typedef enum { PLANE_TYPE_Y = 0, PLANE_TYPE_UV = 1, PLANE_TYPES } PLANE_TYPE;
 #define CFL_IDX_U(idx) (idx >> CFL_ALPHABET_SIZE_LOG2)
 #define CFL_IDX_V(idx) (idx & (CFL_ALPHABET_SIZE - 1))
 
-typedef enum { CFL_PRED_U = 0, CFL_PRED_V = 1, CFL_PRED_PLANES } CFL_PRED_TYPE;
+typedef enum { CFL_PRED_U, CFL_PRED_V, CFL_PRED_PLANES } CFL_PRED_TYPE;
 
 typedef enum {
-  CFL_SIGN_ZERO = 0,
-  CFL_SIGN_NEG = 1,
-  CFL_SIGN_POS = 2,
+  CFL_SIGN_ZERO,
+  CFL_SIGN_NEG,
+  CFL_SIGN_POS,
   CFL_SIGNS
 } CFL_SIGN_TYPE;
 
@@ -546,7 +546,7 @@ typedef enum ATTRIBUTE_PACKED {
 #endif  // CONFIG_CFL
 
 typedef enum {
-  SIMPLE_TRANSLATION = 0,
+  SIMPLE_TRANSLATION,
 #if CONFIG_MOTION_VAR
   OBMC_CAUSAL,  // 2-sided OBMC
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -565,7 +565,7 @@ typedef enum {
 
 #if CONFIG_INTERINTRA
 typedef enum {
-  II_DC_PRED = 0,
+  II_DC_PRED,
   II_V_PRED,
   II_H_PRED,
   II_SMOOTH_PRED,
@@ -574,7 +574,7 @@ typedef enum {
 #endif
 
 typedef enum {
-  COMPOUND_AVERAGE = 0,
+  COMPOUND_AVERAGE,
 #if CONFIG_WEDGE
   COMPOUND_WEDGE,
 #endif  // CONFIG_WEDGE
@@ -725,9 +725,9 @@ typedef enum {
 
 #if CONFIG_LOOP_RESTORATION
 typedef enum {
-  RESTORE_NONE = 0,
-  RESTORE_WIENER = 1,
-  RESTORE_SGRPROJ = 2,
+  RESTORE_NONE,
+  RESTORE_WIENER,
+  RESTORE_SGRPROJ,
   RESTORE_SWITCHABLE,
   RESTORE_SWITCHABLE_TYPES = RESTORE_SWITCHABLE,
   RESTORE_TYPES,
