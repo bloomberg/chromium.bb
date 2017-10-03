@@ -1052,12 +1052,15 @@ void HTMLInputElement::SetValueForUser(const String& value) {
   setValue(value, kDispatchChangeEvent);
 }
 
+const String& HTMLInputElement::SuggestedValue() const {
+  return suggested_value_;
+}
+
 void HTMLInputElement::SetSuggestedValue(const String& value) {
   if (!input_type_->CanSetSuggestedValue())
     return;
-
-  TextControlElement::SetSuggestedValue(SanitizeValue(value));
   needs_to_update_view_value_ = true;
+  suggested_value_ = SanitizeValue(value);
   SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(StyleChangeReason::kControlValue));
@@ -1101,16 +1104,14 @@ void HTMLInputElement::setValue(const String& value,
   if (!input_type_->CanSetValue(value))
     return;
 
-  // Clear the suggested value. Use the base class version to not trigger a view
-  // update.
-  TextControlElement::SetSuggestedValue(String());
-
   EventQueueScope scope;
   String sanitized_value = SanitizeValue(value);
   bool value_changed = sanitized_value != this->value();
 
   SetLastChangeWasNotUserEdit();
   needs_to_update_view_value_ = true;
+  // Prevent TextFieldInputType::setValue from using the suggested value.
+  suggested_value_ = String();
 
   input_type_->SetValue(sanitized_value, value_changed, event_behavior,
                         selection);
@@ -1182,9 +1183,7 @@ void HTMLInputElement::SetValueFromRenderer(const String& value) {
   // File upload controls will never use this.
   DCHECK_NE(type(), InputTypeNames::file);
 
-  // Clear the suggested value. Use the base class version to not trigger a view
-  // update.
-  TextControlElement::SetSuggestedValue(String());
+  suggested_value_ = String();
 
   // Renderer and our event handler are responsible for sanitizing values.
   DCHECK(value == input_type_->SanitizeUserInputValue(value) ||
@@ -1688,10 +1687,6 @@ bool HTMLInputElement::SupportsPlaceholder() const {
 
 void HTMLInputElement::UpdatePlaceholderText() {
   return input_type_view_->UpdatePlaceholderText();
-}
-
-String HTMLInputElement::GetPlaceholderValue() const {
-  return !SuggestedValue().IsEmpty() ? SuggestedValue() : StrippedPlaceholder();
 }
 
 bool HTMLInputElement::SupportsAutocapitalize() const {

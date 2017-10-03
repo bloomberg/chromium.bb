@@ -52,7 +52,8 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   void setDefaultValue(const String&);
   int textLength() const { return value().length(); }
 
-  void SetSuggestedValue(const String& value) override;
+  String SuggestedValue() const;
+  void SetSuggestedValue(const String&);
 
   // For ValidityState
   String validationMessage() const override;
@@ -86,9 +87,11 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   bool IsPlaceholderVisible() const override { return is_placeholder_visible_; }
   void SetPlaceholderVisibility(bool) override;
   bool SupportsPlaceholder() const override { return true; }
-  String GetPlaceholderValue() const final;
   void UpdatePlaceholderText() override;
   bool IsEmptyValue() const override { return value().IsEmpty(); }
+  bool IsEmptySuggestedValue() const final {
+    return SuggestedValue().IsEmpty();
+  }
   bool SupportsAutocapitalize() const override { return true; }
   const AtomicString& DefaultAutocapitalize() const override;
 
@@ -144,6 +147,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   mutable String value_;
   mutable bool is_dirty_;
   unsigned is_placeholder_visible_ : 1;
+  String suggested_value_;
 };
 
 }  // namespace blink
