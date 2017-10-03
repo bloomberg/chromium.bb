@@ -25,20 +25,45 @@ function assert_available_in_iframe(
   document.body.appendChild(frame);
 }
 
+// TODO(crbug.com/769189): A race condition can mean that requests for
+// permission can reach the browser process before navigations do in same-origin
+// iframes. This hack loads a cross-origin iframe to ensure that the load
+// has reached the browser process. Remove this function once that is fixed.
+function ensure_navigation_complete_hack(cross_origin_frame_url) {
+  return new Promise(function(resolve, reject) {
+    const frame = document.createElement('iframe');
+    frame.src = cross_origin_frame_url + ';hack';
+    frame.onload = function() { resolve(); };
+    document.body.appendChild(frame);
+  });
+}
+
 function run_permission_default_header_policy_tests(
     cross_origin, feature_name, error_name, feature_promise_factory) {
   // This may be the version of the page loaded up in an iframe. If so, just
   // post the result of running the feature promise back to the parent.
+  const same_origin_frame_pathname = location.pathname + '#iframe';
+  const cross_origin_frame_url = cross_origin + same_origin_frame_pathname;
+
+  if (location.hash.includes('hack'))
+    return;
+
   if (location.hash == '#iframe') {
-    feature_promise_factory().then(
-        () => window.parent.postMessage('#OK', '*'), error => {
-          var name = error.name;
-          // TODO(raymes): We use error.toString() here instead of error.name
-          // because the latter currently returns undefined for PositionError.
-          if (!name)
-            name = error.toString().split(' ')[1].split(']')[0];
-          window.parent.postMessage('#' + name, '*');
-        });
+    const feature_success = () => {
+      window.parent.postMessage('#OK', '*');
+    };
+    const feature_failure = (error) => {
+      var name = error.name;
+      // TODO(raymes): We use error.toString() here instead of error.name
+      // because the latter currently returns undefined for PositionError.
+      if (!name)
+        name = error.toString().split(' ')[1].split(']')[0];
+      window.parent.postMessage('#' + name, '*');
+    }
+
+    ensure_navigation_complete_hack(cross_origin_frame_url).then(() => {
+      feature_promise_factory().then(feature_success, feature_failure);
+    });
     return;
   }
 
@@ -54,7 +79,6 @@ function run_permission_default_header_policy_tests(
   // 2. Same-origin iframe.
   // Append #iframe to the URL so we can detect the iframe'd version of the
   // page.
-  const same_origin_frame_pathname = location.pathname + '#iframe';
   async_test(
       t => {
         assert_available_in_iframe(
@@ -64,7 +88,6 @@ function run_permission_default_header_policy_tests(
           '" feature policy ["self"] allows same-origin iframes.');
 
   // 3. Cross-origin iframe.
-  const cross_origin_frame_url = cross_origin + same_origin_frame_pathname;
   async_test(
       t => {
         assert_available_in_iframe(
