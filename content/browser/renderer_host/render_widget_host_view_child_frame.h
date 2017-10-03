@@ -311,6 +311,17 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   std::unique_ptr<TouchSelectionControllerClientChildFrame>
       selection_controller_client_;
 
+  // Used to prevent bubbling of subsequent GestureScrollUpdates in a scroll
+  // gesture if the child consumed the first GSU.
+  // TODO(mcnee): This is only needed for |!wheel_scroll_latching_enabled()|
+  // and can be removed once scroll-latching lands. crbug.com/526463
+  enum ScrollBubblingState {
+    NO_ACTIVE_GESTURE_SCROLL,
+    AWAITING_FIRST_UPDATE,
+    BUBBLE,
+    SCROLL_CHILD,
+  } scroll_bubbling_state_;
+
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
 };

@@ -80,6 +80,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
       background_color_(SK_ColorWHITE),
+      scroll_bubbling_state_(NO_ACTIVE_GESTURE_SCROLL),
       weak_factory_(this) {
   if (!IsUsingMus()) {
     GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
@@ -453,14 +454,32 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
       frame_connector_->BubbleScrollEvent(event);
     }
   } else {
+    // Consumption of the first GestureScrollUpdate determines whether to
+    // bubble the sequence of GestureScrollUpdates.
+    // If the child consumed some scroll, then stopped consuming once it could
+    // no longer scroll, we don't want to bubble those unconsumed GSUs as we
+    // want the user to start a new gesture in order to scroll the parent.
+    // Unfortunately, this is only effective for touch scrolling as wheel
+    // scrolling wraps GSUs in GSB/GSE pairs.
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+      DCHECK_EQ(NO_ACTIVE_GESTURE_SCROLL, scroll_bubbling_state_);
+      scroll_bubbling_state_ = AWAITING_FIRST_UPDATE;
+    } else if (scroll_bubbling_state_ == AWAITING_FIRST_UPDATE &&
+               event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+      scroll_bubbling_state_ = (should_bubble ? BUBBLE : SCROLL_CHILD);
+    } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+               event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+      scroll_bubbling_state_ = NO_ACTIVE_GESTURE_SCROLL;
+    }
+
     // GestureScrollBegin is consumed by the target frame and not forwarded,
     // because we don't know whether we will need to bubble scroll until we
-    // receive a GestureScrollUpdate ACK. GestureScrollUpdate with unused
-    // scroll extent is forwarded for bubbling, while GestureScrollEnd is
-    // always forwarded and handled according to current scroll state in the
-    // RenderWidgetHostInputEventRouter.
+    // receive a GestureScrollUpdate ACK. GestureScrollUpdates are forwarded
+    // for bubbling if the first GSU has unused scroll extent,
+    // while GestureScrollEnd is always forwarded and handled according to
+    // current scroll state in the RenderWidgetHostInputEventRouter.
     if ((event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-         should_bubble) ||
+         scroll_bubbling_state_ == BUBBLE) ||
         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
         event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
       frame_connector_->BubbleScrollEvent(event);
