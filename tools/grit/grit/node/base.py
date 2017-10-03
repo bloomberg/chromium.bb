@@ -8,12 +8,14 @@
 
 import ast
 import os
+import sys
 import types
 from xml.sax import saxutils
 
 from grit import clique
 from grit import exception
 from grit import util
+import grit.format.gzip_string
 
 
 class Node(object):
@@ -605,6 +607,26 @@ class Node(object):
       is_active_descendant: Whether the current node is an active descendant
                             from the root node.'''
     return False
+
+  def CompressDataIfNeeded(self, data):
+    '''Compress data using the format specified in the compress attribute.
+
+    Args:
+      data: The data to compressed.
+    Returns:
+      The data in compressed format. If the format was unknown or not supported
+      on the target platform then returns the data uncompressed.
+    '''
+    if (self.attrs.get('compress') != 'gzip'
+        or self.GetRoot().target_platform == 'ios'):
+      return data
+
+    # We only use rsyncable compression on Linux.
+    # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
+    # the --rsyncable option built in for gzip. See crbug.com/617950.
+    if sys.platform == 'linux2' and 'chromeos' not in self.GetRoot().defines:
+      return grit.format.gzip_string.GzipStringRsyncable(data)
+    return grit.format.gzip_string.GzipString(data)
 
 
 class ContentNode(Node):

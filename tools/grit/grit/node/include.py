@@ -7,11 +7,9 @@
 """
 
 import os
-import sys
 
 from grit import exception
 from grit import util
-import grit.format.gzip_string
 import grit.format.html_inline
 import grit.format.rc
 import grit.format.rc_header
@@ -97,19 +95,10 @@ class IncludeNode(base.Node):
     # Note that the minifier will only do anything if a minifier command
     # has been set in the command line.
     data = minifier.Minify(data, filename)
-    use_gzip = self.attrs.get('compress', '') == 'gzip'
-    if use_gzip and self.GetRoot().target_platform != 'ios':
-      # We only use rsyncable compression on Linux.
-      # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
-      # the --rsyncable option built in for gzip. See crbug.com/617950.
-      if sys.platform == 'linux2' and 'chromeos' not in self.GetRoot().defines:
-        data = grit.format.gzip_string.GzipStringRsyncable(data)
-      else:
-        data = grit.format.gzip_string.GzipString(data)
 
     # Include does not care about the encoding, because it only returns binary
     # data.
-    return id, data
+    return id, self.CompressDataIfNeeded(data)
 
   def Process(self, output_dir):
     """Rewrite file references to be base64 encoded data URLs.  The new file
