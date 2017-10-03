@@ -267,7 +267,7 @@ class _BuildHelper(object):
           'ffmpeg_branding="Chrome" proprietary_codecs=true')
     if self.IsLinux():
       self.extra_gn_args_str += (
-          ' allow_posix_link_time_opt=false generate_linker_map=true')
+          ' is_cfi=false generate_linker_map=true')
     self.target = self.target if self.IsAndroid() else 'chrome'
 
   def _GenGnCmd(self):

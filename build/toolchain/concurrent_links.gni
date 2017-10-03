@@ -20,19 +20,11 @@ declare_args() {
 }
 
 if (concurrent_links == -1) {
-  if (allow_posix_link_time_opt || is_cfi) {
-    if (use_thin_lto) {
-      _args = [
-        "--mem_per_link_gb=10",
-        "--reserve_mem_gb=10",
-      ]
-    } else {
-      # Full LTO, needs lots of RAM
-      _args = [
-        "--mem_per_link_gb=26",
-        "--reserve_mem_gb=20",
-      ]
-    }
+  if (use_thin_lto) {
+    _args = [
+      "--mem_per_link_gb=10",
+      "--reserve_mem_gb=10",
+    ]
   } else if (use_sanitizer_coverage) {
     # Sanitizer coverage instrumentation increases linker memory consumption
     # significantly.
