@@ -6,9 +6,25 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_record.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace cc {
+namespace {
+
+sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
+                             const SkRect& bounds,
+                             const SkMatrix* matrix,
+                             ImageProvider* image_provider) {
+  SkPictureRecorder recorder;
+  SkCanvas* canvas = recorder.beginRecording(bounds);
+  if (matrix)
+    canvas->setMatrix(*matrix);
+  record->Playback(canvas, image_provider);
+  return recorder.finishRecordingAsPicture();
+}
+
+}  // namespace
 
 sk_sp<PaintShader> PaintShader::MakeColor(SkColor color) {
   sk_sp<PaintShader> shader(new PaintShader(Type::kColor));
@@ -139,6 +155,96 @@ sk_sp<PaintShader> PaintShader::MakePaintRecord(
 PaintShader::PaintShader(Type type) : shader_type_(type) {}
 PaintShader::~PaintShader() = default;
 
+bool PaintShader::GetRasterizationTileRect(const SkMatrix& ctm,
+                                           SkRect* tile_rect) const {
+  DCHECK_EQ(shader_type_, Type::kPaintRecord);
+
+  // If we are using a fixed scale, the record is rasterized with the original
+  // tile size and scaling is applied to the generated output.
+  if (scaling_behavior_ == ScalingBehavior::kFixedScale) {
+    *tile_rect = tile_;
+    return true;
+  }
+
+  SkMatrix matrix = ctm;
+  if (local_matrix_.has_value())
+    matrix.preConcat(local_matrix_.value());
+
+  SkSize scale;
+  if (!matrix.decomposeScale(&scale)) {
+    // Decomposition failed, use an approximation.
+    scale.set(SkScalarSqrt(matrix.getScaleX() * matrix.getScaleX() +
+                           matrix.getSkewX() * matrix.getSkewX()),
+              SkScalarSqrt(matrix.getScaleY() * matrix.getScaleY() +
+                           matrix.getSkewY() * matrix.getSkewY()));
+  }
+  SkSize scaled_size =
+      SkSize::Make(SkScalarAbs(scale.width() * tile_.width()),
+                   SkScalarAbs(scale.height() * tile_.height()));
+
+  // Clamp the tile size to about 4M pixels.
+  // TODO(khushalsagar): We need to consider the max texture size as well.
+  static const SkScalar kMaxTileArea = 2048 * 2048;
+  SkScalar tile_area = scaled_size.width() * scaled_size.height();
+  if (tile_area > kMaxTileArea) {
+    SkScalar clamp_scale = SkScalarSqrt(kMaxTileArea / tile_area);
+    scaled_size.set(scaled_size.width() * clamp_scale,
+                    scaled_size.height() * clamp_scale);
+  }
+
+  scaled_size = scaled_size.toCeil();
+  if (scaled_size.isEmpty())
+    return false;
+
+  *tile_rect = SkRect::MakeWH(scaled_size.width(), scaled_size.height());
+  return true;
+}
+
+sk_sp<PaintShader> PaintShader::CreateDecodedPaintRecord(
+    const SkMatrix& ctm,
+    ImageProvider* image_provider) const {
+  DCHECK_EQ(shader_type_, Type::kPaintRecord);
+
+  // For creating a decoded PaintRecord shader, we need to do the following:
+  // 1) Figure out the scale at which the record should be rasterization given
+  //    the ctm and local_matrix on the shader.
+  // 2) Transform this record to an SkPicture with this scale and replace
+  //    encoded images in this record with decodes from the ImageProvider. This
+  //    is done by setting the rasterization_matrix_ for this shader to be used
+  //    in GetSkShader.
+  // 3) Since the SkShader will use a scaled SkPicture, we use a kFixedScale for
+  //    the decoded shader which creates an SkPicture backed SkImage for
+  //    creating the decoded SkShader.
+  // Note that the scaling logic here is replicated from
+  // SkPictureShader::refBitmapShader.
+  SkRect tile_rect;
+  if (!GetRasterizationTileRect(ctm, &tile_rect))
+    return nullptr;
+
+  sk_sp<PaintShader> shader(new PaintShader(Type::kPaintRecord));
+  shader->record_ = record_;
+  shader->tile_ = tile_rect;
+  // Use a fixed scale since we have already scaled the tile rect and fixed the
+  // raster scale.
+  shader->scaling_behavior_ = ScalingBehavior::kFixedScale;
+  shader->rasterization_matrix_.emplace();
+  shader->rasterization_matrix_.value().setRectToRect(
+      tile_, tile_rect, SkMatrix::kFill_ScaleToFit);
+  shader->tx_ = tx_;
+  shader->ty_ = ty_;
+
+  const SkSize tile_scale =
+      SkSize::Make(SkIntToScalar(tile_rect.width()) / tile_.width(),
+                   SkIntToScalar(tile_rect.height()) / tile_.height());
+  shader->local_matrix_ = GetLocalMatrix();
+  shader->local_matrix_->preScale(1 / tile_scale.width(),
+                                  1 / tile_scale.height());
+
+  shader->image_provider_ = image_provider;
+
+  return shader;
+}
+
 sk_sp<SkShader> PaintShader::GetSkShader() const {
   if (cached_shader_)
     return cached_shader_;
@@ -182,7 +288,12 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
           tx_, ty_, local_matrix_ ? &*local_matrix_ : nullptr);
       break;
     case Type::kPaintRecord: {
-      auto picture = ToSkPicture(record_, tile_);
+      // Create a recording at the desired scale if this record has images which
+      // have been decoded before raster.
+      auto picture = ToSkPicture(
+          record_, tile_,
+          rasterization_matrix_ ? &rasterization_matrix_.value() : nullptr,
+          image_provider_);
 
       switch (scaling_behavior_) {
         // For raster scale, we create a picture shader directly.
@@ -191,7 +302,7 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
               std::move(picture), tx_, ty_,
               local_matrix_ ? &*local_matrix_ : nullptr, nullptr);
           break;
-        // For fixed scale, we create an image shader with and image backed by
+        // For fixed scale, we create an image shader with an image backed by
         // the picture.
         case ScalingBehavior::kFixedScale: {
           auto image = SkImage::MakeFromPicture(
