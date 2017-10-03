@@ -23843,6 +23843,11 @@
             "soraka"
         ],
         "important": true,
+        "sign_types": [
+            "recovery",
+            "accessory_rwsig",
+            "factory"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },

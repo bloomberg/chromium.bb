@@ -3469,6 +3469,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'poppy-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
+
+      'soraka-release': {
+          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
+      },
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():
