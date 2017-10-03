@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "components/printing/service/pdf_compositor_impl.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
 #include "content/public/common/service_names.mojom.h"
@@ -16,6 +17,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
+
+#if defined(OS_WIN)
+#include "content/public/child/dwrite_font_proxy_init_win.h"
+#endif
 
 namespace {
 
@@ -34,11 +39,19 @@ namespace printing {
 PdfCompositorService::PdfCompositorService(const std::string& creator)
     : creator_(creator.empty() ? "Chromium" : creator), weak_factory_(this) {}
 
-PdfCompositorService::~PdfCompositorService() = default;
+PdfCompositorService::~PdfCompositorService() {
+#if defined(OS_WIN)
+  content::UninitializeDWriteFontProxy();
+#endif
+}
 
 // static
 std::unique_ptr<service_manager::Service> PdfCompositorService::Create(
     const std::string& creator) {
+#if defined(OS_WIN)
+  // Initialize direct write font proxy so skia can use it.
+  content::InitializeDWriteFontProxy();
+#endif
   return base::MakeUnique<printing::PdfCompositorService>(creator);
 }
 

@@ -86,7 +86,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_impl_win.h"
 #endif
 
 namespace content {

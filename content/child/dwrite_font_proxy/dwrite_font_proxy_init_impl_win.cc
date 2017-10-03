@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_impl_win.h"
 
 #include <dwrite.h>
 
@@ -66,8 +66,8 @@ void InitializeDWriteFontProxy() {
     sender = ChildThreadImpl::current()->thread_safe_sender();
 
   if (!g_font_collection) {
-    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
-        &g_font_collection, factory.Get(), sender);
+    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(&g_font_collection,
+                                                       factory.Get(), sender);
   }
 
   mswr::ComPtr<IDWriteFactory2> factory2;
@@ -92,7 +92,7 @@ void InitializeDWriteFontProxy() {
   // This flag can be removed when Win8.0 and earlier are no longer supported.
   bool fallback_available = g_font_fallback.Get() != nullptr;
   DCHECK_EQ(fallback_available,
-    base::win::GetVersion() > base::win::VERSION_WIN8);
+            base::win::GetVersion() > base::win::VERSION_WIN8);
   blink::WebFontRendering::SetUseSkiaFontFallback(fallback_available);
 }
 

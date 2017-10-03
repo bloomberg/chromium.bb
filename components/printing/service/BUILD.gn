@@ -18,6 +18,7 @@ static_library("service") {
     "//base",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
+    "//content/public/child",
     "//content/public/common:service_names",
     "//content/public/utility",
     "//printing/common",
