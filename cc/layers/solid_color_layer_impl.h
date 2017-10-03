@@ -26,6 +26,7 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
                                viz::SharedQuadState* shared_quad_state,
                                const gfx::Rect& visible_layer_rect,
                                SkColor color,
+                               bool force_anti_aliasing_off,
                                AppendQuadsData* append_quads_data);
 
   ~SolidColorLayerImpl() override;

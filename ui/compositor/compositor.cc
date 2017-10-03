@@ -100,6 +100,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   refresh_rate_ = context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
 
+  // Disable edge anti-aliasing in order to increase support for HW overlays.
+  settings.enable_edge_anti_aliasing = false;
+
   if (command_line->HasSwitch(switches::kLimitFps)) {
     std::string fps_str =
         command_line->GetSwitchValueASCII(switches::kLimitFps);

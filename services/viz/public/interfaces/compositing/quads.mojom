@@ -39,6 +39,8 @@ struct RenderPassQuadState {
   gfx.mojom.PointF filters_origin;
   // Render surface's non-normalized texture rect.
   gfx.mojom.RectF tex_coord_rect;
+
+  bool force_anti_aliasing_off;
 };
 
 struct SolidColorQuadState {
@@ -82,6 +84,7 @@ struct TileQuadState {
   bool swizzle_contents;
   uint32 resource_id;
   bool nearest_neighbor;
+  bool force_anti_aliasing_off;
 };
 
 enum YUVColorSpace {

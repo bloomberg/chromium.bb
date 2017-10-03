@@ -309,7 +309,7 @@ class SurfaceAggregatorTest : public testing::Test {
     auto* quad = pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
                  gfx::RectF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-                 gfx::RectF());
+                 gfx::RectF(), false);
   }
 
  protected:
