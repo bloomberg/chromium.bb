@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "core/CoreExport.h"
+#include "platform/PlatformExport.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
 
@@ -41,7 +41,7 @@ namespace blink {
 
 class KURL;
 
-class CORE_EXPORT V8DOMActivityLogger {
+class PLATFORM_EXPORT V8DOMActivityLogger {
   USING_FAST_MALLOC(V8DOMActivityLogger);
 
  public:

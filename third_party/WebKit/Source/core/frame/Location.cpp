@@ -30,7 +30,6 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/string_or_trusted_url.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -40,6 +39,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/url/DOMURLUtilsReadOnly.h"
+#include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

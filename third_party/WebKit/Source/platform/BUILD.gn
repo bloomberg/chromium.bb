@@ -532,6 +532,8 @@ jumbo_component("platform") {
     "bindings/V8Binding.cpp",
     "bindings/V8Binding.h",
     "bindings/V8BindingMacros.h",
+    "bindings/V8DOMActivityLogger.cpp",
+    "bindings/V8DOMActivityLogger.h",
     "bindings/V8DOMWrapper.cpp",
     "bindings/V8DOMWrapper.h",
     "bindings/V8GlobalValueMap.h",
