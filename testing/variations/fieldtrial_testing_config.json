@@ -1216,7 +1216,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enforce"
+                    "name": "EnforceStrict"
                 }
             ]
         }

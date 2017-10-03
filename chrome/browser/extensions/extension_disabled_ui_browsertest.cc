@@ -33,7 +33,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -125,7 +124,6 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
   base::FilePath path_v1_;
   base::FilePath path_v2_;
   base::FilePath path_v3_;
-  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verification_;
 };
 
 // Tests the process of updating an extension to one that requires higher

@@ -12,7 +12,6 @@
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -92,7 +91,6 @@ class RuntimeAPIUpdateTest : public ExtensionApiTest {
 
  private:
   base::ScopedTempDir scoped_temp_dir_;
-  ScopedIgnoreContentVerifierForTest ignore_content_verification_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPIUpdateTest);
 };
