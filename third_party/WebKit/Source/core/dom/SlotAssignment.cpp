@@ -208,7 +208,7 @@ void SlotAssignment::ResolveAssignment() {
 
 void SlotAssignment::ResolveDistribution() {
   ResolveAssignment();
-  const HeapVector<Member<HTMLSlotElement>>& slots = this->Slots();
+  const HeapVector<Member<HTMLSlotElement>>& slots = Slots();
 
   for (auto slot : slots)
     slot->ResolveDistributedNodes();

@@ -200,7 +200,7 @@ inline Element* ShadowRoot::ActiveElement() const {
 }
 
 inline ShadowRoot* Element::ShadowRootIfV1() const {
-  ShadowRoot* root = this->GetShadowRoot();
+  ShadowRoot* root = GetShadowRoot();
   if (root && root->IsV1())
     return root;
   return nullptr;

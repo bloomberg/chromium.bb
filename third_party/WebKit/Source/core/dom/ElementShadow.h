@@ -101,7 +101,7 @@ inline ShadowRoot* Node::YoungestShadowRoot() const {
 }
 
 inline ShadowRoot* Element::YoungestShadowRoot() const {
-  if (ElementShadow* shadow = this->Shadow())
+  if (ElementShadow* shadow = Shadow())
     return &shadow->YoungestShadowRoot();
   return nullptr;
 }

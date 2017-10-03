@@ -54,7 +54,7 @@ ModulePendingScript::ModulePendingScript(ScriptElementBase* element,
     : PendingScript(element, TextPosition()),
       module_tree_client_(client),
       is_external_(is_external) {
-  CHECK(this->GetElement());
+  CHECK(GetElement());
   DCHECK(module_tree_client_);
   client->SetPendingScript(this);
 }

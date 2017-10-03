@@ -124,7 +124,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
 
   Element::AttachLayoutTree(context);
 
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
     return;
 
@@ -158,7 +158,7 @@ void PseudoElement::DidRecalcStyle() {
   // The layoutObjects inside pseudo elements are anonymous so they don't get
   // notified of recalcStyle and must have the style propagated downward
   // manually similar to LayoutObject::propagateStyleToAnonymousChildren.
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   for (LayoutObject* child = layout_object->NextInPreOrder(layout_object);
        child; child = child->NextInPreOrder(layout_object)) {
     // We only manage the style for the generated content items.

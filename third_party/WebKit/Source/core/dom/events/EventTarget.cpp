@@ -205,7 +205,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
     return;
   }
 
-  LocalDOMWindow* executing_window = this->ExecutingWindow();
+  LocalDOMWindow* executing_window = ExecutingWindow();
   if (executing_window) {
     if (options.hasPassive()) {
       UseCounter::Count(executing_window->document(),
@@ -359,7 +359,7 @@ bool EventTarget::AddEventListenerInternal(
 void EventTarget::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  if (const LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+  if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (const Document* document = executing_window->document()) {
       if (event_type == EventTypeNames::auxclick)
         UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
@@ -594,7 +594,7 @@ void EventTarget::CountLegacyEvents(
     return;
   }
 
-  if (const LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+  if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (const Document* document = executing_window->document()) {
       if (legacy_listeners_vector) {
         if (listeners_vector)
@@ -658,7 +658,7 @@ bool EventTarget::FireEventListeners(Event* event,
   // dispatch. Conveniently, all new event listeners will be added after or at
   // index |size|, so iterating up to (but not including) |size| naturally
   // excludes new event listeners.
-  if (const LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+  if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (const Document* document = executing_window->document()) {
       if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
                                 WebFeature::kDocumentBeforeUnloadFired,
