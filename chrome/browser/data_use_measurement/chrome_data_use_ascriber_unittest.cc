@@ -111,10 +111,18 @@ TEST_F(ChromeDataUseAscriberTest, NoRecorderWithoutFrame) {
   ascriber()->OnBeforeUrlRequest(request.get());
   EXPECT_EQ(2u, recorders().size());
 
-  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
   ascriber()->OnUrlRequestDestroyed(request.get());
 
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
+      kRenderFrameId);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
   EXPECT_EQ(1u, recorders().size());
+
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+  EXPECT_EQ(0u, recorders().size());
 }
 
 TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
@@ -138,6 +146,9 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
   EXPECT_FALSE(ascriber()->GetDataUseRecorder(*request)->is_visible());
 
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+
+  ascriber()->OnUrlRequestDestroyed(request.get());
+  EXPECT_EQ(0u, recorders().size());
 }
 
 TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
@@ -161,6 +172,9 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
   EXPECT_TRUE(ascriber()->GetDataUseRecorder(*request)->is_visible());
 
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+
+  ascriber()->OnUrlRequestDestroyed(request.get());
+  EXPECT_EQ(0u, recorders().size());
 }
 
 TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
@@ -188,6 +202,9 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
   ascriber()->WasShownOrHidden(kRenderProcessId + 1, kRenderFrameId + 1, true);
   ascriber()->RenderFrameDeleted(kRenderProcessId + 1, kRenderFrameId + 1, -1,
                                  -1);
+
+  ascriber()->OnUrlRequestDestroyed(request.get());
+  EXPECT_EQ(0u, recorders().size());
 }
 
 TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
