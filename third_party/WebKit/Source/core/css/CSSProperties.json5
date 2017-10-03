@@ -3207,7 +3207,6 @@
       field_template: "external",
       default_value: "LineClampValue()",
       include_paths: ["core/style/LineClampValue.h"],
-      computed_style_custom_functions: ["getter", "setter"]
     },
     {
       name: "-webkit-margin-after-collapse",
