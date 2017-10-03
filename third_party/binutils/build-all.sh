@@ -22,7 +22,7 @@ if [ ! -d "$OUTPUTDIR" ]; then
 fi
 
 # Download the source
-VERSION=2.26
+VERSION=2.28
 wget -c http://ftp.gnu.org/gnu/binutils/binutils-$VERSION.tar.bz2
 
 # Verify the signature
@@ -31,33 +31,13 @@ if ! gpg --verify binutils-$VERSION.tar.bz2.sig; then
   echo "GPG Signature failed to verify."
   echo ""
   echo "You may need to import the vendor GPG key with:"
-  echo "# gpg --keyserver pgp.mit.edu --recv-key 4AE55E93"
+  echo "# gpg --keyserver hkp://pgp.mit.edu:80 --recv-key 4AE55E93"
   exit 1
 fi
 
 # Extract the source
 rm -rf binutils-$VERSION
 tar jxf binutils-$VERSION.tar.bz2
-
-# Patch the source
-(
-  cd binutils-$VERSION
-  echo "long-plt.patch"
-  echo "=================================="
-  patch -p1 < ../long-plt.patch
-  echo "----------------------------------"
-  echo
-  echo "icf-rel.patch"
-  echo "=================================="
-  patch -p1 < ../icf-rel.patch
-  echo "----------------------------------"
-  echo
-  echo "icf-align.patch"
-  echo "=================================="
-  patch -p1 < ../icf-align.patch
-  echo "----------------------------------"
-  echo
-)
 
 for ARCH in i386 amd64; do
   if [ ! -d precise-chroot-$ARCH ]; then
