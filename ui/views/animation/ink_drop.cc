@@ -27,6 +27,11 @@ void InkDrop::NotifyInkDropAnimationStarted() {
     observer.InkDropAnimationStarted();
 }
 
+void InkDrop::NotifyInkDropRippleAnimationEnded(InkDropState ink_drop_state) {
+  for (InkDropObserver& observer : observers_)
+    observer.InkDropRippleAnimationEnded(ink_drop_state);
+}
+
 InkDropContainerView::InkDropContainerView() {}
 
 void InkDropContainerView::AddInkDropLayer(ui::Layer* ink_drop_layer) {

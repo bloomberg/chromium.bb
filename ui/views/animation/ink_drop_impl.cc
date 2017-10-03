@@ -746,6 +746,7 @@ void InkDropImpl::AnimationStarted(InkDropState ink_drop_state) {
 void InkDropImpl::AnimationEnded(InkDropState ink_drop_state,
                                  InkDropAnimationEndedReason reason) {
   highlight_state_->AnimationEnded(ink_drop_state, reason);
+  NotifyInkDropRippleAnimationEnded(ink_drop_state);
   if (reason != InkDropAnimationEndedReason::SUCCESS)
     return;
   // |ink_drop_ripple_| might be null during destruction.
