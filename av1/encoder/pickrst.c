@@ -524,31 +524,32 @@ static void foreach_rtile_in_tile(const struct rest_search_ctxt *ctxt,
                                   rtile_visitor_t fun, void *arg) {
   const AV1_COMMON *const cm = &ctxt->cpi->common;
   const RestorationInfo *rsi = ctxt->cpi->rst_search;
+  TileInfo tile_info;
 
-  const int tile_width_y = cm->tile_width * MI_SIZE;
-  const int tile_height_y = cm->tile_height * MI_SIZE;
+  av1_tile_set_row(&tile_info, cm, tile_row);
+  av1_tile_set_col(&tile_info, cm, tile_col);
 
-  const int tile_width =
-      (ctxt->plane > 0) ? ROUND_POWER_OF_TWO(tile_width_y, cm->subsampling_x)
-                        : tile_width_y;
-  const int tile_height =
-      (ctxt->plane > 0) ? ROUND_POWER_OF_TWO(tile_height_y, cm->subsampling_y)
-                        : tile_height_y;
+  int tile_col_start = tile_info.mi_col_start * MI_SIZE;
+  int tile_col_end = tile_info.mi_col_end * MI_SIZE;
+  int tile_row_start = tile_info.mi_row_start * MI_SIZE;
+  int tile_row_end = tile_info.mi_row_end * MI_SIZE;
+  if (ctxt->plane > 0) {
+    tile_col_start = ROUND_POWER_OF_TWO(tile_col_start, cm->subsampling_x);
+    tile_col_end = ROUND_POWER_OF_TWO(tile_col_end, cm->subsampling_x);
+    tile_row_start = ROUND_POWER_OF_TWO(tile_row_start, cm->subsampling_y);
+    tile_row_end = ROUND_POWER_OF_TWO(tile_row_end, cm->subsampling_y);
+  }
 
   const int rtile_size = rsi->restoration_tilesize;
-  const int rtiles_per_tile_x = tile_width * MI_SIZE / rtile_size;
-  const int rtiles_per_tile_y = tile_height * MI_SIZE / rtile_size;
-
-  const int rtile_row0 = rtiles_per_tile_y * tile_row;
-  const int rtile_row1 =
-      AOMMIN(rtile_row0 + rtiles_per_tile_y, ctxt->nrtiles_y);
-
-  const int rtile_col0 = rtiles_per_tile_x * tile_col;
+  const int rtile_col0 = (tile_col_start + rtile_size - 1) / rtile_size;
   const int rtile_col1 =
-      AOMMIN(rtile_col0 + rtiles_per_tile_x, ctxt->nrtiles_x);
+      AOMMIN((tile_col_end + rtile_size - 1) / rtile_size, ctxt->nrtiles_x);
+  const int rtile_row0 = (tile_row_start + rtile_size - 1) / rtile_size;
+  const int rtile_row1 =
+      AOMMIN((tile_row_end + rtile_size - 1) / rtile_size, ctxt->nrtiles_y);
 
-  const int rtile_width = AOMMIN(tile_width, rtile_size);
-  const int rtile_height = AOMMIN(tile_height, rtile_size);
+  const int rtile_width = AOMMIN(tile_col_end - tile_col_start, rtile_size);
+  const int rtile_height = AOMMIN(tile_row_end - tile_row_start, rtile_size);
 
   for (int rtile_row = rtile_row0; rtile_row < rtile_row1; ++rtile_row) {
     for (int rtile_col = rtile_col0; rtile_col < rtile_col1; ++rtile_col) {
