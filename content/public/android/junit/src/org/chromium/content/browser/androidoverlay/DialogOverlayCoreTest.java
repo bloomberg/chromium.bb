@@ -131,7 +131,8 @@ public class DialogOverlayCoreTest {
     void checkOverlayDidntCall() {
         assertEquals(null, mHost.surface());
         assertEquals(0, mHost.destroyedCount());
-        assertEquals(0, mHost.cleanupCount());
+        assertEquals(0, mHost.waitCleanupCount());
+        assertEquals(0, mHost.enforceCleanupCount());
     }
 
     // Return the SurfaceHolder callback that was provided to takeSurface(), if any.
@@ -150,7 +151,8 @@ public class DialogOverlayCoreTest {
     class HostMock implements DialogOverlayCore.Host {
         private Surface mSurface;
         private int mDestroyedCount;
-        private int mCleanupCount;
+        private int mWaitCleanupCount;
+        private int mEnforceCleanupCount;
 
         @Override
         public void onSurfaceReady(Surface surface) {
@@ -164,7 +166,12 @@ public class DialogOverlayCoreTest {
 
         @Override
         public void waitForCleanup() {
-            mCleanupCount++;
+            mWaitCleanupCount++;
+        }
+
+        @Override
+        public void enforceCleanup() {
+            mEnforceCleanupCount++;
         }
 
         public Surface surface() {
@@ -175,8 +182,12 @@ public class DialogOverlayCoreTest {
             return mDestroyedCount;
         }
 
-        public int cleanupCount() {
-            return mCleanupCount;
+        public int waitCleanupCount() {
+            return mWaitCleanupCount;
+        }
+
+        public int enforceCleanupCount() {
+            return mEnforceCleanupCount;
         }
     };
 
@@ -253,7 +264,8 @@ public class DialogOverlayCoreTest {
 
         mCore.release();
         assertEquals(0, mHost.destroyedCount());
-        assertEquals(0, mHost.cleanupCount());
+        assertEquals(0, mHost.waitCleanupCount());
+        assertEquals(0, mHost.enforceCleanupCount());
         checkDialogIsNotShown();
     }
 
@@ -267,10 +279,11 @@ public class DialogOverlayCoreTest {
         // Destroy the surface.
         holderCallback().surfaceDestroyed(mHolder);
         // |mCore| should have waited for cleanup during surfaceDestroyed.
-        assertEquals(1, mHost.cleanupCount());
+        assertEquals(1, mHost.waitCleanupCount());
         // Since we waited for cleanup, also pretend that the release was posted during the wait and
         // will arrive after the wait completes.
         mCore.release();
+        assertEquals(1, mHost.enforceCleanupCount());
 
         checkOverlayWasDestroyed();
     }

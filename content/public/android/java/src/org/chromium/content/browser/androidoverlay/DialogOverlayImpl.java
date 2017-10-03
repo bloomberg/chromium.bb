@@ -212,6 +212,14 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
         assert false : "Not reached";
     }
 
+    // DialogOverlayCore.Host impl
+    @Override
+    public void enforceCleanup() {
+        // Pretend that the client closed us, even if they didn't.  It's okay if this is called more
+        // than once.  The client might have already called it, or might call it later.
+        close();
+    }
+
     /**
      * Send |token| to the |mDialogCore| on the overlay thread.
      */
