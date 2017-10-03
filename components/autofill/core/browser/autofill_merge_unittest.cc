@@ -117,7 +117,7 @@ class PersonalDataManagerMock : public PersonalDataManager {
 
   // PersonalDataManager:
   std::string SaveImportedProfile(const AutofillProfile& profile) override;
-  std::vector<AutofillProfile*> web_profiles() const override;
+  std::vector<AutofillProfile*> GetProfiles() const override;
 
  private:
   std::vector<std::unique_ptr<AutofillProfile>> profiles_;
@@ -146,7 +146,7 @@ std::string PersonalDataManagerMock::SaveImportedProfile(
   return merged_guid;
 }
 
-std::vector<AutofillProfile*> PersonalDataManagerMock::web_profiles() const {
+std::vector<AutofillProfile*> PersonalDataManagerMock::GetProfiles() const {
   std::vector<AutofillProfile*> result;
   for (const auto& profile : profiles_)
     result.push_back(profile.get());
@@ -282,7 +282,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
     }
   }
 
-  *merged_profiles = SerializeProfiles(personal_data_.web_profiles());
+  *merged_profiles = SerializeProfiles(personal_data_.GetProfiles());
 }
 
 ServerFieldType AutofillMergeTest::StringToFieldType(const std::string& str) {
