@@ -58,8 +58,7 @@ void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
     notification_bridge_ready_ = true;
   } else {
     message_center_display_service_ =
-        std::make_unique<MessageCenterDisplayService>(
-            profile_, g_browser_process->notification_ui_manager());
+        std::make_unique<MessageCenterDisplayService>(profile_);
   }
 
   while (!actions_.empty()) {

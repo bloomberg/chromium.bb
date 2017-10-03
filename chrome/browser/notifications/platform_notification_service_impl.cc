@@ -442,6 +442,8 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
 
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.
+  // TODO(estade): The RichNotificationData should set |clickable| if there's a
+  // click handler.
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       notification_data.title, notification_data.body,

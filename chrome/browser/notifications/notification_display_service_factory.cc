@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -74,9 +73,7 @@ KeyedService* NotificationDisplayServiceFactory::BuildServiceInstanceFor(
         g_browser_process->notification_platform_bridge());
   }
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  return new MessageCenterDisplayService(
-      Profile::FromBrowserContext(context),
-      g_browser_process->notification_ui_manager());
+  return new MessageCenterDisplayService(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext*

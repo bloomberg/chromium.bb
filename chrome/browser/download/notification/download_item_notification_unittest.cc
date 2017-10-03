@@ -7,11 +7,15 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -22,7 +26,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/fake_message_center.h"
 
 using testing::NiceMock;
 using testing::Return;
@@ -38,54 +41,29 @@ const base::FilePath::CharType kDownloadItemTargetPathString[] =
 
 namespace test {
 
-class MockMessageCenter : public message_center::FakeMessageCenter {
- public:
-  MockMessageCenter() {}
-  ~MockMessageCenter() override {}
-
-  void AddVisibleNotification(message_center::Notification* notification) {
-    visible_notifications_.insert(notification);
-  }
-
-  const message_center::NotificationList::Notifications&
-      GetVisibleNotifications() override {
-    return visible_notifications_;
-  }
-
- private:
-  message_center::NotificationList::Notifications visible_notifications_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
-};
-
 class DownloadItemNotificationTest : public testing::Test {
  public:
   DownloadItemNotificationTest() : profile_(nullptr) {}
 
   void SetUp() override {
     testing::Test::SetUp();
-    message_center::MessageCenter::Initialize();
 
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user");
 
-    std::unique_ptr<NotificationUIManager> ui_manager(
-        new StubNotificationUIManager);
-    TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
-        std::move(ui_manager));
+    service_tester_ =
+        std::make_unique<NotificationDisplayServiceTester>(profile_);
 
     download_notification_manager_.reset(
         new DownloadNotificationManagerForProfile(profile_, nullptr));
 
-    message_center_.reset(new MockMessageCenter());
-    download_notification_manager_->OverrideMessageCenterForTest(
-        message_center_.get());
-
     base::FilePath download_item_target_path(kDownloadItemTargetPathString);
     download_item_.reset(new NiceMock<content::MockDownloadItem>());
     ON_CALL(*download_item_, GetId()).WillByDefault(Return(12345));
+    ON_CALL(*download_item_, GetGuid())
+        .WillByDefault(ReturnRefOfCopy(base::GenerateGUID()));
     ON_CALL(*download_item_, GetState())
         .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
     ON_CALL(*download_item_, IsDangerous()).WillByDefault(Return(false));
@@ -106,43 +84,35 @@ class DownloadItemNotificationTest : public testing::Test {
     download_item_notification_ = nullptr;  // will be free'd in the manager.
     download_notification_manager_.reset();
     profile_manager_.reset();
-    message_center::MessageCenter::Shutdown();
     testing::Test::TearDown();
   }
 
  protected:
-  message_center::MessageCenter* message_center() const {
-    return message_center::MessageCenter::Get();
-  }
-
-  NotificationUIManager* ui_manager() const {
-    return TestingBrowserProcess::GetGlobal()->notification_ui_manager();
-  }
-
   std::string notification_id() const {
     return download_item_notification_->notification_->id();
   }
 
-  const Notification* notification() const {
-    return ui_manager()->FindById(
-        download_item_notification_->GetNotificationId(),
-        NotificationUIManager::GetProfileID(profile_));
+  std::unique_ptr<Notification> LookUpNotification() const {
+    std::vector<Notification> notifications =
+        service_tester_->GetDisplayedNotificationsForType(
+            NotificationCommon::DOWNLOAD);
+    for (const auto& notification : notifications) {
+      if (notification.id() == download_item_notification_->GetNotificationId())
+        return std::make_unique<Notification>(notification);
+    }
+    return nullptr;
   }
 
   size_t NotificationCount() const {
-    return ui_manager()
-        ->GetAllIdsByProfileAndSourceOrigin(
-            NotificationUIManager::GetProfileID(profile_),
-            GURL("chrome://downloads"))
+    return service_tester_
+        ->GetDisplayedNotificationsForType(NotificationCommon::DOWNLOAD)
         .size();
   }
 
   void RemoveNotification() {
-    ui_manager()->CancelById(download_item_notification_->GetNotificationId(),
-                             NotificationUIManager::GetProfileID(profile_));
-
-    // Waits, since removing a notification may cause an async job.
-    base::RunLoop().RunUntilIdle();
+    service_tester_->RemoveNotification(
+        NotificationCommon::DOWNLOAD,
+        download_item_notification_->GetNotificationId(), false);
   }
 
   // Trampoline methods to access a private method in DownloadItemNotification.
@@ -153,16 +123,16 @@ class DownloadItemNotificationTest : public testing::Test {
     return download_item_notification_->OnNotificationButtonClick(index);
   }
 
-  bool ShownAsPopUp() {
-    return !notification()->shown_as_popup();
-  }
+  bool ShownAsPopUp() { return !LookUpNotification()->shown_as_popup(); }
 
   void CreateDownloadItemNotification() {
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
     download_item_notification_ =
         download_notification_manager_->items_[download_item_.get()].get();
-    message_center_->AddVisibleNotification(
-        download_item_notification_->notification_.get());
+    NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+        NotificationCommon::DOWNLOAD,
+        download_item_notification_->notification_->id(),
+        *download_item_notification_->notification_);
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -173,8 +143,8 @@ class DownloadItemNotificationTest : public testing::Test {
   std::unique_ptr<NiceMock<content::MockDownloadItem>> download_item_;
   std::unique_ptr<DownloadNotificationManagerForProfile>
       download_notification_manager_;
-  std::unique_ptr<MockMessageCenter> message_center_;
   DownloadItemNotification* download_item_notification_;
+  std::unique_ptr<NotificationDisplayServiceTester> service_tester_;
 };
 
 TEST_F(DownloadItemNotificationTest, ShowAndCloseNotification) {
@@ -282,11 +252,11 @@ TEST_F(DownloadItemNotificationTest, DisablePopup) {
   CreateDownloadItemNotification();
   download_item_->NotifyObserversDownloadOpened();
 
-  EXPECT_EQ(message_center::DEFAULT_PRIORITY, notification()->priority());
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY, LookUpNotification()->priority());
 
   download_item_notification_->DisablePopup();
   // Priority is low.
-  EXPECT_EQ(message_center::LOW_PRIORITY, notification()->priority());
+  EXPECT_EQ(message_center::LOW_PRIORITY, LookUpNotification()->priority());
 
   // Downloading is completed.
   EXPECT_CALL(*download_item_, GetState())
@@ -294,8 +264,8 @@ TEST_F(DownloadItemNotificationTest, DisablePopup) {
   EXPECT_CALL(*download_item_, IsDone()).WillRepeatedly(Return(true));
   download_item_->NotifyObserversDownloadUpdated();
 
-  // Priority is updated back to normal.
-  EXPECT_EQ(message_center::DEFAULT_PRIORITY, notification()->priority());
+  // Priority is increased by the download's completion.
+  EXPECT_GT(LookUpNotification()->priority(), message_center::LOW_PRIORITY);
 }
 
 }  // namespace test

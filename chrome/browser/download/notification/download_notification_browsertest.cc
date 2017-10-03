@@ -841,10 +841,12 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id2));
 
   // Confirms that the old one is low priority, and the new one is default.
-  EXPECT_EQ(message_center::LOW_PRIORITY,
-            GetNotification(notification_id1)->priority());
-  EXPECT_EQ(message_center::DEFAULT_PRIORITY,
-            GetNotification(notification_id2)->priority());
+  const int in_progress_priority1 =
+      GetNotification(notification_id1)->priority();
+  const int in_progress_priority2 =
+      GetNotification(notification_id2)->priority();
+  EXPECT_EQ(message_center::LOW_PRIORITY, in_progress_priority1);
+  EXPECT_EQ(message_center::DEFAULT_PRIORITY, in_progress_priority2);
 
   // Confirms that the updates of both download are delivered to the
   // notifications.
@@ -882,11 +884,11 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id1));
   EXPECT_TRUE(IsInNotifications(popup_notifications, notification_id2));
 
-  // Confirms that the both are default priority after downloads finish.
-  EXPECT_EQ(message_center::DEFAULT_PRIORITY,
-            GetNotification(notification_id1)->priority());
-  EXPECT_EQ(message_center::DEFAULT_PRIORITY,
-            GetNotification(notification_id2)->priority());
+  // Confirms that both increase in priority when finished.
+  EXPECT_GT(GetNotification(notification_id1)->priority(),
+            in_progress_priority1);
+  EXPECT_GT(GetNotification(notification_id2)->priority(),
+            in_progress_priority2);
 
   // Confirms the types of download notifications are correct.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,

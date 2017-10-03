@@ -40,6 +40,13 @@ void NotificationDisplayService::AddNotificationHandler(
   notification_handlers_[notification_type] = std::move(handler);
 }
 
+void NotificationDisplayService::RemoveNotificationHandler(
+    NotificationCommon::Type notification_type) {
+  auto iter = notification_handlers_.find(notification_type);
+  DCHECK(iter != notification_handlers_.end());
+  notification_handlers_.erase(iter);
+}
+
 NotificationHandler* NotificationDisplayService::GetNotificationHandler(
     NotificationCommon::Type notification_type) {
   auto found = notification_handlers_.find(notification_type);

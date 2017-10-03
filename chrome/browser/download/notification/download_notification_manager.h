@@ -41,10 +41,6 @@ class DownloadNotificationManagerForProfile
       Profile* profile, DownloadNotificationManager* parent_manager);
   ~DownloadNotificationManagerForProfile() override;
 
-  message_center::MessageCenter* message_center() const {
-    return message_center_;
-  }
-
   // DownloadItem::Observer overrides:
   void OnDownloadUpdated(content::DownloadItem* download) override;
   void OnDownloadOpened(content::DownloadItem* download) override;
@@ -53,20 +49,16 @@ class DownloadNotificationManagerForProfile
 
   void OnNewDownloadReady(content::DownloadItem* item);
 
+  DownloadItemNotification* GetNotificationItemByGuid(const std::string& guid);
+
  private:
   friend class test::DownloadItemNotificationTest;
-
-  void OverrideMessageCenterForTest(
-      message_center::MessageCenter* message_center);
 
   Profile* profile_ = nullptr;
   DownloadNotificationManager* parent_manager_;  // weak
   std::set<content::DownloadItem*> downloading_items_;
   std::map<content::DownloadItem*, std::unique_ptr<DownloadItemNotification>>
       items_;
-
-  // Pointer to the message center instance.
-  message_center::MessageCenter* message_center_;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_MANAGER_H_
