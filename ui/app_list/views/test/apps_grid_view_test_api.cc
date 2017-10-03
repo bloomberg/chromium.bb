@@ -36,8 +36,11 @@ void AppsGridViewTestApi::LayoutToIdealBounds() {
   view_->Layout();
 }
 
-gfx::Rect AppsGridViewTestApi::GetItemTileRectAt(int row, int col) const {
-  return view_->GetExpectedTileBounds(row, col);
+gfx::Rect AppsGridViewTestApi::GetItemTileRectOnCurrentPageAt(int row,
+                                                              int col) const {
+  int slot = row * (view_->cols()) + col;
+  return view_->GetExpectedTileBounds(
+      AppsGridView::Index(view_->pagination_model()->selected_page(), slot));
 }
 
 void AppsGridViewTestApi::PressItemAt(int index) {

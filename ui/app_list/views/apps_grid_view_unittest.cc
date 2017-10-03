@@ -179,9 +179,9 @@ class AppsGridViewTest : public views::ViewsTestBase,
     return nullptr;
   }
 
-  gfx::Rect GetItemTileRectAt(int row, int col) const {
+  gfx::Rect GetItemRectOnCurrentPageAt(int row, int col) const {
     DCHECK_GT(model_->top_level_item_list()->item_count(), 0u);
-    return test_api_->GetItemTileRectAt(row, col);
+    return test_api_->GetItemTileRectOnCurrentPageAt(row, col);
   }
 
   int GetTilesPerPage(int page) const { return test_api_->TilesPerPage(page); }
@@ -372,8 +372,8 @@ TEST_P(AppsGridViewTest, MouseDragWithFolderDisabled) {
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
 
-  gfx::Point from = GetItemTileRectAt(0, 0).CenterPoint();
-  gfx::Point to = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  gfx::Point to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
 
   // Dragging changes model order.
   SimulateDrag(AppsGridView::MOUSE, from, to);
@@ -420,8 +420,8 @@ TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2"), model_->GetModelContent());
 
-  gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
-  gfx::Point to = GetItemTileRectAt(0, 0).CenterPoint();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
+  gfx::Point to = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
 
   // Dragging item_1 over item_0 creates a folder.
   SimulateDrag(AppsGridView::MOUSE, from, to);
@@ -482,8 +482,8 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   EXPECT_EQ(model_->GetItemName(GetMaxFolderItems()),
             model_->top_level_item_list()->item_at(2)->id());
 
-  gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
-  gfx::Point to = GetItemTileRectAt(0, 0).CenterPoint();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
+  gfx::Point to = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
 
   // Dragging one item into the folder, the folder should accept the item.
   SimulateDrag(AppsGridView::MOUSE, from, to);
@@ -525,23 +525,23 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
             model_->top_level_item_list()->item_at(1)->id());
 
   AppListItemView* folder_view =
-      GetItemViewForPoint(GetItemTileRectAt(0, 0).CenterPoint());
+      GetItemViewForPoint(GetItemRectOnCurrentPageAt(0, 0).CenterPoint());
 
   // Drag the new item to the left so that the grid reorders.
-  gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
-  gfx::Point to = GetItemTileRectAt(0, 0).bottom_left();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
+  gfx::Point to = GetItemRectOnCurrentPageAt(0, 0).bottom_left();
   to.Offset(0, -1);  // Get a point inside the rect.
   AppListItemView* dragged_view = SimulateDrag(AppsGridView::MOUSE, from, to);
   test_api_->LayoutToIdealBounds();
 
   // The grid now looks like | blank | folder |.
-  EXPECT_EQ(nullptr,
-            GetItemViewForPoint(GetItemTileRectAt(0, 0).CenterPoint()));
-  EXPECT_EQ(folder_view,
-            GetItemViewForPoint(GetItemTileRectAt(0, 1).CenterPoint()));
+  EXPECT_EQ(nullptr, GetItemViewForPoint(
+                         GetItemRectOnCurrentPageAt(0, 0).CenterPoint()));
+  EXPECT_EQ(folder_view, GetItemViewForPoint(
+                             GetItemRectOnCurrentPageAt(0, 1).CenterPoint()));
 
   // Move onto the folder and end the drag.
-  to = GetItemTileRectAt(0, 1).CenterPoint();
+  to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
   gfx::Point translated_to =
       gfx::PointAtOffsetFromOrigin(to - dragged_view->origin());
   ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to,
@@ -567,11 +567,13 @@ TEST_P(AppsGridViewTest, MouseDragItemReorder) {
 
   // Dragging an item towards its neighbours should not reorder until the drag
   // is past the folder drop point.
-  gfx::Point top_right = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point top_right = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
   gfx::Vector2d drag_vector;
-  int half_tile_width =
-      (GetItemTileRectAt(0, 1).x() - GetItemTileRectAt(0, 0).x()) / 2;
-  int tile_height = GetItemTileRectAt(1, 0).y() - GetItemTileRectAt(0, 0).y();
+  int half_tile_width = (GetItemRectOnCurrentPageAt(0, 1).x() -
+                         GetItemRectOnCurrentPageAt(0, 0).x()) /
+                        2;
+  int tile_height = GetItemRectOnCurrentPageAt(1, 0).y() -
+                    GetItemRectOnCurrentPageAt(0, 0).y();
 
   // Drag left but stop before the folder dropping circle.
   drag_vector.set_x(-half_tile_width - 4);
@@ -633,8 +635,8 @@ TEST_P(AppsGridViewTest, MouseDragFolderReorder) {
       model_->top_level_item_list()->item_at(0));
   EXPECT_EQ("Item 2", model_->top_level_item_list()->item_at(1)->id());
 
-  gfx::Point from = GetItemTileRectAt(0, 0).CenterPoint();
-  gfx::Point to = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  gfx::Point to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
 
   // Dragging folder over item_1 should leads to re-ordering these two
   // items.
@@ -653,8 +655,8 @@ TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
 
-  gfx::Point from = GetItemTileRectAt(0, 0).CenterPoint();
-  gfx::Point to = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  gfx::Point to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
 
   // Canceling drag should keep existing order.
   SimulateDrag(AppsGridView::MOUSE, from, to);
@@ -690,7 +692,7 @@ TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   EXPECT_EQ(kPages, GetPaginationModel()->total_pages());
   EXPECT_EQ(0, GetPaginationModel()->selected_page());
 
-  gfx::Point from = GetItemTileRectAt(0, 0).CenterPoint();
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
   gfx::Point to;
   const gfx::Rect apps_grid_bounds = apps_grid_view_->GetLocalBounds();
   if (test_with_fullscreen_)
@@ -737,11 +739,11 @@ TEST_P(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
 
-  gfx::Point mouse_from = GetItemTileRectAt(0, 0).CenterPoint();
-  gfx::Point mouse_to = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point mouse_from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  gfx::Point mouse_to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
 
-  gfx::Point touch_from = GetItemTileRectAt(0, 2).CenterPoint();
-  gfx::Point touch_to = GetItemTileRectAt(0, 3).CenterPoint();
+  gfx::Point touch_from = GetItemRectOnCurrentPageAt(0, 2).CenterPoint();
+  gfx::Point touch_to = GetItemRectOnCurrentPageAt(0, 3).CenterPoint();
 
   // Starts a mouse drag first then a touch drag.
   SimulateDrag(AppsGridView::MOUSE, mouse_from, mouse_to);
@@ -770,8 +772,8 @@ TEST_P(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
 
-  gfx::Point mouse_from = GetItemTileRectAt(0, 0).CenterPoint();
-  gfx::Point mouse_to = GetItemTileRectAt(0, 1).CenterPoint();
+  gfx::Point mouse_from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  gfx::Point mouse_to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
 
   // Starts a mouse drag and then cancels it.
   SimulateDrag(AppsGridView::MOUSE, mouse_from, mouse_to);
