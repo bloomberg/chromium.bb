@@ -527,6 +527,7 @@ post_process_cmdline() {
       soft_enable aom_qm
       soft_enable dist_8x8
       soft_enable cdef_singlepass
+      soft_enable loop_restoration
 
       # Provisional adopted
       soft_enable reference_buffer
