@@ -12,8 +12,7 @@ import os
 import subprocess
 import sys
 
-
-HELP_MESSAGE = '''
+HELP_MESSAGE = """
 This script helps to generate code coverage report. It uses Clang Source-based
 Code coverage (https://clang.llvm.org/docs/SourceBasedCodeCoverage.html).
 
@@ -21,18 +20,21 @@ The output is a directory with HTML files that can be inspected via local web
 server (e.g. "python -m SimpleHTTPServer").
 
 In order to generate code coverage report, you need to build the target program
-with "use_clang_coverage=true" GN flag. That flag is not compatible with the
-following flags: "is_asan", "is_msan", etc and also with "optimize_for_fuzzing".
+with "use_clang_coverage=true" GN flag. This flag is not compatible with other
+sanitizer flags: "is_asan", "is_msan", etc and also with "optimize_for_fuzzing".
+
+If you are building a fuzz target, make sure to add the "use_libfuzzer=true"
+GN flag.
 
 For Googlers, there are examples available at go/chrome-code-coverage-examples.
 
 If you have any questions, please ask it on fuzzing@chromium.org.
-'''
+"""
 
 HTML_FILE_EXTENSION = '.html'
 
-CHROME_SRC_PATH = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))))
+CHROME_SRC_PATH = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LLVM_BUILD_PATH = os.path.join(CHROME_SRC_PATH, 'third_party', 'llvm-build')
 LLVM_BIN_PATH = os.path.join(LLVM_BUILD_PATH, 'Release+Asserts', 'bin')
 LLVM_COV_PATH = os.path.join(LLVM_BIN_PATH, 'llvm-cov')
@@ -43,14 +45,14 @@ LLVM_COVERAGE_FILE_NAME = 'coverage.profdata'
 
 REPORT_FILENAME = 'report.html'
 
-REPORT_TEMPLATE = '''<!DOCTYPE html>
+REPORT_TEMPLATE = """<!DOCTYPE html>
 <html>
 <head><style>
 th, td {{ border: 1px solid black; padding: 5px 10px; }}
 </style></head>
 <body>
 {table_data}
-</body></html>'''
+</body></html>"""
 
 SINGLE_FILE_START_MARKER = '<!doctype html><html>'
 SINGLE_FILE_END_MARKER = '</body></html>'
@@ -75,7 +77,7 @@ def CheckBuildInstrumentation(executable_path):
   if data.count('__llvm_profile') > 20:
     return
 
-  logging.error('It looks like the target binary has been compilde without '
+  logging.error('It looks like the target binary has been compiled without '
                 'coverage instrumentation.')
   print('Have you used use_clang_coverage=true flag in GN args? [y/N]')
   answer = raw_input()
@@ -91,10 +93,10 @@ def CreateOutputDir(dir_path):
     return
 
   if os.path.isdir(dir_path):
-    logging.warning('%s already exists.' % dir_path)
+    logging.warning('%s already exists.', dir_path)
     return
 
-  logging.error('%s exists and does not point to a directory.' % dir_path)
+  logging.error('%s exists and does not point to a directory.', dir_path)
   raise Exception('Invalid --output argument specified.')
 
 
@@ -119,7 +121,7 @@ def DownloadCoverageToolsIfNeeded():
   clang_revision, clang_sub_revision = _GetRevisionFromStampFile(
       clang_update.STAMP_FILE)
 
-  coverage_revision_stamp_file =  os.path.join(
+  coverage_revision_stamp_file = os.path.join(
       os.path.dirname(clang_update.STAMP_FILE), 'cr_coverage_revision')
   coverage_revision, coverage_sub_revision = _GetRevisionFromStampFile(
       coverage_revision_stamp_file)
@@ -169,20 +171,20 @@ def ExtractAndFixFilename(data, source_dir):
 
   filename_end += filename_start
 
-  filename = data[filename_start : filename_end]
+  filename = data[filename_start:filename_end]
 
   source_dir = os.path.abspath(source_dir)
 
   if not filename.startswith(source_dir):
     logging.error('Invalid source code path ("%s") specified.\n'
-                  'Coverage dump refers to "%s".' % (source_dir, filename))
+                  'Coverage dump refers to "%s".', source_dir, filename)
     raise Exception('Failed to process coverage dump.')
 
-  filename = filename[len(source_dir) : ]
+  filename = filename[len(source_dir):]
   filename = filename.lstrip('/\\')
 
   # Replace the filename with the shorter version.
-  data = data[ : filename_start] + filename + data[filename_end : ]
+  data = data[:filename_start] + filename + data[filename_end:]
   return filename, data
 
 
@@ -233,8 +235,10 @@ def GenerateReport(report_data):
 
 def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
   """Generate coverage visualization for source code files."""
-  llvm_cov_command = [LLVM_COV_PATH, 'show', '-format=html', executable_path,
-                      '-instr-profile=%s' % coverage_file]
+  llvm_cov_command = [
+      LLVM_COV_PATH, 'show', '-format=html', executable_path,
+      '-instr-profile=%s' % coverage_file
+  ]
 
   data = subprocess.check_output(llvm_cov_command)
 
@@ -245,7 +249,7 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
     logging.error('Failed to extract CSS style from coverage report.')
     raise Exception('Failed to process coverage dump.')
 
-  style_data = data[style_start + len(STYLE_START_MARKER) : style_end]
+  style_data = data[style_start + len(STYLE_START_MARKER):style_end]
   with open(os.path.join(output_dir, STYLE_FILENAME), 'w') as file_handle:
     file_handle.write(style_data)
   style_length = (
@@ -266,7 +270,7 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
     offset += file_end - file_start
 
     # Remove <style> as it's always the same and has been extracted separately.
-    file_data = ReplaceStyleWithCss(data[file_start : file_end], style_length,
+    file_data = ReplaceStyleWithCss(data[file_start:file_end], style_length,
                                     STYLE_FILENAME)
 
     filename, file_data = ExtractAndFixFilename(file_data, source_dir)
@@ -284,8 +288,10 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
 
 def GenerateSummary(executable_path, output_dir, coverage_file):
   """Generate code coverage summary report (i.e. a table with all files)."""
-  llvm_cov_command = [LLVM_COV_PATH, 'report', executable_path,
-                      '-instr-profile=%s' % coverage_file]
+  llvm_cov_command = [
+      LLVM_COV_PATH, 'report', executable_path,
+      '-instr-profile=%s' % coverage_file
+  ]
 
   data = subprocess.check_output(llvm_cov_command)
   report = GenerateReport(data)
@@ -297,13 +303,13 @@ def GenerateSummary(executable_path, output_dir, coverage_file):
 def ProcessCoverageDump(profile_file, coverage_file):
   """Process and convert raw LLVM profile data into coverage data format."""
   print('Processing coverage dump and generating visualization.')
-  merge_command = [LLVM_PROFDATA_PATH, 'merge', '-sparse', profile_file,
-                   '-o', coverage_file]
+  merge_command = [
+      LLVM_PROFDATA_PATH, 'merge', '-sparse', profile_file, '-o', coverage_file
+  ]
   data = subprocess.check_output(merge_command)
 
   if not os.path.exists(coverage_file) or not os.path.getsize(coverage_file):
-    logging.error(
-        '%s is either not created or empty:\n%s' % (coverage_file, data))
+    logging.error('%s is either not created or empty:\n%s', coverage_file, data)
     raise Exception('Failed to merge coverage information after command run.')
 
 
@@ -313,7 +319,7 @@ def ReplaceStyleWithCss(data, style_data_length, css_file_path):
   # Since "style" data is always the same, try some optimization here.
   style_end = style_start + style_data_length
   if (style_end > len(data) or
-      data[style_end - len(STYLE_END_MARKER) : style_end] != STYLE_END_MARKER):
+      data[style_end - len(STYLE_END_MARKER):style_end] != STYLE_END_MARKER):
     # Looks like our optimization has failed, find end of "style" data.
     style_end = data.find(STYLE_END_MARKER)
     if style_end <= style_start or style_start == -1:
@@ -323,7 +329,7 @@ def ReplaceStyleWithCss(data, style_data_length, css_file_path):
 
   css_include = (
       '<link rel="stylesheet" type="text/css" href="/%s">' % css_file_path)
-  result = '\n'.join([ data[ : style_start], css_include, data[style_end : ] ])
+  result = '\n'.join([data[:style_start], css_include, data[style_end:]])
   return result
 
 
@@ -337,7 +343,7 @@ def RunCommand(command, profile_file):
   print('Finished command execution.')
 
   if not os.path.exists(profile_file) or not os.path.getsize(profile_file):
-    logging.error('%s is either not created or empty.' % profile_file)
+    logging.error('%s is either not created or empty.', profile_file)
     raise Exception('Failed to dump coverage information during command run.')
 
 
@@ -346,13 +352,20 @@ def main():
   parser = argparse.ArgumentParser(
       description=HELP_MESSAGE,
       formatter_class=argparse.RawDescriptionHelpFormatter)
-  parser.add_argument('--command', required=True,
-                      help='The command to generate code coverage of')
-  parser.add_argument('--source', required=False, default=CHROME_SRC_PATH,
-                      help='Directory with the source code, if it differs from '
-                           'local Chromium checkout: %s.' % CHROME_SRC_PATH)
-  parser.add_argument('--output', required=True,
-                      help='Directory where result will be written to.')
+  parser.add_argument(
+      '--command',
+      required=True,
+      help='The command to generate code coverage of')
+  parser.add_argument(
+      '--source',
+      required=False,
+      default=CHROME_SRC_PATH,
+      help='Directory with the source code, if it differs from '
+      'local Chromium checkout: %s.' % CHROME_SRC_PATH)
+  parser.add_argument(
+      '--output',
+      required=True,
+      help='Directory where result will be written to.')
 
   args = parser.parse_args()
 
@@ -376,5 +389,5 @@ def main():
         '2. open http://127.0.0.1:8000/report.html' % args.output)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
