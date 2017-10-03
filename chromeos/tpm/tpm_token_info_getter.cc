@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner.h"
@@ -36,13 +38,6 @@ base::TimeDelta GetNextRequestDelayMs(base::TimeDelta last_delay) {
 
 namespace chromeos {
 
-TPMTokenInfo::TPMTokenInfo()
-    : tpm_is_enabled(false),
-      token_slot_id(-1) {
-}
-
-TPMTokenInfo::~TPMTokenInfo() {}
-
 // static
 std::unique_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForUserToken(
     const AccountId& account_id,
@@ -63,11 +58,11 @@ std::unique_ptr<TPMTokenInfoGetter> TPMTokenInfoGetter::CreateForSystemToken(
 
 TPMTokenInfoGetter::~TPMTokenInfoGetter() {}
 
-void TPMTokenInfoGetter::Start(const TPMTokenInfoCallback& callback) {
+void TPMTokenInfoGetter::Start(TpmTokenInfoCallback callback) {
   CHECK(state_ == STATE_INITIAL);
   CHECK(!callback.is_null());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   state_ = STATE_STARTED;
   Continue();
@@ -130,7 +125,7 @@ void TPMTokenInfoGetter::OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled) {
 
   if (!tpm_is_enabled.value()) {
     state_ = STATE_DONE;
-    callback_.Run(TPMTokenInfo());
+    std::move(callback_).Run(base::nullopt);
     return;
   }
 
@@ -146,14 +141,7 @@ void TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo(
   }
 
   state_ = STATE_DONE;
-
-  TPMTokenInfo out_token_info;
-  out_token_info.tpm_is_enabled = true;
-  out_token_info.token_name = token_info->label;
-  out_token_info.user_pin = token_info->user_pin;
-  out_token_info.token_slot_id = token_info->slot;
-
-  callback_.Run(out_token_info);
+  std::move(callback_).Run(std::move(token_info));
 }
 
 }  // namespace chromeos

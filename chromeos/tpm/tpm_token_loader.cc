@@ -162,9 +162,8 @@ void TPMTokenLoader::ContinueTokenInitialization() {
       return;
     }
     case TPM_TOKEN_ENABLED_FOR_NSS: {
-      tpm_token_info_getter_->Start(
-          base::Bind(&TPMTokenLoader::OnGotTpmTokenInfo,
-                     weak_factory_.GetWeakPtr()));
+      tpm_token_info_getter_->Start(base::BindOnce(
+          &TPMTokenLoader::OnGotTpmTokenInfo, weak_factory_.GetWeakPtr()));
       return;
     }
     case TPM_DISABLED: {
@@ -197,15 +196,16 @@ void TPMTokenLoader::OnTPMTokenEnabledForNSS() {
   ContinueTokenInitialization();
 }
 
-void TPMTokenLoader::OnGotTpmTokenInfo(const TPMTokenInfo& token_info) {
-  if (!token_info.tpm_is_enabled) {
+void TPMTokenLoader::OnGotTpmTokenInfo(
+    base::Optional<CryptohomeClient::TpmTokenInfo> token_info) {
+  if (!token_info.has_value()) {
     tpm_token_state_ = TPM_DISABLED;
     ContinueTokenInitialization();
     return;
   }
 
-  tpm_token_slot_id_ = token_info.token_slot_id;
-  tpm_user_pin_ = token_info.user_pin;
+  tpm_token_slot_id_ = token_info->slot;
+  tpm_user_pin_ = token_info->user_pin;
   tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
 
   ContinueTokenInitialization();

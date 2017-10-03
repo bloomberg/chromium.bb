@@ -14,18 +14,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/tpm/tpm_token_info_getter.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
 namespace chromeos {
-
-struct TPMTokenInfo;
-class TPMTokenInfoGetter;
 
 // This class is responsible for loading the TPM backed token for the system
 // slot when the user logs in. It is expected to be constructed on the UI thread
@@ -93,7 +93,8 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   // This is the cyclic chain of callbacks to initialize the TPM token.
   void ContinueTokenInitialization();
   void OnTPMTokenEnabledForNSS();
-  void OnGotTpmTokenInfo(const TPMTokenInfo& token_info);
+  void OnGotTpmTokenInfo(
+      base::Optional<CryptohomeClient::TpmTokenInfo> token_info);
   void OnTPMTokenInitialized(bool success);
 
   // Notifies observers that the TPM token is ready.

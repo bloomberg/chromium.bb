@@ -76,6 +76,9 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
                               uint64_t total)>
       DircryptoMigrationProgessHandler;
 
+  // TPM Token Information retrieved from cryptohome.
+  // For invalid token |label| and |user_pin| will be empty, while |slot| will
+  // be set to -1.
   struct TpmTokenInfo {
     // Holds the PKCS #11 token label. This is not useful in practice to
     // identify a token but may be meaningful to a user.

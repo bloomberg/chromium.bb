@@ -18,35 +18,24 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-// The struct holding information returned by TPMTokenInfoGetter::Start
-// callback.
-struct TestTPMTokenInfo {
-  TestTPMTokenInfo() : enabled(false), slot_id(-2) {}
+using TpmTokenInfo = chromeos::CryptohomeClient::TpmTokenInfo;
 
-  bool IsReady() const {
-    return slot_id >= 0;
-  }
-
-  bool enabled;
-  std::string name;
-  std::string pin;
-  int slot_id;
-};
-
-// Callback for TPMTokenInfoGetter::Start. It records the values returned
-// by TPMTokenInfoGetter to |info|.
-void RecordGetterResult(TestTPMTokenInfo* target,
-                        const chromeos::TPMTokenInfo& source) {
-  target->enabled = source.tpm_is_enabled;
-  target->name = source.token_name;
-  target->pin = source.user_pin;
-  target->slot_id = source.token_slot_id;
+// On invocation, set |called| to true, and store the result |token_info|
+// to the |result|.
+void OnTpmTokenInfoGetterCompleted(bool* called,
+                                   base::Optional<TpmTokenInfo>* result,
+                                   base::Optional<TpmTokenInfo> token_info) {
+  DCHECK(called);
+  DCHECK(result);
+  *called = true;
+  *result = std::move(token_info);
 }
 
 // Task runner for handling delayed tasks posted by TPMTokenInfoGetter when
@@ -122,14 +111,9 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
   // Sets the tpm tpken info to be reported by the test CryptohomeClient.
   // If there is |Pkcs11GetTpmTokenInfo| in progress, runs the pending
   // callback with the set tpm token info.
-  void SetTPMTokenInfo(const std::string& token_name,
-                       const std::string& pin,
-                       int slot_id) {
-    tpm_token_info_.name = token_name;
-    tpm_token_info_.pin = pin;
-    tpm_token_info_.slot_id = slot_id;
-
-    ASSERT_TRUE(tpm_token_info_.IsReady());
+  void SetTpmTokenInfo(const TpmTokenInfo& token_info) {
+    tpm_token_info_ = token_info;
+    ASSERT_NE(-1, tpm_token_info_->slot);
 
     InvokeGetTpmTokenInfoCallbackIfReady();
   }
@@ -196,7 +180,7 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
   }
 
   void InvokeGetTpmTokenInfoCallbackIfReady() {
-    if (!tpm_token_info_.IsReady() ||
+    if (!tpm_token_info_.has_value() || tpm_token_info_->slot == -1 ||
         pending_get_tpm_token_info_callback_.is_null())
       return;
 
@@ -205,8 +189,7 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
     // tests). Unlike with other Cryptohome callbacks, TPMTokenInfoGetter does
     // not rely on this callback being called asynchronously.
     base::ResetAndReturn(&pending_get_tpm_token_info_callback_)
-        .Run(TpmTokenInfo{tpm_token_info_.name, tpm_token_info_.pin,
-                          tpm_token_info_.slot_id});
+        .Run(tpm_token_info_);
   }
 
   AccountId account_id_;
@@ -218,7 +201,7 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
   bool get_tpm_token_info_succeeded_;
   chromeos::DBusMethodCallback<TpmTokenInfo>
       pending_get_tpm_token_info_callback_;
-  TestTPMTokenInfo tpm_token_info_;
+  base::Optional<TpmTokenInfo> tpm_token_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCryptohomeClient);
 };
@@ -239,7 +222,6 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
  protected:
   std::unique_ptr<TestCryptohomeClient> cryptohome_client_;
   std::unique_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
-
   std::vector<int64_t> delays_;
 
  private:
@@ -275,39 +257,41 @@ class UserTPMTokenInfoGetterTest : public testing::Test {
 };
 
 TEST_F(SystemTPMTokenInfoGetterTest, BasicFlow) {
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
 
 TEST_F(SystemTPMTokenInfoGetterTest, TokenSlotIdEqualsZero) {
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_0", "2222", 0);
+  const TpmTokenInfo fake_token_info = {"TOKEN_0", "2222", 0};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_0", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(0, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_0", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(0, result->slot);
 
   EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
@@ -315,13 +299,12 @@ TEST_F(SystemTPMTokenInfoGetterTest, TokenSlotIdEqualsZero) {
 TEST_F(SystemTPMTokenInfoGetterTest, TPMNotEnabled) {
   cryptohome_client_->set_tpm_is_enabled(false);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(reported_info.IsReady());
-  EXPECT_FALSE(reported_info.enabled);
+  EXPECT_TRUE(completed);
 
   EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
@@ -329,19 +312,21 @@ TEST_F(SystemTPMTokenInfoGetterTest, TPMNotEnabled) {
 TEST_F(SystemTPMTokenInfoGetterTest, TpmEnabledCallFails) {
   cryptohome_client_->set_tpm_is_enabled_failure_count(1);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
@@ -352,19 +337,21 @@ TEST_F(SystemTPMTokenInfoGetterTest, TpmEnabledCallFails) {
 TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
   cryptohome_client_->set_get_tpm_token_info_not_set_count(1);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
@@ -375,19 +362,21 @@ TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
 TEST_F(SystemTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
   cryptohome_client_->set_get_tpm_token_info_failure_count(1);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
@@ -400,19 +389,21 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelaysIncreaseExponentially) {
   cryptohome_client_->set_get_tpm_token_info_failure_count(1);
   cryptohome_client_->set_get_tpm_token_info_not_set_count(3);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 2);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(2, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   int64_t kExpectedDelays[] = {100, 200, 400, 800, 1600, 3200};
   ASSERT_EQ(std::vector<int64_t>(kExpectedDelays,
@@ -425,19 +416,21 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelayBounded) {
   cryptohome_client_->set_get_tpm_token_info_failure_count(5);
   cryptohome_client_->set_get_tpm_token_info_not_set_count(6);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   int64_t kExpectedDelays[] = {100,    200,    400,    800,    1600,
                                3200,   6400,   12800,  25600,  51200,
@@ -448,19 +441,21 @@ TEST_F(SystemTPMTokenInfoGetterTest, RetryDelayBounded) {
 }
 
 TEST_F(UserTPMTokenInfoGetterTest, BasicFlow) {
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   EXPECT_EQ(std::vector<int64_t>(), delays_);
 }
@@ -468,19 +463,21 @@ TEST_F(UserTPMTokenInfoGetterTest, BasicFlow) {
 TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
   cryptohome_client_->set_get_tpm_token_info_failure_count(1);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
@@ -491,19 +488,21 @@ TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyFails) {
 TEST_F(UserTPMTokenInfoGetterTest, GetTpmTokenInfoInitiallyNotReady) {
   cryptohome_client_->set_get_tpm_token_info_not_set_count(1);
 
-  TestTPMTokenInfo reported_info;
+  bool completed = false;
+  base::Optional<TpmTokenInfo> result;
   tpm_token_info_getter_->Start(
-      base::Bind(&RecordGetterResult, &reported_info));
+      base::BindOnce(&OnTpmTokenInfoGetterCompleted, &completed, &result));
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(completed);
 
-  EXPECT_FALSE(reported_info.IsReady());
-  cryptohome_client_->SetTPMTokenInfo("TOKEN_1", "2222", 1);
+  const TpmTokenInfo fake_token_info = {"TOKEN_1", "2222", 1};
+  cryptohome_client_->SetTpmTokenInfo(fake_token_info);
 
-  EXPECT_TRUE(reported_info.IsReady());
-  EXPECT_TRUE(reported_info.enabled);
-  EXPECT_EQ("TOKEN_1", reported_info.name);
-  EXPECT_EQ("2222", reported_info.pin);
-  EXPECT_EQ(1, reported_info.slot_id);
+  EXPECT_TRUE(completed);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ("TOKEN_1", result->label);
+  EXPECT_EQ("2222", result->user_pin);
+  EXPECT_EQ(1, result->slot);
 
   const int64_t kExpectedDelays[] = {100};
   EXPECT_EQ(std::vector<int64_t>(kExpectedDelays,
