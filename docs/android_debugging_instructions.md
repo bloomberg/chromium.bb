@@ -106,8 +106,8 @@ private int mSuperNiftyDrawingProperty;
 
 ## Waiting for Java Debugger on Early Startup
 
-*   To debug early startup, pass `--wait-for-java-debugger` as a command line
-    flag.
+*   To debug early startup, pass `--wait-for-java-debugger` to the wrapper
+    scripts (works for both apk wrappers as well as test wrappers).
 
 ## Debugging C/C++
 

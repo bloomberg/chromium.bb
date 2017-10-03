@@ -202,15 +202,16 @@ class LocalDeviceInstrumentationTestRun(
       def set_debug_app(dev):
         # Set debug app in order to enable reading command line flags on user
         # builds
-        if self._test_instance.flags:
-          if not self._test_instance.package_info:
-            logging.error("Couldn't set debug app: no package info")
-          elif not self._test_instance.package_info.package:
-            logging.error("Couldn't set debug app: no package defined")
-          else:
-            dev.RunShellCommand(['am', 'set-debug-app', '--persistent',
-                               self._test_instance.package_info.package],
-                              check_return=True)
+        if not self._test_instance.package_info:
+          logging.error("Couldn't set debug app: no package info")
+        elif not self._test_instance.package_info.package:
+          logging.error("Couldn't set debug app: no package defined")
+        else:
+          cmd = ['am', 'set-debug-app', '--persistent']
+          if self._env.wait_for_java_debugger:
+            cmd.append('-w')
+          cmd.append(self._test_instance.package_info.package)
+          dev.RunShellCommand(cmd, check_return=True)
 
       @trace_event.traced
       def edit_shared_prefs(dev):
@@ -421,6 +422,8 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             device, test_timeout_scale * self._test_instance.timeout_scale)
 
+    if self._env.wait_for_java_debugger:
+      timeout = None
     logging.info('preparing to run %s: %s', test_display_name, test)
 
     render_tests_device_output_dir = None
@@ -611,8 +614,11 @@ class LocalDeviceInstrumentationTestRun(
           extras['log'] = 'true'
           extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
           target = '%s/%s' % (test_package, junit4_runner_class)
+          kwargs = {}
+          if self._env.wait_for_java_debugger:
+            kwargs['timeout'] = None
           test_list_run_output = dev.StartInstrumentation(
-              target, extras=extras)
+              target, extras=extras, retries=0, **kwargs)
           if any(test_list_run_output):
             logging.error('Unexpected output while listing tests:')
             for line in test_list_run_output:
