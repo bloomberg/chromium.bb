@@ -356,7 +356,9 @@ FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& rect_in_frame,
   IntRect viewport_in_root_frame =
       IntRect(frame.GetPage()->GetVisualViewport().VisibleRect());
   FloatRect viewport_in_frame =
-      frame.View()->RootFrameToContents(viewport_in_root_frame);
+      frame.View()->ConvertFromRootFrame(viewport_in_root_frame);
+  auto* view_scrollable_area = frame.View()->LayoutViewportScrollableArea();
+  viewport_in_frame.Move(view_scrollable_area->GetScrollOffset());
   return Intersection(viewport_in_frame, rect_in_frame);
 }
 
