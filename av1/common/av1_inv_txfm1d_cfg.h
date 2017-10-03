@@ -118,7 +118,7 @@ static const int8_t inv_cos_bit_row_adst_32[12] = { 12, 12, 12, 12, 12, 12,
 
 //  ---------------- 64x64 1D constants -----------------------
 // shift
-static const int8_t inv_shift_64[2] = { -1, -7 };
+static const int8_t inv_shift_64[2] = { -1, -5 };
 
 // stage range
 static const int8_t inv_stage_range_col_dct_64[12] = { 11, 11, 11, 11, 11, 11,
