@@ -273,10 +273,12 @@ void MseTrackBuffer::NotifyStartOfCodedFrameGroup(DecodeTimestamp start_dts,
 }
 
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
-                               MediaLog* media_log)
+                               MediaLog* media_log,
+                               ChunkDemuxerStream::RangeApi range_api)
     : group_start_timestamp_(kNoTimestamp),
       update_duration_cb_(update_duration_cb),
-      media_log_(media_log) {
+      media_log_(media_log),
+      range_api_(range_api) {
   DVLOG(2) << __func__ << "()";
   DCHECK(!update_duration_cb.is_null());
 }
@@ -823,12 +825,14 @@ bool FrameProcessor::ProcessFrame(
     }
 
     DCHECK(presentation_timestamp >= base::TimeDelta());
-    if (decode_timestamp < DecodeTimestamp()) {
+    if (decode_timestamp < DecodeTimestamp() &&
+        range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
       // B-frames may still result in negative DTS here after being shifted by
       // |timestamp_offset_|.
       // TODO(wolenetz): This is no longer a step in the CFP, since negative DTS
       // are allowed. Remove this parse failure and error log as part of fixing
       // PTS/DTS conflation in SourceBufferStream. See https://crbug.com/398141
+      // and https://crbug.com/718641.
       MEDIA_LOG(ERROR, media_log_)
           << frame->GetTypeName() << " frame with PTS "
           << presentation_timestamp.InMicroseconds() << "us has negative DTS "

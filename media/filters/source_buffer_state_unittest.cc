@@ -66,7 +66,7 @@ class SourceBufferStateTest
     std::unique_ptr<FrameProcessor> frame_processor = base::WrapUnique(
         new FrameProcessor(base::Bind(&SourceBufferStateTest::OnUpdateDuration,
                                       base::Unretained(this)),
-                           &media_log_));
+                           &media_log_, range_api_));
     mock_stream_parser_ = new testing::StrictMock<MockStreamParser>();
     return base::WrapUnique(new SourceBufferState(
         base::WrapUnique(mock_stream_parser_), std::move(frame_processor),
