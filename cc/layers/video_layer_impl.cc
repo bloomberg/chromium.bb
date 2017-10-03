@@ -76,7 +76,7 @@ void VideoLayerImpl::DidBecomeActive() {
 }
 
 bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
-                              ResourceProvider* resource_provider) {
+                              LayerTreeResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
@@ -330,7 +330,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   }
 }
 
-void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
+void VideoLayerImpl::DidDraw(LayerTreeResourceProvider* resource_provider) {
   LayerImpl::DidDraw(resource_provider);
 
   DCHECK(frame_.get());

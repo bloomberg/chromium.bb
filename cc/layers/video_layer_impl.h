@@ -36,10 +36,10 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   // LayerImpl implementation.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   bool WillDraw(DrawMode draw_mode,
-                ResourceProvider* resource_provider) override;
+                LayerTreeResourceProvider* resource_provider) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
-  void DidDraw(ResourceProvider* resource_provider) override;
+  void DidDraw(LayerTreeResourceProvider* resource_provider) override;
   SimpleEnclosedRegion VisibleOpaqueRegion() const override;
   void DidBecomeActive() override;
   void ReleaseResources() override;
