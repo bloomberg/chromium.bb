@@ -605,3 +605,23 @@ int drv_modify_linear_combinations(struct driver *drv)
 	free(items);
 	return 0;
 }
+
+/*
+ * Pick the best modifier from modifiers, according to the ordering
+ * given by modifier_order.
+ */
+uint64_t drv_pick_modifier(const uint64_t *modifiers, uint32_t count,
+			   const uint64_t *modifier_order, uint32_t order_count)
+{
+	uint32_t i, j;
+
+	for (i = 0; i < order_count; i++) {
+		for (j = 0; j < count; j++) {
+			if (modifiers[j] == modifier_order[i]) {
+				return modifiers[j];
+			}
+		}
+	}
+
+	return DRM_FORMAT_MOD_LINEAR;
+}

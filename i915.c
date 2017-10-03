@@ -291,21 +291,26 @@ static int i915_init(struct driver *drv)
 	return i915_add_combinations(drv);
 }
 
-static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			  uint64_t use_flags)
+static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
+				       uint32_t format, uint64_t modifier)
 {
 	int ret;
 	size_t plane;
 	uint32_t stride;
 	struct drm_i915_gem_create gem_create;
 	struct drm_i915_gem_set_tiling gem_set_tiling;
-	struct combination *combo;
 
-	combo = drv_get_combination(bo->drv, format, use_flags);
-	if (!combo)
-		return -EINVAL;
-
-	bo->tiling = combo->metadata.tiling;
+	switch (modifier) {
+	case DRM_FORMAT_MOD_LINEAR:
+		bo->tiling = I915_TILING_NONE;
+		break;
+	case I915_FORMAT_MOD_X_TILED:
+		bo->tiling = I915_TILING_X;
+		break;
+	case I915_FORMAT_MOD_Y_TILED:
+		bo->tiling = I915_TILING_Y;
+		break;
+	}
 
 	stride = drv_stride_from_format(format, width, 0);
 
@@ -381,6 +386,33 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32
 	}
 
 	return 0;
+}
+
+static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			  uint64_t use_flags)
+{
+	struct combination *combo;
+
+	combo = drv_get_combination(bo->drv, format, use_flags);
+	if (!combo)
+		return -EINVAL;
+
+	return i915_bo_create_for_modifier(bo, width, height, format, combo->metadata.modifier);
+}
+
+static int i915_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					 uint32_t format, const uint64_t *modifiers, uint32_t count)
+{
+	static const uint64_t modifier_order[] = {
+		I915_FORMAT_MOD_Y_TILED, I915_FORMAT_MOD_X_TILED, DRM_FORMAT_MOD_LINEAR,
+	};
+	uint64_t modifier;
+
+	modifier = drv_pick_modifier(modifiers, count, modifier_order, ARRAY_SIZE(modifier_order));
+
+	bo->format_modifiers[0] = modifier;
+
+	return i915_bo_create_for_modifier(bo, width, height, format, modifier);
 }
 
 static void i915_close(struct driver *drv)
@@ -520,6 +552,7 @@ struct backend backend_i915 = {
 	.init = i915_init,
 	.close = i915_close,
 	.bo_create = i915_bo_create,
+	.bo_create_with_modifiers = i915_bo_create_with_modifiers,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = i915_bo_import,
 	.bo_map = i915_bo_map,

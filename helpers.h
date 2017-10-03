@@ -33,4 +33,7 @@ void drv_modify_combination(struct driver *drv, uint32_t format, struct format_m
 			    uint64_t usage);
 struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items);
 int drv_modify_linear_combinations(struct driver *drv);
+uint64_t drv_pick_modifier(const uint64_t *modifiers, uint32_t count,
+			   const uint64_t *modifier_order, uint32_t order_count);
+
 #endif
