@@ -338,6 +338,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   void UpdateETWCategoryGroupEnabledFlags();
 #endif
 
+  // Replaces |logged_events_| with a new TraceBuffer for testing.
+  void SetTraceBufferForTesting(std::unique_ptr<TraceBuffer> trace_buffer);
+
  private:
   typedef unsigned int InternalTraceOptions;
 
