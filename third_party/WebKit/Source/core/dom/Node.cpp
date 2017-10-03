@@ -629,7 +629,7 @@ void Node::normalize() {
 }
 
 LayoutBox* Node::GetLayoutBox() const {
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   return layout_object && layout_object->IsBox() ? ToLayoutBox(layout_object)
                                                  : nullptr;
 }
@@ -685,7 +685,7 @@ void Node::SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style) {
 }
 
 LayoutBoxModelObject* Node::GetLayoutBoxModelObject() const {
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   return layout_object && layout_object->IsBoxModelObject()
              ? ToLayoutBoxModelObject(layout_object)
              : nullptr;
@@ -904,7 +904,7 @@ bool Node::IsInert() const {
   }
 
   if (RuntimeEnabledFeatures::InertAttributeEnabled()) {
-    const Element* element = this->IsElementNode()
+    const Element* element = IsElementNode()
                                  ? ToElement(this)
                                  : FlatTreeTraversal::ParentElement(*this);
     while (element) {
@@ -1231,7 +1231,7 @@ bool Node::isEqualNode(Node* other) const {
   if (!other)
     return false;
 
-  NodeType node_type = this->getNodeType();
+  NodeType node_type = getNodeType();
   if (node_type != other->getNodeType())
     return false;
 
@@ -1953,7 +1953,7 @@ void Node::WillMoveToNewDocument(Document& old_document,
 void Node::DidMoveToNewDocument(Document& old_document) {
   TreeScopeAdopter::EnsureDidMoveToNewDocumentWasCalled(old_document);
 
-  if (const EventTargetData* event_target_data = this->GetEventTargetData()) {
+  if (const EventTargetData* event_target_data = GetEventTargetData()) {
     const EventListenerMap& listener_map =
         event_target_data->event_listener_map;
     if (!listener_map.IsEmpty()) {
@@ -2370,7 +2370,7 @@ void Node::DefaultEventHandler(Event* event) {
       // remove this synchronous layout if we avoid synchronous layout in
       // LayoutTextControlSingleLine::scrollHeight
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-      LayoutObject* layout_object = this->GetLayoutObject();
+      LayoutObject* layout_object = GetLayoutObject();
       while (
           layout_object &&
           (!layout_object->IsBox() ||

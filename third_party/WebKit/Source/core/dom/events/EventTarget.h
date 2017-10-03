@@ -251,12 +251,12 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
 
 // FIXME: These macros should be split into separate DEFINE and DECLARE
 // macros to avoid causing so many header includes.
-#define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute)                        \
-  EventListener* on##attribute() {                                        \
-    return this->GetAttributeEventListener(EventTypeNames::attribute);    \
-  }                                                                       \
-  void setOn##attribute(EventListener* listener) {                        \
-    this->SetAttributeEventListener(EventTypeNames::attribute, listener); \
+#define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute)                  \
+  EventListener* on##attribute() {                                  \
+    return GetAttributeEventListener(EventTypeNames::attribute);    \
+  }                                                                 \
+  void setOn##attribute(EventListener* listener) {                  \
+    SetAttributeEventListener(EventTypeNames::attribute, listener); \
   }
 
 #define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(attribute)                    \

@@ -64,7 +64,7 @@ Node* Text::MergeNextSiblingNodesIfPossible() {
   }
 
   // Merge text nodes.
-  while (Node* next_sibling = this->nextSibling()) {
+  while (Node* next_sibling = nextSibling()) {
     if (next_sibling->getNodeType() != kTextNode)
       break;
 
@@ -383,7 +383,7 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
 }
 
 void Text::RecalcTextStyle(StyleRecalcChange change) {
-  if (LayoutTextItem layout_item = LayoutTextItem(this->GetLayoutObject())) {
+  if (LayoutTextItem layout_item = LayoutTextItem(GetLayoutObject())) {
     if (change != kNoChange || NeedsStyleRecalc())
       layout_item.SetStyle(
           GetDocument().EnsureStyleResolver().StyleForText(this));

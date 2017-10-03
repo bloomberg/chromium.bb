@@ -768,7 +768,7 @@ int Element::OffsetHeight() {
 Element* Element::OffsetParent() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   return layout_object ? layout_object->OffsetParent() : nullptr;
 }
 
@@ -1691,7 +1691,7 @@ const AtomicString& Element::LocateNamespacePrefix(
   if (!prefix().IsNull() && namespaceURI() == namespace_to_locate)
     return prefix();
 
-  AttributeCollection attributes = this->Attributes();
+  AttributeCollection attributes = Attributes();
   for (const Attribute& attr : attributes) {
     if (attr.Prefix() == g_xmlns_atom && attr.Value() == namespace_to_locate)
       return attr.LocalName();
@@ -1885,7 +1885,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   CreateAndAttachPseudoElementIfNeeded(kPseudoIdBefore, children_context);
 
   // When a shadow root exists, it does the work of attaching the children.
-  if (ElementShadow* shadow = this->Shadow())
+  if (ElementShadow* shadow = Shadow())
     shadow->Attach(children_context);
 
   ContainerNode::AttachLayoutTree(children_context);
@@ -1965,7 +1965,7 @@ RefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   // FIXME: Instead of clearing updates that may have been added from calls to
   // StyleForElement outside RecalcStyle, we should just never set them if we're
   // not inside RecalcStyle.
-  if (ElementAnimations* element_animations = this->GetElementAnimations())
+  if (ElementAnimations* element_animations = GetElementAnimations())
     element_animations->CssAnimations().ClearPendingUpdate();
 
   RefPtr<ComputedStyle> style = HasCustomStyleCallbacks()
@@ -1977,13 +1977,13 @@ RefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   }
 
   // StyleForElement() might add active animations so we need to get it again.
-  if (ElementAnimations* element_animations = this->GetElementAnimations()) {
+  if (ElementAnimations* element_animations = GetElementAnimations()) {
     element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
     element_animations->UpdateAnimationFlags(*style);
   }
 
   if (style->HasTransform()) {
-    if (const StylePropertySet* inline_style = this->InlineStyle()) {
+    if (const StylePropertySet* inline_style = InlineStyle()) {
       style->SetHasInlineTransform(
           inline_style->HasProperty(CSSPropertyTransform) ||
           inline_style->HasProperty(CSSPropertyTranslate) ||
@@ -2163,7 +2163,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   if (local_change != kNoChange)
     UpdateCallbackSelectors(old_style.get(), new_style.get());
 
-  if (LayoutObject* layout_object = this->GetLayoutObject()) {
+  if (LayoutObject* layout_object = GetLayoutObject()) {
     // kNoChange may means that the computed style didn't change, but there are
     // additional flags in ComputedStyle which may have changed. For instance,
     // the AffectedBy* flags. We don't need to go through the visual
@@ -2372,7 +2372,7 @@ void Element::SetCustomElementDefinition(CustomElementDefinition* definition) {
   DCHECK(definition);
   DCHECK(!GetCustomElementDefinition());
   EnsureElementRareData().SetCustomElementDefinition(definition);
-  this->SetCustomElementState(CustomElementState::kCustom);
+  SetCustomElementState(CustomElementState::kCustom);
 }
 
 CustomElementDefinition* Element::GetCustomElementDefinition() const {
@@ -2590,7 +2590,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
         change.sibling_after_change);
 
   // TODO(hayato): Confirm that we can skip this if a shadow tree is v1.
-  if (ElementShadow* shadow = this->Shadow())
+  if (ElementShadow* shadow = Shadow())
     shadow->SetNeedsDistributionRecalc();
 }
 
@@ -3180,7 +3180,7 @@ Node* Element::InsertAdjacent(const String& where,
                               Node* new_child,
                               ExceptionState& exception_state) {
   if (DeprecatedEqualIgnoringCase(where, "beforeBegin")) {
-    if (ContainerNode* parent = this->parentNode()) {
+    if (ContainerNode* parent = parentNode()) {
       parent->InsertBefore(new_child, this, exception_state);
       if (!exception_state.HadException())
         return new_child;
@@ -3199,7 +3199,7 @@ Node* Element::InsertAdjacent(const String& where,
   }
 
   if (DeprecatedEqualIgnoringCase(where, "afterEnd")) {
-    if (ContainerNode* parent = this->parentNode()) {
+    if (ContainerNode* parent = parentNode()) {
       parent->InsertBefore(new_child, nextSibling(), exception_state);
       if (!exception_state.HadException())
         return new_child;
@@ -3440,7 +3440,7 @@ bool Element::IsInDescendantTreeOf(const Element* shadow_host) const {
   DCHECK(shadow_host);
   DCHECK(IsShadowHost(shadow_host));
 
-  for (const Element* ancestor_shadow_host = this->OwnerShadowHost();
+  for (const Element* ancestor_shadow_host = OwnerShadowHost();
        ancestor_shadow_host;
        ancestor_shadow_host = ancestor_shadow_host->OwnerShadowHost()) {
     if (ancestor_shadow_host == shadow_host)
@@ -4181,7 +4181,7 @@ void Element::SetSavedLayerScrollOffset(const ScrollOffset& size) {
 }
 
 Attr* Element::AttrIfExists(const QualifiedName& name) {
-  if (AttrNodeList* attr_node_list = this->GetAttrNodeList()) {
+  if (AttrNodeList* attr_node_list = GetAttrNodeList()) {
     for (const auto& attr : *attr_node_list) {
       if (attr->GetQualifiedName().Matches(name))
         return attr.Get();
@@ -4214,7 +4214,7 @@ void Element::DetachAttrNodeFromElementWithValue(Attr* attr_node,
 }
 
 void Element::DetachAllAttrNodesFromElement() {
-  AttrNodeList* list = this->GetAttrNodeList();
+  AttrNodeList* list = GetAttrNodeList();
   if (!list)
     return;
 
@@ -4348,7 +4348,7 @@ void Element::SynchronizeStyleAttributeInternal() const {
   DCHECK(GetElementData());
   DCHECK(GetElementData()->style_attribute_is_dirty_);
   GetElementData()->style_attribute_is_dirty_ = false;
-  const StylePropertySet* inline_style = this->InlineStyle();
+  const StylePropertySet* inline_style = InlineStyle();
   const_cast<Element*>(this)->SetSynchronizedLazyAttribute(
       styleAttr,
       inline_style ? AtomicString(inline_style->AsText()) : g_empty_atom);

@@ -39,7 +39,7 @@ inline const ComputedStyle* Node::GetComputedStyle() const {
 }
 
 inline ComputedStyle* Node::MutableComputedStyle() const {
-  if (LayoutObject* layout_object = this->GetLayoutObject())
+  if (LayoutObject* layout_object = GetLayoutObject())
     return layout_object->MutableStyle();
 
   if (IsElementNode())

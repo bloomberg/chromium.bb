@@ -767,7 +767,7 @@ void Document::SetDoctype(DocumentType* doc_type) {
   DCHECK(!doc_type_ || !doc_type);
   doc_type_ = doc_type;
   if (doc_type_) {
-    this->AdoptIfNeeded(*doc_type_);
+    AdoptIfNeeded(*doc_type_);
     if (doc_type_->publicId().StartsWithIgnoringASCIICase(
             "-//wapforum//dtd xhtml mobile 1.")) {
       is_mobile_document_ = true;
@@ -1133,7 +1133,7 @@ bool Document::HaveImportsLoaded() const {
 LocalDOMWindow* Document::ExecutingWindow() const {
   if (LocalDOMWindow* owning_window = domWindow())
     return owning_window;
-  if (HTMLImportsController* import = this->ImportsController())
+  if (HTMLImportsController* import = ImportsController())
     return import->Master()->domWindow();
   return 0;
 }
@@ -1352,7 +1352,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
       }
   }
 
-  this->AdoptIfNeeded(*source);
+  AdoptIfNeeded(*source);
 
   return source;
 }
@@ -2230,7 +2230,7 @@ void Document::UpdateStyle() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &should_record_stats);
   GetStyleEngine().SetStatsEnabled(should_record_stats);
 
-  if (Element* document_element = this->documentElement()) {
+  if (Element* document_element = documentElement()) {
     if (document_element->ShouldCallRecalcStyle(change)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       Element* viewport_defining = ViewportDefiningElement();
@@ -2793,7 +2793,7 @@ void Document::Shutdown() {
 void Document::RemoveAllEventListeners() {
   ContainerNode::RemoveAllEventListeners();
 
-  if (LocalDOMWindow* dom_window = this->domWindow())
+  if (LocalDOMWindow* dom_window = domWindow())
     dom_window->RemoveAllEventListeners();
 }
 
@@ -2830,7 +2830,7 @@ AXObjectCache* Document::ExistingAXObjectCache() const {
 }
 
 AXObjectCache* Document::AxObjectCache() const {
-  Settings* settings = this->GetSettings();
+  Settings* settings = GetSettings();
   if (!settings || !settings->GetAccessibilityEnabled())
     return 0;
 
@@ -2839,7 +2839,7 @@ AXObjectCache* Document::AxObjectCache() const {
   // which share the AXObjectCache of their owner.
   //
   // See http://crbug.com/532249
-  Document& cache_owner = this->AxObjectCacheOwner();
+  Document& cache_owner = AxObjectCacheOwner();
 
   // If the document has already been detached, do not make a new axObjectCache.
   if (!cache_owner.GetLayoutView())
@@ -3174,8 +3174,8 @@ void Document::ImplicitClose() {
   if (SvgExtensions())
     AccessSVGExtensions().DispatchSVGLoadEventToOutermostSVGElements();
 
-  if (this->domWindow())
-    this->domWindow()->DocumentWasClosed();
+  if (domWindow())
+    domWindow()->DocumentWasClosed();
 
   if (GetFrame()) {
     GetFrame()->Client()->DispatchDidHandleOnloadEvents();
@@ -3810,7 +3810,7 @@ void Document::ProcessBaseElement() {
           kSecurityMessageSource, kErrorMessageLevel,
           "'data:' URLs may not be used as base URLs for a document."));
     }
-    if (!this->GetSecurityOrigin()->CanRequest(base_element_url))
+    if (!GetSecurityOrigin()->CanRequest(base_element_url))
       UseCounter::Count(*this, WebFeature::kBaseWithCrossOriginHref);
   }
 
@@ -4588,7 +4588,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
 SetFocusedElementDone:
   UpdateStyleAndLayoutTree();
-  if (LocalFrame* frame = this->GetFrame())
+  if (LocalFrame* frame = GetFrame())
     frame->Selection().DidChangeFocus();
   return !focus_change_blocked;
 }
@@ -4802,7 +4802,7 @@ void Document::DidSplitTextNode(const Text& old_node) {
 
 void Document::SetWindowAttributeEventListener(const AtomicString& event_type,
                                                EventListener* listener) {
-  LocalDOMWindow* dom_window = this->domWindow();
+  LocalDOMWindow* dom_window = domWindow();
   if (!dom_window)
     return;
   dom_window->SetAttributeEventListener(event_type, listener);
@@ -4810,7 +4810,7 @@ void Document::SetWindowAttributeEventListener(const AtomicString& event_type,
 
 EventListener* Document::GetWindowAttributeEventListener(
     const AtomicString& event_type) {
-  LocalDOMWindow* dom_window = this->domWindow();
+  LocalDOMWindow* dom_window = domWindow();
   if (!dom_window)
     return 0;
   return dom_window->GetAttributeEventListener(event_type);
@@ -5078,7 +5078,7 @@ String Document::cookie(ExceptionState& exception_state) const {
           Suborigin::SuboriginPolicyOptions::kUnsafeCookies))
     return String();
 
-  KURL cookie_url = this->CookieURL();
+  KURL cookie_url = CookieURL();
   if (cookie_url.IsEmpty())
     return String();
 
@@ -5112,7 +5112,7 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
           Suborigin::SuboriginPolicyOptions::kUnsafeCookies))
     return;
 
-  KURL cookie_url = this->CookieURL();
+  KURL cookie_url = CookieURL();
   if (cookie_url.IsEmpty())
     return;
 
@@ -5770,7 +5770,7 @@ void Document::FinishedParsing() {
   ScriptableDocumentParser* parser = GetScriptableDocumentParser();
   well_formed_ = parser && parser->WellFormed();
 
-  if (LocalFrame* frame = this->GetFrame()) {
+  if (LocalFrame* frame = GetFrame()) {
     // Don't update the layout tree if we haven't requested the main resource
     // yet to avoid adding extra latency. Note that the first layout tree update
     // can be expensive since it triggers the parsing of the default stylesheets
@@ -6269,7 +6269,7 @@ void Document::DetachRange(Range* range) {
 }
 
 void Document::InitDNSPrefetch() {
-  Settings* settings = this->GetSettings();
+  Settings* settings = GetSettings();
 
   have_explicitly_disabled_dns_prefetch_ = false;
   is_dns_prefetch_enabled_ = settings && settings->GetDNSPrefetchingEnabled() &&
@@ -6376,7 +6376,7 @@ void Document::TasksWereResumed() {
 }
 
 bool Document::TasksNeedSuspension() {
-  Page* page = this->GetPage();
+  Page* page = GetPage();
   return page && page->Paused();
 }
 
@@ -6580,7 +6580,7 @@ Touch* Document::createTouch(DOMWindow* window,
   // implement them here. See https://bugs.webkit.org/show_bug.cgi?id=47819
   LocalFrame* frame = window && window->IsLocalDOMWindow()
                           ? blink::ToLocalDOMWindow(window)->GetFrame()
-                          : this->GetFrame();
+                          : GetFrame();
   return Touch::Create(
       frame, target, identifier, FloatPoint(screen_x, screen_y),
       FloatPoint(page_x, page_y), FloatSize(radius_x, radius_y), rotation_angle,
@@ -6990,7 +6990,7 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
   // For V0 -> V1 upgrade, we need style recalculation for the whole document.
   if (shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV0 &&
       order == ShadowCascadeOrder::kShadowCascadeV1) {
-    this->SetNeedsStyleRecalc(
+    SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(StyleChangeReason::kShadow));
     UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
