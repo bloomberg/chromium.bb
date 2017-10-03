@@ -81,7 +81,7 @@ def _UninstallApk(devices, install_dict, package_name):
 
 
 def _LaunchUrl(devices, input_args, device_args_file, url, apk,
-               wait_for_debugger):
+               wait_for_java_debugger):
   if input_args and device_args_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
@@ -92,8 +92,10 @@ def _LaunchUrl(devices, input_args, device_args_file, url, apk,
   def launch(device):
     # Set debug app in order to enable reading command line flags on user
     # builds.
-    cmd = ['am', 'set-debug-app', '--persistent', apk.GetPackageName()]
-    if wait_for_debugger:
+    cmd = ['am', 'set-debug-app', apk.GetPackageName()]
+    if wait_for_java_debugger:
+      # To wait for debugging on a non-primary process:
+      #     am set-debug-app org.chromium.chrome:privileged_process0
       cmd[-1:-1] = ['-w']
     # Ignore error since it will fail if apk is not debuggable.
     device.RunShellCommand(cmd, check_return=False)
@@ -844,13 +846,15 @@ class _LaunchCommand(_Command):
   all_devices_by_default = True
 
   def _RegisterExtraArgs(self, group):
-    group.add_argument('-w', '--wait-for-debugger', action='store_true',
-                       help='Pause execution until debugger attaches.')
+    group.add_argument('-w', '--wait-for-java-debugger', action='store_true',
+                       help='Pause execution until debugger attaches. Applies '
+                            'only to the main process. To have renderers wait, '
+                            'use --args="--renderer-wait-for-java-debugger"')
     group.add_argument('url', nargs='?', help='A URL to launch with.')
 
   def Run(self):
     _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
-               self.args.url, self.apk_helper, self.args.wait_for_debugger)
+               self.args.url, self.apk_helper, self.args.wait_for_java_debugger)
 
 
 class _StopCommand(_Command):

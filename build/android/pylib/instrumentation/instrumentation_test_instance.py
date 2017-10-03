@@ -491,6 +491,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._render_results_dir = None
     self._screenshot_dir = None
     self._timeout_scale = None
+    self._wait_for_java_debugger = None
     self._initializeTestControlAttributes(args)
 
     self._coverage_directory = None
@@ -675,6 +676,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._screenshot_dir = args.screenshot_dir
     self._timeout_scale = args.timeout_scale or 1
     self._ui_screenshot_dir = args.ui_screenshot_dir
+    self._wait_for_java_debugger = args.wait_for_java_debugger
 
   def _initializeTestCoverageAttributes(self, args):
     self._coverage_directory = args.coverage_dir
@@ -819,6 +821,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def ui_screenshot_dir(self):
     return self._ui_screenshot_dir
+
+  @property
+  def wait_for_java_debugger(self):
+    return self._wait_for_java_debugger
 
   #override
   def TestType(self):
