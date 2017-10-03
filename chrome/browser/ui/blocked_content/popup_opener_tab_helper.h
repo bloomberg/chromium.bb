@@ -38,6 +38,10 @@ class PopupOpenerTabHelper
 
   void OnOpenedPopup(PopupTracker* popup_tracker);
 
+  bool has_opened_popup_since_last_user_gesture() const {
+    return has_opened_popup_since_last_user_gesture_;
+  }
+
  private:
   friend class content::WebContentsUserData<PopupOpenerTabHelper>;
 
@@ -51,6 +55,7 @@ class PopupOpenerTabHelper
       content::NavigationHandle* navigation_handle) override;
   void WasShown() override;
   void WasHidden() override;
+  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
   // Tracks navigations we are interested in, e.g. ones which start when the
   // WebContents is not visible.
@@ -70,6 +75,8 @@ class PopupOpenerTabHelper
   // Measures the time this WebContents opened a popup before
   // |visibility_tracker_| is instantiated.
   base::TimeTicks last_popup_open_time_before_redirect_;
+
+  bool has_opened_popup_since_last_user_gesture_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PopupOpenerTabHelper);
 };

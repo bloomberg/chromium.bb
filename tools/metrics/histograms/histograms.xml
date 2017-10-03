@@ -83186,6 +83186,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.TabUnderAction" enum="TabUnderAction">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Various actions related to the tab under intervention, logged during main
+    frame navigation.
+  </summary>
+</histogram>
+
 <histogram name="Tab.TimeSinceActive" units="ms">
   <obsolete>
     Deprecated as of 10/2016.

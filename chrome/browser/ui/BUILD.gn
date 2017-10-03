@@ -81,6 +81,8 @@ split_static_library("ui") {
     "blocked_content/popup_tracker.h",
     "blocked_content/scoped_visibility_tracker.cc",
     "blocked_content/scoped_visibility_tracker.h",
+    "blocked_content/tab_under_navigation_throttle.cc",
+    "blocked_content/tab_under_navigation_throttle.h",
     "bookmarks/bookmark_bar.h",
     "bookmarks/bookmark_bar_constants.h",
     "bookmarks/bookmark_bar_instructions_delegate.h",

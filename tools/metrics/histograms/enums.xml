@@ -37996,6 +37996,11 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Revisit"/>
 </enum>
 
+<enum name="TabUnderAction">
+  <int value="0" label="Navigation started"/>
+  <int value="1" label="Tab-under blocked"/>
+</enum>
+
 <enum name="TapDelayType">
   <int value="0" label="Delayed Tap"/>
   <int value="1" label="Undelayed Tap"/>
