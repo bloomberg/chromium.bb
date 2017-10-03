@@ -72,9 +72,8 @@ class MEDIA_EXPORT AudioBufferQueue {
                    int dest_frame_offset,
                    AudioBus* dest);
 
-  BufferQueue::iterator current_buffer_;
   BufferQueue buffers_;
-  int current_buffer_offset_;
+  int front_buffer_offset_;  // Offset into buffers_.front().
 
   // Number of frames available to be read in the buffer.
   int frames_;
