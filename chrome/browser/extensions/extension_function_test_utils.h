@@ -25,9 +25,7 @@ class ListValue;
 // extensions/browser/api_test_utils.h.
 namespace extension_function_test_utils {
 
-// Parse JSON and return as the specified type, or NULL if the JSON is invalid
-// or not the specified type.
-base::Value* ParseJSON(const std::string& data);
+// Parse JSON and return as a ListValue, or null if invalid.
 base::ListValue* ParseList(const std::string& data);
 
 // If |val| is a dictionary, return it as one, otherwise NULL.
