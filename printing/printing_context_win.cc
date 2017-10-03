@@ -200,20 +200,17 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
 
     const PrintSettings::RequestedMedia& requested_media =
         settings_.requested_media();
-    static const int kFromUm = 100;  // Windows uses 0.1mm.
-    int width = requested_media.size_microns.width() / kFromUm;
-    int height = requested_media.size_microns.height() / kFromUm;
     unsigned id = 0;
     // If the paper size is a custom user size, setting by ID may not work.
     if (base::StringToUint(requested_media.vendor_id, &id) && id &&
         id < DMPAPER_USER) {
       dev_mode->dmFields |= DM_PAPERSIZE;
       dev_mode->dmPaperSize = static_cast<short>(id);
-    } else if (width > 0 && height > 0) {
-      dev_mode->dmFields |= DM_PAPERWIDTH;
-      dev_mode->dmPaperWidth = width;
-      dev_mode->dmFields |= DM_PAPERLENGTH;
-      dev_mode->dmPaperLength = height;
+    } else if (!requested_media.size_microns.IsEmpty()) {
+      static constexpr int kFromUm = 100;  // Windows uses 0.1mm.
+      dev_mode->dmFields |= DM_PAPERWIDTH | DM_PAPERLENGTH;
+      dev_mode->dmPaperWidth = requested_media.size_microns.width() / kFromUm;
+      dev_mode->dmPaperLength = requested_media.size_microns.height() / kFromUm;
     }
   }
 
