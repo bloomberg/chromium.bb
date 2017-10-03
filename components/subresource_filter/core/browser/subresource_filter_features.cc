@@ -4,10 +4,10 @@
 
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 
+#include <algorithm>
 #include <map>
 #include <ostream>
 #include <sstream>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -29,7 +29,7 @@ namespace {
 
 class CommaSeparatedStrings {
  public:
-  CommaSeparatedStrings(std::string comma_separated_strings)
+  explicit CommaSeparatedStrings(std::string comma_separated_strings)
       : backing_string_(comma_separated_strings),
         pieces_(base::SplitStringPiece(backing_string_,
                                        ",",
@@ -129,7 +129,13 @@ std::vector<Configuration> FillEnabledPresetConfigurations(
       {kPresetLiveRunOnPhishingSites, false,
        &Configuration::MakePresetForLiveRunOnPhishingSites},
       {kPresetPerformanceTestingDryRunOnAllSites, false,
-       &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites}};
+       &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites},
+      {kPresetLiveRunForAbusiveAds, false,
+       &Configuration::MakePresetForLiveRunForAbusiveAds},
+      {kPresetLiveRunForBetterAds, false,
+       &Configuration::MakePresetForLiveRunForBetterAds},
+      {kPresetLiveRunForAllAds, false,
+       &Configuration::MakePresetForLiveRunForAllAds}};
 
   CommaSeparatedStrings enabled_presets(
       TakeVariationParamOrReturnEmpty(params, kEnablePresetsParameterName));
@@ -286,6 +292,11 @@ const char kDisablePresetsParameterName[] = "disable_presets";
 const char kPresetLiveRunOnPhishingSites[] = "liverun_on_phishing_sites";
 const char kPresetPerformanceTestingDryRunOnAllSites[] =
     "performance_testing_dryrun_on_all_sites";
+const char kPresetLiveRunForAbusiveAds[] =
+    "liverun_on_abusive_ad_violating_sites";
+const char kPresetLiveRunForBetterAds[] =
+    "liverun_on_better_ads_violating_sites";
+const char kPresetLiveRunForAllAds[] = "liverun_on_all_ads_violating_sites";
 
 // Configuration --------------------------------------------------------------
 
@@ -313,6 +324,37 @@ Configuration Configuration::MakeForForcedActivation() {
   // (which is why scope is no_sites).
   Configuration config(ActivationLevel::ENABLED, ActivationScope::NO_SITES);
   config.activation_conditions.forced_activation = true;
+  return config;
+}
+
+// static
+Configuration Configuration::MakePresetForLiveRunForAbusiveAds() {
+  Configuration config(ActivationLevel::ENABLED,
+                       ActivationScope::ACTIVATION_LIST,
+                       ActivationList::ABUSIVE_ADS);
+  config.activation_options.should_disable_ruleset_rules = true;
+  config.activation_options.should_suppress_notifications = true;
+  config.activation_options.should_strengthen_popup_blocker = true;
+  config.activation_conditions.priority = 750;
+  return config;
+}
+
+// static
+Configuration Configuration::MakePresetForLiveRunForBetterAds() {
+  Configuration config(ActivationLevel::ENABLED,
+                       ActivationScope::ACTIVATION_LIST,
+                       ActivationList::BETTER_ADS);
+  config.activation_conditions.priority = 800;
+  return config;
+}
+
+// static
+Configuration Configuration::MakePresetForLiveRunForAllAds() {
+  Configuration config(ActivationLevel::ENABLED,
+                       ActivationScope::ACTIVATION_LIST,
+                       ActivationList::ALL_ADS);
+  config.activation_options.should_strengthen_popup_blocker = true;
+  config.activation_conditions.priority = 850;
   return config;
 }
 
