@@ -53,17 +53,12 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRDisplay {
   void ExitPresent() override;
   void GetNextMagicWindowPose(GetNextMagicWindowPoseCallback callback) override;
 
-  void RequestPresentResult(RequestPresentCallback callback,
-                            bool success);
-
   mojo::Binding<mojom::VRDisplay> binding_;
   mojom::VRDisplayClientPtr client_;
   device::VRDevice* device_;
   const int render_frame_process_id_;
   const int render_frame_routing_id_;
   bool listening_for_activate_ = false;
-
-  base::WeakPtrFactory<VRDisplayImpl> weak_ptr_factory_;
 };
 
 }  // namespace device

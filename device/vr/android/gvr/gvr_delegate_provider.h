@@ -24,11 +24,10 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
  public:
   GvrDelegateProvider() = default;
   virtual void SetDeviceId(unsigned int device_id) = 0;
-  virtual void RequestWebVRPresent(
-      mojom::VRSubmitFrameClientPtr submit_client,
-      mojom::VRPresentationProviderRequest request,
-      mojom::VRDisplayInfoPtr display_info,
-      const base::Callback<void(bool)>& callback) = 0;
+  virtual void RequestWebVRPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                                   mojom::VRPresentationProviderRequest request,
+                                   mojom::VRDisplayInfoPtr display_info,
+                                   base::Callback<void(bool)> callback) = 0;
   virtual void ExitWebVRPresent() = 0;
   virtual void OnDisplayAdded(VRDisplayImpl* display) = 0;
   virtual void OnDisplayRemoved(VRDisplayImpl* display) = 0;

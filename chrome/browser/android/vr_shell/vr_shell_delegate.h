@@ -72,7 +72,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
                            device::mojom::VRPresentationProviderRequest request,
                            device::mojom::VRDisplayInfoPtr display_info,
-                           const base::Callback<void(bool)>& callback) override;
+                           base::Callback<void(bool)> callback) override;
   void OnDisplayAdded(device::VRDisplayImpl* display) override;
   void OnDisplayRemoved(device::VRDisplayImpl* display) override;
   void OnListeningForActivateChanged(device::VRDisplayImpl* display) override;
@@ -86,7 +86,11 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void OnFocusedAndActivatable(device::VRDisplayImpl* display);
   void OnLostFocusedAndActivatable();
   void SetListeningForActivate(bool listening);
-  void SetPresentResult(bool success);
+  void OnPresentResult(device::mojom::VRSubmitFrameClientPtr submit_client,
+                       device::mojom::VRPresentationProviderRequest request,
+                       device::mojom::VRDisplayInfoPtr display_info,
+                       base::Callback<void(bool)> callback,
+                       bool success);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
@@ -94,9 +98,6 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   unsigned int device_id_ = 0;
   VrShell* vr_shell_ = nullptr;
   base::Callback<void(bool)> present_callback_;
-  device::mojom::VRSubmitFrameClientPtr submit_client_;
-  device::mojom::VRPresentationProviderRequest presentation_provider_request_;
-  device::mojom::VRDisplayInfoPtr display_info_;
   bool pending_successful_present_request_ = false;
 
   std::map<content::RenderWidgetHost*, device::VRDisplayImpl*> displays_;

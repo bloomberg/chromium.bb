@@ -27,9 +27,11 @@ class DEVICE_VR_EXPORT VRDevice {
   unsigned int id() const { return id_; }
 
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
-  virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                              mojom::VRPresentationProviderRequest request,
-                              const base::Callback<void(bool)>& callback) = 0;
+  virtual void RequestPresent(
+      VRDisplayImpl* display,
+      mojom::VRSubmitFrameClientPtr submit_client,
+      mojom::VRPresentationProviderRequest request,
+      mojom::VRDisplay::RequestPresentCallback callback) = 0;
   virtual void ExitPresent() = 0;
   virtual void GetNextMagicWindowPose(
       VRDisplayImpl* display,
@@ -54,9 +56,6 @@ class DEVICE_VR_EXPORT VRDevice {
   void OnFocus();
 
  protected:
-  friend class VRDisplayImpl;
-  friend class VRDisplayImplTest;
-
   void SetPresentingDisplay(VRDisplayImpl* display);
 
  private:
@@ -67,8 +66,6 @@ class DEVICE_VR_EXPORT VRDevice {
   unsigned int id_;
 
   static unsigned int next_id_;
-
-  base::WeakPtrFactory<VRDevice> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDevice);
 };
