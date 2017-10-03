@@ -99,7 +99,13 @@ enum PhysicalWebInitialStateIosChrome {
   [centralManager_ setDelegate:nil];
   centralManager_ = nil;
 
-  BOOL bluetoothEnabled = [centralManager_ state] == CBManagerStatePoweredOn;
+  BOOL bluetoothEnabled;
+  if (@available(iOS 10, *)) {
+    bluetoothEnabled = [centralManager_ state] == CBManagerStatePoweredOn;
+  } else {
+    bluetoothEnabled = (CBCentralManagerState)[centralManager_ state] ==
+                       CBCentralManagerStatePoweredOn;
+  }
 
   BOOL locationServicesEnabled = [CLLocationManager locationServicesEnabled];
 

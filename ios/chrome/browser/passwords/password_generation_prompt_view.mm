@@ -271,7 +271,8 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 - (BOOL)textView:(UITextView*)textView
     shouldInteractWithURL:(NSURL*)URL
                   inRange:(NSRange)characterRange
-              interaction:(UITextItemInteraction)interaction {
+              interaction:(UITextItemInteraction)interaction
+    API_AVAILABLE(ios(10.0)) {
   DCHECK([URL isEqual:_URL]);
   [_delegate showSavedPasswords:self];
   return NO;

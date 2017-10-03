@@ -212,7 +212,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (base::ios::IsRunningOnIOS10OrLater()) {
+  if (@available(iOS 10, *)) {
     self.collectionView.prefetchingEnabled = NO;
   }
   self.collectionView.accessibilityIdentifier =
