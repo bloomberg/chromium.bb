@@ -1486,7 +1486,7 @@
     ],
 
     'release_afl_asan': [
-      'release', 'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'release', 'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_bot': [
