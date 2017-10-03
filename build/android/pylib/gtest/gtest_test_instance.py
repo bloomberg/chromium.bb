@@ -293,6 +293,7 @@ class GtestTestInstance(test_instance.TestInstance):
     self._suite = args.suite_name[0]
     self._symbolizer = stack_symbolizer.Symbolizer(None, False)
     self._gs_test_artifacts_bucket = args.gs_test_artifacts_bucket
+    self._wait_for_java_debugger = args.wait_for_java_debugger
 
     # GYP:
     if args.executable_dist_dir:
@@ -327,6 +328,8 @@ class GtestTestInstance(test_instance.TestInstance):
         self._extras[_EXTRA_SHARD_SIZE_LIMIT] = 1
         self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(1e9 * self._shard_timeout)
         self._shard_timeout = 10 * self._shard_timeout
+      if args.wait_for_java_debugger:
+        self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(1e15)  # Forever
 
     if not self._apk_helper and not self._exe_dist_dir:
       error_func('Could not find apk or executable for %s' % self._suite)
@@ -468,6 +471,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def total_external_shards(self):
     return self._total_external_shards
+
+  @property
+  def wait_for_java_debugger(self):
+    return self._wait_for_java_debugger
 
   #override
   def TestType(self):

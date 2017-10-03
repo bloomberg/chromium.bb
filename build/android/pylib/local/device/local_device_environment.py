@@ -145,6 +145,10 @@ class LocalDeviceEnvironment(environment.Environment):
     self._trace_all = None
     if hasattr(args, 'trace_all'):
       self._trace_all = args.trace_all
+    self._wait_for_java_debugger = args.wait_for_java_debugger
+
+    if self._wait_for_java_debugger:
+      self._max_tries = 1
 
     devil_chromium.Initialize(
         output_directory=constants.GetOutDirectory(),
@@ -249,6 +253,10 @@ class LocalDeviceEnvironment(environment.Environment):
   @property
   def trace_output(self):
     return self._trace_output
+
+  @property
+  def wait_for_java_debugger(self):
+    return self._wait_for_java_debugger
 
   #override
   def TearDown(self):

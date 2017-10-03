@@ -118,6 +118,7 @@ class _ApkDelegate(object):
     self._suite = test_instance.suite
     self._component = '%s/%s' % (self._package, self._runner)
     self._extras = test_instance.extras
+    self._wait_for_java_debugger = test_instance.wait_for_java_debugger
 
   def GetTestDataRoot(self, device):
     # pylint: disable=no-self-use
@@ -168,6 +169,10 @@ class _ApkDelegate(object):
     stdout_file = device_temp_file.DeviceTempFile(
         device.adb, dir=device.GetExternalStoragePath(), suffix='.gtest_out')
     extras[_EXTRA_STDOUT_FILE] = stdout_file.name
+
+    if self._wait_for_java_debugger:
+      cmd = ['am', 'set-debug-app', '-w', self._package]
+      device.RunShellCommand(cmd, check_return=True)
 
     with command_line_file, test_list_file, stdout_file:
       try:
@@ -370,9 +375,12 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     @local_device_environment.handle_shard_failures_with(
         on_failure=self._env.BlacklistDevice)
     def list_tests(dev):
+      timeout = 30
+      if self._test_instance.wait_for_java_debugger:
+        timeout = None
       raw_test_list = crash_handler.RetryOnSystemCrash(
           lambda d: self._delegate.Run(
-              None, d, flags='--gtest_list_tests', timeout=30),
+              None, d, flags='--gtest_list_tests', timeout=timeout),
           device=dev)
       tests = gtest_test_instance.ParseGTestListTests(raw_test_list)
       if not tests:
@@ -420,6 +428,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     # Run the test.
     timeout = (self._test_instance.shard_timeout
                * self.GetTool(device).GetTimeoutScale())
+    if self._test_instance.wait_for_java_debugger:
+      timeout = None
     if self._test_instance.store_tombstones:
       tombstones.ClearAllTombstones(device)
     with device_temp_file.DeviceTempFile(

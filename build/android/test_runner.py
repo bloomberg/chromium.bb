@@ -334,6 +334,10 @@ def AddGTestOptions(parser):
       '--test-apk-incremental-install-json',
       type=os.path.realpath,
       help='Path to install json for the test apk.')
+  parser.add_argument(
+      '-w', '--wait-for-java-debugger', action='store_true',
+      help='Wait for java debugger to attach before running any application '
+           'code. Also disables test timeouts and sets retries=0.')
 
   filter_group = parser.add_mutually_exclusive_group()
   filter_group.add_argument(
@@ -481,6 +485,10 @@ def AddInstrumentationTestOptions(parser):
       '--ui-screenshot-directory',
       dest='ui_screenshot_dir', type=os.path.realpath,
       help='Destination for screenshots captured by the tests')
+  parser.add_argument(
+      '-w', '--wait-for-java-debugger', action='store_true',
+      help='Wait for java debugger to attach before running any application '
+           'code. Also disables test timeouts and sets retries=0.')
 
   # These arguments are suppressed from the help text because they should
   # only ever be specified by an intermediate script.
