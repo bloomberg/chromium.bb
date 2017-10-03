@@ -19,6 +19,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   ListItemOrdinal& Ordinal() { return ordinal_; }
 
   int Value() const;
+  String MarkerTextWithoutSuffix() const;
 
   void OrdinalValueChanged();
 
@@ -32,7 +33,8 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   void WillBeRemovedFromTree() override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void MarkerText(StringBuilder*) const;
+  enum MarkerTextFormat { kWithSuffix, kWithoutSuffix };
+  void MarkerText(StringBuilder*, MarkerTextFormat) const;
   void UpdateMarkerText(LayoutText*);
   void UpdateMarker();
 

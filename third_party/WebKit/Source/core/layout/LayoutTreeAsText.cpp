@@ -46,6 +46,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/layout_ng_list_item.h"
 #include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInline.h"
@@ -888,10 +889,13 @@ String MarkerTextForListItem(Element* element) {
   element->GetDocument().UpdateStyleAndLayout();
 
   LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object || !layout_object->IsListItem())
-    return String();
-
-  return ToLayoutListItem(layout_object)->MarkerText();
+  if (layout_object) {
+    if (layout_object->IsListItem())
+      return ToLayoutListItem(layout_object)->MarkerText();
+    if (layout_object->IsLayoutNGListItem())
+      return ToLayoutNGListItem(layout_object)->MarkerTextWithoutSuffix();
+  }
+  return String();
 }
 
 }  // namespace blink
