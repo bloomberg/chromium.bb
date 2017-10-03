@@ -41,10 +41,16 @@ class DragMockChromeClient : public EmptyChromeClient {
   WebPoint last_drag_image_offset;
 };
 
-class DragControllerTest : public RenderingTest {
+typedef bool TestParamRootLayerScrolling;
+class DragControllerTest
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
+      private ScopedRootLayerScrollingForTest,
+      public RenderingTest {
  protected:
   DragControllerTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : ScopedRootLayerScrollingForTest(GetParam()),
+        RenderingTest(SingleChildLocalFrameClient::Create()),
+
         chrome_client_(new DragMockChromeClient) {}
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
   ChromeClient& GetChromeClient() const override { return *chrome_client_; }
@@ -58,7 +64,9 @@ class DragControllerTest : public RenderingTest {
   Persistent<DragMockChromeClient> chrome_client_;
 };
 
-TEST_F(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
+INSTANTIATE_TEST_CASE_P(All, DragControllerTest, ::testing::Bool());
+
+TEST_P(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
   SetBodyInnerHTML(
       "<div>Hello world! This tests that the bitmap for drag image is scaled "
       "by page scale factor</div>");
@@ -128,7 +136,7 @@ TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
       WebView().GetPage()->GetAutoscrollController().AutoscrollInProgress());
 }
 
-TEST_F(DragControllerTest, DragImageForSelectionClipsToViewport) {
+TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
   SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
@@ -196,7 +204,7 @@ TEST_F(DragControllerTest, DragImageForSelectionClipsToViewport) {
   EXPECT_EQ(expected_image_size, selection_image->Size());
 }
 
-TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
+TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
   SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
@@ -271,7 +279,7 @@ TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
   EXPECT_EQ(expected_image_size, selection_image->Size());
 }
 
-TEST_F(DragControllerTest,
+TEST_P(DragControllerTest,
        DragImageForSelectionClipsChildFrameToViewportWithPageScaleFactor) {
   SetBodyInnerHTML(
       "<style>"
@@ -353,7 +361,7 @@ TEST_F(DragControllerTest,
   EXPECT_EQ(expected_image_size, selection_image->Size());
 }
 
-TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
+TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
   SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
@@ -394,7 +402,7 @@ TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
   EXPECT_EQ(expected_offset, IntPoint(ChromeClient().last_drag_image_offset));
 }
 
-TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
+TEST_P(DragControllerTest, DragLinkWithPageScaleFactor) {
   SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
