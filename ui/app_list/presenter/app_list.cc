@@ -101,4 +101,8 @@ void AppList::OnVisibilityChanged(bool visible, int64_t display_id) {
     delegate_->OnAppListVisibilityChanged(visible, display_id);
 }
 
+void AppList::FlushForTesting() {
+  bindings_.FlushForTesting();
+}
+
 }  // namespace app_list

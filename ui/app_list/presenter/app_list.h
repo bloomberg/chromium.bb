@@ -53,6 +53,8 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
 
   void set_delegate(AppListDelegate* delegate) { delegate_ = delegate; }
 
+  void FlushForTesting();
+
  private:
   // Bindings for the mojom::AppList interface.
   mojo::BindingSet<mojom::AppList> bindings_;
