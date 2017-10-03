@@ -47,21 +47,21 @@ You may append to your enum if the possible states/actions grows.  However, you
 should not reorder, renumber, or otherwise reuse existing values.  As such,
 please put this warning by the enum definition:
 ```
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
-enum NEW_TAB_PAGE_ACTION {
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class NEW_TAB_PAGE_ACTION {
   USE_OMNIBOX = 0,
   CLICK_TILE = 1,
   OPEN_BOOKMARK = 2,
-  NEW_TAB_PAGE_ACTION_COUNT
+  COUNT
 };
 ```
 
 Also, please explicitly set enum values `= 0`, `= 1`, `= 2`, etc.  This makes
 clearer that the actual values are important.  In addition, it helps confirm
 the values align between the enum definition and
-[histograms.xml](./histograms.xml).  If a "count" value is included it
-should not include an explicit value.
+[histograms.xml](./histograms.xml).  The COUNT value should not include an
+explicit value--this lets the compiler keep the COUNT up-to-date.
 
 If your enum histogram has a catch-all / miscellaneous bucket, put that bucket
 first (`= 0`).  This will make the bucket easy to find on the dashboard if

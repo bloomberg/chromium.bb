@@ -132,8 +132,8 @@
 // forcing an explicit cast to the HistogramBase::Sample integral type.
 //
 // Note the range checks verify two separate issues:
-// - that the declared enum max isn't out of range of HistogramBase::Sample
-// - that the declared enum max is > 0
+// - that the declared enum size isn't out of range of HistogramBase::Sample
+// - that the declared enum size is > 0
 //
 // TODO(dcheng): This should assert that the passed in types are actually enum
 // types.
