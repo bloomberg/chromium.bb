@@ -4614,14 +4614,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   rd_stats->zero_rate = zero_blk_rate;
   if (cpi->common.tx_mode == TX_MODE_SELECT || tx_size == TX_4X4) {
     inter_tx_size[0][0] = tx_size;
-
+    if (tx_size == TX_32X32 && mbmi->tx_type != DCT_DCT &&
+        rd_stats_stack[block32].rate != INT_MAX
 #if CONFIG_MRC_TX
-    if (tx_size == TX_32X32 && mbmi->tx_type != DCT_DCT &&
-        rd_stats_stack[block32].rate != INT_MAX && !USE_MRC_INTER) {
-#else
-    if (tx_size == TX_32X32 && mbmi->tx_type != DCT_DCT &&
-        rd_stats_stack[block32].rate != INT_MAX) {
+        && !USE_MRC_INTER
 #endif  // CONFIG_MRC_TX
+        ) {
       *rd_stats = rd_stats_stack[block32];
       p->eobs[block] = !rd_stats->skip;
       x->blk_skip[plane][blk_row * bw + blk_col] = rd_stats->skip;
@@ -4777,13 +4775,13 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #endif
   }
 
+  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH
 #if CONFIG_MRC_TX
-  // If the tx type we are trying is MRC_DCT, we cannot partition the transform
-  // into anything smaller than TX_32X32
-  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && mbmi->tx_type != MRC_DCT) {
-#else
-  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH) {
-#endif
+      // If the tx type we are trying is MRC_DCT, we cannot partition the
+      // transform into anything smaller than TX_32X32
+      && mbmi->tx_type != MRC_DCT
+#endif  // CONFIG_MRC_TX
+      ) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
     int sub_step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
