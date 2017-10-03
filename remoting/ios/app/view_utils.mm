@@ -46,6 +46,14 @@ UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view) {
   }
 }
 
+void PostDelayedAccessibilityNotification(NSString* announcement) {
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC),
+                 dispatch_get_main_queue(), ^{
+                   UIAccessibilityPostNotification(
+                       UIAccessibilityAnnouncementNotification, announcement);
+                 });
+}
+
 void SetAccessibilityInfoFromImage(UIBarButtonItem* button) {
   button.accessibilityLabel = button.image.accessibilityLabel;
 }
