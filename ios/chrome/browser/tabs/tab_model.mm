@@ -60,7 +60,6 @@
 #import "ios/web/public/serializable_user_data_manager.h"
 #include "ios/web/public/web_state/session_certificate_policy_cache.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
