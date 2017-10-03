@@ -67,6 +67,7 @@ const char kLoadComponent[] = "LoadComponent";
 const char kGetComponentVersion[] = "GetComponentVersion";
 // Constants
 const char kBadResult[] = "";
+const char kTerminaComponentName[] = "cros-termina";
 }  // namespace imageloader
 
 namespace speech_synthesis {
