@@ -4,13 +4,9 @@
   <div id='target'>target</div>
 </body>
 <script>
+  testRunner.waitUntilDone();
   window.internals.settings.setAutoplayPolicy('document-user-activation-required');
   eventSender.mouseDown();
-
-  if (window.testRunner) {
-    testRunner.clearBackForwardList();
-    testRunner.waitUntilDone();
-  }
 
   document.location.href = 'resources/test-autoplay.html';
 </script>

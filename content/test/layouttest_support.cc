@@ -9,11 +9,11 @@
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -31,8 +31,6 @@
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "content/renderer/history_entry.h"
-#include "content/renderer/history_serialization.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
@@ -53,7 +51,6 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/color_space_switches.h"
@@ -462,11 +459,6 @@ int GetLocalSessionHistoryLength(RenderView* render_view) {
       GetLocalSessionHistoryLengthForTesting();
 }
 
-void SyncNavigationState(RenderView* render_view) {
-  // TODO(creis): Add support for testing in OOPIF-enabled modes.
-  // See https://crbug.com/477150.
-}
-
 void SetFocusAndActivate(RenderView* render_view, bool enable) {
   static_cast<RenderViewImpl*>(render_view)->
       SetFocusAndActivateForTesting(enable);
@@ -540,63 +532,6 @@ void EnableAutoResizeMode(RenderView* render_view,
 void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
   static_cast<RenderViewImpl*>(render_view)->
       DisableAutoResizeForTesting(new_size);
-}
-
-// Returns True if node1 < node2.
-bool HistoryEntryCompareLess(HistoryEntry::HistoryNode* node1,
-                             HistoryEntry::HistoryNode* node2) {
-  base::string16 target1 = node1->item().Target().Utf16();
-  base::string16 target2 = node2->item().Target().Utf16();
-  return base::CompareCaseInsensitiveASCII(target1, target2) < 0;
-}
-
-std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
-                            int indent,
-                            bool is_current_index) {
-  std::string result;
-
-  const blink::WebHistoryItem& item = node->item();
-  if (is_current_index) {
-    result.append("curr->");
-    result.append(indent - 6, ' ');  // 6 == "curr->".length()
-  } else {
-    result.append(indent, ' ');
-  }
-
-  std::string url =
-      test_runner::NormalizeLayoutTestURL(item.UrlString().Utf8());
-  result.append(url);
-  if (!item.Target().IsEmpty()) {
-    result.append(" (in frame \"");
-    result.append(item.Target().Utf8());
-    result.append("\")");
-  }
-  result.append("\n");
-
-  std::vector<HistoryEntry::HistoryNode*> children = node->children();
-  if (!children.empty()) {
-    std::sort(children.begin(), children.end(), HistoryEntryCompareLess);
-    for (size_t i = 0; i < children.size(); ++i)
-      result += DumpHistoryItem(children[i], indent + 4, false);
-  }
-
-  return result;
-}
-
-std::string DumpBackForwardList(std::vector<PageState>& page_state,
-                                size_t current_index) {
-  std::string result;
-  result.append("\n============== Back Forward List ==============\n");
-  for (size_t index = 0; index < page_state.size(); ++index) {
-    std::unique_ptr<HistoryEntry> entry(
-        PageStateToHistoryEntry(page_state[index]));
-    result.append(
-        DumpHistoryItem(entry->root_history_node(),
-                        8,
-                        index == current_index));
-  }
-  result.append("===============================================\n");
-  return result;
 }
 
 void SchedulerRunIdleTasks(const base::Closure& callback) {

@@ -1,7 +1,4 @@
-CONSOLE WARNING: line 17: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
-PASS successfullyParsed is true
-
-TEST COMPLETE
+CONSOLE WARNING: line 16: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 FAIL NotAllowedError: play() can only be initiated by a user gesture. should be undefined. Was NotAllowedError: play() can only be initiated by a user gesture.
 PASS successfullyParsed is true
 

@@ -3,10 +3,9 @@
 <script src="/js-test-resources/js-test.js"></script>
 <script src='../../../media-resources/media-file.js'></script>
 <script>
+var jsTestIsAsync = true;
 function tearDown(result) {
   window.internals.settings.setAutoplayPolicy('no-user-gesture-required');
-  testRunner.notifyDone();
-
   shouldBeUndefined(result);
   finishJSTest();
 }
@@ -15,8 +14,6 @@ function runVideoTest() {
   var video = document.createElement('video');
   video.src = findMediaFile("video", "/resources/test");
   video.play().then(tearDown, tearDown);
-
-  var jsTestIsAsync = true;
 }
 
 window.addEventListener('load', function() {

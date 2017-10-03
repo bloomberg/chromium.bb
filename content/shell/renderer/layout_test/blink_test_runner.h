@@ -181,10 +181,6 @@ class BlinkTestRunner : public RenderViewObserver,
 
  private:
   // Message handlers.
-  void OnSessionHistory(
-      const std::vector<int>& routing_ids,
-      const std::vector<std::vector<PageState> >& session_histories,
-      const std::vector<unsigned>& current_entry_indexes);
   void OnReset();
   void OnTestFinishedInSecondaryRenderer();
   void OnTryLeakDetection();
@@ -210,7 +206,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void CaptureDumpContinued();
   void OnPixelsDumpCompleted(const SkBitmap& snapshot);
   void CaptureDumpComplete();
-  std::string DumpHistoryForWindow(blink::WebView* web_view);
 
   mojom::LayoutTestBluetoothFakeAdapterSetter&
   GetBluetoothFakeAdapterSetter();
@@ -219,10 +214,6 @@ class BlinkTestRunner : public RenderViewObserver,
   test_runner::TestPreferences prefs_;
 
   mojom::ShellTestConfigurationPtr test_config_;
-
-  std::vector<int> routing_ids_;
-  std::vector<std::vector<PageState> > session_histories_;
-  std::vector<unsigned> current_entry_indexes_;
 
   base::circular_deque<base::Callback<void(const std::vector<std::string>&)>>
       get_bluetooth_events_callbacks_;
