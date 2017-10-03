@@ -9,7 +9,6 @@ import "services/viz/public/interfaces/compositing/resource_settings.mojom";
 struct RendererSettings {
   bool allow_antialiasing;
   bool disallow_non_exact_resource_reuse;
-  bool enable_color_correct_rendering;
   bool finish_rendering_on_resize;
   bool force_antialiasing;
   bool force_blending_with_shaders;

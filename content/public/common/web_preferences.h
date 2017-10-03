@@ -183,7 +183,6 @@ struct CONTENT_EXPORT WebPreferences {
   ui::HoverType primary_hover_type;
   bool barrel_button_for_drag_enabled = false;
   bool sync_xhr_in_documents_enabled;
-  bool color_correct_rendering_enabled = false;
   bool should_respect_image_orientation;
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;

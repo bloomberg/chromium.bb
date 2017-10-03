@@ -2172,21 +2172,6 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   gfx::ColorSpace src_color_space = quad->video_color_space;
   gfx::ColorSpace dst_color_space =
       current_frame()->current_render_pass->color_space;
-  if (!base::FeatureList::IsEnabled(media::kVideoColorManagement) &&
-      !settings_->enable_color_correct_rendering) {
-    dst_color_space = gfx::ColorSpace();
-    switch (quad->color_space) {
-      case YUVVideoDrawQuad::REC_601:
-        src_color_space = gfx::ColorSpace::CreateREC601();
-        break;
-      case YUVVideoDrawQuad::REC_709:
-        src_color_space = gfx::ColorSpace::CreateREC709();
-        break;
-      case YUVVideoDrawQuad::JPEG:
-        src_color_space = gfx::ColorSpace::CreateJpeg();
-        break;
-    }
-  }
   cc::DisplayResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
   cc::DisplayResourceProvider::ScopedSamplerGL u_plane_lock(
@@ -3188,19 +3173,14 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key,
   // rendering flag has been specified. This is because media mailboxes will
   // provide YUV color spaces despite YUV to RGB conversion already having been
   // performed.
-  if (settings_->enable_color_correct_rendering) {
-    SetUseProgram(program_key, src_color_space,
-                  current_frame()->current_render_pass->color_space);
-  } else {
-    SetUseProgram(program_key, gfx::ColorSpace(), gfx::ColorSpace());
-  }
+  SetUseProgram(program_key, src_color_space,
+                current_frame()->current_render_pass->color_space);
 }
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
                                const gfx::ColorSpace& dst_color_space) {
-  if (settings_->enable_color_correct_rendering)
-    DCHECK(dst_color_space.IsValid());
+  DCHECK(dst_color_space.IsValid());
 
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =

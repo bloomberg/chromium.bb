@@ -241,13 +241,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       *exit_code = 1;
       return true;
     }
-
-    // Enable additional base::Features. Note that there already may exist a
-    // list of enabled features from the virtual or physical test suite.
-    std::string enabled_features =
-        command_line.GetSwitchValueASCII(switches::kEnableFeatures);
-    enabled_features = "ColorCorrectRendering," + enabled_features;
-    command_line.AppendSwitchASCII(switches::kEnableFeatures, enabled_features);
   }
 
   content_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(

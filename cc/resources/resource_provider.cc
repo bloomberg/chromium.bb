@@ -334,7 +334,6 @@ void ResourceProvider::Resource::SetGenerateMipmap() {
 ResourceProvider::Settings::Settings(
     viz::ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
-    bool enable_color_correct_rasterization,
     const viz::ResourceSettings& resource_settings)
     : default_resource_type(resource_settings.use_gpu_memory_buffer_resources
                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
@@ -342,7 +341,6 @@ ResourceProvider::Settings::Settings(
       yuv_highbit_resource_format(resource_settings.high_bit_for_testing
                                       ? viz::R16_EXT
                                       : viz::LUMINANCE_8),
-      enable_color_correct_rasterization(enable_color_correct_rasterization),
       delegated_sync_points_required(delegated_sync_points_required) {
   if (!compositor_context_provider) {
     default_resource_type = RESOURCE_TYPE_BITMAP;
@@ -385,11 +383,9 @@ ResourceProvider::ResourceProvider(
     viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool delegated_sync_points_required,
-    bool enable_color_correct_rasterization,
     const viz::ResourceSettings& resource_settings)
     : settings_(compositor_context_provider,
                 delegated_sync_points_required,
-                enable_color_correct_rasterization,
                 resource_settings),
       compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
@@ -820,8 +816,6 @@ ResourceProvider::TextureHint ResourceProvider::GetTextureHint(
 
 gfx::ColorSpace ResourceProvider::GetResourceColorSpaceForRaster(
     const Resource* resource) const {
-  if (!settings_.enable_color_correct_rasterization)
-    return gfx::ColorSpace();
   return resource->color_space;
 }
 

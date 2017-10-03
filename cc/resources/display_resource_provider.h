@@ -24,7 +24,6 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       viz::SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       bool delegated_sync_points_required,
-      bool enable_color_correct_rasterization,
       const viz::ResourceSettings& resource_settings);
   ~DisplayResourceProvider() override;
 
