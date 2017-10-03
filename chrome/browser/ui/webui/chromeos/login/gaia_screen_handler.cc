@@ -665,6 +665,7 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
                                             const std::string& typed_email,
                                             const std::string& password,
                                             bool using_saml) {
+  VLOG(1) << "HandleCompleteLogin";
   DoCompleteLogin(gaia_id, typed_email, password, using_saml);
 }
 
