@@ -146,8 +146,8 @@ void OnConnectError(
 void ConnectToPrefService(mojom::PrefStoreConnectorPtr connector,
                           scoped_refptr<PrefRegistry> pref_registry,
                           ConnectCallback callback) {
-  auto connector_ptr = make_scoped_refptr(
-      new RefCountedInterfacePtr<mojom::PrefStoreConnector>());
+  auto connector_ptr =
+      base::MakeRefCounted<RefCountedInterfacePtr<mojom::PrefStoreConnector>>();
   connector_ptr->get() = std::move(connector);
   connector_ptr->get().set_connection_error_handler(base::Bind(
       &OnConnectError, connector_ptr, base::Passed(ConnectCallback{callback})));

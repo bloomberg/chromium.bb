@@ -47,8 +47,7 @@ scoped_refptr<PrinterQuery> PrintQueriesQueue::PopPrinterQuery(
 scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery(
     int render_process_id,
     int render_frame_id) {
-  return make_scoped_refptr(
-      new PrinterQuery(render_process_id, render_frame_id));
+  return base::MakeRefCounted<PrinterQuery>(render_process_id, render_frame_id);
 }
 
 void PrintQueriesQueue::Shutdown() {

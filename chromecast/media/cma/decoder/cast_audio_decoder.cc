@@ -238,8 +238,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     result->set_duration(base::TimeDelta::FromMicroseconds(
         bus->frames() * base::Time::kMicrosecondsPerSecond /
         config_.samples_per_second));
-    return make_scoped_refptr(
-        new media::DecoderBufferAdapter(config_.id, result));
+    return base::MakeRefCounted<media::DecoderBufferAdapter>(config_.id,
+                                                             result);
   }
 
   ::media::MediaLog media_log_;

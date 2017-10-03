@@ -282,9 +282,9 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
           highest_refresh_rate = refresh_rate;
           native_mode = i;
         }
-        display_modes.push_back(make_scoped_refptr(
-            new ManagedDisplayMode(size, refresh_rate, is_interlaced, false,
-                                   1.0, device_scale_factor)));
+        display_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+            size, refresh_rate, is_interlaced, false, 1.0,
+            device_scale_factor));
       }
     }
     scoped_refptr<ManagedDisplayMode> dm = display_modes[native_mode];

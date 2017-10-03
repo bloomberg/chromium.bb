@@ -1301,8 +1301,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
     mode = DecodedDataMode::GPU;
   }
 
-  return base::WrapRefCounted(
-      new ImageData(mode, data_size, draw_image.target_color_space(), params));
+  return base::MakeRefCounted<ImageData>(
+      mode, data_size, draw_image.target_color_space(), params);
 }
 
 void GpuImageDecodeCache::DeletePendingImages() {

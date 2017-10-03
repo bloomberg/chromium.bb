@@ -43,8 +43,8 @@ CompositorWorkerScheduler::IdleTaskRunner() {
   // an idle task runner with the semantics we want for the compositor thread
   // which runs them after the current frame has been drawn before the next
   // vsync. https://crbug.com/609532
-  return make_scoped_refptr(
-      new SingleThreadIdleTaskRunner(thread_->task_runner(), this));
+  return base::MakeRefCounted<SingleThreadIdleTaskRunner>(
+      thread_->task_runner(), this);
 }
 
 bool CompositorWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {
