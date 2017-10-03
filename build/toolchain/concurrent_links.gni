@@ -28,7 +28,7 @@ if (concurrent_links == -1) {
   } else if (use_sanitizer_coverage) {
     # Sanitizer coverage instrumentation increases linker memory consumption
     # significantly.
-    _args = [ "--mem_per_link_gb=12" ]
+    _args = [ "--mem_per_link_gb=16" ]
   } else if (is_win) {
     _args = [ "--mem_per_link_gb=5" ]
   } else if (is_mac) {
