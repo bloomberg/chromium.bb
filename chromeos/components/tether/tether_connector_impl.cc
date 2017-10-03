@@ -99,10 +99,11 @@ void TetherConnectorImpl::ConnectToNetwork(
   }
 
   if (host_scan_cache_->DoesHostRequireSetup(tether_network_guid)) {
-    const std::string& device_name =
-        network_state_handler_->GetNetworkStateFromGuid(tether_network_guid)
-            ->name();
-    notification_presenter_->NotifySetupRequired(device_name);
+    const NetworkState* tether_network_state =
+        network_state_handler_->GetNetworkStateFromGuid(tether_network_guid);
+    DCHECK(tether_network_state);
+    notification_presenter_->NotifySetupRequired(
+        tether_network_state->name(), tether_network_state->signal_strength());
   }
 
   device_id_pending_connection_ = device_id;

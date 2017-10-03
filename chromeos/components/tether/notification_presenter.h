@@ -46,7 +46,8 @@ class NotificationPresenter {
 
   // Notifies the user that the device they are connecting to requires
   // first time setup and must be interacted with.
-  virtual void NotifySetupRequired(const std::string& device_name) = 0;
+  virtual void NotifySetupRequired(const std::string& device_name,
+                                   int signal_strength) = 0;
 
   // Removes the notification created by NotifyFirstTimeSetupRequired(), or does
   // nothing if that notification is not currently displayed.
