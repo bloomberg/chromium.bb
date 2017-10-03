@@ -293,8 +293,8 @@ class RendererSchedulerImplTest : public ::testing::Test {
       main_task_runner_ = SchedulerTqmDelegateImpl::Create(
           message_loop_.get(), std::make_unique<TestTimeSource>(clock_.get()));
     } else {
-      mock_task_runner_ = make_scoped_refptr(
-          new cc::OrderedSimpleTaskRunner(clock_.get(), false));
+      mock_task_runner_ = base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(
+          clock_.get(), false);
       main_task_runner_ = SchedulerTqmDelegateForTest::Create(
           mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     }
@@ -1851,8 +1851,8 @@ class RendererSchedulerImplWithMockSchedulerTest
     : public RendererSchedulerImplTest {
  public:
   void SetUp() override {
-    mock_task_runner_ = make_scoped_refptr(
-        new cc::OrderedSimpleTaskRunner(clock_.get(), false));
+    mock_task_runner_ =
+        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), false);
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);

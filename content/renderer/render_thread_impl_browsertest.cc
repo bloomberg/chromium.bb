@@ -229,8 +229,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->InitFromArgv(old_argv);
 
     run_loop_ = base::MakeUnique<base::RunLoop>();
-    test_msg_filter_ = make_scoped_refptr(
-        new QuitOnTestMsgFilter(run_loop_->QuitWhenIdleClosure()));
+    test_msg_filter_ = base::MakeRefCounted<QuitOnTestMsgFilter>(
+        run_loop_->QuitWhenIdleClosure());
     thread_->AddFilter(test_msg_filter_.get());
   }
 

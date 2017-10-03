@@ -115,8 +115,8 @@ class PrefStoreImplTest : public testing::Test {
 
     if (observed_prefs.empty())
       observed_prefs.insert(observed_prefs.end(), {kKey, kOtherKey});
-    pref_store_ = make_scoped_refptr(
-        new PrefStoreClient(impl_->AddObserver(observed_prefs)));
+    pref_store_ = base::MakeRefCounted<PrefStoreClient>(
+        impl_->AddObserver(observed_prefs));
   }
 
   PrefStore* pref_store() { return pref_store_.get(); }

@@ -143,8 +143,8 @@ scoped_refptr<H264Picture> D3D11H264Accelerator::CreateH264Picture() {
     return nullptr;
   }
   picture->set_in_picture_use(true);
-  return make_scoped_refptr(
-      new D3D11H264Picture(picture, client_->input_buffer_id()));
+  return base::MakeRefCounted<D3D11H264Picture>(picture,
+                                                client_->input_buffer_id());
 }
 
 bool D3D11H264Accelerator::SubmitFrameMetadata(

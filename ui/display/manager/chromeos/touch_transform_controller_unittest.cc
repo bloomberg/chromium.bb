@@ -35,8 +35,8 @@ ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 
   // Create a default mode.
   ManagedDisplayInfo::ManagedDisplayModeList default_modes(
-      1, make_scoped_refptr(
-             new ManagedDisplayMode(bounds.size(), 60, false, true)));
+      1,
+      base::MakeRefCounted<ManagedDisplayMode>(bounds.size(), 60, false, true));
   info.SetManagedDisplayModes(default_modes);
 
   return info;
@@ -172,10 +172,10 @@ TEST_F(TouchTransformControllerTest, MirrorModeLetterboxing) {
 
   ManagedDisplayInfo::ManagedDisplayModeList internal_modes;
 
-  internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(2560, 1700), 60, false, true)));
-  internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1920, 1200), 60, false, false)));
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+      gfx::Size(2560, 1700), 60, false, true));
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+      gfx::Size(1920, 1200), 60, false, false));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
   ManagedDisplayInfo external_display_info =
@@ -238,10 +238,10 @@ TEST_F(TouchTransformControllerTest, MirrorModePillarboxing) {
       CreateDisplayInfo(1, internal_touchscreen, gfx::Rect(0, 0, 1024, 768));
   internal_display_info.set_is_aspect_preserving_scaling(true);
   ManagedDisplayInfo::ManagedDisplayModeList internal_modes;
-  internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1366, 768), 60, false, true)));
-  internal_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1024, 768), 60, false, false)));
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+      gfx::Size(1366, 768), 60, false, true));
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+      gfx::Size(1024, 768), 60, false, false));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
   ManagedDisplayInfo external_display_info =
@@ -308,15 +308,15 @@ TEST_F(TouchTransformControllerTest, SoftwareMirrorMode) {
   ManagedDisplayInfo display1_info =
       CreateDisplayInfo(1, display1_touchscreen, gfx::Rect(0, 0, 1280, 850));
   ManagedDisplayInfo::ManagedDisplayModeList display1_modes;
-  display1_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1280, 850), 60, false, true)));
+  display1_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+      gfx::Size(1280, 850), 60, false, true));
   display1_info.SetManagedDisplayModes(display1_modes);
 
   ManagedDisplayInfo display2_info =
       CreateDisplayInfo(2, display2_touchscreen, gfx::Rect(0, 950, 1920, 1080));
   ManagedDisplayInfo::ManagedDisplayModeList display2_modes;
-  display2_modes.push_back(make_scoped_refptr(
-      new ManagedDisplayMode(gfx::Size(1920, 1080), 60, false, true)));
+  display2_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
+      gfx::Size(1920, 1080), 60, false, true));
   display2_info.SetManagedDisplayModes(display2_modes);
 
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();

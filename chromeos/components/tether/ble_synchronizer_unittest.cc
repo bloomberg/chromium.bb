@@ -197,8 +197,8 @@ class BleSynchronizerTest : public testing::Test {
     num_stop_error_ = 0;
     register_args_list_.clear();
 
-    mock_adapter_ = make_scoped_refptr(
-        new NiceMock<MockBluetoothAdapterWithAdvertisements>());
+    mock_adapter_ = base::MakeRefCounted<
+        NiceMock<MockBluetoothAdapterWithAdvertisements>>();
     ON_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_))
         .WillByDefault(
             Invoke(this, &BleSynchronizerTest::OnAdapterRegisterAdvertisement));
@@ -250,7 +250,7 @@ class BleSynchronizerTest : public testing::Test {
 
     if (success) {
       register_args_list_[reg_arg_index]->callback.Run(
-          make_scoped_refptr(new device::MockBluetoothAdvertisement()));
+          base::MakeRefCounted<device::MockBluetoothAdvertisement>());
     } else {
       register_args_list_[reg_arg_index]->error_callback.Run(
           device::BluetoothAdvertisement::ErrorCode::

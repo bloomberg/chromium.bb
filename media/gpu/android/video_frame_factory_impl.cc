@@ -171,10 +171,10 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
       GL_UNSIGNED_BYTE);
 
   // Create a new CodecImage to back the texture and try to render it early.
-  auto image = make_scoped_refptr(
-      new CodecImage(std::move(output_buffer), surface_texture,
-                     base::Bind(&GpuVideoFrameFactory::OnImageDestructed,
-                                weak_factory_.GetWeakPtr())));
+  auto image = base::MakeRefCounted<CodecImage>(
+      std::move(output_buffer), surface_texture,
+      base::Bind(&GpuVideoFrameFactory::OnImageDestructed,
+                 weak_factory_.GetWeakPtr()));
   images_.push_back(image.get());
   internal::MaybeRenderEarly(&images_);
 
