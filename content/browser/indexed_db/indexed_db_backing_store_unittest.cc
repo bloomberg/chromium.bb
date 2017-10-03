@@ -126,6 +126,10 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   const std::vector<int64_t>& removals() const { return removals_; }
   void ClearRemovals() { removals_.clear(); }
 
+  void StartJournalCleaningTimer() override {
+    IndexedDBBackingStore::StartJournalCleaningTimer();
+  }
+
  protected:
   ~TestableIndexedDBBackingStore() override {}
 
@@ -155,11 +159,6 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
     }
     removals_.push_back(key);
     return true;
-  }
-
-  // Timers don't play nicely with unit tests.
-  void StartJournalCleaningTimer() override {
-    CleanPrimaryJournalIgnoreReturn();
   }
 
  private:
@@ -1009,12 +1008,28 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
   RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](IndexedDBBackingStoreTestWithBlobs* test) {
-                       EXPECT_NE(0U, test->backing_store()->removals().size());
-                       EXPECT_TRUE(test->CheckBlobRemovals());
-                     },
-                     base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBBackingStoreTestWithBlobs* test) {
+            EXPECT_TRUE(test->backing_store()->IsBlobCleanupPending());
+#if DCHECK_IS_ON()
+            EXPECT_EQ(3,
+                      test->backing_store()
+                          ->NumAggregatedJournalCleaningRequestsForTesting());
+#endif
+            for (int i = 3; i < IndexedDBBackingStore::kMaxJournalCleanRequests;
+                 ++i) {
+              test->backing_store()->StartJournalCleaningTimer();
+            }
+            EXPECT_NE(0U, test->backing_store()->removals().size());
+            EXPECT_TRUE(test->CheckBlobRemovals());
+#if DCHECK_IS_ON()
+            EXPECT_EQ(0,
+                      test->backing_store()->NumBlobFilesDeletedForTesting());
+#endif
+            EXPECT_FALSE(test->backing_store()->IsBlobCleanupPending());
+          },
+          base::Unretained(this)));
   RunAllTasksUntilIdle();
 }
 
