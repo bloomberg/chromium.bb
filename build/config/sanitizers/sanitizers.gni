@@ -56,7 +56,7 @@ declare_args() {
   #
   # TODO(pcc): Remove this flag if/when CFI is enabled in all official builds.
   is_cfi = target_os == "linux" && !is_chromeos && target_cpu == "x64" &&
-           is_official_build && allow_posix_link_time_opt
+           is_official_build
 
   # Enable checks for bad casts: derived cast and unrelated cast.
   # TODO(krasin): remove this, when we're ready to add these checks by default.
@@ -163,6 +163,9 @@ using_sanitizer =
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
+
+assert(!is_cfi || is_clang,
+       "is_cfi requires setting is_clang = true in 'gn args'")
 
 prebuilt_instrumented_libraries_available =
     is_msan && (msan_track_origins == 0 || msan_track_origins == 2)

@@ -509,63 +509,45 @@ config("compiler") {
   # example by disabling the optimize configuration.
   # TODO(pcc): Make this conditional on is_official_build rather than on gn
   # flags for specific features.
-  if (!is_debug && (allow_posix_link_time_opt || is_cfi) && !is_nacl) {
+  if (!is_debug && use_thin_lto && !is_nacl) {
     assert(use_lld || target_os == "chromeos",
            "gold plugin only supported with ChromeOS")
 
-    if (use_thin_lto) {
-      cflags += [ "-flto=thin" ]
-      if (is_win) {
-        # This is a straight translation of the non-Windows flags below.
+    cflags += [ "-flto=thin" ]
+    if (is_win) {
+      # This is a straight translation of the non-Windows flags below.
+      ldflags += [
+        "/opt:lldltojobs=8",
+        "/lldltocache:" +
+            rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+        "/lldltocachepolicy:cache_size=10%",
+      ]
+    } else {
+      ldflags += [ "-flto=thin" ]
+
+      # Limit the parallelism to avoid too aggressive competition between
+      # linker jobs. This is still suboptimal to a potential dynamic
+      # resource allocation scheme, but should be good enough.
+      if (use_lld) {
         ldflags += [
-          "/opt:lldltojobs=8",
-          "/lldltocache:" +
+          "-Wl,--thinlto-jobs=8",
+          "-Wl,--thinlto-cache-dir=" +
               rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-          "/lldltocachepolicy:cache_size=10%",
+
+          # Limit the size of the ThinLTO cache to 10% of available disk space
+          # TODO(pcc): Change the limit from a percentage to an absolute size
+          # (10-20GB) once that feature lands in LLVM.
+          "-Wl,--thinlto-cache-policy,cache_size=10%",
         ]
       } else {
-        ldflags += [ "-flto=thin" ]
-
-        # Limit the parallelism to avoid too aggressive competition between
-        # linker jobs. This is still suboptimal to a potential dynamic
-        # resource allocation scheme, but should be good enough.
-        if (use_lld) {
-          ldflags += [
-            "-Wl,--thinlto-jobs=8",
-            "-Wl,--thinlto-cache-dir=" +
-                rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-
-            # Limit the size of the ThinLTO cache to 10% of available disk space
-            # TODO(pcc): Change the limit from a percentage to an absolute size
-            # (10-20GB) once that feature lands in LLVM.
-            "-Wl,--thinlto-cache-policy,cache_size=10%",
-          ]
-        } else {
-          ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
-        }
+        ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
       }
+    }
 
-      # Disable optimization for now because they increase binary size by too
-      # much.
-      if (is_linux && use_lld) {
-        ldflags += [ "-Wl,--lto-O0" ]
-      }
-    } else {
-      cflags += [ "-flto" ]
-      if (!is_win) {
-        ldflags += [ "-flto" ]
-      }
-
-      # Apply a lower LTO optimization level as the default is too slow.
-      if (is_linux) {
-        if (use_lld) {
-          ldflags += [ "-Wl,--lto-O1" ]
-        } else {
-          ldflags += [ "-Wl,-plugin-opt,O1" ]
-        }
-      } else if (is_mac) {
-        ldflags += [ "-Wl,-mllvm,-O1" ]
-      }
+    # Disable optimization for now because they increase binary size by too
+    # much.
+    if (is_linux && use_lld) {
+      ldflags += [ "-Wl,--lto-O0" ]
     }
 
     cflags += [ "-fwhole-program-vtables" ]
@@ -1835,8 +1817,7 @@ config("symbols") {
     # "third_party/binutils/Linux_x64/Release/bin/ld.gold: warning:
     # /tmp/lto-llvm-0b5201.o: corrupt debug info in .debug_info"
     if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
-        (use_gold || use_lld) && !allow_posix_link_time_opt &&
-        !is_official_build) {
+        (use_gold || use_lld) && !use_thin_lto && !is_official_build) {
       ldflags += [ "-Wl,--gdb-index" ]
     }
   }
