@@ -15,9 +15,9 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "base/sys_info.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -28,14 +28,16 @@ struct CpuInfo {
   int total;
 };
 
-// When counter overflow, it will restart from zero. |base::Value| do not
-// supports 64-bit integer, if we pass the counter as a double it may cause
-// problem. Therefore, we only use the last 31 bits of the counter and pass it
+// When counter overflow, it will restart from zero. base::Value do not
+// supports 64-bit integer, and passing the counter as a double it may cause
+// problems. Therefore, only use the last 31 bits of the counter and pass it
 // as a 32-bit signed integer.
+constexpr uint32_t COUNTER_MAX = 0x7FFFFFFFu;
+
 template <typename T>
 inline int ToCounter(T value) {
   DCHECK_GE(value, T(0));
-  return static_cast<int>(value & SysInternalsMessageHandler::COUNTER_MAX);
+  return static_cast<int>(value & COUNTER_MAX);
 }
 
 bool ParseProcStatLine(const std::string& line, std::vector<CpuInfo>* infos) {
@@ -100,7 +102,7 @@ bool GetCpuInfo(std::vector<CpuInfo>* infos) {
 
 void SetConstValue(base::Value* result) {
   DCHECK(result);
-  int counter_max = static_cast<int>(SysInternalsMessageHandler::COUNTER_MAX);
+  int counter_max = static_cast<int>(COUNTER_MAX);
   result->SetPath({"const", "counterMax"}, base::Value(counter_max));
 }
 
@@ -164,7 +166,7 @@ void SetZramValue(const base::SwapInfo& info, base::Value* result) {
   result->SetKey("zram", std::move(zram_result));
 }
 
-std::unique_ptr<base::Value> GetSysInfo() {
+base::Value GetSysInfo() {
   std::vector<CpuInfo> cpu_infos(base::SysInfo::NumberOfProcessors());
   if (!GetCpuInfo(&cpu_infos)) {
     DLOG(WARNING) << "Failed to get system CPU info.";
@@ -185,7 +187,7 @@ std::unique_ptr<base::Value> GetSysInfo() {
   SetMemValue(mem_info, &result);
   SetZramValue(swap_info, &result);
 
-  return base::MakeUnique<base::Value>(std::move(result));
+  return result;
 }
 
 }  // namespace
@@ -202,30 +204,26 @@ void SysInternalsMessageHandler::RegisterMessages() {
 }
 
 void SysInternalsMessageHandler::HandleGetSysInfo(const base::ListValue* args) {
-  AllowJavascript();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(args);
 
+  AllowJavascript();
   const base::Value::ListStorage& list = args->GetList();
-  DCHECK_EQ(1U, list.size());
-  if (list.size() != 1U)
+  if (list.size() != 1 || !list[0].is_string()) {
+    NOTREACHED();
     return;
+  }
 
-  DCHECK(list[0].is_string());
-  if (!list[0].is_string())
-    return;
-
-  std::unique_ptr<base::Value> callback_id =
-      base::MakeUnique<base::Value>(list[0].Clone());
-
+  base::Value callback_id = list[0].Clone();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, base::MayBlock(), base::BindOnce(&GetSysInfo),
       base::BindOnce(&SysInternalsMessageHandler::ReplySysInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
 }
 
-void SysInternalsMessageHandler::ReplySysInfo(
-    std::unique_ptr<base::Value> callback_id,
-    std::unique_ptr<base::Value> result) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ResolveJavascriptCallback(*callback_id, *result);
+void SysInternalsMessageHandler::ReplySysInfo(base::Value callback_id,
+                                              base::Value result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ResolveJavascriptCallback(callback_id, result);
 }
