@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import os
 import platform
 import re
 import sys
@@ -105,6 +106,14 @@ class User(object):
         return response and response[0] == 'y'
 
     def can_open_url(self):
+        # Check if dbus is already running. If dbus is not running, avoid taking
+        # actions which could cause it to be autolaunched. For example, chrome
+        # tends to autolaunch dbus: if this happens inside testing/xvfb.py, that
+        # often causes problems when the autolaunched dbus exits, as dbus sends
+        # a kill signal to all killable processes on exit (!!!).
+        if self._platform_info.is_linux() and 'DBUS_SESSION_BUS_ADDRESS' not in os.environ:
+            _log.warning('dbus is not running, not showing results...')
+            return False
         try:
             webbrowser.get()
             return True
@@ -114,4 +123,5 @@ class User(object):
     def open_url(self, url):
         if not self.can_open_url():
             _log.warning('Failed to open %s', url)
+            return
         webbrowser.open(url)
