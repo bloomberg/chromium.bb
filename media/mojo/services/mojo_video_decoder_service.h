@@ -60,8 +60,10 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
                      scoped_refptr<DecoderBuffer> buffer);
   void OnDecoderDecoded(DecodeCallback callback, DecodeStatus status);
   void OnDecoderReset(ResetCallback callback);
-
-  void OnDecoderOutput(MojoMediaClient::ReleaseMailboxCB,
+  void OnDecoderOutputWithReleaseCB(
+      MojoMediaClient::ReleaseMailboxCB release_cb,
+      const scoped_refptr<VideoFrame>& frame);
+  void OnDecoderOutput(base::Optional<base::UnguessableToken> release_token,
                        const scoped_refptr<VideoFrame>& frame);
 
   void OnDecoderRequestedOverlayInfo(
