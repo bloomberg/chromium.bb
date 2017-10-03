@@ -336,7 +336,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SetStartWorkerStatusCode(ServiceWorkerStatusCode status);
 
   // Sets this version's status to REDUNDANT and deletes its resources.
-  // The version must not have controllees.
   void Doom();
   bool is_redundant() const { return status_ == REDUNDANT; }
 

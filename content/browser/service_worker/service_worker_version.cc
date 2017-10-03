@@ -741,7 +741,17 @@ void ServiceWorkerVersion::SetStartWorkerStatusCode(
 }
 
 void ServiceWorkerVersion::Doom() {
+  // Tell controllees that this version is dead. Each controllee will call
+  // ServiceWorkerVersion::RemoveControllee(), so be careful with iterators.
+  auto iter = controllee_map_.begin();
+  while (iter != controllee_map_.end()) {
+    ServiceWorkerProviderHost* host = iter->second;
+    ++iter;
+    host->NotifyControllerLost();
+  }
+  // Any controllee this version had should have removed itself.
   DCHECK(!HasControllee());
+
   SetStatus(REDUNDANT);
   if (running_status() == EmbeddedWorkerStatus::STARTING ||
       running_status() == EmbeddedWorkerStatus::RUNNING) {

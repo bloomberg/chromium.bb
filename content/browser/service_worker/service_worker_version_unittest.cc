@@ -144,7 +144,7 @@ class TestServiceImpl : public mojom::TestService {
   }
 
  private:
-  explicit TestServiceImpl() {}
+  TestServiceImpl() {}
 };
 
 }  // namespace
@@ -170,13 +170,13 @@ class ServiceWorkerVersionTest : public testing::Test {
         base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
 
-    pattern_ = GURL("http://www.example.com/test/");
+    pattern_ = GURL("https://www.example.com/test/");
     registration_ = new ServiceWorkerRegistration(
         blink::mojom::ServiceWorkerRegistrationOptions(pattern_), 1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
-        GURL("http://www.example.com/test/service_worker.js"),
+        GURL("https://www.example.com/test/service_worker.js"),
         helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
@@ -594,6 +594,29 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   ASSERT_EQ(ServiceWorkerVersion::REDUNDANT, statuses[4]);
 }
 
+TEST_F(ServiceWorkerVersionTest, Doom) {
+  // Add a controllee.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, 1 /* dummy provider_id */,
+      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+      &remote_endpoint);
+  host->SetDocumentUrl(registration_->pattern());
+  host->AssociateRegistration(registration_.get(), false);
+  EXPECT_TRUE(version_->HasControllee());
+  EXPECT_TRUE(host->controller());
+
+  // Doom the version.
+  version_->Doom();
+
+  // The controllee should have been removed.
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
+  EXPECT_FALSE(version_->HasControllee());
+  EXPECT_FALSE(host->controller());
+}
+
 TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Used to reliably test when the idle time gets reset regardless of clock
   // granularity.
@@ -734,7 +757,6 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_NonActiveWorker) {
 
 // Test that staleness is detected when starting a worker.
 TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
-
   // Starting the worker marks it as stale.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
@@ -1242,8 +1264,8 @@ TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
   EXPECT_EQ(0, helper_->mock_render_process_host()->bad_msg_count());
 
-  GURL valid_scope_1("http://www.example.com/test/subscope");
-  GURL valid_scope_2("http://www.example.com/test/othersubscope");
+  GURL valid_scope_1("https://www.example.com/test/subscope");
+  GURL valid_scope_2("https://www.example.com/test/othersubscope");
   std::vector<GURL> valid_scopes;
   valid_scopes.push_back(valid_scope_1);
   valid_scopes.push_back(valid_scope_2);
@@ -1263,7 +1285,7 @@ TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
 
   // Subscope outside the scope of the worker.
   version_->RegisterForeignFetchScopes(
-      std::vector<GURL>(1, GURL("http://www.example.com/wrong")),
+      std::vector<GURL>(1, GURL("https://www.example.com/wrong")),
       valid_origin_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, helper_->mock_render_process_host()->bad_msg_count());
@@ -1272,7 +1294,7 @@ TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
 
   // Subscope on wrong origin.
   version_->RegisterForeignFetchScopes(
-      std::vector<GURL>(1, GURL("http://example.com/test/")),
+      std::vector<GURL>(1, GURL("https://example.com/test/")),
       valid_origin_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, helper_->mock_render_process_host()->bad_msg_count());
