@@ -75,7 +75,7 @@ cr.define('extension_keyboard_shortcut_tests', function() {
         return extension_test_util.isVisible(e, s, true);
       };
       var cards =
-          keyboardShortcuts.$$('#main').querySelectorAll('.shortcut-card');
+          keyboardShortcuts.$$('#container').querySelectorAll('.shortcut-card');
       assertEquals(2, cards.length);
 
       var card1 = cards[0];

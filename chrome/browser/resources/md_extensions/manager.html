@@ -1,9 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -31,7 +30,7 @@
 
 <dom-module id="extensions-manager">
   <template>
-    <style include="cr-shared-style">
+    <style include="cr-hidden-style">
       :host {
         display: flex;
         flex-direction: column;
@@ -42,15 +41,9 @@
         flex-basis: 256px;
       }
 
-      #container {
-        flex: 1;
-        overflow: overlay;
-        position: relative;
-      }
-
       #viewManager {
-        flex-grow: 1;
-        overflow-y: auto;
+        flex: 1;
+        position: relative;
       }
 
       extensions-item {
@@ -78,38 +71,36 @@
         <extensions-sidebar id="sidebar"></extensions-sidebar>
       </div>
     </dialog>
-    <div id="container">
-      <extensions-view-manager id="viewManager">
-        <extensions-item-list id="items-list"
-            items="[[itemsList_]]"
-            delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
-            filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view">
-        </extensions-item-list>
-        <extensions-detail-view id="details-view" delegate="[[delegate]]"
-            in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"
-            slot="view">
-        </extensions-detail-view>
-        <extensions-keyboard-shortcuts id="keyboard-shortcuts"
-            items="[[extensions]]" slot="view">
-        </extensions-keyboard-shortcuts>
-        <extensions-error-page id="error-page"
-            data="[[errorPageItem_]]" delegate="[[delegate]]" slot="view">
-        </extensions-error-page>
-      </extensions-view-manager>
-      <extensions-options-dialog id="options-dialog">
-      </extensions-options-dialog>
-      <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]">
-      </extensions-pack-dialog>
-      <extensions-load-error id="load-error" delegate="[[delegate]]">
-      </extensions-load-error>
+    <extensions-view-manager id="viewManager">
+      <extensions-item-list id="items-list"
+          items="[[itemsList_]]"
+          delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
+          filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view">
+      </extensions-item-list>
+      <extensions-detail-view id="details-view" delegate="[[delegate]]"
+          in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"
+          slot="view">
+      </extensions-detail-view>
+      <extensions-keyboard-shortcuts id="keyboard-shortcuts"
+          items="[[extensions]]" slot="view">
+      </extensions-keyboard-shortcuts>
+      <extensions-error-page id="error-page"
+          data="[[errorPageItem_]]" delegate="[[delegate]]" slot="view">
+      </extensions-error-page>
+    </extensions-view-manager>
+    <extensions-options-dialog id="options-dialog">
+    </extensions-options-dialog>
+    <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]">
+    </extensions-pack-dialog>
+    <extensions-load-error id="load-error" delegate="[[delegate]]">
+    </extensions-load-error>
 <if expr="chromeos">
-      <template is="dom-if" if="[[showKioskDialog_]]" restamp>
-        <extensions-kiosk-dialog id="kiosk-dialog"
-            on-close="onKioskDialogClose_">
-        </extensions-kiosk-dialog>
-      </template>
+    <template is="dom-if" if="[[showKioskDialog_]]" restamp>
+      <extensions-kiosk-dialog id="kiosk-dialog"
+          on-close="onKioskDialogClose_">
+      </extensions-kiosk-dialog>
+    </template>
 </if>
-    </div>
   </template>
   <script src="chrome://extensions/manager.js"></script>
 </dom-module>
