@@ -98,6 +98,8 @@ class CastMediaSinkService
   // List of cast sinks found in current round of mDNS discovery.
   std::vector<MediaSinkInternal> cast_sinks_;
 
+  content::BrowserContext* browser_context_;
+
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkService);
 };
 
