@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -172,6 +173,14 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), delegated_sync_points_required,
+      settings_.enable_color_correct_rasterization,
+      settings_.resource_settings);
+
+  child_context_provider_ = new TestInProcessContextProvider(nullptr);
+  child_context_provider_->BindToCurrentThread();
+  child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
+      child_context_provider_.get(), shared_bitmap_manager_.get(),
+      gpu_memory_buffer_manager_.get(), true,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
