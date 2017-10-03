@@ -41,6 +41,7 @@
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "net/base/escape.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -83,6 +84,9 @@ const int kMaxImageHeight = 100;
 
 // Notification on-screen time, in milliseconds.
 const int32_t kExpireTimeout = 25000;
+
+// The maximum amount of characters for displaying the full origin path.
+const size_t kMaxAllowedOriginLength = 28;
 
 // The values in this enumeration correspond to those of the
 // Linux.NotificationPlatformBridge.InitializationStatus histogram, so
@@ -544,6 +548,16 @@ class NotificationPlatformBridgeLinuxImpl
             base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
                 notification->origin_url(),
                 url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+        if (url_display_text.size() > kMaxAllowedOriginLength) {
+          std::string domain_and_registry =
+              net::registry_controlled_domains::GetDomainAndRegistry(
+                  notification->origin_url(),
+                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          // localhost, raw IPs etc. are not handled by GetDomainAndRegistry.
+          if (!domain_and_registry.empty()) {
+            url_display_text = domain_and_registry;
+          }
+        }
         EscapeUnsafeCharacters(&url_display_text);
         if (body_markup &&
             base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
@@ -564,9 +578,11 @@ class NotificationPlatformBridgeLinuxImpl
       std::string message = base::UTF16ToUTF8(notification->message());
       if (body_markup)
         EscapeUnsafeCharacters(&message);
-      if (body.tellp())
-        body << "\n";
-      body << message;
+      if (!message.empty()) {
+        if (body.tellp())
+          body << "\n";
+        body << message;
+      }
 
       if (notification->type() == message_center::NOTIFICATION_TYPE_MULTIPLE) {
         for (const auto& item : notification->items()) {
