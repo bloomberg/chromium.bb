@@ -5,6 +5,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 
 #include <list>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -741,7 +742,7 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     GetRendererContentSettingRules(map, &rules);
 
     IPC::ChannelProxy* channel =
-        web_contents()->GetRenderProcessHost()->GetChannel();
+        web_contents()->GetMainFrame()->GetProcess()->GetChannel();
     // channel might be NULL in tests.
     if (channel) {
       chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
