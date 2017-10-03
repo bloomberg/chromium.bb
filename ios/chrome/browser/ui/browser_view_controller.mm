@@ -4101,9 +4101,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController
       presentBookmarkForTab:[_model currentTab]
-        currentlyBookmarked:_toolbarModelIOS->IsCurrentTabBookmarkedByUser()
-                     inView:nil
-                 originRect:CGRectZero];
+        currentlyBookmarked:_toolbarModelIOS->IsCurrentTabBookmarkedByUser()];
 }
 
 - (void)showToolsMenu {

@@ -71,7 +71,7 @@ using bookmarks::BookmarkNode;
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
 // Builds a controller and brings it on screen.
-- (void)presentBookmarkForTab:(Tab*)tab;
+- (void)presentBookmarkForBookmarkedTab:(Tab*)tab;
 
 // Dismisses the bookmark browser.
 - (void)dismissBookmarkBrowserAnimated:(BOOL)animated;
@@ -115,7 +115,7 @@ using bookmarks::BookmarkNode;
   _bookmarkEditor.delegate = nil;
 }
 
-- (void)presentBookmarkForTab:(Tab*)tab {
+- (void)presentBookmarkForBookmarkedTab:(Tab*)tab {
   DCHECK(!self.bookmarkBrowser && !self.bookmarkEditor);
   DCHECK(tab);
 
@@ -140,17 +140,14 @@ using bookmarks::BookmarkNode;
                                 completion:nil];
 }
 
-- (void)presentBookmarkForTab:(Tab*)tab
-          currentlyBookmarked:(BOOL)bookmarked
-                       inView:(UIView*)parentView
-                   originRect:(CGRect)origin {
+- (void)presentBookmarkForTab:(Tab*)tab currentlyBookmarked:(BOOL)bookmarked {
   if (!self.bookmarkModel->loaded())
     return;
   if (!tab)
     return;
 
   if (bookmarked) {
-    [self presentBookmarkForTab:tab];
+    [self presentBookmarkForBookmarkedTab:tab];
   } else {
     __weak BookmarkInteractionController* weakSelf = self;
     __weak Tab* weakTab = tab;
@@ -158,7 +155,7 @@ using bookmarks::BookmarkNode;
       BookmarkInteractionController* strongSelf = weakSelf;
       if (!strongSelf || !weakTab)
         return;
-      [strongSelf presentBookmarkForTab:weakTab];
+      [strongSelf presentBookmarkForBookmarkedTab:weakTab];
     };
     [self.mediator addBookmarkWithTitle:tab.title
                                     URL:tab.lastCommittedURL

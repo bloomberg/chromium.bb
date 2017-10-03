@@ -810,16 +810,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [self cancelOmniboxEdit];
 }
 
-- (CGRect)bookmarkButtonAnchorRect {
-  // Shrink the padding around the bookmark button so the popovers are anchored
-  // correctly.
-  return CGRectInset([_starButton bounds], 6, 11);
-}
-
-- (UIView*)bookmarkButtonView {
-  return _starButton;
-}
-
 - (CGRect)visibleOmniboxFrame {
   CGRect frame = _omniboxBackground.frame;
   frame = [self.view.superview convertRect:frame
