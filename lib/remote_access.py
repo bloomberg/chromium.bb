@@ -331,6 +331,8 @@ class RemoteAccess(object):
         ssh_cmd.append('sudo')
 
       if isinstance(cmd, basestring):
+        if 'shell' not in kwargs:
+          raise Exception('Cannot run a string command without a shell')
         ssh_cmd += [cmd]
       else:
         ssh_cmd += cmd

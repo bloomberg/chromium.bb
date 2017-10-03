@@ -1343,7 +1343,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       # TPM state in theory might happen some time other than during
       # provisioning.  Also, the bad TPM state isn't supposed to happen at
       # all; this change is just papering over the real bug.
-      self._RetryCommand('crossystem clear_tpm_owner_request=1',
+      self._RetryCommand(['crossystem', 'clear_tpm_owner_request=1'],
                          **self._cmd_kwargs_omit_error)
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
 
@@ -1355,7 +1355,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     autoreboot_cmd = ('FILE="%s" ; [ -f "$FILE" ] || '
                       '( touch "$FILE" ; start autoreboot )')
     self._RetryCommand(autoreboot_cmd % self.REMOTE_LAB_MACHINE_FILE_PATH,
-                       **self._cmd_kwargs)
+                       shell=True, **self._cmd_kwargs)
     self._VerifyBootExpectations(
         self.inactive_kernel, rollback_message=
         'Build %s failed to boot on %s; system rolled back to previous '
