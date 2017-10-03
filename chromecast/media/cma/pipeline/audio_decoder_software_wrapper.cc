@@ -92,7 +92,13 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
 
   output_config_.codec = media::kCodecPCM;
   output_config_.sample_format = media::kSampleFormatS16;
-  output_config_.channel_number = config.channel_number;
+  // The underlying software decoder will always convert mono to stereo,
+  // so set output stereo in the case of mono input.
+  if (config.channel_number == kMonoChannelCount) {
+    output_config_.channel_number = kStereoChannelCount;
+  } else {
+    output_config_.channel_number = config.channel_number;
+  }
   output_config_.bytes_per_channel = 2;
   output_config_.samples_per_second = config.samples_per_second;
   output_config_.encryption_scheme = Unencrypted();
