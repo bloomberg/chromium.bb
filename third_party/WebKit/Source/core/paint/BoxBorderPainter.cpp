@@ -1055,9 +1055,12 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
     return;
   }
 
-  // The extra multiplier is so that the clipping mask can antialias
+  // The stroke is doubled here because the provided path is the
+  // outside edge of the border so half the stroke is clipped off, with
+  // the extra multiplier so that the clipping mask can antialias
   // the edges to prevent jaggies.
-  graphics_context.SetStrokeThickness(stroke_thickness * 1.1f);
+  const float thickness_multiplier = 2 * 1.1f;
+  graphics_context.SetStrokeThickness(stroke_thickness * thickness_multiplier);
   graphics_context.SetStrokeStyle(
       border_style == EBorderStyle::kDashed ? kDashedStroke : kDottedStroke);
 
