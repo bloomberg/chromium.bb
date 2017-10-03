@@ -35,8 +35,6 @@ void OutputCb(const scoped_refptr<VideoFrame>&) {}
 void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB,
                                 const scoped_refptr<VideoFrame>&) {}
 
-void RequestOverlayInfoCb(bool, const ProvideOverlayInfoCB&) {}
-
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
     std::unique_ptr<service_manager::ServiceContextRef>,
     const base::UnguessableToken&,
@@ -116,7 +114,9 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
         base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
         codec_allocator_.get(), std::move(surface_chooser),
-        base::Bind(&CreateAndroidOverlayCb), base::Bind(&RequestOverlayInfoCb),
+        base::Bind(&CreateAndroidOverlayCb),
+        base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
+                   base::Unretained(this)),
         std::move(video_frame_factory),
         base::MakeUnique<MockServiceContextRef>());
     mcvd_.reset(observable_mcvd);
@@ -150,6 +150,9 @@ class MediaCodecVideoDecoderTest : public testing::Test {
       VideoDecoderConfig config = TestVideoConfig::Large(kCodecH264)) {
     Initialize(config);
     mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+    OverlayInfo info;
+    info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+    provide_overlay_info_cb_.Run(info);
     auto overlay_ptr = base::MakeUnique<MockAndroidOverlay>();
     auto* overlay = overlay_ptr.get();
     surface_chooser_->ProvideOverlay(std::move(overlay_ptr));
@@ -162,6 +165,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
       VideoDecoderConfig config = TestVideoConfig::Large(kCodecH264)) {
     Initialize(config);
     mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+    provide_overlay_info_cb_.Run(OverlayInfo());
     surface_chooser_->ProvideSurfaceTexture();
   }
 
@@ -178,6 +182,12 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   // it can be called after |mcvd_| is reset.
   void PumpCodec() { mcvd_raw_->PumpCodec(false); }
 
+  void RequestOverlayInfoCb(
+      bool restart_for_transitions,
+      const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+    provide_overlay_info_cb_ = provide_overlay_info_cb;
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
@@ -188,6 +198,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   MockVideoFrameFactory* video_frame_factory_;
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   std::unique_ptr<DestructionObserver> destruction_observer_;
+  ProvideOverlayInfoCB provide_overlay_info_cb_;
 
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
   // testing the teardown path.
@@ -221,15 +232,34 @@ TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersFrameFactoryInit) {
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
 }
 
-TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersSurfaceChooserInit) {
+TEST_F(MediaCodecVideoDecoderTest,
+       FirstDecodeTriggersOverlayInfoRequestIfSupported) {
   Initialize();
-  EXPECT_CALL(*surface_chooser_, MockUpdateState());
+  // Requesting overlay info sets this cb.
+  ASSERT_FALSE(provide_overlay_info_cb_);
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+  ASSERT_TRUE(provide_overlay_info_cb_);
+}
+
+TEST_F(MediaCodecVideoDecoderTest,
+       OverlayInfoIsNotRequestedIfOverlaysNotSupported) {
+  Initialize();
+  ON_CALL(*device_info_, SupportsOverlaySurfaces())
+      .WillByDefault(Return(false));
+  mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+  ASSERT_FALSE(provide_overlay_info_cb_);
+}
+
+TEST_F(MediaCodecVideoDecoderTest, OverlayInfoDuringInitUpdatesSurfaceChooser) {
+  InitializeWithSurfaceTexture_OneDecodePending();
+  EXPECT_CALL(*surface_chooser_, MockUpdateState());
+  provide_overlay_info_cb_.Run(OverlayInfo());
 }
 
 TEST_F(MediaCodecVideoDecoderTest, CodecIsCreatedAfterSurfaceChosen) {
   Initialize();
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+  provide_overlay_info_cb_.Run(OverlayInfo());
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, NotNull()));
   surface_chooser_->ProvideSurfaceTexture();
 }
@@ -251,6 +281,14 @@ TEST_F(MediaCodecVideoDecoderTest, CodecCreationFailureIsAnError) {
   codec_allocator_->ProvideNullCodecAsync();
 }
 
+TEST_F(MediaCodecVideoDecoderTest, CodecFailuresAreAnError) {
+  auto* codec = InitializeFully_OneDecodePending();
+  EXPECT_CALL(*codec, DequeueInputBuffer(_, _))
+      .WillOnce(Return(MEDIA_CODEC_ERROR));
+  EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR));
+  PumpCodec();
+}
+
 TEST_F(MediaCodecVideoDecoderTest, AfterInitCompletesTheCodecIsPolled) {
   auto* codec = InitializeFully_OneDecodePending();
   // Run a RunLoop until the first time the codec is polled for an available
@@ -269,57 +307,46 @@ TEST_F(MediaCodecVideoDecoderTest, CodecIsReleasedOnDestruction) {
   EXPECT_CALL(*codec_allocator_, MockReleaseMediaCodec(codec, _, _));
 }
 
-TEST_F(MediaCodecVideoDecoderTest,
-       SurfaceChooserNotInitializedWithOverlayFactory) {
+TEST_F(MediaCodecVideoDecoderTest, SurfaceChooserIsUpdatedWithTheOverlay) {
+  InitializeFully_OneDecodePending();
+  OverlayInfo info;
+  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+  provide_overlay_info_cb_.Run(info);
+  // The surface chooser should have an overlay factory.
+  ASSERT_TRUE(surface_chooser_->factory_);
+}
+
+TEST_F(MediaCodecVideoDecoderTest, SurfaceChooserIsUpdatedOnOverlayChanges) {
   InitializeWithSurfaceTexture_OneDecodePending();
-  // The surface chooser should not have an overlay factory because
-  // OnOverlayInfoChanged() was not called before it was initialized.
-  ASSERT_FALSE(surface_chooser_->factory_);
-}
-
-TEST_F(MediaCodecVideoDecoderTest,
-       SurfaceChooserInitializedWithOverlayFactory) {
-  Initialize();
-  OverlayInfo info;
-  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->OnOverlayInfoChanged(info);
-  mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
-  // The surface chooser should have an overlay factory because
-  // OnOverlayInfoChanged() was called before it was initialized.
-  ASSERT_TRUE(surface_chooser_->factory_);
-}
-
-TEST_F(MediaCodecVideoDecoderTest,
-       OnOverlayInfoChangedIsValidBeforeInitialize) {
-  OverlayInfo info;
-  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->OnOverlayInfoChanged(info);
-  Initialize();
-  mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
-  ASSERT_TRUE(surface_chooser_->factory_);
-}
-
-TEST_F(MediaCodecVideoDecoderTest,
-       OnOverlayInfoChangedReplacesTheOverlayFactory) {
-  InitializeWithOverlay_OneDecodePending();
 
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(2);
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->OnOverlayInfoChanged(info);
+  provide_overlay_info_cb_.Run(info);
   info.routing_token = base::UnguessableToken::Deserialize(3, 4);
-  mcvd_->OnOverlayInfoChanged(info);
+  provide_overlay_info_cb_.Run(info);
 }
 
-TEST_F(MediaCodecVideoDecoderTest, DuplicateOnOverlayInfoChangedAreIgnored) {
-  InitializeWithOverlay_OneDecodePending();
+TEST_F(MediaCodecVideoDecoderTest, OverlayInfoUpdatesAreIgnoredInStateError) {
+  InitializeWithSurfaceTexture_OneDecodePending();
+  // Enter the error state.
+  codec_allocator_->ProvideNullCodecAsync();
 
-  // The second OnOverlayInfoChanged() should be ignored.
+  EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
+  OverlayInfo info;
+  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
+  provide_overlay_info_cb_.Run(info);
+}
+
+TEST_F(MediaCodecVideoDecoderTest, DuplicateOverlayInfoUpdatesAreIgnored) {
+  InitializeWithSurfaceTexture_OneDecodePending();
+
+  // The second overlay info update should be ignored.
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(1);
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->OnOverlayInfoChanged(info);
-  mcvd_->OnOverlayInfoChanged(info);
+  provide_overlay_info_cb_.Run(info);
+  provide_overlay_info_cb_.Run(info);
 }
 
 TEST_F(MediaCodecVideoDecoderTest, CodecIsCreatedWithChosenOverlay) {

@@ -163,27 +163,16 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
     bound_init_cb.Run(false);
     return;
   }
-
   decoder_config_ = config;
-
-  if (first_init) {
-    if (!codec_allocator_->StartThread(this)) {
-      LOG(ERROR) << "Unable to start thread";
-      bound_init_cb.Run(false);
-      return;
-    }
-  }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (config.codec() == kCodecH264)
     ExtractSpsAndPps(config.extra_data(), &csd0_, &csd1_);
 #endif
 
-  // We defer initialization of the Surface and MediaCodec until we
-  // receive a Decode() call to avoid consuming those resources in cases where
-  // we'll be destructed before getting a Decode(). Failure to initialize those
-  // resources will be reported as a decode error on the first decode.
-  // TODO(watk): Initialize the CDM before calling init_cb.
+  // Do the rest of the initialization lazily on the first decode.
+  // TODO(watk): Add CDM Support.
+  DCHECK(!cdm_context);
   init_cb.Run(true);
 }
 
@@ -195,6 +184,11 @@ void MediaCodecVideoDecoder::OnKeyAdded() {
 
 void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
+  lazy_init_pending_ = false;
+  if (!codec_allocator_->StartThread(this)) {
+    EnterTerminalState(State::kError);
+    return;
+  }
   video_frame_factory_->Initialize(
       gpu_task_runner_, get_stub_cb_,
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
@@ -209,25 +203,42 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
     return;
   }
   surface_texture_bundle_ = new AVDASurfaceBundle(std::move(surface_texture));
-  InitializeSurfaceChooser();
+
+  // TODO(watk): This isn't sufficient. Overlays should also be disabled if
+  // we're using threaded texture mailboxes (http://crbug.com/582170).
+  // See gpu::GpuPreferences::enable_threaded_texture_mailboxes.
+  if (!device_info_->SupportsOverlaySurfaces()) {
+    OnSurfaceChosen(nullptr);
+    return;
+  }
+
+  // Request OverlayInfo updates. Initialization continues on the first one.
+  bool restart_for_transitions = device_info_->IsSetOutputSurfaceSupported();
+  std::move(request_overlay_info_cb_)
+      .Run(restart_for_transitions,
+           base::Bind(&MediaCodecVideoDecoder::OnOverlayInfoChanged,
+                      weak_factory_.GetWeakPtr()));
 }
 
 void MediaCodecVideoDecoder::OnOverlayInfoChanged(
     const OverlayInfo& overlay_info) {
   DVLOG(2) << __func__;
+  DCHECK(device_info_->SupportsOverlaySurfaces());
+  if (InTerminalState())
+    return;
+
+  // TODO(watk): Handle frame_hidden like AVDA. Maybe even if in a terminal
+  // state.
+  // TODO(watk): Incorporate the other chooser_state_ signals.
+
   bool overlay_changed = !overlay_info_.RefersToSameOverlayAs(overlay_info);
   overlay_info_ = overlay_info;
-  // Only update surface chooser if it's initialized and the overlay changed.
-  if (state_ != State::kInitializing && overlay_changed)
-    surface_chooser_->UpdateState(CreateOverlayFactoryCb(), chooser_state_);
-}
-
-void MediaCodecVideoDecoder::InitializeSurfaceChooser() {
-  DVLOG(2) << __func__;
-  DCHECK_EQ(state_, State::kInitializing);
-  // Initialize |surface_chooser_| and wait for its decision. Note: the
-  // callback may be reentrant.
-  surface_chooser_->UpdateState(CreateOverlayFactoryCb(), chooser_state_);
+  chooser_state_.is_fullscreen = overlay_info_.is_fullscreen;
+  chooser_state_.is_frame_hidden = overlay_info_.is_frame_hidden;
+  surface_chooser_->UpdateState(
+      overlay_changed ? base::make_optional(CreateOverlayFactoryCb())
+                      : base::nullopt,
+      chooser_state_);
 }
 
 void MediaCodecVideoDecoder::OnSurfaceChosen(
@@ -338,12 +349,11 @@ void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
   pending_decodes_.emplace_back(buffer, std::move(decode_cb));
 
-  if (lazy_init_pending_) {
-    lazy_init_pending_ = false;
-    StartLazyInit();
+  if (state_ == State::kInitializing) {
+    if (lazy_init_pending_)
+      StartLazyInit();
     return;
   }
-
   PumpCodec(true);
 }
 
@@ -603,8 +613,9 @@ void MediaCodecVideoDecoder::OnCodecDrained() {
 
 void MediaCodecVideoDecoder::EnterTerminalState(State state) {
   DVLOG(2) << __func__ << " " << static_cast<int>(state);
-  DCHECK(state == State::kError || state == State::kSurfaceDestroyed);
+
   state_ = state;
+  DCHECK(InTerminalState());
 
   // Cancel pending codec creation.
   codec_allocator_weak_factory_.InvalidateWeakPtrs();
@@ -616,6 +627,10 @@ void MediaCodecVideoDecoder::EnterTerminalState(State state) {
     ClearPendingDecodes(DecodeStatus::DECODE_ERROR);
   if (drain_type_)
     OnCodecDrained();
+}
+
+bool MediaCodecVideoDecoder::InTerminalState() {
+  return state_ == State::kSurfaceDestroyed || state_ == State::kError;
 }
 
 void MediaCodecVideoDecoder::ClearPendingDecodes(DecodeStatus status) {
