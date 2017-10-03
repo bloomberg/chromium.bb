@@ -40,7 +40,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   bool WillDraw(DrawMode draw_mode,
-                ResourceProvider* resource_provider) override;
+                LayerTreeResourceProvider* resource_provider) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,

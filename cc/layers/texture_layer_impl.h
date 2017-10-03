@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 
 namespace viz {
 class SingleReleaseCallback;
@@ -34,7 +35,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   void PushPropertiesTo(LayerImpl* layer) override;
 
   bool WillDraw(DrawMode draw_mode,
-                ResourceProvider* resource_provider) override;
+                LayerTreeResourceProvider* resource_provider) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   SimpleEnclosedRegion VisibleOpaqueRegion() const override;

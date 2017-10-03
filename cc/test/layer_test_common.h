@@ -42,7 +42,6 @@ namespace cc {
 class LayerImpl;
 class LayerTreeFrameSink;
 class RenderSurfaceImpl;
-class ResourceProvider;
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
 RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl);
@@ -182,7 +181,7 @@ class LayerTestCommon {
     LayerTreeFrameSink* layer_tree_frame_sink() const {
       return host_->host_impl()->layer_tree_frame_sink();
     }
-    ResourceProvider* resource_provider() const {
+    LayerTreeResourceProvider* resource_provider() const {
       return host_->host_impl()->resource_provider();
     }
     LayerImpl* root_layer_for_testing() const {

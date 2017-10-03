@@ -110,8 +110,9 @@ void HeadsUpDisplayLayerImpl::ReleaseUnmatchedSizeResources(
                 });
 }
 
-bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
-                                       ResourceProvider* resource_provider) {
+bool HeadsUpDisplayLayerImpl::WillDraw(
+    DrawMode draw_mode,
+    LayerTreeResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 

@@ -4098,7 +4098,8 @@ class DidDrawCheckLayer : public LayerImpl {
     return base::WrapUnique(new DidDrawCheckLayer(tree_impl, id));
   }
 
-  bool WillDraw(DrawMode draw_mode, ResourceProvider* provider) override {
+  bool WillDraw(DrawMode draw_mode,
+                LayerTreeResourceProvider* provider) override {
     will_draw_called_ = true;
     if (will_draw_returns_false_)
       return false;
@@ -4111,7 +4112,7 @@ class DidDrawCheckLayer : public LayerImpl {
     LayerImpl::AppendQuads(render_pass, append_quads_data);
   }
 
-  void DidDraw(ResourceProvider* provider) override {
+  void DidDraw(LayerTreeResourceProvider* provider) override {
     did_draw_called_ = true;
     LayerImpl::DidDraw(provider);
   }

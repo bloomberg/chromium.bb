@@ -59,7 +59,7 @@ void PaintedOverlayScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
 bool PaintedOverlayScrollbarLayerImpl::WillDraw(
     DrawMode draw_mode,
-    ResourceProvider* resource_provider) {
+    LayerTreeResourceProvider* resource_provider) {
   DCHECK(draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE);
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }

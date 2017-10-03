@@ -78,7 +78,7 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 }
 
 bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
-                                ResourceProvider* resource_provider) {
+                                LayerTreeResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 

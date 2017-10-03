@@ -31,7 +31,6 @@
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/touch_action_region.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host_client.h"
@@ -60,6 +59,7 @@ namespace cc {
 
 class AppendQuadsData;
 class LayerTreeImpl;
+class LayerTreeResourceProvider;
 class MicroBenchmarkImpl;
 class MutatorHost;
 class PrioritizedTile;
@@ -140,10 +140,10 @@ class CC_EXPORT LayerImpl {
   // WillDraw/DidDraw must call the base class version only if WillDraw
   // returns true.
   virtual bool WillDraw(DrawMode draw_mode,
-                        ResourceProvider* resource_provider);
+                        LayerTreeResourceProvider* resource_provider);
   virtual void AppendQuads(viz::RenderPass* render_pass,
                            AppendQuadsData* append_quads_data) {}
-  virtual void DidDraw(ResourceProvider* resource_provider);
+  virtual void DidDraw(LayerTreeResourceProvider* resource_provider);
 
   // Verify that the resource ids in the quad are valid.
   void ValidateQuadResources(viz::DrawQuad* quad) const {
