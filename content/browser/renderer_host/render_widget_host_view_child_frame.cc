@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -120,6 +121,11 @@ void RenderWidgetHostViewChildFrame::
     auto* manager = root_view->GetTouchSelectionControllerClientManager();
     if (manager)
       manager->RemoveObserver(this);
+  } else {
+    // We should never get here, but maybe we are? Test this out with a
+    // diagnostic we can track. If we do get here, it would explain
+    // https://crbug.com/760074.
+    base::debug::DumpWithoutCrashing();
   }
 
   selection_controller_client_.reset();
