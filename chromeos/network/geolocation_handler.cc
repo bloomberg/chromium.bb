@@ -21,6 +21,10 @@ namespace {
 constexpr const char* kDevicePropertyNames[] = {
     shill::kGeoWifiAccessPointsProperty, shill::kGeoCellTowersProperty};
 
+std::string HexToDecimal(std::string hex_str) {
+  return std::to_string(std::stoi(hex_str, nullptr, 16));
+}
+
 }  // namespace
 
 GeolocationHandler::GeolocationHandler()
@@ -218,8 +222,11 @@ void GeolocationHandler::AddAccessPointFromDict(
 void GeolocationHandler::AddCellTowerFromDict(
     const base::DictionaryValue* entry) {
   // Docs: developers.google.com/maps/documentation/business/geolocation
+
+  // Create object.
   CellTower ct;
 
+  // Read time fields into object.
   std::string age_str;
   if (entry->GetString(shill::kGeoAgeProperty, &age_str)) {
     int64_t age_ms;
@@ -228,11 +235,23 @@ void GeolocationHandler::AddCellTowerFromDict(
           base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);
     }
   }
-  entry->GetString(shill::kGeoCellIdProperty, &ct.ci);
-  entry->GetString(shill::kGeoLocationAreaCodeProperty, &ct.lac);
+
+  // Read hex fields into object.
+  std::string hex_cell_id;
+  if (entry->GetString(shill::kGeoCellIdProperty, &hex_cell_id)) {
+    ct.ci = HexToDecimal(hex_cell_id);
+  }
+
+  std::string hex_lac;
+  if (entry->GetString(shill::kGeoLocationAreaCodeProperty, &hex_lac)) {
+    ct.lac = HexToDecimal(hex_lac);
+  }
+
+  // Read decimal fields into object.
   entry->GetString(shill::kGeoMobileCountryCodeProperty, &ct.mcc);
   entry->GetString(shill::kGeoMobileNetworkCodeProperty, &ct.mnc);
 
+  // Add new object to vector.
   cell_towers_.push_back(ct);
 }
 
