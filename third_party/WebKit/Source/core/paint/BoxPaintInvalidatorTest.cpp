@@ -10,6 +10,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -18,13 +19,10 @@
 
 namespace blink {
 
-class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
-                                private ScopedRootLayerScrollingForTest,
-                                public RenderingTest {
+class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
  public:
   BoxPaintInvalidatorTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
 
  protected:
   const RasterInvalidationTracking* GetRasterInvalidationTracking() const {
@@ -115,7 +113,9 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, BoxPaintInvalidatorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All,
+                        BoxPaintInvalidatorTest,
+                        ::testing::Values(0, kRootLayerScrolling));
 
 TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
   SetBodyInnerHTML(

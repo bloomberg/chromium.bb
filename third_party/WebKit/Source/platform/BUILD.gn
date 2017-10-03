@@ -1698,6 +1698,7 @@ static_library("test_support") {
     "testing/PaintPrinters.cpp",
     "testing/PaintPrinters.h",
     "testing/PaintPropertyTestHelpers.h",
+    "testing/PaintTestConfigurations.h",
     "testing/PictureMatchers.cpp",
     "testing/PictureMatchers.h",
     "testing/PlatformTestPrinters.cpp",

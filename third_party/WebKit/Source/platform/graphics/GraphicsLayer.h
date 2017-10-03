@@ -290,7 +290,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool ShouldFlattenTransform() const { return should_flatten_transform_; }
 
   explicit GraphicsLayer(GraphicsLayerClient*);
-  // for testing
+
   friend class CompositedLayerMappingTest;
   friend class PaintControllerPaintTestBase;
 

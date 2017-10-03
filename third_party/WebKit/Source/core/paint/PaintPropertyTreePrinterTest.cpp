@@ -5,7 +5,7 @@
 #include "core/paint/PaintPropertyTreePrinter.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTestHelper.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,17 +14,10 @@
 
 namespace blink {
 
-typedef bool TestParamRootLayerScrolling;
-class PaintPropertyTreePrinterTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedSlimmingPaintV2ForTest,
-      private ScopedRootLayerScrollingForTest,
-      public RenderingTest {
+class PaintPropertyTreePrinterTest : public PaintControllerPaintTest {
  public:
   PaintPropertyTreePrinterTest()
-      : ScopedSlimmingPaintV2ForTest(true),
-        ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
 
  private:
   void SetUp() override {
@@ -41,7 +34,10 @@ class PaintPropertyTreePrinterTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, PaintPropertyTreePrinterTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    PaintPropertyTreePrinterTest,
+    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTree) {
   SetBodyInnerHTML("hello world");

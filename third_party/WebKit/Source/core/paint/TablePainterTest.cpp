@@ -13,7 +13,7 @@
 
 namespace blink {
 
-using TablePainterTest = PaintControllerPaintTest;
+using TablePainterTest = PaintControllerPaintTestBase;
 
 TEST_F(TablePainterTest, Background) {
   SetBodyInnerHTML(

@@ -17,7 +17,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -119,24 +119,13 @@ void DrawClippedRect(GraphicsContext& context,
   DrawRect(context, client, drawing_type, bound);
 }
 
-enum TestConfigurations {
-  kSPv2 = 1 << 0,
-  kUnderInvalidationChecking = 1 << 1,
-};
-
 // Tests using this class will be tested with under-invalidation-checking
 // enabled and disabled.
-class PaintControllerTest
-    : public PaintControllerTestBase,
-      public ::testing::WithParamInterface<TestConfigurations>,
-      private ScopedSlimmingPaintV2ForTest,
-      private ScopedPaintUnderInvalidationCheckingForTest {
+class PaintControllerTest : public PaintTestConfigurations,
+                            public PaintControllerTestBase {
  public:
   PaintControllerTest()
-      : ScopedSlimmingPaintV2ForTest(GetParam() & kSPv2),
-        ScopedPaintUnderInvalidationCheckingForTest(GetParam() &
-                                                    kUnderInvalidationChecking),
-        root_paint_property_client_("root"),
+      : root_paint_property_client_("root"),
         root_paint_chunk_id_(root_paint_property_client_,
                              DisplayItem::kUninitializedType) {}
 
@@ -147,9 +136,10 @@ class PaintControllerTest
 INSTANTIATE_TEST_CASE_P(All,
                         PaintControllerTest,
                         ::testing::Values(0,
-                                          kSPv2,
+                                          kSlimmingPaintV2,
                                           kUnderInvalidationChecking,
-                                          kSPv2 | kUnderInvalidationChecking));
+                                          kSlimmingPaintV2 |
+                                              kUnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {
   GraphicsContext context(GetPaintController());

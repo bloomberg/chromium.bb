@@ -13,16 +13,12 @@
 
 namespace blink {
 
-class BlockPainterTest : public ::testing::WithParamInterface<bool>,
-                         private ScopedRootLayerScrollingForTest,
-                         public PaintControllerPaintTestBase {
- public:
-  BlockPainterTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        PaintControllerPaintTestBase(true) {}
-};
+using BlockPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_TEST_CASE_P(All, BlockPainterTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    BlockPainterTest,
+    ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
   SetBodyInnerHTML(
