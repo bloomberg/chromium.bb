@@ -1339,6 +1339,8 @@ class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
   size_t update_count() const { return update_count_; }
 
  private:
+  void ClearCachedEstimate() override {}
+
   mutable size_t update_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidExternalEstimateProvider);
@@ -1385,7 +1387,8 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
         should_notify_delegate_(true),
         rtt_(rtt),
         downstream_throughput_kbps_(downstream_throughput_kbps),
-        update_count_(0) {}
+        update_count_(0),
+        cached_estimate_cleared_(false) {}
   ~TestExternalEstimateProvider() override {}
 
   void SetUpdatedEstimateDelegate(UpdatedEstimateDelegate* delegate) override {
@@ -1405,7 +1408,11 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
 
   size_t update_count() const { return update_count_; }
 
+  bool cached_estimate_cleared() { return cached_estimate_cleared_; }
+
  private:
+  void ClearCachedEstimate() override { cached_estimate_cleared_ = true; }
+
   UpdatedEstimateDelegate* delegate_;
 
   bool should_notify_delegate_;
@@ -1415,6 +1422,9 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
   const int32_t downstream_throughput_kbps_;
 
   mutable size_t update_count_;
+
+  // True if the cached estimate has been cleared.
+  bool cached_estimate_cleared_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExternalEstimateProvider);
 };
@@ -1435,8 +1445,11 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
       test_external_estimate_provider);
   TestNetworkQualityEstimator estimator(std::map<std::string, std::string>(),
                                         std::move(external_estimate_provider));
+  EXPECT_FALSE(test_external_estimate_provider->cached_estimate_cleared());
   estimator.SimulateNetworkChange(net::NetworkChangeNotifier::CONNECTION_WIFI,
                                   "test");
+  EXPECT_TRUE(test_external_estimate_provider->cached_estimate_cleared());
+
   base::TimeDelta rtt;
   int32_t kbps;
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));

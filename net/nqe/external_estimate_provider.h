@@ -37,6 +37,9 @@ class NET_EXPORT ExternalEstimateProvider {
   ExternalEstimateProvider() {}
   virtual ~ExternalEstimateProvider() {}
 
+  // Requests the provider to clear its cached network quality estimate.
+  virtual void ClearCachedEstimate() = 0;
+
   // Sets delegate that is notified when an updated estimate is available.
   // |delegate| should outlive |ExternalEstimateProvider|.
   virtual void SetUpdatedEstimateDelegate(

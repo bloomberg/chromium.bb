@@ -87,6 +87,14 @@ public class ExternalEstimateProviderAndroid {
         return NO_VALUE;
     }
 
+    /**
+     * Requests the provider to clear its cached network quality estimate.
+     */
+    @CalledByNative
+    protected void clearCachedEstimate() {
+        assert mThreadCheck.calledOnValidThread();
+    }
+
     protected final void notifyExternalEstimateProviderAndroidUpdate() {
         synchronized (mLock) {
             if (mNativePtr == 0) return;

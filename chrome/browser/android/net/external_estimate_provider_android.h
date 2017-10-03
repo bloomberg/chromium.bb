@@ -60,6 +60,9 @@ class ExternalEstimateProviderAndroid : public net::ExternalEstimateProvider {
   // Creates the corresponding Java object.
   void CreateJavaObject();
 
+  // net::ExternalEstimateProvider:
+  void ClearCachedEstimate() override;
+
   // Value returned if valid value is unavailable.
   const int32_t no_value_ = -1;
 
