@@ -17,6 +17,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_watcher.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -263,8 +264,10 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ExtensionFrameHelper::OnExtensionValidateMessagePort(const PortId& id) {
-  extension_dispatcher_->messaging_service()->ValidateMessagePort(
-      extension_dispatcher_->script_context_set(), id, render_frame());
+  extension_dispatcher_->bindings_system()
+      ->GetMessagingService()
+      ->ValidateMessagePort(extension_dispatcher_->script_context_set(), id,
+                            render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
@@ -273,24 +276,28 @@ void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
-  extension_dispatcher_->messaging_service()->DispatchOnConnect(
-      extension_dispatcher_->script_context_set(), target_port_id, channel_name,
-      source, info, tls_channel_id, render_frame());
+  extension_dispatcher_->bindings_system()
+      ->GetMessagingService()
+      ->DispatchOnConnect(extension_dispatcher_->script_context_set(),
+                          target_port_id, channel_name, source, info,
+                          tls_channel_id, render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionDeliverMessage(const PortId& target_id,
                                                      const Message& message) {
-  extension_dispatcher_->messaging_service()->DeliverMessage(
-      extension_dispatcher_->script_context_set(), target_id, message,
-      render_frame());
+  extension_dispatcher_->bindings_system()
+      ->GetMessagingService()
+      ->DeliverMessage(extension_dispatcher_->script_context_set(), target_id,
+                       message, render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
     const PortId& id,
     const std::string& error_message) {
-  extension_dispatcher_->messaging_service()->DispatchOnDisconnect(
-      extension_dispatcher_->script_context_set(), id, error_message,
-      render_frame());
+  extension_dispatcher_->bindings_system()
+      ->GetMessagingService()
+      ->DispatchOnDisconnect(extension_dispatcher_->script_context_set(), id,
+                             error_message, render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionSetTabId(int tab_id) {

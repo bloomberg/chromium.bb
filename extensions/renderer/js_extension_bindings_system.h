@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/js_renderer_messaging_service.h"
 
 namespace extensions {
 class IPCMessageSender;
@@ -38,6 +39,7 @@ class JsExtensionBindingsSystem : public ExtensionBindingsSystem {
                       const std::string& error) override;
   RequestSender* GetRequestSender() override;
   IPCMessageSender* GetIPCMessageSender() override;
+  RendererMessagingService* GetMessagingService() override;
 
  private:
   void RegisterBinding(const std::string& api_name,
@@ -49,6 +51,8 @@ class JsExtensionBindingsSystem : public ExtensionBindingsSystem {
   std::unique_ptr<IPCMessageSender> ipc_message_sender_;
 
   std::unique_ptr<RequestSender> request_sender_;
+
+  JSRendererMessagingService messaging_service_;
 
   DISALLOW_COPY_AND_ASSIGN(JsExtensionBindingsSystem);
 };

@@ -73,7 +73,6 @@
 #include "extensions/renderer/id_generator_custom_bindings.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/js_extension_bindings_system.h"
-#include "extensions/renderer/js_renderer_messaging_service.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/module_system.h"
@@ -215,8 +214,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
     bindings_system_ = std::make_unique<JsExtensionBindingsSystem>(
         &source_map_, std::move(ipc_message_sender));
   }
-  messaging_service_ =
-      std::make_unique<JSRendererMessagingService>(bindings_system_.get());
 
   set_idle_notifications_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -968,9 +965,9 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 
 void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
                                   const Message& message) {
-  messaging_service_->DeliverMessage(*script_context_set_, target_port_id,
-                                     message,
-                                     NULL);  // All render frames.
+  bindings_system_->GetMessagingService()->DeliverMessage(
+      *script_context_set_, target_port_id, message,
+      NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnConnect(
@@ -981,17 +978,17 @@ void Dispatcher::OnDispatchOnConnect(
     const std::string& tls_channel_id) {
   DCHECK(!target_port_id.is_opener);
 
-  messaging_service_->DispatchOnConnect(*script_context_set_, target_port_id,
-                                        channel_name, source, info,
-                                        tls_channel_id,
-                                        NULL);  // All render frames.
+  bindings_system_->GetMessagingService()->DispatchOnConnect(
+      *script_context_set_, target_port_id, channel_name, source, info,
+      tls_channel_id,
+      NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(const PortId& port_id,
                                         const std::string& error_message) {
-  messaging_service_->DispatchOnDisconnect(*script_context_set_, port_id,
-                                           error_message,
-                                           NULL);  // All render frames.
+  bindings_system_->GetMessagingService()->DispatchOnDisconnect(
+      *script_context_set_, port_id, error_message,
+      NULL);  // All render frames.
 }
 
 void Dispatcher::OnLoaded(

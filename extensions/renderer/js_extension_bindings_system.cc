@@ -143,7 +143,8 @@ JsExtensionBindingsSystem::JsExtensionBindingsSystem(
     : source_map_(source_map),
       ipc_message_sender_(std::move(ipc_message_sender)),
       request_sender_(
-          std::make_unique<RequestSender>(ipc_message_sender_.get())) {}
+          std::make_unique<RequestSender>(ipc_message_sender_.get())),
+      messaging_service_(this) {}
 
 JsExtensionBindingsSystem::~JsExtensionBindingsSystem() {}
 
@@ -245,6 +246,10 @@ RequestSender* JsExtensionBindingsSystem::GetRequestSender() {
 
 IPCMessageSender* JsExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
+}
+
+RendererMessagingService* JsExtensionBindingsSystem::GetMessagingService() {
+  return &messaging_service_;
 }
 
 void JsExtensionBindingsSystem::DispatchEventInContext(
