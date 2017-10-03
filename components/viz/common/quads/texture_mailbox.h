@@ -40,8 +40,7 @@ class VIZ_COMMON_EXPORT TextureMailbox {
                  const gpu::SyncToken& sync_token,
                  uint32_t target,
                  const gfx::Size& size_in_pixels,
-                 bool is_overlay_candidate,
-                 bool secure_output_only);
+                 bool is_overlay_candidate);
   TextureMailbox(SharedBitmap* shared_bitmap, const gfx::Size& size_in_pixels);
 
   ~TextureMailbox();
@@ -69,7 +68,6 @@ class VIZ_COMMON_EXPORT TextureMailbox {
   void set_is_overlay_candidate(bool overlay_candidate) {
     is_overlay_candidate_ = overlay_candidate;
   }
-  bool secure_output_only() const { return secure_output_only_; }
   bool nearest_neighbor() const { return nearest_neighbor_; }
   void set_nearest_neighbor(bool nearest_neighbor) {
     nearest_neighbor_ = nearest_neighbor;
@@ -111,7 +109,6 @@ class VIZ_COMMON_EXPORT TextureMailbox {
   bool is_backed_by_surface_texture_;
   bool wants_promotion_hint_;
 #endif
-  bool secure_output_only_;
   bool nearest_neighbor_;
   gfx::ColorSpace color_space_;
 };

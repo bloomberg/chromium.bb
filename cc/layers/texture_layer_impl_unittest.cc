@@ -106,46 +106,6 @@ TEST(TextureLayerImplTest, Occlusion) {
   }
 }
 
-TEST(TextureLayerImplTest, OutputIsSecure) {
-  gfx::Size layer_size(1000, 1000);
-  gfx::Size viewport_size(1000, 1000);
-
-  LayerTestCommon::LayerImplTest impl;
-
-  gpu::Mailbox mailbox;
-  impl.layer_tree_frame_sink()
-      ->context_provider()
-      ->ContextGL()
-      ->GenMailboxCHROMIUM(mailbox.name);
-  viz::TextureMailbox texture_mailbox(
-      mailbox,
-      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
-                     gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
-      GL_TEXTURE_2D, layer_size, false, true);
-
-  TextureLayerImpl* texture_layer_impl =
-      impl.AddChildToRoot<TextureLayerImpl>();
-  texture_layer_impl->SetBounds(layer_size);
-  texture_layer_impl->SetDrawsContent(true);
-  texture_layer_impl->SetTextureMailbox(
-      texture_mailbox,
-      viz::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
-
-  impl.CalcDrawProps(viewport_size);
-
-  {
-    gfx::Rect occluded;
-    impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
-
-    EXPECT_EQ(1u, impl.quad_list().size());
-    ASSERT_EQ(viz::DrawQuad::Material::TEXTURE_CONTENT,
-              impl.quad_list().front()->material);
-    const viz::TextureDrawQuad* quad =
-        viz::TextureDrawQuad::MaterialCast(impl.quad_list().front());
-    EXPECT_TRUE(quad->secure_output_only);
-  }
-}
-
 TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   bool released = false;
   LayerTestCommon::LayerImplTest impl(

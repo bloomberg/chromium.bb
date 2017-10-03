@@ -23,23 +23,9 @@ scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox(
   return scoped_refptr<TextureLayer>(new TextureLayer(client));
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client)
-    : client_(client),
-      flipped_(true),
-      nearest_neighbor_(false),
-      uv_top_left_(0.f, 0.f),
-      uv_bottom_right_(1.f, 1.f),
-      premultiplied_alpha_(true),
-      blend_background_color_(false),
-      needs_set_mailbox_(false) {
-  vertex_opacity_[0] = 1.0f;
-  vertex_opacity_[1] = 1.0f;
-  vertex_opacity_[2] = 1.0f;
-  vertex_opacity_[3] = 1.0f;
-}
+TextureLayer::TextureLayer(TextureLayerClient* client) : client_(client) {}
 
-TextureLayer::~TextureLayer() {
-}
+TextureLayer::~TextureLayer() = default;
 
 void TextureLayer::ClearClient() {
   client_ = nullptr;

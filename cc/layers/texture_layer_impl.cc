@@ -21,21 +21,7 @@
 namespace cc {
 
 TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id),
-      external_texture_resource_(0),
-      premultiplied_alpha_(true),
-      blend_background_color_(false),
-      flipped_(true),
-      nearest_neighbor_(false),
-      uv_top_left_(0.f, 0.f),
-      uv_bottom_right_(1.f, 1.f),
-      own_mailbox_(false),
-      valid_texture_copy_(false) {
-  vertex_opacity_[0] = 1.0f;
-  vertex_opacity_[1] = 1.0f;
-  vertex_opacity_[2] = 1.0f;
-  vertex_opacity_[3] = 1.0f;
-}
+    : LayerImpl(tree_impl, id) {}
 
 TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
@@ -175,8 +161,7 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
                id, premultiplied_alpha_, uv_top_left_, uv_bottom_right_,
-               bg_color, vertex_opacity_, flipped_, nearest_neighbor_,
-               texture_mailbox_.secure_output_only());
+               bg_color, vertex_opacity_, flipped_, nearest_neighbor_, false);
   if (!valid_texture_copy_) {
     quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
   }

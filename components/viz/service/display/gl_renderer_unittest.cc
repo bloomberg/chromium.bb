@@ -1956,7 +1956,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
           child_context_provider.get(), shared_bitmap_manager.get());
 
   TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                         GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
+                         GL_TEXTURE_2D, gfx::Size(256, 256), true);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id =
@@ -2148,7 +2148,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
   TextureMailbox mailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
-                         gfx::Size(256, 256), true, false);
+                         gfx::Size(256, 256), true);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id =
@@ -2383,7 +2383,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
           child_context_provider.get(), nullptr);
 
   TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                         GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
+                         GL_TEXTURE_2D, gfx::Size(256, 256), true);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id =

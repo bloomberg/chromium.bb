@@ -67,21 +67,21 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   const char* LayerTypeAsString() const override;
   void FreeTextureMailbox();
 
-  viz::ResourceId external_texture_resource_;
-  bool premultiplied_alpha_;
-  bool blend_background_color_;
-  bool flipped_;
-  bool nearest_neighbor_;
-  gfx::PointF uv_top_left_;
-  gfx::PointF uv_bottom_right_;
-  float vertex_opacity_[4];
+  viz::ResourceId external_texture_resource_ = 0;
+  bool premultiplied_alpha_ = true;
+  bool blend_background_color_ = false;
+  bool flipped_ = true;
+  bool nearest_neighbor_ = false;
+  gfx::PointF uv_top_left_ = gfx::PointF();
+  gfx::PointF uv_bottom_right_ = gfx::PointF(1.f, 1.f);
+  float vertex_opacity_[4] = {1.f, 1.f, 1.f, 1.f};
   // This is a resource that's a GL copy of a software texture mailbox.
   std::unique_ptr<ScopedResource> texture_copy_;
 
   viz::TextureMailbox texture_mailbox_;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
-  bool own_mailbox_;
-  bool valid_texture_copy_;
+  bool own_mailbox_ = false;
+  bool valid_texture_copy_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayerImpl);
 };

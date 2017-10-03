@@ -341,11 +341,9 @@ bool Canvas2DLayerBridge::PrepareGpuMemoryBufferMailboxFromImage(
 
   info->image_info_ = image_info;
   bool is_overlay_candidate = true;
-  bool secure_output_only = false;
 
-  *out_mailbox =
-      viz::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
-                          is_overlay_candidate, secure_output_only);
+  *out_mailbox = viz::TextureMailbox(mailbox, sync_token, texture_target,
+                                     gfx::Size(size_), is_overlay_candidate);
   out_mailbox->set_color_space(color_params_.GetSamplerGfxColorSpace());
   image_info->gpu_memory_buffer_->SetColorSpaceForScanout(
       color_params_.GetStorageGfxColorSpace());
