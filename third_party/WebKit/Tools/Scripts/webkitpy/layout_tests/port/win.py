@@ -92,6 +92,17 @@ class WinPort(base.Port):
         return flags
 
     def check_httpd(self):
+        for var in sorted(self.host.environ):
+            _log.info('%s: %s', var, self.host.environ[var])
+        try:
+            windir = self.host.environ.get('windir', 'C:\\WINDOWS')
+            system32_contents = self._filesystem.listdir(self._filesystem.join(windir, 'System32'))
+            _log.info('System32 contents:')
+            for filename in sorted(system32_contents):
+                _log.info(filename)
+        except OSError as err:
+            _log.error('OSError %s', err)
+
         res = super(WinPort, self).check_httpd()
         if self.uses_apache():
             # In order to run CGI scripts on Win32 that use unix shebang lines, we need to

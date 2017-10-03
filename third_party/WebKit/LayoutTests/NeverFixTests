@@ -12,6 +12,10 @@
 
 # FIXME: Remove the WontFix keyword and have that be implied for tests in this file.
 
+# Disable all http tests to verify that upgraded apache-win32 still doesn't work
+# even when no http tests are run.
+[ Win ] http/tests [ WontFix ]
+
 # Perf tests are really slow in debug builds and there are few benefits in running them.
 [ Debug ] http/tests/perf [ WontFix ]
 [ Debug ] virtual/mojo-loading/http/tests/perf [ WontFix ]
