@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,8 +23,11 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -157,6 +161,34 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
             mBottomBarView = (ViewGroup) bottomBarStub.inflate();
         }
         return mBottomBarView;
+    }
+
+    public void addContextualSearchObserver() {
+        ContextualSearchManager manager = mActivity.getContextualSearchManager();
+        if (manager != null) {
+            ContextualSearchObserver observer = new ContextualSearchObserver() {
+                @Override
+                public void onShowContextualSearch(
+                        @Nullable GSAContextDisplaySelection selectionContext) {
+                    getBottomBarView()
+                            .animate()
+                            .alpha(0)
+                            .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
+                            .setDuration(SLIDE_ANIMATION_DURATION_MS)
+                            .start();
+                }
+                @Override
+                public void onHideContextualSearch() {
+                    getBottomBarView()
+                            .animate()
+                            .alpha(1)
+                            .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
+                            .setDuration(SLIDE_ANIMATION_DURATION_MS)
+                            .start();
+                }
+            };
+            manager.addObserver(observer);
+        }
     }
 
     private void hideBottomBar() {
