@@ -1,15 +1,28 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 
  <!-- Common styles for network elements. -->
 
 <dom-module id="network-shared">
   <template>
-    <style include="cr-shared-style">
+    <style include="cr-shared-style md-select">
+      :root {
+        --network-control-width: 250px;
+      }
+
+      .md-select {
+        --md-select-width: var(--network-control-width);
+      }
+
       .property-box {
         @apply(--cr-section);
         border-top: none;
         min-height: var(--cr-section-two-line-min-height);
         padding: 0;
+      }
+
+      .property-box.hr {
+        border-top: var(--cr-separator-line);
       }
 
       .property-box.indented {
@@ -45,6 +58,7 @@
         };
         margin-bottom: 0;
         margin-top: -9px;
+        width: var(--network-control-width);
       }
     </style>
   </template>

@@ -51,14 +51,16 @@
                   if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
                 <div actionable class="list-item" on-tap="onAddWiFiTap_">
                   <div class="start">$i18n{internetAddWiFi}</div>
-                  <button class="icon-external" is="paper-icon-button-light"
+                  <button class$="[[getAddNetworkClass_('WiFi')]]"
+                      is="paper-icon-button-light"
                       aria-label="$i18n{internetAddWiFi}">
                   </button>
                 </div>
               </template>
               <div actionable class="list-item" on-tap="onAddVPNTap_">
                 <div class="start">$i18n{internetAddVPN}</div>
-                <button class="icon-external" is="paper-icon-button-light"
+                <button class$="[[getAddNetworkClass_('VPN')]]"
+                    is="paper-icon-button-light"
                     aria-label="$i18n{internetAddVPN}">
                 </button>
               </div>

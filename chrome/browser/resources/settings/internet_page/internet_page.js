@@ -277,6 +277,20 @@ Polymer({
   },
 
   /**
+   * @param {string} type
+   * @return {string}
+   * @private
+   */
+  getAddNetworkClass_: function(type) {
+    if (loadTimeData.getBoolean('networkSettingsConfig')) {
+      if (type == CrOnc.Type.WI_FI)
+        return 'icon-add-wifi';
+      return 'icon-add-circle';
+    }
+    return 'icon-external';
+  },
+
+  /**
    * @param {string} subpageType
    * @param {!Object<!CrOnc.DeviceStateProperties>|undefined} deviceStates
    * @return {!CrOnc.DeviceStateProperties|undefined}
