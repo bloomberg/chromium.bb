@@ -1735,6 +1735,7 @@ import_simple_dmabuf(struct gl_renderer *gr,
 	struct egl_image *image;
 	EGLint attribs[50];
 	int atti = 0;
+	bool has_modifier;
 
 	/* This requires the Mesa commit in
 	 * Mesa 10.3 (08264e5dad4df448e7718e782ad9077902089a07) or
@@ -1751,6 +1752,14 @@ import_simple_dmabuf(struct gl_renderer *gr,
 	attribs[atti++] = EGL_LINUX_DRM_FOURCC_EXT;
 	attribs[atti++] = attributes->format;
 
+	if (attributes->modifier[0] != DRM_FORMAT_MOD_INVALID) {
+		if (!gr->has_dmabuf_import_modifiers)
+			return NULL;
+		has_modifier = true;
+	} else {
+		has_modifier = false;
+	}
+
 	if (attributes->n_planes > 0) {
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_FD_EXT;
 		attribs[atti++] = attributes->fd[0];
@@ -1758,7 +1767,7 @@ import_simple_dmabuf(struct gl_renderer *gr,
 		attribs[atti++] = attributes->offset[0];
 		attribs[atti++] = EGL_DMA_BUF_PLANE0_PITCH_EXT;
 		attribs[atti++] = attributes->stride[0];
-		if (gr->has_dmabuf_import_modifiers) {
+		if (has_modifier) {
 			attribs[atti++] = EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT;
 			attribs[atti++] = attributes->modifier[0] & 0xFFFFFFFF;
 			attribs[atti++] = EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT;
@@ -1773,7 +1782,7 @@ import_simple_dmabuf(struct gl_renderer *gr,
 		attribs[atti++] = attributes->offset[1];
 		attribs[atti++] = EGL_DMA_BUF_PLANE1_PITCH_EXT;
 		attribs[atti++] = attributes->stride[1];
-		if (gr->has_dmabuf_import_modifiers) {
+		if (has_modifier) {
 			attribs[atti++] = EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT;
 			attribs[atti++] = attributes->modifier[1] & 0xFFFFFFFF;
 			attribs[atti++] = EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT;
@@ -1788,7 +1797,7 @@ import_simple_dmabuf(struct gl_renderer *gr,
 		attribs[atti++] = attributes->offset[2];
 		attribs[atti++] = EGL_DMA_BUF_PLANE2_PITCH_EXT;
 		attribs[atti++] = attributes->stride[2];
-		if (gr->has_dmabuf_import_modifiers) {
+		if (has_modifier) {
 			attribs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT;
 			attribs[atti++] = attributes->modifier[2] & 0xFFFFFFFF;
 			attribs[atti++] = EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT;
