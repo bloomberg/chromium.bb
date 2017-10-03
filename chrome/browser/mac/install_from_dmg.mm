@@ -35,7 +35,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/mac/dock.h"
+#import "chrome/browser/mac/dock.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_constants.h"
@@ -166,8 +166,9 @@ bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
 // image. Returns false if not, or in the event of an error. If
 // out_dmg_bsd_device_name is present, it will be set to the BSD device name
 // for the disk image's device, in "diskNsM" form.
-bool IsPathOnReadOnlyDiskImage(const char path[],
-                               std::string* out_dmg_bsd_device_name) {
+DiskImageStatus IsPathOnReadOnlyDiskImage(
+    const char path[],
+    std::string* out_dmg_bsd_device_name) {
   if (out_dmg_bsd_device_name) {
     out_dmg_bsd_device_name->clear();
   }
@@ -175,19 +176,19 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
   struct statfs statfs_buf;
   if (statfs(path, &statfs_buf) != 0) {
     PLOG(ERROR) << "statfs " << path;
-    return false;
+    return DiskImageStatusFailure;
   }
 
   if (!(statfs_buf.f_flags & MNT_RDONLY)) {
     // Not on a read-only filesystem.
-    return false;
+    return DiskImageStatusFalse;
   }
 
   const char dev_root[] = "/dev/";
   const int dev_root_length = arraysize(dev_root) - 1;
   if (strncmp(statfs_buf.f_mntfromname, dev_root, dev_root_length) != 0) {
     // Not rooted at dev_root, no BSD name to search on.
-    return false;
+    return DiskImageStatusFalse;
   }
 
   // BSD names in IOKit don't include dev_root.
@@ -205,7 +206,7 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
                                                         dmg_bsd_device_name);
   if (!match_dict) {
     LOG(ERROR) << "IOBSDNameMatching " << dmg_bsd_device_name;
-    return false;
+    return DiskImageStatusFailure;
   }
 
   io_iterator_t iterator_ref;
@@ -214,7 +215,7 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
                                                   &iterator_ref);
   if (kr != KERN_SUCCESS) {
     MACH_LOG(ERROR, kr) << "IOServiceGetMatchingServices";
-    return false;
+    return DiskImageStatusFailure;
   }
   base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
   iterator_ref = IO_OBJECT_NULL;
@@ -223,28 +224,19 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
   base::mac::ScopedIOObject<io_service_t> media(IOIteratorNext(iterator));
   if (!media) {
     LOG(ERROR) << "IOIteratorNext: no service";
-    return false;
+    return DiskImageStatusFailure;
   }
   base::mac::ScopedIOObject<io_service_t> unexpected_service(
       IOIteratorNext(iterator));
   if (unexpected_service) {
     LOG(ERROR) << "IOIteratorNext: too many services";
-    return false;
+    return DiskImageStatusFailure;
   }
 
   iterator.reset();
 
-  return MediaResidesOnDiskImage(media, NULL);
-}
-
-// Returns true if the application is located on a read-only filesystem of a
-// disk image. Returns false if not, or in the event of an error. If
-// dmg_bsd_device_name is present, it will be set to the BSD device name for
-// the disk image's device, in "diskNsM" form.
-bool IsAppRunningFromReadOnlyDiskImage(std::string* dmg_bsd_device_name) {
-  return IsPathOnReadOnlyDiskImage(
-      [[base::mac::OuterBundle() bundlePath] fileSystemRepresentation],
-      dmg_bsd_device_name);
+  return MediaResidesOnDiskImage(media, NULL) ? DiskImageStatusTrue
+                                              : DiskImageStatusFalse;
 }
 
 // Shows a dialog asking the user whether or not to install from the disk
@@ -406,11 +398,19 @@ void ShowErrorDialog() {
 
 }  // namespace
 
+DiskImageStatus IsAppRunningFromReadOnlyDiskImage(
+    std::string* dmg_bsd_device_name) {
+  return IsPathOnReadOnlyDiskImage(
+      [[base::mac::OuterBundle() bundlePath] fileSystemRepresentation],
+      dmg_bsd_device_name);
+}
+
 bool MaybeInstallFromDiskImage() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   std::string dmg_bsd_device_name;
-  if (!IsAppRunningFromReadOnlyDiskImage(&dmg_bsd_device_name)) {
+  if (IsAppRunningFromReadOnlyDiskImage(&dmg_bsd_device_name) !=
+      DiskImageStatusTrue) {
     return false;
   }
 

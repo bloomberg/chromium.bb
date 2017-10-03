@@ -7,6 +7,19 @@
 
 #include <string>
 
+enum DiskImageStatus {
+  DiskImageStatusFailure,
+  DiskImageStatusFalse,
+  DiskImageStatusTrue
+};
+
+// Returns info about the application is located on a read-only filesystem of a
+// disk image. Returns false if not, or in the event of an error. If
+// dmg_bsd_device_name is present, it will be set to the BSD device name for
+// the disk image's device, in "diskNsM" form.
+DiskImageStatus IsAppRunningFromReadOnlyDiskImage(
+    std::string* dmg_bsd_device_name);
+
 // If the application is running from a read-only disk image, prompts the user
 // to install it to the hard drive.  If the user approves, the application
 // will be installed and launched, and MaybeInstallFromDiskImage will return
