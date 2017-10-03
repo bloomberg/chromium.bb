@@ -633,16 +633,18 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_MFMV
   int blk_row, blk_col;
   int coll_blk_count = 0;
+  int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
+  int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
 
   int tpl_sample_pos[9][2] = {
-    { -1, xd->n8_w }, { 0, xd->n8_w },  { xd->n8_h, xd->n8_w },
-    { xd->n8_h, 0 },  { xd->n8_h, -1 }, { xd->n8_h, -2 },
-    { -2, xd->n8_w }, { xd->n8_h, 2 },  { 1, xd->n8_w + 2 },
+    { -2, hoffset }, { 0, hoffset },  { voffset, hoffset },
+    { voffset, 0 },  { voffset, -2 }, { voffset, -4 },
+    { -4, hoffset }, { voffset, 4 },  { 2, hoffset + 4 },
   };
   int i;
 
-  for (blk_row = 0; blk_row < xd->n8_h; ++blk_row) {
-    for (blk_col = 0; blk_col < xd->n8_w; ++blk_col) {
+  for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_size_high[BLOCK_8X8]) {
+    for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_size_wide[BLOCK_8X8]) {
       coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
                                        mi_col, ref_frame, blk_row, blk_col,
                                        refmv_count, ref_mv_stack, mode_context);
