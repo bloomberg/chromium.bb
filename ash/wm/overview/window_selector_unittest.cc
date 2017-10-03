@@ -71,17 +71,24 @@ static const int kHeaderHeight = 32;
 const char kActiveWindowChangedFromOverview[] =
     "WindowSelector_ActiveWindowChanged";
 
+// A simple window delegate that returns the specified hit-test code when
+// requested and applies a minimum size constraint if there is one.
+class TestDragWindowDelegate : public aura::test::TestWindowDelegate {
+ public:
+  TestDragWindowDelegate() { set_window_component(HTCAPTION); }
+  ~TestDragWindowDelegate() override {}
+
+ private:
+  // Overridden from aura::Test::TestWindowDelegate:
+  void OnWindowDestroyed(aura::Window* window) override { delete this; }
+
+  DISALLOW_COPY_AND_ASSIGN(TestDragWindowDelegate);
+};
+
 class NonActivatableActivationDelegate : public ::wm::ActivationDelegate {
  public:
   bool ShouldActivate() const override { return false; }
 };
-
-void CancelDrag(DragDropController* controller, bool* canceled) {
-  if (controller->IsDragDropInProgress()) {
-    *canceled = true;
-    controller->DragCancel();
-  }
-}
 
 float GetItemScale(const gfx::Rect& source,
                    const gfx::Rect& target,
@@ -1312,31 +1319,32 @@ TEST_F(WindowSelectorTest, RemoveDisplayWithAnimation) {
   EXPECT_FALSE(IsSelecting());
 }
 
-// Tests starting overview during a drag and drop tracking operation.
-// TODO(flackr): Fix memory corruption crash when running locally (not failing
-// on bots). See http://crbug.com/342528.
-TEST_F(WindowSelectorTest, DISABLED_DragDropInProgress) {
-  bool drag_canceled_by_test = false;
-  gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
-  ShellTestApi shell_test_api(Shell::Get());
-  DragDropController* drag_drop_controller =
-      shell_test_api.drag_drop_controller();
-  ui::OSExchangeData data;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&WindowSelectorTest::ToggleOverview, base::Unretained(this)));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CancelDrag, drag_drop_controller, &drag_canceled_by_test));
-  data.SetString(base::UTF8ToUTF16("I am being dragged"));
-  drag_drop_controller->StartDragAndDrop(
-      data, window->GetRootWindow(), window.get(), gfx::Point(5, 5),
-      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(drag_canceled_by_test);
+// Tests that toggling overview on and off doesnot cancel drag.
+TEST_F(WindowSelectorTest, DragDropInProgress) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      new TestDragWindowDelegate(), -1, bounds));
+
+  ui::test::EventGenerator event_generator(window->GetRootWindow(),
+                                           window.get());
+  event_generator.PressLeftButton();
+  event_generator.MoveMouseBy(10, 10);
+  EXPECT_EQ(window->bounds().ToString(), "10,10 100x100");
+
+  ToggleOverview();
   ASSERT_TRUE(IsSelecting());
+
+  event_generator.MoveMouseBy(10, 10);
+
+  ToggleOverview();
+  ASSERT_FALSE(IsSelecting());
+
+  event_generator.MoveMouseBy(10, 10);
+  event_generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
+  EXPECT_EQ(window->bounds().ToString(), "30,30 100x100");
+
+  return;
 }
 
 // Test that a label is created under the window on entering overview mode.
