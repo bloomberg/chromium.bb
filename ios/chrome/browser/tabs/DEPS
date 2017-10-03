@@ -12,14 +12,9 @@ specific_include_rules = {
     "+ios/web/web_state/web_state_impl.h",
   ],
 
-  # TODO(crbug.com/620480): Remove tab_model.mm and tab_model_unittest.mm
-  # exceptions.
-  "^tab_model\.mm$": [
-    "+ios/web/web_state/ui/crw_web_controller.h",
-  ],
+  # TODO(crbug.com/620480): tab_model_unittest.mm exceptions.
   "^tab_model_unittest\.mm$": [
-    "+ios/web/web_state/ui/crw_web_controller.h",
-    "+ios/web/web_state/web_state_impl.h",
     "+ios/web/navigation/navigation_manager_impl.h",
+    "+ios/web/web_state/web_state_impl.h",
   ],
 }
