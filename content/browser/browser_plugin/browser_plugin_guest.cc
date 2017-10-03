@@ -1076,10 +1076,9 @@ void BrowserPluginGuest::OnUpdateGeometry(
   GetWebContents()->SendScreenRects();
   if (local_surface_id_ != local_surface_id) {
     local_surface_id_ = local_surface_id;
-    web_contents()
-        ->GetRenderWidgetHostView()
-        ->GetRenderWidgetHost()
-        ->WasResized();
+    RenderWidgetHostView* view = web_contents()->GetRenderWidgetHostView();
+    if (view)
+      view->GetRenderWidgetHost()->WasResized();
   }
 }
 
