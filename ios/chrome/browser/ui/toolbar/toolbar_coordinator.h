@@ -25,9 +25,6 @@
 @property(nonatomic, readonly, strong) UIView* view;
 @property(nonatomic, strong) WebToolbarController* webToolbarController;
 
-// Called when trait collection changes.
-- (void)updateButtonVisibility;
-
 // TabModel callbacks.
 - (void)selectedTabChanged;
 - (void)setTabCount:(NSInteger)tabCount;

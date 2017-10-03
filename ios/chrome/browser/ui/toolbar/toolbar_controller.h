@@ -92,6 +92,7 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 @protocol ToolbarFrameDelegate<NSObject>
 - (void)frameDidChangeFrame:(CGRect)newFrame fromFrame:(CGRect)oldFrame;
 - (void)windowDidChange;
+- (void)traitCollectionDidChange;
 @end
 
 @interface ToolbarView : UIView<RelaxedBoundsConstraintsHitTestSupport>
@@ -211,7 +212,8 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // if the toolbar shouldn't extend through the status bar.
 - (CGFloat)statusBarOffset;
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection;
+// Update share button visibility and |standardButtons_| array.
+- (void)updateStandardButtons;
 
 @end
 

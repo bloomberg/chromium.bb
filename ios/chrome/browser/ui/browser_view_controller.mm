@@ -1413,7 +1413,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // view controller).
   [self.presentedViewController
       traitCollectionDidChange:previousTraitCollection];
-  [_toolbarCoordinator updateButtonVisibility];
   // Update voice search bar visibility.
   [self updateVoiceSearchBarVisibilityAnimated:NO];
 }
