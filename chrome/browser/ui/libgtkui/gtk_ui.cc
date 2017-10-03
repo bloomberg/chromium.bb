@@ -92,15 +92,6 @@ namespace libgtkui {
 
 namespace {
 
-// We would like this to be a feature flag, but GtkUi gets initialized
-// earlier than the feature flag registry, so just use a simple bool.
-// The reason for wanting a flag is so that we can release the GTK3
-// nav button layout manager and the GTK3 nav button provider at the
-// same time (so users don't have to deal with things changing twice).
-// Since this was never really intended to be toggled by users, this
-// is fine for now.
-const bool kUseGtkNavButtonLayoutManager = true;
-
 const double kDefaultDPI = 96;
 
 class GtkButtonImageSource : public gfx::ImageSkiaSource {
@@ -282,7 +273,7 @@ const char* kUnknownContentType = "application/octet-stream";
 std::unique_ptr<NavButtonLayoutManager> CreateNavButtonLayoutManager(
     GtkUi* gtk_ui) {
 #if GTK_MAJOR_VERSION == 3
-  if (GtkVersionCheck(3, 14) && kUseGtkNavButtonLayoutManager)
+  if (GtkVersionCheck(3, 14))
     return std::make_unique<NavButtonLayoutManagerGtk3>(gtk_ui);
 #endif
 #if defined(USE_GCONF)
