@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
@@ -156,9 +157,15 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
                         const base::TestResult& pre_test_result);
 
   // Callback to receive result of a test.
+  // |output_file| is a path to xml file written by test-launcher
+  // child process. It contains information about test and failed
+  // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
+  // file to get additional information about test run (status,
+  // error-messages, stack-traces and file/line for failures).
   void GTestCallback(base::TestLauncher* test_launcher,
                      const std::vector<std::string>& test_names,
                      const std::string& test_name,
+                     const base::FilePath& output_file,
                      std::unique_ptr<TestState> test_state,
                      int exit_code,
                      const base::TimeDelta& elapsed_time,
@@ -368,6 +375,16 @@ void WrapperTestLauncherDelegate::DoRunTests(
   // of the other tests.
   switches.erase(base::kGTestOutputFlag);
 
+  // Create a dedicated temporary directory to store the xml result data
+  // per run to ensure clean state and make it possible to launch multiple
+  // processes in parallel.
+  base::FilePath output_file;
+  CHECK(base::CreateTemporaryDirInDir(
+      temp_dir_.GetPath(), FILE_PATH_LITERAL("results"), &output_file));
+  output_file = output_file.AppendASCII("test_results.xml");
+
+  new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
+
   for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
        iter != switches.end(); ++iter) {
     new_cmd_line.AppendSwitchNative(iter->first, iter->second);
@@ -387,7 +404,7 @@ void WrapperTestLauncherDelegate::DoRunTests(
       TestTimeouts::action_max_timeout(), test_launch_options,
       base::Bind(&WrapperTestLauncherDelegate::GTestCallback,
                  base::Unretained(this), test_launcher, test_names_copy,
-                 test_name, base::Passed(&test_state_ptr)),
+                 test_name, output_file, base::Passed(&test_state_ptr)),
       base::Bind(&CallChildProcessLaunched, base::Unretained(test_state)));
 }
 
@@ -419,6 +436,7 @@ void WrapperTestLauncherDelegate::GTestCallback(
     base::TestLauncher* test_launcher,
     const std::vector<std::string>& test_names,
     const std::string& test_name,
+    const base::FilePath& output_file,
     std::unique_ptr<TestState> test_state,
     int exit_code,
     const base::TimeDelta& elapsed_time,
@@ -427,13 +445,45 @@ void WrapperTestLauncherDelegate::GTestCallback(
   base::TestResult result;
   result.full_name = test_name;
 
-  // TODO(phajdan.jr): Recognize crashes.
-  if (exit_code == 0)
-    result.status = base::TestResult::TEST_SUCCESS;
-  else if (was_timeout)
-    result.status = base::TestResult::TEST_TIMEOUT;
-  else
-    result.status = base::TestResult::TEST_FAILURE;
+  bool crashed = false;
+  std::vector<base::TestResult> parsed_results;
+  bool have_test_results =
+      base::ProcessGTestOutput(output_file, &parsed_results, &crashed);
+
+  if (!base::DeleteFile(output_file.DirName(), true)) {
+    LOG(WARNING) << "Failed to delete output file: " << output_file.value();
+  }
+
+  // Use GTest XML to determine test status. Fallback to exit code if
+  // parsing failed.
+  if (have_test_results && !parsed_results.empty()) {
+    // We expect only one test result here.
+    DCHECK_EQ(1U, parsed_results.size());
+    DCHECK_EQ(test_name, parsed_results.front().full_name);
+
+    result = parsed_results.front();
+
+    if (was_timeout) {
+      // Fix up test status: we forcibly kill the child process
+      // after the timeout, so from XML results it looks like
+      // a crash.
+      result.status = base::TestResult::TEST_TIMEOUT;
+    } else if (result.status == base::TestResult::TEST_SUCCESS &&
+               exit_code != 0) {
+      // This is a bit surprising case: test is marked as successful,
+      // but the exit code was not zero. This can happen e.g. under
+      // memory tools that report leaks this way. Mark test as a
+      // failure on exit.
+      result.status = base::TestResult::TEST_FAILURE_ON_EXIT;
+    }
+  } else {
+    if (was_timeout)
+      result.status = base::TestResult::TEST_TIMEOUT;
+    else if (exit_code != 0)
+      result.status = base::TestResult::TEST_FAILURE;
+    else
+      result.status = base::TestResult::TEST_UNKNOWN;
+  }
 
   result.elapsed_time = elapsed_time;
 
