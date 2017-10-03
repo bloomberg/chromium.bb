@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -80,6 +81,7 @@ public class PopupTest {
     @Test
     @MediumTest
     @Feature({"Popup"})
+    @FlakyTest(message = "crbug.com/771103")
     public void testPopupWindowsAppearWhenAllowed() throws Exception {
         final TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
 
