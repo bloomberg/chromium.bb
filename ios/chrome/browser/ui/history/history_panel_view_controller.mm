@@ -395,7 +395,7 @@ CGFloat kShadowOpacity = 0.2f;
   // The search button should only be enabled if there are history entries to
   // search, and if history is not in edit mode.
   self.navigationItem.leftBarButtonItem.enabled =
-      [_historyCollectionController hasHistoryEntries] &&
+      ![_historyCollectionController isEmpty] &&
       ![_historyCollectionController isEditing];
 }
 
@@ -403,8 +403,7 @@ CGFloat kShadowOpacity = 0.2f;
   _clearBrowsingBar.editing = _historyCollectionController.editing;
   _clearBrowsingBar.deleteButtonEnabled =
       [_historyCollectionController hasSelectedEntries];
-  _clearBrowsingBar.editButtonEnabled =
-      [_historyCollectionController hasHistoryEntries];
+  _clearBrowsingBar.editButtonEnabled = ![_historyCollectionController isEmpty];
 }
 
 #pragma mark - UIResponder

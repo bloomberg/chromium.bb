@@ -641,17 +641,8 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_GOOGLE_APPS_SM_SETTINGS" desc="Title for the view in Settings for managing Google apps specific settings. Translate 'Google Apps'. [Length: 15em] [iOS only]">
         Google Apps
       </message>
-      <message name="IDS_IOS_HISTORY_HAS_SYNCED_RESULTS" desc="The notification at the top of the history page indicating that it is showing visits synced from other devices.">
-        Showing history from your signed-in devices. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>.
-      </message>
-      <message name="IDS_IOS_HISTORY_NO_SYNCED_RESULTS" desc="The notification at the top of the history page indicating that it does not include visits from other devices.">
-        Showing history from this device. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more.<ph name="END_LINK">END_LINK</ph>
-      </message>
       <message name="IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
         Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">BEGIN_LINK</ph>history.google.com<ph name="END_LINK">END_LINK</ph>.
-      </message>
-      <message name="IDS_IOS_HISTORY_SYNC_LEARN_MORE_URL" translateable="false">
-        https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]
       </message>
       <message name="IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER" desc="The placeholder text for the password on the http login dialog [Length: 20em] [iOS only]">
         Password
