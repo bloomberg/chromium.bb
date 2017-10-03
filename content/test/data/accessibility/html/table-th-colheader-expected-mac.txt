@@ -1,0 +1,15 @@
+AXWebArea
+++AXTable AXColumnHeaderUIElements=["AXCell Firstname","AXCell Lastname"] AXHeader='AXGroup' AXRowHeaderUIElements=[]
+++++AXRow AXIndex='0'
+++++++AXCell AXTitle='Firstname' AXColumnHeaderUIElements=["AXCell Firstname","AXCell Lastname"] AXColumnIndexRange={"len":1,"loc":0} AXRowHeaderUIElements=[] AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Firstname'
+++++++AXCell AXTitle='Lastname' AXColumnHeaderUIElements=["AXCell Firstname","AXCell Lastname"] AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=[] AXRowIndexRange={"len":1,"loc":0}
+++++++++AXStaticText AXValue='Lastname'
+++++AXRow AXIndex='1'
+++++++AXCell AXTitle='Jill' AXColumnHeaderUIElements=["AXCell Firstname","AXCell Lastname"] AXColumnIndexRange={"len":1,"loc":0} AXRowHeaderUIElements=[] AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Jill'
+++++++AXCell AXTitle='Smith' AXColumnHeaderUIElements=["AXCell Firstname","AXCell Lastname"] AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=[] AXRowIndexRange={"len":1,"loc":1}
+++++++++AXStaticText AXValue='Smith'
+++++AXColumn AXHeader='AXCell Firstname' AXIndex='0'
+++++AXColumn AXHeader='AXCell Lastname' AXIndex='1'
+++++AXGroup
