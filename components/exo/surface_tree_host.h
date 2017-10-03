@@ -74,6 +74,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
   aura::Window* host_window() { return host_window_.get(); }
   const aura::Window* host_window() const { return host_window_.get(); }
 
+  aura::Window* surface_host() { return surface_host_; }
+  const aura::Window* surface_host() const { return surface_host_; }
+
   Surface* root_surface() { return root_surface_; }
   const Surface* root_surface() const { return root_surface_; }
 
@@ -109,7 +112,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
  private:
   Surface* root_surface_ = nullptr;
-  std::unique_ptr<aura::Window> host_window_;
+  const std::unique_ptr<aura::Window> host_window_;
+  aura::Window* const surface_host_;
   std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
 
   // The begin frame source being observed.
