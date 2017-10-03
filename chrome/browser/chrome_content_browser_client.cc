@@ -103,6 +103,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -3309,6 +3310,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);
   if (pdf_iframe_throttle)
     throttles.push_back(std::move(pdf_iframe_throttle));
+
+  std::unique_ptr<content::NavigationThrottle> tab_under_throttle =
+      TabUnderNavigationThrottle::MaybeCreate(handle);
+  if (tab_under_throttle)
+    throttles.push_back(std::move(tab_under_throttle));
 
   return throttles;
 }

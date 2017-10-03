@@ -6,14 +6,14 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/ui/blocked_content/scoped_visibility_tracker.h"
+#include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupOpenerTabHelper);
 
@@ -47,6 +47,7 @@ PopupOpenerTabHelper::~PopupOpenerTabHelper() {
 }
 
 void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
+  has_opened_popup_since_last_user_gesture_ = true;
   if (!visibility_tracker_after_redirect_)
     last_popup_open_time_before_redirect_ = tick_clock_->NowTicks();
 }
@@ -77,27 +78,11 @@ void PopupOpenerTabHelper::DidFinishNavigation(
     return;
 
   size_t num_erased = pending_background_navigations_.erase(navigation_handle);
-  if (!num_erased || !navigation_handle->HasCommitted() ||
-      navigation_handle->IsErrorPage()) {
-    return;
-  }
-
-  // Only consider renderer-initiated navigations without a user gesture.
-  if (navigation_handle->HasUserGesture() ||
-      !navigation_handle->IsRendererInitiated()) {
-    return;
-  }
-
-  // An empty previous URL indicates this was the first load. We filter these
-  // out because we're primarily interested in sites which navigate themselves
-  // away while in the background.
-  const GURL& previous_main_frame_url = navigation_handle->GetPreviousURL();
-  if (previous_main_frame_url.is_empty())
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage())
     return;
 
-  // Only track cross-origin navigations.
-  if (url::Origin(previous_main_frame_url)
-          .IsSameOriginWith(url::Origin(navigation_handle->GetURL()))) {
+  if (!TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
+          navigation_handle, num_erased != 0 /* started_in_background */)) {
     return;
   }
 
@@ -125,4 +110,9 @@ void PopupOpenerTabHelper::WasHidden() {
   if (visibility_tracker_after_redirect_)
     visibility_tracker_after_redirect_->OnHidden();
   visibility_tracker_->OnHidden();
+}
+
+void PopupOpenerTabHelper::DidGetUserInteraction(
+    const blink::WebInputEvent::Type type) {
+  has_opened_popup_since_last_user_gesture_ = false;
 }
