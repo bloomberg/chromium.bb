@@ -249,7 +249,7 @@ public class CronetUrlRequestTest {
 
         UrlResponseInfo expected =
                 createUrlResponseInfo(new String[] {NativeTestServer.getRedirectURL()}, "Found",
-                        302, 74, "Location", "/success.txt", "redirect-header", "header-value");
+                        302, 73, "Location", "/success.txt", "redirect-header", "header-value");
         mTestRule.assertResponseEquals(expected, callback.mRedirectResponseInfoList.get(0));
 
         // Wait for an unrelated request to finish. The request should not
@@ -297,7 +297,7 @@ public class CronetUrlRequestTest {
 
         UrlResponseInfo urlResponseInfo = createUrlResponseInfo(
                 new String[] {NativeTestServer.getRedirectURL(), NativeTestServer.getSuccessURL()},
-                "OK", 200, 260, "Content-Type", "text/plain", "Access-Control-Allow-Origin", "*",
+                "OK", 200, 258, "Content-Type", "text/plain", "Access-Control-Allow-Origin", "*",
                 "header-name", "header-value", "multi-header-name", "header-value1",
                 "multi-header-name", "header-value2");
 
@@ -627,7 +627,7 @@ public class CronetUrlRequestTest {
 
         // Check first redirect (multiredirect.html -> redirect.html)
         UrlResponseInfo firstExpectedResponseInfo = createUrlResponseInfo(
-                new String[] {NativeTestServer.getMultiRedirectURL()}, "Found", 302, 77, "Location",
+                new String[] {NativeTestServer.getMultiRedirectURL()}, "Found", 302, 76, "Location",
                 "/redirect.html", "redirect-header0", "header-value");
         UrlResponseInfo firstRedirectResponseInfo = callback.mRedirectResponseInfoList.get(0);
         mTestRule.assertResponseEquals(firstExpectedResponseInfo, firstRedirectResponseInfo);
@@ -636,7 +636,7 @@ public class CronetUrlRequestTest {
         UrlResponseInfo secondExpectedResponseInfo = createUrlResponseInfo(
                 new String[] {NativeTestServer.getMultiRedirectURL(),
                         NativeTestServer.getRedirectURL(), NativeTestServer.getSuccessURL()},
-                "OK", 200, 337, "Content-Type", "text/plain", "Access-Control-Allow-Origin", "*",
+                "OK", 200, 334, "Content-Type", "text/plain", "Access-Control-Allow-Origin", "*",
                 "header-name", "header-value", "multi-header-name", "header-value1",
                 "multi-header-name", "header-value2");
 
@@ -653,7 +653,7 @@ public class CronetUrlRequestTest {
         TestUrlRequestCallback callback =
                 startAndWaitForComplete(NativeTestServer.getNotFoundURL());
         UrlResponseInfo expected = createUrlResponseInfo(
-                new String[] {NativeTestServer.getNotFoundURL()}, "Not Found", 404, 121);
+                new String[] {NativeTestServer.getNotFoundURL()}, "Not Found", 404, 120);
         mTestRule.assertResponseEquals(expected, callback.mResponseInfo);
         assertTrue(callback.mHttpResponseDataLength != 0);
         assertEquals(0, callback.mRedirectCount);
