@@ -126,10 +126,9 @@ void MessagePort::start() {
 }
 
 void MessagePort::close() {
-  // A closed port should not be neutered, so rather than merely disconnecting
-  // from the mojo message pipe, also entangle with a new dangling message pipe.
-  if (IsEntangled())
-    channel_ = MessagePortChannel(mojo::MessagePipe().handle0);
+  // A closed port should not be neutered, so don't disconnect the message pipe.
+  // TODO(crbug.com/673526): Make sure that transfering a closed port keeps the
+  // port closed.
   closed_ = true;
 }
 
