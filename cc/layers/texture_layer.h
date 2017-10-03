@@ -157,17 +157,17 @@ class CC_EXPORT TextureLayer : public Layer {
 
   TextureLayerClient* client_;
 
-  bool flipped_;
-  bool nearest_neighbor_;
-  gfx::PointF uv_top_left_;
-  gfx::PointF uv_bottom_right_;
+  bool flipped_ = true;
+  bool nearest_neighbor_ = false;
+  gfx::PointF uv_top_left_ = gfx::PointF();
+  gfx::PointF uv_bottom_right_ = gfx::PointF(1.f, 1.f);
   // [bottom left, top left, top right, bottom right]
-  float vertex_opacity_[4];
-  bool premultiplied_alpha_;
-  bool blend_background_color_;
+  float vertex_opacity_[4] = {1.f, 1.f, 1.f, 1.f};
+  bool premultiplied_alpha_ = true;
+  bool blend_background_color_ = false;
 
   std::unique_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
-  bool needs_set_mailbox_;
+  bool needs_set_mailbox_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayer);
 };

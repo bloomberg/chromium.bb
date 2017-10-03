@@ -45,10 +45,6 @@ struct StructTraits<viz::mojom::TextureMailboxDataView, viz::TextureMailbox> {
 #endif
   }
 
-  static bool secure_output_only(const viz::TextureMailbox& input) {
-    return input.secure_output_only_;
-  }
-
   static bool nearest_neighbor(const viz::TextureMailbox& input) {
     return input.nearest_neighbor_;
   }
@@ -64,7 +60,6 @@ struct StructTraits<viz::mojom::TextureMailboxDataView, viz::TextureMailbox> {
     out->wants_promotion_hint_ = data.wants_promotion_hint();
 #endif
     out->is_overlay_candidate_ = data.is_overlay_candidate();
-    out->secure_output_only_ = data.secure_output_only();
     out->nearest_neighbor_ = data.nearest_neighbor();
 
     return data.ReadMailboxHolder(&out->mailbox_holder_) &&

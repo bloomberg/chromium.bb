@@ -266,7 +266,7 @@ ResourceId CreateResource(
     const gfx::Size& size,
     bool is_overlay_candidate) {
   TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                         GL_TEXTURE_2D, size, is_overlay_candidate, false);
+                         GL_TEXTURE_2D, size, is_overlay_candidate);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
 

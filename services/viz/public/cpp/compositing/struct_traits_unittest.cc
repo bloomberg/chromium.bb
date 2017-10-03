@@ -1317,7 +1317,6 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   const uint32_t texture_target = 1337;
   const gfx::Size size_in_pixels(93, 24);
   const bool is_overlay_candidate = true;
-  const bool secure_output_only = true;
   const bool nearest_neighbor = true;
   const gfx::ColorSpace color_space = gfx::ColorSpace(
       gfx::ColorSpace::PrimaryID::BT470M, gfx::ColorSpace::TransferID::GAMMA28,
@@ -1330,7 +1329,7 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
   TextureMailbox input(mailbox, sync_token, texture_target, size_in_pixels,
-                       is_overlay_candidate, secure_output_only);
+                       is_overlay_candidate);
   input.set_nearest_neighbor(nearest_neighbor);
   input.set_color_space(color_space);
 #if defined(OS_ANDROID)
@@ -1346,7 +1345,6 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   EXPECT_EQ(texture_target, output.target());
   EXPECT_EQ(size_in_pixels, output.size_in_pixels());
   EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate());
-  EXPECT_EQ(secure_output_only, output.secure_output_only());
   EXPECT_EQ(nearest_neighbor, output.nearest_neighbor());
   EXPECT_EQ(color_space, output.color_space());
 #if defined(OS_ANDROID)

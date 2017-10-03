@@ -193,7 +193,7 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
 #else
         GL_TEXTURE_2D,
 #endif
-        size, is_overlay_candidate, false);
+        size, is_overlay_candidate);
     taken_front_buffer_.SetZero();
     HostGlobals::Get()
         ->GetInstance(pp_instance())

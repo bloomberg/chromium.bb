@@ -113,12 +113,13 @@ RefPtr<DrawingBuffer> DrawingBuffer::Create(
   if (multisample_supported) {
     extensions_util->EnsureExtensionEnabled("GL_OES_rgb8_rgba8");
     if (extensions_util->SupportsExtension(
-            "GL_CHROMIUM_framebuffer_multisample"))
+            "GL_CHROMIUM_framebuffer_multisample")) {
       extensions_util->EnsureExtensionEnabled(
           "GL_CHROMIUM_framebuffer_multisample");
-    else
+    } else {
       extensions_util->EnsureExtensionEnabled(
           "GL_EXT_multisampled_render_to_texture");
+    }
   }
   bool discard_framebuffer_supported =
       extensions_util->SupportsExtension("GL_EXT_discard_framebuffer");
@@ -416,12 +417,11 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
   // Populate the output mailbox and callback.
   {
     bool is_overlay_candidate = color_buffer_for_mailbox->image_id != 0;
-    bool secure_output_only = false;
-    *out_mailbox = viz::TextureMailbox(
-        color_buffer_for_mailbox->mailbox,
-        color_buffer_for_mailbox->produce_sync_token,
-        color_buffer_for_mailbox->parameters.target, gfx::Size(size_),
-        is_overlay_candidate, secure_output_only);
+    *out_mailbox =
+        viz::TextureMailbox(color_buffer_for_mailbox->mailbox,
+                            color_buffer_for_mailbox->produce_sync_token,
+                            color_buffer_for_mailbox->parameters.target,
+                            gfx::Size(size_), is_overlay_candidate);
     out_mailbox->set_color_space(sampler_color_space_);
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -1285,12 +1285,13 @@ void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
 
   gl_->BindTexture(target, id);
 
-  if (anti_aliasing_mode_ == kMSAAImplicitResolve)
+  if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
     gl_->FramebufferTexture2DMultisampleEXT(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, id, 0, sample_count_);
-  else
+  } else {
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, id,
                               0);
+  }
 }
 
 bool DrawingBuffer::WantExplicitResolve() {
