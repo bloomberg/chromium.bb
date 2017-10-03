@@ -137,7 +137,7 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   class TestResponder {
    public:
-    void ExecuteCallback(FetcherResponseCallback callback) {
+    void ExecuteCallback(SecureProxyCheckerCallback callback) {
       callback.Run(response, status, http_response_code);
     }
 

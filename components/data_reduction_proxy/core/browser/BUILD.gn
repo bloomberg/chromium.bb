@@ -48,6 +48,10 @@ browser_sources = [
   "data_usage_store.h",
   "db_data_owner.cc",
   "db_data_owner.h",
+  "secure_proxy_checker.cc",
+  "secure_proxy_checker.h",
+  "warmup_url_fetcher.cc",
+  "warmup_url_fetcher.h",
 ]
 
 if (is_android) {

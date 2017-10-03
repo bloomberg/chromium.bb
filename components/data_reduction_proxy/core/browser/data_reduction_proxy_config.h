@@ -18,13 +18,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/previews/core/previews_experiments.h"
-#include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
-#include "net/nqe/effective_connection_type.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 
@@ -45,10 +43,6 @@ class PreviewsDecider;
 }
 
 namespace data_reduction_proxy {
-
-typedef base::Callback<void(const std::string&,
-                            const net::URLRequestStatus&,
-                            int)> FetcherResponseCallback;
 
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
@@ -252,7 +246,7 @@ class DataReductionProxyConfig
 
   // Requests the secure proxy check URL. Upon completion, returns the results
   // to the caller via the |fetcher_callback|. Virtualized for unit testing.
-  virtual void SecureProxyCheck(FetcherResponseCallback fetcher_callback);
+  virtual void SecureProxyCheck(SecureProxyCheckerCallback fetcher_callback);
 
   // Parses the secure proxy check responses and appropriately configures the
   // Data Reduction Proxy rules.
