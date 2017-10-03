@@ -172,7 +172,7 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
   })
 
   command = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
-             '--sysroot=%s' % sysroot, '--nodeps', '--buildpkgonly']
+             '--sysroot=%s' % sysroot]
   if verbose:
     command += ['--show-output']
 
