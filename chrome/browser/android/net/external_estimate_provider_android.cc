@@ -124,5 +124,15 @@ void ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable() const {
   }
 }
 
+void ExternalEstimateProviderAndroid::ClearCachedEstimate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (j_external_estimate_provider_.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ExternalEstimateProviderAndroid_clearCachedEstimate(
+      env, j_external_estimate_provider_);
+}
+
 }  // namespace android
 }  // namespace chrome

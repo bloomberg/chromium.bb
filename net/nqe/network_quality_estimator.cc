@@ -759,6 +759,9 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   downstream_throughput_kbps_observations_.Clear();
   rtt_ms_observations_.Clear();
 
+  if (external_estimate_provider_)
+    external_estimate_provider_->ClearCachedEstimate();
+
 #if defined(OS_ANDROID)
   if (params_->weight_multiplier_per_signal_strength_level() < 1.0 &&
       NetworkChangeNotifier::IsConnectionCellular(current_network_id_.type)) {
