@@ -1,28 +1,27 @@
 /* liblouis Braille Translation and Back-Translation Library
 
-Based on the Linux screenreader BRLTTY, copyright (C) 1999-2006 by The
-BRLTTY Team
+   Based on the Linux screenreader BRLTTY, copyright (C) 1999-2006 by The
+   BRLTTY Team
 
-Copyright (C) 2004, 2005, 2006 ViewPlus Technologies, Inc. www.viewplus.com
-Copyright (C) 2004, 2005, 2006 JJB Software, Inc. www.jjb-software.com
-Copyright (C) 2016 Mike Gray, American Printing House for the Blind
-Copyright (C) 2016 Davy Kager, Dedicon
+   Copyright (C) 2004, 2005, 2006 ViewPlus Technologies, Inc. www.viewplus.com
+   Copyright (C) 2004, 2005, 2006 JJB Software, Inc. www.jjb-software.com
+   Copyright (C) 2016 Mike Gray, American Printing House for the Blind
+   Copyright (C) 2016 Davy Kager, Dedicon
 
-This file is part of liblouis.
+   This file is part of liblouis.
 
-liblouis is free software: you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published
-by the Free Software Foundation, either version 2.1 of the License, or
-(at your option) any later version.
+   liblouis is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Lesser General Public License as published
+   by the Free Software Foundation, either version 2.1 of the License, or
+   (at your option) any later version.
 
-liblouis is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-Lesser General Public License for more details.
+   liblouis is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+   Lesser General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
-
+   You should have received a copy of the GNU Lesser General Public
+   License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /**
@@ -36,17 +35,20 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif /* __cplusplus */
 
+// clang-format interacts badly with @foo@
+// clang-format off
 typedef @WIDECHAR_TYPE@ widechar;
+// clang-format on
 typedef unsigned short formtype;
 
 #ifdef _MSC_VER
-  #ifdef _EXPORTING
-    #define LIBLOUIS_API __declspec(dllexport)
-  #else
-    #define LIBLOUIS_API __declspec(dllimport)
-  #endif
+#ifdef _EXPORTING
+#define LIBLOUIS_API __declspec(dllexport)
 #else
-  #define LIBLOUIS_API
+#define LIBLOUIS_API __declspec(dllimport)
+#endif
+#else
+#define LIBLOUIS_API
 #endif
 
 #ifdef __EMSCRIPTEN__
@@ -55,34 +57,35 @@ typedef unsigned short formtype;
 #elif defined(_WIN32)
 #define EXPORT_CALL __stdcall
 LIBLOUIS_API
-char *EXPORT_CALL lou_getProgramPath(void);
+char *EXPORT_CALL
+lou_getProgramPath(void);
 #else
 #define EXPORT_CALL
 #endif
 
 typedef enum {
-  plain_text = 0x0000,
-  emph_1 = 0x0001,
-  emph_2 = 0x0002,
-  emph_3 = 0x0004,
-  emph_4 = 0x0008,
-  emph_5 = 0x0010,
-  emph_6 = 0x0020,
-  emph_7 = 0x0040,
-  emph_8 = 0x0080,
-  emph_9 = 0x0100,
-  emph_10 = 0x0200,
-  computer_braille = 0x0400,
-  no_translate = 0x0800,
-  no_contract = 0x1000,
-  // SYLLABLE_MARKER_1  0x2000,
-  // SYLLABLE_MARKER_1  0x4000
-  // CAPSEMPH  0x4000
+	plain_text = 0x0000,
+	emph_1 = 0x0001,
+	emph_2 = 0x0002,
+	emph_3 = 0x0004,
+	emph_4 = 0x0008,
+	emph_5 = 0x0010,
+	emph_6 = 0x0020,
+	emph_7 = 0x0040,
+	emph_8 = 0x0080,
+	emph_9 = 0x0100,
+	emph_10 = 0x0200,
+	computer_braille = 0x0400,
+	no_translate = 0x0800,
+	no_contract = 0x1000,
+	// SYLLABLE_MARKER_1  0x2000,
+	// SYLLABLE_MARKER_1  0x4000
+	// CAPSEMPH  0x4000
 } typeforms;
 
-#define italic    emph_1
+#define italic emph_1
 #define underline emph_2
-#define bold      emph_3
+#define bold emph_3
 
 #define comp_emph_1 emph_1
 #define comp_emph_2 emph_2
@@ -93,70 +96,67 @@ typedef enum {
 #define EMPH_NAME_UNDERLINE "underline"
 
 typedef enum {
-  noContractions = 1,
-  compbrlAtCursor = 2,
-  dotsIO = 4,
-  comp8Dots = 8,
-  pass1Only = 16,
-  compbrlLeftCursor = 32,
-  ucBrl = 64,
-  noUndefinedDots = 128,
-  partialTrans = 256
+	noContractions = 1,
+	compbrlAtCursor = 2,
+	dotsIO = 4,
+	comp8Dots = 8,
+	pass1Only = 16,
+	compbrlLeftCursor = 32,
+	ucBrl = 64,
+	noUndefinedDots = 128,
+	partialTrans = 256
 } translationModes;
 
 LIBLOUIS_API
-char *EXPORT_CALL lou_version(void);
+char *EXPORT_CALL
+lou_version(void);
 
 /**
  * Return the size of widechar
  */
 LIBLOUIS_API
-int EXPORT_CALL lou_charSize(void);
+int EXPORT_CALL
+lou_charSize(void);
 
 LIBLOUIS_API
-int EXPORT_CALL lou_translateString(const char *tableList,
-                                    const widechar *inbuf, int *inlen,
-                                    widechar *outbuf, int *outlen,
-                                    formtype *typeform, char *spacing,
-                                    int mode);
+int EXPORT_CALL
+lou_translateString(const char *tableList, const widechar *inbuf, int *inlen,
+		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int mode);
 
 LIBLOUIS_API
-int EXPORT_CALL lou_translate(const char *tableList, const widechar *inbuf,
-                              int *inlen, widechar *outbuf, int *outlen,
-                              formtype *typeform, char *spacing, int *outputPos,
-                              int *inputPos, int *cursorPos, int mode);
+int EXPORT_CALL
+lou_translate(const char *tableList, const widechar *inbuf, int *inlen, widechar *outbuf,
+		int *outlen, formtype *typeform, char *spacing, int *outputPos, int *inputPos,
+		int *cursorPos, int mode);
 
 LIBLOUIS_API
-int EXPORT_CALL lou_translatePrehyphenated(const char *tableList,
-                                           const widechar *inbuf, int *inlen,
-                                           widechar *outbuf, int *outlen,
-                                           formtype *typeform, char *spacing,
-                                           int *outputPos, int *inputPos,
-                                           int *cursorPos, char *inputHyphens,
-                                           char *outputHyphens, int mode);
+int EXPORT_CALL
+lou_translatePrehyphenated(const char *tableList, const widechar *inbuf, int *inlen,
+		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
+		int *inputPos, int *cursorPos, char *inputHyphens, char *outputHyphens, int mode);
 
 LIBLOUIS_API
-int EXPORT_CALL lou_hyphenate(const char *tableList, const widechar *inbuf,
-                              int inlen, char *hyphens, int mode);
+int EXPORT_CALL
+lou_hyphenate(
+		const char *tableList, const widechar *inbuf, int inlen, char *hyphens, int mode);
 LIBLOUIS_API
-int EXPORT_CALL lou_dotsToChar(const char *tableList, widechar *inbuf,
-                               widechar *outbuf, int length, int mode);
+int EXPORT_CALL
+lou_dotsToChar(
+		const char *tableList, widechar *inbuf, widechar *outbuf, int length, int mode);
 LIBLOUIS_API
-int EXPORT_CALL lou_charToDots(const char *tableList, const widechar *inbuf,
-                               widechar *outbuf, int length, int mode);
+int EXPORT_CALL
+lou_charToDots(const char *tableList, const widechar *inbuf, widechar *outbuf, int length,
+		int mode);
 LIBLOUIS_API
-int EXPORT_CALL lou_backTranslateString(const char *tableList,
-                                        const widechar *inbuf, int *inlen,
-                                        widechar *outbuf, int *outlen,
-                                        formtype *typeform, char *spacing,
-                                        int mode);
+int EXPORT_CALL
+lou_backTranslateString(const char *tableList, const widechar *inbuf, int *inlen,
+		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int mode);
 
 LIBLOUIS_API
-int EXPORT_CALL lou_backTranslate(const char *tableList, const widechar *inbuf,
-                                  int *inlen, widechar *outbuf, int *outlen,
-                                  formtype *typeform, char *spacing,
-                                  int *outputPos, int *inputPos, int *cursorPos,
-                                  int mode);
+int EXPORT_CALL
+lou_backTranslate(const char *tableList, const widechar *inbuf, int *inlen,
+		widechar *outbuf, int *outlen, formtype *typeform, char *spacing, int *outputPos,
+		int *inputPos, int *cursorPos, int mode);
 /**
  * Print error messages to a file
  *
@@ -164,7 +164,8 @@ int EXPORT_CALL lou_backTranslate(const char *tableList, const widechar *inbuf,
  * implement their own logging system.
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_logPrint(const char *format, ...);
+void EXPORT_CALL
+lou_logPrint(const char *format, ...);
 
 /**
  * Specify the name of the file to be used by lou_logPrint.
@@ -175,7 +176,8 @@ void EXPORT_CALL lou_logPrint(const char *format, ...);
  * implement their own logging system.
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_logFile(const char *filename);
+void EXPORT_CALL
+lou_logFile(const char *filename);
 
 /**
  * Read a character from a file, whether big-encian, little-endian or ASCII8
@@ -184,7 +186,8 @@ void EXPORT_CALL lou_logFile(const char *filename);
  * call, any other value thereafter
  */
 LIBLOUIS_API
-int EXPORT_CALL lou_readCharFromFile(const char *fileName, int *mode);
+int EXPORT_CALL
+lou_readCharFromFile(const char *fileName, int *mode);
 
 /**
  * Close the log file so it can be read by other functions.
@@ -193,7 +196,8 @@ int EXPORT_CALL lou_readCharFromFile(const char *fileName, int *mode);
  * implement their own logging system.
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_logEnd(void);
+void EXPORT_CALL
+lou_logEnd(void);
 
 /**
  * Load and compile a translation table
@@ -205,7 +209,8 @@ void EXPORT_CALL lou_logEnd(void);
  * and by the tools.
  */
 LIBLOUIS_API
-void *EXPORT_CALL lou_getTable(const char *tableList);
+void *EXPORT_CALL
+lou_getTable(const char *tableList);
 
 /**
  * Check a translation table for errors.
@@ -214,13 +219,15 @@ void *EXPORT_CALL lou_getTable(const char *tableList);
  * non-zero value. Else the return value is 0.
  */
 LIBLOUIS_API
-int EXPORT_CALL lou_checkTable(const char *tableList);
+int EXPORT_CALL
+lou_checkTable(const char *tableList);
 
 /**
  * Register a new table resolver. Overrides the default resolver. */
 LIBLOUIS_API
-void EXPORT_CALL lou_registerTableResolver(
-    char **(EXPORT_CALL *resolver)(const char *table, const char *base));
+void EXPORT_CALL
+lou_registerTableResolver(
+		char **(EXPORT_CALL *resolver)(const char *table, const char *base));
 
 /**
  * Compile a table entry on the fly at run-time
@@ -236,7 +243,8 @@ void EXPORT_CALL lou_registerTableResolver(
  * @return 1 on success and 0 on failure.
  */
 LIBLOUIS_API
-int EXPORT_CALL lou_compileString(const char *tableList, const char *inString);
+int EXPORT_CALL
+lou_compileString(const char *tableList, const char *inString);
 
 /**
  * Get the typeform bit for the named emphasis class.
@@ -245,7 +253,8 @@ int EXPORT_CALL lou_compileString(const char *tableList, const char *inString);
  * typeform is returned. Else the return value is 0.
  */
 LIBLOUIS_API
-formtype EXPORT_CALL lou_getTypeformForEmphClass(const char *tableList, const char *emphClass);
+formtype EXPORT_CALL
+lou_getTypeformForEmphClass(const char *tableList, const char *emphClass);
 
 /**
  * Return the emphasis class names declared in tableList as a
@@ -254,28 +263,31 @@ formtype EXPORT_CALL lou_getTypeformForEmphClass(const char *tableList, const ch
  * and are no longer valid after lou_free() has been called.
  */
 LIBLOUIS_API
-char const **EXPORT_CALL lou_getEmphClasses(const char *tableList);
+char const **EXPORT_CALL
+lou_getEmphClasses(const char *tableList);
 
 /**
  * Set the path used for searching for tables and liblouisutdml files.
  *
  * Overrides the installation path. */
 LIBLOUIS_API
-char *EXPORT_CALL lou_setDataPath(const char *path);
+char *EXPORT_CALL
+lou_setDataPath(const char *path);
 
 /**
  * Get the path set in the previous function. */
 LIBLOUIS_API
-char *EXPORT_CALL lou_getDataPath(void);
+char *EXPORT_CALL
+lou_getDataPath(void);
 
 typedef enum {
-  LOG_ALL = 0,
-  LOG_DEBUG = 10000,
-  LOG_INFO = 20000,
-  LOG_WARN = 30000,
-  LOG_ERROR = 40000,
-  LOG_FATAL = 50000,
-  LOG_OFF = 60000
+	LOG_ALL = 0,
+	LOG_DEBUG = 10000,
+	LOG_INFO = 20000,
+	LOG_WARN = 30000,
+	LOG_ERROR = 40000,
+	LOG_FATAL = 50000,
+	LOG_OFF = 60000
 } logLevels;
 
 typedef void (*logcallback)(logLevels level, const char *message);
@@ -285,13 +297,15 @@ typedef void (*logcallback)(logLevels level, const char *message);
  * Set to NULL for default callback.
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_registerLogCallback(logcallback callback);
+void EXPORT_CALL
+lou_registerLogCallback(logcallback callback);
 
 /**
  * Set the level for logging callback to be called at
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_setLogLevel(logLevels level);
+void EXPORT_CALL
+lou_setLogLevel(logLevels level);
 
 /* =========================  BETA API ========================= */
 
@@ -307,7 +321,8 @@ void EXPORT_CALL lou_setLogLevel(logLevels level);
  * metadata fields.
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_indexTables(const char **tables);
+void EXPORT_CALL
+lou_indexTables(const char **tables);
 
 /**
  * Find the best match for a query.
@@ -320,7 +335,8 @@ void EXPORT_CALL lou_indexTables(const char **tables);
  * caller.
  */
 LIBLOUIS_API
-char *EXPORT_CALL lou_findTable(const char *query);
+char *EXPORT_CALL
+lou_findTable(const char *query);
 
 /**
  * Read metadata from a file.
@@ -330,7 +346,8 @@ char *EXPORT_CALL lou_findTable(const char *query);
  * of the returned string is the responsibility of the caller.
  */
 LIBLOUIS_API
-const char * EXPORT_CALL lou_getTableInfo(const char *table, const char *key);
+const char *EXPORT_CALL
+lou_getTableInfo(const char *table, const char *key);
 
 /**
  * List available tables.
@@ -343,7 +360,8 @@ const char * EXPORT_CALL lou_getTableInfo(const char *table, const char *key);
  * strings is the responsibility of the caller.
  */
 LIBLOUIS_API
-const char **EXPORT_CALL lou_listTables();
+const char **EXPORT_CALL
+lou_listTables();
 
 /* ====================== END OF BETA API ====================== */
 
@@ -354,7 +372,8 @@ const char **EXPORT_CALL lou_listTables();
  * free all memory allocated by liblouis.
  */
 LIBLOUIS_API
-void EXPORT_CALL lou_free(void);
+void EXPORT_CALL
+lou_free(void);
 
 #ifdef __cplusplus
 }

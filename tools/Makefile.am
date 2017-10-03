@@ -76,3 +76,8 @@ nobase_dist_bin_SCRIPTS = \
 	lou_maketable.d/utils.py                \
 	lou_maketable.d/wrap_patgen.sh
 endif
+
+if HAVE_SOURCE_FORMATTER
+format-sources-local:
+	for file in $(SOURCES); do $(SOURCE_FORMATTER) -i $$file; done
+endif
