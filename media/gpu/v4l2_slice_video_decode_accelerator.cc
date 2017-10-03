@@ -1483,6 +1483,12 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
     return false;
   }
 
+  // Dequeued decoded surfaces may be pended in pending_picture_ready_ if they
+  // are waiting for some pictures to be cleared. We should post them right away
+  // because they are about to be dismissed and destroyed for surface set
+  // change.
+  SendPictureReady();
+
   // This will return only once all buffers are dismissed and destroyed.
   // This does not wait until they are displayed however, as display retains
   // references to the buffers bound to textures and will release them
@@ -3229,7 +3235,8 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
 void V4L2SliceVideoDecodeAccelerator::SendPictureReady() {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  bool resetting_or_flushing = (decoder_resetting_ || decoder_flushing_);
+  bool send_now =
+      (decoder_resetting_ || decoder_flushing_ || surface_set_change_pending_);
   while (!pending_picture_ready_.empty()) {
     bool cleared = pending_picture_ready_.front().cleared;
     const Picture& picture = pending_picture_ready_.front().picture;
@@ -3243,17 +3250,20 @@ void V4L2SliceVideoDecodeAccelerator::SendPictureReady() {
           FROM_HERE,
           base::Bind(&Client::PictureReady, decode_client_, picture));
       pending_picture_ready_.pop();
-    } else if (!cleared || resetting_or_flushing) {
+    } else if (!cleared || send_now) {
       DVLOGF(4) << "cleared=" << pending_picture_ready_.front().cleared
                 << ", decoder_resetting_=" << decoder_resetting_
                 << ", decoder_flushing_=" << decoder_flushing_
+                << ", surface_set_change_pending_="
+                << surface_set_change_pending_
                 << ", picture_clearing_count_=" << picture_clearing_count_;
       DVLOGF(4) << "Posting picture ready to GPU for: "
                 << picture.picture_buffer_id();
       // If the picture is not cleared, post it to the child thread because it
       // has to be cleared in the child thread. A picture only needs to be
-      // cleared once. If the decoder is resetting or flushing, send all
-      // pictures to ensure PictureReady arrive before reset or flush done.
+      // cleared once. If the decoder is resetting or flushing or changing
+      // resolution, send all pictures to ensure PictureReady arrive before
+      // reset done, flush done, or picture dismissed.
       child_task_runner_->PostTaskAndReply(
           FROM_HERE, base::Bind(&Client::PictureReady, client_, picture),
           // Unretained is safe. If Client::PictureReady gets to run, |this| is
