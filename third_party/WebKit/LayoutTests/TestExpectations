@@ -3433,10 +3433,6 @@ crbug.com/755405 [ Android ] svg/as-background-image/svg-width-100p-as-backgroun
 crbug.com/755405 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
 crbug.com/755405 [ Android ] transforms/transformed-caret.html [ Failure ]
 
-# Tests that started time out on Windows after upgrading Apache
-crbug.com/747666 [ Win ] http/tests/security/document-domain-canonicalizes.html [ Timeout ]
-crbug.com/747666 [ Win ] virtual/mojo-loading/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
-
 # ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
 crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
