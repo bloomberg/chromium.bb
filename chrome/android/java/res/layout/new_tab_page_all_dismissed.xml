@@ -21,7 +21,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:contentDescription="@null"
-        android:importantForAccessibility="no" />
+        android:importantForAccessibility="no"
+        android:src="@drawable/ntp_all_dismissed_gray" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/title_text"
