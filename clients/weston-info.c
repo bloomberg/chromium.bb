@@ -40,6 +40,7 @@
 #include "shared/xalloc.h"
 #include "shared/zalloc.h"
 #include "presentation-time-client-protocol.h"
+#include "linux-dmabuf-unstable-v1-client-protocol.h"
 
 typedef void (*print_info_t)(void *info);
 typedef void (*destroy_info_t)(void *info);
@@ -94,6 +95,20 @@ struct shm_info {
 	struct wl_shm *shm;
 
 	struct wl_list formats;
+};
+
+struct linux_dmabuf_modifier {
+	struct wl_list link;
+
+	uint32_t format;
+	uint64_t modifier;
+};
+
+struct linux_dmabuf_info {
+	struct global_info global;
+	struct zwp_linux_dmabuf_v1 *dmabuf;
+
+	struct wl_list modifiers;
 };
 
 struct seat_info {
@@ -297,6 +312,25 @@ print_shm_info(void *data)
 }
 
 static void
+print_linux_dmabuf_info(void *data)
+{
+	char str[5];
+	struct linux_dmabuf_info *dmabuf = data;
+	struct linux_dmabuf_modifier *modifier;
+
+	print_global_info(data);
+
+	printf("\tformats:");
+
+	wl_list_for_each(modifier, &dmabuf->modifiers, link) {
+		fourcc2str(modifier->format, str, sizeof(str));
+		printf("\n\t'%s'(0x%08x), modifier: 0x%016"PRIx64, str, modifier->format, modifier->modifier);
+	}
+
+	printf("\n");
+}
+
+static void
 print_seat_info(void *data)
 {
 	struct seat_info *seat = data;
@@ -489,6 +523,62 @@ add_shm_info(struct weston_info *info, uint32_t id, uint32_t version)
 	wl_shm_add_listener(shm->shm, &shm_listener, shm);
 
 	info->roundtrip_needed = true;
+}
+
+static void
+linux_dmabuf_handle_format(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1, uint32_t format)
+{
+	/* This is a deprecated event, don’t use it. */
+}
+
+static void
+linux_dmabuf_handle_modifier(void *data, struct zwp_linux_dmabuf_v1 *zwp_linux_dmabuf_v1, uint32_t format, uint32_t modifier_hi, uint32_t modifier_lo)
+{
+	struct linux_dmabuf_info *dmabuf = data;
+	struct linux_dmabuf_modifier *linux_dmabuf_modifier = xzalloc(sizeof *linux_dmabuf_modifier);
+
+	wl_list_insert(&dmabuf->modifiers, &linux_dmabuf_modifier->link);
+	linux_dmabuf_modifier->format = format;
+	linux_dmabuf_modifier->modifier = ((uint64_t)modifier_hi) << 32 | modifier_lo;
+}
+
+static const struct zwp_linux_dmabuf_v1_listener linux_dmabuf_listener = {
+	linux_dmabuf_handle_format,
+	linux_dmabuf_handle_modifier,
+};
+
+static void
+destroy_linux_dmabuf_info(void *data)
+{
+	struct linux_dmabuf_info *dmabuf = data;
+	struct linux_dmabuf_modifier *modifier, *tmp;
+
+	wl_list_for_each_safe(modifier, tmp, &dmabuf->modifiers, link) {
+		wl_list_remove(&modifier->link);
+		free(modifier);
+	}
+
+	zwp_linux_dmabuf_v1_destroy(dmabuf->dmabuf);
+}
+
+static void
+add_linux_dmabuf_info(struct weston_info *info, uint32_t id, uint32_t version)
+{
+	struct linux_dmabuf_info *dmabuf = xzalloc(sizeof *dmabuf);
+
+	init_global_info(info, &dmabuf->global, id, "zwp_linux_dmabuf_v1", version);
+	dmabuf->global.print = print_linux_dmabuf_info;
+	dmabuf->global.destroy = destroy_linux_dmabuf_info;
+
+	wl_list_init(&dmabuf->modifiers);
+
+	if (version >= 3) {
+		dmabuf->dmabuf = wl_registry_bind(info->registry,
+		                                  id, &zwp_linux_dmabuf_v1_interface, 3);
+		zwp_linux_dmabuf_v1_add_listener(dmabuf->dmabuf, &linux_dmabuf_listener, dmabuf);
+
+		info->roundtrip_needed = true;
+	}
 }
 
 static void
@@ -688,6 +778,8 @@ global_handler(void *data, struct wl_registry *registry, uint32_t id,
 		add_seat_info(info, id, version);
 	else if (!strcmp(interface, "wl_shm"))
 		add_shm_info(info, id, version);
+	else if (!strcmp(interface, "zwp_linux_dmabuf_v1"))
+		add_linux_dmabuf_info(info, id, version);
 	else if (!strcmp(interface, "wl_output"))
 		add_output_info(info, id, version);
 	else if (!strcmp(interface, wp_presentation_interface.name))

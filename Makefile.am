@@ -835,7 +835,9 @@ weston_info_SOURCES = 					\
 	shared/helpers.h
 nodist_weston_info_SOURCES =				\
 	protocol/presentation-time-protocol.c		\
-	protocol/presentation-time-client-protocol.h
+	protocol/presentation-time-client-protocol.h	\
+	protocol/linux-dmabuf-unstable-v1-protocol.c	\
+	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
