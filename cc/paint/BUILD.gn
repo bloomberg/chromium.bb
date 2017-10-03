@@ -45,6 +45,8 @@ cc_component("paint") {
     "paint_shader.h",
     "record_paint_canvas.cc",
     "record_paint_canvas.h",
+    "scoped_image_flags.cc",
+    "scoped_image_flags.h",
     "skia_paint_canvas.cc",
     "skia_paint_canvas.h",
     "skia_paint_image_generator.cc",

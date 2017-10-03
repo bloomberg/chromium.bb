@@ -16,7 +16,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace cc {
-
+class ImageProvider;
 class PaintOpBuffer;
 using PaintRecord = PaintOpBuffer;
 
@@ -111,8 +111,12 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
     return image_;
   }
 
+  const sk_sp<PaintRecord>& paint_record() const { return record_; }
+  bool GetRasterizationTileRect(const SkMatrix& ctm, SkRect* tile_rect) const;
+
   SkShader::TileMode tx() const { return tx_; }
   SkShader::TileMode ty() const { return ty_; }
+  SkRect tile() const { return tile_; }
 
   bool IsOpaque() const;
 
@@ -127,10 +131,16 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   friend class PaintOpReader;
   friend class PaintOpSerializationTestUtils;
   friend class PaintOpWriter;
+  friend class ScopedImageFlags;
+  FRIEND_TEST_ALL_PREFIXES(PaintShaderTest, DecodePaintRecord);
 
   explicit PaintShader(Type type);
 
   sk_sp<SkShader> GetSkShader() const;
+
+  sk_sp<PaintShader> CreateDecodedPaintRecord(
+      const SkMatrix& ctm,
+      ImageProvider* image_provider) const;
 
   void SetColorsAndPositions(const SkColor* colors,
                              const SkScalar* positions,
@@ -165,6 +175,12 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   std::vector<SkColor> colors_;
   std::vector<SkScalar> positions_;
+
+  // The following are only used during raster to replace the decoded images in
+  // the record for this shader. The |image_provider_| and
+  // |decoded_image_stash_| must outlive this shader.
+  ImageProvider* image_provider_ = nullptr;
+  base::Optional<SkMatrix> rasterization_matrix_;
 
   mutable sk_sp<SkShader> cached_shader_;
 
