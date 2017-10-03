@@ -4193,6 +4193,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
     previewingViewControllerForElement:(WKPreviewElementInfo*)elementInfo
                         defaultActions:
                             (NSArray<id<WKPreviewActionItem>>*)previewActions {
+  // Prevent |_contextMenuController| from intercepting the default behavior for
+  // the current on-going touch. Otherwise it would cancel the on-going Peek&Pop
+  // action and show its own context menu instead (crbug.com/770619).
+  [_contextMenuController allowSystemUIForCurrentGesture];
+
   return self.webStateImpl->GetPreviewingViewController(
       net::GURLWithNSURL(elementInfo.linkURL));
 }
