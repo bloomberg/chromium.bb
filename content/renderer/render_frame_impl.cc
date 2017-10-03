@@ -4411,8 +4411,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       document_loader->ReplacesCurrentHistoryItem();
 
   WebFrame* parent = frame_->Parent();
-  int parent_routing_id =
-      parent ? RenderFrame::GetRoutingIdForWebFrame(parent) : -1;
 
   WebDocument frame_document = frame_->GetDocument();
   RequestExtraData* extra_data =
@@ -4425,7 +4423,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(url::Origin(frame_document.GetSecurityOrigin()));
-  extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(
       navigation_state->common_params().allow_download);
   extra_data->set_transition_type(transition_type);
