@@ -103,7 +103,7 @@ class TrayDetailsViewTest : public AshTestBase {
     tray->AddTrayItem(base::WrapUnique(test_item));
     tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
     RunAllPendingInMessageLoop();
-    tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
+    tray->ShowDetailedView(test_item, 0, BUBBLE_USE_EXISTING);
     RunAllPendingInMessageLoop();
 
     return test_item->detailed_view()->tray_popup_header_button();
@@ -157,7 +157,7 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
   RunAllPendingInMessageLoop();
 
   // Show the detailed view of item 2.
-  tray->ShowDetailedView(test_item_2, 0, true, BUBBLE_USE_EXISTING);
+  tray->ShowDetailedView(test_item_2, 0, BUBBLE_USE_EXISTING);
   EXPECT_TRUE(test_item_2->detailed_view());
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(test_item_2->default_view());
@@ -174,7 +174,7 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
   EXPECT_TRUE(test_item_2->default_view()->HasFocus());
 
   // Show the detailed view of item 2 again.
-  tray->ShowDetailedView(test_item_2, 0, true, BUBBLE_USE_EXISTING);
+  tray->ShowDetailedView(test_item_2, 0, BUBBLE_USE_EXISTING);
   EXPECT_TRUE(test_item_2->detailed_view());
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(test_item_2->default_view());
@@ -195,7 +195,7 @@ TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
   tray->AddTrayItem(base::WrapUnique(test_item));
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
-  tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
+  tray->ShowDetailedView(test_item, 0, BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
   test_item->detailed_view()->CreateScrollerViews();
 

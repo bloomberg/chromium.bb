@@ -78,7 +78,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // non-zero, then the view is automatically closed after the specified time.
   void ShowDetailedView(SystemTrayItem* item,
                         int close_delay_in_seconds,
-                        bool activate,
                         BubbleCreationType creation_type);
 
   // Continue showing the existing detailed view, if any, for |close_delay|
@@ -168,15 +167,12 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
 
   // Constructs or re-constructs |system_bubble_| and populates it with |items|.
   // Specify |change_tray_status| to true if want to change the tray background
-  // status. The bubble will be opened in inactive state. If |can_activate| is
-  // true, the bubble will be activated by one of following means. Specify
+  // status. The bubble will be opened in inactive state. Specify
   // |show_by_click| to true if |items| are shown by mouse or gesture click.
-  // * When alt/alt-tab acclerator is used to start navigation.
   // * When the bubble is opened by accelerator.
   // * When the tray item is set to be focused.
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
-                 bool can_activate,
                  BubbleCreationType creation_type,
                  bool persistent,
                  bool show_by_click);
