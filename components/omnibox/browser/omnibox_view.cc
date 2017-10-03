@@ -88,11 +88,8 @@ void OmniboxView::OpenMatch(const AutocompleteMatch& match,
   // Invalid URLs such as chrome://history can end up here.
   if (!match.destination_url.is_valid() || !model_)
     return;
-  const AutocompleteMatch::Type match_type = match.type;
   model_->OpenMatch(
       match, disposition, alternate_nav_url, pasted_text, selected_line);
-  // WARNING: |match| may refer to a deleted object at this point!
-  OnMatchOpened(match_type);
 }
 
 bool OmniboxView::IsEditingOrEmpty() const {
@@ -146,9 +143,6 @@ bool OmniboxView::IsIndicatingQueryRefinement() const {
   // The default implementation always returns false.  Mobile ports can override
   // this method and implement as needed.
   return false;
-}
-
-void OmniboxView::OnMatchOpened(AutocompleteMatch::Type match_type) {
 }
 
 void OmniboxView::GetState(State* state) {
