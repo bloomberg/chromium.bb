@@ -241,11 +241,7 @@ test("device_unittests") {
   }
 
   if (enable_vr && is_android) {
-    sources += [
-      "vr/vr_device_manager_unittest.cc",
-      "vr/vr_display_impl_unittest.cc",
-      "vr/vr_service_impl_unittest.cc",
-    ]
+    sources += [ "vr/vr_display_impl_unittest.cc" ]
 
     deps += [
       "//device/vr",

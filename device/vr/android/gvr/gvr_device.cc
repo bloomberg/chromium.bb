@@ -14,7 +14,6 @@
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
-#include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_display_impl.h"
 #include "jni/NonPresentingGvrContext_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"

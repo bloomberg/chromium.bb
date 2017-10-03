@@ -18,6 +18,8 @@ namespace device {
 
 class VRDisplayImpl;
 
+// TODO(mthiesse, crbug.com/769373): Remove this interface and replace with a
+// mojo interface.
 class DEVICE_VR_EXPORT GvrDelegateProvider {
  public:
   GvrDelegateProvider() = default;

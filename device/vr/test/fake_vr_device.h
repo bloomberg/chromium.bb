@@ -9,11 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
-#include "device/vr/vr_service_impl.h"
+#include "device/vr/vr_export.h"
 
 namespace device {
 
-class FakeVRDevice : public VRDevice {
+// TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
+class DEVICE_VR_EXPORT FakeVRDevice : public VRDevice {
  public:
   explicit FakeVRDevice();
   ~FakeVRDevice() override;

@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "device/vr/vr_device.h"
-#include "device/vr/vr_device_manager.h"
-#include "device/vr/vr_service_impl.h"
 
 namespace device {
 

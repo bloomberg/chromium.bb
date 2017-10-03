@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_VR_DEVICE_MANAGER_H
-#define DEVICE_VR_VR_DEVICE_MANAGER_H
+#ifndef CHROME_BROWSER_VR_SERVICE_VR_DEVICE_MANAGER_H_
+#define CHROME_BROWSER_VR_SERVICE_VR_DEVICE_MANAGER_H_
 
 #include <stdint.h>
 
@@ -15,18 +15,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/vr/service/vr_service_impl.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
-#include "device/vr/vr_service_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-namespace device {
+namespace vr {
 
 // Singleton used to provide the platform's VR devices to VRServiceImpl
 // instances.
-class DEVICE_VR_EXPORT VRDeviceManager {
+class VRDeviceManager {
  public:
   virtual ~VRDeviceManager();
 
@@ -43,25 +43,27 @@ class DEVICE_VR_EXPORT VRDeviceManager {
 
   unsigned int GetNumberOfConnectedDevices();
 
-  VRDevice* GetDevice(unsigned int index);
+  device::VRDevice* GetDevice(unsigned int index);
 
  private:
+  // TODO(mthiesse): Make testable parts protected and have the test expose them
+  // through getters in a subclass.
   friend class VRDeviceManagerTest;
   friend class VRDisplayImplTest;
   friend class VRServiceImplTest;
 
   VRDeviceManager();
   // Constructor for testing.
-  explicit VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider);
+  explicit VRDeviceManager(std::unique_ptr<device::VRDeviceProvider> provider);
 
   void InitializeProviders();
-  void RegisterProvider(std::unique_ptr<VRDeviceProvider> provider);
+  void RegisterProvider(std::unique_ptr<device::VRDeviceProvider> provider);
 
-  using ProviderList = std::vector<std::unique_ptr<VRDeviceProvider>>;
+  using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
   ProviderList providers_;
 
   // Devices are owned by their providers.
-  using DeviceMap = std::map<unsigned int, VRDevice*>;
+  using DeviceMap = std::map<unsigned int, device::VRDevice*>;
   DeviceMap devices_;
 
   bool vr_initialized_ = false;
@@ -71,11 +73,11 @@ class DEVICE_VR_EXPORT VRDeviceManager {
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceManager);
 };
 
-}  // namespace content
+}  // namespace vr
 
-#endif  // CONTENT_BROWSER_VR_VR_DEVICE_MANAGER_H
+#endif  // CHROME_BROWSER_VR_SERVICE_VR_DEVICE_MANAGER_H_

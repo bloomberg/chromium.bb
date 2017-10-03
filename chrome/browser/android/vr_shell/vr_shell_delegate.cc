@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
+#include "chrome/browser/vr/service/vr_device_manager.h"
+#include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -21,9 +23,7 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/vr_device.h"
-#include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_display_impl.h"
-#include "device/vr/vr_service_impl.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
@@ -373,7 +373,7 @@ void VrShellDelegate::GetNextMagicWindowPose(
 }
 
 device::VRDevice* VrShellDelegate::GetDevice() {
-  return device::VRDeviceManager::GetInstance()->GetDevice(device_id_);
+  return vr::VRDeviceManager::GetInstance()->GetDevice(device_id_);
 }
 
 // ----------------------------------------------------------------------------
@@ -388,7 +388,7 @@ static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   device::GvrDelegateProviderFactory::Install(
       new VrShellDelegateProviderFactory);
   content::WebvrServiceProvider::SetWebvrServiceCallback(
-      base::Bind(&device::VRServiceImpl::Create));
+      base::Bind(&vr::VRServiceImpl::Create));
 }
 
 }  // namespace vr_shell

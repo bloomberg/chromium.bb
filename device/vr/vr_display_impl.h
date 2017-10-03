@@ -16,13 +16,12 @@
 
 namespace device {
 
-class VRServiceImpl;
-
 // Browser process representation of a VRDevice within a WebVR site session
 // (see VRServiceImpl). VRDisplayImpl receives/sends VR device events
 // from/to mojom::VRDisplayClient (the render process representation of a VR
 // device).
 // VRDisplayImpl objects are owned by their respective VRServiceImpl instances.
+// TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRDisplay {
  public:
   VRDisplayImpl(device::VRDevice* device,

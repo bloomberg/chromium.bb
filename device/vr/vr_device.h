@@ -18,6 +18,7 @@ const unsigned int VR_DEVICE_LAST_ID = 0xFFFFFFFF;
 
 // Represents one of the platform's VR devices. Owned by the respective
 // VRDeviceProvider.
+// TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDevice {
  public:
   VRDevice();
