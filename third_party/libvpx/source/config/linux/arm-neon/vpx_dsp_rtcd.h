@@ -1670,7 +1670,18 @@ void vpx_scaled_2d_c(const uint8_t* src,
                      int y_step_q4,
                      int w,
                      int h);
-#define vpx_scaled_2d vpx_scaled_2d_c
+void vpx_scaled_2d_neon(const uint8_t* src,
+                        ptrdiff_t src_stride,
+                        uint8_t* dst,
+                        ptrdiff_t dst_stride,
+                        const InterpKernel* filter,
+                        int x0_q4,
+                        int x_step_q4,
+                        int y0_q4,
+                        int y_step_q4,
+                        int w,
+                        int h);
+#define vpx_scaled_2d vpx_scaled_2d_neon
 
 void vpx_scaled_avg_2d_c(const uint8_t* src,
                          ptrdiff_t src_stride,

@@ -1604,6 +1604,7 @@ libvpx_srcs_arm_neon = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/variance_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve8_neon.h",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_neon.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_scaled_convolve8_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/avg.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/bitreader.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/bitreader.h",
@@ -2093,6 +2094,7 @@ libvpx_srcs_arm_neon_cpu_detect_neon = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/subtract_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/variance_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_neon.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_scaled_convolve8_neon.c",
 ]
 libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.c",
@@ -2432,6 +2434,7 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_avg_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_copy_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_convolve_neon.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/vpx_scaled_convolve8_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/avg.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/bitreader.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/bitreader.h",
