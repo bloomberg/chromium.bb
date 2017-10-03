@@ -4,7 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_registration.h"
 
-#include <vector>
+#include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -411,15 +411,6 @@ void ServiceWorkerRegistration::DeleteVersion(
   scoped_refptr<ServiceWorkerRegistration> protect(this);
 
   UnsetVersion(version.get());
-
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetProviderHostIterator();
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (host->controller() == version)
-      host->NotifyControllerLost();
-  }
-
   version->Doom();
 
   if (!active_version() && !waiting_version()) {
