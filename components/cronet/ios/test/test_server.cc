@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -23,6 +24,7 @@ const char kEchoHeaderPath[] = "/EchoHeader?";
 const char kSetCookiePath[] = "/SetCookie?";
 const char kBigDataPath[] = "/BigData?";
 const char kUseEncodingPath[] = "/UseEncoding?";
+const char kEchoRequestBodyPath[] = "/EchoRequestBody";
 
 std::unique_ptr<net::EmbeddedTestServer> g_test_server;
 base::LazyInstance<std::string>::Leaky g_big_data_body =
@@ -40,6 +42,7 @@ std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
   if (it != request.headers.end())
     header_value = it->second;
   auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
   http_response->set_content(header_value);
   return std::move(http_response);
 }
@@ -60,11 +63,23 @@ std::unique_ptr<net::test_server::HttpResponse> UseEncodingInResponse(
         0x65, 0x20, 0x6c,  0x61, 0x7a, 0x79, 0x20, 0x64, 0x6f, 0x67, 0x03};
     std::string quickfoxCompressedStr(quickfoxCompressed,
                                       sizeof(quickfoxCompressed));
+    http_response->set_code(net::HTTP_OK);
     http_response->set_content(quickfoxCompressedStr);
     http_response->AddCustomHeader(std::string("content-encoding"),
                                    std::string("br"));
   }
   return std::move(http_response);
+}
+
+std::unique_ptr<net::test_server::HttpResponse> EchoResponseBody(
+    const net::test_server::HttpRequest& request) {
+  DCHECK(base::StartsWith(request.relative_url, kEchoRequestBodyPath,
+                          base::CompareCase::INSENSITIVE_ASCII));
+  std::string request_content = request.content;
+  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(request_content);
+  return http_response;
 }
 
 std::unique_ptr<net::test_server::HttpResponse> ReturnBigDataInResponse(
@@ -86,6 +101,7 @@ std::unique_ptr<net::test_server::HttpResponse> SetAndEchoCookieInResponse(
                           base::CompareCase::INSENSITIVE_ASCII));
   cookie_line = request.relative_url.substr(strlen(kSetCookiePath));
   auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
   http_response->set_content(cookie_line);
   http_response->AddCustomHeader("Set-Cookie", cookie_line);
   return std::move(http_response);
@@ -108,6 +124,10 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
   if (base::StartsWith(request.relative_url, kUseEncodingPath,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return UseEncodingInResponse(request);
+  }
+  if (base::StartsWith(request.relative_url, kEchoRequestBodyPath,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    return EchoResponseBody(request);
   }
   return base::MakeUnique<net::test_server::BasicHttpResponse>();
 }
@@ -144,6 +164,11 @@ std::string TestServer::GetUseEncodingURL(const std::string& header_name) {
 std::string TestServer::GetSetCookieURL(const std::string& cookie_line) {
   DCHECK(g_test_server);
   return g_test_server->GetURL(kSetCookiePath + cookie_line).spec();
+}
+
+std::string TestServer::EchoRequestBodyURL() {
+  DCHECK(g_test_server);
+  return g_test_server->GetURL(kEchoRequestBodyPath).spec();
 }
 
 std::string TestServer::PrepareBigDataURL(long data_size) {
