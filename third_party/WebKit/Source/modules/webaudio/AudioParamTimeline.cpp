@@ -1403,10 +1403,10 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessExponentialRamp(
 
     // Compute the per-sample multiplier.
     float multiplier = powf(value2 / value1, 1 / num_sample_frames);
-    // Set the starting value of the exponential ramp.
-    value = value1 * powf(value2 / value1,
-                          (current_frame / sample_rate - time1) / delta_time);
-
+    // Set the starting value of the exponential ramp.  Do not attempt
+    // to optimize pow to powf.  See crbug.com/771306.
+    value = value1 * pow(value2 / static_cast<double>(value1),
+                         (current_frame / sample_rate - time1) / delta_time);
     for (; write_index < fill_to_frame; ++write_index) {
       values[write_index] = value;
       value *= multiplier;
