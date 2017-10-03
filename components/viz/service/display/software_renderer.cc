@@ -343,10 +343,12 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   SkCanvas* raster_canvas = current_canvas_;
 
   std::unique_ptr<SkCanvas> color_transform_canvas;
-  // TODO(enne): color transform needs to be replicated in gles2_cmd_decoder
-  color_transform_canvas = SkCreateColorSpaceXformCanvas(
-      current_canvas_, gfx::ColorSpace::CreateSRGB().ToSkColorSpace());
-  raster_canvas = color_transform_canvas.get();
+  if (settings_->enable_color_correct_rendering) {
+    // TODO(enne): color transform needs to be replicated in gles2_cmd_decoder
+    color_transform_canvas = SkCreateColorSpaceXformCanvas(
+        current_canvas_, gfx::ColorSpace::CreateSRGB().ToSkColorSpace());
+    raster_canvas = color_transform_canvas.get();
+  }
 
   base::Optional<skia::OpacityFilterCanvas> opacity_canvas;
   if (needs_transparency || disable_image_filtering) {

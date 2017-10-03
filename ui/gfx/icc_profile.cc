@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkICC.h"
+#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {
@@ -340,6 +341,14 @@ ICCProfile ICCProfile::FromDataWithId(const void* data,
   icc_profile.ComputeColorSpaceAndCache();
   return icc_profile;
 }
+
+#if (!defined(OS_WIN) && !defined(USE_X11) && !defined(OS_MACOSX)) || \
+    defined(OS_IOS)
+// static
+ICCProfile ICCProfile::FromBestMonitor() {
+  return ICCProfile();
+}
+#endif
 
 // static
 const std::vector<char>& ICCProfile::GetData() const {
