@@ -1997,7 +1997,7 @@ def _DepsToLines(deps):
     return []
   s = ['deps = {']
   for name, dep in sorted(deps.iteritems()):
-    condition_part = (['    "condition": "%s",' % dep.condition]
+    condition_part = (['    "condition": %r,' % dep.condition]
                       if dep.condition else [])
     s.extend([
         '  # %s' % dep.hierarchy(include_url=False),
@@ -2019,7 +2019,7 @@ def _DepsOsToLines(deps_os):
   for dep_os, os_deps in sorted(deps_os.iteritems()):
     s.append('  "%s": {' % dep_os)
     for name, dep in sorted(os_deps.iteritems()):
-      condition_part = (['      "condition": "%s",' % dep.condition]
+      condition_part = (['      "condition": %r,' % dep.condition]
                         if dep.condition else [])
       s.extend([
           '    # %s' % dep.hierarchy(include_url=False),
@@ -2049,7 +2049,7 @@ def _HooksToLines(name, hooks):
     if hook.pattern is not None:
       s.append('    "pattern": "%s",' % hook.pattern)
     if hook.condition is not None:
-      s.append('    "condition": "%s",' % hook.condition)
+      s.append('    "condition": %r,' % hook.condition)
     s.extend(
         # Hooks run in the parent directory of their dep.
         ['    "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
@@ -2078,7 +2078,7 @@ def _HooksOsToLines(hooks_os):
       if hook.pattern is not None:
         s.append('      "pattern": "%s",' % hook.pattern)
       if hook.condition is not None:
-        s.append('    "condition": "%s",' % hook.condition)
+        s.append('    "condition": %r,' % hook.condition)
       s.extend(
           # Hooks run in the parent directory of their dep.
           ['      "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
