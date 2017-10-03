@@ -293,7 +293,8 @@ void TypingCommand::InsertText(Document& document,
 void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
     LocalFrame* frame,
     const size_t selection_start,
-    const size_t text_length) {
+    const size_t text_length,
+    EditingState* editing_state) {
   if (!IsIncrementalInsertion())
     return;
 
@@ -304,7 +305,15 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
   Element* element = frame->Selection()
                          .ComputeVisibleSelectionInDOMTreeDeprecated()
                          .RootEditableElement();
-  DCHECK(element);
+
+  // TODO(editing-dev): The text insertion should probably always leave the
+  // selection in an editable region, but we know of at least one case where it
+  // doesn't (see test case in crbug.com/767599). Return early in this case to
+  // avoid a crash.
+  if (!element) {
+    editing_state->Abort();
+    return;
+  }
 
   const size_t end = selection_start + text_length;
   const size_t start =
@@ -601,8 +610,9 @@ void TypingCommand::InsertText(const String& text,
       if (editing_state->IsAborted())
         return;
 
-      AdjustSelectionAfterIncrementalInsertion(
-          GetDocument().GetFrame(), selection_start, insertion_length);
+      AdjustSelectionAfterIncrementalInsertion(GetDocument().GetFrame(),
+                                               selection_start,
+                                               insertion_length, editing_state);
       selection_start += insertion_length;
     }
 
@@ -620,7 +630,8 @@ void TypingCommand::InsertText(const String& text,
       return;
 
     AdjustSelectionAfterIncrementalInsertion(GetDocument().GetFrame(),
-                                             selection_start, text.length());
+                                             selection_start, text.length(),
+                                             editing_state);
     return;
   }
 
@@ -632,7 +643,8 @@ void TypingCommand::InsertText(const String& text,
       return;
 
     AdjustSelectionAfterIncrementalInsertion(GetDocument().GetFrame(),
-                                             selection_start, insertion_length);
+                                             selection_start, insertion_length,
+                                             editing_state);
   }
 }
 
