@@ -437,25 +437,7 @@ void RealGLApi::glReadPixelsFn(GLint x,
                                GLenum format,
                                GLenum type,
                                void* pixels) {
-  GLenum gl_type = type;
-  // TODO(zmo): once ANGLE changes its ES3 behavior to always return HALF_FLOAT
-  // to IMPLEMENTATION_COLOR_READ_TYPE as other native ES3 implementations do,
-  // we can simply call GetPixelType() here.
-  if (version_->is_es) {
-    switch (gl_type) {
-      case GL_HALF_FLOAT:
-      case GL_HALF_FLOAT_OES: {
-        GLint param = 0;
-        GLApiBase::glGetIntegervFn(GL_IMPLEMENTATION_COLOR_READ_TYPE, &param);
-        gl_type = static_cast<GLenum>(param);
-      } break;
-      default:
-        break;
-    }
-  } else {
-    if (gl_type == GL_HALF_FLOAT_OES)
-      gl_type = GL_HALF_FLOAT;
-  }
+  GLenum gl_type = GetPixelType(version_.get(), type, format);
   GLApiBase::glReadPixelsFn(x, y, width, height, format, gl_type, pixels);
 }
 
