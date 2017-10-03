@@ -2,64 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "content/common/message_port.h"
 
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/common/message_port.mojom.h"
+#include "content/common/message_port_message_struct_traits.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/WebKit/common/message_port/message_port.mojom.h"
-#include "third_party/WebKit/common/message_port/message_port_message_struct_traits.h"
 
-namespace blink {
+namespace content {
 
-MessagePortChannel::~MessagePortChannel() {}
+MessagePort::~MessagePort() {}
 
-MessagePortChannel::MessagePortChannel() : state_(new State()) {}
+MessagePort::MessagePort() : state_(new State()) {}
 
-MessagePortChannel::MessagePortChannel(const MessagePortChannel& other)
-    : state_(other.state_) {}
+MessagePort::MessagePort(const MessagePort& other) : state_(other.state_) {}
 
-MessagePortChannel& MessagePortChannel::operator=(
-    const MessagePortChannel& other) {
+MessagePort& MessagePort::operator=(const MessagePort& other) {
   state_ = other.state_;
   return *this;
 }
 
-MessagePortChannel::MessagePortChannel(mojo::ScopedMessagePipeHandle handle)
+MessagePort::MessagePort(mojo::ScopedMessagePipeHandle handle)
     : state_(new State(std::move(handle))) {}
 
-const mojo::ScopedMessagePipeHandle& MessagePortChannel::GetHandle() const {
+const mojo::ScopedMessagePipeHandle& MessagePort::GetHandle() const {
   return state_->handle();
 }
 
-mojo::ScopedMessagePipeHandle MessagePortChannel::ReleaseHandle() const {
+mojo::ScopedMessagePipeHandle MessagePort::ReleaseHandle() const {
   state_->StopWatching();
   return state_->TakeHandle();
 }
 
 // static
-std::vector<mojo::ScopedMessagePipeHandle> MessagePortChannel::ReleaseHandles(
-    const std::vector<MessagePortChannel>& ports) {
+std::vector<mojo::ScopedMessagePipeHandle> MessagePort::ReleaseHandles(
+    const std::vector<MessagePort>& ports) {
   std::vector<mojo::ScopedMessagePipeHandle> handles(ports.size());
   for (size_t i = 0; i < ports.size(); ++i)
     handles[i] = ports[i].ReleaseHandle();
   return handles;
 }
 
-// static
-std::vector<MessagePortChannel> MessagePortChannel::CreateFromHandles(
-    std::vector<mojo::ScopedMessagePipeHandle> handles) {
-  std::vector<MessagePortChannel> ports(handles.size());
-  for (size_t i = 0; i < handles.size(); ++i)
-    ports[i] = MessagePortChannel(std::move(handles[i]));
-  return ports;
-}
-
-void MessagePortChannel::PostMessage(const uint8_t* encoded_message,
-                                     size_t encoded_message_size,
-                                     std::vector<MessagePortChannel> ports) {
+void MessagePort::PostMessage(const uint8_t* encoded_message,
+                              size_t encoded_message_size,
+                              std::vector<MessagePort> ports) {
   DCHECK(state_->handle().is_valid());
 
   // NOTE: It is OK to ignore the return value of mojo::WriteMessageNew here.
@@ -67,15 +56,17 @@ void MessagePortChannel::PostMessage(const uint8_t* encoded_message,
 
   MessagePortMessage msg;
   msg.encoded_message = base::make_span(encoded_message, encoded_message_size);
-  msg.ports = ReleaseHandles(ports);
+  msg.ports.resize(ports.size());
+  for (size_t i = 0; i < ports.size(); ++i)
+    msg.ports[i] = ports[i].ReleaseHandle();
   mojo::Message mojo_message =
       mojom::MessagePortMessage::SerializeAsMessage(&msg);
   mojo::WriteMessageNew(state_->handle().get(), mojo_message.TakeMojoMessage(),
                         MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
-bool MessagePortChannel::GetMessage(std::vector<uint8_t>* encoded_message,
-                                    std::vector<MessagePortChannel>* ports) {
+bool MessagePort::GetMessage(std::vector<uint8_t>* encoded_message,
+                             std::vector<MessagePort>* ports) {
   DCHECK(state_->handle().is_valid());
   mojo::ScopedMessageHandle message_handle;
   MojoResult rv = mojo::ReadMessageNew(state_->handle().get(), &message_handle,
@@ -91,26 +82,28 @@ bool MessagePortChannel::GetMessage(std::vector<uint8_t>* encoded_message,
     return false;
 
   *encoded_message = std::move(msg.owned_encoded_message);
-  *ports = CreateFromHandles(std::move(msg.ports));
+  ports->resize(msg.ports.size());
+  for (size_t i = 0; i < ports->size(); ++i)
+    ports->at(i) = MessagePort(std::move(msg.ports[i]));
 
   return true;
 }
 
-void MessagePortChannel::SetCallback(const base::Closure& callback) {
+void MessagePort::SetCallback(const base::Closure& callback) {
   state_->StopWatching();
   state_->StartWatching(callback);
 }
 
-void MessagePortChannel::ClearCallback() {
+void MessagePort::ClearCallback() {
   state_->StopWatching();
 }
 
-MessagePortChannel::State::State() {}
+MessagePort::State::State() {}
 
-MessagePortChannel::State::State(mojo::ScopedMessagePipeHandle handle)
+MessagePort::State::State(mojo::ScopedMessagePipeHandle handle)
     : handle_(std::move(handle)) {}
 
-void MessagePortChannel::State::StartWatching(const base::Closure& callback) {
+void MessagePort::State::StartWatching(const base::Closure& callback) {
   base::AutoLock lock(lock_);
   DCHECK(!callback_);
   DCHECK(handle_.is_valid());
@@ -133,7 +126,7 @@ void MessagePortChannel::State::StartWatching(const base::Closure& callback) {
   ArmWatcher();
 }
 
-void MessagePortChannel::State::StopWatching() {
+void MessagePort::State::StopWatching() {
   mojo::ScopedWatcherHandle watcher_handle;
 
   {
@@ -145,15 +138,15 @@ void MessagePortChannel::State::StopWatching() {
   }
 }
 
-mojo::ScopedMessagePipeHandle MessagePortChannel::State::TakeHandle() {
+mojo::ScopedMessagePipeHandle MessagePort::State::TakeHandle() {
   base::AutoLock lock(lock_);
   DCHECK(!watcher_handle_.is_valid());
   return std::move(handle_);
 }
 
-MessagePortChannel::State::~State() = default;
+MessagePort::State::~State() = default;
 
-void MessagePortChannel::State::ArmWatcher() {
+void MessagePort::State::ArmWatcher() {
   lock_.AssertAcquired();
 
   if (!watcher_handle_.is_valid())
@@ -189,7 +182,7 @@ void MessagePortChannel::State::ArmWatcher() {
   NOTREACHED();
 }
 
-void MessagePortChannel::State::OnHandleReady(MojoResult result) {
+void MessagePort::State::OnHandleReady(MojoResult result) {
   base::AutoLock lock(lock_);
   if (result == MOJO_RESULT_OK && callback_) {
     callback_.Run();
@@ -200,18 +193,17 @@ void MessagePortChannel::State::OnHandleReady(MojoResult result) {
 }
 
 // static
-void MessagePortChannel::State::CallOnHandleReady(
-    uintptr_t context,
-    MojoResult result,
-    MojoHandleSignalsState signals_state,
-    MojoWatcherNotificationFlags flags) {
+void MessagePort::State::CallOnHandleReady(uintptr_t context,
+                                           MojoResult result,
+                                           MojoHandleSignalsState signals_state,
+                                           MojoWatcherNotificationFlags flags) {
   auto* state = reinterpret_cast<State*>(context);
   if (result == MOJO_RESULT_CANCELLED) {
-    // Balanced in MessagePortChannel::State::StartWatching().
+    // Balanced in MessagePort::State::StartWatching().
     state->Release();
   } else {
     state->OnHandleReady(result);
   }
 }
 
-}  // namespace blink
+}  // namespace content

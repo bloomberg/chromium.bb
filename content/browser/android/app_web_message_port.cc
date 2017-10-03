@@ -10,8 +10,6 @@
 #include "content/browser/android/string_message_codec.h"
 #include "jni/AppWebMessagePort_jni.h"
 
-using blink::MessagePortChannel;
-
 namespace content {
 
 // static
@@ -26,10 +24,10 @@ void AppWebMessagePort::CreateAndBindToJavaObject(
 }
 
 // static
-std::vector<MessagePortChannel> AppWebMessagePort::UnwrapJavaArray(
+std::vector<MessagePort> AppWebMessagePort::UnwrapJavaArray(
     JNIEnv* env,
     const base::android::JavaRef<jobjectArray>& jports) {
-  std::vector<MessagePortChannel> channels;
+  std::vector<MessagePort> ports;
   if (!jports.is_null()) {
     jsize num_ports = env->GetArrayLength(jports.obj());
     for (jsize i = 0; i < num_ports; ++i) {
@@ -41,11 +39,11 @@ std::vector<MessagePortChannel> AppWebMessagePort::UnwrapJavaArray(
       DCHECK(native_port != -1);
       AppWebMessagePort* instance =
           reinterpret_cast<AppWebMessagePort*>(native_port);
-      channels.push_back(instance->channel_);  // Transfers ownership.
+      ports.push_back(instance->port_);  // Transfers ownership.
       delete instance;
     }
   }
-  return channels;
+  return ports;
 }
 
 void AppWebMessagePort::CloseMessagePort(
@@ -53,7 +51,7 @@ void AppWebMessagePort::CloseMessagePort(
     const base::android::JavaParamRef<jobject>& jcaller) {
   // Explicitly reset the port here to ensure that OnMessagesAvailable has
   // finished before we destroy this.
-  channel_ = MessagePortChannel();
+  port_ = MessagePort();
 
   delete this;
 }
@@ -65,8 +63,8 @@ void AppWebMessagePort::PostMessage(
     const base::android::JavaParamRef<jobjectArray>& jports) {
   std::vector<uint8_t> encoded_message =
       EncodeStringMessage(base::android::ConvertJavaStringToUTF16(jmessage));
-  channel_.PostMessage(encoded_message.data(), encoded_message.size(),
-                       UnwrapJavaArray(env, jports));
+  port_.PostMessage(encoded_message.data(), encoded_message.size(),
+                    UnwrapJavaArray(env, jports));
 }
 
 jboolean AppWebMessagePort::DispatchNextMessage(
@@ -82,8 +80,8 @@ jboolean AppWebMessagePort::DispatchNextMessage(
           "<init>", "()V");
 
   std::vector<uint8_t> encoded_message;
-  std::vector<MessagePortChannel> channels;
-  if (!channel_.GetMessage(&encoded_message, &channels))
+  std::vector<MessagePort> ports;
+  if (!port_.GetMessage(&encoded_message, &ports))
     return false;
 
   base::string16 message;
@@ -94,20 +92,20 @@ jboolean AppWebMessagePort::DispatchNextMessage(
       base::android::ConvertUTF16ToJavaString(env, message);
 
   base::android::ScopedJavaLocalRef<jobjectArray> jports;
-  if (channels.size() > 0) {
+  if (ports.size() > 0) {
     jports = base::android::ScopedJavaLocalRef<jobjectArray>(
         env, env->NewObjectArray(
-                 channels.size(),
+                 ports.size(),
                  org_chromium_content_browser_AppWebMessagePort_clazz(env),
                  nullptr));
 
     // Instantiate the Java and C++ wrappers for the transferred ports.
-    for (size_t i = 0; i < channels.size(); ++i) {
+    for (size_t i = 0; i < ports.size(); ++i) {
       base::android::ScopedJavaLocalRef<jobject> jport(
           env, env->NewObject(
                    org_chromium_content_browser_AppWebMessagePort_clazz(env),
                    app_web_message_port_constructor));
-      CreateAndBindToJavaObject(env, channels[i].ReleaseHandle(), jport);
+      CreateAndBindToJavaObject(env, ports[i].ReleaseHandle(), jport);
 
       env->SetObjectArrayElement(jports.obj(), i, jport.obj());
     }
@@ -120,15 +118,18 @@ jboolean AppWebMessagePort::DispatchNextMessage(
 void AppWebMessagePort::StartReceivingMessages(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  channel_.SetCallback(base::Bind(&AppWebMessagePort::OnMessagesAvailable,
-                                  base::Unretained(this)));
+  port_.SetCallback(
+      base::Bind(&AppWebMessagePort::OnMessagesAvailable,
+                 base::Unretained(this)));
 }
 
 AppWebMessagePort::AppWebMessagePort(
     JNIEnv* env,
     mojo::ScopedMessagePipeHandle handle,
     const base::android::JavaRef<jobject>& jobject)
-    : channel_(std::move(handle)), java_ref_(env, jobject) {}
+    : port_(std::move(handle)),
+      java_ref_(env, jobject) {
+}
 
 AppWebMessagePort::~AppWebMessagePort() {
 }

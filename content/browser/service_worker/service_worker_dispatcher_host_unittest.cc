@@ -37,8 +37,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
-using blink::MessagePortChannel;
-
 namespace content {
 
 namespace {
@@ -50,10 +48,10 @@ static void SaveStatusCallback(bool* called,
   *out = status;
 }
 
-void SetUpDummyMessagePort(std::vector<MessagePortChannel>* ports) {
+void SetUpDummyMessagePort(std::vector<MessagePort>* ports) {
   // Let the other end of the pipe close.
   mojo::MessagePipe pipe;
-  ports->push_back(MessagePortChannel(std::move(pipe.handle0)));
+  ports->push_back(MessagePort(std::move(pipe.handle0)));
 }
 
 struct RemoteProviderInfo {
@@ -348,7 +346,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<MessagePortChannel>& sent_message_ports,
+      const std::vector<MessagePort>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const ServiceWorkerDispatcherHost::StatusCallback& callback) {
     dispatcher_host_->DispatchExtendableMessageEvent(
@@ -876,7 +874,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
   // Dispatch ExtendableMessageEvent.
-  std::vector<MessagePortChannel> ports;
+  std::vector<MessagePort> ports;
   SetUpDummyMessagePort(&ports);
   called = false;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -904,7 +902,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the
   // worker and to dispatch the event.
-  std::vector<MessagePortChannel> ports;
+  std::vector<MessagePort> ports;
   SetUpDummyMessagePort(&ports);
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;

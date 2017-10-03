@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,38 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProviderClient_h
-#define WebServiceWorkerProviderClient_h
+#ifndef WebMessagePortChannelClient_h
+#define WebMessagePortChannelClient_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/modules/serviceworker/WebServiceWorker.h"
-
-#include <memory>
+#include "WebCommon.h"
 
 namespace blink {
 
-class WebServiceWorker;
-class WebString;
-
-// See WebServiceWorkerProvider for full documentation.
-//
-// WebServiceWorkerProviderClient is implemented by ServiceWorkerContainer.
-// We probably wouldn't need this abstract class, except we also make a
-// MockServiceWorkerProviderClient for unit tests.
-class WebServiceWorkerProviderClient {
+// Provides an interface for users of WebMessagePortChannel to be notified
+// when messages are available.
+class BLINK_PLATFORM_EXPORT WebMessagePortChannelClient {
  public:
-  virtual ~WebServiceWorkerProviderClient() {}
+  // Alerts that new messages have arrived, which are retrieved by calling
+  // WebMessagePortChannel::TryGetMessage. Note that this may be called
+  // on any thread.
+  virtual void MessageAvailable() = 0;
 
-  virtual void SetController(std::unique_ptr<WebServiceWorker::Handle>,
-                             bool should_notify_controller_change) = 0;
-
-  virtual void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
-                                    const WebString& message,
-                                    WebMessagePortChannelArray channels) = 0;
-  virtual void CountFeature(uint32_t feature) = 0;
+ protected:
+  ~WebMessagePortChannelClient() {}
 };
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerProviderClient_h
+#endif

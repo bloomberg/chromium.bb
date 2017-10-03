@@ -179,8 +179,8 @@ void DOMWindow::postMessage(RefPtr<SerializedScriptValue> message,
     }
   }
 
-  auto channels = MessagePort::DisentanglePorts(GetExecutionContext(), ports,
-                                                exception_state);
+  MessagePortChannelArray channels = MessagePort::DisentanglePorts(
+      GetExecutionContext(), ports, exception_state);
   if (exception_state.HadException())
     return;
 

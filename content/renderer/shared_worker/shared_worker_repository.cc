@@ -4,6 +4,7 @@
 
 #include "content/renderer/shared_worker/shared_worker_repository.h"
 
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -26,7 +27,7 @@ void SharedWorkerRepository::Connect(
     blink::WebAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     bool data_saver_enabled,
-    blink::MessagePortChannel channel,
+    std::unique_ptr<blink::WebMessagePortChannel> channel,
     std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) {
   // Lazy bind the connector.
   if (!connector_)
@@ -43,7 +44,9 @@ void SharedWorkerRepository::Connect(
             mojo::MakeRequest(&client));
 
   connector_->Connect(std::move(info), std::move(client), creation_context_type,
-                      channel.ReleaseHandle());
+                      static_cast<WebMessagePortChannelImpl*>(channel.get())
+                          ->ReleaseMessagePort()
+                          .ReleaseHandle());
 }
 
 void SharedWorkerRepository::DocumentDetached(DocumentID document_id) {

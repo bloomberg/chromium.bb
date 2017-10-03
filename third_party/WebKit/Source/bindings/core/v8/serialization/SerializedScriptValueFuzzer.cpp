@@ -17,6 +17,7 @@
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/wtf/StringHasher.h"
 #include "public/platform/WebBlobInfo.h"
+#include "public/platform/WebMessagePortChannel.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -31,6 +32,18 @@ WebBlobInfoArray* g_blob_info_array = nullptr;
 enum : uint32_t {
   kFuzzMessagePorts = 1 << 0,
   kFuzzBlobInfo = 1 << 1,
+};
+
+class WebMessagePortChannelImpl final : public WebMessagePortChannel {
+ public:
+  // WebMessagePortChannel
+  void SetClient(WebMessagePortChannelClient* client) override {}
+  void PostMessage(const uint8_t*, size_t, WebMessagePortChannelArray) {
+    NOTIMPLEMENTED();
+  }
+  bool TryGetMessage(WebVector<uint8_t>*, WebMessagePortChannelArray&) {
+    return false;
+  }
 };
 
 }  // namespace
@@ -66,7 +79,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     MessagePortArray* message_ports = new MessagePortArray(3);
     std::generate(message_ports->begin(), message_ports->end(), []() {
       MessagePort* port = MessagePort::Create(g_page_holder->GetDocument());
-      port->Entangle(mojo::MessagePipe().handle0);
+      port->Entangle(WTF::MakeUnique<WebMessagePortChannelImpl>());
       return port;
     });
     options.message_ports = message_ports;

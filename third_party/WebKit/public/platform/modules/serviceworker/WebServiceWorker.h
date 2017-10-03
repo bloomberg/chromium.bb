@@ -32,6 +32,7 @@
 #define WebServiceWorker_h
 
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
@@ -39,7 +40,6 @@
 
 namespace blink {
 
-class MessagePortChannel;
 class WebSecurityOrigin;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProxy;
@@ -75,7 +75,7 @@ class WebServiceWorker {
   virtual void PostMessage(WebServiceWorkerProvider*,
                            const WebString&,
                            const WebSecurityOrigin&,
-                           WebVector<MessagePortChannel>) = 0;
+                           WebMessagePortChannelArray) = 0;
 
   virtual void Terminate() {}
 };

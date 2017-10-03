@@ -47,6 +47,8 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
 #include "public/platform/WebBlobInfo.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebMessagePortChannelClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -68,7 +70,7 @@ v8::Local<v8::Value> RoundTrip(
                                         : scope.GetExceptionState();
 
   // Extract message ports and disentangle them.
-  Vector<MessagePortChannel> channels;
+  MessagePortChannelArray channels;
   if (transferables) {
     channels = MessagePort::DisentanglePorts(scope.GetExecutionContext(),
                                              transferables->message_ports,
@@ -873,25 +875,39 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV18) {
                      new_image_data->BufferBase()->Data())[0]);
 }
 
-MessagePort* MakeMessagePort(ExecutionContext* execution_context,
-                             MojoHandle* unowned_handle_out = nullptr) {
+class WebMessagePortChannelImpl final : public WebMessagePortChannel {
+ public:
+  // WebMessagePortChannel
+  void SetClient(WebMessagePortChannelClient* client) override {}
+  void PostMessage(const uint8_t*, size_t, WebMessagePortChannelArray) {
+    NOTIMPLEMENTED();
+  }
+  bool TryGetMessage(WebVector<uint8_t>*, WebMessagePortChannelArray&) {
+    return false;
+  }
+};
+
+MessagePort* MakeMessagePort(
+    ExecutionContext* execution_context,
+    WebMessagePortChannel** unowned_channel_out = nullptr) {
+  std::unique_ptr<WebMessagePortChannelImpl> channel =
+      WTF::MakeUnique<WebMessagePortChannelImpl>();
+  auto* unowned_channel_ptr = channel.get();
   MessagePort* port = MessagePort::Create(*execution_context);
-  mojo::MessagePipe pipe;
-  MojoHandle unowned_handle = pipe.handle0.get().value();
-  port->Entangle(std::move(pipe.handle0));
+  port->Entangle(std::move(channel));
   EXPECT_TRUE(port->IsEntangled());
-  EXPECT_EQ(unowned_handle, port->EntangledHandleForTesting());
-  if (unowned_handle_out)
-    *unowned_handle_out = unowned_handle;
+  EXPECT_EQ(unowned_channel_ptr, port->EntangledChannelForTesting());
+  if (unowned_channel_out)
+    *unowned_channel_out = unowned_channel_ptr;
   return port;
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripMessagePort) {
   V8TestingScope scope;
 
-  MojoHandle unowned_handle;
+  WebMessagePortChannel* unowned_channel;
   MessagePort* port =
-      MakeMessagePort(scope.GetExecutionContext(), &unowned_handle);
+      MakeMessagePort(scope.GetExecutionContext(), &unowned_channel);
   v8::Local<v8::Value> wrapper = ToV8(port, scope.GetScriptState());
   Transferables transferables;
   transferables.message_ports.push_back(port);
@@ -902,7 +918,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripMessagePort) {
   MessagePort* new_port = V8MessagePort::ToImpl(result.As<v8::Object>());
   EXPECT_FALSE(port->IsEntangled());
   EXPECT_TRUE(new_port->IsEntangled());
-  EXPECT_EQ(unowned_handle, new_port->EntangledHandleForTesting());
+  EXPECT_EQ(unowned_channel, new_port->EntangledChannelForTesting());
 }
 
 TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
@@ -929,7 +945,9 @@ TEST(V8ScriptValueSerializerTest,
                                  ExceptionState::kExecutionContext, "Window",
                                  "postMessage");
 
-  MessagePort* port = MakeMessagePort(scope.GetExecutionContext());
+  WebMessagePortChannel* unowned_channel;
+  MessagePort* port =
+      MakeMessagePort(scope.GetExecutionContext(), &unowned_channel);
   v8::Local<v8::Value> wrapper = ToV8(port, scope.GetScriptState());
   Transferables transferables;
 
