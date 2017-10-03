@@ -466,25 +466,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
              '\n' + MARKER_COMMENT + '\n'
              'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]'))
 
-    def test_write_to_test_expectations_skips_existing_lines(self):
-        host = self.mock_host()
-        expectations_path = host.port_factory.get().path_to_generic_test_expectations_file()
-        host.filesystem.write_text_file(
-            expectations_path,
-            'crbug.com/111 dont/copy/me.html [ Failure ]\n')
-        updater = WPTExpectationsUpdater(host)
-        line_list = [
-            'crbug.com/111 dont/copy/me.html [ Failure ]',
-            'crbug.com/222 do/copy/me.html [ Failure ]'
-        ]
-        updater.write_to_test_expectations(line_list)
-        value = host.filesystem.read_text_file(expectations_path)
-        self.assertEqual(
-            value,
-            ('crbug.com/111 dont/copy/me.html [ Failure ]\n'
-             '\n' + MARKER_COMMENT + '\n'
-             'crbug.com/222 do/copy/me.html [ Failure ]'))
-
     def test_write_to_test_expectations_with_marker_and_no_lines(self):
         host = self.mock_host()
         expectations_path = host.port_factory.get().path_to_generic_test_expectations_file()
