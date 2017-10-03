@@ -188,6 +188,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT(address_home_dependent_locality);
   VISIT(address_home_language_code);
   VISIT_REP(phone_home_whole_number);
+  VISIT(validity_state_bitfield);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillSpecifics& proto) {

@@ -1635,6 +1635,19 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
       table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(kValidityBitfieldValue, db_profile->GetValidityBitfieldValue());
+
+  // Modify the validity of the profile.
+  const int kOtherValidityBitfieldValue = 1999;
+  profile.SetValidityFromBitfieldValue(kOtherValidityBitfieldValue);
+
+  // Update the profile in the table.
+  EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
+
+  // Get the profile from the table and make sure the validity was updated.
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_EQ(kOtherValidityBitfieldValue,
+            db_profile->GetValidityBitfieldValue());
 }
 
 TEST_F(AutofillTableTest, SetGetServerCards) {

@@ -1087,14 +1087,15 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
       "UPDATE autofill_profiles "
       "SET guid=?, company_name=?, street_address=?, dependent_locality=?, "
       "    city=?, state=?, zipcode=?, sorting_code=?, country_code=?, "
-      "    use_count=?, use_date=?, date_modified=?, origin=?, language_code=? "
+      "    use_count=?, use_date=?, date_modified=?, origin=?, "
+      "    language_code=?, validity_bitfield=? "
       "WHERE guid=?"));
   BindAutofillProfileToStatement(profile,
                                  update_modification_date
                                      ? AutofillClock::Now()
                                      : old_profile->modification_date(),
                                  &s);
-  s.BindString(14, profile.guid());
+  s.BindString(15, profile.guid());
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
