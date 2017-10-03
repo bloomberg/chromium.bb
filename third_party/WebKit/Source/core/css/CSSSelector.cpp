@@ -61,7 +61,9 @@ void CSSSelector::CreateRareData() {
   AtomicString value(data_.value_);
   if (data_.value_)
     data_.value_->Release();
-  data_.rare_data_ = RareData::Create(value).LeakRef();
+  auto rare_data = RareData::Create(value);
+  rare_data->AddRef();
+  data_.rare_data_ = rare_data.get();
   has_rare_data_ = true;
 }
 

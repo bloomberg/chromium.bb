@@ -38,7 +38,8 @@ void WebAudioBus::Initialize(unsigned number_of_channels,
   if (private_)
     private_->Release();
 
-  private_ = audio_bus.LeakRef();
+  audio_bus->AddRef();
+  private_ = audio_bus.get();
 }
 
 void WebAudioBus::ResizeSmaller(size_t new_length) {

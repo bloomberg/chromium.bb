@@ -185,7 +185,11 @@ class StaticSingleton final {
 // DEFINE_STATIC_LOCAL macro, as this macro does not lead to an extra memory
 // allocation.
 #define DEFINE_STATIC_REF(type, name, arguments) \
-  static type* name = RefPtr<type>(arguments).LeakRef();
+  static type* name = [](RefPtr<type> o) {       \
+    if (o)                                       \
+      o->AddRef();                               \
+    return o.get();                              \
+  }(arguments);
 
 /*
  * The reinterpret_cast<Type1*>([pointer to Type2]) expressions - where

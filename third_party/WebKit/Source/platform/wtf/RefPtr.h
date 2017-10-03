@@ -78,13 +78,13 @@ class RefPtr {
   }
   RefPtr(RefPtr&& o) : ptr_(o.ptr_) { o.ptr_ = nullptr; }
   template <typename U>
-  RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
-      : ptr_(o.LeakRef()) {}
+  RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T)) : ptr_(o.ptr_) {
+    o.ptr_ = nullptr;
+  }
 
   ALWAYS_INLINE ~RefPtr() { DerefIfNotNull(ptr_); }
 
   ALWAYS_INLINE T* get() const { return ptr_; }
-  T* LeakRef() WARN_UNUSED_RESULT;
 
   T& operator*() const { return *ptr_; }
   ALWAYS_INLINE T* operator->() const { return ptr_; }
@@ -110,19 +110,14 @@ class RefPtr {
 
  private:
   friend RefPtr AdoptRef<T>(T*);
+  template <typename U>
+  friend class RefPtr;
 
   enum AdoptRefTag { kAdoptRef };
   RefPtr(T* ptr, AdoptRefTag) : ptr_(ptr) {}
 
   T* ptr_;
 };
-
-template <typename T>
-inline T* RefPtr<T>::LeakRef() {
-  T* ptr = ptr_;
-  ptr_ = nullptr;
-  return ptr;
-}
 
 template <typename T>
 template <typename U>

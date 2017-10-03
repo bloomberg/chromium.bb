@@ -21,19 +21,6 @@ TEST(RefPtrTest, Basic) {
   EXPECT_TRUE(!string);
 }
 
-TEST(RefPtrTest, LeakRef) {
-  RefPtr<StringImpl> string = StringImpl::Create("test");
-  EXPECT_TRUE(string);
-  EXPECT_TRUE(string->HasOneRef());
-  StringImpl* raw = string.get();
-  StringImpl* leaked = string.LeakRef();
-  EXPECT_TRUE(!string);
-  EXPECT_TRUE(leaked);
-  EXPECT_TRUE(leaked->HasOneRef());
-  EXPECT_EQ(raw, leaked);
-  leaked->Release();
-}
-
 TEST(RefPtrTest, MoveAssignmentOperator) {
   RefPtr<StringImpl> a = StringImpl::Create("a");
   RefPtr<StringImpl> b = StringImpl::Create("b");

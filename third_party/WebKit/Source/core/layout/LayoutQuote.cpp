@@ -240,10 +240,12 @@ const QuotesData* QuotesDataForLanguage(const AtomicString& lang) {
   if (match == languages_end || strcmp(match->lang, key.lang))
     return nullptr;
 
-  if (!match->data)
-    match->data = QuotesData::Create(match->open1, match->close1, match->open2,
-                                     match->close2)
-                      .LeakRef();
+  if (!match->data) {
+    auto data = QuotesData::Create(match->open1, match->close1, match->open2,
+                                   match->close2);
+    data->AddRef();
+    match->data = data.get();
+  }
 
   return match->data;
 }

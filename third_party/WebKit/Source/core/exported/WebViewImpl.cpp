@@ -301,7 +301,9 @@ WebView* WebView::Create(WebViewClient* client,
 WebViewImpl* WebViewImpl::Create(WebViewClient* client,
                                  WebPageVisibilityState visibility_state) {
   // Pass the WebViewImpl's self-reference to the caller.
-  return WTF::AdoptRef(new WebViewImpl(client, visibility_state)).LeakRef();
+  auto web_view = WTF::AdoptRef(new WebViewImpl(client, visibility_state));
+  web_view->AddRef();
+  return web_view.get();
 }
 
 void WebView::UpdateVisitedLinkState(unsigned long long link_hash) {
