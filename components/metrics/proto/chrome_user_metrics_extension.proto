@@ -12,17 +12,19 @@ option java_package = "org.chromium.components.metrics";
 package metrics;
 
 import "cast_logs.proto";
+import "extension_install.proto";
 import "histogram_event.proto";
 import "memory_leak_report.proto";
 import "omnibox_event.proto";
 import "perf_data.proto";
 import "printer_event.proto";
+import "reporting_info.proto";
 import "sampled_profile.proto";
 import "system_profile.proto";
 import "translate_event.proto";
 import "user_action_event.proto";
 
-// Next tag: 17
+// Next tag: 18
 message ChromeUserMetricsExtension {
   // The product (i.e. end user application) for a given UMA log.
   enum Product {
@@ -81,4 +83,8 @@ message ChromeUserMetricsExtension {
 
   // Memory leak reports generated since the last UMA upload.
   repeated MemoryLeakReportProto memory_leak_report = 13;
+
+  // The ReportingInfo message sent in the X-Chrome-UMA-ReportingInfo header.
+  // Copied in by the receiving server.
+  optional ReportingInfo reporting_info = 17;
 }
