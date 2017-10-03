@@ -7,7 +7,7 @@
 ; untrusted code within Native Client.
 ;
 
-; *** The contents of content/common/common.sb are implicitly included here. ***
+; *** The contents of common.sb are implicitly included here. ***
 
 ; Allow a Native Client application to use semaphores, specifically
 ; sem_init(), et.al.

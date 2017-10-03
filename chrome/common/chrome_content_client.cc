@@ -65,6 +65,10 @@
 #include "sandbox/linux/services/credentials.h"
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_MACOSX)
+#include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -701,11 +705,10 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 #if defined(OS_MACOSX)
 bool ChromeContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,
-    int* sandbox_profile_resource_id) const {
-  DCHECK(sandbox_profile_resource_id);
+    const char** sandbox_profile) const {
 #if BUILDFLAG(ENABLE_NACL)
   if (sandbox_type == NACL_SANDBOX_TYPE_NACL_LOADER) {
-    *sandbox_profile_resource_id = IDR_NACL_SANDBOX_PROFILE;
+    *sandbox_profile = service_manager::kSeatbeltPolicyString_nacl_loader;
     return true;
   }
 #endif

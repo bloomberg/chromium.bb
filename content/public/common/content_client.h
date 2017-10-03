@@ -162,15 +162,14 @@ class CONTENT_EXPORT ContentClient {
 
 #if defined(OS_MACOSX)
   // Allows the embedder to define a new |sandbox_type| by mapping it to the
-  // resource ID corresponding to the sandbox profile to use. The legal values
+  // policy string for the sandbox profile to use. The legal values
   // for |sandbox_type| are defined by the embedder and should start with
   // SandboxType::SANDBOX_TYPE_AFTER_LAST_TYPE. Returns false if no sandbox
-  // profile for the given |sandbox_type| exists. Otherwise,
-  // |sandbox_profile_resource_id| is set to the resource ID corresponding to
-  // the sandbox profile to use and true is returned.
+  // profile for the given |sandbox_type| exists. Otherwise, |sandbox_profile|
+  // is set to the string to use and true is returned.
   virtual bool GetSandboxProfileForSandboxType(
       int sandbox_type,
-      int* sandbox_profile_resource_id) const;
+      const char** sandbox_profile) const;
 #endif
 
   // Returns whether or not V8 script extensions should be allowed for a

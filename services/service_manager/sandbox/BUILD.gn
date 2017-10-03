@@ -13,14 +13,14 @@ component("sandbox") {
     # Duplicated here to keep private.
     "//services/service_manager/embedder/service_manager_embedder_export.h",
   ]
-
   defines = [ "SERVICE_MANAGER_SANDBOX_IMPL" ]
-
   public_deps = [
     "//services/service_manager/embedder:embedder_switches",
   ]
-
   deps = [
     "//base",
   ]
+  if (is_mac) {
+    public_deps += [ "mac:packaged_sb_files" ]
+  }
 }

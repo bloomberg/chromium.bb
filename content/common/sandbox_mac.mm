@@ -12,6 +12,9 @@
 #include <signal.h>
 #include <sys/param.h>
 
+#include <algorithm>
+#include <iterator>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -32,11 +35,15 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "content/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/sandbox_compiler.h"
+#include "services/service_manager/sandbox/mac/common.sb.h"
+#include "services/service_manager/sandbox/mac/gpu.sb.h"
+#include "services/service_manager/sandbox/mac/ppapi.sb.h"
+#include "services/service_manager/sandbox/mac/renderer.sb.h"
+#include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
@@ -50,20 +57,25 @@ bool gSandboxIsActive = false;
 
 struct SandboxTypeToResourceIDMapping {
   service_manager::SandboxType sandbox_type;
-  int sandbox_profile_resource_id;
+  const char* seatbelt_policy_string;
 };
 
 // Mapping from sandbox process types to resource IDs containing the sandbox
 // profile for all process types known to content.
 // TODO(tsepez): Implement profile for SANDBOX_TYPE_NETWORK.
 SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
-    {service_manager::SANDBOX_TYPE_NO_SANDBOX, -1},
-    {service_manager::SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE},
-    {service_manager::SANDBOX_TYPE_UTILITY, IDR_UTILITY_SANDBOX_PROFILE},
-    {service_manager::SANDBOX_TYPE_GPU, IDR_GPU_SANDBOX_PROFILE},
-    {service_manager::SANDBOX_TYPE_PPAPI, IDR_PPAPI_SANDBOX_PROFILE},
-    {service_manager::SANDBOX_TYPE_NETWORK, -1},
-    {service_manager::SANDBOX_TYPE_CDM, IDR_PPAPI_SANDBOX_PROFILE},
+    {service_manager::SANDBOX_TYPE_NO_SANDBOX, nullptr},
+    {service_manager::SANDBOX_TYPE_RENDERER,
+     service_manager::kSeatbeltPolicyString_renderer},
+    {service_manager::SANDBOX_TYPE_UTILITY,
+     service_manager::kSeatbeltPolicyString_utility},
+    {service_manager::SANDBOX_TYPE_GPU,
+     service_manager::kSeatbeltPolicyString_gpu},
+    {service_manager::SANDBOX_TYPE_PPAPI,
+     service_manager::kSeatbeltPolicyString_ppapi},
+    {service_manager::SANDBOX_TYPE_NETWORK, nullptr},
+    {service_manager::SANDBOX_TYPE_CDM,
+     service_manager::kSeatbeltPolicyString_ppapi},
 };
 
 static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) ==
@@ -183,43 +195,28 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
 std::string LoadSandboxTemplate(int sandbox_type) {
   // We use a custom sandbox definition to lock things down as tightly as
   // possible.
-  int sandbox_profile_resource_id = -1;
+  base::StringPiece sandbox_definition;
+  auto* it = std::find_if(
+      std::begin(kDefaultSandboxTypeToResourceIDMapping),
+      std::end(kDefaultSandboxTypeToResourceIDMapping),
+      [sandbox_type](const SandboxTypeToResourceIDMapping& element) {
+        return element.sandbox_type == sandbox_type;
+      });
 
-  // Find resource id for sandbox profile to use for the specific sandbox type.
-  for (size_t i = 0;
-       i < arraysize(kDefaultSandboxTypeToResourceIDMapping);
-       ++i) {
-    if (kDefaultSandboxTypeToResourceIDMapping[i].sandbox_type ==
-        sandbox_type) {
-      sandbox_profile_resource_id =
-          kDefaultSandboxTypeToResourceIDMapping[i].sandbox_profile_resource_id;
-      break;
-    }
-  }
-  if (sandbox_profile_resource_id == -1) {
+  if (it != std::end(kDefaultSandboxTypeToResourceIDMapping)) {
+    sandbox_definition = it->seatbelt_policy_string;
+  } else {
     // Check if the embedder knows about this sandbox process type.
+    const char* result_string;
     bool sandbox_type_found =
-        GetContentClient()->GetSandboxProfileForSandboxType(
-            sandbox_type, &sandbox_profile_resource_id);
+        GetContentClient()->GetSandboxProfileForSandboxType(sandbox_type,
+                                                            &result_string);
     CHECK(sandbox_type_found) << "Unknown sandbox type " << sandbox_type;
-  }
-
-  base::StringPiece sandbox_definition =
-      GetContentClient()->GetDataResource(
-          sandbox_profile_resource_id, ui::SCALE_FACTOR_NONE);
-  if (sandbox_definition.empty()) {
-    LOG(FATAL) << "Failed to load the sandbox profile (resource id "
-               << sandbox_profile_resource_id << ")";
-    return std::string();
+    sandbox_definition = result_string;
   }
 
   base::StringPiece common_sandbox_definition =
-      GetContentClient()->GetDataResource(
-          IDR_COMMON_SANDBOX_PROFILE, ui::SCALE_FACTOR_NONE);
-  if (common_sandbox_definition.empty()) {
-    LOG(FATAL) << "Failed to load the common sandbox profile";
-    return std::string();
-  }
+      service_manager::kSeatbeltPolicyString_common;
 
   // Prefix sandbox_data with common_sandbox_prefix_data.
   std::string sandbox_profile = common_sandbox_definition.as_string();

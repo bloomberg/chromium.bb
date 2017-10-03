@@ -267,6 +267,7 @@ static_library("common") {
     "//pdf:features",
     "//ppapi/features",
     "//printing/features",
+    "//services/service_manager/sandbox",
     "//skia",
     "//third_party/icu",
     "//third_party/re2",

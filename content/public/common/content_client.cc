@@ -113,7 +113,7 @@ std::string ContentClient::GetProcessTypeNameInEnglish(int type) {
 #if defined(OS_MACOSX)
 bool ContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,
-    int* sandbox_profile_resource_id) const {
+    const char** sandbox_profile) const {
   return false;
 }
 #endif
