@@ -224,17 +224,23 @@ of `operator new`. Any garbage-collected objects should be kept as `Member<T>` r
 need to define a `trace()` method as they are on the stack, and automatically traced and kept alive should
 a conservative GC be required.
 
+Classes with this annotation do not need a `Trace()` method, and should not inherit a garbage collected class.
+
 ### DISALLOW_NEW()
 
 Class-level annotation declaring the class a part object that cannot be separately allocated using `operator new`.
 If the class has `Member<T>` references, you need a `trace()` method which the object containing the `DISALLOW_NEW()`
 part object must call upon. The clang Blink GC plugin checks and enforces this.
 
+Classes with this annotation need a `Trace()` method, but should not inherit a garbage collected class.
+
 ### DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
 
 Class-level annotation allowing only the use of the placement `new` operator. This disallows general allocation of the
 object but allows putting the object as a value object in collections.  If the class has `Member<T>` references,
 you need to declare a `trace()` method. That trace method will be called automatically by the on-heap collections.
+
+Classes with this annotation need a `Trace()` method, but should not inherit a garbage collected class.
 
 ## Handles
 
