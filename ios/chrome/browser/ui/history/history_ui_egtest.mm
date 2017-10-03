@@ -245,48 +245,6 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test that history displays a message about entries only if the user is logged
-// in, and that tapping on the link in the message opens a new tab with the sync
-// help page.
-- (void)testHistoryEntriesStatusCell {
-  [self loadTestURLs];
-  [self openHistoryPanel];
-  // Assert that no message is shown when the user is not signed in.
-  NSRange range;
-  NSString* entriesMessage = ParseStringWithLink(
-      l10n_util::GetNSString(IDS_IOS_HISTORY_NO_SYNCED_RESULTS), &range);
-  [[EarlGrey selectElementWithMatcher:grey_text(entriesMessage)]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
-
-  // Mock sign in and assert that the page indicates what type of history
-  // entries are shown.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
-  [ChromeEarlGreyUI signInToIdentityByEmail:identity.userEmail];
-  [ChromeEarlGreyUI confirmSigninConfirmationDialog];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
-
-  [self openHistoryPanel];
-  // Assert that message about entries is shown. The "history is showing local
-  // entries" message will be shown because sync is not set up for this test.
-  [[EarlGrey selectElementWithMatcher:grey_text(entriesMessage)]
-      assertWithMatcher:grey_notNil()];
-
-  // Tap on "Learn more" link.
-  [[EarlGrey
-      selectElementWithMatcher:grey_kindOfClass([TransparentLinkButton class])]
-      performAction:grey_tap()];
-  // Assert that new tab with the link is opened, hence tab count of 2.
-  [ChromeEarlGrey waitForMainTabCount:2];
-}
-
 // Tests that searching history displays only entries matching the search term.
 - (void)testSearchHistory {
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once

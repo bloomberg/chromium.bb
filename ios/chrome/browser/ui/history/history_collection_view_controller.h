@@ -41,8 +41,8 @@ class ChromeBrowserState;
 @property(nonatomic, assign, getter=isEditing) BOOL editing;
 // YES if the the search bar is present.
 @property(nonatomic, assign, getter=isSearching) BOOL searching;
-// YES if collection is currently displaying any history entries.
-@property(nonatomic, assign, readonly) BOOL hasHistoryEntries;
+// YES if collection is currently displaying no history entries.
+@property(nonatomic, assign, readonly, getter=isEmpty) BOOL empty;
 // YES if the collection view has selected entries while in editing mode.
 @property(nonatomic, assign, readonly) BOOL hasSelectedEntries;
 

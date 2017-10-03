@@ -8,14 +8,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
-// Type of displayed history entries.  Entries can be synced or local, or there
-// may be no history entries.
-typedef NS_ENUM(NSInteger, HistoryEntriesStatus) {
-  NO_ENTRIES,
-  LOCAL_ENTRIES,
-  SYNCED_ENTRIES
-};
-
 class GURL;
 @class HistoryEntriesStatusItem;
 @class LabelLinkController;
@@ -31,8 +23,6 @@ class GURL;
 
 // Model item for HistoryEntriesStatusCell. Manages links added to the cell.
 @interface HistoryEntriesStatusItem : CollectionViewItem
-// Status of currently displayed history entries.
-@property(nonatomic, assign) HistoryEntriesStatus entriesStatus;
 // YES if messages should be hidden.
 @property(nonatomic, assign, getter=isHidden) BOOL hidden;
 // YES if message for other forms of browsing data should be shown.
