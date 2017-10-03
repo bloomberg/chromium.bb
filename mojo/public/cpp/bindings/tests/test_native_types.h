@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_TESTS_BINDINGS_TEST_NATIVE_TYPES_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_TESTS_BINDINGS_TEST_NATIVE_TYPES_H_
+
 #include <string>
 
 #include "base/macros.h"
@@ -82,3 +85,5 @@ struct ParamTraits<mojo::test::TestNativeStructWithAttachments> {
 };
 
 }  // namespace IPC
+
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_BINDINGS_TEST_NATIVE_TYPES_H_
