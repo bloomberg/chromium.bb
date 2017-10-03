@@ -12,10 +12,6 @@
 @synthesize tabModel = _tabModel;
 @synthesize webToolbarController = _webToolbarController;
 
-- (void)updateButtonVisibility {
-  [self.webToolbarController traitCollectionDidChange:nil];
-}
-
 - (void)selectedTabChanged {
   [self.webToolbarController selectedTabChanged];
 }

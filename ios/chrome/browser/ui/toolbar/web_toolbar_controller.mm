@@ -353,6 +353,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)updateSnapshotWithWidth:(CGFloat)width forced:(BOOL)force;
 // Insert 'com' without the period if cursor is directly after a period.
 - (NSString*)updateTextForDotCom:(NSString*)text;
+// Updates all buttons visibility, including the parent class buttons.
+- (void)updateToolbarButtons;
 @end
 
 @implementation WebToolbarController
@@ -836,8 +838,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   return omniboxViewIOS->IsPopupOpen();
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
+- (void)updateToolbarButtons {
+  [super updateStandardButtons];
   _lastKnownTraitCollection = [UITraitCollection
       traitCollectionWithTraitsFromCollections:@[ self.view.traitCollection ]];
   if (IsIPadIdiom()) {
@@ -1349,8 +1351,12 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)windowDidChange {
   if (![_lastKnownTraitCollection
           containsTraitsInCollection:self.view.traitCollection]) {
-    [self traitCollectionDidChange:_lastKnownTraitCollection];
+    [self updateToolbarButtons];
   }
+}
+
+- (void)traitCollectionDidChange {
+  [self updateToolbarButtons];
 }
 
 #pragma mark -
