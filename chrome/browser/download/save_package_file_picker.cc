@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/file_util_icu.h"
@@ -22,6 +24,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
@@ -132,7 +135,7 @@ SavePackageFilePicker::SavePackageFilePicker(
     bool can_save_as_complete,
     DownloadPrefs* download_prefs,
     const content::SavePackagePathPickedCallback& callback)
-    : render_process_id_(web_contents->GetRenderProcessHost()->GetID()),
+    : render_process_id_(web_contents->GetMainFrame()->GetProcess()->GetID()),
       can_save_as_complete_(can_save_as_complete),
       download_prefs_(download_prefs),
       callback_(callback) {
