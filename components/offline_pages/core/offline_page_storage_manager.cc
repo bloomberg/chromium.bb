@@ -139,7 +139,7 @@ void OfflinePageStorageManager::GetPageIdsToClear(
   // If we're still over the clear threshold, we're going to clear remaining
   // pages from oldest last access time.
   int64_t free_space = stats.free_disk_space;
-  int64_t total_size = stats.total_archives_size;
+  int64_t total_size = stats.temporary_archives_size;
   int64_t space_to_release =
       kept_pages_size -
       (total_size + free_space) * constants::kOfflinePageStorageClearThreshold;
@@ -162,7 +162,7 @@ void OfflinePageStorageManager::GetPageIdsToClear(
 OfflinePageStorageManager::ClearMode
 OfflinePageStorageManager::ShouldClearPages(
     const ArchiveManager::StorageStats& storage_stats) {
-  int64_t total_size = storage_stats.total_archives_size;
+  int64_t total_size = storage_stats.temporary_archives_size;
   int64_t free_space = storage_stats.free_disk_space;
   if (total_size == 0)
     return ClearMode::NOT_NEEDED;

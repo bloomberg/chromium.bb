@@ -116,7 +116,7 @@ class OfflinePageTestModel : public OfflinePageModelImpl {
     return removed_pages_;
   }
 
-  int64_t GetTotalSize() const;
+  int64_t GetTemporaryPagesSize() const;
 
   base::SimpleTestClock* clock() { return clock_; }
 
@@ -153,10 +153,13 @@ void OfflinePageTestModel::DeletePagesByOfflineId(
   callback.Run(DeletePageResult::SUCCESS);
 }
 
-int64_t OfflinePageTestModel::GetTotalSize() const {
+int64_t OfflinePageTestModel::GetTemporaryPagesSize() const {
   int64_t res = 0;
   for (const auto& id_page_pair : pages_)
-    res += id_page_pair.second.file_size;
+    if (policy_controller_->GetPolicy(id_page_pair.second.client_id.name_space)
+            .lifetime_policy.lifetime_type ==
+        LifetimePolicy::LifetimeType::TEMPORARY)
+      res += id_page_pair.second.file_size;
   return res;
 }
 
@@ -202,7 +205,7 @@ class OfflinePageStorageManagerTest : public testing::Test {
   TestArchiveManager* test_archive_manager() { return archive_manager_.get(); }
   void OnPagesCleared(size_t pages_cleared_count, ClearStorageResult result);
   void Initialize(const std::vector<PageSettings>& settings,
-                  StorageStats stats = {kFreeSpaceNormal, 0},
+                  StorageStats stats = {kFreeSpaceNormal, 0, 0},
                   TestOptions options = TestOptions::DEFAULT);
   void TryClearPages();
 
@@ -249,8 +252,8 @@ void OfflinePageStorageManagerTest::Initialize(
 
   if (stats.free_disk_space == 0)
     stats.free_disk_space = kFreeSpaceNormal;
-  if (stats.total_archives_size == 0) {
-    stats.total_archives_size = model_->GetTotalSize();
+  if (stats.total_archives_size() == 0) {
+    stats.temporary_archives_size = model_->GetTemporaryPagesSize();
   }
   archive_manager_.reset(new TestArchiveManager(stats));
   manager_.reset(new OfflinePageStorageManager(
@@ -315,7 +318,7 @@ TEST_F(OfflinePageStorageManagerTest, TestDeletePersistentPages) {
   TryClearPages();
   EXPECT_EQ(0, last_cleared_page_count());
   EXPECT_EQ(1, total_cleared_times());
-  EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
+  EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(0, static_cast<int>(model()->GetRemovedPages().size()));
 }
 
@@ -394,14 +397,15 @@ TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
   // Adding more fresh pages to make it go over limit.
   clock()->Advance(base::TimeDelta::FromMinutes(5));
   model()->AddPages({kOneWeekNamespace, 400, 0});
-  int64_t total_size_before = model()->GetTotalSize();
+  int64_t total_size_before = model()->GetTemporaryPagesSize();
   int64_t available_space = 300 * (1 << 20);  // 300 MB
-  test_archive_manager()->SetValues({available_space, total_size_before});
+  test_archive_manager()->SetValues(
+      {available_space, total_size_before, 40 * kTestFileSize});
   EXPECT_GE(total_size_before, constants::kOfflinePageStorageLimit *
                                    (available_space + total_size_before));
   TryClearPages();
   EXPECT_LE(total_size_before * constants::kOfflinePageStorageClearThreshold,
-            model()->GetTotalSize());
+            model()->GetTemporaryPagesSize());
   EXPECT_EQ(4, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   int deleted_page_total = last_cleared_page_count() + 101;
@@ -411,7 +415,7 @@ TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
   // After more days, all pages should be deleted.
   clock()->Advance(base::TimeDelta::FromDays(30));
   TryClearPages();
-  EXPECT_EQ(40 * kTestFileSize, model()->GetTotalSize());
+  EXPECT_EQ(0, model()->GetTemporaryPagesSize());
   EXPECT_EQ(5, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   // Number of removed pages should be all the temporary pages initially
