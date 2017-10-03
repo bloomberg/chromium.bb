@@ -920,14 +920,6 @@ void UiSceneManager::SetToolbarState(const ToolbarState& state) {
   webvr_url_toast_->SetToolbarState(state);
 }
 
-void UiSceneManager::SetLoading(bool loading) {
-  NOTREACHED();
-}
-
-void UiSceneManager::SetLoadProgress(float progress) {
-  NOTREACHED();
-}
-
 void UiSceneManager::SetIsExiting() {
   if (exiting_)
     return;
