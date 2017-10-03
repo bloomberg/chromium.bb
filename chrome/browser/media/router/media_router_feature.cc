@@ -30,11 +30,6 @@ const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
 // Controls if local media casting is enabled.
 const base::Feature kEnableCastLocalMedia{"EnableCastLocalMedia",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls if browser should retry opening cast channel when error occurs and
-// if so what is the backoff policy.
-const base::Feature kEnableCastChannelRetry{"EnableCastChannelRetry",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -81,9 +76,6 @@ bool CastLocalMediaEnabled() {
   return base::FeatureList::IsEnabled(kEnableCastLocalMedia);
 }
 
-bool CastChannelRetryEnabled() {
-  return base::FeatureList::IsEnabled(kEnableCastChannelRetry);
-}
 #endif
 
 }  // namespace media_router

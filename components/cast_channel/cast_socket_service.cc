@@ -12,8 +12,6 @@
 using content::BrowserThread;
 
 namespace {
-// Connect timeout for connect calls.
-const int kConnectTimeoutSecs = 10;
 
 // Ping interval
 const int kPingIntervalInSecs = 5;
@@ -113,8 +111,8 @@ int CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
 
 int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
                                   net::NetLog* net_log,
+                                  base::TimeDelta connect_timeout,
                                   CastSocket::OnOpenCallback open_cb) {
-  auto connect_timeout = base::TimeDelta::FromSeconds(kConnectTimeoutSecs);
   auto ping_interval = base::TimeDelta::FromSeconds(kPingIntervalInSecs);
   auto liveness_timeout =
       base::TimeDelta::FromSeconds(kConnectLivenessTimeoutSecs);

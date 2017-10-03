@@ -211,7 +211,7 @@ class CastMediaSinkServiceImpl
   // number of retry attempts to decide when to stop retry.
   static constexpr int kDefaultMaxRetryAttempts = 3;
 
-  // Parameter name const for kEnableCastChannelRetry feature.
+  // Parameter name const for kEnableCastDiscovery feature.
   static constexpr char const kParamNameInitialDelayMS[] = "initial_delay_ms";
   static constexpr char const kParamNameMaxRetryAttempts[] =
       "max_retry_attempts";

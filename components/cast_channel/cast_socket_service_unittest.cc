@@ -90,6 +90,7 @@ TEST_F(CastSocketServiceTest, TestOpenChannel) {
 
   cast_socket_service_->AddObserver(&mock_observer_);
   cast_socket_service_->OpenSocket(ip_endpoint, nullptr /* net_log */,
+                                   base::TimeDelta::FromSeconds(20),
                                    mock_on_open_callback_.Get());
 }
 
