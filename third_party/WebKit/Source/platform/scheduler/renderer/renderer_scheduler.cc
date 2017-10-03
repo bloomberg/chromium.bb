@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -26,9 +25,13 @@ RendererScheduler::RAILModeObserver::~RAILModeObserver() = default;
 // static
 std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   // Ensure categories appear as an option in chrome://tracing.
-  WarmupTracingCategories();
-  // Workers might be short-lived, so placing warmup here.
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
+  TRACE_EVENT_WARMUP_CATEGORY(
+      TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"));
+  TRACE_EVENT_WARMUP_CATEGORY(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"));
+  TRACE_EVENT_WARMUP_CATEGORY(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.enable_verbose_snapshots"));
 
   base::MessageLoop* message_loop = base::MessageLoop::current();
   std::unique_ptr<RendererSchedulerImpl> scheduler(
