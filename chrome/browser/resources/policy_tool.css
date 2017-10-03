@@ -23,3 +23,11 @@ tbody.value-editing-on .edit-button,
 tbody.value-editing-on .value {
   display: none;
 }
+
+#invalid-session-name-error {
+  color: red;
+}
+
+#invalid-session-name-error:not(hidden) {
+  display: block;
+}

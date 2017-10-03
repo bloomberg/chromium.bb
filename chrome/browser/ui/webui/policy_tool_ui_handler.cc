@@ -197,7 +197,7 @@ void PolicyToolUIHandler::HandleLoadSession(const base::ListValue* args) {
   base::FilePath::StringType new_session_name =
       base::FilePath::FromUTF8Unsafe(args->GetList()[0].GetString()).value();
   if (!IsValidSessionName(new_session_name)) {
-    ShowErrorMessageToUser("errorInvalidSessionName");
+    CallJavascriptFunction("policy.Page.showInvalidSessionNameError");
     return;
   }
   session_name_ = new_session_name;

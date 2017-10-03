@@ -44,6 +44,8 @@ class PolicyToolUITest : public InProcessBrowserTest {
 
   std::unique_ptr<base::DictionaryValue> ExtractPolicyValues(bool need_status);
 
+  bool IsInvalidSessionNameErrorMessageDisplayed();
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(PolicyToolUITest);
@@ -133,6 +135,18 @@ void PolicyToolUITest::LoadSessionAndWaitForAlert(
   LoadSession(session_name);
   dialog_wait.Run();
   EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
+}
+
+bool PolicyToolUITest::IsInvalidSessionNameErrorMessageDisplayed() {
+  const std::string javascript =
+      "domAutomationController.send($('invalid-session-name-error')."
+      "offsetWidth > "
+      "0)";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  bool result = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(contents, javascript, &result));
+  return result;
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, CreatingSessionFiles) {
@@ -234,9 +248,13 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, Editing) {
   EXPECT_EQ(expected, *values);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidFilename) {
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidSessionName) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
-  LoadSessionAndWaitForAlert("../test");
+  EXPECT_FALSE(IsInvalidSessionNameErrorMessageDisplayed());
+  LoadSession("../test");
+  EXPECT_TRUE(IsInvalidSessionNameErrorMessageDisplayed());
+  LoadSession("policy");
+  EXPECT_FALSE(IsInvalidSessionNameErrorMessageDisplayed());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidJson) {
