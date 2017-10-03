@@ -34,7 +34,6 @@
 #include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Deprecation.h"
@@ -68,6 +67,7 @@
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
