@@ -360,7 +360,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
         info, DEFAULT_PRIORITY, &test_hosts[i].addresses, CompletionCallback(),
         &request[i], NetLogWithSource());
 
-    // Setup a SpdySessionKey
+    // Setup a SpdySessionKey.
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
         PRIVACY_MODE_DISABLED);
@@ -396,8 +396,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // |session| for the second host.
   base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
-          test_hosts[1].key, GURL(test_hosts[1].url),
-          /* enable_ip_based_pooling = */ false, NetLogWithSource());
+          test_hosts[1].key, /* enable_ip_based_pooling = */ false,
+          NetLogWithSource());
   EXPECT_FALSE(session1);
 
   // Verify that the second host, through a proxy, won't share the IP.
@@ -427,8 +427,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // Grab the session to host 1 and verify that it is the same session
   // we got with host 0, and that is a different from host 2's session.
   session1 = spdy_session_pool_->FindAvailableSession(
-      test_hosts[1].key, GURL(test_hosts[1].url),
-      /* enable_ip_based_pooling = */ true, NetLogWithSource());
+      test_hosts[1].key, /* enable_ip_based_pooling = */ true,
+      NetLogWithSource());
   EXPECT_EQ(session.get(), session1.get());
   EXPECT_NE(session2.get(), session1.get());
 
@@ -570,8 +570,8 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
   base::HistogramTester histogram_tester;
   base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
-          test_hosts[1].key, GURL(),
-          /* enable_ip_based_pooling = */ true, net_log.bound());
+          test_hosts[1].key, /* enable_ip_based_pooling = */ true,
+          net_log.bound());
   EXPECT_EQ(session0.get(), session1.get());
 
   ASSERT_EQ(1u, net_log.GetSize());
@@ -579,8 +579,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
 
   // A request to the second host should still pool to the existing connection.
   session1 = spdy_session_pool_->FindAvailableSession(
-      test_hosts[1].key, GURL(),
-      /* enable_ip_based_pooling = */ true, net_log.bound());
+      test_hosts[1].key, /* enable_ip_based_pooling = */ true, net_log.bound());
   EXPECT_EQ(session0.get(), session1.get());
 
   ASSERT_EQ(2u, net_log.GetSize());
@@ -654,15 +653,15 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
   // A request to the second host should pool to the existing connection.
   base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
-          test_hosts[1].key, GURL(),
-          /* enable_ip_based_pooling = */ true, NetLogWithSource());
+          test_hosts[1].key, /* enable_ip_based_pooling = */ true,
+          NetLogWithSource());
   EXPECT_EQ(session0.get(), session1.get());
 
   // A request to the second host should not pool to the existing connection if
   // IP based pooling is disabled.
   session1 = spdy_session_pool_->FindAvailableSession(
-      test_hosts[1].key, GURL(),
-      /* enable_ip_based_pooling = */ false, NetLogWithSource());
+      test_hosts[1].key, /* enable_ip_based_pooling = */ false,
+      NetLogWithSource());
   EXPECT_FALSE(session1);
 
   // It should be possible to open a new SpdySession, even if a previous call to
@@ -797,46 +796,6 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(delegateB.StreamIsClosed());
   EXPECT_THAT(delegateB.WaitForClose(), IsError(ERR_NETWORK_CHANGED));
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
-}
-
-TEST_F(SpdySessionPoolTest, FindAvailableSession) {
-  SpdySessionKey key(HostPortPair("www.example.org", 443),
-                     ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
-  StaticSocketDataProvider data(reads, arraysize(reads), nullptr, 0);
-  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  CreateNetworkSession();
-
-  base::WeakPtr<SpdySession> session =
-      CreateSpdySession(http_session_.get(), key, NetLogWithSource());
-
-  // Flush the SpdySession::OnReadComplete() task.
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key));
-
-  // FindAvailableSession should return |session| if called with empty |url|.
-  base::WeakPtr<SpdySession> session1 =
-      spdy_session_pool_->FindAvailableSession(
-          key, GURL(),
-          /* enable_ip_based_pooling = */ true, NetLogWithSource());
-  EXPECT_EQ(session.get(), session1.get());
-
-  // FindAvailableSession should return |session| if called with |url| for which
-  // there is no pushed stream on any sessions owned by |spdy_session_pool_|.
-  base::WeakPtr<SpdySession> session2 =
-      spdy_session_pool_->FindAvailableSession(
-          key, GURL("http://news.example.org/foo.html"),
-          /* enable_ip_based_pooling = */ true, NetLogWithSource());
-  EXPECT_EQ(session.get(), session2.get());
-
-  spdy_session_pool_->CloseCurrentSessions(ERR_ABORTED);
 }
 
 class SpdySessionMemoryDumpTest

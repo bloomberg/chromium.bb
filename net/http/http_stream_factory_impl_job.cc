@@ -547,7 +547,6 @@ void HttpStreamFactoryImpl::Job::OnPreconnectsComplete() {
 int HttpStreamFactoryImpl::Job::OnHostResolution(
     SpdySessionPool* spdy_session_pool,
     const SpdySessionKey& spdy_session_key,
-    const GURL& origin_url,
     bool enable_ip_based_pooling,
     const AddressList& addresses,
     const NetLogWithSource& net_log) {
@@ -555,7 +554,7 @@ int HttpStreamFactoryImpl::Job::OnHostResolution(
   // ClientSocketPoolManager will be destroyed in the same callback that
   // destroys the SpdySessionPool.
   return spdy_session_pool->FindAvailableSession(
-             spdy_session_key, origin_url, enable_ip_based_pooling, net_log)
+             spdy_session_key, enable_ip_based_pooling, net_log)
              ? ERR_SPDY_SESSION_ALREADY_EXISTS
              : OK;
 }
@@ -923,12 +922,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
     return rv;
   }
 
-  // Check first if we have a spdy session for this group.  If so, then go
-  // straight to using that.
+  // Check first if there is a pushed stream matching the request, or an HTTP/2
+  // connection this request can pool to.  If so, then go straight to using
+  // that.
   if (CanUseExistingSpdySession()) {
     base::WeakPtr<SpdySession> spdy_session =
-        session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, origin_url_, enable_ip_based_pooling_, net_log_);
+        session_->spdy_session_pool()->push_promise_index()->Find(
+            spdy_session_key_, origin_url_);
+    if (!spdy_session) {
+      spdy_session = session_->spdy_session_pool()->FindAvailableSession(
+          spdy_session_key_, enable_ip_based_pooling_, net_log_);
+    }
     if (spdy_session) {
       // If we're preconnecting, but we already have a SpdySession, we don't
       // actually need to preconnect any sockets, so we're done.
@@ -969,7 +973,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   OnHostResolutionCallback resolution_callback =
       CanUseExistingSpdySession()
           ? base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
-                       spdy_session_key_, origin_url_, enable_ip_based_pooling_)
+                       spdy_session_key_, enable_ip_based_pooling_)
           : OnHostResolutionCallback();
   if (delegate_->for_websockets()) {
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
@@ -1003,7 +1007,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     // probably an IP pooled connection.
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, origin_url_, enable_ip_based_pooling_, net_log_);
+            spdy_session_key_, enable_ip_based_pooling_, net_log_);
     if (existing_spdy_session_) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
@@ -1191,10 +1195,19 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   CHECK(!stream_.get());
 
+  // It is possible that a pushed stream has been opened by a server since last
+  // time Job checked above.
+  if (!existing_spdy_session_) {
+    existing_spdy_session_ =
+        session_->spdy_session_pool()->push_promise_index()->Find(
+            spdy_session_key_, origin_url_);
+  }
+  // It is also possible that an HTTP/2 connection has been established since
+  // last time Job checked above.
   if (!existing_spdy_session_) {
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, origin_url_, enable_ip_based_pooling_, net_log_);
+            spdy_session_key_, enable_ip_based_pooling_, net_log_);
   }
   if (existing_spdy_session_.get()) {
     // We picked up an existing session, so we don't need our socket.

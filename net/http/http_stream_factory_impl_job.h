@@ -400,7 +400,6 @@ class HttpStreamFactoryImpl::Job {
   // session is found, and OK otherwise.
   static int OnHostResolution(SpdySessionPool* spdy_session_pool,
                               const SpdySessionKey& spdy_session_key,
-                              const GURL& origin_url,
                               bool enable_ip_based_pooling,
                               const AddressList& addresses,
                               const NetLogWithSource& net_log);
