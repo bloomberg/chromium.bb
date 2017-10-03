@@ -54,7 +54,6 @@
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -1342,8 +1341,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     // For iPhone place the popup just below the toolbar.
     CGRect fieldFrame =
         [parent convertRect:[_webToolbar bounds] fromView:_webToolbar];
-    frame.origin.y =
-        CGRectGetMaxY(fieldFrame) - [ToolbarController toolbarDropShadowHeight];
+    frame.origin.y = CGRectGetMaxY(fieldFrame);
     frame.size.height = CGRectGetMaxY([parent bounds]) - frame.origin.y;
   }
   return frame;

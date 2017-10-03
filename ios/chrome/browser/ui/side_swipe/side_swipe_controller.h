@@ -10,12 +10,12 @@
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 
 @class CardSideSwipeView;
 @class SideSwipeGestureRecognizer;
 @protocol TabStripHighlighting;
+@class WebToolbarController;
 
 // Notification sent when the user starts a side swipe (on tablet).
 extern NSString* const kSideSwipeWillStartNotification;

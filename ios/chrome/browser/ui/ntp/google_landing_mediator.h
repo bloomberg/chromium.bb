@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 
+@protocol BrowserCommands;
 @protocol GoogleLandingConsumer;
 @protocol OmniboxFocuser;
 @protocol UrlLoader;
