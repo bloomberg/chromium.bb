@@ -53,6 +53,7 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
   GrContextOptions options;
   options.fGlyphCacheTextureMaximumBytes = max_glyph_cache_texture_bytes;
   options.fAvoidStencilBuffers = capabilities.avoid_stencil_buffers;
+  options.fAllowPathMaskCaching = false;
   sk_sp<GrGLInterface> interface(
       skia_bindings::CreateGLES2InterfaceBindings(gl));
   gr_context_ = sk_sp<GrContext>(GrContext::Create(
