@@ -193,6 +193,16 @@ class FrameProcessorTest
         &timestamp_offset_));
   }
 
+  // Compares |expected| to the buffered ranges of |stream| formatted into a
+  // string as follows:
+  //
+  // If no ranges: "{ }"
+  // If one range: "{ [start1,end1) }"
+  // If multiple ranges, they are added space-delimited in sequence, like:
+  // "{ [start1,end1) [start2,end2) }"
+  //
+  // startN and endN are the respective buffered start and end times of the
+  // range in integer milliseconds.
   void CheckExpectedRangesByTimestamp(ChunkDemuxerStream* stream,
                                       const std::string& expected) {
     // Note, DemuxerStream::TEXT streams return [0,duration (==infinity here))
@@ -960,23 +970,54 @@ TEST_P(FrameProcessorTest,
                                 base::TimeDelta::FromMilliseconds(13)));
   }
 
+  // Process a sequence of two audio frames:
+  // A: PTS -7ms, DTS 10ms, duration 10ms, keyframe
+  // B: PTS  3ms, DTS 20ms, duration 10ms, keyframe
   ProcessFrames("-7|10K 3|20K", "");
 
   if (use_sequence_mode_) {
+    // Sequence mode detected that frame A needs to be relocated 7ms into the
+    // future to begin the sequence at time 0. There is no append window
+    // filtering because the PTS result of the relocation is within the append
+    // window of [0,+Infinity).
+    // Frame A is relocated by 7 to PTS 0, DTS 17, duration 10.
+    // Frame B is relocated by 7 to PTS 10, DTS 27, duration 10.
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(7), timestamp_offset_);
 
-    // TODO(wolenetz): Adjust the following expectation to use PTS instead of
-    // DTS once https://crbug.com/398130 is fixed.
-    CheckExpectedRangesByTimestamp(audio_.get(), "{ [17,37) }");
+    if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+      // By DTS, start of frame A (17) through end of frame B (27+10).
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [17,37) }");
+    } else {
+      // By PTS, start of frame A (0) through end of frame B (10+10).
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,20) }");
+    }
 
+    // Frame A is now at PTS 0 (originally at PTS -7)
+    // Frame B is now at PTS 10 (originally at PTS 3)
     CheckReadsThenReadStalls(audio_.get(), "0:-7 10:3");
   } else {
+    // Segments mode does not update timestampOffset automatically, so it
+    // remained 0 and neither frame was relocated by timestampOffset.
+    // Frame A's start *was* relocated by append window partial audio cropping:
+    // Append window filtering (done by PTS, regardless of range buffering API)
+    // did a partial crop of the first 7ms of frame A which was before
+    // the default append window start time 0, and moved both the PTS and DTS of
+    // frame A forward by 7 and reduced its duration by 7. Frame B was fully
+    // inside the append window and remained uncropped and unrelocated.
+    // Frame A is buffered at PTS -7+7=0, DTS 10+7=17, duration 10-7=3.
+    // Frame B is buffered at PTS 3, DTS 20, duration 10.
     EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
 
-    // TODO(wolenetz): Adjust the following expectation to use PTS instead of
-    // DTS once https://crbug.com/398130 is fixed.
-    CheckExpectedRangesByTimestamp(audio_.get(), "{ [17,30) }");
+    if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+      // By DTS, start of frame A (17) through end of frame B (20+10).
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [17,30) }");
+    } else {
+      // By PTS, start of frame A (0) through end of frame B (3+10).
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,13) }");
+    }
 
+    // Frame A is now at PTS 0 (originally at PTS -7)
+    // Frame B is now at PTS 3 (same as it was originally)
     CheckReadsThenReadStalls(audio_.get(), "0:-7 3");
   }
 }
@@ -1109,15 +1150,18 @@ TEST_P(FrameProcessorTest,
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 7));
   ProcessFrames("", "40|70");  // PTS=40, DTS=70
 
-  // Verify DTS-based range is increased.
-  // TODO(wolenetz): Update this expectation to be { [50,70] } when switching to
-  // managing and reporting buffered ranges by PTS intervals instead of DTS
-  // intervals. This reflects the expectation that PTS start is not "pulled
-  // backward" for the new frame at PTS=40 because current spec text doesn't
-  // support SAP Type 2; it has no steps in the coded frame processing algorithm
-  // that would do that "pulling backward". See https://crbug.com/718641 and
-  // https://github.com/w3c/media-source/issues/187.
-  CheckExpectedRangesByTimestamp(video_.get(), "{ [50,80) }");
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    // Verify DTS-based range is increased.
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [50,80) }");
+  } else {
+    // This reflects the expectation that PTS start is not "pulled backward" for
+    // the new frame at PTS=40 because current spec text doesn't support SAP
+    // Type 2; it has no steps in the coded frame processing algorithm that
+    // would do that "pulling backward". See https://crbug.com/718641 and
+    // https://github.com/w3c/media-source/issues/187.
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [50,70) }");
+  }
+
   SeekStream(video_.get(), base::TimeDelta());
   CheckReadsThenReadStalls(video_.get(), "50 60 40");
 }

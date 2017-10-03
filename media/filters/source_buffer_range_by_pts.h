@@ -13,20 +13,20 @@
 
 namespace media {
 
-// TODO(wolenetz): Make this class correctly buffer by PTS intervals. See
-// https://crbug.com/718641.
 class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
  public:
   // Creates a range with |new_buffers|. |new_buffers| cannot be empty and the
   // front of |new_buffers| must be a keyframe.
-  // |range_start_decode_time| refers to the starting timestamp for the coded
+  // |range_start_pts| refers to the starting timestamp for the coded
   // frame group to which these buffers belong.
   SourceBufferRangeByPts(GapPolicy gap_policy,
                          const BufferQueue& new_buffers,
-                         DecodeTimestamp range_start_decode_time,
+                         base::TimeDelta range_start_pts,
                          const InterbufferDistanceCB& interbuffer_distance_cb);
 
   ~SourceBufferRangeByPts() override;
+
+  void DeleteAll(BufferQueue* deleted_buffers) override;
 
   // Appends the buffers from |range| into this range.
   // The first buffer in |range| must come directly after the last buffer
@@ -43,42 +43,50 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
 
   // Appends |buffers| to the end of the range and updates |keyframe_map_| as
   // it encounters new keyframes.
-  // If |new_buffers_group_start_timestamp| is kNoDecodeTimestamp(), then the
+  // If |new_buffers_group_start_pts| is kNoTimestamp, then the
   // first buffer in |buffers| must come directly after the last buffer in this
-  // range (within the fudge room).
-  // If |new_buffers_group_start_timestamp| is set otherwise, then that time
-  // must come directly after the last buffer in this range (within the fudge
-  // room). The latter scenario is required when a muxed coded frame group has
-  // such a large jagged start across tracks that its first buffer is not within
-  // the fudge room, yet its group start was.
+  // range (within the fudge room) - specifically, if the first buffer in
+  // |buffers| is not a keyframe, then it must be next in DTS order w.r.t. last
+  // buffer in |buffers|. Otherwise, it's a keyframe that must be next in PTS
+  // order w.r.t. |highest_frame_|.
+  // If |new_buffers_group_start_pts| is set otherwise, then that time must come
+  // directly after |highest_frame_| (within the fudge room), and the first
+  // buffer in |buffers| must be a keyframe.
+  // The latter scenario is required when a muxed coded frame group has such a
+  // large jagged start across tracks that its first buffer is not within the
+  // fudge room, yet its group start was.
   // During append, |highest_frame_| is updated, if necessary.
   void AppendBuffersToEnd(const BufferQueue& buffers,
-                          DecodeTimestamp new_buffers_group_start_timestamp);
-  bool CanAppendBuffersToEnd(
-      const BufferQueue& buffers,
-      DecodeTimestamp new_buffers_group_start_timestamp) const;
+                          base::TimeDelta new_buffers_group_start_timestamp);
+  bool CanAppendBuffersToEnd(const BufferQueue& buffers,
+                             base::TimeDelta new_buffers_group_start_pts) const;
 
-  // Updates |next_buffer_index_| to point to the Buffer containing |timestamp|.
-  // Assumes |timestamp| is valid and in this range.
-  void Seek(DecodeTimestamp timestamp);
+  // Updates |next_buffer_index_| to point to the keyframe with presentation
+  // timestamp at or before |timestamp|. Assumes |timestamp| is valid and in
+  // this range.
+  void Seek(base::TimeDelta timestamp);
+
+  // Returns true if the range has enough data to seek to the specified
+  // |timestamp|, false otherwise.
+  bool CanSeekTo(base::TimeDelta timestamp) const;
 
   // Return the config ID for the buffer at |timestamp|. Precondition: callers
   // must first verify CanSeekTo(timestamp) == true.
-  int GetConfigIdAtTime(DecodeTimestamp timestamp);
+  int GetConfigIdAtTime(base::TimeDelta timestamp);
 
   // Return true if all buffers in range of [start, end] have the same config
   // ID. Precondition: callers must first verify that
   // CanSeekTo(start) ==  CanSeekTo(end) == true.
-  bool SameConfigThruRange(DecodeTimestamp start, DecodeTimestamp end);
+  bool SameConfigThruRange(base::TimeDelta start, base::TimeDelta end);
 
   // Finds the next keyframe from |buffers_| starting at or after |timestamp|
   // and creates and returns a new SourceBufferRangeByPts with the buffers from
   // that keyframe onward. The buffers in the new SourceBufferRangeByPts are
   // moved out of this range. If there is no keyframe at or after |timestamp|,
   // SplitRange() returns null and this range is unmodified. This range can
-  // become empty if |timestamp| <= the DTS of the first buffer in this range.
+  // become empty if |timestamp| <= the PTS of the first buffer in this range.
   // |highest_frame_| is updated, if necessary.
-  std::unique_ptr<SourceBufferRangeByPts> SplitRange(DecodeTimestamp timestamp);
+  std::unique_ptr<SourceBufferRangeByPts> SplitRange(base::TimeDelta timestamp);
 
   // Deletes the buffers from this range starting at |timestamp|, exclusive if
   // |is_exclusive| is true, inclusive otherwise.
@@ -90,7 +98,7 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // starting at the buffer that had been at |next_buffer_index_|.
   // Returns true if everything in the range was deleted. Otherwise
   // returns false.
-  bool TruncateAt(DecodeTimestamp timestamp,
+  bool TruncateAt(base::TimeDelta timestamp,
                   BufferQueue* deleted_buffers,
                   bool is_exclusive);
 
@@ -108,14 +116,14 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // Returns the size of the buffers to secure if the buffers of
   // [|start_timestamp|, |end_removal_timestamp|) is removed.
   // Will not update |end_removal_timestamp| if the returned size is 0.
-  size_t GetRemovalGOP(DecodeTimestamp start_timestamp,
-                       DecodeTimestamp end_timestamp,
+  size_t GetRemovalGOP(base::TimeDelta start_timestamp,
+                       base::TimeDelta end_timestamp,
                        size_t bytes_to_free,
-                       DecodeTimestamp* end_removal_timestamp);
+                       base::TimeDelta* end_removal_timestamp);
 
   // Returns true iff the buffered end time of the first GOP in this range is
   // at or before |media_time|.
-  bool FirstGOPEarlierThanMediaTime(DecodeTimestamp media_time) const;
+  bool FirstGOPEarlierThanMediaTime(base::TimeDelta media_time) const;
 
   // Indicates whether the GOP at the beginning or end of the range contains the
   // next buffer position.
@@ -124,68 +132,72 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
 
   // Returns the timestamp of the next buffer that will be returned from
   // GetNextBuffer(), or kNoTimestamp if the timestamp is unknown.
-  DecodeTimestamp GetNextTimestamp() const;
+  base::TimeDelta GetNextTimestamp() const;
 
   // Returns the start timestamp of the range.
-  DecodeTimestamp GetStartTimestamp() const;
+  base::TimeDelta GetStartTimestamp() const;
 
-  // Returns the timestamp of the last buffer in the range.
-  DecodeTimestamp GetEndTimestamp() const;
+  // Returns the highest presentation timestamp of frames in the last GOP in the
+  // range.
+  base::TimeDelta GetEndTimestamp() const;
 
   // Returns the timestamp for the end of the buffered region in this range.
-  // This is an approximation if the duration for the last buffer in the range
-  // is unset.
-  DecodeTimestamp GetBufferedEndTimestamp() const;
+  // This is an approximation if the duration for the buffer with highest PTS in
+  // the last GOP in the range is unset.
+  base::TimeDelta GetBufferedEndTimestamp() const;
 
   // Returns whether a buffer with a starting timestamp of |timestamp| would
   // belong in this range. This includes a buffer that would be appended to
   // the end of the range.
-  bool BelongsToRange(DecodeTimestamp timestamp) const;
+  bool BelongsToRange(base::TimeDelta timestamp) const;
 
-  // Gets the timestamp for the keyframe that is after |timestamp|. If
-  // there isn't a keyframe in the range after |timestamp| then kNoTimestamp
-  // is returned. If |timestamp| is in the "gap" between the value  returned by
+  // Gets the timestamp for the keyframe that is at or after |timestamp|. If
+  // there isn't such a keyframe in the range then kNoTimestamp is returned.
+  // If |timestamp| is in the "gap" between the value returned by
   // GetStartTimestamp() and the timestamp on the first buffer in |buffers_|,
   // then |timestamp| is returned.
-  DecodeTimestamp NextKeyframeTimestamp(DecodeTimestamp timestamp);
+  base::TimeDelta NextKeyframeTimestamp(base::TimeDelta timestamp);
 
   // Gets the timestamp for the closest keyframe that is <= |timestamp|. If
   // there isn't a keyframe before |timestamp| or |timestamp| is outside
   // this range, then kNoTimestamp is returned.
-  DecodeTimestamp KeyframeBeforeTimestamp(DecodeTimestamp timestamp);
-
-  // Returns true if the range has enough data to seek to the specified
-  // |timestamp|, false otherwise.
-  bool CanSeekTo(DecodeTimestamp timestamp) const;
+  base::TimeDelta KeyframeBeforeTimestamp(base::TimeDelta timestamp);
 
   // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
   // no buffers exist in the range returns false, true otherwise.
-  bool GetBuffersInRange(DecodeTimestamp start,
-                         DecodeTimestamp end,
+  // This method is used for finding audio splice overlap buffers, so all
+  // buffers are expected to be keyframes here (so DTS doesn't matter at all).
+  bool GetBuffersInRange(base::TimeDelta start,
+                         base::TimeDelta end,
                          BufferQueue* buffers);
 
  private:
-  typedef std::map<DecodeTimestamp, int> KeyframeMap;
+  typedef std::map<base::TimeDelta, int> KeyframeMap;
 
-  // Implementation of protected SourceBufferRange interface.
-  bool TruncateAt(const BufferQueue::iterator& starting_point,
-                  BufferQueue* deleted_buffers) override;
-
-  // Returns an iterator in |buffers_| pointing to the buffer at |timestamp|.
-  // If |skip_given_timestamp| is true, this returns the first buffer with
-  // timestamp greater than |timestamp|.
-  BufferQueue::iterator GetBufferItrAt(DecodeTimestamp timestamp,
+  // Returns an index (or iterator) into |buffers_| pointing to the first buffer
+  // at or after |timestamp|.  If |skip_given_timestamp| is true, this returns
+  // the first buffer with timestamp strictly greater than |timestamp|. If
+  // |buffers_| has no such buffer, returns |buffers_.size()| (or
+  // |buffers_.end()|).
+  size_t GetBufferIndexAt(base::TimeDelta timestamp, bool skip_given_timestamp);
+  BufferQueue::iterator GetBufferItrAt(base::TimeDelta timestamp,
                                        bool skip_given_timestamp);
 
   // Returns an iterator in |keyframe_map_| pointing to the next keyframe after
   // |timestamp|. If |skip_given_timestamp| is true, this returns the first
   // keyframe with a timestamp strictly greater than |timestamp|.
-  KeyframeMap::iterator GetFirstKeyframeAt(DecodeTimestamp timestamp,
+  KeyframeMap::iterator GetFirstKeyframeAt(base::TimeDelta timestamp,
                                            bool skip_given_timestamp);
 
   // Returns an iterator in |keyframe_map_| pointing to the first keyframe
   // before or at |timestamp|.
-  KeyframeMap::iterator GetFirstKeyframeAtOrBefore(DecodeTimestamp timestamp);
+  KeyframeMap::iterator GetFirstKeyframeAtOrBefore(base::TimeDelta timestamp);
+
+  // Helper method to delete buffers in |buffers_| starting at
+  // |starting_point|, an index in |buffers_|.
+  // Returns true if everything in the range was removed. Returns
+  // false if the range still contains buffers.
+  bool TruncateAt(const size_t starting_point, BufferQueue* deleted_buffers);
 
   // Updates |highest_frame_| to be the frame with highest PTS in the last GOP
   // in this range.  If there are no buffers in this range, resets
@@ -198,23 +210,23 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   void UpdateEndTimeUsingLastGOP();
 
   // If the first buffer in this range is the beginning of a coded frame group,
-  // |range_start_decode_time_| is the time when the coded frame group begins.
-  // This is especially important in muxed media where the first coded frames
-  // for each track do not necessarily begin at the same time.
-  // |range_start_decode_time_| may be <= the timestamp of the first buffer in
-  // |buffers_|. |range_start_decode_time_| is kNoDecodeTimestamp() if this
-  // range does not start at the beginning of a coded frame group, which can
-  // happen by range removal or split when we don't have a way of knowing,
-  // across potentially multiple muxed streams, the coded frame group start
-  // timestamp for the new range.
-  DecodeTimestamp range_start_decode_time_;
+  // |range_start_pts_| is the presentation time when the coded frame group
+  // begins. This is especially important in muxed media where the first coded
+  // frames for each track do not necessarily begin at the same time.
+  // |range_start_pts_| may be <= the timestamp of the first buffer in
+  // |buffers_|. |range_start_pts_| is kNoTimestamp if this range does not start
+  // at the beginning of a coded frame group, which can happen by range removal
+  // or split when we don't have a way of knowing, across potentially multiple
+  // muxed streams, the coded frame group start timestamp for the new range.
+  base::TimeDelta range_start_pts_;
 
   // Index base of all positions in |keyframe_map_|. In other words, the
   // real position of entry |k| of |keyframe_map_| in the range is:
   //   keyframe_map_[k] - keyframe_map_index_base_
   int keyframe_map_index_base_;
 
-  // Maps keyframe decode timestamps to its index position in |buffers_|.
+  // Maps keyframe presentation timestamps to GOP start index of |buffers_|
+  // (with index adjusted by |keyframe_map_index_base_|);
   KeyframeMap keyframe_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferRangeByPts);

@@ -167,8 +167,10 @@ static const char kOpusSmallCodecDelayHash_2[] =
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const int k640IsoFileDurationMs = 2737;
-const int k640IsoCencFileDurationMs = 2736;
+const int k640IsoCencFileDurationMsByDts = 2736;
+const int k640IsoCencFileDurationMsByPts = 2769;
 const int k1280IsoFileDurationMs = 2736;
+const int k1280IsoFileDurationMsAVByPts = 2763;
 const int k1280IsoAVC3FileDurationMs = 2736;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
@@ -1746,8 +1748,13 @@ TEST_P(MSEPipelineIntegrationTest, ConfigChange_MP4) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
-            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  if (buffering_api_ == BufferingApi::kLegacyByDts) {
+    EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
+              pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  } else {
+    EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMsAVByPts,
+              pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  }
 
   source.Shutdown();
   Stop();
@@ -1776,7 +1783,10 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
   EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  if (buffering_api_ == BufferingApi::kLegacyByDts)
+    EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  else
+    EXPECT_EQ(33, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
@@ -1804,7 +1814,10 @@ MAYBE_EME_TEST_P(
   EXPECT_TRUE(WaitUntilOnEnded());
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  if (buffering_api_ == BufferingApi::kLegacyByDts)
+    EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  else
+    EXPECT_EQ(33, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
@@ -1865,10 +1878,19 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
   source.EndOfStream();
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  if (buffering_api_ == BufferingApi::kLegacyByDts)
+    EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  else
+    EXPECT_EQ(33, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+
   // The second video was not added, so its time has not been added.
-  EXPECT_EQ(k640IsoCencFileDurationMs,
-            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  if (buffering_api_ == BufferingApi::kLegacyByDts) {
+    EXPECT_EQ(k640IsoCencFileDurationMsByDts,
+              pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  } else {
+    EXPECT_EQ(k640IsoCencFileDurationMsByPts,
+              pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+  }
 
   Play();
 

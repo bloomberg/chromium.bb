@@ -60,11 +60,11 @@ class MEDIA_EXPORT SourceBufferRange {
 
   virtual ~SourceBufferRange();
 
+  // Deletes all buffers in range.
+  virtual void DeleteAll(BufferQueue* deleted_buffers) = 0;
+
   // Seeks to the beginning of the range.
   void SeekToStart();
-
-  // Deletes all buffers in range.
-  void DeleteAll(BufferQueue* deleted_buffers);
 
   // Updates |out_buffer| with the next buffer in presentation order. Seek()
   // must be called before calls to GetNextBuffer(), and buffers are returned
@@ -97,13 +97,6 @@ class MEDIA_EXPORT SourceBufferRange {
  protected:
   // Friend of protected is only for IsNextInPresentationSequence testing.
   friend class SourceBufferStreamTest;
-
-  // Helper method to delete buffers in |buffers_| starting at
-  // |starting_point|, an iterator in |buffers_|.
-  // Returns true if everything in the range was removed. Returns
-  // false if the range still contains buffers.
-  virtual bool TruncateAt(const BufferQueue::iterator& starting_point,
-                          BufferQueue* deleted_buffers) = 0;
 
   // Called during AppendBuffersToEnd to adjust estimated duration at the
   // end of the last append to match the delta in timestamps between
@@ -170,11 +163,8 @@ class MEDIA_EXPORT SourceBufferRange {
   int next_buffer_index_;
 
   // Caches the buffer, if any, with the highest PTS currently in |buffers_|.
-  // This is nullptr if this range is empty.
-  // This is useful in determining range membership and adjacency.
-  // TODO(wolenetz): Switch to using this in CanAppendBuffersToEnd(), etc., when
-  // switching to managing ranges by their presentation interval between GOPs,
-  // and by their decode sequence within GOPs. See https://crbug.com/718641.
+  // This is nullptr if this range is empty.  This is useful in determining
+  // range membership and adjacency in SourceBufferRangeByPts.
   scoped_refptr<StreamParserBuffer> highest_frame_;
 
   // Called to get the largest interbuffer distance seen so far in the stream.
