@@ -19,6 +19,7 @@ namespace device {
 class GvrDelegateProvider;
 class VRDisplayImpl;
 
+// TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
  public:
   static std::unique_ptr<GvrDevice> Create();

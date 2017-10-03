@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/vr/vr_device_manager.h"
+#include "chrome/browser/vr/service/vr_device_manager.h"
 
 #include <utility>
 
@@ -20,7 +20,7 @@
 #include "device/vr/openvr/openvr_device_provider.h"
 #endif
 
-namespace device {
+namespace vr {
 
 namespace {
 VRDeviceManager* g_vr_device_manager = nullptr;
@@ -29,7 +29,7 @@ VRDeviceManager* g_vr_device_manager = nullptr;
 VRDeviceManager::VRDeviceManager() : keep_alive_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
-  RegisterProvider(std::make_unique<GvrDeviceProvider>());
+  RegisterProvider(std::make_unique<device::GvrDeviceProvider>());
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
@@ -37,16 +37,16 @@ VRDeviceManager::VRDeviceManager() : keep_alive_(false) {
 #endif
 }
 
-VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
+VRDeviceManager::VRDeviceManager(
+    std::unique_ptr<device::VRDeviceProvider> provider)
     : keep_alive_(true) {
-  thread_checker_.DetachFromThread();
   RegisterProvider(std::move(provider));
   CHECK(!g_vr_device_manager);
   g_vr_device_manager = this;
 }
 
 VRDeviceManager::~VRDeviceManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   g_vr_device_manager = nullptr;
 }
 
@@ -60,17 +60,17 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
   // Loop through any currently active devices and send Connected messages to
   // the service. Future devices that come online will send a Connected message
   // when they are created.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   InitializeProviders();
 
-  std::vector<VRDevice*> devices;
+  std::vector<device::VRDevice*> devices;
   for (const auto& provider : providers_) {
     provider->GetDevices(&devices);
   }
 
   for (auto* device : devices) {
-    if (device->id() == VR_DEVICE_LAST_ID) {
+    if (device->id() == device::VR_DEVICE_LAST_ID) {
       continue;
     }
 
@@ -94,13 +94,13 @@ void VRDeviceManager::RemoveService(VRServiceImpl* service) {
 }
 
 unsigned int VRDeviceManager::GetNumberOfConnectedDevices() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return static_cast<unsigned int>(devices_.size());
 }
 
-VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+device::VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (index == 0)
     return nullptr;
@@ -125,8 +125,8 @@ void VRDeviceManager::InitializeProviders() {
 }
 
 void VRDeviceManager::RegisterProvider(
-    std::unique_ptr<VRDeviceProvider> provider) {
+    std::unique_ptr<device::VRDeviceProvider> provider) {
   providers_.push_back(std::move(provider));
 }
 
-}  // namespace device
+}  // namespace vr

@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "device/vr/vr_device_provider.h"
+#include "device/vr/vr_export.h"
 
 namespace device {
 
 class GvrDelegateProvider;
 class GvrDevice;
 
-class GvrDeviceProvider : public VRDeviceProvider {
+class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
  public:
   GvrDeviceProvider();
   ~GvrDeviceProvider() override;

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/vr/vr_service_impl.h"
+#include "chrome/browser/vr/service/vr_service_impl.h"
 
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/vr/service/vr_device_manager.h"
 #include "device/vr/vr_device.h"
-#include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_display_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace device {
+namespace vr {
 
 VRServiceImpl::VRServiceImpl(int render_frame_process_id,
                              int render_frame_routing_id)
@@ -35,13 +35,13 @@ VRServiceImpl::~VRServiceImpl() {
 
 void VRServiceImpl::Create(int render_frame_process_id,
                            int render_frame_routing_id,
-                           mojom::VRServiceRequest request) {
+                           device::mojom::VRServiceRequest request) {
   mojo::MakeStrongBinding(std::make_unique<VRServiceImpl>(
                               render_frame_process_id, render_frame_routing_id),
                           std::move(request));
 }
 
-void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
+void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
                               SetClientCallback callback) {
   DCHECK(!client_.get());
   client_ = std::move(service_client);
@@ -59,15 +59,15 @@ void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
 
 // Creates a VRDisplayImpl unique to this service so that the associated page
 // can communicate with the VRDevice.
-void VRServiceImpl::ConnectDevice(VRDevice* device) {
+void VRServiceImpl::ConnectDevice(device::VRDevice* device) {
   // Client should always be set as this is called through SetClient.
   DCHECK(client_);
   DCHECK(displays_.count(device) == 0);
-  mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
+  device::mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
   DCHECK(display_info);
   if (!display_info)
     return;
-  displays_[device] = std::make_unique<VRDisplayImpl>(
+  displays_[device] = std::make_unique<device::VRDisplayImpl>(
       device, render_frame_process_id_, render_frame_routing_id_, client_.get(),
       std::move(display_info));
 }
@@ -78,9 +78,10 @@ void VRServiceImpl::SetListeningForActivate(bool listening) {
   }
 }
 
-VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(VRDevice* device) {
+device::VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(
+    device::VRDevice* device) {
   auto it = displays_.find(device);
   return (it == displays_.end()) ? nullptr : it->second.get();
 }
 
-}  // namespace device
+}  // namespace vr
