@@ -63,6 +63,9 @@ class CollectionIndexCache {
 
   void Invalidate();
 
+  void NodeInserted();
+  void NodeRemoved();
+
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(current_node_); }
 
  protected:
@@ -110,6 +113,18 @@ void CollectionIndexCache<Collection, NodeType>::Invalidate() {
 }
 
 template <typename Collection, typename NodeType>
+void CollectionIndexCache<Collection, NodeType>::NodeInserted() {
+  cached_node_count_++;
+  current_node_ = nullptr;
+}
+
+template <typename Collection, typename NodeType>
+void CollectionIndexCache<Collection, NodeType>::NodeRemoved() {
+  cached_node_count_--;
+  current_node_ = nullptr;
+}
+
+template <typename Collection, typename NodeType>
 inline unsigned CollectionIndexCache<Collection, NodeType>::NodeCount(
     const Collection& collection) {
   if (IsCachedNodeCountValid())
@@ -137,7 +152,6 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::NodeAt(
   }
 
   // No valid cache yet, let's find the first matching element.
-  DCHECK(!IsCachedNodeCountValid());
   NodeType* first_node = collection.TraverseToFirst();
   if (!first_node) {
     // The collection is empty.

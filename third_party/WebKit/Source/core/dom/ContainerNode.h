@@ -343,9 +343,13 @@ class CORE_EXPORT ContainerNode : public Node {
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);
 
-  void InvalidateNodeListCachesInAncestors(
-      const QualifiedName* attr_name = nullptr,
-      Element* attribute_owner_element = nullptr);
+  // |attr_name| and |owner_element| are only used for element attribute
+  // modifications. |ChildrenChange| is either nullptr or points to a
+  // ChildNode::ChildrenChange structure that describes the changes in the tree.
+  // If non-null, blink may preserve caches that aren't affected by the change.
+  void InvalidateNodeListCachesInAncestors(const QualifiedName* attr_name,
+                                           Element* attribute_owner_element,
+                                           const ChildrenChange*);
 
   void SetFirstChild(Node* child) {
     first_child_ = child;
