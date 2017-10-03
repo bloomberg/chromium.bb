@@ -35,7 +35,7 @@ class Recorder : public mojom::Recorder {
   // them to data pipes are done on a background thread.
   Recorder(
       mojom::RecorderRequest request,
-      bool data_is_array,
+      mojom::TraceDataType data_type,
       const base::Closure& on_data_change_callback,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
   ~Recorder() override;
@@ -54,7 +54,7 @@ class Recorder : public mojom::Recorder {
 
   const base::DictionaryValue& metadata() const { return metadata_; }
   bool is_recording() const { return is_recording_; }
-  bool data_is_array() const { return data_is_array_; }
+  mojom::TraceDataType data_type() const { return data_type_; }
 
  private:
   friend class RecorderTest;  // For testing.
@@ -68,7 +68,7 @@ class Recorder : public mojom::Recorder {
   std::string data_;
   base::DictionaryValue metadata_;
   bool is_recording_;
-  bool data_is_array_;
+  mojom::TraceDataType data_type_;
   base::Closure on_data_change_callback_;
   // To avoid blocking the UI thread if the tracing service is run on the UI
   // thread, we make sure that buffering trace events and copying them to the

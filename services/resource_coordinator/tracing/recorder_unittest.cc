@@ -25,14 +25,15 @@ class RecorderTest : public testing::Test {
   }
 
   void CreateRecorder(mojom::RecorderRequest request,
-                      bool is_array,
+                      mojom::TraceDataType data_type,
                       const base::Closure& callback) {
-    recorder_.reset(new Recorder(std::move(request), is_array, callback,
+    recorder_.reset(new Recorder(std::move(request), data_type, callback,
                                  base::ThreadTaskRunnerHandle::Get()));
   }
 
-  void CreateRecorder(bool is_array, const base::Closure& callback) {
-    CreateRecorder(nullptr, is_array, callback);
+  void CreateRecorder(mojom::TraceDataType data_type,
+                      const base::Closure& callback) {
+    CreateRecorder(nullptr, data_type, callback);
   }
 
   void AddChunk(const std::string& chunk) { recorder_->AddChunk(chunk); }
@@ -49,7 +50,7 @@ class RecorderTest : public testing::Test {
 
 TEST_F(RecorderTest, AddChunkArray) {
   size_t num_calls = 0;
-  CreateRecorder(true /* is_array */,
+  CreateRecorder(mojom::TraceDataType::ARRAY,
                  base::BindRepeating([](size_t* num_calls) { (*num_calls)++; },
                                      base::Unretained(&num_calls)));
   AddChunk("chunk1");
@@ -62,9 +63,26 @@ TEST_F(RecorderTest, AddChunkArray) {
   EXPECT_EQ(3u, num_calls);
 }
 
+TEST_F(RecorderTest, AddChunkObject) {
+  size_t num_calls = 0;
+  CreateRecorder(mojom::TraceDataType::OBJECT,
+                 base::BindRepeating([](size_t* num_calls) { (*num_calls)++; },
+                                     base::Unretained(&num_calls)));
+  AddChunk("chunk1");
+  AddChunk("chunk2");
+  AddChunk("chunk3");
+
+  // Objects are similar to arrays. Their chunks are separated by commas.
+  EXPECT_EQ("chunk1,chunk2,chunk3", recorder_->data());
+
+  // Verify that the recorder has called the callback every time it received a
+  // chunk.
+  EXPECT_EQ(3u, num_calls);
+}
+
 TEST_F(RecorderTest, AddChunkString) {
   size_t num_calls = 0;
-  CreateRecorder(false /* is_array */,
+  CreateRecorder(mojom::TraceDataType::STRING,
                  base::BindRepeating([](size_t* num_calls) { (*num_calls)++; },
                                      base::Unretained(&num_calls)));
   AddChunk("chunk1");
@@ -75,7 +93,7 @@ TEST_F(RecorderTest, AddChunkString) {
 }
 
 TEST_F(RecorderTest, AddMetadata) {
-  CreateRecorder(true /* is_array */, base::BindRepeating([] {}));
+  CreateRecorder(mojom::TraceDataType::ARRAY, base::BindRepeating([] {}));
 
   auto dict1 = base::MakeUnique<base::DictionaryValue>();
   dict1->SetString("network-type", "Ethernet");
@@ -100,7 +118,7 @@ TEST_F(RecorderTest, OnConnectionError) {
   {
     mojom::RecorderPtr ptr;
     auto request = MakeRequest(&ptr);
-    CreateRecorder(std::move(request), false /* is_array */,
+    CreateRecorder(std::move(request), mojom::TraceDataType::STRING,
                    base::BindRepeating(
                        [](size_t* num_calls, base::Closure quit_closure) {
                          (*num_calls)++;
