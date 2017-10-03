@@ -582,6 +582,87 @@ TEST(SubresourceFilterFeaturesTest,
        {kPerformanceMeasurementRateParameterName, "1.0"}});
 }
 
+TEST(SubresourceFilterFeaturesTest, PresetForLiveRunOnAbusiveAdsSites) {
+  ExpectPresetCanBeEnabledByName(
+      Configuration::MakePresetForLiveRunForAbusiveAds(),
+      kPresetLiveRunForAbusiveAds);
+  const Configuration config =
+      Configuration::MakePresetForLiveRunForAbusiveAds();
+  ExpectPresetIsEquivalentToVariationParams(
+      config, {{kActivationLevelParameterName, kActivationLevelEnabled},
+               {kActivationScopeParameterName, kActivationScopeActivationList},
+               {kActivationListsParameterName, kActivationListAbusiveAds},
+               {kActivationPriorityParameterName, "750"},
+               {kSuppressNotificationsParameterName, "true"},
+               {kDisableRulesetRules, "true"},
+               {kStrengthenPopupBlockerParameterName, "true"}});
+
+  EXPECT_EQ(ActivationList::ABUSIVE_ADS,
+            config.activation_conditions.activation_list);
+  EXPECT_EQ(ActivationScope::ACTIVATION_LIST,
+            config.activation_conditions.activation_scope);
+  EXPECT_EQ(750, config.activation_conditions.priority);
+  EXPECT_FALSE(config.activation_conditions.forced_activation);
+  EXPECT_EQ(ActivationLevel::ENABLED,
+            config.activation_options.activation_level);
+  EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
+  EXPECT_TRUE(config.activation_options.should_suppress_notifications);
+  EXPECT_FALSE(config.activation_options.should_whitelist_site_on_reload);
+  EXPECT_TRUE(config.activation_options.should_strengthen_popup_blocker);
+  EXPECT_TRUE(config.activation_options.should_disable_ruleset_rules);
+}
+
+TEST(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
+  ExpectPresetCanBeEnabledByName(
+      Configuration::MakePresetForLiveRunForBetterAds(),
+      kPresetLiveRunForBetterAds);
+  const Configuration config =
+      Configuration::MakePresetForLiveRunForBetterAds();
+  ExpectPresetIsEquivalentToVariationParams(
+      config, {{kActivationLevelParameterName, kActivationLevelEnabled},
+               {kActivationScopeParameterName, kActivationScopeActivationList},
+               {kActivationListsParameterName, kActivationListBetterAds},
+               {kActivationPriorityParameterName, "800"}});
+  EXPECT_EQ(ActivationList::BETTER_ADS,
+            config.activation_conditions.activation_list);
+  EXPECT_EQ(ActivationScope::ACTIVATION_LIST,
+            config.activation_conditions.activation_scope);
+  EXPECT_EQ(800, config.activation_conditions.priority);
+  EXPECT_FALSE(config.activation_conditions.forced_activation);
+  EXPECT_EQ(ActivationLevel::ENABLED,
+            config.activation_options.activation_level);
+  EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
+  EXPECT_FALSE(config.activation_options.should_suppress_notifications);
+  EXPECT_FALSE(config.activation_options.should_whitelist_site_on_reload);
+  EXPECT_FALSE(config.activation_options.should_strengthen_popup_blocker);
+  EXPECT_FALSE(config.activation_options.should_disable_ruleset_rules);
+}
+
+TEST(SubresourceFilterFeaturesTest, PresetForLiveRunOnAllAdsSites) {
+  ExpectPresetCanBeEnabledByName(Configuration::MakePresetForLiveRunForAllAds(),
+                                 kPresetLiveRunForAllAds);
+  const Configuration config = Configuration::MakePresetForLiveRunForAllAds();
+  ExpectPresetIsEquivalentToVariationParams(
+      config, {{kActivationLevelParameterName, kActivationLevelEnabled},
+               {kActivationScopeParameterName, kActivationScopeActivationList},
+               {kActivationListsParameterName, kActivationListAllAds},
+               {kActivationPriorityParameterName, "850"},
+               {kStrengthenPopupBlockerParameterName, "true"}});
+  EXPECT_EQ(ActivationList::ALL_ADS,
+            config.activation_conditions.activation_list);
+  EXPECT_EQ(ActivationScope::ACTIVATION_LIST,
+            config.activation_conditions.activation_scope);
+  EXPECT_EQ(850, config.activation_conditions.priority);
+  EXPECT_FALSE(config.activation_conditions.forced_activation);
+  EXPECT_EQ(ActivationLevel::ENABLED,
+            config.activation_options.activation_level);
+  EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
+  EXPECT_FALSE(config.activation_options.should_suppress_notifications);
+  EXPECT_FALSE(config.activation_options.should_whitelist_site_on_reload);
+  EXPECT_TRUE(config.activation_options.should_strengthen_popup_blocker);
+  EXPECT_FALSE(config.activation_options.should_disable_ruleset_rules);
+}
+
 TEST(SubresourceFilterFeaturesTest, ConfigurationPriorities) {
   const std::vector<Configuration> expected_order_by_decreasing_priority = {
       Configuration::MakePresetForLiveRunOnPhishingSites(),
