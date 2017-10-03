@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/core/previews_io_data.h"
+#include "components/previews/core/previews_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace previews {
@@ -23,11 +24,13 @@ class TestPreviewsUIService : public PreviewsUIService {
   TestPreviewsUIService(
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store)
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<PreviewsLogger> logger)
       : PreviewsUIService(previews_io_data,
                           io_task_runner,
                           std::move(previews_opt_out_store),
-                          PreviewsIsEnabledCallback()),
+                          PreviewsIsEnabledCallback(),
+                          std::move(logger)),
         io_data_set_(false) {}
   ~TestPreviewsUIService() override {}
 
@@ -45,11 +48,43 @@ class TestPreviewsUIService : public PreviewsUIService {
   bool io_data_set_;
 };
 
+// Mock class of PreviewsLogger for checking passed in parameters.
+class TestPreviewsLogger : public PreviewsLogger {
+ public:
+  TestPreviewsLogger() {}
+
+  void LogPreviewNavigation(
+      const PreviewsLogger::PreviewNavigation& navigation) override {
+    navigation_ =
+        base::MakeUnique<PreviewsLogger::PreviewNavigation>(navigation);
+  }
+
+  // Return the passed in navigation.
+  PreviewsLogger::PreviewNavigation navigation() const { return *navigation_; }
+
+ private:
+  std::unique_ptr<PreviewsLogger::PreviewNavigation> navigation_;
+};
+
 class PreviewsUIServiceTest : public testing::Test {
  public:
   PreviewsUIServiceTest() {}
 
   ~PreviewsUIServiceTest() override {}
+
+  void SetUp() override {
+    std::unique_ptr<TestPreviewsLogger> logger =
+        base::MakeUnique<TestPreviewsLogger>();
+
+    // Use to testing logger data.
+    logger_ptr_ = logger.get();
+
+    set_io_data(base::WrapUnique(
+        new PreviewsIOData(loop_.task_runner(), loop_.task_runner())));
+    set_ui_service(base::WrapUnique(new TestPreviewsUIService(
+        io_data(), loop_.task_runner(), nullptr, std::move(logger))));
+    base::RunLoop().RunUntilIdle();
+  }
 
   void set_io_data(std::unique_ptr<PreviewsIOData> io_data) {
     io_data_ = std::move(io_data);
@@ -66,6 +101,7 @@ class PreviewsUIServiceTest : public testing::Test {
  protected:
   // Run this test on a single thread.
   base::MessageLoopForIO loop_;
+  TestPreviewsLogger* logger_ptr_;
 
  private:
   std::unique_ptr<PreviewsIOData> io_data_;
@@ -75,14 +111,36 @@ class PreviewsUIServiceTest : public testing::Test {
 }  // namespace
 
 TEST_F(PreviewsUIServiceTest, TestInitialization) {
-  set_io_data(base::WrapUnique(
-      new PreviewsIOData(loop_.task_runner(), loop_.task_runner())));
-  set_ui_service(base::WrapUnique(
-      new TestPreviewsUIService(io_data(), loop_.task_runner(), nullptr)));
-  base::RunLoop().RunUntilIdle();
   // After the outstanding posted tasks have run, SetIOData should have been
   // called for |ui_service_|.
   EXPECT_TRUE(ui_service()->io_data_set());
+}
+
+TEST_F(PreviewsUIServiceTest, TestLogPreviewNavigationPassInCorrectParams) {
+  const GURL url_a = GURL("http://www.url_a.com/url_a");
+  PreviewsType lofi = PreviewsType::LOFI;
+  bool opt_out_a = true;
+  base::Time time = base::Time::Now();
+
+  ui_service()->LogPreviewNavigation(url_a, lofi, opt_out_a, time);
+
+  PreviewsLogger::PreviewNavigation actual_a = logger_ptr_->navigation();
+  EXPECT_EQ(url_a, actual_a.url);
+  EXPECT_EQ(lofi, actual_a.type);
+  EXPECT_EQ(opt_out_a, actual_a.opt_out);
+  EXPECT_EQ(time, actual_a.time);
+
+  const GURL url_b = GURL("http://www.url_b.com/url_b");
+  PreviewsType offline = PreviewsType::OFFLINE;
+  bool opt_out_b = false;
+
+  ui_service()->LogPreviewNavigation(url_b, offline, opt_out_b, time);
+
+  PreviewsLogger::PreviewNavigation actual_b = logger_ptr_->navigation();
+  EXPECT_EQ(url_b, actual_b.url);
+  EXPECT_EQ(offline, actual_b.type);
+  EXPECT_EQ(opt_out_b, actual_b.opt_out);
+  EXPECT_EQ(time, actual_b.time);
 }
 
 }  // namespace previews
