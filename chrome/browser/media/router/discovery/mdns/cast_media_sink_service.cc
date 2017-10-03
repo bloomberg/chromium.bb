@@ -11,10 +11,12 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 
@@ -91,7 +93,9 @@ CastMediaSinkService::CastMediaSinkService(
     const OnSinksDiscoveredCallback& callback,
     content::BrowserContext* browser_context,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : MediaSinkService(callback), task_runner_(task_runner) {
+    : MediaSinkService(callback),
+      task_runner_(task_runner),
+      browser_context_(browser_context) {
   // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(task_runner_);
@@ -120,7 +124,9 @@ void CastMediaSinkService::Start() {
         base::BindRepeating(&CastMediaSinkService::OnSinksDiscoveredOnIOThread,
                             this),
         cast_channel::CastSocketService::GetInstance(),
-        DiscoveryNetworkMonitor::GetInstance(), task_runner_));
+        DiscoveryNetworkMonitor::GetInstance(),
+        Profile::FromBrowserContext(browser_context_)->GetRequestContext(),
+        task_runner_));
   }
 
   task_runner_->PostTask(

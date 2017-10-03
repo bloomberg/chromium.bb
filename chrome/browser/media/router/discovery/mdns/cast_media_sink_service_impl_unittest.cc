@@ -82,6 +82,7 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
         media_sink_service_impl_(mock_sink_discovered_cb_.Get(),
                                  mock_cast_socket_service_.get(),
                                  discovery_network_monitor_.get(),
+                                 nullptr /* url_request_context_getter */,
                                  mock_time_task_runner_.get()) {}
 
   void SetUp() override {

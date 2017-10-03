@@ -62,6 +62,7 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
       : CastMediaSinkServiceImpl(callback,
                                  cast_socket_service,
                                  network_monitor,
+                                 nullptr /* url_request_context_getter */,
                                  task_runner) {}
   ~MockCastMediaSinkServiceImpl() override {}
 
