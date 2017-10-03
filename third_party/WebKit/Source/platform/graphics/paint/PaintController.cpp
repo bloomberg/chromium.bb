@@ -178,18 +178,17 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       IsCheckingUnderInvalidation()) {
     SubsequenceMarkers* markers = GetSubsequenceMarkers(client);
-    if (!markers) {
+    if (!markers && start != end) {
       ShowSequenceUnderInvalidationError(
           "under-invalidation : unexpected subsequence", client, start, end);
       CHECK(false);
     }
-    if (markers->end - markers->start != end - start) {
+    if (markers && markers->end - markers->start != end - start) {
       ShowSequenceUnderInvalidationError(
           "under-invalidation: new subsequence wrong length", client, start,
           end);
       CHECK(false);
     }
-    under_invalidation_checking_end_ = 0;
   }
 
   if (start == end) {
@@ -988,10 +987,7 @@ void PaintController::ShowUnderInvalidationError(
 #else
   LOG(ERROR) << "Run debug build to get more details.";
 #endif
-  LOG(ERROR) << "See http://crbug.com/619103. For media layout tests, this "
-                "could fail due to change in buffered range. In that case, set "
-                "internals.runtimeFlags.paintUnderInvalidationCheckingEnabled "
-                "to false in layout test.";
+  LOG(ERROR) << "See http://crbug.com/619103.";
 
 #ifndef NDEBUG
   const PaintRecord* new_record = nullptr;
@@ -1044,6 +1040,16 @@ void PaintController::CheckUnderInvalidation() {
     return;
 
   const DisplayItem& new_item = new_display_item_list_.Last();
+  if (new_item.SkippedCache()) {
+    // We allow cache skipping and temporary under-invalidation in cached
+    // subsequences. See the usage of DisplayItemCacheSkipper in BoxPainter.
+    under_invalidation_checking_end_ = 0;
+    // Match the remaining display items in the subsequence normally.
+    next_item_to_match_ = next_item_to_index_ =
+        under_invalidation_checking_begin_;
+    return;
+  }
+
   size_t old_item_index = under_invalidation_checking_begin_ +
                           skipped_probable_under_invalidation_count_;
   DisplayItem* old_item =
