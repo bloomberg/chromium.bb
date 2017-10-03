@@ -605,7 +605,7 @@ console-format-startup.html:222 HTMLAllCollection(18)
     p: p#p
     sel: select#sel
     svg-node: svg#svg-node
-    x: (3) [div#x, input, input]
+    x: NodeList(3) [div#x, input, input]
     __proto__: HTMLAllCollection
 console-format-startup.html:226 HTMLFormControlsCollection(3)
     0: select#sel
@@ -613,7 +613,7 @@ console-format-startup.html:226 HTMLFormControlsCollection(3)
     2: input
     length: 3
     sel: select#sel
-    x: (2) [input, input, value: ""]
+    x: RadioNodeList(2) [input, input, value: ""]
     __proto__: HTMLFormControlsCollection
 console-format-startup.html:230 RadioNodeList(2)
     0: input
