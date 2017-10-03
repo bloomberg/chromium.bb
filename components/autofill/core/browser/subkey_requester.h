@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CORE_SUBKEY_REQUESTER_H_
-#define COMPONENTS_PAYMENTS_CORE_SUBKEY_REQUESTER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_SUBKEY_REQUESTER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_SUBKEY_REQUESTER_H_
 
 #include "base/macros.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
-namespace payments {
+namespace autofill {
 
 // This receives a region code and the device's language.
 using SubKeyReceiverCallback =
@@ -19,7 +19,7 @@ using SubKeyReceiverCallback =
 // For a given key (region code for a country, such as US), the list of its
 // corresponding subkeys is the list of that countries admin areas (states,
 // provinces, ..).
-class SubKeyRequester : public autofill::LoadRulesListener {
+class SubKeyRequester : public LoadRulesListener {
  public:
   // The interface for the subkey request.
   class Request {
@@ -28,8 +28,8 @@ class SubKeyRequester : public autofill::LoadRulesListener {
     virtual ~Request() {}
   };
 
-  SubKeyRequester(std::unique_ptr<i18n::addressinput::Source> source,
-                  std::unique_ptr<i18n::addressinput::Storage> storage);
+  SubKeyRequester(std::unique_ptr<::i18n::addressinput::Source> source,
+                  std::unique_ptr<::i18n::addressinput::Storage> storage);
   ~SubKeyRequester() override;
 
   // If the rules for |region_code| are loaded, this gets the subkeys for the
@@ -66,11 +66,11 @@ class SubKeyRequester : public autofill::LoadRulesListener {
   std::string pending_subkey_region_code_;
 
   // The address validator used to load subkeys.
-  autofill::AddressValidator address_validator_;
+  AddressValidator address_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubKeyRequester);
 };
 
-}  // namespace payments
+}  // namespace autofill
 
-#endif  // COMPONENTS_PAYMENTS_CORE_SUBKEY_REQUESTER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_SUBKEY_REQUESTER_H_
