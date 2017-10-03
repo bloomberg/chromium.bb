@@ -231,6 +231,10 @@ const base::Feature kMacRTL{"MacRTL", base::FEATURE_DISABLED_BY_DEFAULT};
 // removed once we feel okay about leaving it on.
 const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables "Share" submenu in File menu.
+const base::Feature kMacSystemShareMenu{"MacSystemShareMenu",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables the Material Design version of chrome://bookmarks.

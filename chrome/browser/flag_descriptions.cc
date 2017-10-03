@@ -2253,6 +2253,10 @@ extern const char kMacRTLName[] = "Enable RTL";
 extern const char kMacRTLDescription[] =
     "Mirrors the UI for RTL language users";
 
+extern const char kMacSystemShareMenuName[] = "Enable System Share Menu";
+extern const char kMacSystemShareMenuDescription[] =
+    "Enables sharing via macOS share extensions.";
+
 extern const char kMacTouchBarName[] = "Hardware Touch Bar";
 extern const char kMacTouchBarDescription[] =
     "Control the use of the Touch Bar.";
