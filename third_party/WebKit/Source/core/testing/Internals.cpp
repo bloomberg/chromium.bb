@@ -205,6 +205,12 @@ static WTF::Optional<DocumentMarker::MarkerType> MarkerTypeFrom(
     return DocumentMarker::kGrammar;
   if (DeprecatedEqualIgnoringCase(marker_type, "TextMatch"))
     return DocumentMarker::kTextMatch;
+  if (DeprecatedEqualIgnoringCase(marker_type, "Composition"))
+    return DocumentMarker::kComposition;
+  if (DeprecatedEqualIgnoringCase(marker_type, "ActiveSuggestion"))
+    return DocumentMarker::kActiveSuggestion;
+  if (DeprecatedEqualIgnoringCase(marker_type, "Suggestion"))
+    return DocumentMarker::kSuggestion;
   return WTF::nullopt;
 }
 
