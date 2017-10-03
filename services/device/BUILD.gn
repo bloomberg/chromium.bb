@@ -27,7 +27,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//device/hid",
     "//device/sensors",
     "//device/sensors/public/interfaces",
     "//services/device/fingerprint",
@@ -46,6 +45,7 @@ source_set("lib") {
     deps += [ ":device_service_jni_headers" ]
   } else {
     deps += [
+      "//device/hid",
       "//services/device/battery",
       "//services/device/vibration",
     ]

@@ -24,13 +24,11 @@ device::UsbService* ChromeDeviceClient::GetUsbService() {
   return usb_service_.get();
 }
 
+#if !defined(OS_ANDROID)
 device::HidService* ChromeDeviceClient::GetHidService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_ANDROID)
-  return nullptr;
-#else
   if (!hid_service_)
     hid_service_ = device::HidService::Create();
   return hid_service_.get();
-#endif  // defined(OS_ANDROID)
 }
+#endif  // defined(OS_ANDROID)

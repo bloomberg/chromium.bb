@@ -21,7 +21,9 @@ class ChromeDeviceClient : device::DeviceClient {
 
   // device::DeviceClient implementation
   device::UsbService* GetUsbService() override;
+#if !defined(OS_ANDROID)
   device::HidService* GetHidService() override;
+#endif  // !defined(OS_ANDROID)
 
  private:
 #if !defined(OS_ANDROID)
