@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InProcessWorkerBase_h
-#define InProcessWorkerBase_h
+#ifndef DedicatedWorker_h
+#define DedicatedWorker_h
 
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
@@ -23,17 +23,26 @@ class ExecutionContext;
 class ScriptState;
 class WorkerScriptLoader;
 
-// Base class for workers that operate in the same process as the document that
-// creates them.
-class CORE_EXPORT InProcessWorkerBase
+// Implementation of the Worker interface defined in the WebWorker HTML spec:
+// https://html.spec.whatwg.org/multipage/workers.html#worker
+//
+// Confusingly, the Worker interface is for dedicated workers, so this class is
+// called DedicatedWorker.
+class CORE_EXPORT DedicatedWorker final
     : public AbstractWorker,
-      public ActiveScriptWrappable<InProcessWorkerBase> {
+      public ActiveScriptWrappable<DedicatedWorker> {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorker);
   // Eager finalization is needed to notify the parent object destruction of the
   // GC-managed messaging proxy and to initiate worker termination.
   EAGERLY_FINALIZE();
 
  public:
-  ~InProcessWorkerBase() override;
+  static DedicatedWorker* Create(ExecutionContext*,
+                                 const String& url,
+                                 ExceptionState&);
+
+  ~DedicatedWorker() override;
 
   void postMessage(ScriptState*,
                    RefPtr<SerializedScriptValue> message,
@@ -42,31 +51,33 @@ class CORE_EXPORT InProcessWorkerBase
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
   void terminate();
 
-  // SuspendableObject
+  // Implements ContextLifecycleObserver (via AbstractWorker).
   void ContextDestroyed(ExecutionContext*) override;
 
-  // ScriptWrappable
+  // Implements ScriptWrappable
+  // (via AbstractWorker -> EventTargetWithInlineData -> EventTarget).
   bool HasPendingActivity() const final;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   DECLARE_VIRTUAL_TRACE();
 
- protected:
-  explicit InProcessWorkerBase(ExecutionContext*);
+ private:
+  explicit DedicatedWorker(ExecutionContext*);
   bool Initialize(ExecutionContext*, const String&, ExceptionState&);
 
   // Creates a proxy to allow communicating with the worker's global scope.
-  // InProcessWorkerBase does not take ownership of the created proxy. The proxy
+  // DedicatedWorker does not take ownership of the created proxy. The proxy
   // is expected to manage its own lifetime, and delete itself in response to
   // terminateWorkerGlobalScope().
-  virtual DedicatedWorkerMessagingProxy* CreateMessagingProxy(
-      ExecutionContext*) = 0;
+  DedicatedWorkerMessagingProxy* CreateMessagingProxy(ExecutionContext*);
 
- private:
-  // Callbacks for m_scriptLoader.
+  // Callbacks for |script_loader_|.
   void OnResponse();
   void OnFinished();
+
+  // Implements EventTarget (via AbstractWorker -> EventTargetWithInlineData).
+  const AtomicString& InterfaceName() const final;
 
   RefPtr<WorkerScriptLoader> script_loader_;
 
@@ -75,4 +86,4 @@ class CORE_EXPORT InProcessWorkerBase
 
 }  // namespace blink
 
-#endif  // InProcessWorkerBase_h
+#endif  // DedicatedWorker_h

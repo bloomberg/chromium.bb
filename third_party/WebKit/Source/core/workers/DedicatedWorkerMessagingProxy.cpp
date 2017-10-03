@@ -12,10 +12,10 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/DedicatedWorker.h"
 #include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/InProcessWorkerBase.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "platform/CrossThreadFunctional.h"
@@ -31,7 +31,7 @@ struct DedicatedWorkerMessagingProxy::QueuedTask {
 
 DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     ExecutionContext* execution_context,
-    InProcessWorkerBase* worker_object,
+    DedicatedWorker* worker_object,
     WorkerClients* worker_clients)
     : ThreadedMessagingProxyBase(execution_context, worker_clients),
       worker_object_(worker_object) {

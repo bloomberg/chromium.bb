@@ -33,7 +33,8 @@
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
     // TODO(foolip): Exposed=(Window,Worker),
-    RaisesException=Constructor
+    RaisesException=Constructor,
+    ImplementedAs=DedicatedWorker
 ] interface Worker : EventTarget {
     void terminate();
 

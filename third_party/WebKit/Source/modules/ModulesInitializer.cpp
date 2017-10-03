@@ -21,7 +21,6 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/origin_trials/origin_trials.h"
 #include "core/page/ChromeClient.h"
-#include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "modules/EventModulesFactory.h"
