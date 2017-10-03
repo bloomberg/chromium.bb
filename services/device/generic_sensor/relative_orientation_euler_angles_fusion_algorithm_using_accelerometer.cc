@@ -40,7 +40,7 @@ void ComputeRelativeOrientationFromAccelerometer(double acceleration_x,
   // Also note that alpha can't be provided but it's assumed to be always zero.
   // This is necessary in order to provide enough information to solve
   // the equations.
-  *alpha_in_degrees = 0.0;
+  *alpha_in_degrees = NAN;
   *beta_in_degrees = gfx::RadToDeg(std::atan2(-acceleration_y, acceleration_z));
   *gamma_in_degrees = gfx::RadToDeg(std::asin(acceleration_x / kMeanGravity));
 
