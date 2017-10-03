@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -168,6 +169,31 @@ GURL GetWarmupURL() {
   variations::GetVariationParams(GetQuicFieldTrialName(), &params);
   return GURL(GetStringValueForVariationParamWithDefaultValue(
       params, "warmup_url", kDefaultWarmupUrl));
+}
+
+bool ShouldBypassMissingViaHeader(bool connection_is_cellular) {
+  return GetFieldTrialParamByFeatureAsBool(
+      data_reduction_proxy::features::kMissingViaHeaderShortDuration,
+      connection_is_cellular ? "should_bypass_missing_via_cellular"
+                             : "should_bypass_missing_via_wifi",
+      true);
+}
+
+std::pair<base::TimeDelta, base::TimeDelta>
+GetMissingViaHeaderBypassDurationRange(bool connection_is_cellular) {
+  base::TimeDelta bypass_max =
+      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+          data_reduction_proxy::features::kMissingViaHeaderShortDuration,
+          connection_is_cellular ? "missing_via_max_bypass_cellular_in_seconds"
+                                 : "missing_via_max_bypass_wifi_in_seconds",
+          300));
+  base::TimeDelta bypass_min =
+      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+          data_reduction_proxy::features::kMissingViaHeaderShortDuration,
+          connection_is_cellular ? "missing_via_min_bypass_cellular_in_seconds"
+                                 : "missing_via_min_bypass_wifi_in_seconds",
+          60));
+  return {bypass_min, bypass_max};
 }
 
 bool IsLoFiOnViaFlags() {

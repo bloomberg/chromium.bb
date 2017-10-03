@@ -24,7 +24,6 @@
 #include "net/url_request/url_request.h"
 
 using base::StringPiece;
-using base::TimeDelta;
 
 namespace {
 
@@ -64,12 +63,17 @@ const char kChromeProxyActionFingerprintContentLength[] = "fcl";
 const int kShortBypassMaxSeconds = 59;
 const int kMediumBypassMaxSeconds = 300;
 
+base::TimeDelta GetRandomBypassTime(base::TimeDelta min_time,
+                                    base::TimeDelta max_time) {
+  const int64_t delta_ms =
+      base::RandInt(min_time.InMilliseconds(), max_time.InMilliseconds());
+  return base::TimeDelta::FromMilliseconds(delta_ms);
+}
+
 // Returns a random bypass duration between 1 and 5 minutes.
 base::TimeDelta GetDefaultBypassDuration() {
-  const int64_t delta_ms =
-      base::RandInt(base::TimeDelta::FromMinutes(1).InMilliseconds(),
-                    base::TimeDelta::FromMinutes(5).InMilliseconds());
-  return TimeDelta::FromMilliseconds(delta_ms);
+  return GetRandomBypassTime(base::TimeDelta::FromMinutes(1),
+                             base::TimeDelta::FromMinutes(5));
 }
 
 bool StartsWithActionPrefix(base::StringPiece header_value,
@@ -292,7 +296,7 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders& headers,
         continue;  // In case there is a well formed instruction.
       }
       if (seconds != 0) {
-        *bypass_duration = TimeDelta::FromSeconds(seconds);
+        *bypass_duration = base::TimeDelta::FromSeconds(seconds);
       } else {
         // Server deferred to us to choose a duration. Default to a random
         // duration between one and five minutes.
@@ -344,7 +348,7 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders& headers,
   if (headers.HasHeaderValue(kChromeProxyHeader, kChromeProxyActionBlockOnce)) {
     proxy_info->bypass_all = true;
     proxy_info->mark_proxies_as_bad = false;
-    proxy_info->bypass_duration = TimeDelta();
+    proxy_info->bypass_duration = base::TimeDelta();
     proxy_info->bypass_action = BYPASS_ACTION_TYPE_BLOCK_ONCE;
     return true;
   }
@@ -399,10 +403,11 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
     if (!data_reduction_proxy_info->mark_proxies_as_bad)
       return BYPASS_EVENT_TYPE_CURRENT;
 
-    const TimeDelta& duration = data_reduction_proxy_info->bypass_duration;
-    if (duration <= TimeDelta::FromSeconds(kShortBypassMaxSeconds))
+    const base::TimeDelta& duration =
+        data_reduction_proxy_info->bypass_duration;
+    if (duration <= base::TimeDelta::FromSeconds(kShortBypassMaxSeconds))
       return BYPASS_EVENT_TYPE_SHORT;
-    if (duration <= TimeDelta::FromSeconds(kMediumBypassMaxSeconds))
+    if (duration <= base::TimeDelta::FromSeconds(kMediumBypassMaxSeconds))
       return BYPASS_EVENT_TYPE_MEDIUM;
     return BYPASS_EVENT_TYPE_LONG;
   }
@@ -441,9 +446,23 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
       // bypass the data reduction proxy for the current request.
       data_reduction_proxy_info->bypass_all = true;
       data_reduction_proxy_info->mark_proxies_as_bad = false;
-      data_reduction_proxy_info->bypass_duration = TimeDelta();
+      data_reduction_proxy_info->bypass_duration = base::TimeDelta();
       return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX;
     }
+
+    bool connection_is_cellular =
+        net::NetworkChangeNotifier::IsConnectionCellular(
+            net::NetworkChangeNotifier::GetConnectionType());
+
+    if (!params::ShouldBypassMissingViaHeader(connection_is_cellular)) {
+      return BYPASS_EVENT_TYPE_MAX;
+    }
+
+    data_reduction_proxy_info->mark_proxies_as_bad = true;
+    std::pair<base::TimeDelta, base::TimeDelta> bypass_range =
+        params::GetMissingViaHeaderBypassDurationRange(connection_is_cellular);
+    data_reduction_proxy_info->bypass_duration =
+        GetRandomBypassTime(bypass_range.first, bypass_range.second);
 
     return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER;
   }
