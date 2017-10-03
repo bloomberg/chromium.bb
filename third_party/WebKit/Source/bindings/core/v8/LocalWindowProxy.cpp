@@ -127,7 +127,12 @@ void LocalWindowProxy::Initialize() {
                                                          : non_main_frame_hist);
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
-
+  // Inspector may request V8 interruption to process DevTools protocol
+  // commands, processing can force JavaScript execution. Since JavaScript
+  // evaluation is forbiden during creating of snapshot, we should ignore any
+  // inspector interruption to avoid JavaScript execution.
+  InspectorTaskRunner::IgnoreInterruptsScope inspector_ignore_interrupts(
+      MainThreadDebugger::Instance()->TaskRunner());
   v8::HandleScope handle_scope(GetIsolate());
 
   CreateContext();
