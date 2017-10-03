@@ -7,9 +7,11 @@
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 typedef InProcessBrowserTest AcceleratorsCocoaBrowserTest;
@@ -112,6 +114,13 @@ IN_PROC_BROWSER_TEST_F(AcceleratorsCocoaBrowserTest,
 IN_PROC_BROWSER_TEST_F(AcceleratorsCocoaBrowserTest,
                        MappingAcceleratorsInMainMenu) {
   AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
+  // The "Share" menu is dynamically populated.
+  NSMenu* mainMenu = [NSApp mainMenu];
+  NSMenu* fileMenu = [[mainMenu itemWithTag:IDC_FILE_MENU] submenu];
+  NSMenu* shareMenu =
+      [[fileMenu itemWithTitle:l10n_util::GetNSString(IDS_SHARE_MAC)] submenu];
+  [[shareMenu delegate] menuNeedsUpdate:shareMenu];
+
   for (AcceleratorsCocoa::AcceleratorMap::iterator it =
            keymap->accelerators_.begin();
        it != keymap->accelerators_.end();

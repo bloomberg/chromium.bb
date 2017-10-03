@@ -2476,6 +2476,7 @@ test("browser_tests") {
         "../browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm",
         "../browser/ui/cocoa/applescript/window_applescript_test.mm",
         "../browser/ui/cocoa/certificate_viewer_mac_browsertest.mm",
+        "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
       ]
       sources -= [
         # TODO(groby): This test depends on hunspell and we cannot run it on

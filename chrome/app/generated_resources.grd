@@ -9380,6 +9380,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_EMAIL_PAGE_LOCATION_MAC" desc="The Mac menu item to email the page location in the file menu.">
           Email Page Location
         </message>
+        <message name="IDS_SHARING_MORE_MAC" desc="The Mac menu item to see more macOS share extensions in the share menu.">
+          More...
+        </message>
+        <message name="IDS_SHARE_MAC" desc="The Mac menu item for sharing to external services.">
+          Share
+        </message>
         <message name="IDS_PRINT_USING_SYSTEM_DIALOG_MAC" desc="The Mac menu item to print using system dialog in the file menu">
           Print Using System Dialog...
         </message>

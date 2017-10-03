@@ -72,6 +72,7 @@
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
+#import "chrome/browser/ui/cocoa/share_menu_controller.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -411,6 +412,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     NSMenuItem* customizeItem = [viewMenu itemWithTag:IDC_CUSTOMIZE_TOUCH_BAR];
     if (customizeItem)
       [viewMenu removeItem:customizeItem];
+  }
+
+  // In |applicationWillFinishLaunching| because FeatureList isn't
+  // available at init time.
+  if (base::FeatureList::IsEnabled(features::kMacSystemShareMenu)) {
+    // Initialize the share menu.
+    [self initShareMenu];
   }
 }
 
@@ -1259,6 +1267,28 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   profileMenuController_.reset(
       [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu]);
+}
+
+- (void)initShareMenu {
+  shareMenuController_.reset([[ShareMenuController alloc] init]);
+  NSMenu* mainMenu = [NSApp mainMenu];
+  NSMenu* fileMenu = [[mainMenu itemWithTag:IDC_FILE_MENU] submenu];
+  NSString* shareMenuTitle = l10n_util::GetNSString(IDS_SHARE_MAC);
+  base::scoped_nsobject<NSMenuItem> shareMenuItem([[NSMenuItem alloc]
+      initWithTitle:shareMenuTitle
+             action:NULL
+      keyEquivalent:@""]);
+  base::scoped_nsobject<NSMenu> shareSubmenu(
+      [[NSMenu alloc] initWithTitle:shareMenuTitle]);
+  [shareSubmenu setDelegate:shareMenuController_];
+  [shareMenuItem setSubmenu:shareSubmenu];
+  // Replace "Email Page Location" with Share.
+  // TODO(crbug.com/770804): Remove this code and update the XIB when
+  // the share menu launches.
+  NSInteger index = [fileMenu indexOfItemWithTag:IDC_EMAIL_PAGE_LOCATION];
+  DCHECK(index != -1);
+  [fileMenu removeItemAtIndex:index];
+  [fileMenu insertItem:shareMenuItem atIndex:index];
 }
 
 // The Confirm to Quit preference is atypical in that the preference lives in
