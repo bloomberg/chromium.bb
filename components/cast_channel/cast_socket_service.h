@@ -48,19 +48,7 @@ class CastSocketService {
   // Parameters:
   // |open_params|: Parameters necessary to open a Cast channel.
   // |open_cb|: OnOpenCallback invoked when cast socket is opened.
-  int OpenSocket(const CastSocketOpenParams& open_params,
-                 CastSocket::OnOpenCallback open_cb);
-
-  // Opens cast socket with |ip_endpoint| and invokes |open_cb| when opening
-  // operation finishes. If cast socket with |ip_endpoint| already exists,
-  // invoke |open_cb| directly with existing socket's channel ID.
-  // |ip_endpoint|: IP address and port of the remote host.
-  // |net_log|: Log of socket events.
-  // |connect_timeout|: Connection timeout interval for Cast channel.
-  // |open_cb|: OnOpenCallback invoked when cast socket is opened.
-  virtual int OpenSocket(const net::IPEndPoint& ip_endpoint,
-                         net::NetLog* net_log,
-                         base::TimeDelta connect_timeout,
+  virtual int OpenSocket(const CastSocketOpenParams& open_params,
                          CastSocket::OnOpenCallback open_cb);
 
   // Adds |observer| to socket service. When socket service opens cast socket,
