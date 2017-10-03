@@ -318,6 +318,22 @@ void DrawR1TopPartialLeftR2(const gfx::RectF& pinned_rect_f,
                         render_text);
 }
 
+void DrawR1BottomPartialLeftR2(const gfx::RectF& pinned_rect_f,
+                               const gfx::RectF& hovered_rect_f,
+                               const cc::PaintFlags& flags,
+                               gfx::Canvas* canvas,
+                               gfx::RenderText* render_text) {
+  float x1 = hovered_rect_f.x() + hovered_rect_f.width() / 2;
+  float y1 = pinned_rect_f.bottom();
+  float x2 = x1;
+  float y2 = hovered_rect_f.y();
+
+  // Vertical left dotted line.
+  canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
+  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+                        render_text);
+}
+
 }  // namespace
 
 UIDevToolsDOMAgent::UIDevToolsDOMAgent()
@@ -646,7 +662,8 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
                        flags);
       return;
     case HighlightRectsConfiguration::R1_BOTTOM_PARTIAL_LEFT_R2:
-      NOTIMPLEMENTED();
+      DrawR1BottomPartialLeftR2(pinned_rect_f, hovered_rect_f, flags, canvas,
+                                render_text_.get());
       return;
     case HighlightRectsConfiguration::R1_INTERSECTS_R2:
       NOTIMPLEMENTED();
