@@ -58,7 +58,7 @@ constexpr char kOneCellTowerRequestBody[] =
     "\"cellTowers\":["
     "{"
     "\"cellId\":\"1\","
-    "\"locationAreaCode\":\"10\","
+    "\"locationAreaCode\":\"3\","
     "\"mobileCountryCode\":\"100\","
     "\"mobileNetworkCode\":\"101\""
     "}"
@@ -390,7 +390,7 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   void AddCellTower(int idx) {
     base::DictionaryValue properties;
     std::string ci = base::IntToString(idx);
-    std::string lac = base::IntToString(idx * 10);
+    std::string lac = base::IntToString(idx * 3);
     std::string mcc = base::IntToString(idx * 100);
     std::string mnc = base::IntToString(idx * 100 + 1);
 
