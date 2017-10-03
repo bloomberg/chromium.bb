@@ -1920,8 +1920,10 @@ class V4SafeBrowsingServiceTest : public SafeBrowsingServiceTest {
   void MarkUrlForListIdUnexpired(const GURL& bad_url,
                                  const ListIdentifier& list_id,
                                  ThreatPatternType threat_pattern_type) {
+    ThreatMetadata metadata;
+    metadata.threat_pattern_type = threat_pattern_type;
     FullHashInfo full_hash_info =
-        GetFullHashInfoWithMetadata(bad_url, list_id, threat_pattern_type);
+        GetFullHashInfoWithMetadata(bad_url, list_id, metadata);
     v4_db_factory_->MarkPrefixAsBad(list_id, full_hash_info.full_hash);
     v4_get_hash_factory_->AddToFullHashCache(full_hash_info);
   }

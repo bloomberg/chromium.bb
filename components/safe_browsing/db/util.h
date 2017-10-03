@@ -47,6 +47,8 @@ enum class ThreatPatternType : int {
 // Metadata that was returned by a GetFullHash call. This is the parsed version
 // of the PB (from Pver3, or Pver4 local) or JSON (from Pver4 via GMSCore).
 // Some fields are only applicable to certain lists.
+//
+// When adding elements to this struct, make sure you update operator==.
 struct ThreatMetadata {
   ThreatMetadata();
   ThreatMetadata(const ThreatMetadata& other);
@@ -67,9 +69,10 @@ struct ThreatMetadata {
   // This will be empty if it wasn't present in the response.
   std::string population_id;
 
-  // Used with threat type SUBRESOURCE_FILTER. Indicates that the site is only a
-  // match for experimental configurations.
-  bool experimental = false;
+  // Used with threat type SUBRESOURCE_FILTER. Indicates that the site is only
+  // in "warning" mode and should not get full enforcement (only warning
+  // messages).
+  bool warning = false;
 };
 
 // A truncated hash's type.

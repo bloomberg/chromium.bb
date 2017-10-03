@@ -125,7 +125,7 @@ const char kPhaPatternType[] = "pha_pattern_type";
 const char kMalwareThreatType[] = "malware_threat_type";
 const char kSePatternType[] = "se_pattern_type";
 const char kSfPatternType[] = "sf_pattern_type";
-const char kExperimentalKey[] = "experimental";
+const char kWarningKey[] = "warning";
 const char kLanding[] = "LANDING";
 const char kDistribution[] = "DISTRIBUTION";
 const char kSocialEngineeringAds[] = "SOCIAL_ENGINEERING_ADS";
@@ -684,8 +684,8 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
           metadata->threat_pattern_type =
               ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS;
         }
-      } else if (m.key() == kExperimentalKey) {
-        metadata->experimental = m.value() == "true";
+      } else if (m.key() == kWarningKey) {
+        metadata->warning = m.value() == "true";
       }
     }
   } else if (match.has_threat_entry_metadata() &&
