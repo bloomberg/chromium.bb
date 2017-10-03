@@ -814,67 +814,6 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   assert(dy == 1);
   assert(dx > 0);
 
-#if CONFIG_INTRA_INTERP
-  if (filter_type != INTRA_FILTER_LINEAR) {
-    const int pad_size = SUBPEL_TAPS >> 1;
-    int len;
-    DECLARE_ALIGNED(16, uint8_t, buf[SUBPEL_SHIFTS][MAX_SB_SIZE]);
-    DECLARE_ALIGNED(16, uint8_t, src[MAX_SB_SIZE + SUBPEL_TAPS]);
-    uint8_t flags[SUBPEL_SHIFTS];
-
-    memset(flags, 0, SUBPEL_SHIFTS * sizeof(flags[0]));
-    memset(src, above[0], pad_size * sizeof(above[0]));
-    memcpy(src + pad_size, above, (bw + bh) * sizeof(above[0]));
-    memset(src + pad_size + bw + bh, above[bw + bh - 1],
-           pad_size * sizeof(above[0]));
-    flags[0] = 1;
-    x = dx;
-    for (r = 0; r < bh; ++r, dst += stride, x += dx) {
-      base = x >> 8;
-      shift = x & 0xFF;
-      shift = ROUND_POWER_OF_TWO(shift, 8 - SUBPEL_BITS);
-      if (shift == SUBPEL_SHIFTS) {
-        base += 1;
-        shift = 0;
-      }
-      len = AOMMIN(bw, bw + bh - 1 - base);
-      if (len <= 0) {
-        int i;
-        for (i = r; i < bh; ++i) {
-          memset(dst, above[bw + bh - 1], bw * sizeof(dst[0]));
-          dst += stride;
-        }
-        return;
-      }
-
-      if (len <= (bw >> 1) && !flags[shift]) {
-        base = x >> 8;
-        shift = x & 0xFF;
-        for (c = 0; c < len; ++c) {
-          val = intra_subpel_interp(base, shift, above, 0, bw + bh - 1,
-                                    filter_type);
-          dst[c] = clip_pixel(val);
-          ++base;
-        }
-      } else {
-        if (!flags[shift]) {
-          const int16_t *filter = av1_intra_filter_kernels[filter_type][shift];
-          aom_convolve8_horiz(src + pad_size, bw + bh, buf[shift], bw + bh,
-                              filter, 16, NULL, 16, bw + bh,
-                              bw + bh < 16 ? 2 : 1);
-          flags[shift] = 1;
-        }
-        memcpy(dst, shift == 0 ? src + pad_size + base : &buf[shift][base],
-               len * sizeof(dst[0]));
-      }
-
-      if (len < bw)
-        memset(dst + len, above[bw + bh - 1], (bw - len) * sizeof(dst[0]));
-    }
-    return;
-  }
-#endif  // CONFIG_INTRA_INTERP
-
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_above = 0;
 #endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
@@ -896,8 +835,13 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
     for (c = 0; c < bw; ++c, base += base_inc) {
       if (base < max_base_x) {
+#if CONFIG_INTRA_INTERP
+        val = intra_subpel_interp(base, shift, above, 0, bw + bh - 1,
+                                  filter_type);
+#else   // CONFIG_INTRA_INTERP
         val = above[base] * (256 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
+#endif  // CONFIG_INTRA_INTERP
         dst[c] = clip_pixel(val);
       } else {
         dst[c] = above[max_base_x];
@@ -977,77 +921,6 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   assert(dx == 1);
   assert(dy > 0);
 
-#if CONFIG_INTRA_INTERP
-  if (filter_type != INTRA_FILTER_LINEAR) {
-    const int pad_size = SUBPEL_TAPS >> 1;
-    int len, i;
-    DECLARE_ALIGNED(16, uint8_t, buf[MAX_SB_SIZE][4 * SUBPEL_SHIFTS]);
-    DECLARE_ALIGNED(16, uint8_t, src[(MAX_SB_SIZE + SUBPEL_TAPS) * 4]);
-    uint8_t flags[SUBPEL_SHIFTS];
-
-    memset(flags, 0, SUBPEL_SHIFTS * sizeof(flags[0]));
-    for (i = 0; i < pad_size; ++i) src[4 * i] = left[0];
-    for (i = 0; i < bw + bh; ++i) src[4 * (i + pad_size)] = left[i];
-    for (i = 0; i < pad_size; ++i)
-      src[4 * (i + bw + bh + pad_size)] = left[bw + bh - 1];
-    flags[0] = 1;
-    y = dy;
-    for (c = 0; c < bw; ++c, y += dy) {
-      base = y >> 8;
-      shift = y & 0xFF;
-      shift = ROUND_POWER_OF_TWO(shift, 8 - SUBPEL_BITS);
-      if (shift == SUBPEL_SHIFTS) {
-        base += 1;
-        shift = 0;
-      }
-      len = AOMMIN(bh, bw + bh - 1 - base);
-
-      if (len <= 0) {
-        for (r = 0; r < bh; ++r) {
-          dst[r * stride + c] = left[bw + bh - 1];
-        }
-        continue;
-      }
-
-      if (len <= (bh >> 1) && !flags[shift]) {
-        base = y >> 8;
-        shift = y & 0xFF;
-        for (r = 0; r < len; ++r) {
-          val = intra_subpel_interp(base, shift, left, 0, bw + bh - 1,
-                                    filter_type);
-          dst[r * stride + c] = clip_pixel(val);
-          ++base;
-        }
-      } else {
-        if (!flags[shift]) {
-          const int16_t *filter = av1_intra_filter_kernels[filter_type][shift];
-          aom_convolve8_vert(src + 4 * pad_size, 4, buf[0] + 4 * shift,
-                             4 * SUBPEL_SHIFTS, NULL, 16, filter, 16,
-                             bw + bh < 16 ? 4 : 4, bw + bh);
-          flags[shift] = 1;
-        }
-
-        if (shift == 0) {
-          for (r = 0; r < len; ++r) {
-            dst[r * stride + c] = left[r + base];
-          }
-        } else {
-          for (r = 0; r < len; ++r) {
-            dst[r * stride + c] = buf[r + base][4 * shift];
-          }
-        }
-      }
-
-      if (len < bh) {
-        for (r = len; r < bh; ++r) {
-          dst[r * stride + c] = left[bw + bh - 1];
-        }
-      }
-    }
-    return;
-  }
-#endif  // CONFIG_INTRA_INTERP
-
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_left = 0;
 #endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
@@ -1061,8 +934,13 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
     for (r = 0; r < bh; ++r, base += base_inc) {
       if (base < max_base_y) {
+#if CONFIG_INTRA_INTERP
+        val =
+            intra_subpel_interp(base, shift, left, 0, bw + bh - 1, filter_type);
+#else   // CONFIG_INTRA_INTERP
         val = left[base] * (256 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
+#endif  // CONFIG_INTRA_INTERP
         dst[r * stride + c] = clip_pixel(val);
       } else {
         for (; r < bh; ++r) dst[r * stride + c] = left[max_base_y];
