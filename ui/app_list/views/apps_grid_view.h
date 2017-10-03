@@ -472,11 +472,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Gets height on top of the all apps tiles for |page|.
   int GetHeightOnTopOfAllAppsTiles(int page) const;
 
-  // Gets the bounds of the tile located at |slot| on the current page.
-  gfx::Rect GetExpectedTileBounds(int slot) const;
-
-  // Gets the bounds of the tile located at |row| and |col| on the current page.
-  gfx::Rect GetExpectedTileBounds(int row, int col) const;
+  // Gets the bounds of the tile located at |index|, where |index| contains the
+  // page/slot info.
+  gfx::Rect GetExpectedTileBounds(const Index& index) const;
 
   // Gets the item view currently displayed at |slot| on the current page. If
   // there is no item displayed at |slot|, returns NULL. Note that this finds an
