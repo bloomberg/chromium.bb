@@ -165,7 +165,7 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  if (!navigation_handle->IsInMainFrame())
     return;
 
   if (!ascriber_)
@@ -174,13 +174,16 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &ChromeDataUseAscriber::DidFinishMainFrameNavigation,
-          base::Unretained(ascriber_),
-          web_contents->GetMainFrame()->GetProcess()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID(),
-          navigation_handle->GetURL(), navigation_handle->IsSameDocument(),
-          navigation_handle->GetPageTransition(), base::TimeTicks::Now()));
+      base::BindOnce(&ChromeDataUseAscriber::DidFinishMainFrameNavigation,
+                     base::Unretained(ascriber_),
+                     web_contents->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents->GetMainFrame()->GetRoutingID(),
+                     navigation_handle->GetURL(),
+                     navigation_handle->IsSameDocument(),
+                     navigation_handle->HasCommitted()
+                         ? navigation_handle->GetPageTransition()
+                         : ui::PAGE_TRANSITION_CORE_MASK,
+                     base::TimeTicks::Now()));
 }
 
 void ChromeDataUseAscriberService::SetDataUseAscriber(
