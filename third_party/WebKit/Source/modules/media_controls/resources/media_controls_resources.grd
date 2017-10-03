@@ -30,8 +30,8 @@
       <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_OVERFLOW_MENU_ICON" file="legacy/mediaplayer_overflow_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_DOWNLOAD_ICON" file="legacy/mediaplayer_download.png" />
       <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_SUBTITLES_ICON" file="legacy/mediaplayer_subtitles_icon.png" />
-      <structure type="chrome_html" name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS" file="legacyMediaControls.css" flattenhtml="true" />
-      <structure type="chrome_html" name="IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS" file="modernMediaControls.css" flattenhtml="true" />
+      <structure type="chrome_html" name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS" file="legacyMediaControls.css" flattenhtml="true" compress="gzip" />
+      <structure type="chrome_html" name="IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS" file="modernMediaControls.css" flattenhtml="true" compress="gzip" />
     </structures>
     <includes>
       <include name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS" file="legacyMediaControlsAndroid.css" type="BINDATA" compress="gzip" />

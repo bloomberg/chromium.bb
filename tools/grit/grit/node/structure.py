@@ -150,6 +150,7 @@ class StructureNode(base.Node):
              # dependencies.
              'sconsdep' : 'false',
              'variables': '',
+             'compress': 'false',
              }
 
   def IsExcludedFromRc(self):
@@ -205,8 +206,10 @@ class StructureNode(base.Node):
     id = id_map[self.GetTextualIds()[0]]
     if self.ExpandVariables():
       text = self.gatherer.GetText()
-      return id, util.Encode(self._Substitute(text), encoding)
-    return id, self.gatherer.GetData(lang, encoding)
+      data = util.Encode(self._Substitute(text), encoding)
+    else:
+      data = self.gatherer.GetData(lang, encoding)
+    return id, self.CompressDataIfNeeded(data)
 
   def GetHtmlResourceFilenames(self):
     """Returns a set of all filenames inlined by this node."""

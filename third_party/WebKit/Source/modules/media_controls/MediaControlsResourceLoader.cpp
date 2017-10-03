@@ -40,13 +40,10 @@ MediaControlsResourceLoader::~MediaControlsResourceLoader(){};
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 String MediaControlsResourceLoader::GetMediaControlsCSS() const {
-  if (RuntimeEnabledFeatures::ModernMediaControlsEnabled()) {
-    return ResourceBundleHelper::GetResourceAsString(
-        IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS);
-  } else {
-    return ResourceBundleHelper::GetResourceAsString(
-        IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS);
-  }
+  return ResourceBundleHelper::UncompressResourceAsString(
+      RuntimeEnabledFeatures::ModernMediaControlsEnabled()
+          ? IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS
+          : IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS);
 };
 
 String MediaControlsResourceLoader::GetMediaControlsAndroidCSS() const {
