@@ -262,6 +262,10 @@ class RenderViewHostTestHarness : public testing::Test {
 
   std::unique_ptr<BrowserContext> browser_context_;
 
+  // This must be placed before |contents_| such that it will be destructed
+  // after it. See https://crbug.com/770451
+  std::unique_ptr<RenderViewHostTestEnabler> rvh_test_enabler_;
+
   std::unique_ptr<WebContents> contents_;
 #if defined(OS_WIN)
   std::unique_ptr<ui::ScopedOleInitializer> ole_initializer_;
@@ -269,7 +273,6 @@ class RenderViewHostTestHarness : public testing::Test {
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
-  std::unique_ptr<RenderViewHostTestEnabler> rvh_test_enabler_;
   RenderProcessHostFactory* factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
