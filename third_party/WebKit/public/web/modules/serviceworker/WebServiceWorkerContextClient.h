@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
@@ -45,7 +46,6 @@
 
 namespace blink {
 
-class MessagePortChannel;
 struct WebPaymentHandlerResponse;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
@@ -318,7 +318,7 @@ class WebServiceWorkerContextClient {
   // crbug.com/351753
   virtual void PostMessageToClient(const WebString& uuid,
                                    const WebString&,
-                                   WebVector<MessagePortChannel>) = 0;
+                                   WebMessagePortChannelArray) = 0;
 
   // For WindowClient#focus(). Requests the embedder to focus a window.
   virtual void Focus(const WebString& uuid,

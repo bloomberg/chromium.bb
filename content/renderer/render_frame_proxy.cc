@@ -13,6 +13,7 @@
 #include "components/viz/common/switches.h"
 #include "content/child/feature_policy/feature_policy_platform.h"
 #include "content/child/web_url_request_util.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -487,7 +488,8 @@ void RenderFrameProxy::ForwardPostMessage(
   if (!target_origin.IsNull())
     params.target_origin = target_origin.ToString().Utf16();
 
-  params.message_ports = event.ReleaseChannels().ReleaseVector();
+  params.message_ports =
+      WebMessagePortChannelImpl::ExtractMessagePorts(event.ReleaseChannels());
 
   // Include the routing ID for the source frame (if one exists), which the
   // browser process will translate into the routing ID for the equivalent

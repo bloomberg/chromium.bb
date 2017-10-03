@@ -22,12 +22,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/worker_service.h"
 
-namespace blink {
-class MessagePortChannel;
-}
-
 namespace content {
 
+class MessagePort;
 class SharedWorkerInstance;
 class SharedWorkerHost;
 class SharedWorkerMessageFilter;
@@ -59,7 +56,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
       mojom::SharedWorkerInfoPtr info,
       mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
-      const blink::MessagePortChannel& port,
+      const MessagePort& port,
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id);
 

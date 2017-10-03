@@ -56,7 +56,7 @@ class CORE_EXPORT SharedWorkerRepositoryClientImpl final
   ~SharedWorkerRepositoryClientImpl() override {}
 
   void Connect(SharedWorker*,
-               MessagePortChannel,
+               std::unique_ptr<WebMessagePortChannel>,
                const KURL&,
                const String& name) override;
   void DocumentDetached(Document*) override;

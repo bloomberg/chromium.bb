@@ -231,13 +231,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     int event_id,
     const WebString& message,
     const WebSecurityOrigin& source_origin,
-    WebVector<MessagePortChannel> channels,
+    WebMessagePortChannelArray web_channels,
     const WebServiceWorkerClientInfo& client) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WebSerializedScriptValue value =
       WebSerializedScriptValue::FromString(message);
-  MessagePortArray* ports =
-      MessagePort::EntanglePorts(*worker_global_scope_, std::move(channels));
+  MessagePortArray* ports = MessagePort::ToMessagePortArray(
+      worker_global_scope_, std::move(web_channels));
   String origin;
   if (!source_origin.IsUnique())
     origin = source_origin.ToString();
@@ -258,13 +258,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     int event_id,
     const WebString& message,
     const WebSecurityOrigin& source_origin,
-    WebVector<MessagePortChannel> channels,
+    WebMessagePortChannelArray web_channels,
     std::unique_ptr<WebServiceWorker::Handle> handle) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WebSerializedScriptValue value =
       WebSerializedScriptValue::FromString(message);
-  MessagePortArray* ports =
-      MessagePort::EntanglePorts(*worker_global_scope_, std::move(channels));
+  MessagePortArray* ports = MessagePort::ToMessagePortArray(
+      worker_global_scope_, std::move(web_channels));
   String origin;
   if (!source_origin.IsUnique())
     origin = source_origin.ToString();

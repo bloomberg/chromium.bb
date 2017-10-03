@@ -37,18 +37,24 @@
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
-#include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebMessagePortChannelClient.h"
 
 namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
+class MessagePort;
 class ScriptState;
 class SerializedScriptValue;
 
+typedef Vector<std::unique_ptr<WebMessagePortChannel>, 1>
+    MessagePortChannelArray;
+
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public ActiveScriptWrappable<MessagePort>,
-                                public ContextLifecycleObserver {
+                                public ContextLifecycleObserver,
+                                public WebMessagePortChannelClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
@@ -65,21 +71,25 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void start();
   void close();
 
-  void Entangle(mojo::ScopedMessagePipeHandle);
-  void Entangle(MessagePortChannel);
-  MessagePortChannel Disentangle();
+  void Entangle(std::unique_ptr<WebMessagePortChannel>);
+  std::unique_ptr<WebMessagePortChannel> Disentangle();
+
+  static WebMessagePortChannelArray ToWebMessagePortChannelArray(
+      MessagePortChannelArray);
+
+  // Returns an empty array if the passed array is empty.
+  static MessagePortArray* ToMessagePortArray(ExecutionContext*,
+                                              WebMessagePortChannelArray);
 
   // Returns an empty array if there is an exception, or if the passed array is
-  // empty.
-  static Vector<MessagePortChannel> DisentanglePorts(ExecutionContext*,
-                                                     const MessagePortArray&,
-                                                     ExceptionState&);
+  // nullptr/empty.
+  static MessagePortChannelArray DisentanglePorts(ExecutionContext*,
+                                                  const MessagePortArray&,
+                                                  ExceptionState&);
 
   // Returns an empty array if the passed array is empty.
   static MessagePortArray* EntanglePorts(ExecutionContext&,
-                                         Vector<MessagePortChannel>);
-  static MessagePortArray* EntanglePorts(ExecutionContext&,
-                                         WebVector<MessagePortChannel>);
+                                         MessagePortChannelArray);
 
   bool Started() const { return started_; }
 
@@ -117,23 +127,26 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   // A port gets neutered when it is transferred to a new owner via
   // postMessage().
-  bool IsNeutered() const { return !channel_.GetHandle().is_valid(); }
+  bool IsNeutered() const { return !entangled_channel_; }
 
   // For testing only: allows inspection of the entangled channel.
-  MojoHandle EntangledHandleForTesting() const;
+  WebMessagePortChannel* EntangledChannelForTesting() const {
+    return entangled_channel_.get();
+  }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit MessagePort(ExecutionContext&);
   bool TryGetMessage(RefPtr<SerializedScriptValue>& message,
-                     Vector<MessagePortChannel>& channels);
+                     MessagePortChannelArray& channels);
 
  private:
-  void MessageAvailable();
+  // WebMessagePortChannelClient implementation.
+  void MessageAvailable() override;
   void DispatchMessages();
 
-  MessagePortChannel channel_;
+  std::unique_ptr<WebMessagePortChannel> entangled_channel_;
 
   int pending_dispatch_task_ = 0;
   bool started_ = false;

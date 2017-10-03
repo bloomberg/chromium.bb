@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,38 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProviderClient_h
-#define WebServiceWorkerProviderClient_h
+#ifndef WebMessagePortChannel_h
+#define WebMessagePortChannel_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/modules/serviceworker/WebServiceWorker.h"
-
+#include "WebCommon.h"
+#include "WebVector.h"
 #include <memory>
 
 namespace blink {
 
-class WebServiceWorker;
-class WebString;
+class WebMessagePortChannelClient;
+class WebMessagePortChannel;
 
-// See WebServiceWorkerProvider for full documentation.
-//
-// WebServiceWorkerProviderClient is implemented by ServiceWorkerContainer.
-// We probably wouldn't need this abstract class, except we also make a
-// MockServiceWorkerProviderClient for unit tests.
-class WebServiceWorkerProviderClient {
+using WebMessagePortChannelArray =
+    WebVector<std::unique_ptr<WebMessagePortChannel>>;
+
+// Provides an interface to a Message Port Channel implementation.
+class WebMessagePortChannel {
  public:
-  virtual ~WebServiceWorkerProviderClient() {}
-
-  virtual void SetController(std::unique_ptr<WebServiceWorker::Handle>,
-                             bool should_notify_controller_change) = 0;
-
-  virtual void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
-                                    const WebString& message,
-                                    WebMessagePortChannelArray channels) = 0;
-  virtual void CountFeature(uint32_t feature) = 0;
+  virtual ~WebMessagePortChannel() {}
+  virtual void SetClient(WebMessagePortChannelClient*) = 0;
+  // Callee receives ownership of the passed vector.
+  // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
+  virtual void PostMessage(const uint8_t*,
+                           size_t,
+                           WebMessagePortChannelArray) = 0;
+  virtual bool TryGetMessage(WebVector<uint8_t>*,
+                             WebMessagePortChannelArray&) = 0;
 };
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerProviderClient_h
+#endif  // WebMessagePortChannel_h

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_MESSAGE_PORT_CHANNEL_H_
-#define THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_MESSAGE_PORT_CHANNEL_H_
+#ifndef CONTENT_COMMON_MESSAGE_PORT_H_
+#define CONTENT_COMMON_MESSAGE_PORT_H_
 
 #include <vector>
 
@@ -11,70 +11,67 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/watcher.h"
-#include "third_party/WebKit/common/common_export.h"
 
-namespace blink {
+namespace content {
 
-// MessagePortChannel corresponds to a HTML MessagePort. It is a thin wrapper
-// around a Mojo MessagePipeHandle and provides methods for reading and writing
-// messages.
+// MessagePort corresponds to a HTML MessagePort. It is a thin wrapper around a
+// Mojo MessagePipeHandle and provides methods for reading and writing messages.
 //
-// A MessagePortChannel is only actively listening for incoming messages once
+// A MessagePort is only actively listening for incoming messages once
 // SetCallback has been called with a valid callback. If ClearCallback is
 // called (or if SetCallback is called with a null callback), then the
-// MessagePortChannel will stop listening for incoming messages. The callback
-// runs on an unspecified background thread.
+// MessagePort will stop listening for incoming messages. The callback runs on
+// an unspecified background thread.
 //
-// Upon destruction, if the MessagePortChannel is listening for incoming
-// messages, then the destructor will first synchronize with the background
-// thread, waiting for it to finish any in-process callback before closing the
+// Upon destruction, if the MessagePort is listening for incoming messages,
+// then the destructor will first synchronize with the background thread,
+// waiting for it to finish any in-process callback before closing the
 // underlying MessagePipeHandle. This synchronization ensures that any code
-// running in the callback can be sure to not worry about the MessagePortChannel
+// running in the callback can be sure to not worry about the MessagePort
 // becoming invalid during callback execution.
 //
-// MessagePortChannel methods may be used from any thread; however, care must be
-// taken when using ReleaseHandle, ReleaseHandles or when destroying a
-// MessagePortChannel instance. The MessagePortChannel class does not
-// synchronize those methods with methods like PostMessage, GetMessage and
-// SetCallback that use the underlying MessagePipeHandle.
+// MessagePort methods may be used from any thread; however, care must be taken
+// when using ReleaseHandle, ReleaseHandles or when destroying a MessagePort
+// instance. The MessagePort class does not synchronize those methods with
+// methods like PostMessage, GetMessage and SetCallback that use the underlying
+// MessagePipeHandle.
 //
 // TODO(darin): Make this class move-only once no longer used with Chrome IPC.
 //
-class BLINK_COMMON_EXPORT MessagePortChannel {
+class CONTENT_EXPORT MessagePort {
  public:
-  ~MessagePortChannel();
-  MessagePortChannel();
+  ~MessagePort();
+  MessagePort();
 
   // Shallow copy, resulting in multiple references to the same port.
-  MessagePortChannel(const MessagePortChannel& other);
-  MessagePortChannel& operator=(const MessagePortChannel& other);
+  MessagePort(const MessagePort& other);
+  MessagePort& operator=(const MessagePort& other);
 
-  explicit MessagePortChannel(mojo::ScopedMessagePipeHandle handle);
+  explicit MessagePort(mojo::ScopedMessagePipeHandle handle);
 
   const mojo::ScopedMessagePipeHandle& GetHandle() const;
   mojo::ScopedMessagePipeHandle ReleaseHandle() const;
 
   static std::vector<mojo::ScopedMessagePipeHandle> ReleaseHandles(
-      const std::vector<MessagePortChannel>& ports);
-  static std::vector<MessagePortChannel> CreateFromHandles(
-      std::vector<mojo::ScopedMessagePipeHandle> handles);
+      const std::vector<MessagePort>& ports);
 
   // Sends an encoded message (along with ports to transfer) to this port's
   // peer.
   void PostMessage(const uint8_t* encoded_message,
                    size_t encoded_message_size,
-                   std::vector<MessagePortChannel> ports);
+                   std::vector<MessagePort> ports);
 
   // Get the next available encoded message if any. Returns true if a message
   // was read.
   bool GetMessage(std::vector<uint8_t>* encoded_message,
-                  std::vector<MessagePortChannel>* ports);
+                  std::vector<MessagePort>* ports);
 
   // This callback will be invoked on a background thread when messages are
   // available to be read via GetMessage. It must not synchronously call back
-  // into the MessagePortChannel instance.
+  // into the MessagePort instance.
   void SetCallback(const base::Closure& callback);
 
   // Clears any callback specified by a prior call to SetCallback.
@@ -84,7 +81,7 @@ class BLINK_COMMON_EXPORT MessagePortChannel {
   class State : public base::RefCountedThreadSafe<State> {
    public:
     State();
-    explicit State(mojo::ScopedMessagePipeHandle handle);
+    State(mojo::ScopedMessagePipeHandle handle);
 
     void StartWatching(const base::Closure& callback);
     void StopWatching();
@@ -119,6 +116,6 @@ class BLINK_COMMON_EXPORT MessagePortChannel {
   mutable scoped_refptr<State> state_;
 };
 
-}  // namespace blink
+}  // namespace content
 
-#endif  // THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_MESSAGE_PORT_CHANNEL_H_
+#endif  // CONTENT_COMMON_MESSAGE_PORT_H_

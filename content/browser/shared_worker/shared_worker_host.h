@@ -23,12 +23,9 @@
 
 class GURL;
 
-namespace blink {
-class MessagePortChannel;
-}
-
 namespace content {
 
+class MessagePort;
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
 
@@ -59,7 +56,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost {
   void AddClient(mojom::SharedWorkerClientPtr client,
                  int process_id,
                  int frame_id,
-                 const blink::MessagePortChannel& port);
+                 const MessagePort& port);
 
   // Returns true if any clients live in a different process from this worker.
   bool ServesExternalClient();

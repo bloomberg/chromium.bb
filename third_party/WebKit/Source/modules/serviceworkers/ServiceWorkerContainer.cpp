@@ -448,12 +448,12 @@ void ServiceWorkerContainer::SetController(
 void ServiceWorkerContainer::DispatchMessageEvent(
     std::unique_ptr<WebServiceWorker::Handle> handle,
     const WebString& message,
-    WebVector<MessagePortChannel> channels) {
+    WebMessagePortChannelArray web_channels) {
   if (!GetExecutionContext() || !GetExecutionContext()->ExecutingWindow())
     return;
 
-  MessagePortArray* ports =
-      MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
+  MessagePortArray* ports = MessagePort::ToMessagePortArray(
+      GetExecutionContext(), std::move(web_channels));
   RefPtr<SerializedScriptValue> value = SerializedScriptValue::Create(message);
   ServiceWorker* source = ServiceWorker::From(
       GetExecutionContext(), WTF::WrapUnique(handle.release()));

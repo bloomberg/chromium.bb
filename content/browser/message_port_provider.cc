@@ -15,16 +15,15 @@
 #include "content/browser/android/app_web_message_port.h"
 #endif
 
-using blink::MessagePortChannel;
-
 namespace content {
 namespace {
 
-void PostMessageToFrameInternal(WebContents* web_contents,
-                                const base::string16& source_origin,
-                                const base::string16& target_origin,
-                                const base::string16& data,
-                                std::vector<MessagePortChannel> channels) {
+void PostMessageToFrameInternal(
+    WebContents* web_contents,
+    const base::string16& source_origin,
+    const base::string16& target_origin,
+    const base::string16& data,
+    std::vector<MessagePort> ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FrameMsg_PostMessage_Params params;
@@ -33,7 +32,7 @@ void PostMessageToFrameInternal(WebContents* web_contents,
   params.source_routing_id = MSG_ROUTING_NONE;
   params.source_origin = source_origin;
   params.target_origin = target_origin;
-  params.message_ports = std::move(channels);
+  params.message_ports = std::move(ports);
 
   RenderFrameHost* rfh = web_contents->GetMainFrame();
   rfh->Send(new FrameMsg_PostMessageEvent(rfh->GetRoutingID(), params));
@@ -57,7 +56,7 @@ void MessagePortProvider::PostMessageToFrame(
     const base::string16& target_origin,
     const base::string16& data) {
   PostMessageToFrameInternal(web_contents, source_origin, target_origin, data,
-                             std::vector<MessagePortChannel>());
+                             std::vector<MessagePort>());
 }
 
 #if defined(OS_ANDROID)

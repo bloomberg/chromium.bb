@@ -58,7 +58,7 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   DCHECK(context_proxy_);
   // Disentangle the port in preparation for sending it to the remote context.
-  auto channels = MessagePort::DisentanglePorts(
+  MessagePortChannelArray channels = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
