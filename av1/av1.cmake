@@ -407,6 +407,13 @@ if (CONFIG_INTRA_EDGE)
       "${AOM_ROOT}/av1/common/x86/intra_edge_sse4.c")
 endif ()
 
+if (CONFIG_NCOBMC_ADAPT_WEIGHT)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/ncobmc_kernels.c"
+      "${AOM_ROOT}/av1/common/ncobmc_kernels.h")
+endif ()
+
 if (CONFIG_PVQ)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
