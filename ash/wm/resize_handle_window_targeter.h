@@ -36,10 +36,9 @@ class ResizeHandleWindowTargeter : public wm::WindowStateObserver,
   void OnWindowDestroying(aura::Window* window) override;
 
   // aura::WindowTargeter:
-  aura::Window* FindTargetForLocatedEvent(aura::Window* window,
-                                          ui::LocatedEvent* event) override;
-  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
-                                       const ui::LocatedEvent& event) override;
+  bool GetHitTestRects(aura::Window* window,
+                       gfx::Rect* hit_test_rect_mouse,
+                       gfx::Rect* hit_test_rect_touch) const override;
 
   // The targeter does not take ownership of |window_| or
   // |immersive_controller_|.

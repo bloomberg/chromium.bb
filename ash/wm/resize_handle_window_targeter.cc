@@ -47,41 +47,10 @@ void ResizeHandleWindowTargeter::OnWindowDestroying(aura::Window* window) {
   window_ = NULL;
 }
 
-aura::Window* ResizeHandleWindowTargeter::FindTargetForLocatedEvent(
+bool ResizeHandleWindowTargeter::GetHitTestRects(
     aura::Window* window,
-    ui::LocatedEvent* event) {
-  if (window == window_) {
-    gfx::Insets insets;
-    if (immersive_controller_ && immersive_controller_->IsEnabled() &&
-        !immersive_controller_->IsRevealed() && event->IsTouchEvent()) {
-      // If the window is in immersive fullscreen, and top-of-window views are
-      // not revealed, then touch events towards the top of the window
-      // should not reach the child window so that touch gestures can be used to
-      // reveal the top-of-windows views. This is needed because the child
-      // window may consume touch events and prevent touch-scroll gesture from
-      // being generated.
-      insets = gfx::Insets(
-          ImmersiveFullscreenController::kImmersiveFullscreenTopEdgeInset, 0, 0,
-          0);
-    } else {
-      // If the event falls very close to the inside of the frame border, then
-      // target the window itself, so that the window can be resized easily.
-      insets = frame_border_inset_;
-    }
-
-    if (!insets.IsEmpty()) {
-      gfx::Rect bounds = gfx::Rect(window_->bounds().size());
-      bounds.Inset(insets);
-      if (!bounds.Contains(event->location()))
-        return window_;
-    }
-  }
-  return aura::WindowTargeter::FindTargetForLocatedEvent(window, event);
-}
-
-bool ResizeHandleWindowTargeter::SubtreeShouldBeExploredForEvent(
-    aura::Window* window,
-    const ui::LocatedEvent& event) {
+    gfx::Rect* hit_test_rect_mouse,
+    gfx::Rect* hit_test_rect_touch) const {
   if (window == window_) {
     // Defer to the parent's targeter on whether |window_| should be able to
     // receive the event.
@@ -90,11 +59,40 @@ bool ResizeHandleWindowTargeter::SubtreeShouldBeExploredForEvent(
     if (parent) {
       aura::WindowTargeter* targeter =
           static_cast<aura::WindowTargeter*>(parent->GetEventTargeter());
-      if (targeter)
-        return targeter->SubtreeShouldBeExploredForEvent(window, event);
+      if (targeter) {
+        return targeter->GetHitTestRects(window, hit_test_rect_mouse,
+                                         hit_test_rect_touch);
+      }
     }
   }
-  return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+
+  bool got_rects = WindowTargeter::GetHitTestRects(window, hit_test_rect_mouse,
+                                                   hit_test_rect_touch);
+  if (!got_rects || !window->parent() || window->parent() != window_)
+    return got_rects;
+
+  // If the event falls very close to the inside of the frame border, then
+  // target the window itself, so that the window can be resized easily.
+  // This is achieved by insetting the child (NativeViewHost).
+  gfx::Insets mouse_insets;
+  gfx::Insets touch_insets;
+  touch_insets = mouse_insets = frame_border_inset_;
+
+  // If the window is in immersive fullscreen, and top-of-window views are
+  // not revealed, then touch events towards the top of the window
+  // should not reach the child window so that touch gestures can be used
+  // to reveal the top-of-windows views. This is needed because the child
+  // window may consume touch events and prevent touch-scroll gesture from
+  // being generated.
+  if (immersive_controller_ && immersive_controller_->IsEnabled() &&
+      !immersive_controller_->IsRevealed()) {
+    touch_insets = gfx::Insets(
+        ImmersiveFullscreenController::kImmersiveFullscreenTopEdgeInset, 0, 0,
+        0);
+  }
+  hit_test_rect_mouse->Inset(mouse_insets);
+  hit_test_rect_touch->Inset(touch_insets);
+  return got_rects;
 }
 
 }  // namespace ash
