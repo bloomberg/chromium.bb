@@ -520,3 +520,67 @@ TEST_F(NotificationPlatformBridgeLinuxTest, Silent) {
       NotificationCommon::PERSISTENT, "", "", false,
       NotificationBuilder("2").SetSilent(true).GetResult(), nullptr);
 }
+
+TEST_F(NotificationPlatformBridgeLinuxTest, OriginUrlFormat) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ("google.com", request.body);
+          },
+          1))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ("mail.google.com", request.body);
+          },
+          2))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ("123.123.123.123", request.body);
+          },
+          3))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ("a.b.c.co.uk", request.body);
+          },
+          4))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ("evilsite.com", request.body);
+          },
+          4));
+
+  CreateNotificationBridgeLinux(std::vector<std::string>{"actions", "body"},
+                                true, true, true);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("1")
+          .SetOriginUrl(GURL("https://google.com"))
+          .GetResult(),
+      nullptr);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("2")
+          .SetOriginUrl(GURL("https://mail.google.com"))
+          .GetResult(),
+      nullptr);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("3")
+          .SetOriginUrl(GURL("https://123.123.123.123"))
+          .GetResult(),
+      nullptr);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("4")
+          .SetOriginUrl(GURL("https://a.b.c.co.uk/file.html"))
+          .GetResult(),
+      nullptr);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("5")
+          .SetOriginUrl(GURL(
+              "https://google.com.blahblahblahblahblahblahblah.evilsite.com"))
+          .GetResult(),
+      nullptr);
+}
