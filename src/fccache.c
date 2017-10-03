@@ -88,28 +88,24 @@ FcCacheUuidAdd (FcUuidHashTable *table,
     return FcTrue;
 }
 
-static FcBool
-FcCacheUuidRemove (FcUuidHashTable *table,
-		   const FcChar8   *file)
+static void
+FcCacheUuidDestroy (FcUuidHashTable *table)
 {
-    FcUuidBucket **prev, *bucket;
-    FcChar32 hash = FcStrHashIgnoreCase (file);
+    int i;
 
-    for (prev = &table->buckets[hash % FC_UUID_HASH_SIZE];
-	 (bucket = *prev); )
+    for (i = 0; i < FC_UUID_HASH_SIZE; i++)
     {
-	if (FcStrCmp (bucket->file, file) == 0)
-	{
-	    *prev = bucket->next;
-	    FcStrFree (bucket->file);
-	    free (bucket);
+	FcUuidBucket *bucket = table->buckets[i], *prev;
 
-	    return FcTrue;
+	while (bucket)
+	{
+	    FcStrFree (bucket->file);
+	    prev = bucket;
+	    bucket = bucket->next;
+	    free (prev);
 	}
-	else
-	    prev = &(bucket->next);
+	table->buckets[i] = NULL;
     }
-    return FcFalse;
 }
 
 static FcBool
@@ -269,29 +265,25 @@ FcCacheAliasAdd (FcAliasHashTable *table,
     return FcTrue;
 }
 
-static FcBool
-FcCacheAliasRemove (FcAliasHashTable *table,
-		    const FcChar8    *orig)
+static void
+FcCacheAliasDestroy (FcAliasHashTable *table)
 {
-    FcAliasBucket **prev, *bucket;
-    FcChar32 hash = FcStrHashIgnoreCase (orig);
+    int i;
 
-    for (prev = &table->buckets[hash % FC_ALIAS_HASH_SIZE];
-	 (bucket = *prev); )
+    for (i = 0; i < FC_ALIAS_HASH_SIZE; i++)
     {
-	if (FcStrCmp (bucket->orig, orig) == 0)
+	FcAliasBucket *bucket = table->buckets[i], *prev;
+
+	while (bucket)
 	{
-	    *prev = bucket->next;
+	    prev = bucket;
 	    FcStrFree (bucket->orig);
 	    FcStrFree (bucket->alias);
-	    free (bucket);
-
-	    return FcTrue;
+	    bucket = bucket->next;
+	    free (prev);
 	}
-	else
-	    prev = &(bucket->next);
+	table->buckets[i] = NULL;
     }
-    return FcFalse;
 }
 
 static FcBool
@@ -841,13 +833,12 @@ FcCacheObjectDereference (void *object)
     {
 	if (FcRefDec (&skip->ref) == 1)
 	{
-	    const FcChar8 *d = FcDirCacheFindAliasPath (FcCacheDir (skip->cache));
-
-	    FcCacheUuidRemove (&uuid_table, FcCacheDir (skip->cache));
-	    if (d)
-		FcCacheUuidRemove (&uuid_table, d);
-	    FcCacheAliasRemove (&alias_table, FcCacheDir (skip->cache));
 	    FcDirCacheDisposeUnlocked (skip->cache);
+	    if (fcCacheMaxLevel == 0)
+	    {
+		FcCacheUuidDestroy (&uuid_table);
+		FcCacheAliasDestroy (&alias_table);
+	    }
 	}
     }
     unlock_cache ();
