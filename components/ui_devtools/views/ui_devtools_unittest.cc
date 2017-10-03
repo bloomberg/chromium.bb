@@ -651,6 +651,46 @@ TEST_F(UIDevToolsTest, OneUIElementStaysPartiallyBottomLeftOfAnother) {
             HighlightRectsConfiguration::R1_BOTTOM_PARTIAL_LEFT_R2);
 }
 
+// Test case R1_INTERSECTS_R2.
+TEST_F(UIDevToolsTest, OneUIElementIntersectsAnother) {
+  const gfx::Rect left_rect(100, 100, 50, 50);
+  std::unique_ptr<views::Widget> widget_left(CreateTestWidget(left_rect));
+
+  const gfx::Rect right_rect(120, 120, 50, 50);
+  std::unique_ptr<views::Widget> widget_right(CreateTestWidget(right_rect));
+
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  int left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+      left_rect.origin(), GetPrimaryRootWindow());
+  int right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+      right_rect.origin(), GetPrimaryRootWindow());
+  dom_agent()->ShowDistancesInHighlightOverlay(left_rect_id, right_rect_id);
+
+  HighlightRectsConfiguration highlight_rect_config =
+      dom_agent()->highlight_rect_config();
+
+  // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
+  dom_agent()->ShowDistancesInHighlightOverlay(right_rect_id, left_rect_id);
+  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+
+  const std::pair<aura::Window*, gfx::Rect> element_left(
+      dom_agent()
+          ->GetElementFromNodeId(left_rect_id)
+          ->GetNodeWindowAndBounds());
+
+  const std::pair<aura::Window*, gfx::Rect> element_right(
+      dom_agent()
+          ->GetElementFromNodeId(right_rect_id)
+          ->GetNodeWindowAndBounds());
+
+  EXPECT_EQ(element_left.second, left_rect);
+  EXPECT_EQ(element_right.second, right_rect);
+  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+            HighlightRectsConfiguration::R1_INTERSECTS_R2);
+}
+
 // Tests that the correct Overlay events are dispatched to the frontend when
 // hovering and clicking over a UI element in inspect mode.
 TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
