@@ -401,6 +401,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::Bind(&AddConsoleError),
           APILastError(base::Bind(&GetLastErrorParents),
                        base::Bind(&AddConsoleError))),
+      messaging_service_(this),
       weak_factory_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));
@@ -591,6 +592,10 @@ RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
 
 IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
+}
+
+RendererMessagingService* NativeExtensionBindingsSystem::GetMessagingService() {
+  return &messaging_service_;
 }
 
 void NativeExtensionBindingsSystem::OnExtensionPermissionsUpdated(

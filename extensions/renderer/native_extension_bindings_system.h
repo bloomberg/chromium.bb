@@ -14,6 +14,7 @@
 #include "extensions/renderer/bindings/event_emitter.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/feature_cache.h"
+#include "extensions/renderer/js_renderer_messaging_service.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -48,6 +49,7 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
                       const std::string& error) override;
   RequestSender* GetRequestSender() override;
   IPCMessageSender* GetIPCMessageSender() override;
+  RendererMessagingService* GetMessagingService() override;
   void OnExtensionPermissionsUpdated(const ExtensionId& id) override;
   void OnExtensionRemoved(const ExtensionId& id) override;
 
@@ -99,6 +101,10 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
 
   // The APIBindingsSystem associated with this class.
   APIBindingsSystem api_system_;
+
+  // TODO(devlin): For now, native bindings still use JS hooks for messaging.
+  // Swap this out for NativeRendererMessagingService when it's ready.
+  JSRendererMessagingService messaging_service_;
 
   FeatureCache feature_cache_;
 

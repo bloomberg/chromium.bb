@@ -17,6 +17,7 @@ class ListValue;
 
 namespace extensions {
 class IPCMessageSender;
+class RendererMessagingService;
 class RequestSender;
 class ScriptContext;
 struct EventFilteringInfo;
@@ -65,6 +66,9 @@ class ExtensionBindingsSystem {
   // Returns the associated RequestSender, if any.
   // TODO(devlin): Factor this out.
   virtual RequestSender* GetRequestSender() = 0;
+
+  // Returns the associated RendererMessagingService.
+  virtual RendererMessagingService* GetMessagingService() = 0;
 
   // Called when an extension is removed.
   virtual void OnExtensionRemoved(const ExtensionId& id) {}
