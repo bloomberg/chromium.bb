@@ -162,20 +162,26 @@ class TetherNotificationPresenterTest : public testing::Test {
   TetherNotificationPresenterTest() : test_device_(CreateTestRemoteDevice()) {}
 
   void SetUp() override {
+    message_center::MessageCenter::Initialize();
+
     TestingProfile::Builder builder;
     profile_ = builder.Build();
     test_message_center_ = base::WrapUnique(new TestMessageCenter());
     test_network_connect_ = base::WrapUnique(new TestNetworkConnect());
-    notification_presenter_ = base::WrapUnique(new TetherNotificationPresenter(
+
+    notification_presenter_ = base::MakeUnique<TetherNotificationPresenter>(
         profile_.get(), test_message_center_.get(),
-        test_network_connect_.get()));
+        test_network_connect_.get());
 
     test_settings_ui_delegate_ = new TestSettingsUiDelegate();
     notification_presenter_->SetSettingsUiDelegateForTesting(
         base::WrapUnique(test_settings_ui_delegate_));
   }
 
-  void TearDown() override { profile_.reset(); }
+  void TearDown() override {
+    profile_.reset();
+    message_center::MessageCenter::Shutdown();
+  }
 
   std::string GetActiveHostNotificationId() {
     return std::string(TetherNotificationPresenter::kActiveHostNotificationId);
@@ -260,7 +266,8 @@ TEST_F(TetherNotificationPresenterTest,
        TestSetupRequiredNotification_RemoveProgrammatically) {
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetSetupRequiredNotificationId()));
-  notification_presenter_->NotifySetupRequired(test_device_.name);
+  notification_presenter_->NotifySetupRequired(test_device_.name,
+                                               kTestNetworkSignalStrength);
 
   message_center::Notification* notification =
       test_message_center_->FindVisibleNotificationById(
@@ -279,7 +286,8 @@ TEST_F(TetherNotificationPresenterTest,
        TestSetupRequiredNotification_TapNotification) {
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetSetupRequiredNotificationId()));
-  notification_presenter_->NotifySetupRequired(test_device_.name);
+  notification_presenter_->NotifySetupRequired(test_device_.name,
+                                               kTestNetworkSignalStrength);
 
   message_center::Notification* notification =
       test_message_center_->FindVisibleNotificationById(

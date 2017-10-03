@@ -52,7 +52,8 @@ class TetherNotificationPresenter
   NotificationPresenter::PotentialHotspotNotificationState
   GetPotentialHotspotNotificationState() override;
   void RemovePotentialHotspotNotification() override;
-  void NotifySetupRequired(const std::string& device_name) override;
+  void NotifySetupRequired(const std::string& device_name,
+                           int signal_strength) override;
   void RemoveSetupRequiredNotification() override;
   void NotifyConnectionToHostFailed() override;
   void RemoveConnectionToHostFailedNotification() override;
