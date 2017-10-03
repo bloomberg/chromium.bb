@@ -2937,6 +2937,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testQuickActionCaptionAndImage() throws InterruptedException, TimeoutException {
+        mPanel.getAnimationHandler().enableTestingMode();
+
         // Simulate a tap to show the Bar, then set the quick action data.
         simulateTapSearch("search");
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -2944,8 +2946,6 @@ public class ContextualSearchManagerTest {
             public void run() {
                 mPanel.onSearchTermResolved("search", null, "tel:555-555-5555",
                         QuickActionCategory.PHONE);
-                // Finish all running animations.
-                mPanel.onUpdateAnimation(System.currentTimeMillis(), true);
             }
         });
 
