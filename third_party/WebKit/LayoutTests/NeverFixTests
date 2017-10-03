@@ -130,8 +130,6 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 
 # These tests are flaky/fail when threaded and add little value (they're just
 # reading back Blink's current animation value).
-virtual/threaded/animations/transition-and-animation-1.html [ WontFix ]
-virtual/threaded/animations/transition-and-animation-2.html [ WontFix ]
 virtual/threaded/transitions/transition-end-event-multiple-04.html [ WontFix ]
 
 # See crbug.com/522326
