@@ -785,11 +785,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_VersionChangeCrashResilience) {
   NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part2",
                           "pass - part2 - crash me");
-  // If we actually crash here then googletest will not run the next step
-  // (VersionChangeCrashResilience) as an optimization. googletest's
-  // ASSERT_DEATH/EXIT fails to work properly (on Windows) due to how we
-  // implement the PRE_* test mechanism.
-  exit(0);
+  // Previously this test would abruptly terminate the browser process
+  // to ensure that the version update was not partially committed,
+  // which was possible in the very early implementation (circa 2011).
+  // This test no longer abruptly terminates the process, but the
+  // commit scheme has changed so it's not plausible any more anyway.
+  // TODO(jsbell): Delete or rename the test.
 }
 
 // Fails to cleanup GPU processes on swarming.
