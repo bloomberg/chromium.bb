@@ -25,7 +25,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
-#include <algorithm>
 #include <utility>
 
 namespace WTF {

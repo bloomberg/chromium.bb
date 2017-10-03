@@ -21,7 +21,6 @@
 #ifndef StylePropertySet_h
 #define StylePropertySet_h
 
-#include <algorithm>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -145,9 +144,14 @@ class CORE_EXPORT StylePropertySet
       : css_parser_mode_(css_parser_mode), is_mutable_(true), array_size_(0) {}
 
   StylePropertySet(CSSParserMode css_parser_mode, unsigned immutable_array_size)
-      : css_parser_mode_(css_parser_mode),
-        is_mutable_(false),
-        array_size_(std::min(immutable_array_size, unsigned(kMaxArraySize))) {}
+      : css_parser_mode_(css_parser_mode), is_mutable_(false) {
+    // Avoid min()/max() from std here in the header, because that would require
+    // inclusion of <algorithm>, which is slow to compile.
+    if (immutable_array_size < unsigned(kMaxArraySize))
+      array_size_ = immutable_array_size;
+    else
+      array_size_ = unsigned(kMaxArraySize);
+  }
 
   unsigned css_parser_mode_ : 3;
   mutable unsigned is_mutable_ : 1;

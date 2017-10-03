@@ -33,7 +33,6 @@
 #include "platform/wtf/text/ASCIIFastPath.h"
 #include "platform/wtf/text/StringImpl.h"
 #include "platform/wtf/text/StringView.h"
-#include <algorithm>
 #include <iosfwd>
 
 #ifdef __OBJC__

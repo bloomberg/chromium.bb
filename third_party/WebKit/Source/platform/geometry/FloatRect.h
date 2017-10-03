@@ -118,24 +118,10 @@ class PLATFORM_EXPORT FloatRect {
   void Contract(const FloatSize& size) { size_ -= size; }
   void Contract(float dw, float dh) { size_.Expand(-dw, -dh); }
 
-  void ShiftXEdgeTo(float edge) {
-    float delta = edge - X();
-    SetX(edge);
-    SetWidth(std::max(0.0f, Width() - delta));
-  }
-  void ShiftMaxXEdgeTo(float edge) {
-    float delta = edge - MaxX();
-    SetWidth(std::max(0.0f, Width() + delta));
-  }
-  void ShiftYEdgeTo(float edge) {
-    float delta = edge - Y();
-    SetY(edge);
-    SetHeight(std::max(0.0f, Height() - delta));
-  }
-  void ShiftMaxYEdgeTo(float edge) {
-    float delta = edge - MaxY();
-    SetHeight(std::max(0.0f, Height() + delta));
-  }
+  void ShiftXEdgeTo(float);
+  void ShiftMaxXEdgeTo(float);
+  void ShiftYEdgeTo(float);
+  void ShiftMaxYEdgeTo(float);
 
   FloatPoint MinXMinYCorner() const { return location_; }  // typically topLeft
   FloatPoint MaxXMinYCorner() const {
