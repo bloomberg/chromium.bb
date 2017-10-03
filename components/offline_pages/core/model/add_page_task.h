@@ -23,8 +23,7 @@ class OfflinePageMetadataStoreSQL;
 // after taskifying OfflinePageModel.
 class AddPageTask : public Task {
  public:
-  typedef base::OnceCallback<void(AddPageResult, const OfflinePageItem&)>
-      AddPageTaskCallback;
+  typedef base::OnceCallback<void(AddPageResult)> AddPageTaskCallback;
 
   AddPageTask(OfflinePageMetadataStoreSQL* store,
               const OfflinePageItem& offline_page,

@@ -125,6 +125,7 @@ source_set("unit_tests") {
   sources = [
     "archive_manager_unittest.cc",
     "client_policy_controller_unittest.cc",
+    "model/add_page_task_unittest.cc",
     "model/clear_storage_task_unittest.cc",
     "model/create_archive_task_unittest.cc",
     "model/delete_page_task_unittest.cc",

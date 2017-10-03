@@ -39,13 +39,13 @@ class OfflinePageMetadataStoreTestUtil {
   void DeleteStore();
 
   // Inserts an offline page item into the store.
-  void InsertItem(const OfflinePageItem& item);
+  void InsertItem(const OfflinePageItem& page_to_insert);
 
   // Gets the total number of pages in the store.
   int64_t GetPageCount();
 
   // Gets offline page by offline_id.
-  OfflinePageItem GetPageByOfflineId(int64_t offline_id);
+  std::unique_ptr<OfflinePageItem> GetPageByOfflineId(int64_t offline_id);
 
   OfflinePageMetadataStoreSQL* store() { return store_.get(); }
 

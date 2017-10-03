@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/memory/ptr_util.h"
+#include "components/offline_pages/core/model/add_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "sql/connection.h"
@@ -58,40 +60,43 @@ OfflinePageMetadataStoreTestUtil::ReleaseStore() {
 }
 
 void OfflinePageMetadataStoreTestUtil::InsertItem(const OfflinePageItem& page) {
-  ItemActionStatus status;
-  store_->AddOfflinePage(
-      page, base::Bind([](ItemActionStatus* out_status,
-                          ItemActionStatus status) { *out_status = status; },
-                       &status));
+  AddPageResult result;
+  auto task = base::MakeUnique<AddPageTask>(
+      store(), page,
+      base::Bind([](AddPageResult* out_result,
+                    AddPageResult cb_result) { *out_result = cb_result; },
+                 &result));
+  task->Run();
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(ItemActionStatus::SUCCESS, status);
+  EXPECT_EQ(AddPageResult::SUCCESS, result);
 }
 
 int64_t OfflinePageMetadataStoreTestUtil::GetPageCount() {
-  int64_t page_count = 0;
-  store_->Execute(base::BindOnce(&GetPageCountSync),
-                  base::BindOnce([](int64_t* out_count,
-                                    int64_t count) { *out_count = count; },
-                                 &page_count));
+  int64_t count = 0;
+  store_->Execute(
+      base::BindOnce(&GetPageCountSync),
+      base::BindOnce(
+          [](int64_t* out_count, int64_t cb_count) { *out_count = cb_count; },
+          &count));
   task_runner_->RunUntilIdle();
-  return page_count;
+  return count;
 }
 
-OfflinePageItem OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(
-    int64_t offline_id) {
-  OfflinePageItem out_page;
+std::unique_ptr<OfflinePageItem>
+OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(int64_t offline_id) {
+  OfflinePageItem* page = nullptr;
   auto task = GetPagesTask::CreateTaskMatchingOfflineId(
       store(),
       base::Bind(
-          [](OfflinePageItem* out_page, const OfflinePageItem* page) {
-            if (page)
-              *out_page = *page;
+          [](OfflinePageItem** out_page, const OfflinePageItem* cb_page) {
+            if (cb_page)
+              *out_page = new OfflinePageItem(*cb_page);
           },
-          &out_page),
+          &page),
       offline_id);
   task->Run();
   task_runner_->RunUntilIdle();
-  return out_page;
+  return base::WrapUnique<OfflinePageItem>(page);
 }
 
 }  // namespace offline_pages

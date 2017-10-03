@@ -70,13 +70,12 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
                                                      current_time);
   std::move(task)->Run();
 
-  OfflinePageItem offline_page =
-      store_test_util()->GetPageByOfflineId(kTestOfflineId);
-  EXPECT_EQ(kTestUrl, offline_page.url);
-  EXPECT_EQ(kTestClientId, offline_page.client_id);
-  EXPECT_EQ(kTestFileSize, offline_page.file_size);
-  EXPECT_EQ(1, offline_page.access_count);
-  EXPECT_EQ(current_time, offline_page.last_access_time);
+  auto offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
+  EXPECT_EQ(kTestUrl, offline_page->url);
+  EXPECT_EQ(kTestClientId, offline_page->client_id);
+  EXPECT_EQ(kTestFileSize, offline_page->file_size);
+  EXPECT_EQ(1, offline_page->access_count);
+  EXPECT_EQ(current_time, offline_page->last_access_time);
 }
 
 TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
@@ -89,23 +88,22 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
                                                      current_time);
   std::move(task)->Run();
 
-  OfflinePageItem offline_page =
-      store_test_util()->GetPageByOfflineId(kTestOfflineId);
-  EXPECT_EQ(kTestOfflineId, offline_page.offline_id);
-  EXPECT_EQ(kTestUrl, offline_page.url);
-  EXPECT_EQ(kTestClientId, offline_page.client_id);
-  EXPECT_EQ(kTestFileSize, offline_page.file_size);
-  EXPECT_EQ(1, offline_page.access_count);
-  EXPECT_EQ(current_time, offline_page.last_access_time);
+  auto offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
+  EXPECT_EQ(kTestOfflineId, offline_page->offline_id);
+  EXPECT_EQ(kTestUrl, offline_page->url);
+  EXPECT_EQ(kTestClientId, offline_page->client_id);
+  EXPECT_EQ(kTestFileSize, offline_page->file_size);
+  EXPECT_EQ(1, offline_page->access_count);
+  EXPECT_EQ(current_time, offline_page->last_access_time);
 
   task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                 base::Time::Now());
   std::move(task)->Run();
 
   offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
-  EXPECT_EQ(kTestOfflineId, offline_page.offline_id);
-  EXPECT_EQ(2, offline_page.access_count);
-  EXPECT_LT(current_time, offline_page.last_access_time);
+  EXPECT_EQ(kTestOfflineId, offline_page->offline_id);
+  EXPECT_EQ(2, offline_page->access_count);
+  EXPECT_LT(current_time, offline_page->last_access_time);
 }
 
 }  // namespace offline_pages

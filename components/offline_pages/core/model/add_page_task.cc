@@ -88,7 +88,7 @@ void AddPageTask::OnAddPageDone(ItemActionStatus status) {
 }
 
 void AddPageTask::InformAddPageDone(AddPageResult result) {
-  std::move(callback_).Run(result, offline_page_);
+  std::move(callback_).Run(result);
   TaskComplete();
 }
 
