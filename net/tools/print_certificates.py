@@ -73,11 +73,19 @@ def extract_certificates_from_pem(pem_bytes):
   certificates_der = []
 
   regex = re.compile(
-      r'-----BEGIN CERTIFICATE-----(.*?)-----END CERTIFICATE-----', re.DOTALL)
+      r'-----BEGIN (CERTIFICATE|PKCS7)-----(.*?)-----END \1-----', re.DOTALL)
 
   for match in regex.finditer(pem_bytes):
-    cert_der = base64.b64decode(strip_all_whitespace(match.group(1)))
-    certificates_der.append(cert_der)
+    der = base64.b64decode(strip_all_whitespace(match.group(2)))
+    if match.group(1) == 'CERTIFICATE':
+      certificates_der.append(der)
+    else:
+      pkcs7_certs_pem = process_data_with_command(
+          ['openssl','pkcs7','-print_certs', '-inform', 'DER'], der)
+      # The output will be one or more PEM encoded certificates.
+      # (Or CRLS, but those will be ignored.)
+      if pkcs7_certs_pem:
+        certificates_der.extend(extract_certificates_from_pem(pkcs7_certs_pem))
 
   return certificates_der
 
@@ -192,7 +200,7 @@ def extract_tls_certificate_message(netlog_text):
 
 
 def extract_certificates(source_bytes):
-  if "BEGIN CERTIFICATE" in source_bytes:
+  if "BEGIN CERTIFICATE" in source_bytes or "BEGIN PKCS7" in source_bytes:
     return extract_certificates_from_pem(source_bytes)
 
   if "SEQUENCE {" in source_bytes:
@@ -300,7 +308,7 @@ def main():
   parser.add_argument('sources', metavar='SOURCE', nargs='*',
                       help='''Each SOURCE can be one of:
   (1) A server name such as www.google.com.
-  (2) A PEM [*] file containing one or more CERTIFICATE blocks
+  (2) A PEM [*] file containing one or more CERTIFICATE or PKCS7 blocks
   (3) A file containing one or more DER ASCII certificates
   (4) A text NetLog dump of a TLS certificate message
       (must include the SSL_HANDSHAKE_MESSAGE_RECEIVED line)
