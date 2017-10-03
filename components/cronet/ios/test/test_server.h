@@ -23,6 +23,8 @@ class TestServer {
   // Returns URL which respond with setting cookie to |cookie_line| and echo it
   // in response body.
   static std::string GetSetCookieURL(const std::string& cookie_line);
+  // Returns URL which echoes data in a request body.
+  static std::string EchoRequestBodyURL();
   // Prepares response and returns URL which respond with |data_size| of bytes
   // in response body.
   static std::string PrepareBigDataURL(long data_size);
