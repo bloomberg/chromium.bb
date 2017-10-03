@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Resetting the canvas state does not reset the origin-clean flag assert_throws: function "function () { canvas.toDataURL(); }" did not throw
-Harness: the test ran to completion.
-

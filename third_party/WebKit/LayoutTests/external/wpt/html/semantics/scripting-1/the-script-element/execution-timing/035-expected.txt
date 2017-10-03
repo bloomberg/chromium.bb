@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL  scheduler: innerHTML adding frames with JS in and moving scripts assert_array_equals: lengths differ, expected 4 got 5
+Harness: the test ran to completion.
+

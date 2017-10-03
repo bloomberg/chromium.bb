@@ -180,7 +180,6 @@ SET TIMEOUT: offscreen-canvas/the-offscreen-canvas/*
 SET TIMEOUT: old-tests/submission/Microsoft/history/history_000.htm
 SET TIMEOUT: old-tests/submission/Microsoft/sandbox/*
 SET TIMEOUT: old-tests/submission/Microsoft/structuredclone/structuredclone_0.html
-SET TIMEOUT: old-tests/submission/Opera/script_scheduling/*
 SET TIMEOUT: old-tests/webdriver/timeouts/res/implicit_waits_tests.html
 SET TIMEOUT: page-visibility/resources/pagevistestharness.js
 SET TIMEOUT: payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html
