@@ -97,12 +97,11 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     client->OnReceiveResponse(response_head, ssl_info, nullptr);
 
     // Pass the response body to the client.
-    // TODO(nhiroki): Add test cases where the body size is bigger than the
-    // buffer size used in ServiceWorkerScriptURLLoader.
     uint32_t bytes_written = response.body.size();
     mojo::DataPipe data_pipe;
-    data_pipe.producer_handle->WriteData(response.body.data(), &bytes_written,
-                                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        response.body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    ASSERT_EQ(MOJO_RESULT_OK, result);
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
 
     ResourceRequestCompletionStatus status;
@@ -204,6 +203,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
       return false;
 
     // Verify the response status.
+    size_t response_data_size = 0;
     {
       std::unique_ptr<ServiceWorkerResponseReader> reader =
           helper_->context()->storage()->CreateResponseReader(
@@ -216,6 +216,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
         return false;
       EXPECT_LT(0, rv);
       EXPECT_EQ("OK", info_buffer->http_info->headers->GetStatusText());
+      response_data_size = info_buffer->response_data_size;
     }
 
     // Verify the response body.
@@ -224,7 +225,8 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
       std::unique_ptr<ServiceWorkerResponseReader> reader =
           helper_->context()->storage()->CreateResponseReader(
               cache_resource_id);
-      auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(512);
+      auto buffer =
+          base::MakeRefCounted<net::IOBufferWithSize>(response_data_size);
       net::TestCompletionCallback cb;
       reader->ReadData(buffer.get(), buffer->size(), cb.callback());
       int rv = cb.WaitForResult();
@@ -255,9 +257,9 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
-  GURL script_url(kNormalScriptURL);
-  SetUpRegistration(script_url);
-  DoRequest(script_url);
+  const GURL kScriptURL(kNormalScriptURL);
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
   client_.RunUntilComplete();
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
 
@@ -267,10 +269,10 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
-  EXPECT_EQ(mock_server_->Get(script_url).body, response);
+  EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
-  EXPECT_TRUE(VerifyStoredResponse(script_url));
+  EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
@@ -292,6 +294,36 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
   EXPECT_TRUE(response.empty());
+
+  // The response should also be stored in the storage.
+  EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Success_LargeBody) {
+  // Create a response that has a larger body than the script loader's buffer
+  // to test chunked data write. We chose this multiplier to avoid hitting the
+  // limit of mojo's data pipe buffer (it's about kReadBufferSize * 2 as of
+  // now).
+  const uint32_t kBodySize =
+      ServiceWorkerScriptURLLoader::kReadBufferSize * 1.6;
+  const GURL kScriptURL("https://example.com/large-body.js");
+  mock_server_->Add(
+      kScriptURL,
+      MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
+                                           "Content-Type: text/javascript\n\n"),
+                               std::string(kBodySize, 'a')));
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+
+  // The client should have received the response.
+  EXPECT_TRUE(client_.has_received_response());
+  EXPECT_TRUE(client_.response_body().is_valid());
+  std::string response;
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(
+      client_.response_body_release(), &response));
+  EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
