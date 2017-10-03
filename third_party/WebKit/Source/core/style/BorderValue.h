@@ -25,7 +25,6 @@
 #ifndef BorderValue_h
 #define BorderValue_h
 
-#include <algorithm>
 #include "core/css/StyleColor.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
@@ -120,8 +119,11 @@ class BorderValue {
  protected:
   static unsigned WidthToFixedPoint(float width) {
     DCHECK_GE(width, 0);
-    return static_cast<unsigned>(std::min<float>(width, kMaxForBorderWidth) *
-                                 kBorderWidthDenominator);
+    // Avoid min()/max() from std here in the header, because that would require
+    // inclusion of <algorithm>, which is slow to compile.
+    if (width > float(kMaxForBorderWidth))
+      width = float(kMaxForBorderWidth);
+    return static_cast<unsigned>(width * kBorderWidthDenominator);
   }
 
   Color color_;

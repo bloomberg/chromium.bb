@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "core/layout/TextDecorationOffsetBase.h"
+
+#include <algorithm>
 #include "core/layout/line/LineVerticalPositionType.h"
 #include "core/paint/DecorationInfo.h"
 #include "platform/fonts/FontMetrics.h"
