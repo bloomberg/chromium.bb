@@ -6388,18 +6388,18 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       if (is_inter) {
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
       } else {
-        const int tx_size_ctx = get_tx_size_context(xd);
-        const int tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                         : intra_tx_size_cat_lookup[bsize];
+        const TX_SIZE tx_size_ctx = get_tx_size_context(xd);
+        const TX_SIZE tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+                                             : intra_tx_size_cat_lookup[bsize];
         const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
         const int depth = tx_size_to_depth(coded_tx_size);
         ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
         if (tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
       }
 #else
-      const int tx_size_ctx = get_tx_size_context(xd);
-      const int tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                       : intra_tx_size_cat_lookup[bsize];
+      const TX_SIZE tx_size_ctx = get_tx_size_context(xd);
+      const TX_SIZE tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+                                           : intra_tx_size_cat_lookup[bsize];
       const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
       const int depth = tx_size_to_depth(coded_tx_size);
 

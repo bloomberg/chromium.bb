@@ -511,7 +511,7 @@ static void get_rate_cost(aom_prob p, int cost[2]) {
 #endif  // !LV_MAP_PROB
 
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
-  for (TX_SIZE tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+  for (int tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (int plane = 0; plane < PLANE_TYPES; ++plane) {
       LV_MAP_COEFF_COST *pcost = &x->coeff_costs[tx_size][plane];
 

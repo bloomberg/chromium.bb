@@ -147,8 +147,8 @@ void av1_fwd_txfm2d_4x8_c(const int16_t *input, int32_t *output, int stride,
 #if CONFIG_TXMG
   int32_t txfm_buf[4 * 8];
   int16_t rinput[4 * 8];
-  int tx_size = TX_4X8;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_4X8;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
@@ -177,8 +177,8 @@ void av1_fwd_txfm2d_8x16_c(const int16_t *input, int32_t *output, int stride,
 #if CONFIG_TXMG
   int32_t txfm_buf[8 * 16];
   int16_t rinput[8 * 16];
-  int tx_size = TX_8X16;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_8X16;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
@@ -207,8 +207,8 @@ void av1_fwd_txfm2d_16x32_c(const int16_t *input, int32_t *output, int stride,
 #if CONFIG_TXMG
   int32_t txfm_buf[16 * 32];
   int16_t rinput[16 * 32];
-  int tx_size = TX_16X32;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_16X32;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
@@ -349,13 +349,13 @@ static const TXFM_1D_CFG *fwd_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
 #endif  // CONFIG_EXT_TX
 };
 
-TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(TX_TYPE tx_type, int tx_size) {
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size) {
   TXFM_2D_FLIP_CFG cfg;
   set_flip_cfg(tx_type, &cfg);
   const TX_TYPE_1D tx_type_col = vtx_tab[tx_type];
   const TX_TYPE_1D tx_type_row = htx_tab[tx_type];
-  const int tx_size_col = txsize_vert_map[tx_size];
-  const int tx_size_row = txsize_horz_map[tx_size];
+  const TX_SIZE tx_size_col = txsize_vert_map[tx_size];
+  const TX_SIZE tx_size_row = txsize_horz_map[tx_size];
   cfg.col_cfg = fwd_txfm_col_cfg_ls[tx_type_col][tx_size_col];
   cfg.row_cfg = fwd_txfm_row_cfg_ls[tx_type_row][tx_size_row];
   return cfg;
@@ -365,7 +365,7 @@ TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(TX_TYPE tx_type, int tx_size) {
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_32x64_cfg(TX_TYPE tx_type) {
   TXFM_2D_FLIP_CFG cfg;
   const TX_TYPE_1D tx_type_row = htx_tab[tx_type];
-  const int tx_size_row = txsize_horz_map[TX_32X64];
+  const TX_SIZE tx_size_row = txsize_horz_map[TX_32X64];
   switch (tx_type) {
     case DCT_DCT:
       cfg.col_cfg = &fwd_txfm_1d_col_cfg_dct_64;
@@ -381,7 +381,7 @@ TXFM_2D_FLIP_CFG av1_get_fwd_txfm_32x64_cfg(TX_TYPE tx_type) {
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x32_cfg(TX_TYPE tx_type) {
   TXFM_2D_FLIP_CFG cfg;
   const TX_TYPE_1D tx_type_col = vtx_tab[tx_type];
-  const int tx_size_col = txsize_vert_map[TX_64X32];
+  const TX_SIZE tx_size_col = txsize_vert_map[TX_64X32];
   switch (tx_type) {
     case DCT_DCT:
       cfg.col_cfg = fwd_txfm_col_cfg_ls[tx_type_col][tx_size_col];

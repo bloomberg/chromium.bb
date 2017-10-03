@@ -140,7 +140,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_AOM_QM
   (void)tx_type;
   int band, c = 0;
-  const int tx_size_ctx = txsize_sqr_map[tx_size];
+  const TX_SIZE tx_size_ctx = txsize_sqr_map[tx_size];
   aom_cdf_prob(*coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
       ec_ctx->coef_head_cdfs[tx_size_ctx][type][ref];
   aom_cdf_prob(*coef_tail_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =

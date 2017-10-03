@@ -1441,7 +1441,7 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const uint16_t *band_count = &band_count_table[tx_size][1];
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-  const int tx_size_ctx = txsize_sqr_map[tx_size];
+  const TX_SIZE tx_size_ctx = txsize_sqr_map[tx_size];
   uint8_t token_cache[MAX_TX_SQUARE];
   int pt = combine_entropy_contexts(*a, *l);
   int c, cost;
@@ -2212,8 +2212,9 @@ void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
 }
 #endif  // CONFIG_SUPERTX
 
-static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
-                        BLOCK_SIZE bsize, TX_SIZE tx_size) {
+static TX_SIZE tx_size_cost(const AV1_COMP *const cpi,
+                            const MACROBLOCK *const x, BLOCK_SIZE bsize,
+                            TX_SIZE tx_size) {
   const AV1_COMMON *const cm = &cpi->common;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -2229,11 +2230,11 @@ static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
 
   if (tx_select) {
     const int is_inter = is_inter_block(mbmi);
-    const int tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                     : intra_tx_size_cat_lookup[bsize];
+    const TX_SIZE tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+                                         : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);
-    const int tx_size_ctx = get_tx_size_context(xd);
+    const TX_SIZE tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
@@ -2291,7 +2292,7 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
 }
 static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                         RD_STATS *rd_stats, int64_t ref_best_rd, BLOCK_SIZE bs,
-                        TX_TYPE tx_type, int tx_size) {
+                        TX_TYPE tx_type, TX_SIZE tx_size) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -4601,7 +4602,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       av1_cost_bit(xd->fc->txb_skip[txs_ctx][txb_ctx.txb_skip_ctx], 1);
 #endif  // LV_MAP_PROB
 #else
-  int tx_size_ctx = txsize_sqr_map[tx_size];
+  TX_SIZE tx_size_ctx = txsize_sqr_map[tx_size];
   int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
   zero_blk_rate =
       x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];

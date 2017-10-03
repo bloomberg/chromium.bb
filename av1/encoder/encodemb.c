@@ -1139,7 +1139,7 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
                                     tran_low_t *ref_coeff,
                                     tran_low_t *const dqcoeff, uint16_t *eob,
                                     const int16_t *quant, int plane,
-                                    int tx_size, TX_TYPE tx_type, int *rate,
+                                    TX_SIZE tx_size, TX_TYPE tx_type, int *rate,
                                     int speed, PVQ_INFO *pvq_info) {
   const int tx_blk_size = tx_size_wide[tx_size];
   daala_enc_ctx *daala_enc = &x->daala_enc;

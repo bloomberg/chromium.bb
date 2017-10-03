@@ -8284,7 +8284,7 @@ static void dfs_scan(int tx1d_size, int *scan_idx, int coeff_idx, int16_t *scan,
   ++(*scan_idx);
 }
 
-void av1_update_neighbors(int tx_size, const int16_t *scan,
+void av1_update_neighbors(TX_SIZE tx_size, const int16_t *scan,
                           const int16_t *iscan, int16_t *neighbors) {
   const int tx1d_wide = tx_size_wide[tx_size];
   const int tx1d_high = tx_size_high[tx_size];

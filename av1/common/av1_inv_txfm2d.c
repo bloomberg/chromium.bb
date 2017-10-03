@@ -140,13 +140,13 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
 #endif  // CONFIG_EXT_TX
 };
 
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, int tx_size) {
+TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size) {
   TXFM_2D_FLIP_CFG cfg;
   set_flip_cfg(tx_type, &cfg);
   const TX_TYPE_1D tx_type_col = vtx_tab[tx_type];
   const TX_TYPE_1D tx_type_row = htx_tab[tx_type];
-  const int tx_size_col = txsize_vert_map[tx_size];
-  const int tx_size_row = txsize_horz_map[tx_size];
+  const TX_SIZE tx_size_col = txsize_vert_map[tx_size];
+  const TX_SIZE tx_size_row = txsize_horz_map[tx_size];
   cfg.col_cfg = inv_txfm_col_cfg_ls[tx_type_col][tx_size_col];
   cfg.row_cfg = inv_txfm_row_cfg_ls[tx_type_row][tx_size_row];
   return cfg;
@@ -294,9 +294,10 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
 
 static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
                                          int stride, int32_t *txfm_buf,
-                                         TX_TYPE tx_type, int tx_size, int bd) {
+                                         TX_TYPE tx_type, TX_SIZE tx_size,
+                                         int bd) {
   TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, tx_size);
-  int tx_size_sqr = txsize_sqr_map[tx_size];
+  TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
   inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf,
                    fwd_shift_sum[tx_size_sqr], bd);
 }
@@ -313,8 +314,8 @@ void av1_inv_txfm2d_add_8x4_c(const int32_t *input, uint16_t *output,
   int txfm_buf[8 * 4 + 8 + 8];
   int32_t rinput[8 * 4];
   uint16_t routput[8 * 4];
-  int tx_size = TX_8X4;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_8X4;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
@@ -342,8 +343,8 @@ void av1_inv_txfm2d_add_16x8_c(const int32_t *input, uint16_t *output,
   int txfm_buf[16 * 8 + 16 + 16];
   int32_t rinput[16 * 8];
   uint16_t routput[16 * 8];
-  int tx_size = TX_16X8;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_16X8;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
@@ -371,8 +372,8 @@ void av1_inv_txfm2d_add_32x16_c(const int32_t *input, uint16_t *output,
   int txfm_buf[32 * 16 + 32 + 32];
   int32_t rinput[32 * 16];
   uint16_t routput[32 * 16];
-  int tx_size = TX_32X16;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_32X16;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
@@ -425,8 +426,8 @@ void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
   int txfm_buf[64 * 32 + 64 + 64];
   int32_t rinput[64 * 32];
   uint16_t routput[64 * 32];
-  int tx_size = TX_64X32;
-  int rtx_size = av1_rotate_tx_size(tx_size);
+  TX_SIZE tx_size = TX_64X32;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
   TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
   int w = tx_size_wide[tx_size];
   int h = tx_size_high[tx_size];
