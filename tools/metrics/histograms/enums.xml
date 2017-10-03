@@ -33175,6 +33175,21 @@ from previous Chrome versions.
   <int value="3" label="Audio and video"/>
 </enum>
 
+<enum name="RendererSchedulerFrameType">
+  <int value="0" label="MainFrame_OnScreen"/>
+  <int value="1" label="MainFrame_OffScreen"/>
+  <int value="2" label="MainFrame_Background"/>
+  <int value="3" label="MainFrame_Background_ThrottlingExempt"/>
+  <int value="4" label="SameOrigin_OnScreen"/>
+  <int value="5" label="SameOrigin_OffScreen"/>
+  <int value="6" label="SameOrigin_Background"/>
+  <int value="7" label="SameOrigin_Background_ThrottlingExempt"/>
+  <int value="8" label="CrossOrigin_OnScreen"/>
+  <int value="9" label="CrossOrigin_OffScreen"/>
+  <int value="10" label="CrossOrigin_Background"/>
+  <int value="11" label="CrossOrigin_Background_ThrottlingExempt"/>
+</enum>
+
 <enum name="RendererSchedulerTaskQueueType">
   <int value="0" label="Control"/>
   <int value="1" label="Default"/>

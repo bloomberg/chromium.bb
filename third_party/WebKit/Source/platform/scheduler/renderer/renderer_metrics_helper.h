@@ -13,9 +13,35 @@
 #include "platform/scheduler/renderer/task_duration_metric_reporter.h"
 
 namespace blink {
+
+class WebFrameScheduler;
 namespace scheduler {
 
+class MainThreadTaskQueue;
 class RendererSchedulerImpl;
+
+// This enum is used for histogram and should not be renumbered.
+// This enum should be kept in sync with FrameThrottlingState and
+// FrameOriginState.
+enum class FrameType {
+  MAIN_FRAME_VISIBLE = 0,
+  MAIN_FRAME_HIDDEN = 1,
+  MAIN_FRAME_BACKGROUND = 2,
+  MAIN_FRAME_BACKGROUND_EXEMPT = 3,
+  SAME_ORIGIN_VISIBLE = 4,
+  SAME_ORIGIN_HIDDEN = 5,
+  SAME_ORIGIN_BACKGROUND = 6,
+  SAME_ORIGIN_BACKGROUND_EXEMPT = 7,
+  CROSS_ORIGIN_VISIBLE = 8,
+  CROSS_ORIGIN_HIDDEN = 9,
+  CROSS_ORIGIN_BACKGROUND = 10,
+  CROSS_ORIGIN_BACKGROUND_EXEMPT = 11,
+
+  COUNT = 12
+};
+
+PLATFORM_EXPORT FrameType
+GetFrameType(const WebFrameScheduler& frame_scheduler);
 
 // Helper class to take care of metrics on behalf of RendererScheduler.
 // This class should be used only on the main thread.
@@ -26,7 +52,7 @@ class PLATFORM_EXPORT RendererMetricsHelper {
                         bool renderer_backgrounded);
   ~RendererMetricsHelper();
 
-  void RecordTaskMetrics(MainThreadTaskQueue::QueueType queue_type,
+  void RecordTaskMetrics(MainThreadTaskQueue* queue,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time);
 
@@ -47,24 +73,37 @@ class PLATFORM_EXPORT RendererMetricsHelper {
   ThreadLoadTracker background_main_thread_load_tracker;
   ThreadLoadTracker foreground_main_thread_load_tracker;
 
-  TaskDurationMetricReporter task_duration_reporter;
-  TaskDurationMetricReporter foreground_task_duration_reporter;
-  TaskDurationMetricReporter foreground_first_minute_task_duration_reporter;
-  TaskDurationMetricReporter foreground_second_minute_task_duration_reporter;
-  TaskDurationMetricReporter foreground_third_minute_task_duration_reporter;
-  TaskDurationMetricReporter
+  using TaskDurationPerQueueTypeMetricReporter =
+      TaskDurationMetricReporter<MainThreadTaskQueue::QueueType>;
+
+  TaskDurationPerQueueTypeMetricReporter task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter foreground_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      foreground_first_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      foreground_second_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      foreground_third_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
       foreground_after_third_minute_task_duration_reporter;
-  TaskDurationMetricReporter background_task_duration_reporter;
-  TaskDurationMetricReporter background_first_minute_task_duration_reporter;
-  TaskDurationMetricReporter background_second_minute_task_duration_reporter;
-  TaskDurationMetricReporter background_third_minute_task_duration_reporter;
-  TaskDurationMetricReporter background_fourth_minute_task_duration_reporter;
-  TaskDurationMetricReporter background_fifth_minute_task_duration_reporter;
-  TaskDurationMetricReporter
+  TaskDurationPerQueueTypeMetricReporter background_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_first_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_second_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_third_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_fourth_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_fifth_minute_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
       background_after_fifth_minute_task_duration_reporter;
-  TaskDurationMetricReporter hidden_task_duration_reporter;
-  TaskDurationMetricReporter visible_task_duration_reporter;
-  TaskDurationMetricReporter hidden_music_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter hidden_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter visible_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter hidden_music_task_duration_reporter;
+
+  TaskDurationMetricReporter<FrameType> frame_type_duration_reporter;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMetricsHelper);
 };

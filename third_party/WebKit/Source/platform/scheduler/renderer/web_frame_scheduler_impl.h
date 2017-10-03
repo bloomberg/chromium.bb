@@ -44,9 +44,12 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   void AddThrottlingObserver(ObserverType, Observer*) override;
   void RemoveThrottlingObserver(ObserverType, Observer*) override;
   void SetFrameVisible(bool frame_visible) override;
+  bool IsFrameVisible() const override;
   void SetPageVisible(bool page_visible) override;
+  bool IsPageVisible() const override;
   void SetPaused(bool frame_paused) override;
   void SetCrossOrigin(bool cross_origin) override;
+  bool IsCrossOrigin() const override;
   RefPtr<WebTaskRunner> LoadingTaskRunner() override;
   RefPtr<WebTaskRunner> LoadingControlTaskRunner() override;
   RefPtr<WebTaskRunner> ThrottleableTaskRunner() override;
@@ -66,6 +69,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   void OnFirstMeaningfulPaint() override;
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;
+  bool IsExemptFromThrottling() const override;
 
   bool has_active_connection() const { return active_connection_count_; }
 

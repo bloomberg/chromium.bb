@@ -71,40 +71,52 @@ class EmptyPopupMenu : public PopupMenu {
 class EmptyFrameScheduler : public WebFrameScheduler {
  public:
   EmptyFrameScheduler() { DCHECK(IsMainThread()); }
+
+  RefPtr<WebTaskRunner> LoadingTaskRunner() override {
+    return Platform::Current()->MainThread()->GetWebTaskRunner();
+  }
+  RefPtr<WebTaskRunner> LoadingControlTaskRunner() override {
+    return Platform::Current()->MainThread()->GetWebTaskRunner();
+  }
+  RefPtr<WebTaskRunner> ThrottleableTaskRunner() override {
+    return Platform::Current()->MainThread()->GetWebTaskRunner();
+  }
+  RefPtr<WebTaskRunner> DeferrableTaskRunner() override {
+    return Platform::Current()->MainThread()->GetWebTaskRunner();
+  }
+  RefPtr<WebTaskRunner> PausableTaskRunner() override {
+    return Platform::Current()->MainThread()->GetWebTaskRunner();
+  }
+  RefPtr<WebTaskRunner> UnpausableTaskRunner() override {
+    return Platform::Current()->MainThread()->GetWebTaskRunner();
+  }
+
   void AddThrottlingObserver(ObserverType, Observer*) override {}
   void RemoveThrottlingObserver(ObserverType, Observer*) override {}
   void SetFrameVisible(bool) override {}
-  RefPtr<WebTaskRunner> LoadingTaskRunner() override;
-  RefPtr<WebTaskRunner> LoadingControlTaskRunner() override;
-  RefPtr<WebTaskRunner> ThrottleableTaskRunner() override;
-  RefPtr<WebTaskRunner> DeferrableTaskRunner() override;
-  RefPtr<WebTaskRunner> PausableTaskRunner() override;
-  RefPtr<WebTaskRunner> UnpausableTaskRunner() override;
+  bool IsFrameVisible() const override { return false; }
+  void SetPageVisible(bool) override {}
+  bool IsPageVisible() const override { return false; }
+  void SetPaused(bool) override {}
+  void SetCrossOrigin(bool) override {}
+  bool IsCrossOrigin() const override { return false; }
+  WebViewScheduler* GetWebViewScheduler() override { return nullptr; }
+  void DidStartLoading(unsigned long identifier) override {}
+  void DidStopLoading(unsigned long identifier) override {}
+  void WillNavigateBackForwardSoon() override {}
+  void DidStartProvisionalLoad(bool is_main_frame) override {}
+  void DidFailProvisionalLoad() override {}
+  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
+                                bool is_reload,
+                                bool is_main_frame) override {}
+  void SetDocumentParsingInBackground(
+      bool background_parsing_enabled) override {}
+  void OnFirstMeaningfulPaint() override {}
+  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
+    return nullptr;
+  }
+  bool IsExemptFromThrottling() const override { return false; }
 };
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::LoadingTaskRunner() {
-  return Platform::Current()->MainThread()->GetWebTaskRunner();
-}
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::LoadingControlTaskRunner() {
-  return Platform::Current()->MainThread()->GetWebTaskRunner();
-}
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::ThrottleableTaskRunner() {
-  return Platform::Current()->MainThread()->GetWebTaskRunner();
-}
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::DeferrableTaskRunner() {
-  return Platform::Current()->MainThread()->GetWebTaskRunner();
-}
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::PausableTaskRunner() {
-  return Platform::Current()->MainThread()->GetWebTaskRunner();
-}
-
-RefPtr<WebTaskRunner> EmptyFrameScheduler::UnpausableTaskRunner() {
-  return Platform::Current()->MainThread()->GetWebTaskRunner();
-}
 
 PopupMenu* EmptyChromeClient::OpenPopupMenu(LocalFrame&, HTMLSelectElement&) {
   return new EmptyPopupMenu();

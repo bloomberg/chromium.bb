@@ -156,11 +156,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   WebFrameScheduler* GetFrameScheduler() const;
   void SetFrameScheduler(WebFrameScheduler* frame);
 
- private:
+ protected:
   MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                       const QueueCreationParams& params,
                       RendererSchedulerImpl* renderer_scheduler);
 
+ private:
   friend class TaskQueueManager;
 
   QueueType queue_type_;
