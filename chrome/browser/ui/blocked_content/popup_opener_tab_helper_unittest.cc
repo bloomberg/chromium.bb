@@ -34,12 +34,10 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    PopupOpenerTabHelper::CreateForWebContents(web_contents());
-
     auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
     raw_clock_ = tick_clock.get();
-    PopupOpenerTabHelper::FromWebContents(web_contents())
-        ->set_tick_clock_for_testing(std::move(tick_clock));
+    PopupOpenerTabHelper::CreateForWebContents(web_contents(),
+                                               std::move(tick_clock));
 
     // The tick clock needs to be advanced manually so it isn't set to null,
     // which the code uses to determine if it is set yet.
@@ -87,6 +85,8 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(PopupOpenerTabHelperTest, BackgroundNavigation_LogsMetrics) {
   NavigateAndCommitWithoutGesture(GURL("https://first.test/"));
+  raw_clock()->Advance(base::TimeDelta::FromMinutes(1));
+
   web_contents()->WasHidden();
   NavigateAndCommitWithoutGesture(GURL("https://example.test/"));
 
@@ -100,6 +100,10 @@ TEST_F(PopupOpenerTabHelperTest, BackgroundNavigation_LogsMetrics) {
   histogram_tester()->ExpectUniqueSample(
       kTabVisibleTimeAfterRedirect,
       base::TimeDelta::FromSeconds(1).InMilliseconds(), 1);
+
+  histogram_tester()->ExpectUniqueSample(
+      "Tab.VisibleTime", base::TimeDelta::FromSeconds(60 + 1).InMilliseconds(),
+      1);
 }
 
 TEST_F(PopupOpenerTabHelperTest, FirstNavigation_NoLogging) {

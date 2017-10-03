@@ -18,8 +18,8 @@ class TickClock;
 // OnShown/OnHidden notifications, which are logically idempotent.
 class ScopedVisibilityTracker {
  public:
-  ScopedVisibilityTracker(std::unique_ptr<base::TickClock> tick_clock,
-                          bool is_shown);
+  // |tick_clock| must outlive this object.
+  ScopedVisibilityTracker(base::TickClock* tick_clock, bool is_shown);
   ~ScopedVisibilityTracker();
 
   void OnShown();
@@ -30,7 +30,7 @@ class ScopedVisibilityTracker {
  private:
   void Update(bool in_foreground);
 
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   base::TimeTicks last_time_shown_;
   base::TimeDelta foreground_duration_;

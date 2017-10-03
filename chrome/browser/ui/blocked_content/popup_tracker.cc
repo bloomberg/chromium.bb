@@ -34,7 +34,8 @@ PopupTracker::~PopupTracker() {
 
 PopupTracker::PopupTracker(content::WebContents* contents,
                            content::WebContents* opener)
-    : content::WebContentsObserver(contents) {
+    : content::WebContentsObserver(contents),
+      tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
   if (auto* popup_opener = PopupOpenerTabHelper::FromWebContents(opener))
     popup_opener->OnOpenedPopup(this);
 }
@@ -50,8 +51,7 @@ void PopupTracker::DidFinishNavigation(
   // we've committed the first navigation in this WebContents.
   if (!first_load_visibility_tracker_) {
     first_load_visibility_tracker_ = base::MakeUnique<ScopedVisibilityTracker>(
-        base::MakeUnique<base::DefaultTickClock>(),
-        web_contents()->IsVisible());
+        tick_clock_.get(), web_contents()->IsVisible());
   } else {
     web_contents()->RemoveUserData(UserDataKey());
     // Destroys this object.
