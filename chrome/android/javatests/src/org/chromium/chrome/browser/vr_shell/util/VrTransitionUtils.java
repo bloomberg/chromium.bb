@@ -10,13 +10,14 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.customtabs.CustomTabsIntent;
 
 import com.google.vr.ndk.base.DaydreamApi;
 
 import org.junit.Assert;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
@@ -189,13 +190,11 @@ public class VrTransitionUtils {
     public static void sendDaydreamAutopresentIntent(String url, final Activity activity) {
         // Create an intent that will launch Chrome at the specified URL with autopresent
         final Intent intent =
-                activity.getPackageManager().getLaunchIntentForPackage(activity.getPackageName());
-        intent.setAction(Intent.ACTION_VIEW);
+                new Intent(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
         intent.setData(Uri.parse(url));
         intent.putExtra(VrIntentUtils.DAYDREAM_VR_EXTRA, true);
         DaydreamApi.setupVrIntent(intent);
         intent.removeCategory("com.google.intent.category.DAYDREAM");
-        CustomTabsIntent.setAlwaysUseBrowserUI(intent);
 
         final VrClassesWrapperImpl wrapper = new VrClassesWrapperImpl();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
