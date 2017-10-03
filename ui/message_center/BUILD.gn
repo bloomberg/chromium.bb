@@ -18,7 +18,6 @@ aggregate_vector_icons("message_center_vector_icons") {
     "notification_expand_more.icon",
     "notification_settings_button.1x.icon",
     "notification_settings_button.icon",
-    "product.1x.icon",
     "product.icon",
   ]
 }
