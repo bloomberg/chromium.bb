@@ -557,7 +557,7 @@ void AnimationTicker::MarkAbortedAnimationsForDeletion(
   }
 
   if (has_bound_element_animations() && animation_aborted)
-    element_animations_->SetNeedsUpdateImplClientState();
+    element_animations_->SetNeedsPushProperties();
 }
 
 void AnimationTicker::PurgeAnimationsMarkedForDeletion(bool impl_only) {
@@ -642,7 +642,7 @@ void AnimationTicker::RemoveAnimationsCompletedOnMainThread(
   base::EraseIf(animations, affects_active_only_and_is_waiting_for_deletion);
 
   if (has_bound_element_animations() && animation_completed)
-    element_animations_->SetNeedsUpdateImplClientState();
+    element_animations_->SetNeedsPushProperties();
 }
 
 void AnimationTicker::PushPropertiesToImplThread(

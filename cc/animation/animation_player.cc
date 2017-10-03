@@ -310,9 +310,6 @@ void AnimationPlayer::SetNeedsPushProperties() {
 
   DCHECK(animation_timeline_);
   animation_timeline_->SetNeedsPushProperties();
-
-  DCHECK(element_animations());
-  element_animations()->SetNeedsPushProperties();
 }
 
 bool AnimationPlayer::HasTickingAnimation() const {

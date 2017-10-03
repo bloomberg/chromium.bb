@@ -32,8 +32,7 @@ ElementAnimations::ElementAnimations()
       element_id_(),
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
-      needs_push_properties_(false),
-      needs_update_impl_client_state_(false) {}
+      needs_push_properties_(false) {}
 
 ElementAnimations::~ElementAnimations() {}
 
@@ -144,10 +143,7 @@ void ElementAnimations::PushPropertiesTo(
     return;
   needs_push_properties_ = false;
 
-  // Update impl client state.
-  if (needs_update_impl_client_state_)
-    element_animations_impl->UpdateClientAnimationState();
-  needs_update_impl_client_state_ = false;
+  element_animations_impl->UpdateClientAnimationState();
 }
 
 void ElementAnimations::UpdatePlayersTickingState(
@@ -251,11 +247,6 @@ bool ElementAnimations::ScrollOffsetAnimationWasInterrupted() const {
       return true;
   }
   return false;
-}
-
-void ElementAnimations::SetNeedsUpdateImplClientState() {
-  needs_update_impl_client_state_ = true;
-  SetNeedsPushProperties();
 }
 
 void ElementAnimations::NotifyClientFloatAnimated(float opacity,

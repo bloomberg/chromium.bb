@@ -478,14 +478,6 @@ bool AnimationTimelinesTest::CheckPlayerTimelineNeedsPushProperties(
                   << needs_push_properties;
     result = false;
   }
-  if (player_->element_animations() &&
-      player_->element_animations()->needs_push_properties() !=
-          needs_push_properties) {
-    ADD_FAILURE() << "player_->element_animations()->needs_push_properties() "
-                     "expected to be "
-                  << needs_push_properties;
-    result = false;
-  }
 
   return result;
 }
