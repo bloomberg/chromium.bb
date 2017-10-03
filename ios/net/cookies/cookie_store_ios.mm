@@ -763,7 +763,7 @@ bool CookieStoreIOS::GetSystemCookies(
   NSArray* nscookies = system_store_->GetCookiesForURL(url);
   bool found_cookies = false;
   for (NSHTTPCookie* nscookie in nscookies) {
-    if (nscookie.name.UTF8String == name) {
+    if (base::SysNSStringToUTF8(nscookie.name) == name) {
       net::CanonicalCookie canonical_cookie = CanonicalCookieFromSystemCookie(
           nscookie, creation_time_manager_->GetCreationTime(nscookie));
       cookies->push_back(canonical_cookie);
