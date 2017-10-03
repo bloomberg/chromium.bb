@@ -384,16 +384,6 @@ void ContentSettingBubbleContents::Init() {
       content_setting_bubble_model_->bubble_content();
   bool bubble_content_empty = true;
 
-  if (!provider->IsHarmonyMode() && !bubble_content.title.empty()) {
-    views::Label* title_label =
-        new views::Label(bubble_content.title, CONTEXT_BODY_TEXT_SMALL);
-    title_label->SetMultiLine(true);
-    title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->StartRow(0, kSingleColumnSetId);
-    layout->AddView(title_label);
-    bubble_content_empty = false;
-  }
-
   if (!bubble_content.message.empty()) {
     views::Label* message_label = new views::Label(bubble_content.message);
     // For bubble's without titles there is no need for padding.
@@ -534,14 +524,6 @@ void ContentSettingBubbleContents::Init() {
     layout->AddView(manage_checkbox_);
   }
 
-  if (!bubble_content_empty && !provider->IsHarmonyMode()) {
-    layout->AddPaddingRow(0, related_control_vertical_spacing);
-    layout->StartRow(0, kSingleColumnSetId);
-    layout->AddView(new views::Separator(), 1, 1, GridLayout::FILL,
-                    GridLayout::FILL);
-    layout->AddPaddingRow(0, related_control_vertical_spacing);
-  }
-
   if (list_item_container_)
     content_setting_bubble_model_->set_owner(this);
 }
@@ -550,6 +532,15 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
   std::vector<View*> extra_views;
+  // Optionally add a help icon if the view wants to link to a help page.
+  if (bubble_content.show_learn_more) {
+    learn_more_button_ = views::CreateVectorImageButton(this);
+    learn_more_button_->SetFocusForPlatform();
+    learn_more_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+    StyleLearnMoreButton(GetNativeTheme());
+    extra_views.push_back(learn_more_button_);
+  }
   // Optionally add a "Manage" button if the view wants to use a button to
   // invoke a separate management UI related to the dialog content.
   if (bubble_content.manage_text_style ==
@@ -562,15 +553,6 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
         layout->GetDistanceMetric(views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH),
         0));
     extra_views.push_back(manage_button_);
-  }
-  // Optionally add a help icon if the view wants to link to a help page.
-  if (bubble_content.show_learn_more) {
-    learn_more_button_ = views::CreateVectorImageButton(this);
-    learn_more_button_->SetFocusForPlatform();
-    learn_more_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    StyleLearnMoreButton(GetNativeTheme());
-    extra_views.push_back(learn_more_button_);
   }
   if (extra_views.empty())
     return nullptr;

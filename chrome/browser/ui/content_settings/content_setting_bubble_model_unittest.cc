@@ -729,8 +729,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
-  ASSERT_EQ(1U, bubble_content.list_items.size());
-  EXPECT_EQ(plugin_name, bubble_content.list_items[0].title);
+  ASSERT_EQ(0U, bubble_content.list_items.size());
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);

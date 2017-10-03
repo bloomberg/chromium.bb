@@ -331,11 +331,6 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
   }
 #endif
 
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS && !details.empty() &&
-      !base::ContainsValue(blocked_plugin_names_, details)) {
-    blocked_plugin_names_.push_back(details);
-  }
-
   if (!status.blocked) {
     status.blocked = true;
     // TODO: it would be nice to have a way of mocking this in tests.
@@ -806,7 +801,6 @@ void TabSpecificContentSettings::DidFinishNavigation(
 
   // Clear "blocked" flags.
   ClearContentSettingsExceptForNavigationRelatedSettings();
-  blocked_plugin_names_.clear();
   GeolocationDidNavigate(navigation_handle);
   MidiDidNavigate(navigation_handle);
 
