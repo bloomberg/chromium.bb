@@ -55,14 +55,6 @@ if (use_ozone) {
   use_glib = false
 }
 
-if (is_linux && !use_ozone) {
-  use_cairo = true
-  use_pango = true
-} else {
-  use_cairo = false
-  use_pango = false
-}
-
 # Whether to use atk, the Accessibility ToolKit library
 use_atk = is_desktop_linux && use_x11
 # =============================================

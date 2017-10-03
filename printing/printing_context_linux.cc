@@ -182,7 +182,7 @@ void PrintingContextLinux::ReleaseContext() {
   // Intentional No-op.
 }
 
-skia::NativeDrawingContext PrintingContextLinux::context() const {
+printing::NativeDrawingContext PrintingContextLinux::context() const {
   // Intentional No-op.
   return NULL;
 }

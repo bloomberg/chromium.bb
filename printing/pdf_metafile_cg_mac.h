@@ -46,7 +46,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   CGContextRef context() const override;
 
   bool RenderPage(unsigned int page_number,
-                  skia::NativeDrawingContext context,
+                  printing::NativeDrawingContext context,
                   const CGRect rect,
                   const MacRenderPageParams& params) const override;
 

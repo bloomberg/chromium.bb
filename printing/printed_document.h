@@ -61,7 +61,7 @@ class PRINTING_EXPORT PrintedDocument
   // Note: locks for a short amount of time in debug only.
 #if defined(OS_WIN) || defined(OS_MACOSX) && !defined(USE_AURA)
   void RenderPrintedPage(const PrintedPage& page,
-                         skia::NativeDrawingContext context) const;
+                         printing::NativeDrawingContext context) const;
 #elif defined(OS_POSIX)
   void RenderPrintedPage(const PrintedPage& page,
                          PrintingContext* context) const;

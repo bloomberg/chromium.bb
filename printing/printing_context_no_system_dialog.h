@@ -33,7 +33,7 @@ class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  skia::NativeDrawingContext context() const override;
+  printing::NativeDrawingContext context() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintingContextNoSystemDialog);

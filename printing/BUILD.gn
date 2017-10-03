@@ -88,6 +88,7 @@ component("printing") {
   defines = [ "PRINTING_IMPLEMENTATION" ]
 
   public_deps = [
+    "//build/config/linux/pangocairo:features",
     "//printing/features",
   ]
   deps = [

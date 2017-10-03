@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
+import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
@@ -1882,8 +1883,6 @@ source_set("browser") {
       "renderer_host/pepper/pepper_truetype_font_list_host.cc",
       "renderer_host/pepper/pepper_truetype_font_list_host.h",
       "renderer_host/pepper/pepper_truetype_font_list_mac.mm",
-      "renderer_host/pepper/pepper_truetype_font_list_ozone.cc",
-      "renderer_host/pepper/pepper_truetype_font_list_pango.cc",
       "renderer_host/pepper/pepper_truetype_font_list_win.cc",
       "renderer_host/pepper/pepper_truetype_font_mac.mm",
       "renderer_host/pepper/pepper_truetype_font_win.cc",
@@ -1902,11 +1901,11 @@ source_set("browser") {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
-    if (!use_ozone || use_pango) {
-      sources -= [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]
+    if (use_ozone) {
+      sources += [ "renderer_host/pepper/pepper_truetype_font_list_ozone.cc" ]
     }
-    if (!use_pango) {
-      sources -= [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
+    if (use_pangocairo) {
+      sources += [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
     }
   }
 
@@ -1939,7 +1938,7 @@ source_set("browser") {
     deps += [ "//ui/gfx/x" ]
   }
 
-  if (use_pango) {
+  if (use_pangocairo) {
     configs += [ "//build/config/linux/pangocairo" ]
   }
 

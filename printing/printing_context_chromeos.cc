@@ -370,7 +370,7 @@ void PrintingContextChromeos::ReleaseContext() {
   printer_.reset();
 }
 
-skia::NativeDrawingContext PrintingContextChromeos::context() const {
+printing::NativeDrawingContext PrintingContextChromeos::context() const {
   // Intentional No-op.
   return nullptr;
 }

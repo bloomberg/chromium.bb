@@ -112,7 +112,7 @@ class PRINTING_EXPORT PrintingContext {
   virtual void ReleaseContext() = 0;
 
   // Returns the native context used to print.
-  virtual skia::NativeDrawingContext context() const = 0;
+  virtual printing::NativeDrawingContext context() const = 0;
 
   // Creates an instance of this object. Implementers of this interface should
   // implement this method to create an object of their implementation.
