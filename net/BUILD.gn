@@ -6196,3 +6196,15 @@ fuzzer_test("net_spdy_session_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_spdy_session_fuzzer.dict"
   seed_corpus = "data/fuzzer_data/net_spdy_session_fuzzer/"
 }
+
+fuzzer_test("net_http2_frame_decoder_fuzzer") {
+  sources = [
+    "http2/decoder/http2_frame_decoder_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
