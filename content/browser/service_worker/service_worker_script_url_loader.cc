@@ -21,13 +21,8 @@
 
 namespace content {
 
-namespace {
-
-// Buffer size for reading script data from network. We chose this size because
-// the AppCache uses this.
-const uint32_t kReadBufferSize = 32768;
-
-}  // namespace
+// We chose this size because the AppCache uses this.
+const uint32_t ServiceWorkerScriptURLLoader::kReadBufferSize = 32768;
 
 // TODO(nhiroki): We're doing multiple things in the ctor. Consider factors out
 // some of them into a separate function.
