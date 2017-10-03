@@ -15754,6 +15754,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Android_GmsUserRecoverableDialogAccepted">
+  <owner>bsazonov@chromium.org</owner>
+  <description>
+    Recorded when user accepts an option presented by Google Play services error
+    dialog (e.g., clicks &quot;Update&quot; button).
+  </description>
+</action>
+
 <action name="Signin_Android_GmsUserRecoverableDialogShown"
     not_user_triggered="true">
   <owner>bsazonov@chromium.org</owner>
