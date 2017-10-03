@@ -1,18 +1,18 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Stores information about an extension installed on a user's machine.
 
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "ExtensionInstallProtos";
 option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Next tag: 16.
+// Stores information about an extension installed on a user's machine.
+// Next tag: 17.
 message ExtensionInstallProto {
   // The type of extension item this is.
   enum Type {

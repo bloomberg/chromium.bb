@@ -18,6 +18,7 @@ proto_library("proto") {
     "perf_data.proto",
     "perf_stat.proto",
     "printer_event.proto",
+    "reporting_info.proto",
     "sampled_profile.proto",
     "system_profile.proto",
     "translate_event.proto",

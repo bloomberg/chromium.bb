@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metrics;
+
+// Extra information attached to reports by client at upload time.
+// Next tag: 3
+message ReportingInfo {
+  // Number of times upload of the current report has been attempted.
+  optional int32 attempt_count = 1;
+
+  // The HTTP response/error code of the last upload attempt.
+  optional int32 last_response_code = 2;
+}
