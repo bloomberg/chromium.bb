@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_request_context_builder_mojo.h"
+#include "content/public/network/url_request_context_builder_mojo.h"
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
-#include "net/proxy/test_mojo_proxy_resolver_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -18,11 +18,14 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/proxy_resolver/public/cpp/test_mojo_proxy_resolver_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
-namespace net {
+using proxy_resolver::TestMojoProxyResolverFactory;
+
+namespace content {
 
 namespace {
 
@@ -30,71 +33,77 @@ const char kPacPath[] = "/super.pac";
 
 // When kPacPath is requested, returns a PAC script that uses the test server
 // itself as the proxy.
-std::unique_ptr<test_server::HttpResponse> HandlePacRequest(
-    const test_server::HttpRequest& request) {
+std::unique_ptr<net::test_server::HttpResponse> HandlePacRequest(
+    const net::test_server::HttpRequest& request) {
   if (request.relative_url != kPacPath)
     return nullptr;
-  std::unique_ptr<test_server::BasicHttpResponse> response =
-      std::make_unique<test_server::BasicHttpResponse>();
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
   response->set_content(base::StringPrintf(
       "function FindProxyForURL(url, host) { return 'PROXY %s;'; }",
-      HostPortPair::FromURL(request.base_url).ToString().c_str()));
+      net::HostPortPair::FromURL(request.base_url).ToString().c_str()));
   response->set_content_type("text/html");
   return std::move(response);
 }
 
 class URLRequestContextBuilderMojoTest : public PlatformTest {
  protected:
-  URLRequestContextBuilderMojoTest() {
+  URLRequestContextBuilderMojoTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     test_server_.RegisterRequestHandler(base::Bind(&HandlePacRequest));
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   }
 
-  EmbeddedTestServer test_server_;
+  base::test::ScopedTaskEnvironment task_environment_;
+  TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
+  net::EmbeddedTestServer test_server_;
   URLRequestContextBuilderMojo builder_;
 };
 
 TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
   EXPECT_TRUE(test_server_.Start());
-  TestMojoProxyResolverFactory::GetInstance()->set_resolver_created(false);
 
-  builder_.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
-      ProxyConfig::CreateFromCustomPacURL(test_server_.GetURL(kPacPath))));
-  builder_.set_mojo_proxy_resolver_factory(
-      TestMojoProxyResolverFactory::GetInstance());
+  builder_.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateFromCustomPacURL(
+              test_server_.GetURL(kPacPath))));
+  builder_.set_mojo_proxy_resolver_factory(&test_mojo_proxy_resolver_factory_);
 
-  std::unique_ptr<URLRequestContext> context(builder_.Build());
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(context->CreateRequest(
-      GURL("http://hats:12345/echoheader?Foo"), DEFAULT_PRIORITY, &delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<net::URLRequestContext> context(builder_.Build());
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request(context->CreateRequest(
+      GURL("http://hats:12345/echoheader?Foo"), net::DEFAULT_PRIORITY,
+      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->SetExtraRequestHeaderByName("Foo", "Bar", false);
   request->Start();
   base::RunLoop().Run();
   EXPECT_EQ("Bar", delegate.data_received());
 
   // Make sure that the Mojo factory was used.
-  EXPECT_TRUE(TestMojoProxyResolverFactory::GetInstance()->resolver_created());
+  EXPECT_TRUE(test_mojo_proxy_resolver_factory_.resolver_created());
 }
 
 // Makes sure that pending PAC requests are correctly shut down during teardown.
 TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
-  test_server::SimpleConnectionListener connection_listener(
-      1, test_server::SimpleConnectionListener::FAIL_ON_ADDITIONAL_CONNECTIONS);
+  net::test_server::SimpleConnectionListener connection_listener(
+      1, net::test_server::SimpleConnectionListener::
+             FAIL_ON_ADDITIONAL_CONNECTIONS);
   test_server_.SetConnectionListener(&connection_listener);
   EXPECT_TRUE(test_server_.Start());
 
-  builder_.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
-      ProxyConfig::CreateFromCustomPacURL(test_server_.GetURL("/hung"))));
-  builder_.set_mojo_proxy_resolver_factory(
-      TestMojoProxyResolverFactory::GetInstance());
+  builder_.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateFromCustomPacURL(
+              test_server_.GetURL("/hung"))));
+  builder_.set_mojo_proxy_resolver_factory(&test_mojo_proxy_resolver_factory_);
 
-  std::unique_ptr<URLRequestContext> context(builder_.Build());
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(context->CreateRequest(
-      GURL("http://hats:12345/echoheader?Foo"), DEFAULT_PRIORITY, &delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<net::URLRequestContext> context(builder_.Build());
+  net::TestDelegate delegate;
+  std::unique_ptr<net::URLRequest> request(context->CreateRequest(
+      GURL("http://hats:12345/echoheader?Foo"), net::DEFAULT_PRIORITY,
+      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   request->Start();
   connection_listener.WaitForConnections();
 
@@ -110,4 +119,4 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace content

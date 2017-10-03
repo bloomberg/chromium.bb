@@ -56,6 +56,10 @@ namespace chrome_browser_net {
 class DnsProbeService;
 }
 
+namespace content {
+class URLRequestContextBuilderMojo;
+}
+
 namespace data_usage {
 class DataUseAggregator;
 }
@@ -79,7 +83,6 @@ class ProxyConfigService;
 class RTTAndThroughputEstimatesObserver;
 class SSLConfigService;
 class URLRequestContext;
-class URLRequestContextBuilderMojo;
 class URLRequestContextGetter;
 
 namespace ct {
@@ -220,7 +223,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // |proxy_config_service| and sets a number of proxy-related options based on
   // prefs, policies, and the command line.
   void SetUpProxyConfigService(
-      net::URLRequestContextBuilderMojo* builder,
+      content::URLRequestContextBuilderMojo* builder,
       std::unique_ptr<net::ProxyConfigService> proxy_config_service) const;
 
  private:

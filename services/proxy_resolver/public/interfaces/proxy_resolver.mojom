@@ -5,9 +5,9 @@
 // Put Mojo definitions into their own namespace to avoid collisions with C++
 // definitions.
 // TODO(amistry): Resolve the conflict between these two sets of definitions.
-module net.interfaces;
+module proxy_resolver.mojom;
 
-import "host_resolver_service.mojom";
+import "net/interfaces/host_resolver_service.mojom";
 import "url/mojo/url.mojom";
 
 // Mirror of net::ProxyServer::Scheme.
@@ -46,8 +46,8 @@ interface ProxyResolverRequestClient {
   Alert(string error);
   OnError(int32 line_number, string error);
 
-  ResolveDns(HostResolverRequestInfo request_info,
-             HostResolverRequestClient client);
+  ResolveDns(net.interfaces.HostResolverRequestInfo request_info,
+             net.interfaces.HostResolverRequestClient client);
 };
 
 interface ProxyResolverFactory {
@@ -62,6 +62,6 @@ interface ProxyResolverFactoryRequestClient {
   Alert(string error);
   OnError(int32 line_number, string error);
 
-  ResolveDns(HostResolverRequestInfo request_info,
-             HostResolverRequestClient client);
+  ResolveDns(net.interfaces.HostResolverRequestInfo request_info,
+             net.interfaces.HostResolverRequestClient client);
 };

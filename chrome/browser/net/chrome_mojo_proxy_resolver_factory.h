@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "net/proxy/mojo_proxy_resolver_factory.h"
+#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory.h"
 
 #if !defined(OS_ANDROID)
 namespace content {
@@ -28,15 +28,17 @@ struct DefaultSingletonTraits;
 // Android, the proxy resolvers will run in the browser process, and on other
 // platforms, they'll all be run in the same utility process. Utility process
 // crashes are detected and the utility process is automatically restarted.
-class ChromeMojoProxyResolverFactory : public net::MojoProxyResolverFactory {
+class ChromeMojoProxyResolverFactory
+    : public proxy_resolver::MojoProxyResolverFactory {
  public:
   static ChromeMojoProxyResolverFactory* GetInstance();
 
-  // Overridden from net::MojoProxyResolverFactory:
+  // Overridden from proxy_resolver::MojoProxyResolverFactory:
   std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
       const std::string& pac_script,
-      mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
-      net::interfaces::ProxyResolverFactoryRequestClientPtr client) override;
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
+      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
+      override;
 
  private:
   friend struct base::DefaultSingletonTraits<ChromeMojoProxyResolverFactory>;
@@ -58,7 +60,7 @@ class ChromeMojoProxyResolverFactory : public net::MojoProxyResolverFactory {
   // destroyed.
   void OnIdleTimeout();
 
-  net::interfaces::ProxyResolverFactoryPtr resolver_factory_;
+  proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory_;
 
 #if !defined(OS_ANDROID)
   base::WeakPtr<content::UtilityProcessHost> weak_utility_process_host_;

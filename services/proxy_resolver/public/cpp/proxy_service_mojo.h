@@ -2,22 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_PROXY_SERVICE_MOJO_H_
-#define NET_PROXY_PROXY_SERVICE_MOJO_H_
+#ifndef SERVICES_PROX_RESOLVER_PUBLIC_CPP_PROXY_SERVICE_MOJO_H_
+#define SERVICES_PROX_RESOLVER_PUBLIC_CPP_PROXY_SERVICE_MOJO_H_
 
 #include <memory>
 
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 
 namespace net {
-
 class HostResolver;
-class MojoProxyResolverFactory;
 class NetLog;
 class NetworkDelegate;
 class ProxyConfigService;
 class ProxyScriptFetcher;
 class ProxyService;
+}  // namespace net
+
+namespace proxy_resolver {
+
+class MojoProxyResolverFactory;
 
 // Creates a proxy service that uses |mojo_proxy_factory| to create and connect
 // to a Mojo proxy resolver service. This proxy service polls
@@ -32,15 +35,15 @@ class ProxyService;
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyService.
-std::unique_ptr<ProxyService> CreateProxyServiceUsingMojoFactory(
+std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
-    std::unique_ptr<ProxyConfigService> proxy_config_service,
-    ProxyScriptFetcher* proxy_script_fetcher,
-    std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
-    HostResolver* host_resolver,
-    NetLog* net_log,
-    NetworkDelegate* network_delegate);
+    std::unique_ptr<net::ProxyConfigService> proxy_config_service,
+    net::ProxyScriptFetcher* proxy_script_fetcher,
+    std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
+    net::HostResolver* host_resolver,
+    net::NetLog* net_log,
+    net::NetworkDelegate* network_delegate);
 
-}  // namespace net
+}  // namespace proxy_resolver
 
-#endif  // NET_PROXY_PROXY_SERVICE_MOJO_H_
+#endif  // SERVICES_PROX_RESOLVER_PUBLIC_CPP_PROXY_SERVICE_MOJO_H_

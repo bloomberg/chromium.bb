@@ -16,9 +16,9 @@
           "extensions::mojom::MediaParser",
           "extensions::mojom::RemovableStorageWriter",
           "extensions::mojom::WiFiCredentialsGetter",
-          "net::interfaces::ProxyResolverFactory",
           "payments::mojom::PaymentManifestParser",
           "profiling::mojom::MemlogClient",
+          "proxy_resolver::mojom::ProxyResolverFactory",
           "safe_json::mojom::SafeJsonParser"
         ]
       }

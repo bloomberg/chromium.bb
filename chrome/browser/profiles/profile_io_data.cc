@@ -81,6 +81,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/network/url_request_context_builder_mojo.h"
 #include "extensions/features/features.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
@@ -107,7 +108,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_context_builder_mojo.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -1008,8 +1008,8 @@ void ProfileIOData::Init(
   extensions_request_context_->set_name("extensions");
 
   // Create the main request context.
-  std::unique_ptr<net::URLRequestContextBuilderMojo> builder =
-      base::MakeUnique<net::URLRequestContextBuilderMojo>();
+  std::unique_ptr<content::URLRequestContextBuilderMojo> builder =
+      base::MakeUnique<content::URLRequestContextBuilderMojo>();
 
   builder->set_net_log(io_thread->net_log());
   builder->set_shared_http_user_agent_settings(

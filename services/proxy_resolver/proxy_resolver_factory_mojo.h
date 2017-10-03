@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
-#define NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
+#ifndef SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_FACTORY_MOJO_H_
+#define SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_FACTORY_MOJO_H_
 
 #include <memory>
 
@@ -15,42 +15,46 @@
 
 namespace net {
 class HostResolver;
-class MojoProxyResolverFactory;
 class NetLog;
 class ProxyResolverErrorObserver;
 class ProxyResolverScriptData;
+}  // namespace net
+
+namespace proxy_resolver {
+
+class MojoProxyResolverFactory;
 
 // Implementation of ProxyResolverFactory that connects to a Mojo service to
 // create implementations of a Mojo proxy resolver to back a ProxyResolverMojo.
-class ProxyResolverFactoryMojo : public ProxyResolverFactory {
+class ProxyResolverFactoryMojo : public net::ProxyResolverFactory {
  public:
   ProxyResolverFactoryMojo(
       MojoProxyResolverFactory* mojo_proxy_factory,
-      HostResolver* host_resolver,
-      const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>&
+      net::HostResolver* host_resolver,
+      const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>&
           error_observer_factory,
-      NetLog* net_log);
+      net::NetLog* net_log);
   ~ProxyResolverFactoryMojo() override;
 
   // ProxyResolverFactory override.
   int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<ProxyResolver>* resolver,
-      const CompletionCallback& callback,
+      const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
+      std::unique_ptr<net::ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
       std::unique_ptr<Request>* request) override;
 
  private:
   class Job;
 
   MojoProxyResolverFactory* const mojo_proxy_factory_;
-  HostResolver* const host_resolver_;
-  const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>
+  net::HostResolver* const host_resolver_;
+  const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>
       error_observer_factory_;
-  NetLog* const net_log_;
+  net::NetLog* const net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryMojo);
 };
 
-}  // namespace net
+}  // namespace proxy_resolver
 
-#endif  // NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
+#endif  // SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_FACTORY_MOJO_H_

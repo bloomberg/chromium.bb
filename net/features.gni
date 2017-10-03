@@ -40,3 +40,7 @@ declare_args() {
   # connections use HTTPS.
   include_transport_security_state_preload_list = true
 }
+
+declare_args() {
+  enable_net_mojo = !is_ios && !is_proto_quic
+}
