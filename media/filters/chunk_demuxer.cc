@@ -218,12 +218,13 @@ size_t ChunkDemuxerStream::GetBufferedSize() const {
   return SBSTREAM_OP(GetBufferedSize());
 }
 
-void ChunkDemuxerStream::OnStartOfCodedFrameGroup(
-    DecodeTimestamp start_timestamp) {
-  DVLOG(2) << "ChunkDemuxerStream::OnStartOfCodedFrameGroup("
-           << start_timestamp.InSecondsF() << ")";
+void ChunkDemuxerStream::OnStartOfCodedFrameGroup(DecodeTimestamp start_dts,
+                                                  base::TimeDelta start_pts) {
+  DVLOG(2) << "ChunkDemuxerStream::OnStartOfCodedFrameGroup(dts "
+           << start_dts.InSecondsF() << ", pts " << start_pts.InSecondsF()
+           << ")";
   base::AutoLock auto_lock(lock_);
-  SBSTREAM_OP(OnStartOfCodedFrameGroup(start_timestamp));
+  SBSTREAM_OP(OnStartOfCodedFrameGroup(start_dts, start_pts));
 }
 
 bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,

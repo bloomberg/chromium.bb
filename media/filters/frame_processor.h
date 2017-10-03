@@ -95,8 +95,9 @@ class MEDIA_EXPORT FrameProcessor {
   MseTrackBuffer* FindTrack(StreamParser::TrackId id);
 
   // Signals all track buffers' streams that a coded frame group is starting
-  // with decode timestamp |start_timestamp|.
-  void NotifyStartOfCodedFrameGroup(DecodeTimestamp start_timestamp);
+  // with |start_dts| and |start_pts|.
+  void NotifyStartOfCodedFrameGroup(DecodeTimestamp start_dts,
+                                    base::TimeDelta start_pts);
 
   // Helper that signals each track buffer to append any processed, but not yet
   // appended, frames to its stream. Returns true on success, or false if one or
