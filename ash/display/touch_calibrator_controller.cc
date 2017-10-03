@@ -15,6 +15,28 @@
 #include "ui/events/event_constants.h"
 
 namespace ash {
+namespace {
+
+void InitInternalTouchDeviceIds(std::set<int>& internal_touch_device_ids) {
+  if (!display::Display::HasInternalDisplay())
+    return;
+
+  DCHECK(ui::DeviceDataManager::GetInstance()
+             ->AreTouchscreenTargetDisplaysValid());
+
+  internal_touch_device_ids.clear();
+
+  const std::vector<ui::TouchscreenDevice>& device_list =
+      ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices();
+  int64_t internal_display_id = display::Display::InternalDisplayId();
+
+  for (const auto& touchscreen_device : device_list) {
+    if (touchscreen_device.target_display_id == internal_display_id)
+      internal_touch_device_ids.insert(touchscreen_device.id);
+  }
+}
+
+}  // namespace
 
 // Time interval after a touch event during which all other touch events are
 // ignored during calibration.
@@ -51,6 +73,10 @@ void TouchCalibratorController::StartCalibration(
 
   // Set the touch device id as invalid so it can be set during calibration.
   touch_device_id_ = ui::InputDevice::kInvalidId;
+
+  // Populate |internal_touch_device_ids_| with the ids of touch devices that
+  // are currently associated with the internal display.
+  InitInternalTouchDeviceIds(internal_touch_device_ids_);
 
   // If this is a native touch calibration, then initialize the UX for it.
   if (state_ == CalibrationState::kNativeCalibration) {
@@ -168,6 +194,11 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
   if (base::Time::Now() - last_touch_timestamp_ < kTouchIntervalThreshold)
     return;
   last_touch_timestamp_ = base::Time::Now();
+
+  // If the touch event originated from a touch device that is associated with
+  // the internal display, then ignore it.
+  if (internal_touch_device_ids_.count(touch->source_device_id()))
+    return;
 
   if (touch_device_id_ == ui::InputDevice::kInvalidId)
     touch_device_id_ = touch->source_device_id();

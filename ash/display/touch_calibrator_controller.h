@@ -112,6 +112,10 @@ class ASH_EXPORT TouchCalibratorController
   // the events are originating from.
   int touch_device_id_ = ui::InputDevice::kInvalidId;
 
+  // A set of ids that belong to touch devices associated with the internal
+  // display. This is only valid when |state_| is not |kInactive|.
+  std::set<int> internal_touch_device_ids_;
+
   // An array of Calibration point pairs. This stores all the 4 display and
   // touch input point pairs that will be used for calibration.
   CalibrationPointPairQuad touch_point_quad_;
