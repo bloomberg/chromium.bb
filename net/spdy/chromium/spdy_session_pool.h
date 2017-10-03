@@ -87,9 +87,7 @@ class NET_EXPORT SpdySessionPool
       std::unique_ptr<ClientSocketHandle> connection,
       const NetLogWithSource& net_log);
 
-  // If |url| is not empty and there is a session for |key| that has an
-  // unclaimed push stream for |url|, return it.
-  // Otherwise if there is an available session for |key|, return it.
+  // If there is an available session for |key|, return it.
   // Otherwise if there is a session to pool to based on IP address:
   //   * if |enable_ip_based_pooling == true|,
   //     then mark it as available for |key| and return it;
@@ -98,7 +96,6 @@ class NET_EXPORT SpdySessionPool
   // Otherwise return nullptr.
   base::WeakPtr<SpdySession> FindAvailableSession(
       const SpdySessionKey& key,
-      const GURL& url,
       bool enable_ip_based_pooling,
       const NetLogWithSource& net_log);
 

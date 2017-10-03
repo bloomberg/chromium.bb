@@ -133,14 +133,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
 
 base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const SpdySessionKey& key,
-    const GURL& url,
     bool enable_ip_based_pooling,
     const NetLogWithSource& net_log) {
-  base::WeakPtr<SpdySession> session = push_promise_index_.Find(key, url);
-  if (session) {
-    return session;
-  }
-
   AvailableSessionMap::iterator it = LookupAvailableSessionByKey(key);
   if (it != available_sessions_.end()) {
     if (key.Equals(it->second->spdy_session_key())) {

@@ -490,8 +490,7 @@ SpdyURLRequestContext::~SpdyURLRequestContext() {
 
 bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {
   return static_cast<bool>(pool->FindAvailableSession(
-      key, GURL(),
-      /* enable_ip_based_pooling = */ true, NetLogWithSource()));
+      key, /* enable_ip_based_pooling = */ true, NetLogWithSource()));
 }
 
 namespace {
@@ -503,7 +502,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
     Error expected_status,
     bool enable_ip_based_pooling) {
   EXPECT_FALSE(http_session->spdy_session_pool()->FindAvailableSession(
-      key, GURL(), enable_ip_based_pooling, NetLogWithSource()));
+      key, enable_ip_based_pooling, NetLogWithSource()));
 
   scoped_refptr<TransportSocketParams> transport_params(
       new TransportSocketParams(

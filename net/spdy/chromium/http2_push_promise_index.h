@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/spdy/chromium/spdy_session_key.h"
@@ -21,7 +22,6 @@ class NET_EXPORT Http2PushPromiseIndex {
  public:
   Http2PushPromiseIndex();
   ~Http2PushPromiseIndex();
-  Http2PushPromiseIndex(const Http2PushPromiseIndex&) = delete;
 
   // If there is a session for |key| that has an unclaimed push stream for
   // |url|, return it.  Otherwise return nullptr.
@@ -44,6 +44,8 @@ class NET_EXPORT Http2PushPromiseIndex {
   // but it is possible that multiple SpdySessions have pushed streams for the
   // same GURL.
   UnclaimedPushedStreamMap unclaimed_pushed_streams_;
+
+  DISALLOW_COPY_AND_ASSIGN(Http2PushPromiseIndex);
 };
 
 }  // namespace net
