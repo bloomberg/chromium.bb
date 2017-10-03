@@ -3553,9 +3553,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDownloadsForeground)},
 #endif  // defined(OS_ANDROID)
 
-    // NOTE: Adding new command-line switches requires adding corresponding
-    // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
-    // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
+    // NOTE: Adding a new flag requires adding a corresponding entry to enum
+    // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
+    // Histograms" in tools/metrics/histograms/README.md (run the
+    // AboutFlagsHistogramTest unit test to verify this process).
 };
 
 class FlagsStateSingleton {

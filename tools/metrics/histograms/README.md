@@ -67,6 +67,29 @@ If your enum histogram has a catch-all / miscellaneous bucket, put that bucket
 first (`= 0`).  This will make the bucket easy to find on the dashboard if
 later you add additional buckets to your histogram.
 
+### Flag Histograms
+
+When adding a new flag in
+[about_flags.cc](../../../chrome/browser/about_flags.cc), you need to add a
+corresponding entry to [enums.xml](./enums.xml). This will be automatically
+verified by the `AboutFlagsHistogramTest` unit test.
+
+To add a new entry:
+
+1. Edit [enums.xml](./enums.xml), adding the feature to the `LoginCustomFlags`
+   enum section, with any unique value (just make one up).
+2. Build `unit_tests`, then run `unit_tests
+   --gtest_filter='AboutFlagsHistogramTest.*'` to compute the correct value.
+3. Update the entry in [enums.xml](./enums.xml) with the correct value, and move
+   it so the list is sorted by value.
+4. Re-run the test to ensure the value and ordering are correct.
+
+You can also use `tools/metrics/histograms/validate_format.py` to check the
+ordering (but not that the value is correct).
+
+Don't remove entries when removing a flag; they are still used to decode data
+from previous Chrome versions.
+
 ### Count Histograms
 
 [histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h)
