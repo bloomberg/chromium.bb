@@ -143,6 +143,10 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
     self.DisableStory('browse:news:cnn',
                       [expectations.ANDROID_WEBVIEW],
                       'Crash: crbug.com/767595')
+    self.DisableStory('browse:news:toi',
+                      [expectations.ANDROID_NEXUS5X,
+                       expectations.ANDROID_NEXUS6],
+                      'Crash: crbug.com/770920')
 
 
 class SystemHealthWebviewStartupExpectations(expectations.StoryExpectations):
