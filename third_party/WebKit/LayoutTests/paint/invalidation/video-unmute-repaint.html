@@ -12,11 +12,6 @@
 <p>This tests that we repaint the mute button when we change the volume</p>
 
 <script>
-    // Disable under-invalidation checking because we allow short period of
-    // under-invalidation of buffered ranges.
-    if (window.internals)
-        internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = false;
-
     window.testIsAsync = true;
 
     var video = document.getElementById("v");

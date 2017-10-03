@@ -11,6 +11,7 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
@@ -2064,7 +2065,10 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
                          .GetPaintRecord());
 }
 
-TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
+TEST_P(PaintControllerTest, OptimizeNoopPairs) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   FakeDisplayItemClient first("first");
   FakeDisplayItemClient second("second");
   FakeDisplayItemClient third("third");
@@ -2118,7 +2122,7 @@ TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
                       TestControllerDisplayItem(third, kBackgroundDrawingType));
 }
 
-TEST_F(PaintControllerTestBase, SmallPaintControllerHasOnePaintChunk) {
+TEST_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk) {
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
   FakeDisplayItemClient client("test client");
 
@@ -2158,7 +2162,7 @@ void DrawPath(GraphicsContext& context,
     context.DrawPath(path, flags);
 }
 
-TEST_F(PaintControllerTestBase, BeginAndEndFrame) {
+TEST_P(PaintControllerTest, BeginAndEndFrame) {
   class FakeFrame {};
 
   // PaintController should have one null frame in the stack since beginning.
@@ -2549,6 +2553,69 @@ TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
 
 TEST_F(PaintControllerUnderInvalidationTest, SubsequenceBecomesEmpty) {
   EXPECT_DEATH(TestSubsequenceBecomesEmpty(), "");
+}
+
+TEST_F(PaintControllerUnderInvalidationTest, SkipCacheInSubsequence) {
+  FakeDisplayItemClient container("container");
+  FakeDisplayItemClient content("content");
+  GraphicsContext context(GetPaintController());
+
+  {
+    SubsequenceRecorder r(context, container);
+    {
+      DisplayItemCacheSkipper cache_skipper(context);
+      DrawRect(context, content, kBackgroundDrawingType,
+               FloatRect(100, 100, 300, 300));
+    }
+    DrawRect(context, content, kForegroundDrawingType,
+             FloatRect(200, 200, 400, 400));
+  }
+  GetPaintController().CommitNewDisplayItems();
+
+  {
+    EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
+        context, container));
+    SubsequenceRecorder r(context, container);
+    {
+      DisplayItemCacheSkipper cache_skipper(context);
+      DrawRect(context, content, kBackgroundDrawingType,
+               FloatRect(200, 200, 400, 400));
+    }
+    DrawRect(context, content, kForegroundDrawingType,
+             FloatRect(200, 200, 400, 400));
+  }
+  GetPaintController().CommitNewDisplayItems();
+}
+
+TEST_F(PaintControllerUnderInvalidationTest,
+       EmptySubsequenceInCachedSubsequence) {
+  FakeDisplayItemClient container("container");
+  FakeDisplayItemClient content("content");
+  GraphicsContext context(GetPaintController());
+
+  {
+    SubsequenceRecorder r(context, container);
+    DrawRect(context, container, kBackgroundDrawingType,
+             FloatRect(100, 100, 300, 300));
+    { SubsequenceRecorder r1(context, content); }
+    DrawRect(context, container, kForegroundDrawingType,
+             FloatRect(100, 100, 300, 300));
+  }
+  GetPaintController().CommitNewDisplayItems();
+
+  {
+    EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
+        context, container));
+    SubsequenceRecorder r(context, container);
+    DrawRect(context, container, kBackgroundDrawingType,
+             FloatRect(100, 100, 300, 300));
+    EXPECT_FALSE(
+        SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, content));
+    { SubsequenceRecorder r1(context, content); }
+    DrawRect(context, container, kForegroundDrawingType,
+             FloatRect(100, 100, 300, 300));
+  }
+  GetPaintController().CommitNewDisplayItems();
 }
 
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
