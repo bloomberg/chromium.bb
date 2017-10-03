@@ -27,10 +27,6 @@ class CC_EXPORT LayerTreeMutator {
   // Returns true if the mutator should be rescheduled.
   virtual bool Mutate(base::TimeTicks now) = 0;
   virtual void SetClient(LayerTreeMutatorClient* client) = 0;
-
-  // Returns a callback which is responsible for applying layer tree mutations
-  // to DOM elements.
-  virtual base::Closure TakeMutations() = 0;
 };
 
 }  // namespace cc

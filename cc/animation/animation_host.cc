@@ -347,13 +347,6 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
   return true;
 }
 
-base::Closure AnimationHost::TakeMutations() {
-  if (mutator_)
-    return mutator_->TakeMutations();
-
-  return base::Closure();
-}
-
 std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
   return std::make_unique<AnimationEvents>();
 }

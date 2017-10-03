@@ -1257,7 +1257,6 @@ void StyleResolver::ApplyAnimatedStandardProperties(
     } else if (interpolation.IsTransitionInterpolation()) {
       ToTransitionInterpolation(interpolation).Apply(state);
     } else {
-      // TODO(alancutter): Move CustomCompositorAnimations off AnimatableValues.
       ToLegacyStyleInterpolation(interpolation).Apply(state);
     }
   }

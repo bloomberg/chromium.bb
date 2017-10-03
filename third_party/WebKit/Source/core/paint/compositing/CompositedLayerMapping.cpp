@@ -69,7 +69,6 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/ClipRecorder.h"

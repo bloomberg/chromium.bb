@@ -105,8 +105,6 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
 
-  base::Closure TakeMutations() override;
-
   std::unique_ptr<MutatorEvents> CreateEvents() override;
   void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) override;
 

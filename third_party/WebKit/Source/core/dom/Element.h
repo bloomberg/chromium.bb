@@ -44,7 +44,6 @@ class AccessibleNode;
 class Attr;
 class Attribute;
 class CSSStyleDeclaration;
-class CompositorMutation;
 class CustomElementDefinition;
 class DOMRect;
 class DOMRectList;
@@ -786,8 +785,6 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void setTabIndex(int);
   int tabIndex() const override;
-
-  void UpdateFromCompositorMutation(const CompositorMutation&);
 
   // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
   // the element is isConnected() and the context is an isolated world.

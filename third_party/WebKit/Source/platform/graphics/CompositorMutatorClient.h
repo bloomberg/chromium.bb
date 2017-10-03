@@ -13,32 +13,27 @@
 namespace blink {
 
 class CompositorMutator;
-struct CompositorMutations;
-class CompositorMutationsTarget;
 
 class PLATFORM_EXPORT CompositorMutatorClient
     : public WebCompositorMutatorClient {
  public:
-  CompositorMutatorClient(CompositorMutator*, CompositorMutationsTarget*);
+  explicit CompositorMutatorClient(CompositorMutator*);
   virtual ~CompositorMutatorClient();
 
+  // TODO(petermayo): Remove this.  Without CompositorWorker, it becomes
+  // unnecessary.  crbug.com/746212
   void SetNeedsMutate();
 
   // cc::LayerTreeMutator
   bool Mutate(base::TimeTicks monotonic_time) override;
   void SetClient(cc::LayerTreeMutatorClient*) override;
-  base::Closure TakeMutations() override;
 
   CompositorMutator* Mutator() { return mutator_.Get(); }
 
-  void SetMutationsForTesting(std::unique_ptr<CompositorMutations>);
-
  private:
   cc::LayerTreeMutatorClient* client_;
-  CompositorMutationsTarget* mutations_target_;
   // Accessed by main and compositor threads.
   CrossThreadPersistent<CompositorMutator> mutator_;
-  std::unique_ptr<CompositorMutations> mutations_;
 };
 
 }  // namespace blink

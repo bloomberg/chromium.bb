@@ -506,8 +506,6 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->begin_frame_id = begin_frame_id;
   begin_main_frame_state->begin_frame_args = args;
-  begin_main_frame_state->begin_frame_callbacks =
-      host_impl_->ProcessLayerTreeMutations();
   begin_main_frame_state->scroll_info = host_impl_->ProcessScrollDeltas();
   begin_main_frame_state->evicted_ui_resources =
       host_impl_->EvictedUIResourcesExist();
