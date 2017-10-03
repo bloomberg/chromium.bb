@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "tools/gn/item.h"
 
 // Represents a named pool in the dependency graph.
@@ -17,9 +18,6 @@ class Pool : public Item {
  public:
   using Item::Item;
   ~Pool() override;
-
-  Pool(const Pool&) = delete;
-  Pool& operator=(const Pool&) = delete;
 
   // Item implementation.
   Pool* AsPool() override;
@@ -36,6 +34,8 @@ class Pool : public Item {
   std::string GetNinjaName(bool include_toolchain) const;
 
   int64_t depth_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(Pool);
 };
 
 #endif  // TOOLS_GN_POOL_H_
