@@ -149,6 +149,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   typedef std::list<TempImage> TempImages;
   typedef std::vector<PendingCallback> PendingCallbacks;
 
+  // Starts to query most visited URLs from history database instantly.
+  // Also cancels any pending queries requested in a delayed manner by
+  // cancelling the timer.
   void StartQueryForMostVisited();
 
   // Generates the diff of things that happened between "old" and "new."
@@ -194,13 +197,10 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // in |temp_images_|.
   void RemoveTemporaryThumbnailByURL(const GURL& url);
 
-  // Add a thumbnail for an unknown url. See |temp_images_|.
+  // Adds a thumbnail for an unknown url. See |temp_images_|.
   void AddTemporaryThumbnail(const GURL& url,
                              base::RefCountedMemory* thumbnail,
                              const ThumbnailScore& score);
-
-  // Called by our timer. Starts the query for the most visited sites.
-  void TimerFired();
 
   // Finds the given URL in the redirect chain for the given TopSite, and
   // returns the distance from the destination in hops that the given URL is.
@@ -208,12 +208,12 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   static int GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
                                        const GURL& url);
 
-  // Add prepopulated pages: 'welcome to Chrome' and themes gallery to |urls|.
+  // Adds prepopulated pages: 'welcome to Chrome' and themes gallery to |urls|.
   // Returns true if any pages were added.
   bool AddPrepopulatedPages(MostVisitedURLList* urls,
                             size_t num_forced_urls) const;
 
-  // Add all the forced URLs from |cache_| into |new_list|, making sure not to
+  // Adds all the forced URLs from |cache_| into |new_list|, making sure not to
   // add any URL that's already in |new_list|'s non-forced URLs. The forced URLs
   // in |cache_| and |new_list| are assumed to appear at the front of the list
   // and be sorted in increasing |last_forced_time|. This will still be true
@@ -228,10 +228,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
   static std::string GetURLHash(const GURL& url);
-
-  // Returns the delay until the next update of history is needed.
-  // Uses |last_num_urls_changed_|.
-  base::TimeDelta GetUpdateDelay() const;
 
   // Updates URLs in |cache_| and the db (in the background).
   // The non-forced URLs in |new_top_sites| replace those in |cache_|.
@@ -255,8 +251,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   void ResetThreadSafeImageCache();
 
-  // Stops and starts timer with a delay of |delta|.
-  void RestartQueryForTopSitesTimer(base::TimeDelta delta);
+  // Schedules a timer to update top sites with a delay.
+  // Does nothing if there is already a request queued.
+  void ScheduleUpdateTimer();
 
   // Callback from TopSites with the top sites/thumbnails. Should be called
   // from the UI thread.
@@ -292,15 +289,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // Task tracker for history and backend requests.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Timer that asks history for the top sites. This is used to make sure our
-  // data stays in sync with history.
+  // Timer that asks history for the top sites. This is used to coalesce
+  // requests that are generated in quick succession.
   base::OneShotTimer timer_;
-
-  // The time we started |timer_| at. Only valid if |timer_| is running.
-  base::TimeTicks timer_start_time_;
-
-  // The number of URLs changed on the last update.
-  size_t last_num_urls_changed_;
 
   // The pending requests for the top sites list. Can only be non-empty at
   // startup. After we read the top sites from the DB, we'll always have a

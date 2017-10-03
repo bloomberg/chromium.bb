@@ -255,14 +255,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   void StartQueryForMostVisited() { top_sites()->StartQueryForMostVisited(); }
 
-  void SetLastNumUrlsChanged(size_t value) {
-    top_sites()->last_num_urls_changed_ = value;
-  }
-
-  size_t last_num_urls_changed() { return top_sites()->last_num_urls_changed_; }
-
-  base::TimeDelta GetUpdateDelay() { return top_sites()->GetUpdateDelay(); }
-
   bool IsTopSitesLoaded() { return top_sites()->loaded_; }
 
   bool AddPrepopulatedPages(MostVisitedURLList* urls) {
@@ -1047,43 +1039,6 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
   }
 }
 
-// Makes sure GetUpdateDelay is updated appropriately.
-TEST_F(TopSitesImplTest, GetUpdateDelay) {
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64_t kExpectedUpdateDelayInMinute0Changed = 5;
-  const int64_t kExpectedUpdateDelayInMinute3Changed = 5;
-  const int64_t kExpectedUpdateDelayInMinute20Changed = 1;
-#else
-  const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64_t kExpectedUpdateDelayInMinute0Changed = 60;
-  const int64_t kExpectedUpdateDelayInMinute3Changed = 52;
-  const int64_t kExpectedUpdateDelayInMinute20Changed = 1;
-#endif
-
-  SetLastNumUrlsChanged(0);
-  EXPECT_EQ(kExpectedUpdateDelayInSecondEmpty, GetUpdateDelay().InSeconds());
-
-  MostVisitedURLList url_list;
-  url_list.resize(20);
-  GURL tmp_url(GURL("http://x"));
-  for (size_t i = 0; i < url_list.size(); ++i) {
-    url_list[i].url = tmp_url;
-    url_list[i].redirects.push_back(tmp_url);
-  }
-  SetTopSites(url_list);
-  EXPECT_EQ(20u, last_num_urls_changed());
-  SetLastNumUrlsChanged(0);
-  EXPECT_EQ(kExpectedUpdateDelayInMinute0Changed, GetUpdateDelay().InMinutes());
-
-  SetLastNumUrlsChanged(3);
-  EXPECT_EQ(kExpectedUpdateDelayInMinute3Changed, GetUpdateDelay().InMinutes());
-
-  SetLastNumUrlsChanged(20);
-  EXPECT_EQ(kExpectedUpdateDelayInMinute20Changed,
-            GetUpdateDelay().InMinutes());
-}
-
 // Verifies that callbacks are notified correctly if requested before top sites
 // has loaded.
 TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
@@ -1463,8 +1418,6 @@ TEST_F(TopSitesImplTest, SetForcedTopSites) {
 
   // Set the initial list of URLs.
   SetTopSites(old_url_list);
-  EXPECT_EQ(kNumOldForcedURLs + kNonForcedTopSitesCount,
-            last_num_urls_changed());
 
   TopSitesQuerier querier;
   // Query only non-forced URLs first.
