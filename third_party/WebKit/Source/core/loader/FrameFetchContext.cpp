@@ -333,10 +333,10 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 
   // Reload should reflect the current data saver setting.
   if (IsReloadLoadType(MasterDocumentLoader()->LoadType()))
-    request.ClearHTTPHeaderField("Save-Data");
+    request.ClearHTTPHeaderField(HTTPNames::Save_Data);
 
   if (GetSettings() && GetSettings()->GetDataSaverEnabled())
-    request.SetHTTPHeaderField("Save-Data", "on");
+    request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
 
   if (GetLocalFrameClient()->IsClientLoFiActiveForFrame()) {
     request.AddHTTPHeaderField(

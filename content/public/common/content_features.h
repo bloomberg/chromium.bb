@@ -22,6 +22,7 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kAsmJsToWebAssembly;
 CONTENT_EXPORT extern const base::Feature kAsyncWheelEvents;
 CONTENT_EXPORT extern const base::Feature kBlockCredentialedSubresources;
+CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
 CONTENT_EXPORT extern const base::Feature kBrowserSideNavigation;
 CONTENT_EXPORT extern const base::Feature kBuggyRSAParser;

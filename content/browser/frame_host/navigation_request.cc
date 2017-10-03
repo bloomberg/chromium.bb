@@ -145,15 +145,17 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  bool is_reload =
-      navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-      navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
-      navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
-  if (is_reload)
-    headers->RemoveHeader("Save-Data");
+  if (!base::FeatureList::IsEnabled(features::kDataSaverHoldback)) {
+    bool is_reload =
+        navigation_type == FrameMsg_Navigate_Type::RELOAD ||
+        navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
+        navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+    if (is_reload)
+      headers->RemoveHeader("Save-Data");
 
-  if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context))
-    headers->SetHeaderIfMissing("Save-Data", "on");
+    if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context))
+      headers->SetHeaderIfMissing("Save-Data", "on");
+  }
 
   // Attach additional request headers specified by embedder.
   std::unique_ptr<net::HttpRequestHeaders> embedder_additional_headers =

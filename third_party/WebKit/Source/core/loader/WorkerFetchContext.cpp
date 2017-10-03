@@ -251,7 +251,7 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     return;
 
   if (web_context_->IsDataSaverEnabled())
-    request.SetHTTPHeaderField("Save-Data", "on");
+    request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
 }
 
 void WorkerFetchContext::DispatchWillSendRequest(
