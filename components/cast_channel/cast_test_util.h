@@ -72,6 +72,7 @@ class MockCastSocketService : public CastSocketService {
 
   int OpenSocket(const net::IPEndPoint& ip_endpoint,
                  net::NetLog* net_log,
+                 base::TimeDelta connect_time,
                  CastSocket::OnOpenCallback open_cb) override {
     // Unit test should not call |open_cb| more than once. Just use
     // base::AdaptCallbackForRepeating to pass |open_cb| to a mock method.
