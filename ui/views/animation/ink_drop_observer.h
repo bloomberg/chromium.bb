@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -20,6 +21,14 @@ class VIEWS_EXPORT InkDropObserver {
   // be notified, as the notification is dependent on the subclass
   // implementation.
   virtual void InkDropAnimationStarted() = 0;
+
+  // Called when the animation to the provided ink drop state has ended (both if
+  // the animation ended successfully, and if the animation was aborted).
+  // Includes ripple animation only.
+  // NOTE: this is not guaranteed to be notified, as the notification is
+  // dependent on the subclass implementation.
+  // |ink_drop_state| - The state to which the ink drop ripple was animating.
+  virtual void InkDropRippleAnimationEnded(InkDropState ink_drop_state) = 0;
 
  protected:
   InkDropObserver() = default;
