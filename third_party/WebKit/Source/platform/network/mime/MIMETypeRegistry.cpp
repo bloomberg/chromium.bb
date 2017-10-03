@@ -78,15 +78,6 @@ String MIMETypeRegistry::GetWellKnownMIMETypeForExtension(const String& ext) {
   return String::FromUTF8(mime_type.data(), mime_type.length());
 }
 
-String MIMETypeRegistry::GetMIMETypeForPath(const String& path) {
-  int pos = path.ReverseFind('.');
-  if (pos < 0)
-    return "application/octet-stream";
-  String extension = path.Substring(pos + 1);
-  String mime_type = GetMIMETypeForExtension(extension);
-  return mime_type.IsEmpty() ? "application/octet-stream" : mime_type;
-}
-
 bool MIMETypeRegistry::IsSupportedMIMEType(const String& mime_type) {
   return blink::IsSupportedMimeType(ToLowerASCIIOrEmpty(mime_type));
 }
