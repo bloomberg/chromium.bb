@@ -12,6 +12,9 @@ import os
 import subprocess
 import sys
 
+import SimpleHTTPServer
+import SocketServer
+
 HELP_MESSAGE = """
 This script helps to generate code coverage report. It uses Clang Source-based
 Code coverage (https://clang.llvm.org/docs/SourceBasedCodeCoverage.html).
@@ -66,6 +69,9 @@ STYLE_END_MARKER = '</style>'
 STYLE_FILENAME = 'style.css'
 
 ZERO_FUNCTION_FILE_TEXT = 'Files which contain no functions'
+
+HTTP_PORT = 9000
+COVERAGE_REPORT_LINK = 'http://127.0.0.1:%d/report.html' % HTTP_PORT
 
 
 def CheckBuildInstrumentation(executable_path):
@@ -300,6 +306,22 @@ def GenerateSummary(executable_path, output_dir, coverage_file):
     file_handle.write(report)
 
 
+def ServeReportOnHTTP(output_directory):
+  """Serve report directory on HTTP."""
+  os.chdir(output_directory)
+
+  SocketServer.TCPServer.allow_reuse_address = True
+  httpd = SocketServer.TCPServer(('', HTTP_PORT),
+                                 SimpleHTTPServer.SimpleHTTPRequestHandler)
+  print('Load coverage report using %s. Press Ctrl+C to exit.' %
+        COVERAGE_REPORT_LINK)
+
+  try:
+    httpd.serve_forever()
+  except KeyboardInterrupt:
+    httpd.server_close()
+
+
 def ProcessCoverageDump(profile_file, coverage_file):
   """Process and convert raw LLVM profile data into coverage data format."""
   print('Processing coverage dump and generating visualization.')
@@ -370,6 +392,7 @@ def main():
   args = parser.parse_args()
 
   executable_path = args.command.split()[0]
+
   CheckBuildInstrumentation(executable_path)
 
   DownloadCoverageToolsIfNeeded()
@@ -384,9 +407,9 @@ def main():
   GenerateSummary(executable_path, args.output, coverage_file)
   GenerateSources(executable_path, args.output, args.source, coverage_file)
 
-  print('Done. The next steps would be:\n'
-        '1. cd %s && python -m SimpleHTTPServer\n'
-        '2. open http://127.0.0.1:8000/report.html' % args.output)
+  ServeReportOnHTTP(args.output)
+
+  print('Done.')
 
 
 if __name__ == '__main__':
