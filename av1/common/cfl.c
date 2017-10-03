@@ -62,18 +62,51 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
   }
 }
 
-// CfL computes its own block-level DC_PRED. This is required to compute both
-// alpha_cb and alpha_cr before the prediction are computed.
-static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
+static void sum_above_row(const MACROBLOCKD *xd, int width, int *out_sum_u,
+                          int *out_sum_v) {
   const struct macroblockd_plane *const pd_u = &xd->plane[AOM_PLANE_U];
   const struct macroblockd_plane *const pd_v = &xd->plane[AOM_PLANE_V];
-
-  const uint8_t *const dst_u = pd_u->dst.buf;
-  const uint8_t *const dst_v = pd_v->dst.buf;
 
   const int dst_u_stride = pd_u->dst.stride;
   const int dst_v_stride = pd_v->dst.stride;
 
+  const uint8_t *above_dst_u = pd_u->dst.buf - dst_u_stride;
+  const uint8_t *above_dst_v = pd_v->dst.buf - dst_v_stride;
+
+  int sum_u = 0;
+  int sum_v = 0;
+  for (int i = 0; i < width; i++) {
+    sum_u += above_dst_u[i];
+    sum_v += above_dst_v[i];
+  }
+  *out_sum_u += sum_u;
+  *out_sum_v += sum_v;
+}
+
+static void sum_left_col(const MACROBLOCKD *xd, int height, int *out_sum_u,
+                         int *out_sum_v) {
+  const struct macroblockd_plane *const pd_u = &xd->plane[AOM_PLANE_U];
+  const struct macroblockd_plane *const pd_v = &xd->plane[AOM_PLANE_V];
+
+  const int dst_u_stride = pd_u->dst.stride;
+  const int dst_v_stride = pd_v->dst.stride;
+
+  const uint8_t *left_dst_u = pd_u->dst.buf - 1;
+  const uint8_t *left_dst_v = pd_v->dst.buf - 1;
+
+  int sum_u = 0;
+  int sum_v = 0;
+  for (int i = 0; i < height; i++) {
+    sum_u += left_dst_u[i * dst_u_stride];
+    sum_v += left_dst_v[i * dst_v_stride];
+  }
+  *out_sum_u += sum_u;
+  *out_sum_v += sum_v;
+}
+
+// CfL computes its own block-level DC_PRED. This is required to compute both
+// alpha_cb and alpha_cr before the prediction are computed.
+static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   CFL_CTX *const cfl = xd->cfl;
 
   // Compute DC_PRED until block boundary. We can't assume the neighbor will use
@@ -88,9 +121,8 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   int sum_u = 0;
   int sum_v = 0;
 
-  // Match behavior of build_intra_predictors_high (reconintra.c) at superblock
-  // boundaries:
-  const int base = 128 << (xd->bd - 8);
+// Match behavior of build_intra_predictors_high (reconintra.c) at superblock
+// boundaries:
 // base-1 base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
 // base+1   A      B  ..     Y      Z
 // base+1   C      D  ..     W      X
@@ -103,12 +135,9 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
 #else
   if (xd->up_available && xd->mb_to_right_edge >= 0) {
 #endif
-    // TODO(ltrudeau) replace this with DC_PRED assembly
-    for (int i = 0; i < width; i++) {
-      sum_u += dst_u[-dst_u_stride + i];
-      sum_v += dst_v[-dst_v_stride + i];
-    }
+    sum_above_row(xd, width, &sum_u, &sum_v);
   } else {
+    const int base = 128 << (xd->bd - 8);
     sum_u = width * (base - 1);
     sum_v = width * (base - 1);
   }
@@ -118,11 +147,9 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
 #else
   if (xd->left_available && xd->mb_to_bottom_edge >= 0) {
 #endif
-    for (int i = 0; i < height; i++) {
-      sum_u += dst_u[i * dst_u_stride - 1];
-      sum_v += dst_v[i * dst_v_stride - 1];
-    }
+    sum_left_col(xd, height, &sum_u, &sum_v);
   } else {
+    const int base = 128 << (xd->bd - 8);
     sum_u += height * (base + 1);
     sum_v += height * (base + 1);
   }
