@@ -54,4 +54,18 @@ TEST_F(TypingCommandTest, insertLineBreakWithIllFormedHTML) {
   TypingCommand::InsertLineBreak(GetDocument());
 }
 
+// http://crbug.com/767599
+TEST_F(TypingCommandTest,
+       DontCrashWhenReplaceSelectionCommandLeavesBadSelection) {
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>^<h1>H1</h1>ello|</div>"));
+
+  // This call shouldn't crash.
+  TypingCommand::InsertText(
+      GetDocument(), " ", 0,
+      TypingCommand::TextCompositionType::kTextCompositionUpdate, true);
+  EXPECT_EQ("<div contenteditable>^<h1></h1>|</div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink
