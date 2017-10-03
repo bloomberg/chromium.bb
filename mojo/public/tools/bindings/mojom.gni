@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(rockot): Maybe we can factor these dependencies out of //mojo. They're
+# used to conditionally enable message ID scrambling in a way which is
+# consistent across toolchains.
+import("//build/config/nacl/config.gni")
+import("//components/nacl/features.gni")
+
 declare_args() {
   # Indicates whether typemapping should be supported in this build
   # configuration. This may be disabled when building external projects which
@@ -13,6 +19,11 @@ declare_args() {
   # any Chromium build configuration.
   enable_mojom_typemapping = true
 }
+
+# NOTE: We would like to avoid scrambling message IDs where it doesn't add
+# value, so we limit the behavior to Mac and Windows desktop builds for now.
+enable_scrambled_message_ids = is_mac || is_win || (is_linux && !is_chromeos) ||
+                               enable_nacl || is_nacl || is_nacl_nonsfi
 
 mojom_generator_root = "//mojo/public/tools/bindings"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
@@ -35,6 +46,25 @@ mojom_generator_sources = [
   "$mojom_generator_root/pylib/mojom/parse/parser.py",
   "$mojom_generator_script",
 ]
+
+if (enable_scrambled_message_ids) {
+  declare_args() {
+    # The path to a file whose contents can be used as the basis for a message
+    # ID scrambling salt.
+    mojom_message_id_salt_path = "//chrome/VERSION"
+
+    # The path to a file whose contents will be concatenated to the contents of
+    # the file at |mojom_message_id_salt_path| to form a complete salt for
+    # message ID scrambling. May be the empty string, in which case the contents
+    # of the above file alone are used as the complete salt.
+    mojom_message_id_salt_suffix_path = ""
+  }
+
+  mojom_generator_sources += [ mojom_message_id_salt_path ]
+  if (mojom_message_id_salt_suffix_path != "") {
+    mojom_generator_sources += [ mojom_message_id_salt_suffix_path ]
+  }
+}
 
 generate_export_header_script =
     "$mojom_generator_root/generate_export_header.py"
@@ -184,6 +214,10 @@ if (enable_mojom_typemapping) {
 #       be serialized and deserialized using a legacy IPC::ParamTraits
 #       specialization.
 #
+#   scramble_message_ids (optional)
+#       If set to |true| (the default), generated mojom interfaces will use
+#       scrambled ordinal identifiers in encoded messages.
+#
 #   component_output_prefix (optional)
 #       The prefix to use for the output_name of any component library emitted
 #       for generated C++ bindings. If this is omitted, C++ bindings targets are
@@ -322,6 +356,25 @@ template("mojom") {
       "--bytecode_path",
       rebase_path("$root_gen_dir/mojo/public/tools/bindings", root_build_dir),
     ]
+
+    if (!defined(invoker.scramble_message_ids) || invoker.scramble_message_ids) {
+      # Scramble message IDs if enabled, unless the target has explicitly opted
+      # out.
+      if (enable_scrambled_message_ids) {
+        assert(mojom_message_id_salt_path != "")
+        common_generator_args += [
+          "--scrambled_message_id_salt_path",
+          rebase_path(mojom_message_id_salt_path, root_build_dir),
+        ]
+
+        if (mojom_message_id_salt_suffix_path != "") {
+          common_generator_args += [
+            "--scrambled_message_id_salt_path",
+            rebase_path(mojom_message_id_salt_suffix_path, root_build_dir),
+          ]
+        }
+      }
+    }
 
     if (!defined(invoker.allow_native_structs) || invoker.allow_native_structs) {
       common_generator_args += [ "--allow_native_structs" ]

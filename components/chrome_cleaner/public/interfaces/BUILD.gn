@@ -11,4 +11,8 @@ mojom("interfaces") {
   deps = [
     "//mojo/common:common_custom_types",
   ]
+
+  # NOTE: We avoid scrambling message IDs here because these messages cross an
+  # IPC boundary to an external program built from a different source tree.
+  scramble_message_ids = false
 }
