@@ -3612,7 +3612,6 @@ crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Ti
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
 crbug.com/760546 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
-crbug.com/757955 [ Linux Win7 Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 
 # Tests flakely timing out on WebKit Linux Trusty dbg builder
 crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
@@ -3676,7 +3675,6 @@ crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.
 
 # Sheriff failures 2017-09-11
 crbug.com/763809 [ Win7 Debug ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure Timeout ]
-crbug.com/763810 [ Linux Win7 Debug ] virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-12
