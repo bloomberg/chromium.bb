@@ -103,7 +103,7 @@ bool FetchUtils::IsCORSSafelistedHeader(const AtomicString& name,
       EqualIgnoringASCIICase(name, "content-language") ||
       EqualIgnoringASCIICase(
           name, HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id) ||
-      EqualIgnoringASCIICase(name, "save-data") ||
+      EqualIgnoringASCIICase(name, HTTPNames::Save_Data) ||
       EqualIgnoringASCIICase(name, "intervention"))
     return true;
 
