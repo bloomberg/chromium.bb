@@ -150,8 +150,8 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
-#include "chrome/browser/ui/webui/sys_internals/sys_internals_ui.h"
-#include "chrome/browser/ui/webui/voice_search_ui.h"
+#include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/voice_search_ui.h"
 #include "components/proximity_auth/webui/proximity_auth_ui.h"
 #include "components/proximity_auth/webui/url_constants.h"
 #endif

@@ -13,7 +13,7 @@
         'constants',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'sub_chart',
@@ -22,7 +22,7 @@
         'data_series',
         'constants',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'scrollbar',
@@ -30,14 +30,14 @@
         'constants',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'unit_label',
       'dependencies': [
         'constants',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'menu',
@@ -46,18 +46,18 @@
         'data_series',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'data_series',
       'dependencies': [
         'constants',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'constants',
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }

@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/voice_search_ui.h"
+#include "chrome/browser/ui/webui/chromeos/voice_search_ui.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,10 +49,6 @@
 #include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using base::ASCIIToUTF16;
 using content::WebUIMessageHandler;
 
@@ -83,7 +75,7 @@ content::WebUIDataSource* CreateVoiceSearchUiHtmlSource() {
 void AddPair16(base::ListValue* list,
                const base::string16& key,
                const base::string16& value) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
+  auto results = std::make_unique<base::DictionaryValue>();
   results->SetString("key", key);
   results->SetString("value", value);
   list->Append(std::move(results));
@@ -106,26 +98,25 @@ void AddLineBreak(base::ListValue* list) {
   AddPair(list, "", "");
 }
 
-void AddSharedModulePlatformsOnFileThread(base::ListValue* list,
-                                          const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+void AddSharedModulePlatformsOnBlockingTaskRunner(base::ListValue* list,
+                                                  const base::FilePath& path) {
+  base::AssertBlockingAllowed();
 
-  if (!path.empty()) {
-    // Display available platforms for shared module.
-    base::FilePath platforms_path = path.AppendASCII("_platform_specific");
-    base::FileEnumerator enumerator(
-        platforms_path, false, base::FileEnumerator::DIRECTORIES);
-    base::string16 files;
-    for (base::FilePath name = enumerator.Next();
-         !name.empty();
-         name = enumerator.Next()) {
-      files += name.BaseName().LossyDisplayName() + ASCIIToUTF16(" ");
-    }
-    AddPair16(list,
-              ASCIIToUTF16("Shared Module Platforms"),
-              files.empty() ? ASCIIToUTF16("undefined") : files);
-    AddLineBreak(list);
+  if (path.empty())
+    return;
+
+  // Display available platforms for shared module.
+  base::FilePath platforms_path = path.AppendASCII("_platform_specific");
+  base::FileEnumerator enumerator(platforms_path, false,
+                                  base::FileEnumerator::DIRECTORIES);
+  base::string16 files;
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    files += name.BaseName().LossyDisplayName() + ASCIIToUTF16(" ");
   }
+  AddPair16(list, ASCIIToUTF16("Shared Module Platforms"),
+            files.empty() ? ASCIIToUTF16("undefined") : files);
+  AddLineBreak(list);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,8 +129,7 @@ void AddSharedModulePlatformsOnFileThread(base::ListValue* list,
 class VoiceSearchDomHandler : public WebUIMessageHandler {
  public:
   explicit VoiceSearchDomHandler(Profile* profile)
-      : profile_(profile),
-        weak_factory_(this) {}
+      : profile_(profile), weak_factory_(this) {}
 
   ~VoiceSearchDomHandler() override {}
 
@@ -169,7 +159,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
   // Fill in the data to be displayed on the page.
   void PopulatePageInformation() {
     // Store Key-Value pairs of about-information.
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
+    auto list = std::make_unique<base::ListValue>();
 
     // Populate information.
     AddOperatingSystemInfo(list.get());
@@ -178,12 +168,10 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddHotwordInfo(list.get());
     AddAppListInfo(list.get());
 
-    AddExtensionInfo(extension_misc::kHotwordNewExtensionId,
-                     "Extension",
+    AddExtensionInfo(extension_misc::kHotwordNewExtensionId, "Extension",
                      list.get());
 
-    AddExtensionInfo(extension_misc::kHotwordSharedModuleId,
-                     "Shared Module",
+    AddExtensionInfo(extension_misc::kHotwordSharedModuleId, "Shared Module",
                      list.get());
 
     base::FilePath path;
@@ -201,52 +189,22 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     base::ListValue* raw_list = list.get();
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::BindOnce(&AddSharedModulePlatformsOnFileThread, raw_list, path),
+        base::BindOnce(&AddSharedModulePlatformsOnBlockingTaskRunner, raw_list,
+                       path),
         base::BindOnce(&VoiceSearchDomHandler::ReturnVoiceSearchInfo,
                        weak_factory_.GetWeakPtr(),
                        base::Passed(std::move(list))));
   }
 
   // Adds information regarding the system and chrome version info to list.
-  void AddOperatingSystemInfo(base::ListValue* list)  {
+  void AddOperatingSystemInfo(base::ListValue* list) {
     // Obtain the Chrome version info.
-    AddPair(list,
-            l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
+    AddPair(list, l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
             version_info::GetVersionNumber() + " (" +
-            chrome::GetChannelString() + ")");
+                chrome::GetChannelString() + ")");
 
     // OS version information.
     std::string os_label = version_info::GetOSType();
-#if defined(OS_WIN)
-    base::win::OSInfo* os = base::win::OSInfo::GetInstance();
-    switch (os->version()) {
-      case base::win::VERSION_XP:
-        os_label += " XP";
-        break;
-      case base::win::VERSION_SERVER_2003:
-        os_label += " Server 2003 or XP Pro 64 bit";
-        break;
-      case base::win::VERSION_VISTA:
-        os_label += " Vista or Server 2008";
-        break;
-      case base::win::VERSION_WIN7:
-        os_label += " 7 or Server 2008 R2";
-        break;
-      case base::win::VERSION_WIN8:
-        os_label += " 8 or Server 2012";
-        break;
-      default:
-        os_label += " UNKNOWN";
-        break;
-    }
-    os_label += " SP" + base::IntToString(os->service_pack().major);
-
-    if (os->service_pack().minor > 0)
-      os_label += "." + base::IntToString(os->service_pack().minor);
-
-    if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
-      os_label += " 64 bit";
-#endif
     AddPair(list, l10n_util::GetStringUTF8(IDS_VERSION_UI_OS), os_label);
 
     AddLineBreak(list);
@@ -258,7 +216,6 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     // platforms. ENABLE_EXTENSIONS covers those platforms and hey would not
     // allow Hotwording anyways since it is an extension.
     std::string nacl_enabled = "not available";
-#if BUILDFLAG(ENABLE_EXTENSIONS)
     nacl_enabled = "No";
     // Determine if NaCl is available.
     base::FilePath path;
@@ -271,7 +228,6 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
         nacl_enabled = "Yes";
       }
     }
-#endif
 
     AddPair(list, "NaCl Enabled", nacl_enabled);
 
@@ -289,23 +245,16 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
   // Adds information regarding languages to the list.
   void AddLanguageInfo(base::ListValue* list) {
     std::string locale =
-#if defined(OS_CHROMEOS)
-        // On ChromeOS locale is per-profile.
         profile_->GetPrefs()->GetString(prefs::kApplicationLocale);
-#else
-        g_browser_process->GetApplicationLocale();
-#endif
     AddPair(list, "Current Language", locale);
-
-    AddPair(list,
-            "Hotword Previous Language",
+    AddPair(list, "Hotword Previous Language",
             profile_->GetPrefs()->GetString(prefs::kHotwordPreviousLanguage));
 
     AddLineBreak(list);
   }
 
   // Adds information specific to the hotword configuration to the list.
-  void AddHotwordInfo(base::ListValue* list)  {
+  void AddHotwordInfo(base::ListValue* list) {
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
     AddPairBool(list, "Hotword Module Installable",
@@ -348,10 +297,9 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     }
     AddPair(list, name_prefix + " Id", id);
     AddPair(list, name_prefix + " Version", version);
-    AddPair16(list,
-              ASCIIToUTF16(name_prefix + " Path"),
-              path.empty() ?
-              ASCIIToUTF16("undefined") : path.LossyDisplayName());
+    AddPair16(
+        list, ASCIIToUTF16(name_prefix + " Path"),
+        path.empty() ? ASCIIToUTF16("undefined") : path.LossyDisplayName());
 
     extensions::ExtensionPrefs* extension_prefs =
         extensions::ExtensionPrefs::Get(profile_);
@@ -417,7 +365,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 #endif
   }
 
-  Profile* profile_;
+  Profile* const profile_;
   base::WeakPtrFactory<VoiceSearchDomHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceSearchDomHandler);
@@ -434,7 +382,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 VoiceSearchUI::VoiceSearchUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  web_ui->AddMessageHandler(base::MakeUnique<VoiceSearchDomHandler>(profile));
+  web_ui->AddMessageHandler(std::make_unique<VoiceSearchDomHandler>(profile));
 
   // Set up the about:voicesearch source.
   content::WebUIDataSource::Add(profile, CreateVoiceSearchUiHtmlSource());

@@ -683,17 +683,17 @@
       <include name="IDR_MEDIA_ENGAGEMENT_JS" file="resources\media\media_engagement.js" flattenhtml="true" type="BINDATA" compress="gzip" />
       <include name="IDR_MEDIA_ENGAGEMENT_MOJO_JS" file="${root_gen_dir}\chrome\browser\media\media_engagement_score_details.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <if expr="chromeos">
-        <include name="IDR_SYS_INTERNALS_HTML" file="resources\sys_internals\index.html" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_CSS" file="resources\sys_internals\index.css" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_JS" file="resources\sys_internals\index.js" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_CONSTANT_JS" file="resources\sys_internals\constants.js" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_LINE_CHART_CSS" file="resources\sys_internals\line_chart\line_chart.css" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_LINE_CHART_JS" file="resources\sys_internals\line_chart\index.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_IMAGE_MENU_SVG" file="resources\sys_internals\img\menu.svg" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_IMAGE_INFO_SVG" file="resources\sys_internals\img\info.svg" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_IMAGE_CPU_SVG" file="resources\sys_internals\img\cpu.svg" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_IMAGE_MEMORY_SVG" file="resources\sys_internals\img\memory.svg" type="BINDATA" />
-        <include name="IDR_SYS_INTERNALS_IMAGE_ZRAM_SVG" file="resources\sys_internals\img\zram.svg" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_HTML" file="resources\chromeos\sys_internals\index.html" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_CSS" file="resources\chromeos\sys_internals\index.css" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_JS" file="resources\chromeos\sys_internals\index.js" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_CONSTANT_JS" file="resources\chromeos\sys_internals\constants.js" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_LINE_CHART_CSS" file="resources\chromeos\sys_internals\line_chart\line_chart.css" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_LINE_CHART_JS" file="resources\chromeos\sys_internals\line_chart\index.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_IMAGE_MENU_SVG" file="resources\chromeos\sys_internals\img\menu.svg" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_IMAGE_INFO_SVG" file="resources\chromeos\sys_internals\img\info.svg" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_IMAGE_CPU_SVG" file="resources\chromeos\sys_internals\img\cpu.svg" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_IMAGE_MEMORY_SVG" file="resources\chromeos\sys_internals\img\memory.svg" type="BINDATA" />
+        <include name="IDR_SYS_INTERNALS_IMAGE_ZRAM_SVG" file="resources\chromeos\sys_internals\img\zram.svg" type="BINDATA" />
       </if>
     </includes>
   </release>
