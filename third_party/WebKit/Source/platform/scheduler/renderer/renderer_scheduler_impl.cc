@@ -2086,11 +2086,11 @@ TimeDomain* RendererSchedulerImpl::GetActiveTimeDomain() {
 void RendererSchedulerImpl::OnTraceLogEnabled() {
   CreateTraceEventObjectSnapshot();
 
-  main_thread_only().use_case_tracer.SetState(
+  main_thread_only().use_case_tracer.Start(
       UseCaseToString(main_thread_only().current_use_case));
-  main_thread_only().backgrounding_tracer.SetState(
+  main_thread_only().backgrounding_tracer.Start(
       BackgroundStateToString(main_thread_only().renderer_backgrounded));
-  main_thread_only().audio_playing_tracer.SetState(
+  main_thread_only().audio_playing_tracer.Start(
       AudioPlayingToString(main_thread_only().is_audio_playing));
 }
 

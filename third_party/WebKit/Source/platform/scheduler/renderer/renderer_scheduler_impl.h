@@ -29,7 +29,7 @@
 #include "platform/scheduler/renderer/task_cost_estimator.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
-#include "platform/scheduler/util/tracing_helper.h"
+#include "platform/scheduler/util/state_tracer.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 namespace base {
@@ -602,9 +602,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     RendererMetricsHelper metrics_helper;
     RendererProcessType process_type;
-    StateTracer<kTracingCategoryNameDefault> use_case_tracer;
-    StateTracer<kTracingCategoryNameDefault> backgrounding_tracer;
-    StateTracer<kTracingCategoryNameDefault> audio_playing_tracer;
+    StateTracer use_case_tracer;
+    StateTracer backgrounding_tracer;
+    StateTracer audio_playing_tracer;
   };
 
   struct AnyThread {
