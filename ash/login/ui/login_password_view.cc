@@ -46,9 +46,6 @@ constexpr int kPasswordTotalWidthDp = 204;
 // Distance between the last password dot and the submit arrow/button.
 constexpr int kDistanceBetweenPasswordAndSubmitDp = 0;
 
-// The character used for displaying obscured password text.
-constexpr base::char16 kPasswordReplacementChar = 0x2219;
-
 // Color of the password field text.
 constexpr SkColor kTextColor = SkColorSetARGBMacro(0xAB, 0xFF, 0xFF, 0xFF);
 
@@ -110,7 +107,6 @@ LoginPasswordView::LoginPasswordView() {
 
   textfield_->SetBorder(nullptr);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  textfield_->SetPasswordReplacementChar(kPasswordReplacementChar);
 
   textfield_sizer->AddChildView(textfield_);
   row->AddChildView(textfield_sizer);

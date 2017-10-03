@@ -567,11 +567,6 @@ void Textfield::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
-void Textfield::SetPasswordReplacementChar(
-    base::char16 password_replacement_char) {
-  GetRenderText()->SetPasswordReplacementChar(password_replacement_char);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -938,7 +933,7 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
     node_data->AddState(ui::AX_STATE_PROTECTED);
     node_data->SetValue(base::string16(
-        text().size(), GetRenderText()->password_replacement_char()));
+        text().size(), gfx::RenderText::kPasswordReplacementChar));
   } else {
     node_data->SetValue(text());
   }

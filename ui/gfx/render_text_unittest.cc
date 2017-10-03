@@ -286,8 +286,7 @@ void VerifyDecoratedWordsAreEqual(const DecoratedText& expected,
 }
 
 // Helper method to return an obscured string of the given |length|, with the
-// |reveal_index| filled with |reveal_char|, using the default password
-// placement char.
+// |reveal_index| filled with |reveal_char|.
 base::string16 GetObscuredString(size_t length,
                                  size_t reveal_index,
                                  base::char16 reveal_char) {
@@ -296,12 +295,9 @@ base::string16 GetObscuredString(size_t length,
   return base::string16(arr.begin(), arr.end());
 }
 
-// Helper method to return an obscured string of the given |length|, using the
-// specified password placement char, or the default if none is specified.
-base::string16 GetObscuredString(size_t length,
-                                 base::char16 password_replacement_char =
-                                     RenderText::kPasswordReplacementChar) {
-  return base::string16(length, password_replacement_char);
+// Helper method to return an obscured string of the given |length|.
+base::string16 GetObscuredString(size_t length) {
+  return base::string16(length, RenderText::kPasswordReplacementChar);
 }
 
 // Converts a vector of UTF8 literals into a vector of (UTF16) string16.
@@ -976,30 +972,6 @@ TEST_P(RenderTextTest, RevealObscuredText) {
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
 }
 
-TEST_P(RenderTextTest, CustomPasswordReplacementChar) {
-  const base::char16 custom_password_replacement_char = 0x2219;
-  const base::string16 seuss = UTF8ToUTF16("hop on pop");
-  const base::string16 no_seuss_default = GetObscuredString(seuss.length());
-  const base::string16 no_seuss_custom =
-      GetObscuredString(seuss.length(), custom_password_replacement_char);
-  RenderText* render_text = GetRenderText();
-
-  render_text->SetText(seuss);
-  render_text->SetObscured(true);
-  EXPECT_EQ(seuss, render_text->text());
-  // If password replacement char is not explicitly set, GetDisplayText()
-  // returns a string filled with the default value.
-  EXPECT_EQ(no_seuss_default, render_text->GetDisplayText());
-
-  // After a custom password replacement char is set, GetDisplayText()
-  // returns a string filled with the custom value.
-  render_text->SetPasswordReplacementChar(custom_password_replacement_char);
-  EXPECT_EQ(no_seuss_custom, render_text->GetDisplayText());
-  render_text->SetObscured(false);
-  EXPECT_EQ(seuss, render_text->text());
-  EXPECT_EQ(seuss, render_text->GetDisplayText());
-}
-
 TEST_P(RenderTextTest, ObscuredEmoji) {
   // Ensures text itemization doesn't crash on obscured multi-char glyphs.
   RenderText* render_text = GetRenderText();
@@ -1103,7 +1075,10 @@ TEST_P(RenderTextTest, ElidedObscuredText) {
   std::unique_ptr<RenderText> expected_render_text(CreateRenderTextInstance());
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
-  expected_render_text->SetText(UTF8ToUTF16("**\u2026"));
+  const base::char16 elided_obscured_text[] = {
+      RenderText::kPasswordReplacementChar,
+      RenderText::kPasswordReplacementChar, 0x2026, 0};
+  expected_render_text->SetText(elided_obscured_text);
 
   RenderText* render_text = GetRenderText();
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
@@ -1113,7 +1088,7 @@ TEST_P(RenderTextTest, ElidedObscuredText) {
   render_text->SetObscured(true);
   render_text->SetText(UTF8ToUTF16("abcdef"));
   EXPECT_EQ(UTF8ToUTF16("abcdef"), render_text->text());
-  EXPECT_EQ(UTF8ToUTF16("**\u2026"), render_text->GetDisplayText());
+  EXPECT_EQ(elided_obscured_text, render_text->GetDisplayText());
 }
 
 #endif  // !defined(OS_MACOSX)
