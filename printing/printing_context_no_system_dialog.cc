@@ -138,7 +138,7 @@ void PrintingContextNoSystemDialog::ReleaseContext() {
   // Intentional No-op.
 }
 
-skia::NativeDrawingContext PrintingContextNoSystemDialog::context() const {
+printing::NativeDrawingContext PrintingContextNoSystemDialog::context() const {
   // Intentional No-op.
   return nullptr;
 }

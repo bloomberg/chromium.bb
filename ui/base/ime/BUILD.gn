@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -50,8 +51,6 @@ component("ime") {
     "chromeos/mock_ime_engine_handler.h",
     "composition_text.cc",
     "composition_text.h",
-    "composition_text_util_pango.cc",
-    "composition_text_util_pango.h",
     "ime_bridge.cc",
     "ime_bridge.h",
     "ime_engine_handler_interface.h",
@@ -163,10 +162,9 @@ component("ime") {
     ]
   }
 
-  if (use_pango) {
+  if (use_pangocairo) {
     configs += [ "//build/config/linux/pangocairo" ]
-  } else {
-    sources -= [
+    sources += [
       "composition_text_util_pango.cc",
       "composition_text_util_pango.h",
     ]

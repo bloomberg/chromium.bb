@@ -52,7 +52,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  skia::NativeDrawingContext context() const override;
+  printing::NativeDrawingContext context() const override;
 
  private:
   base::string16 document_name_;

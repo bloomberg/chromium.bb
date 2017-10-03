@@ -505,7 +505,7 @@ void PrintingContextMac::ReleaseContext() {
   context_ = NULL;
 }
 
-skia::NativeDrawingContext PrintingContextMac::context() const {
+printing::NativeDrawingContext PrintingContextMac::context() const {
   return context_;
 }
 

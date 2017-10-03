@@ -336,7 +336,7 @@ void PrintingContextWin::ReleaseContext() {
   }
 }
 
-skia::NativeDrawingContext PrintingContextWin::context() const {
+printing::NativeDrawingContext PrintingContextWin::context() const {
   return context_;
 }
 

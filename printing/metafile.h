@@ -74,14 +74,14 @@ class PRINTING_EXPORT MetafilePlayer {
   // back in the HDC. The trick is that it skip over the records known to have
   // issue with some printers. See Emf::Record::SafePlayback implementation for
   // details.
-  virtual bool SafePlayback(skia::NativeDrawingContext hdc) const = 0;
+  virtual bool SafePlayback(printing::NativeDrawingContext hdc) const = 0;
 
 #elif defined(OS_MACOSX)
   // Renders the given page into |rect| in the given context.
   // Pages use a 1-based index. The rendering uses the arguments in
   // |params| to determine scaling, translation, and rotation.
   virtual bool RenderPage(unsigned int page_number,
-                          skia::NativeDrawingContext context,
+                          printing::NativeDrawingContext context,
                           const CGRect rect,
                           const MacRenderPageParams& params) const = 0;
 #endif  // if defined(OS_WIN)
@@ -144,7 +144,7 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   virtual gfx::Rect GetPageBounds(unsigned int page_number) const = 0;
   virtual unsigned int GetPageCount() const = 0;
 
-  virtual skia::NativeDrawingContext context() const = 0;
+  virtual printing::NativeDrawingContext context() const = 0;
 
 #if defined(OS_WIN)
   // "Plays" the EMF buffer in a HDC. It is the same effect as calling the
@@ -155,7 +155,7 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // functions, whether used directly or indirectly through precompiled EMF
   // data. We have to accept the risk here. Since it is used only for printing,
   // it requires user intervention.
-  virtual bool Playback(skia::NativeDrawingContext hdc,
+  virtual bool Playback(printing::NativeDrawingContext hdc,
                         const RECT* rect) const = 0;
 #endif  // OS_WIN
 

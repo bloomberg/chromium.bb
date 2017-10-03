@@ -52,7 +52,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   Result DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
-  skia::NativeDrawingContext context() const override;
+  printing::NativeDrawingContext context() const override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_printing_context_;
