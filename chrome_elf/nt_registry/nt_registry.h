@@ -13,8 +13,10 @@
 // Note that this API is currently lazy initialized.  Any function that is
 // NOT merely a wrapper function (i.e. any function that directly interacts with
 // NTDLL) will immediately check:
-//  if (!g_initialized)
-//    InitNativeRegApi();
+//
+// if (!g_initialized && !InitNativeRegApi())
+//   return false;
+//
 // There is currently no multi-threading lock around the lazy initialization,
 // as the main client for this API (chrome_elf) does not introduce
 // a multi-threading concern.  This can easily be changed if needed.
@@ -73,11 +75,13 @@ bool OpenRegKey(ROOT_KEY root,
 
 // Delete a registry key.
 // - Caller must still call CloseRegKey after the delete.
+// - Non-recursive.  Must have no subkeys.
 bool DeleteRegKey(HANDLE key);
 
 // Delete a registry key.
 // - WRAPPER: Function opens and closes the target key for caller.
 // - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
+// - Non-recursive.  Must have no subkeys.
 bool DeleteRegKey(ROOT_KEY root,
                   WOW64_OVERRIDE wow64_override,
                   const wchar_t* key_path);
@@ -221,6 +225,25 @@ bool SetRegValueMULTISZ(ROOT_KEY root,
                         const wchar_t* key_path,
                         const wchar_t* value_name,
                         const std::vector<std::wstring>& values);
+
+//------------------------------------------------------------------------------
+// Enumeration Support
+//------------------------------------------------------------------------------
+
+// Query key information for subkey enumeration.
+// - Key handle should have been opened with OpenRegKey (with at least
+//   KEY_ENUMERATE_SUB_KEYS access rights).
+// - Currently only returns the number of subkeys.  Use |subkey_count|
+//   in a loop for calling QueryRegSubkey.
+bool QueryRegEnumerationInfo(HANDLE key, ULONG* out_subkey_count);
+
+// Enumerate subkeys by index.
+// - Key handle should have been opened with OpenRegKey (with at least
+//   KEY_ENUMERATE_SUB_KEYS access rights).
+// - Get subkey count by calling QueryRegEnumerationInfo.
+bool QueryRegSubkey(HANDLE key,
+                    ULONG subkey_index,
+                    std::wstring* out_subkey_name);
 
 //------------------------------------------------------------------------------
 // Utils
