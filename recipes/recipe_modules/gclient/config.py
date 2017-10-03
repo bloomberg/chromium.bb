@@ -18,7 +18,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     solutions = ConfigList(
       lambda: ConfigGroup(
         name = Single(basestring),
-        url = Single(basestring),
+        url = Single((basestring, type(None)), empty_val=''),
         deps_file = Single(basestring, empty_val='.DEPS.git', required=False,
                            hidden=False),
         managed = Single(bool, empty_val=True, required=False, hidden=False),
