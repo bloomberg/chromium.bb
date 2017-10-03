@@ -1641,10 +1641,15 @@ void ArcBluetoothBridge::DeregisterForGattNotification(
     return;
   }
 
+  // TODO(rkc): Return an error code when failing. crbug.com/771055
   std::string char_id_str = characteristic->GetIdentifier();
-  std::unique_ptr<BluetoothGattNotifySession> notify =
-      std::move(notification_session_[char_id_str]);
-  notification_session_.erase(char_id_str);
+  auto it = notification_session_.find(char_id_str);
+  if (it == notification_session_.end()) {
+    LOG(WARNING) << "Notification session not found " << char_id_str;
+    return;
+  }
+  std::unique_ptr<BluetoothGattNotifySession> notify = std::move(it->second);
+  notification_session_.erase(it);
   notify->Stop(
       base::Bind(&OnGattOperationDone, base::Passed(std::move(callback))));
 }
