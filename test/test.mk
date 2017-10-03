@@ -195,11 +195,9 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += subtract_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += blend_a64_mask_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += blend_a64_mask_1d_test.cc
 
-ifeq ($(CONFIG_EXT_INTER),yes)
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += masked_variance_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += masked_sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_wedge_utils_test.cc
-endif
 
 ## Skip the unit test written for 4-tap filter intra predictor, because we
 ## revert to 3-tap filter.
