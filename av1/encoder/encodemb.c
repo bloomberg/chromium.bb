@@ -205,11 +205,8 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       // compute the distortion for the first candidate
       // and the distortion for quantizing to 0.
       int dx0 = abs(coeff[rc]) * (1 << shift);
-#if CONFIG_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        dx0 >>= xd->bd - 8;
-      }
-#endif
+      dx0 >>= xd->bd - 8;
+
       const int64_t d0 = (int64_t)dx0 * dx0;
       const int x_a = x - 2 * sz - 1;
       int dqv;
@@ -225,13 +222,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif
 
       int dx = (dqcoeff[rc] - coeff[rc]) * (1 << shift);
-#if CONFIG_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        int dx_sign = dx < 0 ? 1 : 0;
-        dx = abs(dx) >> (xd->bd - 8);
-        if (dx_sign) dx = -dx;
-      }
-#endif  // CONFIG_HIGHBITDEPTH
+      dx >>= xd->bd - 8;
       const int64_t d2 = (int64_t)dx * dx;
 
       /* compute the distortion for the second candidate
@@ -242,21 +233,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #if CONFIG_NEW_QUANT
         dx = av1_dequant_coeff_nuq(x, dqv, dequant_val[band_translate[i]]) -
              (coeff[rc] * (1 << shift));
-#if CONFIG_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-          dx >>= xd->bd - 8;
-        }
-#endif  // CONFIG_HIGHBITDEPTH
+        dx >>= xd->bd - 8;
 #else   // CONFIG_NEW_QUANT
-#if CONFIG_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-          dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
-        } else {
-          dx -= (dqv + sz) ^ sz;
-        }
-#else
-        dx -= (dqv + sz) ^ sz;
-#endif  // CONFIG_HIGHBITDEPTH
+        dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
 #endif  // CONFIG_NEW_QUANT
         d2_a = (int64_t)dx * dx;
       } else {
