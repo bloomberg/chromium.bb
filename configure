@@ -506,7 +506,6 @@ post_process_cmdline() {
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
       soft_enable chroma_sub8x8
-      soft_enable reference_buffer
       soft_enable rect_tx
       soft_enable global_motion
       soft_enable ext_tx
@@ -518,28 +517,32 @@ post_process_cmdline() {
       soft_enable dual_filter
       soft_enable motion_var
       soft_enable warped_motion
-      soft_enable ext_delta_q
-      soft_enable loopfiltering_across_tiles
       soft_enable var_tx
-      soft_enable txmg
       soft_enable wedge
       soft_enable compound_segment
       soft_enable interintra
       soft_enable one_sided_compound
-      soft_enable ext_comp_refs
-      soft_enable smooth_hv
-      soft_enable parallel_deblocking
       soft_enable convolve_round
       soft_enable aom_qm
       soft_enable dist_8x8
+      soft_enable cdef_singlepass
+
+      # Provisional adopted
+      soft_enable reference_buffer
+      soft_enable loopfiltering_across_tiles
+      soft_enable palette_throughput
+      soft_enable smooth_hv
+      soft_enable tempmv_signaling
+      soft_enable ext_comp_refs
+      soft_enable ext_delta_q
+      soft_enable parallel_deblocking
     fi
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
 
-    soft_enable palette_throughput
-    soft_enable tempmv_signaling
-    soft_enable cdef_singlepass
+    # Enable LBD/HBD txfm consistency tool
+    soft_enable txmg
 
     # Fix up experiment dependencies
     enabled pvq && disable_feature chroma_2x2
