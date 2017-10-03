@@ -33,6 +33,7 @@ endforeach()
 string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 
 include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
+include("${AOM_ROOT}/build/cmake/aom_experiment_deps.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
@@ -147,55 +148,10 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "arm")
   string(STRIP "${AOM_AS_FLAGS}" AOM_AS_FLAGS)
 endif ()
 
-################################################################################
-# Fix CONFIG_* dependencies. This must be done before including cpu.cmake to
-# ensure RTCD_CONFIG_* are properly set.
-
 if (CONFIG_ANALYZER)
   find_package(wxWidgets REQUIRED adv base core)
   include(${wxWidgets_USE_FILE})
-
-  if (NOT CONFIG_INSPECTION)
-    change_config_and_warn(CONFIG_INSPECTION 1 CONFIG_ANALYZER)
-  endif ()
 endif ()
-
-if (CONFIG_VAR_TX_NO_TX_MODE AND NOT CONFIG_VAR_TX)
-   change_config_and_warn(CONFIG_VAR_TX 1 CONFIG_VAR_TX_NO_TX_MODE)
-endif()
-
-if (CONFIG_CHROMA_2X2)
-  change_config_and_warn(CONFIG_CHROMA_SUB8X8 0 CONFIG_CHROMA_2X2)
-endif ()
-
-if (CONFIG_DAALA_TX)
-   set(CONFIG_DAALA_DCT4 1)
-   set(CONFIG_DAALA_DCT8 1)
-   set(CONFIG_DAALA_DCT16 1)
-   set(CONFIG_DAALA_DCT32 1)
-   set(CONFIG_DAALA_DCT64 1)
-endif()
-
-if (CONFIG_DAALA_DCT64 AND NOT CONFIG_TX64X64)
-   message(WARNING "--- CONFIG_DAALA_DCT64 requires CONFIG_TX64X64, disabling.")
-   set(CONFIG_DAALA_DCT64 0)
-endif()
-
-if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16 OR
-    CONFIG_DAALA_DCT32 OR CONFIG_DAALA_DCT64)
-  if (CONFIG_RECT_TX)
-    change_config_and_warn(CONFIG_RECT_TX 0 CONFIG_DAALA_DCTx)
-  endif()
-  if (CONFIG_VAR_TX)
-     change_config_and_warn(CONFIG_VAR_TX 0 CONFIG_DAALA_DCTx)
-  endif()
-  if (CONFIG_LGT)
-    change_config_and_warn(CONFIG_LGT 0 CONFIG_DAALA_DCTx)
-  endif()
-  if (NOT CONFIG_LOWBITDEPTH)
-    change_config_and_warn(CONFIG_LOWBITDEPTH 1 CONFIG_DAALA_DCTx)
-  endif()
-endif()
 
 if (NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU\|Clang")
   set(CONFIG_GCC 1)
@@ -212,77 +168,14 @@ if (CONFIG_GPROF)
   require_compiler_flag("-pg" YES)
 endif ()
 
-if (CONFIG_TXK_SEL)
-  if (NOT CONFIG_LV_MAP)
-    change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
-  endif ()
-endif ()
-
-if (CONFIG_CTX1D)
-  if (NOT CONFIG_LV_MAP)
-    change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_CTX1D)
-  endif ()
-  if (NOT CONFIG_EXT_TX)
-    change_config_and_warn(CONFIG_EXT_TX 1 CONFIG_CTX1D)
-  endif ()
-endif ()
-
-if (CONFIG_EXT_COMP_REFS)
-  if (NOT CONFIG_EXT_REFS)
-    change_config_and_warn(CONFIG_EXT_REFS 1 CONFIG_EXT_COMP_REFS)
-  endif()
-endif()
-
-if (CONFIG_STRIPED_LOOP_RESTORATION)
-  if (NOT CONFIG_LOOP_RESTORATION)
-    change_config_and_warn(CONFIG_LOOP_RESTORATION 1 CONFIG_STRIPED_LOOP_RESTORATION)
-  endif()
-endif()
-
-if (CONFIG_MFMV)
-  if (NOT CONFIG_FRAME_MARKER)
-    change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_MFMV)
-  endif()
-endif()
-
-if (CONFIG_NEW_MULTISYMBOL)
-  if (NOT CONFIG_RESTRICT_COMPRESSED_HDR)
-    change_config_and_warn(CONFIG_RESTRICT_COMPRESSED_HDR 1
-                           CONFIG_NEW_MULTISYMBOL)
-  endif ()
-endif ()
-
-if (CONFIG_JNT_COMP)
-  if (NOT CONFIG_FRAME_MARKER)
-    change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_JNT_COMP)
-  endif()
-endif()
-
-if (CONFIG_AMVR)
-  change_config_and_warn(CONFIG_HASH_ME 1 CONFIG_AMVR)
-endif ()
-
-if (CONFIG_PVQ)
-  if (CONFIG_EXT_TX)
-    change_config_and_warn(CONFIG_EXT_TX 0 CONFIG_PVQ)
-  endif ()
-  if (CONFIG_HIGHBITDEPTH)
-    change_config_and_warn(CONFIG_HIGHBITDEPTH 0 CONFIG_PVQ)
-  endif ()
-  if (CONFIG_PALETTE_THROUGHPUT)
-    change_config_and_warn(CONFIG_PALETTE_THROUGHPUT 0 CONFIG_PVQ)
-  endif ()
-  if (CONFIG_RECT_TX)
-    change_config_and_warn(CONFIG_RECT_TX 0 CONFIG_PVQ)
-  endif ()
-  if (CONFIG_VAR_TX)
-    change_config_and_warn(CONFIG_VAR_TX 0 CONFIG_PVQ)
-  endif ()
-endif ()
-
 if ("${AOM_TARGET_SYSTEM}" MATCHES "Darwin\|Linux\|Windows")
   set(CONFIG_OS_SUPPORT 1)
 endif ()
+
+################################################################################
+# Fix CONFIG_* dependencies. This must be done before including cpu.cmake to
+# ensure RTCD_CONFIG_* are properly set.
+fix_experiment_configs()
 
 # Test compiler support.
 aom_get_inline("INLINE")
