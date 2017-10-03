@@ -11,19 +11,14 @@
 
 namespace blink {
 
-class ViewPainterTest : public ::testing::WithParamInterface<bool>,
-                        private ScopedRootLayerScrollingForTest,
-                        public PaintControllerPaintTestBase {
- public:
-  ViewPainterTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        PaintControllerPaintTestBase(false) {}
-
+class ViewPainterTest : public PaintControllerPaintTest {
  protected:
   void RunFixedBackgroundTest(bool prefer_compositing_to_lcd_text);
 };
 
-INSTANTIATE_TEST_CASE_P(All, ViewPainterTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All,
+                        ViewPainterTest,
+                        ::testing::Values(0, kRootLayerScrolling));
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {

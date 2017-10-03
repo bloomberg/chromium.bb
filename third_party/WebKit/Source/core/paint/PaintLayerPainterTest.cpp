@@ -12,26 +12,10 @@
 
 namespace blink {
 
-struct PaintLayerPainterTestParam {
-  PaintLayerPainterTestParam(bool root_layer_scrolling, bool slimming_paint_v2)
-      : root_layer_scrolling(root_layer_scrolling),
-        slimming_paint_v2(slimming_paint_v2) {}
-
-  bool root_layer_scrolling;
-  bool slimming_paint_v2;
-};
-
-class PaintLayerPainterTest
-    : public ::testing::WithParamInterface<PaintLayerPainterTestParam>,
-      private ScopedRootLayerScrollingForTest,
-      public PaintControllerPaintTestBase {
+class PaintLayerPainterTest : public PaintControllerPaintTest {
   USING_FAST_MALLOC(PaintLayerPainterTest);
 
  public:
-  PaintLayerPainterTest()
-      : ScopedRootLayerScrollingForTest(GetParam().root_layer_scrolling),
-        PaintControllerPaintTestBase(GetParam().slimming_paint_v2) {}
-
   void ExpectPaintedOutputInvisible(const char* element_name,
                                     bool expected_value) {
     // The optimization to skip painting for effectively-invisible content is
@@ -60,22 +44,14 @@ class PaintLayerPainterTest
 
  private:
   void SetUp() override {
-    PaintControllerPaintTestBase::SetUp();
+    PaintControllerPaintTest::SetUp();
     EnableCompositing();
   }
 };
 
 INSTANTIATE_TEST_CASE_P(All,
                         PaintLayerPainterTest,
-                        ::testing::Values(
-                            // non-root-layer-scrolls, slimming-paint-v1
-                            PaintLayerPainterTestParam(false, false),
-                            // non-root-layer-scrolls, slimming-paint-v2
-                            PaintLayerPainterTestParam(false, true),
-                            // root-layer-scrolls, slimming-paint-v1
-                            PaintLayerPainterTestParam(true, false),
-                            // root-layer-scrolls, slimming-paint-v2
-                            PaintLayerPainterTestParam(true, true)));
+                        ::testing::ValuesIn(kDefaultPaintTestConfigurations));
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   SetBodyInnerHTML(

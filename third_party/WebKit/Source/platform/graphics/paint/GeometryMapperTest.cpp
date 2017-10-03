@@ -12,19 +12,14 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-typedef bool SlimmingPaintV2Enabled;
-class GeometryMapperTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<SlimmingPaintV2Enabled>,
-      public ScopedSlimmingPaintV2ForTest {
+class GeometryMapperTest : public ::testing::Test,
+                           public PaintTestConfigurations {
  public:
-  GeometryMapperTest() : ScopedSlimmingPaintV2ForTest(GetParam()) {}
-
   const FloatClipRect* GetClip(
       const ClipPaintPropertyNode* descendant_clip,
       const PropertyTreeState& ancestor_property_tree_state) {
@@ -44,13 +39,11 @@ class GeometryMapperTest
         local_state, ancestor_state, float_clip_rect, success);
     mapping_rect = float_clip_rect.Rect();
   }
-
- private:
 };
 
-bool values[] = {false, true};
-
-INSTANTIATE_TEST_CASE_P(All, GeometryMapperTest, ::testing::ValuesIn(values));
+INSTANTIATE_TEST_CASE_P(All,
+                        GeometryMapperTest,
+                        ::testing::Values(0, kSlimmingPaintV2));
 
 const static float kTestEpsilon = 1e-6;
 

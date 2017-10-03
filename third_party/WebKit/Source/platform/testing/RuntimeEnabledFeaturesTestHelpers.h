@@ -45,6 +45,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SetRootLayerScrollingEnabled>
     ScopedRootLayerScrollingForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::SlimmingPaintV175Enabled,
+    RuntimeEnabledFeatures::SetSlimmingPaintV175Enabled>
+    ScopedSlimmingPaintV175ForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SlimmingPaintV2Enabled,
     RuntimeEnabledFeatures::SetSlimmingPaintV2Enabled>
     ScopedSlimmingPaintV2ForTest;

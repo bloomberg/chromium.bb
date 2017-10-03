@@ -17,10 +17,10 @@
 namespace blink {
 namespace {
 
-class LayerClipRecorderTest : public PaintControllerPaintTest {
+class LayerClipRecorderTest : public PaintControllerPaintTestBase {
  private:
   void SetUp() override {
-    PaintControllerPaintTest::SetUp();
+    PaintControllerPaintTestBase::SetUp();
     EnableCompositing();
   }
 };

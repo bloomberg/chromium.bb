@@ -24,7 +24,7 @@
 namespace blink {
 namespace {
 
-class SVGInlineTextBoxPainterTest : public PaintControllerPaintTest {
+class SVGInlineTextBoxPainterTest : public PaintControllerPaintTestBase {
  public:
   const DrawingDisplayItem* GetDrawingForSVGTextById(const char* element_name) {
     // Look up the inline text box that serves as the display item client for
@@ -61,7 +61,7 @@ class SVGInlineTextBoxPainterTest : public PaintControllerPaintTest {
 
  private:
   void SetUp() override {
-    PaintControllerPaintTest::SetUp();
+    PaintControllerPaintTestBase::SetUp();
     EnableCompositing();
   }
 };

@@ -5,7 +5,7 @@
 #ifndef PaintPropertyTreeBuilderTest_h
 #define PaintPropertyTreeBuilderTest_h
 
-#include "core/layout/LayoutTestHelper.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,16 +18,10 @@ class ScrollPaintPropertyNode;
 class LayoutPoint;
 
 typedef bool TestParamRootLayerScrolling;
-class PaintPropertyTreeBuilderTest
-    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedSlimmingPaintV2ForTest,
-      private ScopedRootLayerScrollingForTest,
-      public RenderingTest {
+class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
  public:
   PaintPropertyTreeBuilderTest()
-      : ScopedSlimmingPaintV2ForTest(true),
-        ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
 
  protected:
   void LoadTestData(const char* file_name);

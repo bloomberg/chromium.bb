@@ -6,6 +6,7 @@
 #define PaintControllerPaintTest_h
 
 #include <gtest/gtest.h>
+#include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
@@ -13,19 +14,18 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CullRect.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/PaintTestConfigurations.h"
 
 namespace blink {
 
-class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
-                                     public RenderingTest {
+class PaintControllerPaintTestBase : public RenderingTest {
  public:
-  PaintControllerPaintTestBase(bool enable_slimming_paint_v2)
-      : ScopedSlimmingPaintV2ForTest(enable_slimming_paint_v2) {}
+  PaintControllerPaintTestBase(LocalFrameClient* local_frame_client = nullptr)
+      : RenderingTest(local_frame_client) {}
 
  protected:
-  LayoutView& GetLayoutView() { return *GetDocument().GetLayoutView(); }
-  PaintController& RootPaintController() {
+  LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
+  PaintController& RootPaintController() const {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       return *GetDocument().View()->GetPaintController();
     return GetLayoutView()
@@ -76,7 +76,7 @@ class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
 
   bool DisplayItemListContains(const DisplayItemList& display_item_list,
                                DisplayItemClient& client,
-                               DisplayItem::Type type) {
+                               DisplayItem::Type type) const {
     for (auto& item : display_item_list) {
       if (item.Client() == client && item.GetType() == type)
         return true;
@@ -84,32 +84,23 @@ class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
     return false;
   }
 
-  int NumCachedNewItems() {
+  int NumCachedNewItems() const {
     return RootPaintController().num_cached_new_items_;
+  }
+
+  const DisplayItemClient& CaretDisplayItemClientForTesting() const {
+    return GetDocument()
+        .GetFrame()
+        ->Selection()
+        .CaretDisplayItemClientForTesting();
   }
 };
 
-class PaintControllerPaintTest : public PaintControllerPaintTestBase {
+class PaintControllerPaintTest : public PaintTestConfigurations,
+                                 public PaintControllerPaintTestBase {
  public:
-  PaintControllerPaintTest() : PaintControllerPaintTestBase(false) {}
-};
-
-class PaintControllerPaintTestForSlimmingPaintV2
-    : public PaintControllerPaintTestBase,
-      public ::testing::WithParamInterface<bool>,
-      private ScopedRootLayerScrollingForTest {
- public:
-  PaintControllerPaintTestForSlimmingPaintV2()
-      : PaintControllerPaintTestBase(true),
-        ScopedRootLayerScrollingForTest(GetParam()) {}
-};
-
-class PaintControllerPaintTestForSlimmingPaintV1AndV2
-    : public PaintControllerPaintTestBase,
-      public ::testing::WithParamInterface<bool> {
- public:
-  PaintControllerPaintTestForSlimmingPaintV1AndV2()
-      : PaintControllerPaintTestBase(GetParam()) {}
+  PaintControllerPaintTest(LocalFrameClient* local_frame_client = nullptr)
+      : PaintControllerPaintTestBase(local_frame_client) {}
 };
 
 class TestDisplayItem final : public DisplayItem {
