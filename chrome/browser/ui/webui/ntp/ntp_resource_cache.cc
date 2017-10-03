@@ -131,15 +131,6 @@ std::string GetNewTabBackgroundTilingCSS(
   return ThemeProperties::TilingToString(repeat_mode);
 }
 
-bool ShouldShowApps() {
-// Ash shows apps in app list thus should not show apps page in NTP4.
-#if defined(USE_ASH)
-  return false;
-#else
-  return true;
-#endif
-}
-
 }  // namespace
 
 NTPResourceCache::NTPResourceCache(Profile* profile)
@@ -457,7 +448,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
                             is_swipe_tracking_from_scroll_events_enabled_);
 
-  load_time_data.SetBoolean("showApps", ShouldShowApps());
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 
