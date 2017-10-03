@@ -886,7 +886,7 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   } else {
     InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
     CGFloat shadowHeight = kShadowViewFrame[idiom].size.height;
-    CGFloat shadowVerticalOffset = [[self class] toolbarDropShadowHeight];
+    CGFloat shadowVerticalOffset = 0.0;
     beginFrame = CGRectOffset(beginBounds, 0.0,
                               beginBounds.size.height - shadowVerticalOffset);
     beginFrame.size.height = shadowHeight;
@@ -1009,10 +1009,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
     base::RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
   else
     NOTREACHED();
-}
-
-+ (CGFloat)toolbarDropShadowHeight {
-  return 0.0;
 }
 
 - (uint32_t)snapshotHash {

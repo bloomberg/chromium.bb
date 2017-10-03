@@ -447,7 +447,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
-    "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

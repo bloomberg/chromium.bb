@@ -1976,7 +1976,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Account for the toolbar's drop shadow.  The toolbar overlaps with the web
   // content slightly.
-  minY -= [ToolbarController toolbarDropShadowHeight];
+  minY -= 0.0;
 
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
@@ -2982,8 +2982,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       [results addObject:[HeaderDefinition
                              definitionWithView:[_toolbarCoordinator view]
                                 headerBehaviour:Hideable
-                               heightAdjustment:[ToolbarController
-                                                    toolbarDropShadowHeight]
+                               heightAdjustment:0.0
                                           inset:0.0]];
     }
   } else {
@@ -2997,8 +2996,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       [results addObject:[HeaderDefinition
                              definitionWithView:[_toolbarCoordinator view]
                                 headerBehaviour:Hideable
-                               heightAdjustment:[ToolbarController
-                                                    toolbarDropShadowHeight]
+                               heightAdjustment:0.0
                                           inset:0.0]];
     }
     if ([_findBarController view]) {
