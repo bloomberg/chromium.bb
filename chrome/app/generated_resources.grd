@@ -9784,6 +9784,26 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_CAMERA_BLOCKED" desc="Camera usage status text that is used as tooltip text for the location bar icon and as status text of the media settings bubble when a page is blocked from using the camera.">
         This page has been blocked from accessing your camera.
       </message>
+
+      <message name="IDS_MICROPHONE_CAMERA_ALLOWED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera and microphone.">
+        Camera and microphone allowed
+      </message>
+      <message name="IDS_MICROPHONE_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera and microphone.">
+        Camera and microphone blocked
+      </message>
+      <message name="IDS_MICROPHONE_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the microphone.">
+        Microphone allowed
+      </message>
+      <message name="IDS_CAMERA_ACCESSED_TITLE" desc="Title for the media status bubble when a page is allowed to use the camera.">
+        Camera allowed
+      </message>
+      <message name="IDS_MICROPHONE_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the microphone.">
+        Microphone blocked
+      </message>
+      <message name="IDS_CAMERA_BLOCKED_TITLE" desc="Title for the media status bubble when a page is blocked from using the camera.">
+        Camera blocked
+      </message>
+
       <message name="IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE" desc="Message that is used to suggest reloading when media (camera, microphone) settings was changed by the user. These settings are immediately effective, but the web page might not know how to deal with the new settings.">
         This page may need to be reloaded before the new settings take effect.
       </message>
