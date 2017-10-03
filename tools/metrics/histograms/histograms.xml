@@ -1410,6 +1410,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="AnimatedImage.NumOfFramesSkipped" units="count">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    If the frame rate for the image animation can not be reached, frames in the
+    animation are skipped to catch up to the desired frame. This metric tracks
+    the number of frames skipped during catch up, and can be used to assess the
+    smoothness of these animations. It records the number of frames skipped each
+    time the animation is ticked forward to draw the next frame. In the ideal
+    case, where the animation can be drawn at the desired rate, 0 frames should
+    be skipped. Note that skipping of frames can also be triggered if the
+    animation was intentionally paused (on becoming off-screen, or the tab being
+    hidden).
+  </summary>
+</histogram>
+
 <histogram name="AppBanners.BeforeInstallEvent"
     enum="AppBannersBeforeInstallEvent">
   <owner>dominickn@chromium.org</owner>
@@ -102523,6 +102538,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Time spent in tasks of a particular type when the renderer is
              hidden and is playing audible sound."/>
   <affected-histogram name="RendererScheduler.TaskDurationPerQueueType2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="RendererThreadType" separator=".">
+  <suffix name="Main" label="Measurement taken on the main/render thread."/>
+  <suffix name="Compositor"
+      label="Measurement taken on the compositor thread."/>
+  <affected-histogram name="AnimatedImage.NumOfFramesSkipped"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RequestMediaKeySystemAccessKeySystems" separator=".">
