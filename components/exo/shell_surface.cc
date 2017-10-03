@@ -771,7 +771,7 @@ void ShellSurface::OnSurfaceCommit() {
 
   if (enabled() && !widget_) {
     // Defer widget creation until surface contains some contents.
-    if (root_surface()->content_size().IsEmpty()) {
+    if (host_window()->bounds().IsEmpty()) {
       Configure();
       return;
     }
@@ -1623,8 +1623,11 @@ bool ShellSurface::IsResizing() const {
 
 gfx::Rect ShellSurface::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  return geometry_.IsEmpty() ? gfx::Rect(host_window()->bounds().size())
-                             : geometry_;
+  if (!geometry_.IsEmpty())
+    return geometry_;
+
+  return root_surface() ? gfx::Rect(root_surface()->content_size())
+                        : gfx::Rect();
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {

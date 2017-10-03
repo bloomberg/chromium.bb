@@ -35,20 +35,14 @@ const gfx::Size& NotificationSurface::GetContentSize() const {
 
 void NotificationSurface::OnSurfaceCommit() {
   SurfaceTreeHost::OnSurfaceCommit();
-  SubmitCompositorFrame();
-
-  gfx::Rect bounds = host_window()->bounds();
-  auto& size = host_window()->bounds().size();
-  if (bounds.size() != size) {
-    bounds.set_size(size);
-    host_window()->SetBounds(bounds);
-  }
 
   // Defer AddSurface until there are contents to show.
-  if (!added_to_manager_ && !size.IsEmpty()) {
+  if (!added_to_manager_ && !host_window()->bounds().IsEmpty()) {
     added_to_manager_ = true;
     manager_->AddSurface(this);
   }
+
+  SubmitCompositorFrame();
 }
 
 void NotificationSurface::OnSurfaceDestroying(Surface* surface) {
