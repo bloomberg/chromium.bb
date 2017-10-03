@@ -69,38 +69,6 @@ suite('history-toolbar', function() {
     toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
   });
 
-  test('sync notice shows and hides', function() {
-    toolbar.showSyncNotice = true;
-    Polymer.dom.flush();
-
-    var button = toolbar.$$('#info-button');
-    var notice = toolbar.$$('#sync-notice');
-
-    assertTrue(!!button);
-    MockInteractions.tap(button);
-
-    assertFalse(notice.hidden);
-
-    // Tapping the notice does not dismiss it.
-    MockInteractions.tap(notice);
-    assertFalse(notice.hidden);
-
-    // Tapping elsewhere does dismiss the notice.
-    MockInteractions.tap(toolbar);
-    assertTrue(notice.hidden);
-
-    // Pressing escape hides the notice.
-    MockInteractions.tap(button);
-    assertFalse(notice.hidden);
-    MockInteractions.pressAndReleaseKeyOn(notice, /* esc */ 27, '', 'Escape');
-    assertTrue(notice.hidden);
-
-    // Hiding the button hides the notice.
-    MockInteractions.tap(button);
-    toolbar.showSyncNotice = false;
-    assertTrue(notice.hidden);
-  });
-
   test('menu promo hides when drawer is opened', function() {
     app.showMenuPromo_ = true;
     app.hasDrawer_ = true;

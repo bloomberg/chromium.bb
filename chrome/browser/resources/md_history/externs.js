@@ -34,7 +34,6 @@ var HistoryEntry;
  * chrome/browser/ui/webui/browsing_history_handler.cc:
  *     BrowsingHistoryHandler::QueryComplete()
  * @typedef {{finished: boolean,
- *            hasSyncedResults: boolean,
  *            term: string}}
  */
 var HistoryQuery;

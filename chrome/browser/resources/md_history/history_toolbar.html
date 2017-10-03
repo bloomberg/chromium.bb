@@ -37,43 +37,6 @@
       cr-toolbar-selection-overlay {
         --selection-overlay-max-width: var(--card-max-width);
       }
-
-      /* Info button and dropdown. */
-
-      #info-button {
-        /* Additional styles for unresolved <button>. */
-        background: none;
-        border: none;
-        color: inherit;
-        height: 32px;
-        margin: 6px;
-        outline: none;
-        padding: 0;
-        width: 32px;
-      }
-
-      #info-button-icon {
-        height: 20px;
-        width: 20px;
-      }
-
-      #sync-notice {
-        @apply(--shadow-elevation-2dp);
-        background-color: white;
-        border-radius: 2px;
-        color: var(--primary-text-color);
-        overflow: hidden;
-        padding: 12px 20px;
-        position: absolute;
-        right: 24px;
-        top: 46px;
-        z-index: 1;
-      }
-
-      :host-context([dir=rtl]) #sync-notice {
-        left: 24px;
-        right: auto;
-      }
     </style>
     <cr-toolbar id="main-toolbar"
         page-name="$i18n{title}"
@@ -87,20 +50,7 @@
         menu-promo="$i18n{menuPromo}"
         close-menu-promo="$i18n{closeMenuPromo}"
         on-search-changed="onSearchChanged_">
-      <div class="more-actions">
-        <template is="dom-if" if="[[showSyncNotice]]">
-          <button is="paper-icon-button-light" id="info-button"
-              on-click="onInfoButtonTap_"
-              aria-label="$i18n{hasSyncedResultsDescription}">
-            <iron-icon icon="history:info-outline" id="info-button-icon">
-            </iron-icon>
-          </button>
-        </template>
-      </div>
     </cr-toolbar>
-    <div id="sync-notice" hidden="[[!syncNoticeVisible_]]">
-      $i18nRaw{hasSyncedResults}
-    </div>
     <template is="dom-if" if="[[itemsSelected_]]">
       <cr-toolbar-selection-overlay delete-label="$i18n{delete}"
           cancel-label="$i18n{cancel}"

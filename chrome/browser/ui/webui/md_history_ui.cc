@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/webui/md_history_ui.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -71,10 +76,6 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                              IDS_HISTORY_OTHER_SESSIONS_EXPAND_SESSION);
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
-  source->AddLocalizedString("hasSyncedResults",
-                             IDS_MD_HISTORY_HAS_SYNCED_RESULTS);
-  source->AddLocalizedString("hasSyncedResultsDescription",
-                             IDS_MD_HISTORY_HAS_SYNCED_RESULTS_DESCRIPTION);
   source->AddLocalizedString("historyMenuButton",
                              IDS_MD_HISTORY_HISTORY_MENU_DESCRIPTION);
   source->AddLocalizedString("historyMenuItem",
