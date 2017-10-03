@@ -26,7 +26,7 @@ BleAdvertiser::AdvertisementMetadata::~AdvertisementMetadata() {}
 BleAdvertiser::BleAdvertiser(
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
     cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    BleSynchronizer* ble_synchronizer)
+    BleSynchronizerBase* ble_synchronizer)
     : remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       local_device_data_provider_(local_device_data_provider),
       ble_synchronizer_(ble_synchronizer),

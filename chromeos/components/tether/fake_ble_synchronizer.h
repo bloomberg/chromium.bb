@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chromeos/components/tether/ble_synchronizer.h"
+#include "chromeos/components/tether/ble_synchronizer_base.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
@@ -16,7 +16,7 @@ namespace chromeos {
 namespace tether {
 
 // Test double for BleSynchronizer.
-class FakeBleSynchronizer : public BleSynchronizer {
+class FakeBleSynchronizer : public BleSynchronizerBase {
  public:
   FakeBleSynchronizer();
   ~FakeBleSynchronizer() override;
@@ -44,7 +44,6 @@ class FakeBleSynchronizer : public BleSynchronizer {
   GetStopDiscoveryErrorCallback(size_t index);
 
  protected:
-  // BleSynchronizer:
   void ProcessQueue() override;
 
  private:

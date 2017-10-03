@@ -72,7 +72,7 @@ class FakeErrorTolerantBleAdvertisementFactory
   std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
       const std::string& device_id,
       std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-      BleSynchronizer* ble_synchronizer) override {
+      BleSynchronizerBase* ble_synchronizer) override {
     FakeErrorTolerantBleAdvertisement* fake_advertisement =
         new FakeErrorTolerantBleAdvertisement(
             device_id, base::Bind(&FakeErrorTolerantBleAdvertisementFactory::
