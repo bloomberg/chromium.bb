@@ -102,6 +102,9 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   static base::FilePath GetBlobStoreFileName(const url::Origin& origin);
   static base::FilePath GetLevelDBFileName(const url::Origin& origin);
 
+  // Called when blob files have been cleaned (an aggregated delayed task).
+  void BlobFilesCleaned(const url::Origin& origin);
+
   // Will be null in unit tests.
   storage::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();

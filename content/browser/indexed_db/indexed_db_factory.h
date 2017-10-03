@@ -91,6 +91,9 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual void DatabaseDeleted(
       const IndexedDBDatabase::Identifier& identifier) = 0;
 
+  // Called by IndexedDBBackingStore when blob files have been cleaned.
+  virtual void BlobFilesCleaned(const url::Origin& origin) = 0;
+
   virtual size_t GetConnectionCount(const url::Origin& origin) const = 0;
 
   virtual void NotifyIndexedDBContentChanged(

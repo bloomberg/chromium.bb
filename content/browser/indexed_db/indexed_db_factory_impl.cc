@@ -173,8 +173,13 @@ void IndexedDBFactoryImpl::CloseBackingStore(const Origin& origin) {
   DCHECK(it != backing_store_map_.end());
   // Stop the timer and pre close tasks (if they are running) - this may happen
   // if the timer was started and then a forced close occurs.
-  it->second->close_timer()->Stop();
-  it->second->SetPreCloseTaskList(nullptr);
+  scoped_refptr<IndexedDBBackingStore>& backing_store = it->second;
+  backing_store->close_timer()->Stop();
+  backing_store->SetPreCloseTaskList(nullptr);
+
+  if (backing_store->IsBlobCleanupPending())
+    backing_store->ForceRunBlobCleanup();
+
   backing_store_map_.erase(it);
 }
 
@@ -390,6 +395,13 @@ void IndexedDBFactoryImpl::DatabaseDeleted(
   if (!context_)
     return;
   context_->DatabaseDeleted(identifier.first);
+}
+
+void IndexedDBFactoryImpl::BlobFilesCleaned(const url::Origin& origin) {
+  // NULL after ContextDestroyed() called, and in some unit tests.
+  if (!context_)
+    return;
+  context_->BlobFilesCleaned(origin);
 }
 
 void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(

@@ -463,7 +463,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, DISABLED_BlobDidAck) {
   SimpleTest(GetTestUrl("indexeddb", "blob_did_ack.html"));
   // Wait for idle so that the blob ack has time to be received/processed by
   // the browser process.
+  scoped_refptr<base::ThreadTestHelper> helper =
+      base::MakeRefCounted<base::ThreadTestHelper>(GetContext()->TaskRunner());
+  ASSERT_TRUE(helper->Run());
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(helper->Run());
   content::ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(
           shell()->web_contents()->GetBrowserContext());
