@@ -15,6 +15,7 @@
 #include "platform/scheduler/base/task_queue_manager_delegate.h"
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
+#include "platform/scheduler/util/tracing_helper.h"
 #include "platform/wtf/debug/CrashLogging.h"
 
 namespace blink {
@@ -462,10 +463,6 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
   state->SetBoolean("enabled", IsQueueEnabled());
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
-  bool verbose_snapshots_enabled = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.enable_verbose_snapshots"),
-      &verbose_snapshots_enabled);
   state->SetInteger("immediate_incoming_queue_size",
                     immediate_incoming_queue().size());
   state->SetInteger("delayed_incoming_queue_size",
@@ -483,7 +480,7 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
   }
   if (main_thread_only().current_fence)
     state->SetInteger("current_fence", main_thread_only().current_fence);
-  if (verbose_snapshots_enabled) {
+  if (AreVerboseSnapshotsEnabled()) {
     state->BeginArray("immediate_incoming_queue");
     QueueAsValueInto(immediate_incoming_queue(), now, state);
     state->EndArray();
