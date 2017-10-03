@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,6 +134,47 @@ public class UploadDataProvidersTest {
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals(LOREM, callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    // Tests that ByteBuffer's limit cannot be changed by the caller.
+    public void testUploadChangeBufferLimit() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                NativeTestServer.getEchoBodyURL(), callback, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.setUploadDataProvider(new UploadDataProvider() {
+            private static final String CONTENT = "hello";
+            @Override
+            public long getLength() throws IOException {
+                return CONTENT.length();
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {
+                int oldPos = byteBuffer.position();
+                int oldLimit = byteBuffer.limit();
+                byteBuffer.put(CONTENT.getBytes());
+                assertEquals(oldPos + CONTENT.length(), byteBuffer.position());
+                assertEquals(oldLimit, byteBuffer.limit());
+                // Now change the limit to something else. This should give an error.
+                byteBuffer.limit(oldLimit - 1);
+                uploadDataSink.onReadSucceeded(false);
+            }
+
+            @Override
+            public void rewind(UploadDataSink uploadDataSink) throws IOException {}
+        }, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        assertTrue(callback.mOnErrorCalled);
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("ByteBuffer limit changed", callback.mError.getCause().getMessage());
     }
 
     @Test

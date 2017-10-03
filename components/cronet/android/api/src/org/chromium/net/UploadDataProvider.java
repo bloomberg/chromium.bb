@@ -42,7 +42,8 @@ public abstract class UploadDataProvider implements Closeable {
      *
      * @param uploadDataSink The object to notify when the read has completed,
      *            successfully or otherwise.
-     * @param byteBuffer The buffer to copy the read bytes into.
+     * @param byteBuffer The buffer to copy the read bytes into. Do not change
+     *            byteBuffer's limit.
      * @throws IOException if any IOException occurred during the process.
      *         {@link UrlRequest.Callback#onFailed} will be called with the
      *         thrown exception set as the cause of the
