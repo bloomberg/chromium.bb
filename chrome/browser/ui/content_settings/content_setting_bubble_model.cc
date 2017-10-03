@@ -658,6 +658,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   DCHECK(CameraAccessed() || MicrophoneAccessed());
 
   SetTitle();
+  SetMessage();
   SetRadioGroup();
   SetMediaMenus();
   SetManageText();
@@ -707,21 +708,52 @@ bool ContentSettingMediaStreamBubbleModel::CameraAccessed() const {
   return (state_ & TabSpecificContentSettings::CAMERA_ACCESSED) != 0;
 }
 
+bool ContentSettingMediaStreamBubbleModel::MicrophoneBlocked() const {
+  return (state_ & TabSpecificContentSettings::MICROPHONE_BLOCKED) != 0;
+}
+
+bool ContentSettingMediaStreamBubbleModel::CameraBlocked() const {
+  return (state_ & TabSpecificContentSettings::CAMERA_BLOCKED) != 0;
+}
+
 void ContentSettingMediaStreamBubbleModel::SetTitle() {
   DCHECK(CameraAccessed() || MicrophoneAccessed());
   int title_id = 0;
-  if (state_ & TabSpecificContentSettings::MICROPHONE_BLOCKED) {
-    title_id = (state_ & TabSpecificContentSettings::CAMERA_BLOCKED) ?
-        IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
-  } else if (state_ & TabSpecificContentSettings::CAMERA_BLOCKED) {
-    title_id = IDS_CAMERA_BLOCKED;
-  } else if (MicrophoneAccessed()) {
-    title_id = CameraAccessed() ? IDS_MICROPHONE_CAMERA_ALLOWED
-                                : IDS_MICROPHONE_ACCESSED;
-  } else if (CameraAccessed()) {
-    title_id = IDS_CAMERA_ACCESSED;
-  }
+  if (MicrophoneBlocked() && CameraBlocked())
+    title_id = IDS_MICROPHONE_CAMERA_BLOCKED_TITLE;
+  else if (MicrophoneBlocked())
+    title_id = IDS_MICROPHONE_BLOCKED_TITLE;
+  else if (CameraBlocked())
+    title_id = IDS_CAMERA_BLOCKED_TITLE;
+  else if (MicrophoneAccessed() && CameraAccessed())
+    title_id = IDS_MICROPHONE_CAMERA_ALLOWED_TITLE;
+  else if (MicrophoneAccessed())
+    title_id = IDS_MICROPHONE_ACCESSED_TITLE;
+  else if (CameraAccessed())
+    title_id = IDS_CAMERA_ACCESSED_TITLE;
+  else
+    NOTREACHED();
   set_title(l10n_util::GetStringUTF16(title_id));
+}
+
+void ContentSettingMediaStreamBubbleModel::SetMessage() {
+  DCHECK(CameraAccessed() || MicrophoneAccessed());
+  int message_id = 0;
+  if (MicrophoneBlocked() && CameraBlocked())
+    message_id = IDS_MICROPHONE_CAMERA_BLOCKED;
+  else if (MicrophoneBlocked())
+    message_id = IDS_MICROPHONE_BLOCKED;
+  else if (CameraBlocked())
+    message_id = IDS_CAMERA_BLOCKED;
+  else if (MicrophoneAccessed() && CameraAccessed())
+    message_id = IDS_MICROPHONE_CAMERA_ALLOWED;
+  else if (MicrophoneAccessed())
+    message_id = IDS_MICROPHONE_ACCESSED;
+  else if (CameraAccessed())
+    message_id = IDS_CAMERA_ACCESSED;
+  else
+    NOTREACHED();
+  set_message(l10n_util::GetStringUTF16(message_id));
 }
 
 void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
