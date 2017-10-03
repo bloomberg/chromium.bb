@@ -150,16 +150,11 @@ void GpuMain::BindOnGpu(mojom::GpuMainRequest request) {
 void GpuMain::InitOnGpuThread(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_runner) {
-  // TODO(kylechar): When process split happens this shouldn't be a constant.
-  constexpr bool kInProcessGpu = true;
-
   gpu_init_.reset(new gpu::GpuInit());
   gpu_init_->set_sandbox_helper(this);
-  bool success = gpu_init_->InitializeAndStartSandbox(
-      base::CommandLine::ForCurrentProcess(), kInProcessGpu);
-  if (!success)
-    return;
-
+  // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
+  // split into a separate process.
+  gpu_init_->InitializeInProcess(base::CommandLine::ForCurrentProcess());
   gpu_service_ = base::MakeUnique<viz::GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_runner,
       gpu_init_->gpu_feature_info());

@@ -14,6 +14,7 @@
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
+#include "gpu/ipc/service/gpu_init.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_ANDROID)
@@ -50,50 +51,18 @@ void InProcessGpuThread::Init() {
 
   gpu_process_ = new GpuProcess(io_thread_priority);
 
-#if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
-#endif
+  auto gpu_init = std::make_unique<gpu::GpuInit>();
+  auto* client = GetContentClient()->gpu();
+  gpu_init->InitializeInProcess(base::CommandLine::ForCurrentProcess(),
+                                client ? client->GetGPUInfo() : nullptr,
+                                client ? client->GetGpuFeatureInfo() : nullptr);
 
-  gpu::GPUInfo gpu_info;
-  gpu::GpuFeatureInfo gpu_feature_info;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (GetContentClient()->gpu() && GetContentClient()->gpu()->GetGPUInfo() &&
-      GetContentClient()->gpu()->GetGpuFeatureInfo()) {
-    gpu_info = *(GetContentClient()->gpu()->GetGPUInfo());
-    gpu_feature_info = *(GetContentClient()->gpu()->GetGpuFeatureInfo());
-  } else {
-#if defined(OS_ANDROID)
-    gpu::CollectContextGraphicsInfo(&gpu_info);
-#else
-    // TODO(zmo): Collect basic GPU info here instead.
-    gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info);
-#endif
-    gpu_feature_info = gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
-  }
-
-  if (!gl::init::InitializeGLNoExtensionsOneOff()) {
-    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
-  } else {
-#if !defined(OS_ANDROID)
-    gpu::CollectContextGraphicsInfo(&gpu_info);
-    gpu_feature_info = gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
-#endif
-  }
-  if (!gpu_feature_info.disabled_extensions.empty()) {
-    gl::init::SetDisabledExtensionsPlatform(
-        gpu_feature_info.disabled_extensions);
-  }
-  if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
-    VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
-  }
-  GetContentClient()->SetGpuInfo(gpu_info);
+  GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
   GpuChildThread* child_thread =
-      new GpuChildThread(params_, gpu_info, gpu_feature_info);
+      new GpuChildThread(params_, std::move(gpu_init));
 
   // Since we are in the browser process, use the thread start time as the
   // process start time.
