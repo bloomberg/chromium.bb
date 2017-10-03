@@ -19,12 +19,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContents;
 
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for the text suggestion menu.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
+@CommandLineFlags.Add({"expose-internals-for-testing"})
 public class TextSuggestionMenuTest {
     private static final String URL =
             "data:text/html, <div contenteditable id=\"div\" /><span id=\"span\" />";
@@ -49,7 +52,8 @@ public class TextSuggestionMenuTest {
 
     @Test
     @LargeTest
-    public void testDeleteMarkedWord() throws InterruptedException, Throwable, TimeoutException {
+    public void testDeleteWordMarkedWithSuggestionMarker()
+            throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = cvc.getWebContents();
 
@@ -60,6 +64,64 @@ public class TextSuggestionMenuTest {
                 new String[] {"goodbye"}, SuggestionSpan.FLAG_EASY_CORRECT);
         textToCommit.setSpan(suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         mRule.commitText(textToCommit, 1);
+
+        DOMUtils.clickNode(cvc, "div");
+        waitForMenuToShow(cvc);
+
+        TouchCommon.singleClickView(getDeleteButton(cvc));
+
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div").equals("");
+                } catch (InterruptedException | TimeoutException e) {
+                    return false;
+                }
+            }
+        });
+
+        waitForMenuToHide(cvc);
+    }
+
+    @Test
+    @LargeTest
+    public void testDeleteWordMarkedWithSpellingMarker()
+            throws InterruptedException, Throwable, TimeoutException {
+        final ContentViewCore cvc = mRule.getContentViewCore();
+        WebContents webContents = cvc.getWebContents();
+
+        DOMUtils.focusNode(webContents, "div");
+
+        SpannableString textToCommit = new SpannableString("hello");
+        mRule.commitText(textToCommit, 1);
+
+        // Wait for renderer to acknowledge commitText(). ImeActivityTestRule.commitText() blocks
+        // and waits for the IME thread to finish, but the communication between the IME thread and
+        // the renderer is asynchronous, so if we try to run JavaScript right away, the text won't
+        // necessarily have been committed yet.
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return DOMUtils.getNodeContents(webContents, "div").equals("hello");
+                } catch (InterruptedException | TimeoutException e) {
+                    return false;
+                }
+            }
+        });
+
+        // Add a spelling marker on "hello".
+        // Note: we disable spell checking first to avoid the spell checker immediately clearing
+        // the added marker.
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                "internals.setSpellCheckingEnabled(false);"
+                        + "const div = document.getElementById('div');"
+                        + "const text = div.firstChild;"
+                        + "const range = document.createRange();"
+                        + "range.setStart(text, 0);"
+                        + "range.setEnd(text, 5);"
+                        + "internals.setMarker(document, range, 'spelling');");
 
         DOMUtils.clickNode(cvc, "div");
         waitForMenuToShow(cvc);
@@ -190,13 +252,16 @@ public class TextSuggestionMenuTest {
 
         waitForMenuToHide(cvc);
 
-        // TODO(rlanday): Verify that the suggestion marker was removed once we have a way to do
-        // this in a content test (crbug.com/767507).
+        // Verify that the suggestion marker was replaced.
+        Assert.assertEquals("0",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "  document.getElementById('div').firstChild, 'suggestion')"));
     }
 
     @Test
     @LargeTest
-    public void menuDismissal() throws InterruptedException, Throwable, TimeoutException {
+    public void suggestionMenuDismissal() throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = cvc.getWebContents();
 
@@ -226,19 +291,16 @@ public class TextSuggestionMenuTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                SuggestionsPopupWindow suggestionsPopupWindow =
-                        cvc.getTextSuggestionHostForTesting()
-                                .getTextSuggestionsPopupWindowForTesting();
-                if (suggestionsPopupWindow == null) {
+                View deleteButton = getDeleteButton(cvc);
+                if (deleteButton == null) {
                     return false;
                 }
 
-                // On some test runs, even when suggestionsPopupWindow is non-null and
                 // suggestionsPopupWindow.isShowing() returns true, the delete button hasn't been
                 // measured yet and getWidth()/getHeight() return 0. This causes the menu button
                 // click to instead fall on the "Add to dictionary" button. So we have to check that
                 // this isn't happening.
-                return getDeleteButton(cvc).getWidth() != 0;
+                return deleteButton.getWidth() != 0;
             }
         });
     }
@@ -250,15 +312,35 @@ public class TextSuggestionMenuTest {
                 SuggestionsPopupWindow suggestionsPopupWindow =
                         cvc.getTextSuggestionHostForTesting()
                                 .getTextSuggestionsPopupWindowForTesting();
-                return suggestionsPopupWindow == null;
+
+                SuggestionsPopupWindow spellCheckPopupWindow =
+                        cvc.getTextSuggestionHostForTesting().getSpellCheckPopupWindowForTesting();
+
+                return suggestionsPopupWindow == null && spellCheckPopupWindow == null;
             }
         });
     }
 
+    private View getContentView(ContentViewCore cvc) {
+        SuggestionsPopupWindow suggestionsPopupWindow =
+                cvc.getTextSuggestionHostForTesting().getTextSuggestionsPopupWindowForTesting();
+
+        if (suggestionsPopupWindow != null) {
+            return suggestionsPopupWindow.getContentViewForTesting();
+        }
+
+        SuggestionsPopupWindow spellCheckPopupWindow =
+                cvc.getTextSuggestionHostForTesting().getSpellCheckPopupWindowForTesting();
+
+        if (spellCheckPopupWindow != null) {
+            return spellCheckPopupWindow.getContentViewForTesting();
+        }
+
+        return null;
+    }
+
     private ListView getSuggestionList(ContentViewCore cvc) {
-        View contentView = cvc.getTextSuggestionHostForTesting()
-                                   .getTextSuggestionsPopupWindowForTesting()
-                                   .getContentViewForTesting();
+        View contentView = getContentView(cvc);
         return (ListView) contentView.findViewById(R.id.suggestionContainer);
     }
 
@@ -267,9 +349,11 @@ public class TextSuggestionMenuTest {
     }
 
     private View getDeleteButton(ContentViewCore cvc) {
-        View contentView = cvc.getTextSuggestionHostForTesting()
-                                   .getTextSuggestionsPopupWindowForTesting()
-                                   .getContentViewForTesting();
+        View contentView = getContentView(cvc);
+        if (contentView == null) {
+            return null;
+        }
+
         return contentView.findViewById(R.id.deleteButton);
     }
 }
