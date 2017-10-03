@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/sys_internals/sys_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 
 #include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/sys_internals/sys_internals_message_handler.h"
+#include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_message_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"

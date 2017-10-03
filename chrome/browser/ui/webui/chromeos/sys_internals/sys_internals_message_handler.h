@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SYS_INTERNALS_SYS_INTERNALS_MESSAGE_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SYS_INTERNALS_SYS_INTERNALS_MESSAGE_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYS_INTERNALS_SYS_INTERNALS_MESSAGE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYS_INTERNALS_SYS_INTERNALS_MESSAGE_HANDLER_H_
 
 #include <stdint.h>
 #include <memory>
@@ -24,9 +24,9 @@ class SysInternalsMessageHandler : public content::WebUIMessageHandler {
   // content::WebUIMessageHandler methods:
   void RegisterMessages() override;
 
-  // Because the |base::Value| API only supports 32-bit signed integer,
+  // Because the base::Value API only supports 32-bit signed integer,
   // we need to make sure every counter is less than the maximum value.
-  // See |ToCounter()| in |sys_internals_message_handler.cc|.
+  // See ToCounter() in sys_internals_message_handler.cc.
   static const uint32_t COUNTER_MAX = 0x7FFFFFFFu;
 
  private:
@@ -74,4 +74,4 @@ class SysInternalsMessageHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(SysInternalsMessageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SYS_INTERNALS_SYS_INTERNALS_MESSAGE_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYS_INTERNALS_SYS_INTERNALS_MESSAGE_HANDLER_H_

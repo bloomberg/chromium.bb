@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/sys_internals/sys_internals_message_handler.h"
+#include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_message_handler.h"
 
 #include <inttypes.h>
 #include <cstdio>
