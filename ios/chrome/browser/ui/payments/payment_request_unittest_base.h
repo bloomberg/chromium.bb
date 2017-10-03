@@ -9,12 +9,12 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/prefs/pref_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -67,7 +67,7 @@ class PaymentRequestUnitTestBase {
   std::vector<std::unique_ptr<autofill::AutofillProfile>> profiles_;
   std::vector<std::unique_ptr<autofill::CreditCard>> cards_;
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+  web::TestWebThreadBundle web_thread_bundle_;
   web::TestWebState web_state_;
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;

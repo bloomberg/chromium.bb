@@ -11,8 +11,8 @@ IOSSigninClient::IOSSigninClient(
     PrefService* pref_service,
     net::URLRequestContextGetter* url_request_context,
     SigninErrorController* signin_error_controller,
-    content_settings::CookieSettings* cookie_settings,
-    HostContentSettingsMap* host_content_settings_map,
+    scoped_refptr<content_settings::CookieSettings> cookie_settings,
+    scoped_refptr<HostContentSettingsMap> host_content_settings_map,
     scoped_refptr<TokenWebData> token_web_data)
     : OAuth2TokenService::Consumer("ios_signin_client"),
       pref_service_(pref_service),
@@ -64,7 +64,7 @@ bool IOSSigninClient::IsFirstRun() const {
 }
 
 bool IOSSigninClient::AreSigninCookiesAllowed() {
-  return signin::SettingsAllowSigninCookies(cookie_settings_);
+  return signin::SettingsAllowSigninCookies(cookie_settings_.get());
 }
 
 void IOSSigninClient::AddContentSettingsObserver(
