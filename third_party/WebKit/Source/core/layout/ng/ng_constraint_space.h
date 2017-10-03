@@ -40,10 +40,7 @@ class CORE_EXPORT NGConstraintSpace final
   // a root NGConstraintSpace.
   // override_logical_width/height are only used if
   // LayoutObject::OverideLogicalContentWidth/Height is undefined.
-  static RefPtr<NGConstraintSpace> CreateFromLayoutObject(
-      const LayoutBox&,
-      Optional<LayoutUnit> override_logical_width = WTF::nullopt,
-      Optional<LayoutUnit> override_logical_height = WTF::nullopt);
+  static RefPtr<NGConstraintSpace> CreateFromLayoutObject(const LayoutBox&);
 
   const NGExclusionSpace& ExclusionSpace() const { return *exclusion_space_; }
 

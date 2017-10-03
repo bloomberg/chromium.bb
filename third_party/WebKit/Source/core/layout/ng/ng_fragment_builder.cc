@@ -145,6 +145,42 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
   return *this;
 }
 
+void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
+    NGBlockNode node,
+    const NGStaticPosition& static_position) {
+  DCHECK_GE(size_.inline_size, LayoutUnit());
+  DCHECK_GE(size_.block_size, LayoutUnit());
+
+  NGOutOfFlowPositionedDescendant descendant{node, static_position};
+  // Need 0,0 physical coordinates as child offset. Because offset
+  // is stored as logical, must convert physical 0,0 to logical.
+  NGLogicalOffset zero_offset;
+  switch (WritingMode()) {
+    case kHorizontalTopBottom:
+      if (IsLtr(Direction()))
+        zero_offset = NGLogicalOffset();
+      else
+        zero_offset = NGLogicalOffset(size_.inline_size, LayoutUnit());
+      break;
+    case kVerticalRightLeft:
+    case kSidewaysRightLeft:
+      if (IsLtr(Direction()))
+        zero_offset = NGLogicalOffset(LayoutUnit(), size_.block_size);
+      else
+        zero_offset = NGLogicalOffset(size_.inline_size, size_.block_size);
+      break;
+    case kVerticalLeftRight:
+    case kSidewaysLeftRight:
+      if (IsLtr(Direction()))
+        zero_offset = NGLogicalOffset();
+      else
+        zero_offset = NGLogicalOffset(size_.inline_size, LayoutUnit());
+      break;
+  }
+  oof_positioned_candidates_.push_back(
+      NGOutOfFlowPositionedCandidate{descendant, zero_offset});
+}
+
 void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates) {
   DCHECK(descendant_candidates->IsEmpty());

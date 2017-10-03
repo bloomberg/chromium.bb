@@ -21,6 +21,7 @@ struct CORE_EXPORT NGStaticPosition {
   NGPhysicalOffset offset;
 
   // Creates a position with proper type wrt writing mode and direction.
+  // It expects physical offset of inline_start/block_start vertex.
   static NGStaticPosition Create(NGWritingMode,
                                  TextDirection,
                                  NGPhysicalOffset);
