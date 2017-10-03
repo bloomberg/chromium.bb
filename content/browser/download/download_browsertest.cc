@@ -21,6 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,6 +46,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -62,7 +64,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "ppapi/features/features.h"
@@ -581,10 +582,9 @@ class DownloadContentTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
-    base::FilePath mock_base(GetTestFilePath("download", ""));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
+    base::FilePath test_data_dir;
+    ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_data_dir));
+    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     ASSERT_TRUE(embedded_test_server()->Start());
     const std::string real_host =
         embedded_test_server()->host_port_pair().host();
@@ -828,8 +828,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->GetState());
 
   // Start the second download and wait until it's done.
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
-  DownloadItem* download2 = StartDownloadAndReturnItem(shell(), url);
+  DownloadItem* download2 = StartDownloadAndReturnItem(
+      shell(), embedded_test_server()->GetURL("/download/download-test.lib"));
   WaitForCompletion(download2);
 
   ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->GetState());
@@ -876,9 +876,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
   PluginServiceImpl::GetInstance()->RegisterInternalPlugin(plugin_info, false);
 
   // The following is served with a Content-Type of application/octet-stream.
-  GURL url(
-      net::URLRequestMockHTTPJob::GetMockUrl("octet-stream.abc"));
-  NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(
+      shell(), embedded_test_server()->GetURL("/download/download-test.lib"),
+      DownloadItem::COMPLETE);
 }
 #endif
 
@@ -894,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
 
   // Create a download
   NavigateToURL(shell(),
-                net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
+                embedded_test_server()->GetURL("/download/download-test.lib"));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -943,7 +943,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
 
   // Create a download
   NavigateToURL(shell(),
-                net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
+                embedded_test_server()->GetURL("/download/download-test.lib"));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -1056,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 
   // Create a download
   NavigateToURL(shell(),
-                net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
+                embedded_test_server()->GetURL("/download/download-test.lib"));
 
   // Wait until the first (intermediate file) rename and execute the callback.
   file_factory->WaitForSomeCallback();
@@ -2656,16 +2656,17 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
 // The content body is empty. Make sure this case is handled properly and we
 // don't regress on http://crbug.com/320394.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadGZipWithNoContent) {
-  GURL url = net::URLRequestMockHTTPJob::GetMockUrl("empty.bin");
-  NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(
+      shell(), embedded_test_server()->GetURL("/download/empty.bin"),
+      DownloadItem::COMPLETE);
   // That's it. This should work without crashing.
 }
 
 // Make sure that sniffed MIME types are correctly passed through to the
 // download item.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, SniffedMimeType) {
-  GURL url = net::URLRequestMockHTTPJob::GetMockUrl("gzip-content.gz");
-  DownloadItem* item = StartDownloadAndReturnItem(shell(), url);
+  DownloadItem* item = StartDownloadAndReturnItem(
+      shell(), embedded_test_server()->GetURL("/download/gzip-content.gz"));
   WaitForCompletion(item);
 
   EXPECT_STREQ("application/x-gzip", item->GetMimeType().c_str());
