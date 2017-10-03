@@ -180,6 +180,9 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
       .active = YES;
 
   [self setKeyboardSize:CGSizeZero needsLayout:NO];
+
+  remoting::PostDelayedAccessibilityNotification(
+      l10n_util::GetNSString(IDS_HOST_CONNECTED_ANNOUNCEMENT));
 }
 
 - (void)viewDidUnload {
@@ -207,10 +210,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                                   _hasPhysicalKeyboard = hasPhysicalKeyboard;
                                   [_clientKeyboard becomeFirstResponder];
                                 }];
-
-  UIAccessibilityPostNotification(
-      UIAccessibilityAnnouncementNotification,
-      l10n_util::GetNSString(IDS_HOST_CONNECTED_ANNOUNCEMENT));
 }
 
 - (void)viewWillAppear:(BOOL)animated {
