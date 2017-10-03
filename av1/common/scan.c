@@ -8238,10 +8238,12 @@ static void update_scan_count(int16_t *scan, int max_scan,
 void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
                                   TX_SIZE tx_size, TX_TYPE tx_type,
                                   const tran_low_t *dqcoeffs, int max_scan) {
-  int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
-  uint32_t *non_zero_count = get_non_zero_counts(counts, tx_size, tx_type);
-  update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
-  ++counts->txb_count[tx_size][tx_type];
+  if (do_adapt_scan(tx_size, tx_type)) {
+    int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
+    uint32_t *non_zero_count = get_non_zero_counts(counts, tx_size, tx_type);
+    update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
+    ++counts->txb_count[tx_size][tx_type];
+  }
 }
 
 static int cmp_prob(const void *a, const void *b) {
@@ -8484,19 +8486,21 @@ void av1_init_scan_order(AV1_COMMON *cm) {
     if (tx_size >= TX_SIZES) continue;
 #endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
-      uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
-      const int tx2d_size = tx_size_2d[tx_size];
-      int i;
-      SCAN_ORDER *sc = &cm->fc->sc[tx_size][tx_type];
-      for (i = 0; i < tx2d_size; ++i) {
-        non_zero_prob[i] =
-            (1 << ADAPT_SCAN_PROB_PRECISION) / 2;  // init non_zero_prob to 0.5
+      if (do_adapt_scan(tx_size, tx_type)) {
+        uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
+        const int tx2d_size = tx_size_2d[tx_size];
+        int i;
+        SCAN_ORDER *sc = &cm->fc->sc[tx_size][tx_type];
+        for (i = 0; i < tx2d_size; ++i) {
+          non_zero_prob[i] = (1 << ADAPT_SCAN_PROB_PRECISION) /
+                             2;  // init non_zero_prob to 0.5
+        }
+        update_scan_order_facade(cm, tx_size, tx_type, 1);
+        sc->scan = get_adapt_scan(cm->fc, tx_size, tx_type);
+        sc->iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
+        sc->neighbors = get_adapt_nb(cm->fc, tx_size, tx_type);
+        update_eob_threshold(cm, tx_size, tx_type);
       }
-      update_scan_order_facade(cm, tx_size, tx_type, 1);
-      sc->scan = get_adapt_scan(cm->fc, tx_size, tx_type);
-      sc->iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
-      sc->neighbors = get_adapt_nb(cm->fc, tx_size, tx_type);
-      update_eob_threshold(cm, tx_size, tx_type);
     }
   }
 }
@@ -8517,9 +8521,11 @@ void av1_adapt_scan_order(AV1_COMMON *cm) {
 #endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     TX_TYPE tx_type;
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
-      update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE);
-      update_scan_order_facade(cm, tx_size, tx_type, use_curr_frame);
-      update_eob_threshold(cm, tx_size, tx_type);
+      if (do_adapt_scan(tx_size, tx_type)) {
+        update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE);
+        update_scan_order_facade(cm, tx_size, tx_type, use_curr_frame);
+        update_eob_threshold(cm, tx_size, tx_type);
+      }
     }
   }
 }
