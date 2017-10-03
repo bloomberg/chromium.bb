@@ -13,6 +13,8 @@ blink_modules_sources("media_controls") {
     "MediaControlsMediaEventListener.h",
     "MediaControlsOrientationLockDelegate.cpp",
     "MediaControlsOrientationLockDelegate.h",
+    "MediaControlsResourceLoader.cpp",
+    "MediaControlsResourceLoader.h",
     "MediaControlsRotateToFullscreenDelegate.cpp",
     "MediaControlsRotateToFullscreenDelegate.h",
     "MediaControlsWindowEventListener.cpp",
@@ -74,6 +76,7 @@ blink_modules_sources("media_controls") {
     "//device/screen_orientation/public/interfaces:interfaces_blink",
     "//services/device/public/interfaces:constants_blink",
     "//services/service_manager/public/cpp",
+    "//third_party/WebKit/public:media_controls_resources_header",
   ]
 }
 

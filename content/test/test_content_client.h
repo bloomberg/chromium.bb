@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/common/content_client.h"
-#include "ui/base/resource/data_pack.h"
 
 namespace content {
 
@@ -27,8 +26,6 @@ class TestContentClient : public ContentClient {
       ui::ScaleFactor scale_factor) const override;
 
  private:
-  ui::DataPack data_pack_;
-
   DISALLOW_COPY_AND_ASSIGN(TestContentClient);
 };
 
