@@ -35,7 +35,6 @@ const WhitelistEntry kEventArgsWhitelist[] = {
 
 const char* kMetadataWhitelist[] = {
   "clock-domain",
-  "command_line",
   "config",
   "cpu-*",
   "field-trials",
