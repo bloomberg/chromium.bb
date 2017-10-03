@@ -266,92 +266,93 @@ foreach (aom_lib ${AOM_LIB_TARGETS})
   endif ()
 endforeach ()
 
-#
-# Application and application support targets.
-#
-add_library(aom_common_app_util OBJECT ${AOM_COMMON_APP_UTIL_SOURCES})
-
 # Generate a stub file containing the C function usage_exit(). Users of the
 # aom_common_app_util library must define this function. This is a convenience
 # to allow omission of the function from applications that might want to use
 # other pieces of the util support without defining the usage_exit().
 file(WRITE "${AOM_CONFIG_DIR}/usage_exit.c" "void usage_exit(void) {}")
 
-if (CONFIG_AV1_DECODER)
-  add_library(aom_decoder_app_util OBJECT ${AOM_DECODER_APP_UTIL_SOURCES})
+#
+# Application and application support targets.
+#
+if (CONFIG_UNIT_TESTS OR ENABLE_EXAMPLES OR ENABLE_TOOLS)
+  add_library(aom_common_app_util OBJECT ${AOM_COMMON_APP_UTIL_SOURCES})
+  if (CONFIG_AV1_DECODER)
+    add_library(aom_decoder_app_util OBJECT ${AOM_DECODER_APP_UTIL_SOURCES})
+  endif ()
+  if (CONFIG_AV1_ENCODER)
+    add_library(aom_encoder_app_util OBJECT ${AOM_ENCODER_APP_UTIL_SOURCES})
+  endif ()
+endif ()
+
+if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
   add_executable(aomdec
                  "${AOM_ROOT}/aomdec.c"
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:aom_decoder_app_util>)
+  add_executable(decode_to_md5
+                 "${AOM_ROOT}/examples/decode_to_md5.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  add_executable(decode_with_drops
+                 "${AOM_ROOT}/examples/decode_with_drops.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
+  add_executable(simple_decoder
+                 "${AOM_ROOT}/examples/simple_decoder.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
 
-  if (ENABLE_EXAMPLES)
-    if (CONFIG_ANALYZER)
-      add_executable(analyzer
-                     "${AOM_ROOT}/examples/analyzer.cc"
-                     $<TARGET_OBJECTS:aom_common_app_util>
-                     $<TARGET_OBJECTS:aom_decoder_app_util>)
-      target_link_libraries(analyzer
-                            ${AOM_LIB_LINK_TYPE} ${wxWidgets_LIBRARIES})
-      set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
-      set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} analyzer)
-    endif ()
-
-    add_executable(decode_to_md5
-                   "${AOM_ROOT}/examples/decode_to_md5.c"
+  if (CONFIG_ANALYZER)
+    add_executable(analyzer
+                   "${AOM_ROOT}/examples/analyzer.cc"
                    $<TARGET_OBJECTS:aom_common_app_util>
                    $<TARGET_OBJECTS:aom_decoder_app_util>)
-    add_executable(decode_with_drops
-                   "${AOM_ROOT}/examples/decode_with_drops.c"
-                   $<TARGET_OBJECTS:aom_common_app_util>
-                   $<TARGET_OBJECTS:aom_decoder_app_util>)
-    add_executable(simple_decoder
-                   "${AOM_ROOT}/examples/simple_decoder.c"
-                   $<TARGET_OBJECTS:aom_common_app_util>
-                   $<TARGET_OBJECTS:aom_decoder_app_util>)
-
-    if (CONFIG_INSPECTION)
-      add_executable(inspect
-                     "${AOM_ROOT}/examples/inspect.c"
-                     $<TARGET_OBJECTS:aom_common_app_util>
-                     $<TARGET_OBJECTS:aom_decoder_app_util>)
-      set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} inspect)
-
-      if (EMSCRIPTEN)
-        add_preproc_definition(_POSIX_SOURCE)
-        append_link_flag_to_target("inspect" "-s TOTAL_MEMORY=134217728")
-        append_link_flag_to_target("inspect" "-s MODULARIZE=1")
-        append_link_flag_to_target("inspect"
-                                   "-s EXPORT_NAME=\"\'DecoderModule\'\"")
-        append_link_flag_to_target("inspect" "--memory-init-file 0")
-
-        if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-          # Default to -O3 when no build type specified.
-          append_compiler_flag("-O3")
-        endif ()
-
-        em_link_post_js(inspect "${AOM_ROOT}/tools/inspect-post.js")
-      endif ()
-    endif ()
-
-    # Maintain a list of decoder example targets.
-    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS}
-        decode_to_md5 decode_with_drops simple_decoder)
+    target_link_libraries(analyzer
+                          ${AOM_LIB_LINK_TYPE} ${wxWidgets_LIBRARIES})
+    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
+    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} analyzer)
   endif ()
 
+  if (CONFIG_INSPECTION)
+    add_executable(inspect
+                   "${AOM_ROOT}/examples/inspect.c"
+                   $<TARGET_OBJECTS:aom_common_app_util>
+                   $<TARGET_OBJECTS:aom_decoder_app_util>)
+    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} inspect)
+
+    if (EMSCRIPTEN)
+      add_preproc_definition(_POSIX_SOURCE)
+      append_link_flag_to_target("inspect" "-s TOTAL_MEMORY=134217728")
+      append_link_flag_to_target("inspect" "-s MODULARIZE=1")
+      append_link_flag_to_target("inspect"
+                                 "-s EXPORT_NAME=\"\'DecoderModule\'\"")
+      append_link_flag_to_target("inspect" "--memory-init-file 0")
+
+      if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+        # Default to -O3 when no build type specified.
+        append_compiler_flag("-O3")
+      endif ()
+
+      em_link_post_js(inspect "${AOM_ROOT}/tools/inspect-post.js")
+    endif ()
+  endif ()
+
+  # Maintain a list of decoder example targets.
+  set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS}
+      aomdec decode_to_md5 decode_with_drops simple_decoder)
+
   # Add decoder examples to the app targets list.
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomdec ${AOM_DECODER_EXAMPLE_TARGETS})
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} ${AOM_DECODER_EXAMPLE_TARGETS})
 endif ()
 
-
 if (CONFIG_AV1_ENCODER)
-  add_library(aom_encoder_app_util OBJECT ${AOM_ENCODER_APP_UTIL_SOURCES})
-  add_executable(aomenc
-                 "${AOM_ROOT}/aomenc.c"
-                 $<TARGET_OBJECTS:aom_common_app_util>
-                 $<TARGET_OBJECTS:aom_encoder_app_util>
-                 $<TARGET_OBJECTS:aom_encoder_stats>)
-
   if (ENABLE_EXAMPLES)
+    add_executable(aomenc
+                   "${AOM_ROOT}/aomenc.c"
+                   $<TARGET_OBJECTS:aom_common_app_util>
+                   $<TARGET_OBJECTS:aom_encoder_app_util>
+                   $<TARGET_OBJECTS:aom_encoder_stats>)
     add_executable(lossless_encoder
                    "${AOM_ROOT}/examples/lossless_encoder.c"
                    $<TARGET_OBJECTS:aom_common_app_util>
@@ -371,39 +372,45 @@ if (CONFIG_AV1_ENCODER)
 
     # Maintain a list of encoder example targets.
     set(AOM_ENCODER_EXAMPLE_TARGETS
-        lossless_encoder set_maps simple_encoder twopass_encoder)
+        aomenc lossless_encoder set_maps simple_encoder twopass_encoder)
+
+    # Add encoder examples to app target list.
+    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
   endif ()
 
-  if (ENABLE_TOOLS)
-    if (CONFIG_ENTROPY_STATS)
-      # TODO(tomfinegan): Sort out why a simple link command with
-      # aom_entropy_optimizer.c won't work on macos, but dragging in all the
-      # helper machinery allows the link to succeed.
-      add_executable(aom_entropy_optimizer
-                     "${AOM_CONFIG_DIR}/usage_exit.c"
-                     "${AOM_ROOT}/tools/aom_entropy_optimizer.c"
-                     $<TARGET_OBJECTS:aom_common_app_util>
-                     $<TARGET_OBJECTS:aom_encoder_app_util>)
+  if (ENABLE_TOOLS AND CONFIG_ENTROPY_STATS)
+    # TODO(tomfinegan): Sort out why a simple link command with
+    # aom_entropy_optimizer.c won't work on macos, but dragging in all the
+    # helper machinery allows the link to succeed.
+    add_executable(aom_entropy_optimizer
+                   "${AOM_CONFIG_DIR}/usage_exit.c"
+                   "${AOM_ROOT}/tools/aom_entropy_optimizer.c"
+                   $<TARGET_OBJECTS:aom_common_app_util>
+                   $<TARGET_OBJECTS:aom_encoder_app_util>)
 
-      # Maintain a list of encoder tool targets.
-      set(AOM_ENCODER_TOOL_TARGETS
-          ${AOM_ENCODER_TOOL_TARGETS} aom_entropy_optimizer)
-    endif ()
+    # Maintain a list of encoder tool targets.
+    set(AOM_ENCODER_TOOL_TARGETS
+        ${AOM_ENCODER_TOOL_TARGETS} aom_entropy_optimizer)
+
+      # Add encoder tools to app target list.
+    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
   endif ()
-
-  # Add encoder examples and tools to the targets list.
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomenc
-      ${AOM_ENCODER_EXAMPLE_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
 endif ()
 
-# Maintain a separate variable listing only the examples to facilitate
-# installation of example programs into an examples sub directory of
-# $AOM_DIST_DIR/bin when building the dist target.
-set(AOM_EXAMPLE_TARGETS
-    ${AOM_DECODER_EXAMPLE_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
+if (ENABLE_EXAMPLES)
+  # Maintain a separate variable listing only the examples to facilitate
+  # installation of example programs into an examples sub directory of
+  # $AOM_DIST_DIR/bin when building the dist target.
+  set(AOM_EXAMPLE_TARGETS
+      ${AOM_DECODER_EXAMPLE_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
+endif ()
 
-# Do the same for tool targets.
-set(AOM_TOOL_TARGETS ${AOM_DECODER_TOOL_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
+if (ENABLE_TOOLS)
+  # Maintain a separate variable listing only the examples to facilitate
+  # installation of example programs into an tools sub directory of
+  # $AOM_DIST_DIR/bin when building the dist target.
+  set(AOM_TOOL_TARGETS ${AOM_DECODER_TOOL_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
+endif ()
 
 if (ENABLE_EXAMPLES AND CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
   add_executable(aom_cx_set_ref
@@ -418,43 +425,45 @@ foreach (aom_app ${AOM_APP_TARGETS})
   target_link_libraries(${aom_app} ${AOM_LIB_LINK_TYPE} aom)
 endforeach ()
 
-if (CONFIG_LIBYUV)
-  add_library(yuv OBJECT ${AOM_LIBYUV_SOURCES})
-  if (NOT MSVC)
-    target_compile_options(yuv PRIVATE -Wno-unused-parameter)
-  endif ()
-  include_directories("${AOM_ROOT}/third_party/libyuv/include")
+if (CONFIG_UNIT_TESTS OR ENABLE_EXAMPLES OR ENABLE_TOOLS)
+  if (CONFIG_LIBYUV)
+    add_library(yuv OBJECT ${AOM_LIBYUV_SOURCES})
+    if (NOT MSVC)
+      target_compile_options(yuv PRIVATE -Wno-unused-parameter)
+    endif ()
+    include_directories("${AOM_ROOT}/third_party/libyuv/include")
 
-  # Add to existing targets.
-  foreach (aom_app ${AOM_APP_TARGETS})
-    target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:yuv>)
-    set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
-  endforeach ()
-endif ()
-
-if (CONFIG_WEBM_IO)
-  add_library(webm OBJECT ${AOM_LIBWEBM_SOURCES})
-  include_directories("${AOM_ROOT}/third_party/libwebm")
-  target_compile_definitions(webm PRIVATE __STDC_CONSTANT_MACROS)
-  target_compile_definitions(webm PRIVATE __STDC_LIMIT_MACROS)
-
-  if (NOT MSVC)
-    target_compile_options(webm PRIVATE -Wno-shadow)
+    # Add to existing targets.
+    foreach (aom_app ${AOM_APP_TARGETS})
+      target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:yuv>)
+      set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
+    endforeach ()
   endif ()
 
-  # Add to existing targets.
-  if (CONFIG_AV1_DECODER)
-    target_sources(aom_decoder_app_util PRIVATE ${AOM_WEBM_DECODER_SOURCES})
-  endif ()
+  if (CONFIG_WEBM_IO)
+    add_library(webm OBJECT ${AOM_LIBWEBM_SOURCES})
+    include_directories("${AOM_ROOT}/third_party/libwebm")
+    target_compile_definitions(webm PRIVATE __STDC_CONSTANT_MACROS)
+    target_compile_definitions(webm PRIVATE __STDC_LIMIT_MACROS)
 
-  if (CONFIG_AV1_ENCODER)
-    target_sources(aom_encoder_app_util PRIVATE ${AOM_WEBM_ENCODER_SOURCES})
-  endif ()
+    if (NOT MSVC)
+      target_compile_options(webm PRIVATE -Wno-shadow)
+    endif ()
 
-  foreach (aom_app ${AOM_APP_TARGETS})
-    target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:webm>)
-    set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
-   endforeach ()
+    # Add to existing targets.
+    if (CONFIG_AV1_DECODER)
+      target_sources(aom_decoder_app_util PRIVATE ${AOM_WEBM_DECODER_SOURCES})
+    endif ()
+
+    if (CONFIG_AV1_ENCODER)
+      target_sources(aom_encoder_app_util PRIVATE ${AOM_WEBM_ENCODER_SOURCES})
+    endif ()
+
+    foreach (aom_app ${AOM_APP_TARGETS})
+      target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:webm>)
+      set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
+     endforeach ()
+  endif ()
 endif ()
 
 if (CONFIG_UNIT_TESTS)
@@ -531,7 +540,10 @@ set(AOM_INSTALL_INCS
     "${AOM_ROOT}/aom/aom.h")
 
 if (CONFIG_AV1_DECODER)
-  set(AOM_INSTALL_BINS ${AOM_INSTALL_BINS} aomdec)
+  if (ENABLE_EXAMPLES)
+    set(AOM_INSTALL_BINS ${AOM_INSTALL_BINS} aomdec)
+  endif ()
+
   set(AOM_INSTALL_INCS
       ${AOM_INSTALL_INCS}
       "${AOM_ROOT}/aom/aom_decoder.h"
@@ -539,11 +551,14 @@ if (CONFIG_AV1_DECODER)
 endif ()
 
 if (CONFIG_AV1_ENCODER)
+  if (ENABLE_EXAMPLES)
+    set(AOM_INSTALL_BINS ${AOM_INSTALL_BINS} aomenc)
+  endif ()
+
   set(AOM_INSTALL_INCS
       ${AOM_INSTALL_INCS}
       "${AOM_ROOT}/aom/aomcx.h"
       "${AOM_ROOT}/aom/aom_encoder.h")
-  set(AOM_INSTALL_BINS ${AOM_INSTALL_BINS} aomenc)
 endif ()
 
 set(AOM_INSTALL_LIBS aom)
@@ -553,13 +568,16 @@ install(FILES ${AOM_INSTALL_INCS}
 install(FILES "${AOM_CONFIG_DIR}/aom.pc"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
 install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
-install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+
+if (ENABLE_EXAMPLES)
+  install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+endif ()
 
 # Aomedia dist rule.
-if (CONFIG_AV1_DECODER)
+if (CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
   set(AOM_DIST_APPS ${AOM_DIST_APPS} $<TARGET_FILE:aomdec>)
 endif ()
-if (CONFIG_AV1_ENCODER)
+if (CONFIG_AV1_ENCODER AND ENABLE_EXAMPLES)
   set(AOM_DIST_APPS ${AOM_DIST_APPS} $<TARGET_FILE:aomenc>)
 endif ()
 
@@ -592,7 +610,8 @@ add_custom_target(dist
                   -DENABLE_DOCS=${ENABLE_DOCS}
                   -P "${AOM_ROOT}/build/cmake/dist.cmake"
                   DEPENDS ${AOM_INSTALL_BINS} ${AOM_INSTALL_LIBS}
-                  ${AOM_INSTALL_INCS} ${AOM_EXAMPLE_TARGETS})
+                  ${AOM_INSTALL_INCS} ${AOM_EXAMPLE_TARGETS}
+                  ${AOM_TOOL_TARGETS})
 
 if (ENABLE_DOCS)
   add_dependencies(dist docs)
