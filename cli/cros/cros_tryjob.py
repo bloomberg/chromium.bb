@@ -361,7 +361,7 @@ Production Examples (danger, can break production if misused):
       # Ask for confirmation if there are no patches to test.
       if not patches_given and not self.options.yes:
         prompt = ('No patches were provided; are you sure you want to just '
-                  'run a remote build of %s?' % (
+                  'run a build of %s?' % (
                       self.options.branch if self.options.branch else 'ToT'))
         if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
           cros_build_lib.Die('No confirmation.')
