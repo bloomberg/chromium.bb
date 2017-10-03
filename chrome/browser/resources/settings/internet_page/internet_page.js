@@ -325,7 +325,10 @@ Polymer({
 
   /** @private */
   onAddVPNTap_: function() {
-    chrome.send('addNetwork', [CrOnc.Type.VPN]);
+    if (loadTimeData.getBoolean('networkSettingsConfig'))
+      this.showConfig_(CrOnc.Type.VPN);
+    else
+      chrome.send('addNetwork', [CrOnc.Type.VPN]);
   },
 
   /**

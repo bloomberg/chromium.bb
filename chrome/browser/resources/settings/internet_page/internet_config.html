@@ -28,7 +28,8 @@
         </paper-button>
         <template is="dom-if" if="[[guid_]]">
           <paper-button class="primary-button" on-tap="onSaveTap_"
-              disabled="[[!saveIsEnabled_(isConfigured_, propertiesReceived_]]">
+              disabled="[[!saveIsEnabled_(isConfigured_,
+                  propertiesReceived_)]]">
             $i18n{save}
           </paper-button>
         </template>
@@ -77,6 +78,65 @@
       </network-config-input>
     </template>
 
+    <!-- VPN -->
+    <template is="dom-if" if="[[showVpn_]]">
+      <network-config-input label="$i18n{OncVPN-Host}"
+          value="{{configProperties_.VPN.Host}}">
+      </network-config-input>
+      <network-config-input label="$i18n{OncName}"
+          value="{{configProperties_.Name}}">
+      </network-config-input>
+      <network-config-select id="outer" label="$i18n{OncVPN-Type}"
+          value="{{vpnType_}}" items="[[vpnTypeItems_]]"
+          onc-prefix="VPN.Type">
+      </network-config-select>
+      <template is="dom-if" if="[[!showVpn_.OpenVPN]]">
+        <network-config-input label="$i18n{OncVPN-Username}"
+            value="{{configProperties_.VPN.L2TP.Username}}">
+        </network-config-input>
+        <network-config-input label="$i18n{OncVPN-Password}"
+            value="{{configProperties_.VPN.L2TP.Password}}">
+        </network-config-input>
+        <network-config-input label="$i18n{OncVPN-IPsec-Group}"
+            value="{{configProperties_.VPN.IPsec.Group}}">
+        </network-config-input>
+        <template is="dom-if" if="[[!showVpn_.Cert]]">
+          <network-config-input label="$i18n{OncVPN-IPsec-PSK}"
+              value="{{configProperties_.VPN.IPsec.PSK}}">
+          </network-config-input>
+        </template>
+      </template>
+      <template is="dom-if" if="[[showVpn_.OpenVPN]]">
+        <network-config-input label="$i18n{OncVPN-Username}"
+            value="{{configProperties_.VPN.OpenVPN.Username}}">
+        </network-config-input>
+        <network-config-input label="$i18n{OncVPN-Password}"
+            value="{{configProperties_.VPN.OpenVPN.Password}}">
+        </network-config-input>
+        <network-config-input label="$i18n{OncVPN-OpenVPN-OTP}"
+            value="{{configProperties_.VPN.OpenVPN.OTP}}">
+        </network-config-input>
+      </template>
+      <template is="dom-if" if="[[showVpn_.Cert]]">
+        <network-config-select id="vpnServerCa" label="$i18n{OncEAP-ServerCA}"
+            value="{{selectedServerCaHash_}}" items="[[serverCaCerts_]]"
+            cert-list>
+        </network-config-select>
+        <network-config-select id="vpnUserCert" label="$i18n{OncEAP-UserCert}"
+            value="{{selectedUserCertHash_}}" items="[[userCerts_]]"
+            cert-list>
+        </network-config-select>
+      </template>
+      <div class="settings-box">
+        <div id="vpnSaveCredentialsLabel" class="start">
+          $i18n{networkConfigSaveCredentials}
+        </div>
+        <paper-toggle-button checked="{{vpnSaveCredentials_}}"
+            aria-labelledby="vpnSaveCredentialsLabel">
+        </paper-toggle-button>
+      </div>
+    </template>
+
     <!-- EAP (WiFi, WiMAX, Ethernet) -->
     <template is="dom-if" if="[[showEap_]]">
       <network-config-select id="outer" label="$i18n{OncEAP-Outer}"
@@ -111,11 +171,11 @@
           hidden="[[!showEap_.AnonymousIdentity]]">
       </network-config-input>
       <div class="settings-box">
-        <div id="saveCredentialsLabel" class="start">
+        <div id="eapSaveCredentialsLabel" class="start">
           $i18n{networkConfigSaveCredentials}
         </div>
         <paper-toggle-button checked="{{eapProperties_.SaveCredentials}}"
-            aria-labelledby="saveCredentialsLabel">
+            aria-labelledby="eapSaveCredentialsLabel">
         </paper-toggle-button>
       </div>
     </template>

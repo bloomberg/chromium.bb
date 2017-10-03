@@ -1761,6 +1761,9 @@
     <message name="IDS_ONC_MAC_ADDRESS" desc="ONC Property label for MacAddress">
       MAC address
     </message>
+    <message name="IDS_ONC_NAME" desc="ONC Property label for the network Name (displayed when configuring a VPN service name)">
+      Service name
+    </message>
     <message name="IDS_ONC_RESTRICTED_CONNECTIVITY" desc="ONC Property label for RestrictedConnectivity">
       Restricted IP
     </message>
@@ -1797,10 +1800,19 @@
     <message name="IDS_ONC_VPN_HOST" desc="ONC Property label for VPN.Host">
       Server hostname
     </message>
-    <message name="IDS_ONC_VPN_L2TP_USERNAME" desc="ONC Property label for VPN.L2TP.Username">
-      Username
+    <message name="IDS_ONC_VPN_IPSEC_GROUP" desc="ONC Property label for VPN.IPSec.Group">
+      Group name
     </message>
-    <message name="IDS_ONC_VPN_OPEN_VPN_USERNAME" desc="ONC Property label for VPN.OpenVPN.Username">
+    <message name="IDS_ONC_VPN_IPSEC_PSK" desc="ONC Property label for VPN.IPSec.PSK">
+      Pre-shared key
+    </message>
+    <message name="IDS_ONC_VPN_OPENVPN_OTP" desc="ONC Property label for VPN.OpenVPN.OTP">
+      OTP
+    </message>
+    <message name="IDS_ONC_VPN_PASSWORD" desc="ONC Property label for VPN.OpenVPN.Password or VPN.L2TP.Password">
+      Password
+    </message>
+    <message name="IDS_ONC_VPN_USERNAME" desc="ONC Property label for VPN.OpenVPN.Username or VPN.L2TP.Username">
       Username
     </message>
     <message name="IDS_ONC_VPN_THIRD_PARTY_VPN_PROVIDER_NAME" desc="ONC Property label for VPN.ThirdPartyVPN.ProviderName">
@@ -1811,6 +1823,12 @@
     </message>
     <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC" desc="ONC Property label for VPN.Type.L2TP-IPSec">
       L2TP/IPsec
+    </message>
+    <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC_PSK" desc="ONC Property label for configuring VPN.Type.L2TP-IPSec with AuthenticationType = PSK">
+      L2TP/IPsec + pre-shared key
+    </message>
+    <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC_CERT" desc="ONC Property label for configuring VPN.Type.L2TP-IPSec  with AuthenticationType = Cert">
+      L2TP/IPsec + user certificate
     </message>
     <message name="IDS_ONC_VPN_TYPE_OPENVPN" desc="ONC Property label for VPN.Type.OpenVPN">
       Open VPN

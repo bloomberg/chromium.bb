@@ -397,6 +397,7 @@ chrome.networkingPrivate.ManagedXAUTHProperties;
  * @typedef {{
  *   AuthenticationType: string,
  *   ClientCertPattern: (!chrome.networkingPrivate.CertificatePattern|undefined),
+ *   ClientCertPKCS11Id: (string|undefined),
  *   ClientCertRef: (string|undefined),
  *   ClientCertType: (string|undefined),
  *   EAP: (!chrome.networkingPrivate.EAPProperties|undefined),
@@ -404,6 +405,7 @@ chrome.networkingPrivate.ManagedXAUTHProperties;
  *   IKEVersion: (number|undefined),
  *   PSK: (string|undefined),
  *   SaveCredentials: (boolean|undefined),
+ *   ServerCAPEMs: (!Array<string>|undefined),
  *   ServerCARefs: (!Array<string>|undefined),
  *   XAUTH: (!chrome.networkingPrivate.XAUTHProperties|undefined)
  * }}
@@ -415,6 +417,7 @@ chrome.networkingPrivate.IPSecProperties;
  * @typedef {{
  *   AuthenticationType: !chrome.networkingPrivate.ManagedDOMString,
  *   ClientCertPattern: (!chrome.networkingPrivate.ManagedCertificatePattern|undefined),
+ *   ClientCertPKCS11Id: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ClientCertRef: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ClientCertType: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   EAP: (!chrome.networkingPrivate.ManagedEAPProperties|undefined),
@@ -422,6 +425,7 @@ chrome.networkingPrivate.IPSecProperties;
  *   IKEVersion: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   PSK: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   SaveCredentials: (!chrome.networkingPrivate.ManagedBoolean|undefined),
+ *   ServerCAPEMs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   ServerCARefs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   XAUTH: (!chrome.networkingPrivate.ManagedXAUTHProperties|undefined)
  * }}
@@ -547,8 +551,9 @@ chrome.networkingPrivate.ManagedVerifyX509;
  *   AuthRetry: (string|undefined),
  *   AuthNoCache: (boolean|undefined),
  *   Cipher: (string|undefined),
- *   ClientCertRef: (string|undefined),
+ *   ClientCertPKCS11Id: (string|undefined),
  *   ClientCertPattern: (!chrome.networkingPrivate.CertificatePattern|undefined),
+ *   ClientCertRef: (string|undefined),
  *   ClientCertType: (string|undefined),
  *   CompLZO: (string|undefined),
  *   CompNoAdapt: (boolean|undefined),
@@ -565,6 +570,7 @@ chrome.networkingPrivate.ManagedVerifyX509;
  *   RemoteCertTLS: (string|undefined),
  *   RenegSec: (number|undefined),
  *   SaveCredentials: (boolean|undefined),
+ *   ServerCAPEMs: (!Array<string>|undefined),
  *   ServerCARefs: (!Array<string>|undefined),
  *   ServerCertRef: (string|undefined),
  *   ServerPollTimeout: (number|undefined),
@@ -588,8 +594,9 @@ chrome.networkingPrivate.OpenVPNProperties;
  *   AuthRetry: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   AuthNoCache: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   Cipher: (!chrome.networkingPrivate.ManagedDOMString|undefined),
- *   ClientCertRef: (!chrome.networkingPrivate.ManagedDOMString|undefined),
+ *   ClientCertPKCS11Id: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ClientCertPattern: (!chrome.networkingPrivate.ManagedCertificatePattern|undefined),
+ *   ClientCertRef: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ClientCertType: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   CompLZO: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   CompNoAdapt: (!chrome.networkingPrivate.ManagedBoolean|undefined),
@@ -606,6 +613,7 @@ chrome.networkingPrivate.OpenVPNProperties;
  *   RemoteCertTLS: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   RenegSec: (!chrome.networkingPrivate.ManagedLong|undefined),
  *   SaveCredentials: (!chrome.networkingPrivate.ManagedBoolean|undefined),
+ *   ServerCAPEMs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   ServerCARefs: (!chrome.networkingPrivate.ManagedDOMStringList|undefined),
  *   ServerCertRef: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   ServerPollTimeout: (!chrome.networkingPrivate.ManagedLong|undefined),
@@ -802,7 +810,7 @@ chrome.networkingPrivate.VPNProperties;
  *   L2TP: (!chrome.networkingPrivate.ManagedL2TPProperties|undefined),
  *   OpenVPN: (!chrome.networkingPrivate.ManagedOpenVPNProperties|undefined),
  *   ThirdPartyVPN: (!chrome.networkingPrivate.ManagedThirdPartyVPNProperties|undefined),
- *   Type: !chrome.networkingPrivate.ManagedDOMString
+ *   Type: (!chrome.networkingPrivate.ManagedDOMString|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-ManagedVPNProperties
  */

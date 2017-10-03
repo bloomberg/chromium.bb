@@ -559,7 +559,9 @@ namespace networking.onc {
     boolean? AutoConnect;
     // The VPN host.
     DOMString? Host;
-    // The VPN type. This can not be an enum because of 'L2TP-IPSec'.
+    // The VPN type. This cannot be an enum because of 'L2TP-IPSec'.
+    // This is optional for NetworkConfigProperties which is passed to
+    // setProperties which may be used to set only specific properties.
     DOMString? Type;
   };
 
@@ -569,7 +571,7 @@ namespace networking.onc {
     // See $(ref:VPNProperties.Host).
     ManagedDOMString? Host;
     // See $(ref:VPNProperties.Type).
-    ManagedDOMString Type;
+    ManagedDOMString? Type;
   };
 
   dictionary VPNStateProperties {
