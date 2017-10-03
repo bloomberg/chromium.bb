@@ -3342,7 +3342,7 @@ TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
 
   // Make sure everything is set up correctly.
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
 
   profile.set_language_code("en");
@@ -6713,7 +6713,7 @@ TEST_F(PersonalDataManagerTest,
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
 
@@ -6728,7 +6728,7 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   // The Wallet address should have been added as a new local profile.
-  EXPECT_EQ(2U, personal_data_->web_profiles().size());
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
   histogram_tester.ExpectUniqueSample("Autofill.WalletAddressConversionType",
                                       AutofillMetrics::CONVERTED_ADDRESS_ADDED,
@@ -6818,7 +6818,7 @@ TEST_F(PersonalDataManagerTest,
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
 
@@ -6833,7 +6833,7 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   // The Wallet address should have been merged with the existing local profile.
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
   histogram_tester.ExpectUniqueSample("Autofill.WalletAddressConversionType",
                                       AutofillMetrics::CONVERTED_ADDRESS_MERGED,
@@ -6890,7 +6890,7 @@ TEST_F(PersonalDataManagerTest,
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(0U, personal_data_->web_profiles().size());
+  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
 
   ///////////////////////////////////////////////////////////////////////
@@ -6909,7 +6909,7 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   // There should be no local profiles added.
-  EXPECT_EQ(0U, personal_data_->web_profiles().size());
+  EXPECT_EQ(0U, personal_data_->GetProfiles().size());
   EXPECT_EQ(1U, personal_data_->GetServerProfiles().size());
 }
 
@@ -6986,7 +6986,7 @@ TEST_F(
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetServerProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
 
@@ -7002,7 +7002,7 @@ TEST_F(
 
   // The first Wallet address should have been added as a new local profile and
   // the second one should have merged with the first.
-  EXPECT_EQ(2U, personal_data_->web_profiles().size());
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetServerProfiles().size());
   histogram_tester.ExpectBucketCount("Autofill.WalletAddressConversionType",
                                      AutofillMetrics::CONVERTED_ADDRESS_ADDED,
@@ -7088,7 +7088,7 @@ TEST_F(
   WaitForOnPersonalDataChanged();
 
   // The Wallet address should have been converted to a new local profile.
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
 
   // The conversion should be recorded in the Wallet address.
   EXPECT_TRUE(personal_data_->GetServerProfiles().back()->has_converted());
@@ -7113,7 +7113,7 @@ TEST_F(
   // Make sure everything is set up correctly.
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-  EXPECT_EQ(1U, personal_data_->web_profiles().size());
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
   EXPECT_EQ(2U, personal_data_->GetCreditCards().size());
 
   ///////////////////////////////////////////////////////////////////////

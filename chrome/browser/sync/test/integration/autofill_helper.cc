@@ -305,7 +305,7 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   pdm->Refresh();
 
-  // PersonalDataManager::web_profiles() simply returns the current values that
+  // PersonalDataManager::GetProfiles() simply returns the current values that
   // have been last reported to the UI sequence. PersonalDataManager::Refresh()
   // will post a task to the DB sequence to read back the latest values, and we
   // very much want the latest values. Unfortunately, the Refresh() call is
@@ -315,13 +315,13 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   // scheduled, and we cannot ensure that we have the latest view. Instead
   // explicitly wait for our Refresh to have executed. It is possible for
   // another write to sneak in between our Refresh() and the task that is
-  // blocked for, causing the web_profiles() read to return even more current
+  // blocked for, causing the GetProfiles() read to return even more current
   // data, but this shouldn't cause problems. While PersonalDataManager will
   // cancel outstanding queries, this is only instigated on the UI sequence,
   // which we are about to block, which means we are safe.
   base::TaskScheduler::GetInstance()->FlushForTesting();
 
-  return pdm->web_profiles();
+  return pdm->GetProfiles();
 }
 
 int GetProfileCount(int profile) {
@@ -380,9 +380,9 @@ bool AutofillProfileChecker::Wait() {
 
 bool AutofillProfileChecker::IsExitConditionSatisfied() {
   const std::vector<AutofillProfile*>& autofill_profiles_a =
-      autofill_helper::GetPersonalDataManager(profile_a_)->web_profiles();
+      autofill_helper::GetPersonalDataManager(profile_a_)->GetProfiles();
   const std::vector<AutofillProfile*>& autofill_profiles_b =
-      autofill_helper::GetPersonalDataManager(profile_b_)->web_profiles();
+      autofill_helper::GetPersonalDataManager(profile_b_)->GetProfiles();
   return ProfilesMatchImpl(profile_a_, autofill_profiles_a, profile_b_,
                            autofill_profiles_b);
 }

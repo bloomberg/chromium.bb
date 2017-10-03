@@ -200,16 +200,13 @@ class PersonalDataManager : public KeyedService,
   // This PersonalDataManager owns these profiles and credit cards.  Their
   // lifetime is until the web database is updated with new profile and credit
   // card information, respectively.
-  // TODO(crbug.com/687352): Remove one of these since they do the same thing.
-  // |GetProfiles()| and |web_profiles()| returns only local profiles.
-  virtual const std::vector<AutofillProfile*>& GetProfiles() const;
-  virtual std::vector<AutofillProfile*> web_profiles() const;
+  virtual std::vector<AutofillProfile*> GetProfiles() const;
   // Returns just SERVER_PROFILES.
   virtual std::vector<AutofillProfile*> GetServerProfiles() const;
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
   // Returns all credit cards, server and local.
-  virtual const std::vector<CreditCard*>& GetCreditCards() const;
+  virtual std::vector<CreditCard*> GetCreditCards() const;
 
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
@@ -481,10 +478,6 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<CreditCard>> local_credit_cards_;
   std::vector<std::unique_ptr<CreditCard>> server_credit_cards_;
 
-  // A combination of local and server credit cards. The pointers are owned
-  // by the local/server_credit_cards_ vectors.
-  mutable std::vector<CreditCard*> credit_cards_;
-
   // When the manager makes a request from WebDataServiceBase, the database
   // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
@@ -534,12 +527,6 @@ class PersonalDataManager : public KeyedService,
   // be set as true if there are duplicated field types in the form.
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
-
-  // Functionally equivalent to GetProfiles(), but also records metrics if
-  // |record_metrics| is true. Metrics should be recorded when the returned
-  // profiles will be used to populate the fields shown in an Autofill popup.
-  virtual const std::vector<AutofillProfile*>& GetProfiles(
-      bool record_metrics) const;
 
   // Returns credit card suggestions based on the |cards_to_suggest| and the
   // |type| and |field_contents| of the credit card field.

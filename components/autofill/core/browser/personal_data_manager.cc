@@ -925,12 +925,9 @@ bool PersonalDataManager::IsDataLoaded() const {
   return is_data_loaded_;
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() const {
-  return GetProfiles(false);
-}
-
-std::vector<AutofillProfile*> PersonalDataManager::web_profiles() const {
+std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
   std::vector<AutofillProfile*> result;
+  result.reserve(web_profiles_.size());
   for (const auto& profile : web_profiles_)
     result.push_back(profile.get());
   return result;
@@ -938,6 +935,7 @@ std::vector<AutofillProfile*> PersonalDataManager::web_profiles() const {
 
 std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
   std::vector<AutofillProfile*> result;
+  result.reserve(server_profiles_.size());
   for (const auto& profile : server_profiles_)
     result.push_back(profile.get());
   return result;
@@ -945,20 +943,22 @@ std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
 
 std::vector<CreditCard*> PersonalDataManager::GetLocalCreditCards() const {
   std::vector<CreditCard*> result;
+  result.reserve(local_credit_cards_.size());
   for (const auto& card : local_credit_cards_)
     result.push_back(card.get());
   return result;
 }
 
-const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
-  credit_cards_.clear();
+std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
+  std::vector<CreditCard*> result;
+  result.reserve(local_credit_cards_.size() + server_credit_cards_.size());
   for (const auto& card : local_credit_cards_)
-    credit_cards_.push_back(card.get());
+    result.push_back(card.get());
   if (pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     for (const auto& card : server_credit_cards_)
-      credit_cards_.push_back(card.get());
+      result.push_back(card.get());
   }
-  return credit_cards_;
+  return result;
 }
 
 void PersonalDataManager::Refresh() {
@@ -968,7 +968,7 @@ void PersonalDataManager::Refresh() {
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
     const {
-  std::vector<AutofillProfile*> profiles = GetProfiles(true);
+  std::vector<AutofillProfile*> profiles = GetProfiles();
 
   // Rank the suggestions by frecency (see AutofillDataModel for details).
   const base::Time comparison_time = AutofillClock::Now();
@@ -1291,7 +1291,7 @@ bool PersonalDataManager::IsCountryOfInterest(
     const std::string& country_code) const {
   DCHECK_EQ(2U, country_code.size());
 
-  const std::vector<AutofillProfile*>& profiles = web_profiles();
+  const std::vector<AutofillProfile*>& profiles = GetProfiles();
   std::list<std::string> country_codes;
   for (size_t i = 0; i < profiles.size(); ++i) {
     country_codes.push_back(base::ToLowerASCII(
@@ -1574,7 +1574,7 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   std::map<std::string, int> votes;
   // TODO(estade): can we make this GetProfiles() instead? It seems to cause
   // errors in tests on mac trybots. See http://crbug.com/57221
-  const std::vector<AutofillProfile*>& profiles = web_profiles();
+  const std::vector<AutofillProfile*>& profiles = GetProfiles();
   const std::vector<std::string>& country_codes =
       CountryDataMap::GetInstance()->country_codes();
   for (size_t i = 0; i < profiles.size(); ++i) {
@@ -1897,14 +1897,6 @@ bool PersonalDataManager::IsKnownCard(const CreditCard& credit_card) {
   return false;
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
-    bool record_metrics) const {
-  profiles_.clear();
-  for (const auto& profile : web_profiles_)
-    profiles_.push_back(profile.get());
-  return profiles_;
-}
-
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const AutofillType& type,
     const base::string16& field_contents,
@@ -1992,7 +1984,7 @@ void PersonalDataManager::ApplyProfileUseDatesFix() {
 
   std::vector<AutofillProfile> profiles;
   bool has_changed_data = false;
-  for (AutofillProfile* profile : web_profiles()) {
+  for (AutofillProfile* profile : GetProfiles()) {
     if (profile->use_date() == base::Time()) {
       profile->set_use_date(AutofillClock::Now() -
                             base::TimeDelta::FromDays(14));
