@@ -38,6 +38,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
                                           NGStaticPosition static_position,
                                           NGLogicalOffset* offset);
 
+  bool IsContainingBlockForDescendant(const ComputedStyle& descendant_style);
+
   RefPtr<NGLayoutResult> GenerateFragment(
       NGBlockNode node,
       const Optional<LayoutUnit>& block_estimate,
@@ -46,6 +48,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   const ComputedStyle& container_style_;
   NGFragmentBuilder* container_builder_;
 
+  bool contains_absolute_;
+  bool contains_fixed_;
   NGLogicalOffset content_offset_;
   NGPhysicalOffset content_physical_offset_;
   NGLogicalSize container_size_;

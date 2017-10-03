@@ -54,6 +54,8 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
   void AddOverflowFromChildren() override;
 
  private:
+  void UpdateOutOfFlowBlockLayout();
+
   const NGPhysicalFragment* CurrentFragment() const;
 
   void UpdateMargins(const NGConstraintSpace&);

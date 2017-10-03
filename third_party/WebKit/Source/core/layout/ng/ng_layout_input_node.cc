@@ -82,6 +82,14 @@ bool NGLayoutInputNode::IsQuirkyContainer() const {
          (box_->IsBody() || box_->IsTableCell());
 }
 
+bool NGLayoutInputNode::IsAbsoluteContainer() const {
+  return box_->CanContainAbsolutePositionObjects();
+}
+
+bool NGLayoutInputNode::IsFixedContainer() const {
+  return box_->CanContainFixedPositionObjects();
+}
+
 bool NGLayoutInputNode::CreatesNewFormattingContext() const {
   return IsBlock() && box_->AvoidsFloats();
 }
