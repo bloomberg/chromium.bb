@@ -50,9 +50,11 @@ REPORT_FILENAME = 'report.html'
 
 REPORT_TEMPLATE = """<!DOCTYPE html>
 <html>
-<head><style>
-th, td {{ border: 1px solid black; padding: 5px 10px; }}
-</style></head>
+<head>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<meta charset='UTF-8'>
+<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
 <body>
 {table_data}
 </body></html>"""
@@ -196,15 +198,15 @@ def ExtractAndFixFilename(data, source_dir):
 
 def GenerateReport(report_data):
   """Build HTML page with the summary report and links to individual files."""
-  table_data = '<table>\n'
+  table_data = '<table class="centered">\n'
   report_lines = report_data.splitlines()
 
   # Write header.
-  table_data += '  <tr>\n'
+  table_data += '  <tr class="source-name-title">\n'
   for column in report_lines[0].split('  '):
     if not column:
       continue
-    table_data += '    <th>%s</th>\n' % column
+    table_data += '    <th><pre>%s</pre></th>\n' % column
   table_data += '  </tr>\n'
 
   for line in report_lines[1:-1]:
@@ -212,8 +214,9 @@ def GenerateReport(report_data):
       continue
 
     if line.startswith(ZERO_FUNCTION_FILE_TEXT):
-      table_data += '  <tr>\n'
-      table_data += '    <td><b>%s</b></td>\n' % line
+      table_data += '  <tr class="source-name-title">\n'
+      table_data += ('    <td class="column-entry-left"><pre>%s</pre></td>\n' %
+                     line)
       table_data += '  </tr>\n'
       continue
 
@@ -222,17 +225,19 @@ def GenerateReport(report_data):
     columns = line.split()
 
     # First column is a file name, build a link.
-    table_data += '    <td><a href="/%s">%s</a></td>\n' % (
+    table_data += ('    <td class="column-entry-left">\n'
+                   '      <a href="/%s"><pre>%s</pre></a>\n'
+                   '    </td>\n') % (
         columns[0] + HTML_FILE_EXTENSION, columns[0])
 
     for column in line.split()[1:]:
-      table_data += '    <td>%s</td>\n' % column
+      table_data += '    <td class="column-entry"><pre>%s</pre></td>\n' % column
     table_data += '  </tr>\n'
 
   # Write the last "TOTAL" row.
-  table_data += '  <tr style="font-weight:bold">\n'
+  table_data += '  <tr class="source-name-title">\n'
   for column in report_lines[-1].split():
-    table_data += '    <td>%s</td>\n' % column
+    table_data += '    <td class="column-entry"><pre>%s</pre></td>\n' % column
   table_data += '  </tr>\n'
   table_data += '</table>\n'
 
@@ -256,6 +261,12 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
     raise Exception('Failed to process coverage dump.')
 
   style_data = data[style_start + len(STYLE_START_MARKER):style_end]
+
+  # Add hover for table <tr>.
+  style_data += ('\ntr:hover {'
+                 '\n  background-color: #eee;'
+                 '\n}')
+
   with open(os.path.join(output_dir, STYLE_FILENAME), 'w') as file_handle:
     file_handle.write(style_data)
   style_length = (
