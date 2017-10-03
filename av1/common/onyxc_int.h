@@ -204,6 +204,15 @@ typedef int BASE_CTX_TABLE[2 /*col*/][2 /*sig_map*/]
                           [BASE_CONTEXT_POSITION_NUM + 1];
 #endif
 
+#if CONFIG_REFERENCE_BUFFER
+/* Initial version of sequence header structure */
+typedef struct SequenceHeader {
+  int frame_id_numbers_present_flag;
+  int frame_id_length_minus7;
+  int delta_frame_id_length_minus2;
+} SequenceHeader;
+#endif  // CONFIG_REFERENCE_BUFFER
+
 typedef struct AV1Common {
   struct aom_internal_error_info error;
   aom_color_space_t color_space;
@@ -507,7 +516,7 @@ typedef struct AV1Common {
 #endif
   int num_tg;
 #if CONFIG_REFERENCE_BUFFER
-  int use_reference_buffer;
+  SequenceHeader seq_params;
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
@@ -527,15 +536,6 @@ typedef struct AV1Common {
   int final_lpf_encode;
 #endif
 } AV1_COMMON;
-
-#if CONFIG_REFERENCE_BUFFER
-/* Initial version of sequence header structure */
-typedef struct SequenceHeader {
-  int frame_id_numbers_present_flag;
-  int frame_id_length_minus7;
-  int delta_frame_id_length_minus2;
-} SequenceHeader;
-#endif  // CONFIG_REFERENCE_BUFFER
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic
 // frame reference count.
@@ -1329,7 +1329,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 
 static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
 #if CONFIG_REFERENCE_BUFFER
-  cm->use_reference_buffer = use;
+  cm->seq_params.frame_id_numbers_present_flag = use;
 #else
   (void)cm;
   (void)use;

@@ -1286,7 +1286,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                          &dst_time_stamp, &dst_end_time_stamp,
                                          !img)) {
 #if CONFIG_REFERENCE_BUFFER
-      if (cpi->common.use_reference_buffer) {
+      if (cpi->common.seq_params.frame_id_numbers_present_flag) {
         if (cpi->common.invalid_delta_frame_id_minus1) {
           ctx->base.err_detail = "Invalid delta_frame_id_minus1";
           return AOM_CODEC_ERROR;

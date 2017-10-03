@@ -21,7 +21,8 @@ struct aom_read_bit_buffer;
 
 #if CONFIG_REFERENCE_BUFFER
 /* Placeholder for now */
-void read_sequence_header(SequenceHeader *seq_params);
+void read_sequence_header(SequenceHeader *seq_params,
+                          struct aom_read_bit_buffer *rb);
 #endif
 
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,

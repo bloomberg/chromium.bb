@@ -277,26 +277,20 @@ static aom_codec_err_t decoder_peek_si_internal(
     }
     error_resilient = aom_rb_read_bit(&rb);
 #if CONFIG_REFERENCE_BUFFER
-    int use_reference_buffer = 1;
     SequenceHeader seq_params = { 0, 0, 0 };
     if (si->is_kf) {
       /* TODO: Move outside frame loop or inside key-frame branch */
-      use_reference_buffer = aom_rb_read_bit(&rb);
-      if (use_reference_buffer) {
-        read_sequence_header(&seq_params);
+      read_sequence_header(&seq_params, &rb);
 #if CONFIG_EXT_TILE
-        if (large_scale_tile) seq_params.frame_id_numbers_present_flag = 0;
+      if (large_scale_tile) seq_params.frame_id_numbers_present_flag = 0;
 #endif  // CONFIG_EXT_TILE
-      }
     }
 #endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_REFERENCE_BUFFER
-    if (use_reference_buffer) {
+    if (seq_params.frame_id_numbers_present_flag) {
       int frame_id_len;
-      if (seq_params.frame_id_numbers_present_flag) {
-        frame_id_len = seq_params.frame_id_length_minus7 + 7;
-        aom_rb_read_literal(&rb, frame_id_len);
-      }
+      frame_id_len = seq_params.frame_id_length_minus7 + 7;
+      aom_rb_read_literal(&rb, frame_id_len);
     }
 #endif  // CONFIG_REFERENCE_BUFFER
     if (si->is_kf) {

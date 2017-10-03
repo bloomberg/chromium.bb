@@ -4411,11 +4411,14 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 }
 
 #if CONFIG_REFERENCE_BUFFER
-void read_sequence_header(SequenceHeader *seq_params) {
+void read_sequence_header(SequenceHeader *seq_params,
+                          struct aom_read_bit_buffer *rb) {
   /* Placeholder for actually reading from the bitstream */
-  seq_params->frame_id_numbers_present_flag = FRAME_ID_NUMBERS_PRESENT_FLAG;
-  seq_params->frame_id_length_minus7 = FRAME_ID_LENGTH_MINUS7;
-  seq_params->delta_frame_id_length_minus2 = DELTA_FRAME_ID_LENGTH_MINUS2;
+  seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
+  if (seq_params->frame_id_numbers_present_flag) {
+    seq_params->frame_id_length_minus7 = aom_rb_read_literal(rb, 4);
+    seq_params->delta_frame_id_length_minus2 = aom_rb_read_literal(rb, 4);
+  }
 }
 #endif  // CONFIG_REFERENCE_BUFFER
 
@@ -4646,7 +4649,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_EXT_TILE
   cm->large_scale_tile = aom_rb_read_literal(rb, 1);
 #if CONFIG_REFERENCE_BUFFER
-  if (cm->large_scale_tile) pbi->seq_params.frame_id_numbers_present_flag = 0;
+  if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
 #endif  // CONFIG_REFERENCE_BUFFER
 #endif  // CONFIG_EXT_TILE
 
@@ -4657,17 +4660,15 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     const int existing_frame_idx = aom_rb_read_literal(rb, 3);
     const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
 #if CONFIG_REFERENCE_BUFFER
-    if (cm->use_reference_buffer) {
-      if (pbi->seq_params.frame_id_numbers_present_flag) {
-        int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
-        int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
-        /* Compare display_frame_id with ref_frame_id and check valid for
-         * referencing */
-        if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||
-            cm->valid_for_referencing[existing_frame_idx] == 0)
-          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                             "Reference buffer frame ID mismatch");
-      }
+    if (cm->seq_params.frame_id_numbers_present_flag) {
+      int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
+      int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
+      /* Compare display_frame_id with ref_frame_id and check valid for
+       * referencing */
+      if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||
+          cm->valid_for_referencing[existing_frame_idx] == 0)
+        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                           "Reference buffer frame ID mismatch");
     }
 #endif
     lock_buffer_pool(pool);
@@ -4709,51 +4710,46 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
   cm->error_resilient_mode = aom_rb_read_bit(rb);
 #if CONFIG_REFERENCE_BUFFER
-  if (frame_is_intra_only(cm)) {
-    cm->use_reference_buffer = aom_rb_read_bit(rb);
 #if !CONFIG_OBU
-    read_sequence_header(&pbi->seq_params);
+  if (frame_is_intra_only(cm)) read_sequence_header(&cm->seq_params, rb);
 #endif  // !CONFIG_OBU
-  }
-  if (cm->use_reference_buffer) {
-    if (pbi->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
-      int diff_len = pbi->seq_params.delta_frame_id_length_minus2 + 2;
-      int prev_frame_id = 0;
-      if (cm->frame_type != KEY_FRAME) {
-        prev_frame_id = cm->current_frame_id;
-      }
-      cm->current_frame_id = aom_rb_read_literal(rb, frame_id_length);
+  if (cm->seq_params.frame_id_numbers_present_flag) {
+    int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
+    int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+    int prev_frame_id = 0;
+    if (cm->frame_type != KEY_FRAME) {
+      prev_frame_id = cm->current_frame_id;
+    }
+    cm->current_frame_id = aom_rb_read_literal(rb, frame_id_length);
 
-      if (cm->frame_type != KEY_FRAME) {
-        int diff_frame_id;
-        if (cm->current_frame_id > prev_frame_id) {
-          diff_frame_id = cm->current_frame_id - prev_frame_id;
-        } else {
-          diff_frame_id =
-              (1 << frame_id_length) + cm->current_frame_id - prev_frame_id;
-        }
-        /* Check current_frame_id for conformance */
-        if (prev_frame_id == cm->current_frame_id ||
-            diff_frame_id >= (1 << (frame_id_length - 1))) {
-          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                             "Invalid value of current_frame_id");
-        }
+    if (cm->frame_type != KEY_FRAME) {
+      int diff_frame_id;
+      if (cm->current_frame_id > prev_frame_id) {
+        diff_frame_id = cm->current_frame_id - prev_frame_id;
+      } else {
+        diff_frame_id =
+            (1 << frame_id_length) + cm->current_frame_id - prev_frame_id;
       }
-      /* Check if some frames need to be marked as not valid for referencing */
-      for (i = 0; i < REF_FRAMES; i++) {
-        if (cm->frame_type == KEY_FRAME) {
+      /* Check current_frame_id for conformance */
+      if (prev_frame_id == cm->current_frame_id ||
+          diff_frame_id >= (1 << (frame_id_length - 1))) {
+        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                           "Invalid value of current_frame_id");
+      }
+    }
+    /* Check if some frames need to be marked as not valid for referencing */
+    for (i = 0; i < REF_FRAMES; i++) {
+      if (cm->frame_type == KEY_FRAME) {
+        cm->valid_for_referencing[i] = 0;
+      } else if (cm->current_frame_id - (1 << diff_len) > 0) {
+        if (cm->ref_frame_id[i] > cm->current_frame_id ||
+            cm->ref_frame_id[i] < cm->current_frame_id - (1 << diff_len))
           cm->valid_for_referencing[i] = 0;
-        } else if (cm->current_frame_id - (1 << diff_len) > 0) {
-          if (cm->ref_frame_id[i] > cm->current_frame_id ||
-              cm->ref_frame_id[i] < cm->current_frame_id - (1 << diff_len))
-            cm->valid_for_referencing[i] = 0;
-        } else {
-          if (cm->ref_frame_id[i] > cm->current_frame_id &&
-              cm->ref_frame_id[i] < (1 << frame_id_length) +
-                                        cm->current_frame_id - (1 << diff_len))
-            cm->valid_for_referencing[i] = 0;
-        }
+      } else {
+        if (cm->ref_frame_id[i] > cm->current_frame_id &&
+            cm->ref_frame_id[i] <
+                (1 << frame_id_length) + cm->current_frame_id - (1 << diff_len))
+          cm->valid_for_referencing[i] = 0;
       }
     }
   }
@@ -4870,22 +4866,20 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         cm->ref_frame_sign_bias[LAST_FRAME + i] = aom_rb_read_bit(rb);
 #endif
 #if CONFIG_REFERENCE_BUFFER
-        if (cm->use_reference_buffer) {
-          if (pbi->seq_params.frame_id_numbers_present_flag) {
-            int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
-            int diff_len = pbi->seq_params.delta_frame_id_length_minus2 + 2;
-            int delta_frame_id_minus1 = aom_rb_read_literal(rb, diff_len);
-            int ref_frame_id =
-                ((cm->current_frame_id - (delta_frame_id_minus1 + 1) +
-                  (1 << frame_id_length)) %
-                 (1 << frame_id_length));
-            /* Compare values derived from delta_frame_id_minus1 and
-             * refresh_frame_flags. Also, check valid for referencing */
-            if (ref_frame_id != cm->ref_frame_id[ref] ||
-                cm->valid_for_referencing[ref] == 0)
-              aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                                 "Reference buffer frame ID mismatch");
-          }
+        if (cm->seq_params.frame_id_numbers_present_flag) {
+          int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
+          int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+          int delta_frame_id_minus1 = aom_rb_read_literal(rb, diff_len);
+          int ref_frame_id =
+              ((cm->current_frame_id - (delta_frame_id_minus1 + 1) +
+                (1 << frame_id_length)) %
+               (1 << frame_id_length));
+          /* Compare values derived from delta_frame_id_minus1 and
+           * refresh_frame_flags. Also, check valid for referencing */
+          if (ref_frame_id != cm->ref_frame_id[ref] ||
+              cm->valid_for_referencing[ref] == 0)
+            aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                               "Reference buffer frame ID mismatch");
         }
 #endif  // CONFIG_REFERENCE_BUFFER
       }
@@ -4948,17 +4942,15 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  if (cm->use_reference_buffer) {
-    if (pbi->seq_params.frame_id_numbers_present_flag) {
-      /* If bitmask is set, update reference frame id values and
-         mark frames as valid for reference */
-      int refresh_frame_flags =
-          cm->frame_type == KEY_FRAME ? 0xFF : pbi->refresh_frame_flags;
-      for (i = 0; i < REF_FRAMES; i++) {
-        if ((refresh_frame_flags >> i) & 1) {
-          cm->ref_frame_id[i] = cm->current_frame_id;
-          cm->valid_for_referencing[i] = 1;
-        }
+  if (cm->seq_params.frame_id_numbers_present_flag) {
+    /* If bitmask is set, update reference frame id values and
+       mark frames as valid for reference */
+    int refresh_frame_flags =
+        cm->frame_type == KEY_FRAME ? 0xFF : pbi->refresh_frame_flags;
+    for (i = 0; i < REF_FRAMES; i++) {
+      if ((refresh_frame_flags >> i) & 1) {
+        cm->ref_frame_id[i] = cm->current_frame_id;
+        cm->valid_for_referencing[i] = 1;
       }
     }
   }
@@ -5795,7 +5787,7 @@ static uint32_t read_temporal_delimiter_obu() { return 0; }
 static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                                          struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
-  SequenceHeader *const seq_params = &pbi->seq_params;
+  SequenceHeader *const seq_params = &cm->seq_params;
   uint32_t saved_bit_offset = rb->bit_offset;
 
   cm->profile = av1_read_profile(rb);

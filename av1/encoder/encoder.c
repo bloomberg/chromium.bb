@@ -5522,7 +5522,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  if (cm->use_reference_buffer) {
+  if (cm->seq_params.frame_id_numbers_present_flag) {
     /* Non-normative definition of current_frame_id ("frame counter" with
     * wraparound) */
     const int frame_id_length = FRAME_ID_LENGTH_MINUS7 + 7;
@@ -5622,7 +5622,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 
 #if CONFIG_REFERENCE_BUFFER
-  if (cm->use_reference_buffer) {
+  if (cm->seq_params.frame_id_numbers_present_flag) {
     int i;
     /* Update reference frame id values based on the value of refresh_mask */
     for (i = 0; i < REF_FRAMES; i++) {
@@ -6588,7 +6588,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  if (cm->use_reference_buffer) {
+  if (cm->seq_params.frame_id_numbers_present_flag) {
     if (*time_stamp == 0) {
       cpi->common.current_frame_id = -1;
     }

@@ -618,9 +618,6 @@ typedef struct AV1_COMP {
 #if CONFIG_GLOBAL_MOTION
   int global_motion_search_done;
 #endif
-#if CONFIG_REFERENCE_BUFFER
-  SequenceHeader seq_params;
-#endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_LV_MAP
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
 #endif
