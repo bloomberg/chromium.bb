@@ -33,11 +33,11 @@ namespace vr {
 // functionality.
 class AnimationPlayer final {
  public:
-  AnimationPlayer();
-  ~AnimationPlayer();
-
   static int GetNextAnimationId();
   static int GetNextGroupId();
+
+  AnimationPlayer();
+  ~AnimationPlayer();
 
   cc::AnimationTarget* target() const { return target_; }
   void set_target(cc::AnimationTarget* target) { target_ = target; }
@@ -84,18 +84,26 @@ class AnimationPlayer final {
 
   bool IsAnimatingProperty(int property) const;
 
+  float GetTargetFloatValue(int target_property, float default_value) const;
   cc::TransformOperations GetTargetTransformOperationsValue(
       int target_property,
-      cc::TransformOperations default_value) const;
+      const cc::TransformOperations& default_value) const;
   gfx::SizeF GetTargetSizeValue(int target_property,
-                                gfx::SizeF default_value) const;
-  float GetTargetFloatValue(int target_property, float default_value) const;
+                                const gfx::SizeF& default_value) const;
   SkColor GetTargetColorValue(int target_property, SkColor default_value) const;
 
  private:
   void StartAnimations(base::TimeTicks monotonic_time);
+  template <typename ValueType>
+  void TransitionValueTo(base::TimeTicks monotonic_time,
+                         int target_property,
+                         const ValueType& current,
+                         const ValueType& target);
   cc::Animation* GetRunningAnimationForProperty(int target_property) const;
   cc::Animation* GetAnimationForProperty(int target_property) const;
+  template <typename ValueType>
+  ValueType GetTargetValue(int target_property,
+                           const ValueType& default_value) const;
 
   cc::AnimationTarget* target_ = nullptr;
   Animations animations_;
