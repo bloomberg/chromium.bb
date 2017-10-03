@@ -162,9 +162,6 @@ cr.define('ntp', function() {
 
       this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
 
-      // TODO(dbeam): remove showApps and everything that says if (apps).
-      assert(loadTimeData.getBoolean('showApps'));
-
       // Request data on the apps so we can fill them in.
       // Note that this is kicked off asynchronously.  'getAppsCallback' will
       // be invoked at some point after this function returns.
@@ -261,8 +258,6 @@ cr.define('ntp', function() {
      *     position indices.
      */
     appMoved: function(appData) {
-      assert(loadTimeData.getBoolean('showApps'));
-
       var app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
@@ -280,8 +275,6 @@ cr.define('ntp', function() {
      * @param {boolean} fromPage True if the removal was from the current page.
      */
     appRemoved: function(appData, isUninstall, fromPage) {
-      assert(loadTimeData.getBoolean('showApps'));
-
       var app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to remove an app that doesn\'t exist');
 
@@ -316,8 +309,6 @@ cr.define('ntp', function() {
      *     An object with all the data on available applications.
      */
     getAppsCallback: function(data) {
-      assert(loadTimeData.getBoolean('showApps'));
-
       var startTime = Date.now();
 
       // Remember this to select the correct card when done rebuilding.
@@ -423,8 +414,6 @@ cr.define('ntp', function() {
      *     be highlighted.
      */
     appAdded: function(appData, opt_highlight) {
-      assert(loadTimeData.getBoolean('showApps'));
-
       if (appData.id == this.highlightAppId) {
         opt_highlight = true;
         this.highlightAppId = null;
@@ -459,8 +448,6 @@ cr.define('ntp', function() {
      *     applications.
      */
     appsPrefChangedCallback: function(data) {
-      assert(loadTimeData.getBoolean('showApps'));
-
       for (var i = 0; i < data.apps.length; ++i) {
         $(data.apps[i].id).appData = data.apps[i];
       }
@@ -500,10 +487,8 @@ cr.define('ntp', function() {
           0, Math.min(this.cardSlider.currentCard, this.tilePages.length - 1));
       this.cardSlider.setCards(
           Array.prototype.slice.call(this.tilePages), pageNo);
-      if (loadTimeData.getBoolean('showApps')) {
-        this.cardSlider.selectCardByValue(this.appsPages[Math.min(
-            this.shownPageIndex, this.appsPages.length - 1)]);
-      }
+      this.cardSlider.selectCardByValue(this.appsPages[Math.min(
+          this.shownPageIndex, this.appsPages.length - 1)]);
     },
 
     /**
@@ -511,12 +496,10 @@ cr.define('ntp', function() {
      * of a moving or insert tile.
      */
     enterRearrangeMode: function() {
-      if (loadTimeData.getBoolean('showApps')) {
-        var tempPage = new ntp.AppsPage();
-        tempPage.classList.add('temporary');
-        var pageName = loadTimeData.getString('appDefaultPageName');
-        this.appendTilePage(tempPage, pageName, true);
-      }
+      var tempPage = new ntp.AppsPage();
+      tempPage.classList.add('temporary');
+      var pageName = loadTimeData.getString('appDefaultPageName');
+      this.appendTilePage(tempPage, pageName, true);
 
       if (ntp.getCurrentlyDraggingTile().firstChild.canBeRemoved()) {
         $('footer').classList.add('showing-trash-mode');
