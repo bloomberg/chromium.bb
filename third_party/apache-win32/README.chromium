@@ -1,52 +1,55 @@
 Name: Apache2 (+ PHP)
 Short Name: httpd
 URL: http://www.apache.org
-Version: 2.2.25
+Version: 2.4.27
 Security Critical: no
 License: Apache Version 2.0
-License File: NOT_SHIPPED
+License File: LICENSE.txt
 
 Description:
 
-This is a checked-in copy of Apache 2.2.25 for Win 32.
-
+This is a checked-in copy of Apache2 with OpenSSL and PHP5 for Win32.
 It is used by the Blink layout tests.
 
-To recreate this directory (assuming an msys bash shell; adjust your
-checkout path from /d/src/checkout/src as needed): 
+To update, you'll need to fetch Apache2 and PHP5. https://www.apache.org no
+longer hosts binaries of the latest stable version, but you can find Apache2
+win32 binaries in other places, such as https://www.apachehaus.com/.
+PHP5 can be found at http://windows.php.net/downloads/releases/archives/.
 
-  % cd /d/src/checkout/src/third_party
-  % mv apache-win32 apache-win32.bak
-  % curl -o httpd.msi http://www.apache.org/dist/httpd/binaries/win32/httpd-2.2.25-win32-x86-openssl-0.9.8y.msi
-  % cmd
-  > start /wait msiexec /i httpd.msi /q INSTALLDIR=d:\src\checkout\src\third_party\apache-win32
-  > exit
-  # stop running apache processes if the installer started them.
-  % cp -p apache-win32.bak/README.chromium apache-win32
-  % cp -p apache-win32.bak/remove_files_not_needed_for_chromium.sh apache-win32
-  % mkdir php
-  % curl -o php/php.zip http://windows.php.net/downloads/releases/archives/php-5.4.24-Win32-VC9-x86.zip
-  % (cd php && unzip php/php.zip)
-  % cp -p php/php5ts.dll apache-win32/bin
-  % cp -p php/php5apache2_2.dll apache-win32/modules
-  % (cd apache-win32 && ./remove_files_not_needed_for_chromium.sh)
+To update:
 
+1. Go to the Chromium third_party directory and back up apache-win32,
+   for example by renaming it as apache-win32.bak.
 
-To upload the large files (executables, DLLs) to google storage (contact
-chrome-infrastructure-team@ in order to get permission to write to the
-chrome-apache-win32 Google Cloud Storage bucket):
+2. Download Apache2, unpack, and move to "apache-win32". This directory
+   should contain metadata files and bin/ and modules/ subdirectories.
 
-  % find apache-win32/bin -name '*.exe' -o -name '*.dll' -o -name '*.so' | upload_to_google_storage.py --bucket chromium-apache-win32 -
-  % find apache-win32/modules -name '*.so'  | upload_to_google_storage.py --bucket chromium-apache-win32 -
+3. Copy README.chromium and remove_files_not_needed_for_chromium.sh
+   to the new apache-win32 directory.
 
-To prune the files that were uploaded so that we can check in the rest:
+4. Download PHP5 and unpack; copy "php5ts.dll "to bin/ and copy
+   "php5apache2_*.dll" to modules/.
 
-  % find apache-win32/bin -name '*.exe' -o -name '*.dll' -o -name '*.so' | xargs rm
-  % find apache-win32/modules -name '*.so' | xargs rm
-  % git add apache-win32
+5. It might be necessary to copy other DLL files to the directories
+   where the relevant binaries are present.
 
-And, to clean up the temp files used in the above:
+6. Verify that Apache2 works, for example by running "run-blink-httpd"
+   in the Blink tools directory. Update the win-httpd.conf configuration
+   file if necessary.
 
-  % rm -fr httpd.msi php apache-win32.bak
+7. Delete files that aren't need for Chromium using
+   remove_files_not_needed_for_chromium.sh.
 
-You might need to uninstall apache via the control panel as well.
+8. Upload the executables and DLLs to Google Storage, to the
+   chromium-apache-win32 bucket. See http://g.co/bugatrooper in order to get
+   permission to upload. Upload all exe, dll and so binaries, e.g.:
+
+   % find apache-win32/bin -name '*.exe' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+   % find apache-win32/bin -name '*.dll' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+   % find apache-win32/modules -name '*.so' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+   % find apache-win32/modules -name '*.dll' | upload_to_google_storage.py --bucket chromium-apache-win32 -
+
+9. Optionally, prune the files that were uploaded and run gclient runhooks to
+   verify that they are re-downloaded. Remember to clean up any temp files used
+   in the above process before uploading a CL. The CL should contain sha1 files
+   but not actual binaries.
