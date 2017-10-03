@@ -31,7 +31,6 @@ class WebFaviconDriver : public web::WebStateObserver,
                                 history::HistoryService* history_service);
 
   // FaviconDriver implementation.
-  void FetchFavicon(const GURL& page_url, bool is_same_document) override;
   gfx::Image GetFavicon() const override;
   bool FaviconIsValid() const override;
   GURL GetActiveURL() override;
@@ -58,17 +57,20 @@ class WebFaviconDriver : public web::WebStateObserver,
                    history::HistoryService* history_service);
 
   // web::WebStateObserver implementation.
-  void NavigationItemCommitted(
-      const web::LoadCommittedDetails& load_details) override;
+  void DidStartNavigation(web::NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::NavigationContext* navigation_context) override;
   void FaviconUrlUpdated(
       const std::vector<web::FaviconURL>& candidates) override;
 
-  // The URL passed to FetchFavicon().
-  GURL fetch_favicon_url_;
+  // Invoked when new favicon URL candidates are received.
+  void FaviconUrlUpdatedInternal(
+      const std::vector<favicon::FaviconURL>& candidates);
 
   // Image Fetcher used to fetch favicon.
   image_fetcher::IOSImageDataFetcherWrapper image_fetcher_;
+
+  // Caches the favicon URLs candidates for same-document navigations.
+  std::vector<favicon::FaviconURL> candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFaviconDriver);
 };
