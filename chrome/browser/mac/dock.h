@@ -13,11 +13,20 @@ class NSString;
 
 namespace dock {
 
+enum ChromeInDockStatus {
+  ChromeInDockFailure,
+  ChromeInDockFalse,
+  ChromeInDockTrue
+};
+
 enum AddIconStatus {
   IconAddFailure,
   IconAddSuccess,
   IconAlreadyPresent
 };
+
+// Returns info about Chrome's presence in the Dock.
+ChromeInDockStatus ChromeIsInTheDock();
 
 // Adds an icon to the Dock pointing to |installed_path| if one is not already
 // present. |dmg_app_path| is the path to the install source. Its tile will be

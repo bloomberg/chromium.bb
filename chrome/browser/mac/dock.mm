@@ -10,6 +10,7 @@
 #include <signal.h>
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
@@ -42,6 +43,8 @@ namespace {
 
 NSString* const kDockTileDataKey = @"tile-data";
 NSString* const kDockFileDataKey = @"file-data";
+NSString* const kDockDomain = @"com.apple.dock";
+NSString* const kDockPersistentAppsKey = @"persistent-apps";
 
 // A wrapper around _CFURLCopyPropertyListRepresentation that operates on
 // Foundation data types and returns an autoreleased NSDictionary.
@@ -81,6 +84,10 @@ NSURL* NSURLCreateFromDictionary(NSDictionary* dictionary) {
 // pathnames of the Dock tiles contained therein. Returns nil on failure, such
 // as when the structure of |persistent_apps| is not understood.
 NSMutableArray* PersistentAppPaths(NSArray* persistent_apps) {
+  if (!persistent_apps) {
+    return nil;
+  }
+
   NSMutableArray* app_paths =
       [NSMutableArray arrayWithCapacity:[persistent_apps count]];
 
@@ -141,7 +148,44 @@ void Restart() {
   kill(pid, SIGTERM);
 }
 
+NSDictionary* DockPlistFromUserDefaults() {
+  NSDictionary* dock_plist = [[NSUserDefaults standardUserDefaults]
+      persistentDomainForName:kDockDomain];
+  if (![dock_plist isKindOfClass:[NSDictionary class]]) {
+    LOG(ERROR) << "dock_plist is not an NSDictionary";
+    return nil;
+  }
+  return dock_plist;
+}
+
+NSArray* PersistentAppsFromDockPlist(NSDictionary* dock_plist) {
+  if (!dock_plist) {
+    return nil;
+  }
+  NSArray* persistent_apps = [dock_plist objectForKey:kDockPersistentAppsKey];
+  if (![persistent_apps isKindOfClass:[NSArray class]]) {
+    LOG(ERROR) << "persistent_apps is not an NSArray";
+    return nil;
+  }
+  return persistent_apps;
+}
+
 }  // namespace
+
+ChromeInDockStatus ChromeIsInTheDock() {
+  NSDictionary* dock_plist = DockPlistFromUserDefaults();
+  NSArray* persistent_apps = PersistentAppsFromDockPlist(dock_plist);
+
+  if (!persistent_apps) {
+    return ChromeInDockFailure;
+  }
+
+  NSString* launch_path = [base::mac::OuterBundle() bundlePath];
+
+  return [PersistentAppPaths(persistent_apps) containsObject:launch_path]
+             ? ChromeInDockTrue
+             : ChromeInDockFalse;
+}
 
 AddIconStatus AddIcon(NSString* installed_path, NSString* dmg_app_path) {
   // ApplicationServices.framework/Frameworks/HIServices.framework contains an
@@ -160,27 +204,10 @@ AddIconStatus AddIcon(NSString* installed_path, NSString* dmg_app_path) {
   // distinct pool.
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
-  NSString* const kDockDomain = @"com.apple.dock";
-  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
-
-  NSDictionary* dock_plist_const =
-      [user_defaults persistentDomainForName:kDockDomain];
-  if (![dock_plist_const isKindOfClass:[NSDictionary class]]) {
-    LOG(ERROR) << "dock_plist_const not NSDictionary";
-    return IconAddFailure;
-  }
-  NSMutableDictionary* dock_plist =
-      [NSMutableDictionary dictionaryWithDictionary:dock_plist_const];
-
-  NSString* const kDockPersistentAppsKey = @"persistent-apps";
-  NSArray* persistent_apps_const =
-      [dock_plist objectForKey:kDockPersistentAppsKey];
-  if (![persistent_apps_const isKindOfClass:[NSArray class]]) {
-    LOG(ERROR) << "persistent_apps_const not NSArray";
-    return IconAddFailure;
-  }
+  NSMutableDictionary* dock_plist = [NSMutableDictionary
+      dictionaryWithDictionary:DockPlistFromUserDefaults()];
   NSMutableArray* persistent_apps =
-      [NSMutableArray arrayWithArray:persistent_apps_const];
+      [NSMutableArray arrayWithArray:PersistentAppsFromDockPlist(dock_plist)];
 
   NSMutableArray* persistent_app_paths = PersistentAppPaths(persistent_apps);
   if (!persistent_app_paths) {
@@ -330,7 +357,8 @@ AddIconStatus AddIcon(NSString* installed_path, NSString* dmg_app_path) {
 
   // Rewrite the plist.
   [dock_plist setObject:persistent_apps forKey:kDockPersistentAppsKey];
-  [user_defaults setPersistentDomain:dock_plist forName:kDockDomain];
+  [[NSUserDefaults standardUserDefaults] setPersistentDomain:dock_plist
+                                                     forName:kDockDomain];
 
   Restart();
   return IconAddSuccess;
