@@ -325,21 +325,13 @@ void PaymentRequest::RecordFirstAbortReason(
 }
 
 void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
-  if (delegate_->IsIncognito()) {
-    RespondToCanMakePaymentQuery(
-        spec()->HasBasicCardMethodName() ||
-        base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps));
-  } else if (CanMakePaymentQueryFactory::GetInstance()
-                 ->GetForContext(web_contents_->GetBrowserContext())
-                 ->CanQuery(top_level_origin_, frame_origin_,
-                            spec()->stringified_method_data())) {
-    RespondToCanMakePaymentQuery(can_make_payment);
+  if (CanMakePaymentQueryFactory::GetInstance()
+          ->GetForContext(web_contents_->GetBrowserContext())
+          ->CanQuery(top_level_origin_, frame_origin_,
+                     spec()->stringified_method_data())) {
+    RespondToCanMakePaymentQuery(can_make_payment, false);
   } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
-    client_->OnCanMakePayment(
-        can_make_payment
-            ? mojom::CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
-            : mojom::CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT);
-    journey_logger_.SetCanMakePaymentValue(can_make_payment);
+    RespondToCanMakePaymentQuery(can_make_payment, true);
   } else {
     client_->OnCanMakePayment(
         mojom::CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
@@ -349,10 +341,24 @@ void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
     observer_for_testing_->OnCanMakePaymentReturned();
 }
 
-void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment) {
-  client_->OnCanMakePayment(
-      can_make_payment ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
-                       : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment,
+                                                  bool warn_localhost_or_file) {
+  if (delegate_->IsIncognito()) {
+    can_make_payment =
+        spec()->HasBasicCardMethodName() ||
+        base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps);
+  }
+
+  mojom::CanMakePaymentQueryResult positive =
+      warn_localhost_or_file
+          ? mojom::CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
+          : mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT;
+  mojom::CanMakePaymentQueryResult negative =
+      warn_localhost_or_file
+          ? mojom::CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT
+          : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT;
+
+  client_->OnCanMakePayment(can_make_payment ? positive : negative);
   journey_logger_.SetCanMakePaymentValue(can_make_payment);
 }
 
