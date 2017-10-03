@@ -1,5 +1,5 @@
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   let expected = new DOMException('Origin is not allowed to access the ' +
                                   'service. Tip: Add the service UUID to ' +
                                   '\'optionalServices\' in requestDevice() ' +

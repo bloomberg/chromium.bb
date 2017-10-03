@@ -1,4 +1,4 @@
-promise_test(() => {
+bluetooth_test(() => {
   let val = new Uint8Array([1]);
   return setBluetoothFakeAdapter('GATTOperationSucceedsAfterReconnectionAdapter')
     .then(() => requestDeviceWithKeyDown({

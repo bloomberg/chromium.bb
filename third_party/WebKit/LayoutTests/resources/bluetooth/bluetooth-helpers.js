@@ -1,5 +1,43 @@
 'use strict';
 
+function loadScript(path) {
+  let script = document.createElement('script');
+  let promise = new Promise(resolve => script.onload = resolve);
+  script.src = path;
+  script.async = false;
+  document.head.appendChild(script);
+  return promise;
+}
+
+function loadScripts(paths) {
+  let chain = Promise.resolve();
+  for (let path of paths) {
+    chain = chain.then(() => loadScript(path));
+  }
+  return chain;
+}
+
+function loadChromiumResources() {
+  let root = window.location.pathname.match(/.*LayoutTests/);
+  let resource_prefix = `${root}/resources`;
+  return loadScripts([
+    `${resource_prefix}/mojo-helpers.js`,
+    `${resource_prefix}/bluetooth/web-bluetooth-test.js`,
+  ]);
+}
+
+// These tests rely on the User Agent providing an implementation of the
+// Web Bluetooth Testing API.
+// https://docs.google.com/document/d/1Nhv_oVDCodd1pEH_jj9k8gF4rPGb_84VYaZ9IG8M_WY/edit?ts=59b6d823#heading=h.7nki9mck5t64
+function bluetooth_test(func, name, properties) {
+  Promise.resolve()
+    .then(() => {
+      // Chromium Testing API
+      if (window.chrome !== undefined) return loadChromiumResources();
+    })
+    .then(() => promise_test(func, name, properties));
+}
+
 // HCI Error Codes. Used for simulateGATT[Dis]ConnectionResponse.
 // For a complete list of possible error codes see
 // BT 4.2 Vol 2 Part D 1.3 List Of Error Codes.

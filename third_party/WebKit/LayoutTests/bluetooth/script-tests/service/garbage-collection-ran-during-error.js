@@ -2,7 +2,7 @@
 let test_desc = 'Garbage Collection ran during FUNCTION_NAME call that ' +
    'fails. Should not crash';
 let func_promise;
-promise_test(() => getHealthThermometerService()
+bluetooth_test(() => getHealthThermometerService()
   .then(({service}) => {
     func_promise = assert_promise_rejects_with_message(
         service.CALLS([

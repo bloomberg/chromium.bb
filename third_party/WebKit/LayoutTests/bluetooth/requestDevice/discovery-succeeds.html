@@ -4,7 +4,7 @@
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   let devices = [];
   let push = device => devices.push(device);
   // We can't use Promise.all() because Chrome will always close
