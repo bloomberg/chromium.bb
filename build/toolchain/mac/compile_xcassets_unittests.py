@@ -64,6 +64,21 @@ class TestFilterCompilerOutput(unittest.TestCase):
             '/* com.apple.actool.compilation-results */\n',
             self.relative_paths))
 
+  def testSpurious(self):
+    self.assertEquals(
+        '/* com.apple.actool.document.warnings */\n'
+        '../../Chromium.xcassets:./AppIcon.appiconset: warning: A 1024x1024 ap'
+            'p store icon is required for iOS apps\n',
+        compile_xcassets.FilterCompilerOutput(
+            '/* com.apple.actool.document.warnings */\n'
+            '/Users/janedoe/chromium/src/Chromium.xcassets:./AppIcon.appiconse'
+                't: warning: A 1024x1024 app store icon is required for iOS ap'
+                'ps\n'
+            '/* com.apple.actool.document.notices */\n'
+            '/Users/janedoe/chromium/src/Chromium.xcassets:./AppIcon.appiconse'
+                't/[][ipad][76x76][][][1x][][]: notice: (null)\n',
+            self.relative_paths))
+
   def testComplexError(self):
     self.assertEquals(
         '/* com.apple.actool.errors */\n'
