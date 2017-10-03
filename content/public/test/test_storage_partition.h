@@ -30,6 +30,7 @@ class ZoomLevelDelegate;
 
 namespace mojom {
 class NetworkContext;
+class URLLoaderFactory;
 }
 
 // Fake implementation of StoragePartition.
@@ -55,6 +56,13 @@ class TestStoragePartition : public StoragePartition {
     network_context_ = context;
   }
   mojom::NetworkContext* GetNetworkContext() override;
+
+  void set_url_loader_factory_for_browser_process(
+      mojom::URLLoaderFactory* url_loader_factory_for_browser_process) {
+    url_loader_factory_for_browser_process_ =
+        url_loader_factory_for_browser_process;
+  }
+  mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() override;
 
   void set_quota_manager(storage::QuotaManager* manager) {
     quota_manager_ = manager;
@@ -150,22 +158,23 @@ class TestStoragePartition : public StoragePartition {
 
  private:
   base::FilePath file_path_;
-  net::URLRequestContextGetter* url_request_context_getter_;
-  net::URLRequestContextGetter* media_url_request_context_getter_;
-  mojom::NetworkContext* network_context_;
-  storage::QuotaManager* quota_manager_;
-  AppCacheService* app_cache_service_;
-  storage::FileSystemContext* file_system_context_;
-  storage::DatabaseTracker* database_tracker_;
-  DOMStorageContext* dom_storage_context_;
-  IndexedDBContext* indexed_db_context_;
-  ServiceWorkerContext* service_worker_context_;
-  CacheStorageContext* cache_storage_context_;
-  PlatformNotificationContext* platform_notification_context_;
+  net::URLRequestContextGetter* url_request_context_getter_ = nullptr;
+  net::URLRequestContextGetter* media_url_request_context_getter_ = nullptr;
+  mojom::NetworkContext* network_context_ = nullptr;
+  mojom::URLLoaderFactory* url_loader_factory_for_browser_process_ = nullptr;
+  storage::QuotaManager* quota_manager_ = nullptr;
+  AppCacheService* app_cache_service_ = nullptr;
+  storage::FileSystemContext* file_system_context_ = nullptr;
+  storage::DatabaseTracker* database_tracker_ = nullptr;
+  DOMStorageContext* dom_storage_context_ = nullptr;
+  IndexedDBContext* indexed_db_context_ = nullptr;
+  ServiceWorkerContext* service_worker_context_ = nullptr;
+  CacheStorageContext* cache_storage_context_ = nullptr;
+  PlatformNotificationContext* platform_notification_context_ = nullptr;
 #if !defined(OS_ANDROID)
-  HostZoomMap* host_zoom_map_;
-  HostZoomLevelContext* host_zoom_level_context_;
-  ZoomLevelDelegate* zoom_level_delegate_;
+  HostZoomMap* host_zoom_map_ = nullptr;
+  HostZoomLevelContext* host_zoom_level_context_ = nullptr;
+  ZoomLevelDelegate* zoom_level_delegate_ = nullptr;
 #endif  // !defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);

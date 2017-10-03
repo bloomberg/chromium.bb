@@ -56,6 +56,7 @@ class ZoomLevelDelegate;
 
 namespace mojom {
 class NetworkContext;
+class URLLoaderFactory;
 }
 
 // Defines what persistent state a child process can access.
@@ -69,9 +70,13 @@ class CONTENT_EXPORT StoragePartition {
   virtual base::FilePath GetPath() = 0;
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
-  // Returns the NetworkContext associated with this storage partition. Must
-  // only be called when the network service is enabled.
   virtual mojom::NetworkContext* GetNetworkContext() = 0;
+  // Returns a pointer to a URLLoaderFactory owned by the storage partition.
+  // Prefer to use this instead of creating a new URLLoaderFactory when issuing
+  // requests from the Browser process, to share resources. The returned
+  // URLLoaderFactory should not be sent to subprocesses, due to its
+  // permissions.
+  virtual mojom::URLLoaderFactory* GetURLLoaderFactoryForBrowserProcess() = 0;
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;

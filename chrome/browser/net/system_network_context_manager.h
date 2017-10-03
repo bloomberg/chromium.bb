@@ -52,12 +52,18 @@ class SystemNetworkContextManager {
   // called.
   content::mojom::NetworkContext* GetContext();
 
+  // Returns a URLLoaderFactory owned by the SystemNetworkContextManager that is
+  // backed by the SystemNetworkContext. Allows sharing of the URLLoaderFactory.
+  // Prefer this to creating a new one.  Call Clone() on the value returned by
+  // this method to get a URLLoaderFactory that can be used on other threads.
+  content::mojom::URLLoaderFactory* GetURLLoaderFactory();
+
   // Permanently disables QUIC, both for NetworkContexts using the IOThread's
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();
 
  private:
-  // NetworkContext using the network service, if the/ network service is
+  // NetworkContext using the network service, if the network service is
   // enabled. nullptr, otherwise.
   content::mojom::NetworkContextPtr network_service_network_context_;
 
@@ -65,6 +71,10 @@ class SystemNetworkContextManager {
   // Always initialized in SetUp, but it's only returned by Context() when the
   // network service is disabled.
   content::mojom::NetworkContextPtr io_thread_network_context_;
+
+  // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
+  // consumers don't all need to create their own factory.
+  content::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   bool is_quic_allowed_ = true;
 
