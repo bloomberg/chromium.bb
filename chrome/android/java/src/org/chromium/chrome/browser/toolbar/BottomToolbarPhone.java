@@ -750,6 +750,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
             updateMenuButtonClickableState();
         }
 
+        mToggleTabStackButton.setClickable(mBottomSheet == null || !mBottomSheet.isShowingNewTab());
+
         DrawableCompat.setTint(mLocationBarBackground,
                 isIncognito() ? Color.WHITE
                               : ApiCompatibilityUtils.getColor(
