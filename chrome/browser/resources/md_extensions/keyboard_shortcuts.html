@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
@@ -10,7 +11,17 @@
 
 <dom-module id="extensions-keyboard-shortcuts">
   <template>
-    <style include="md-select cr-hidden-style">
+    <style include="md-select cr-shared-style">
+      :host {
+        height: 100%;
+      }
+
+      #container {
+        height: 100%;
+        overflow: overlay;
+        padding-top: 24px;
+      }
+
       .shortcut-card {
         @apply(--cr-primary-text);
         @apply(--shadow-elevation-2dp);
@@ -68,12 +79,8 @@
         -webkit-margin-end: 20px;
         -webkit-margin-start: 56px;
       }
-
-      #main {
-        margin-top: 24px;
-      }
     </style>
-    <div id="main">
+    <div id="container">
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
         <div class="shortcut-card">
           <div class="card-title">

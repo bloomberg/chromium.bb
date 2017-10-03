@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
@@ -8,9 +9,14 @@
 
 <dom-module id="extensions-item-list">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-shared-style">
       :host {
         @apply(--layout-vertical);
+      }
+
+      #container {
+        height: 100%;
+        overflow: overlay;
       }
 
       iron-list {
@@ -30,25 +36,27 @@
         padding: 6px;
       }
     </style>
-    <div id="no-items" class="empty-list-message"
-        hidden$="[[!shouldShowEmptyItemsMessage_(items.length)]]">
-      <span>$i18nRaw{noExtensionsOrApps}</span>
-    </div>
-    <div id="no-search-results" class="empty-list-message"
-        hidden$="[[!shouldShowEmptySearchMessage_(shownItems_.length)]]">
-      <span>$i18n{noSearchResults}</span>
-    </div>
+    <div id="container">
+      <div id="no-items" class="empty-list-message"
+          hidden$="[[!shouldShowEmptyItemsMessage_(items.length)]]">
+        <span>$i18nRaw{noExtensionsOrApps}</span>
+      </div>
+      <div id="no-search-results" class="empty-list-message"
+          hidden$="[[!shouldShowEmptySearchMessage_(shownItems_.length)]]">
+        <span>$i18n{noSearchResults}</span>
+      </div>
 
-    <iron-list id="list" items="[[shownItems_]]"
-        as="item" grid>
-      <template>
-        <div class="wrapper">
-          <extensions-item data="[[item]]" delegate="[[delegate]]"
-              id="[[item.id]]" in-dev-mode="[[inDevMode]]">
-          </extensions-item>
-        </div>
-      </template>
-    </iron-list>
+      <iron-list id="list" items="[[shownItems_]]"
+          scroll-target="[[$$('#container')]]" as="item" grid>
+        <template>
+          <div class="wrapper">
+            <extensions-item data="[[item]]" delegate="[[delegate]]"
+                id="[[item.id]]" in-dev-mode="[[inDevMode]]">
+            </extensions-item>
+          </div>
+        </template>
+      </iron-list>
+    </div>
   </template>
   <script src="chrome://extensions/item_list.js"></script>
 </dom-module>
