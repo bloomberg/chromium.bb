@@ -501,6 +501,7 @@ PageInfoBubbleView::PageInfoBubbleView(
       profile_(profile),
       header_(nullptr),
       site_settings_view_(nullptr),
+      cookie_dialog_link_(nullptr),
       permissions_view_(nullptr),
       weak_factory_(this) {
   g_shown_bubble_type = BUBBLE_PAGE_INFO;
@@ -655,27 +656,33 @@ gfx::Size PageInfoBubbleView::CalculatePreferredSize() const {
 }
 
 void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
-  // Create the link and icon for the Cookies section.
-  views::Link* cookie_dialog_link = new views::Link(
-      l10n_util::GetPluralStringFUTF16(IDS_PAGE_INFO_NUM_COOKIES, 0));
-  cookie_dialog_link->set_id(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_COOKIE_DIALOG);
-  cookie_dialog_link->set_listener(this);
-  cookie_dialog_link->SetUnderline(false);
+  // This method gets called each time site data is updated, so if the cookie
+  // link already exists, replace the text instead of creating a new one.
+  if (cookie_dialog_link_ == nullptr) {
+    // Create the link for the Cookies section.
+    cookie_dialog_link_ = new views::Link(
+        l10n_util::GetPluralStringFUTF16(IDS_PAGE_INFO_NUM_COOKIES, 0));
+    cookie_dialog_link_->set_id(
+        PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_COOKIE_DIALOG);
+    cookie_dialog_link_->set_listener(this);
+    cookie_dialog_link_->SetUnderline(false);
 
-  PageInfoUI::PermissionInfo info;
-  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
-  info.setting = CONTENT_SETTING_ALLOW;
-  info.is_incognito =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext())
-          ->IsOffTheRecord();
+    // Get the icon.
+    PageInfoUI::PermissionInfo info;
+    info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+    info.setting = CONTENT_SETTING_ALLOW;
+    info.is_incognito =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->IsOffTheRecord();
+    const gfx::ImageSkia icon =
+        PageInfoUI::GetPermissionIcon(info).AsImageSkia();
 
-  const gfx::ImageSkia icon = PageInfoUI::GetPermissionIcon(info).AsImageSkia();
-  site_settings_view_->AddChildView(CreateInspectLinkSection(
-      icon, IDS_PAGE_INFO_COOKIES, cookie_dialog_link));
+    site_settings_view_->AddChildView(CreateInspectLinkSection(
+        icon, IDS_PAGE_INFO_COOKIES, cookie_dialog_link_));
+  }
 
-  // |cookie_info_list| should only ever have 2 items: first- and third-party
-  // cookies.
+  // Calculate the number of cookies used by this site. |cookie_info_list|
+  // should only ever have 2 items: first- and third-party cookies.
   DCHECK_EQ(cookie_info_list.size(), 2u);
   int total_allowed = 0;
   for (const auto& i : cookie_info_list) {
@@ -683,7 +690,7 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
   }
   base::string16 label_text = l10n_util::GetPluralStringFUTF16(
       IDS_PAGE_INFO_NUM_COOKIES, total_allowed);
-  cookie_dialog_link->SetText(label_text);
+  cookie_dialog_link_->SetText(label_text);
 
   Layout();
   SizeToContents();

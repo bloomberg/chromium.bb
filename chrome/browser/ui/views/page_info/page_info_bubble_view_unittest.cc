@@ -13,6 +13,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -20,10 +21,12 @@
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
 
@@ -61,6 +64,13 @@ class PageInfoBubbleViewTestApi {
     return view_->selector_rows_[index].get();
   }
 
+  // Returns the number of cookies shown on the link to open the collected
+  // cookies dialog. This link is always shown, so fail if it's not there.
+  base::string16 GetCookiesLinkText() {
+    EXPECT_TRUE(view_->cookie_dialog_link_);
+    return view_->cookie_dialog_link_->text();
+  }
+
   // Returns the permission label text of the |index|th permission selector row.
   // This function returns an empty string if the permission selector row's
   // |label_| element isn't actually a |views::Label|.
@@ -84,6 +94,9 @@ class PageInfoBubbleViewTestApi {
       return base::string16();
     }
   }
+
+  // Simulates updating the number of cookies.
+  void SetCookieInfo(const CookieInfoList& list) { view_->SetCookieInfo(list); }
 
   // Simulates recreating the dialog with a new PermissionInfoList.
   void SetPermissionInfo(const PermissionInfoList& list) {
@@ -269,4 +282,34 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   api_->SetPermissionInfo(list);
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
+}
+
+// Test that updating the number of cookies used by the current page doesn't add
+// any extra views to Page Info.
+TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
+  const int kExpectedChildren = 4;
+  EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
+
+  // Create a fake list of cookies.
+  PageInfoUI::CookieInfo first_party_cookies;
+  first_party_cookies.allowed = 10;
+  first_party_cookies.blocked = 0;
+  first_party_cookies.is_first_party = true;
+
+  PageInfoUI::CookieInfo third_party_cookies;
+  third_party_cookies.allowed = 6;
+  third_party_cookies.blocked = 32;
+  third_party_cookies.is_first_party = false;
+
+  const CookieInfoList cookies = {first_party_cookies, third_party_cookies};
+
+  // Update the number of cookies.
+  api_->SetCookieInfo(cookies);
+  EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
+
+  // Check the number of cookies shown is correct.
+  base::string16 expected = l10n_util::GetPluralStringFUTF16(
+      IDS_PAGE_INFO_NUM_COOKIES,
+      first_party_cookies.allowed + third_party_cookies.allowed);
+  EXPECT_EQ(expected, api_->GetCookiesLinkText());
 }
