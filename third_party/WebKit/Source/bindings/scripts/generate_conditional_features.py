@@ -153,7 +153,7 @@ def conditional_features_context(generator_name, feature_info, snake_case):
         'core/context_features/ContextFeatureSettings.h',
         'core/dom/ExecutionContext.h',
         'core/frame/Frame.h',
-        'core/origin_trials/OriginTrials.h',
+        'core/origin_trials/origin_trials.h',
         'platform/bindings/ConditionalFeatures.h',
         'platform/bindings/ScriptState.h',
         # TODO(iclelland): Remove the need to explicitly include this; it is

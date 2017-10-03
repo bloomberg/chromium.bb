@@ -17,7 +17,7 @@
 #include "core/context_features/ContextFeatureSettings.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
-#include "core/origin_trials/OriginTrials.h"
+#include "core/origin_trials/origin_trials.h"
 #include "platform/bindings/ConditionalFeatures.h"
 #include "platform/bindings/ScriptState.h"
 
