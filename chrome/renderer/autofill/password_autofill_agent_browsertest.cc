@@ -1351,18 +1351,16 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestion) {
     EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
         selected_element, kAliceUsername, kAlicePassword));
     CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    CheckUsernameSelection(0, 0);
+    int username_length = strlen(kAliceUsername);
+    CheckUsernameSelection(0, username_length);
 
     // Try previewing with a password different from the one that was initially
     // sent to the renderer.
     EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
         selected_element, kBobUsername, kCarolPassword));
     CheckTextFieldsSuggestedState(kBobUsername, true, kCarolPassword, true);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    CheckUsernameSelection(0, 0);
+    username_length = strlen(kBobUsername);
+    CheckUsernameSelection(0, username_length);
 
     ClearUsernameAndPasswordFields();
   }
@@ -1435,9 +1433,8 @@ TEST_F(PasswordAutofillAgentTest, PreviewSuggestionSelectionRange) {
     EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
         selected_element, kAliceUsername, kAlicePassword));
     CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
-    // Since the suggestion is previewed as a placeholder, there should be no
-    // selected text.
-    CheckUsernameSelection(0, 0);
+    int username_length = strlen(kAliceUsername);
+    CheckUsernameSelection(3, username_length);
   }
 }
 
