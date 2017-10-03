@@ -80,14 +80,19 @@ def extract_certificates_from_pem(pem_bytes):
     if match.group(1) == 'CERTIFICATE':
       certificates_der.append(der)
     else:
-      pkcs7_certs_pem = process_data_with_command(
-          ['openssl','pkcs7','-print_certs', '-inform', 'DER'], der)
-      # The output will be one or more PEM encoded certificates.
-      # (Or CRLS, but those will be ignored.)
-      if pkcs7_certs_pem:
-        certificates_der.extend(extract_certificates_from_pem(pkcs7_certs_pem))
+      certificates_der.extend(extract_certificates_from_der_pkcs7(der))
 
   return certificates_der
+
+
+def extract_certificates_from_der_pkcs7(der_bytes):
+  pkcs7_certs_pem = process_data_with_command(
+      ['openssl','pkcs7','-print_certs', '-inform', 'DER'], der_bytes)
+  # The output will be one or more PEM encoded certificates.
+  # (Or CRLS, but those will be ignored.)
+  if pkcs7_certs_pem:
+    return extract_certificates_from_pem(pkcs7_certs_pem)
+  return []
 
 
 def extract_certificates_from_der_ascii(input_text):
@@ -209,6 +214,10 @@ def extract_certificates(source_bytes):
   if "SSL_HANDSHAKE_MESSAGE_RECEIVED" in source_bytes:
     return extract_tls_certificate_message(source_bytes)
 
+  # DER encoding of PKCS #7 signedData OID (1.2.840.113549.1.7.2)
+  if "\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x07\x02" in source_bytes:
+    return extract_certificates_from_der_pkcs7(source_bytes)
+
   # Otherwise assume it is the DER for a single certificate
   return [source_bytes]
 
@@ -312,7 +321,8 @@ def main():
   (3) A file containing one or more DER ASCII certificates
   (4) A text NetLog dump of a TLS certificate message
       (must include the SSL_HANDSHAKE_MESSAGE_RECEIVED line)
-  (5) A binary file containing DER-encoded certificate
+  (5) A binary file containing DER-encoded PKCS #7 signedData
+  (6) A binary file containing DER-encoded certificate
 
 When multiple SOURCEs are listed, all certificates in them
 are concatenated. If no SOURCE is given then data will be
