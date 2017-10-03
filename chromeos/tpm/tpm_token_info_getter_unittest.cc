@@ -150,25 +150,26 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
   }
 
   void Pkcs11GetTpmTokenInfo(
-      const Pkcs11GetTpmTokenInfoCallback& callback) override {
+      chromeos::DBusMethodCallback<TpmTokenInfo> callback) override {
     ASSERT_TRUE(account_id_.empty());
 
-    HandleGetTpmTokenInfo(callback);
+    HandleGetTpmTokenInfo(std::move(callback));
   }
 
   void Pkcs11GetTpmTokenInfoForUser(
       const cryptohome::Identification& cryptohome_id,
-      const Pkcs11GetTpmTokenInfoCallback& callback) override {
+      chromeos::DBusMethodCallback<TpmTokenInfo> callback) override {
     ASSERT_FALSE(cryptohome_id.id().empty());
     ASSERT_EQ(account_id_, cryptohome_id.GetAccountId());
 
-    HandleGetTpmTokenInfo(callback);
+    HandleGetTpmTokenInfo(std::move(callback));
   }
 
   // Handles Pkcs11GetTpmTokenInfo calls (both for system and user token). The
   // CryptohomeClient method overrides should make sure that |account_id_| is
   // properly set before calling this.
-  void HandleGetTpmTokenInfo(const Pkcs11GetTpmTokenInfoCallback& callback) {
+  void HandleGetTpmTokenInfo(
+      chromeos::DBusMethodCallback<TpmTokenInfo> callback) {
     ASSERT_TRUE(tpm_is_enabled_succeeded_);
     ASSERT_FALSE(get_tpm_token_info_succeeded_);
     ASSERT_TRUE(pending_get_tpm_token_info_callback_.is_null());
@@ -176,28 +177,21 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
     if (get_tpm_token_info_failure_count_ > 0) {
       --get_tpm_token_info_failure_count_;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback,
-                     chromeos::DBUS_METHOD_CALL_FAILURE,
-                     std::string() /* token name */,
-                     std::string() /* user pin */,
-                     -1 /* slot id */));
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
     if (get_tpm_token_info_not_set_count_ > 0) {
       --get_tpm_token_info_not_set_count_;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback,
-                     chromeos::DBUS_METHOD_CALL_SUCCESS,
-                     std::string() /* token name */,
-                     std::string() /* user pin */,
-                     -1 /* slot id */));
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    TpmTokenInfo{std::string() /* label */,
+                                                 std::string() /* user_pin */,
+                                                 -1 /* slot */}));
       return;
     }
 
-    pending_get_tpm_token_info_callback_ = callback;
+    pending_get_tpm_token_info_callback_ = std::move(callback);
     InvokeGetTpmTokenInfoCallbackIfReady();
   }
 
@@ -210,11 +204,9 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
     // Called synchronously for convenience (to avoid using extra RunLoop in
     // tests). Unlike with other Cryptohome callbacks, TPMTokenInfoGetter does
     // not rely on this callback being called asynchronously.
-    pending_get_tpm_token_info_callback_.Run(
-        chromeos::DBUS_METHOD_CALL_SUCCESS,
-        tpm_token_info_.name,
-        tpm_token_info_.pin,
-        tpm_token_info_.slot_id);
+    base::ResetAndReturn(&pending_get_tpm_token_info_callback_)
+        .Run(TpmTokenInfo{tpm_token_info_.name, tpm_token_info_.pin,
+                          tpm_token_info_.slot_id});
   }
 
   AccountId account_id_;
@@ -224,7 +216,8 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
   int get_tpm_token_info_failure_count_;
   int get_tpm_token_info_not_set_count_;
   bool get_tpm_token_info_succeeded_;
-  Pkcs11GetTpmTokenInfoCallback pending_get_tpm_token_info_callback_;
+  chromeos::DBusMethodCallback<TpmTokenInfo>
+      pending_get_tpm_token_info_callback_;
   TestTPMTokenInfo tpm_token_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCryptohomeClient);
