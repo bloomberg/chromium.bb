@@ -307,6 +307,7 @@ namespace networkingPrivate {
   dictionary IPSecProperties {
     DOMString AuthenticationType;
     CertificatePattern? ClientCertPattern;
+    DOMString? ClientCertPKCS11Id;
     DOMString? ClientCertRef;
     DOMString? ClientCertType;
     EAPProperties? EAP;
@@ -314,6 +315,7 @@ namespace networkingPrivate {
     long? IKEVersion;
     DOMString? PSK;
     boolean? SaveCredentials;
+    DOMString[]? ServerCAPEMs;
     DOMString[]? ServerCARefs;
     XAUTHProperties? XAUTH;
   };
@@ -321,6 +323,7 @@ namespace networkingPrivate {
   dictionary ManagedIPSecProperties {
     ManagedDOMString AuthenticationType;
     ManagedCertificatePattern? ClientCertPattern;
+    ManagedDOMString? ClientCertPKCS11Id;
     ManagedDOMString? ClientCertRef;
     ManagedDOMString? ClientCertType;
     ManagedEAPProperties? EAP;
@@ -328,6 +331,7 @@ namespace networkingPrivate {
     ManagedLong? IKEVersion;
     ManagedDOMString? PSK;
     ManagedBoolean? SaveCredentials;
+    ManagedDOMStringList? ServerCAPEMs;
     ManagedDOMStringList? ServerCARefs;
     ManagedXAUTHProperties? XAUTH;
   };
@@ -405,8 +409,9 @@ namespace networkingPrivate {
     DOMString? AuthRetry;
     boolean? AuthNoCache;
     DOMString? Cipher;
-    DOMString? ClientCertRef;
+    DOMString? ClientCertPKCS11Id;
     CertificatePattern? ClientCertPattern;
+    DOMString? ClientCertRef;
     DOMString? ClientCertType;
     DOMString? CompLZO;
     boolean? CompNoAdapt;
@@ -423,6 +428,7 @@ namespace networkingPrivate {
     DOMString? RemoteCertTLS;
     long? RenegSec;
     boolean? SaveCredentials;
+    DOMString[]? ServerCAPEMs;
     DOMString[]? ServerCARefs;
     DOMString? ServerCertRef;
     long? ServerPollTimeout;
@@ -442,8 +448,9 @@ namespace networkingPrivate {
     ManagedDOMString? AuthRetry;
     ManagedBoolean? AuthNoCache;
     ManagedDOMString? Cipher;
-    ManagedDOMString? ClientCertRef;
+    ManagedDOMString? ClientCertPKCS11Id;
     ManagedCertificatePattern? ClientCertPattern;
+    ManagedDOMString? ClientCertRef;
     ManagedDOMString? ClientCertType;
     ManagedDOMString? CompLZO;
     ManagedBoolean? CompNoAdapt;
@@ -460,6 +467,7 @@ namespace networkingPrivate {
     ManagedDOMString? RemoteCertTLS;
     ManagedLong? RenegSec;
     ManagedBoolean? SaveCredentials;
+    ManagedDOMStringList? ServerCAPEMs;
     ManagedDOMStringList? ServerCARefs;
     ManagedDOMString? ServerCertRef;
     ManagedLong? ServerPollTimeout;
@@ -600,7 +608,9 @@ namespace networkingPrivate {
     L2TPProperties? L2TP;
     OpenVPNProperties? OpenVPN;
     ThirdPartyVPNProperties? ThirdPartyVPN;
-    // 'Type' can not be an enum because of 'L2TP-IPSec'.
+    // The VPN type. This cannot be an enum because of 'L2TP-IPSec'.
+    // This is optional for NetworkConfigProperties which is passed to
+    // setProperties which may be used to set only specific properties.
     DOMString? Type;
   };
 
@@ -611,7 +621,7 @@ namespace networkingPrivate {
     ManagedL2TPProperties? L2TP;
     ManagedOpenVPNProperties? OpenVPN;
     ManagedThirdPartyVPNProperties? ThirdPartyVPN;
-    ManagedDOMString Type;
+    ManagedDOMString? Type;
   };
 
   dictionary VPNStateProperties {

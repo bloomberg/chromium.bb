@@ -47,8 +47,8 @@ const OncFieldSignature certificate_pattern_fields[] = {
 const OncFieldSignature eap_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
     {::onc::eap::kAnonymousIdentity, &kStringSignature},
-    {::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
     {::onc::client_cert::kClientCertPKCS11Id, &kStringSignature},
+    {::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
     {::onc::client_cert::kClientCertRef, &kStringSignature},
     {::onc::client_cert::kClientCertType, &kStringSignature},
     {::onc::eap::kIdentity, &kStringSignature},
@@ -68,6 +68,7 @@ const OncFieldSignature eap_fields[] = {
 const OncFieldSignature ipsec_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
     {::onc::ipsec::kAuthenticationType, &kStringSignature},
+    {::onc::client_cert::kClientCertPKCS11Id, &kStringSignature},
     {::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
     {::onc::client_cert::kClientCertRef, &kStringSignature},
     {::onc::client_cert::kClientCertType, &kStringSignature},
@@ -103,6 +104,7 @@ const OncFieldSignature openvpn_fields[] = {
     {::onc::openvpn::kAuthNoCache, &kBoolSignature},
     {::onc::openvpn::kAuthRetry, &kStringSignature},
     {::onc::openvpn::kCipher, &kStringSignature},
+    {::onc::client_cert::kClientCertPKCS11Id, &kStringSignature},
     {::onc::client_cert::kClientCertPattern, &kCertificatePatternSignature},
     {::onc::client_cert::kClientCertRef, &kStringSignature},
     {::onc::client_cert::kClientCertType, &kStringSignature},

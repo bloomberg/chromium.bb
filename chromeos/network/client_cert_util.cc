@@ -194,8 +194,7 @@ void SetShillProperties(const ConfigType cert_config_type,
     case CONFIG_TYPE_OPENVPN: {
       properties->SetKey(shill::kOpenVPNPinProperty,
                          base::Value(kDefaultTPMPin));
-      properties->SetKey(shill::kOpenVPNClientCertSlotProperty,
-                         base::Value(base::IntToString(tpm_slot)));
+      // Note: OpemVPN does not have a slot property, see crbug.com/769550.
       properties->SetKey(shill::kOpenVPNClientCertIdProperty,
                          base::Value(pkcs11_id));
       break;
