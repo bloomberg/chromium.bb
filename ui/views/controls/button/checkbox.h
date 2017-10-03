@@ -25,7 +25,8 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  public:
   static const char kViewClassName[];
 
-  explicit Checkbox(const base::string16& label);
+  // |force_md| forces MD even when --secondary-ui-md flag is not set.
+  explicit Checkbox(const base::string16& label, bool force_md = false);
   ~Checkbox() override;
 
   // Sets a listener for this checkbox. Checkboxes aren't required to have them
@@ -37,8 +38,9 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   bool checked() const { return checked_; }
 
  protected:
-  // Returns whether MD is enabled; exists for the sake of brevity.
-  static bool UseMd();
+  // Returns whether MD is enabled. Returns true if |force_md| in the
+  // constructor or --secondary-ui-md flag is set.
+  bool UseMd() const;
 
   // LabelButton:
   const char* GetClassName() const override;
@@ -86,6 +88,8 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
   // The images for each button node_data.
   gfx::ImageSkia images_[2][2][STATE_COUNT];
+
+  bool use_md_;
 
   DISALLOW_COPY_AND_ASSIGN(Checkbox);
 };

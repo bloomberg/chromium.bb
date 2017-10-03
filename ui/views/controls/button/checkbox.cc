@@ -72,9 +72,11 @@ void IconFocusRing::OnPaint(gfx::Canvas* canvas) {
 // static
 const char Checkbox::kViewClassName[] = "Checkbox";
 
-Checkbox::Checkbox(const base::string16& label)
+Checkbox::Checkbox(const base::string16& label, bool force_md)
     : LabelButton(NULL, label),
-      checked_(false) {
+      checked_(false),
+      use_md_(force_md ||
+              ui::MaterialDesignController::IsSecondaryUiMaterial()) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFocusForPlatform();
   SetFocusPainter(nullptr);
@@ -145,9 +147,10 @@ void Checkbox::SetChecked(bool checked) {
   UpdateImage();
 }
 
-// static
-bool Checkbox::UseMd() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+// TODO(tetsui): Remove this method and |use_md_| when MD for secondary UI
+// becomes default and IsSecondaryUiMaterial() is tautology.
+bool Checkbox::UseMd() const {
+  return use_md_;
 }
 
 const char* Checkbox::GetClassName() const {
