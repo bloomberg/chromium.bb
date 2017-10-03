@@ -95,8 +95,6 @@ Bug(none) external/wpt/service-workers/service-worker/invalid-blobtype.https.htm
 Bug(none) external/wpt/service-workers/service-worker/invalid-header.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/iso-latin1-header.https.html [ Crash ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/navigation-redirect-to-http.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/opaque-response-preloaded.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/redirected-response.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/register-link-header.https.html [ Timeout ]

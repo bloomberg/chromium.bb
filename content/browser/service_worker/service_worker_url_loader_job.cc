@@ -107,6 +107,11 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       blob_client_binding_(this),
       binding_(this),
       weak_factory_(this) {
+  DCHECK_EQ(FETCH_REQUEST_MODE_NAVIGATE, resource_request_.fetch_request_mode);
+  DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
+            resource_request_.fetch_credentials_mode);
+  DCHECK_EQ(FetchRedirectMode::MANUAL_MODE,
+            resource_request_.fetch_redirect_mode);
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
 }

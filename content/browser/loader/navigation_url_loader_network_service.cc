@@ -550,6 +550,10 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->report_raw_headers = request_info->report_raw_headers;
   new_request->allow_download = allow_download_;
 
+  new_request->fetch_request_mode = FETCH_REQUEST_MODE_NAVIGATE;
+  new_request->fetch_credentials_mode = FETCH_CREDENTIALS_MODE_INCLUDE;
+  new_request->fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
+
   int frame_tree_node_id = request_info->frame_tree_node_id;
 
   // Check if a web UI scheme wants to handle this request.
