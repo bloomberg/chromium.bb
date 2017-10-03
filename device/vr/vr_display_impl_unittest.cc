@@ -53,7 +53,7 @@ class VRDisplayImplTest : public testing::Test {
 
   void ExitPresent(VRDisplayImpl* display_impl) { display_impl->ExitPresent(); }
 
-  bool presenting() { return !!device_->presenting_display_; }
+  bool presenting() { return !!device_->GetPresentingDisplay(); }
   VRDevice* device() { return device_.get(); }
   FakeVRServiceClient* client() { return client_.get(); }
 

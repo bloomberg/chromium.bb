@@ -11,8 +11,7 @@ namespace device {
 
 unsigned int VRDevice::next_id_ = 1;
 
-VRDevice::VRDevice()
-    : presenting_display_(nullptr), id_(next_id_), weak_ptr_factory_(this) {
+VRDevice::VRDevice() : presenting_display_(nullptr), id_(next_id_) {
   // Prevent wraparound. Devices with this ID will be treated as invalid.
   if (next_id_ != VR_DEVICE_LAST_ID)
     next_id_++;

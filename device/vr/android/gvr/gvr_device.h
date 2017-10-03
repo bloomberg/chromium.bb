@@ -27,9 +27,11 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
 
   // VRDevice
   mojom::VRDisplayInfoPtr GetVRDisplayInfo() override;
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      mojom::VRPresentationProviderRequest request,
-                      const base::Callback<void(bool)>& callback) override;
+  void RequestPresent(
+      VRDisplayImpl* display,
+      mojom::VRSubmitFrameClientPtr submit_client,
+      mojom::VRPresentationProviderRequest request,
+      mojom::VRDisplay::RequestPresentCallback callback) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(
       VRDisplayImpl* display,
@@ -44,12 +46,18 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
                          const base::android::JavaRef<jobject>& obj);
 
  private:
+  void OnRequestPresentResult(mojom::VRDisplay::RequestPresentCallback callback,
+                              VRDisplayImpl* display,
+                              bool result);
+
   GvrDevice();
   GvrDelegateProvider* GetGvrDelegateProvider();
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   mojom::VRDisplayInfoPtr display_info_;
+
+  base::WeakPtrFactory<GvrDevice> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

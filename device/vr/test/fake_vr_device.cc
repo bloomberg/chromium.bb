@@ -57,10 +57,13 @@ mojom::VRDisplayInfoPtr FakeVRDevice::GetVRDisplayInfo() {
   return display_info_.Clone();
 }
 
-void FakeVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                                  mojom::VRPresentationProviderRequest request,
-                                  const base::Callback<void(bool)>& callback) {
-  callback.Run(true);
+void FakeVRDevice::RequestPresent(
+    VRDisplayImpl* display,
+    mojom::VRSubmitFrameClientPtr submit_client,
+    mojom::VRPresentationProviderRequest request,
+    mojom::VRDisplay::RequestPresentCallback callback) {
+  SetPresentingDisplay(display);
+  std::move(callback).Run(true);
 }
 
 void FakeVRDevice::ExitPresent() {

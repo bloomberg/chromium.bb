@@ -28,9 +28,11 @@ class OpenVRDevice : public VRDevice {
 
   // VRDevice
   mojom::VRDisplayInfoPtr GetVRDisplayInfo() override;
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      mojom::VRPresentationProviderRequest request,
-                      const base::Callback<void(bool)>& callback) override;
+  void RequestPresent(
+      VRDisplayImpl* display,
+      mojom::VRSubmitFrameClientPtr submit_client,
+      mojom::VRPresentationProviderRequest request,
+      mojom::VRDisplay::RequestPresentCallback callback) override;
   void ExitPresent() override;
   void GetNextMagicWindowPose(
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) override;

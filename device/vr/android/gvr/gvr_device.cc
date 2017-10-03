@@ -124,7 +124,7 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
   return device;
 }
 
-GvrDevice::GvrDevice() : VRDevice() {
+GvrDevice::GvrDevice() : VRDevice(), weak_ptr_factory_(this) {
   GetGvrDelegateProvider();
   JNIEnv* env = base::android::AttachCurrentThread();
   non_presenting_context_.Reset(
@@ -149,18 +149,31 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDisplayInfo() {
   return display_info_.Clone();
 }
 
-void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                               mojom::VRPresentationProviderRequest request,
-                               const base::Callback<void(bool)>& callback) {
+void GvrDevice::RequestPresent(
+    VRDisplayImpl* display,
+    mojom::VRSubmitFrameClientPtr submit_client,
+    mojom::VRPresentationProviderRequest request,
+    mojom::VRDisplay::RequestPresentCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider)
-    return callback.Run(false);
+    return std::move(callback).Run(false);
 
   // RequestWebVRPresent is async as we may trigger a DON (Device ON) flow that
   // pauses Chrome.
-  delegate_provider->RequestWebVRPresent(std::move(submit_client),
-                                         std::move(request), GetVRDisplayInfo(),
-                                         callback);
+  delegate_provider->RequestWebVRPresent(
+      std::move(submit_client), std::move(request), GetVRDisplayInfo(),
+      base::Bind(&GvrDevice::OnRequestPresentResult,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback),
+                 base::Unretained(display)));
+}
+
+void GvrDevice::OnRequestPresentResult(
+    mojom::VRDisplay::RequestPresentCallback callback,
+    VRDisplayImpl* display,
+    bool result) {
+  if (result)
+    SetPresentingDisplay(display);
+  std::move(callback).Run(result);
 }
 
 void GvrDevice::ExitPresent() {
