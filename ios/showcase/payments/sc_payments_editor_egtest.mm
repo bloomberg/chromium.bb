@@ -80,20 +80,13 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
       grey_sufficientlyVisible(), nil);
 }
 
-// Matcher for the return key on the keyboard.
-id<GREYMatcher> KeyboardReturnKey(NSString* accessibilityID) {
-  return grey_allOf(grey_accessibilityID(accessibilityID),
+// Matcher for the next key on the keyboard.
+id<GREYMatcher> KeyboardNextKey() {
+  return grey_allOf(grey_anyOf(grey_accessibilityID(@"Next"),
+                               grey_accessibilityID(@"Next:"), nil),
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey),
                     grey_sufficientlyVisible(), nil);
-}
-
-id<GREYMatcher> KeyboardNextKey() {
-  if (@available(iOS 10, *)) {
-    return KeyboardReturnKey(@"Next:");
-  } else {
-    return KeyboardReturnKey(@"Next");
-  }
 }
 
 }  // namespace
@@ -303,13 +296,6 @@ id<GREYMatcher> KeyboardNextKey() {
 // get focus except for the last textfield in which case causes the focus to go
 // away from the textfield.
 - (void)testNavigationByTappingReturn {
-// TODO(crbug.com/769464): Re-enable this test on iPad devices.
-#if !TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-  }
-#endif
-
   // Tap the name textfield.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       performAction:grey_tap()];
@@ -326,9 +312,9 @@ id<GREYMatcher> KeyboardNextKey() {
       @"City/Province_textField");
 
   // The standard keyboard does not display for the province field. Instead, tap
-  // the address textfield.
+  // the postal code textfield.
   id<GREYMatcher> matcher =
-      grey_allOf(grey_accessibilityID(@"Address_textField"),
+      grey_allOf(grey_accessibilityID(@"Postal Code_textField"),
                  grey_interactable(), grey_sufficientlyVisible(), nil);
   [[[EarlGrey selectElementWithMatcher:matcher]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 50)
@@ -336,21 +322,6 @@ id<GREYMatcher> KeyboardNextKey() {
           grey_accessibilityID(
               @"kPaymentRequestEditCollectionViewAccessibilityID")]
       performAction:grey_tap()];
-
-  // Assert the address textfield is focused.
-  AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Address_textField");
-
-  // Press the return key.
-  [[EarlGrey selectElementWithMatcher:KeyboardNextKey()]
-      performAction:grey_tap()];
-
-  if (IsIPadIdiom()) {
-    // Disable EarlGrey's synchronization.
-    // TODO(crbug.com/768864): Investigate why synchronization gets blocked.
-    [[GREYConfiguration sharedInstance]
-            setValue:@NO
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
 
   // Assert the postal code textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Postal Code_textField");
@@ -365,13 +336,6 @@ id<GREYMatcher> KeyboardNextKey() {
   GREYAssertFalse([firstResponder isKindOfClass:[UITextField class]],
                   @"Expected first responder not to be of kind %@.",
                   [UITextField class]);
-
-  if (IsIPadIdiom()) {
-    // Reenable synchronization.
-    [[GREYConfiguration sharedInstance]
-            setValue:@YES
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
 }
 
 @end
