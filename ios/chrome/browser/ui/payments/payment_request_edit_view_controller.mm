@@ -591,11 +591,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (index < 0 || index >= static_cast<NSInteger>(self.fields.count))
     return;
 
+  // Early return if the validation message and not the field is selected.
+  if (indexPath.row != 0)
+    return;
+
   EditorField* field = [self.fields objectAtIndex:index];
 
-  // If a selector field is selected, blur the focused text field.
-  if (field.fieldType == EditorFieldTypeSelector)
+  // If a selector field is selected, blur the currently focused UITextField.
+  // And if a text field is selected, focus the corresponding UITextField.
+  if (field.fieldType == EditorFieldTypeSelector) {
     [[_currentEditingCell textField] resignFirstResponder];
+  } else if (field.fieldType == EditorFieldTypeTextField) {
+    id cell = [collectionView cellForItemAtIndexPath:indexPath];
+    // |cell| may be nil if the cell is not visible.
+    if (cell) {
+      AutofillEditCell* autofillEditCell =
+          base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+      [autofillEditCell.textField becomeFirstResponder];
+    }
+  }
 
   if ([self.delegate respondsToSelector:@selector
                      (paymentRequestEditViewController:didSelectField:)]) {
