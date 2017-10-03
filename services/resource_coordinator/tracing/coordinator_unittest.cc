@@ -55,6 +55,14 @@ class CoordinatorTest : public testing::Test,
     return agents_.back().get();
   }
 
+  MockAgent* AddObjectAgent() {
+    auto agent = base::MakeUnique<MockAgent>();
+    agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "systemTraceEvents",
+                                   mojom::TraceDataType::OBJECT, false);
+    agents_.push_back(std::move(agent));
+    return agents_.back().get();
+  }
+
   MockAgent* AddStringAgent() {
     auto agent = base::MakeUnique<MockAgent>();
     agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "battor",
@@ -206,6 +214,27 @@ TEST_F(CoordinatorTest, StartTracingWithSameConfigs) {
   // because the 2nd |StartTracing| was a no-op.
   EXPECT_EQ(1u, agent->call_stat().size());
   EXPECT_EQ("StartTracing", agent->call_stat()[0]);
+}
+
+TEST_F(CoordinatorTest, StopAndFlushObjectAgent) {
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+
+  auto* agent = AddObjectAgent();
+  agent->data_.push_back("\"content\":{\"a\":1}");
+  agent->data_.push_back("\"name\":\"etw\"");
+
+  StartTracing("config", true, true);
+  if (!quit_closure_.is_null())
+    run_loop.Run();
+
+  EXPECT_EQ("{\"systemTraceEvents\":{\"content\":{\"a\":1},\"name\":\"etw\"}}",
+            output_);
+
+  // Each agent should have received exactly two calls.
+  EXPECT_EQ(2u, agent->call_stat().size());
+  EXPECT_EQ("StartTracing", agent->call_stat()[0]);
+  EXPECT_EQ("StopAndFlush", agent->call_stat()[1]);
 }
 
 TEST_F(CoordinatorTest, StopAndFlushTwoArrayAgents) {

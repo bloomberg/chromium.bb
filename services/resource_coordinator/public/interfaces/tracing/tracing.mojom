@@ -11,10 +11,12 @@ import "mojo/common/values.mojom";
 //
 // - All agents with the same label should have the same type.
 // - There can be multiple agents with the same label, if their data type is
-//   ARRAY. Their data will be concatenated together and separated by commas.
+//   ARRAY or OBJECT. Their data will be concatenated together and separated by
+//   commas.
 // - There can be only one agent with data type STRING.
 enum TraceDataType {
   ARRAY,
+  OBJECT,
   STRING
 };
 
