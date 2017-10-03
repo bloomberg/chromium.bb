@@ -76,7 +76,7 @@ class ChromeContentClient : public content::ContentClient {
       std::vector<content::PepperPluginInfo>* plugins) override;
   void AddContentDecryptionModules(
       std::vector<content::CdmInfo>* cdms,
-      std::vector<content::CdmHostFilePath>* cdm_host_file_paths) override;
+      std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override;
 
   void AddAdditionalSchemes(Schemes* schemes) override;
   std::string GetProduct() const override;
