@@ -65,11 +65,11 @@ struct QNameComponentsTranslator {
                         const QualifiedNameData& data,
                         unsigned) {
     const QualifiedNameComponents& components = data.components_;
-    location = QualifiedName::QualifiedNameImpl::Create(
-                   AtomicString(components.prefix_),
-                   AtomicString(components.local_name_),
-                   AtomicString(components.namespace_), data.is_static_)
-                   .LeakRef();
+    auto name = QualifiedName::QualifiedNameImpl::Create(
+        AtomicString(components.prefix_), AtomicString(components.local_name_),
+        AtomicString(components.namespace_), data.is_static_);
+    name->AddRef();
+    location = name.get();
   }
 };
 
