@@ -130,6 +130,13 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     const ServiceWorkerResponse& response,
     storage::mojom::BlobPtr body_as_blob,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
+  // A response with status code 0 is Blink telling us to respond with network
+  // error.
+  if (response.status_code == 0) {
+    DeliverErrorResponse();
+    return;
+  }
+
   ServiceWorkerLoaderHelpers::SaveResponseInfo(response, &response_head_);
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
       response.status_code, response.status_text, response.headers,
