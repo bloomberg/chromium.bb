@@ -71,6 +71,9 @@ class WizardController : public BaseScreenDelegate,
     return skip_post_login_screens_;
   }
 
+  // Whether to skip any prompts that may be normally shown during enrollment.
+  static bool skip_enrollment_prompts() { return skip_enrollment_prompts_; }
+
   // Sets delays to zero. MUST be used only for tests.
   static void SetZeroDelays();
 
@@ -83,6 +86,9 @@ class WizardController : public BaseScreenDelegate,
   // Skips any screens that may normally be shown after login (registration,
   // Terms of Service, user image selection).
   static void SkipPostLoginScreensForTesting();
+
+  // Skips any enrollment prompts that may be normally shown.
+  static void SkipEnrollmentPromptsForTesting();
 
   // Returns true if OOBE is operating under the
   // Zero-Touch Hands-Off Enrollment Flow.
@@ -335,6 +341,8 @@ class WizardController : public BaseScreenDelegate,
   static bool skip_post_login_screens_;
 
   static bool zero_delay_enabled_;
+
+  static bool skip_enrollment_prompts_;
 
   // Screen that's currently active.
   BaseScreen* current_screen_ = nullptr;

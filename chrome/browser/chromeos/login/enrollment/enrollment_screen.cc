@@ -351,7 +351,7 @@ void EnrollmentScreen::OnDeviceAttributeProvided(const std::string& asset_id,
 void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
   // If user is permitted to update device attributes
   // Show attribute prompt screen
-  if (granted) {
+  if (granted && !WizardController::skip_enrollment_prompts()) {
     // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
     LOG(WARNING) << "Show device attribute prompt screen";
     StartupUtils::MarkDeviceRegistered(
@@ -405,7 +405,8 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
   retry_backoff_->InformOfRequest(true);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
-  if (WizardController::UsingHandsOffEnrollment()) {
+  if (WizardController::UsingHandsOffEnrollment() ||
+      WizardController::skip_enrollment_prompts()) {
     OnConfirmationClosed();
   } else {
     view_->ShowEnrollmentStatus(

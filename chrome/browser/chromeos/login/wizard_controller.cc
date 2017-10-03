@@ -249,6 +249,9 @@ WizardController* WizardController::default_controller_ = nullptr;
 bool WizardController::skip_post_login_screens_ = false;
 
 // static
+bool WizardController::skip_enrollment_prompts_ = false;
+
+// static
 bool WizardController::zero_delay_enabled_ = false;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1462,6 +1465,11 @@ bool WizardController::IsOOBEStepToTrack(OobeScreen screen_id) {
 // static
 void WizardController::SkipPostLoginScreensForTesting() {
   skip_post_login_screens_ = true;
+}
+
+// static
+void WizardController::SkipEnrollmentPromptsForTesting() {
+  skip_enrollment_prompts_ = true;
 }
 
 // static
