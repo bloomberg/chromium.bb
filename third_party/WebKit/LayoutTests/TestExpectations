@@ -1723,7 +1723,6 @@ crbug.com/626703 http/tests/devtools/network/network-columns-visible.html [ Pass
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
-crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
