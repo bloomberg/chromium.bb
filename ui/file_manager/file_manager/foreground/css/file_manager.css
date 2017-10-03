@@ -141,6 +141,7 @@ div.splitter {
 
 #directory-tree .tree-row > .button {
   display: flex;
+  min-width: 0;
 }
 
 #directory-tree .tree-row > .expand-icon {
