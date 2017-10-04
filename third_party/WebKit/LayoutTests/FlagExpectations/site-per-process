@@ -12,12 +12,6 @@ crbug.com/769508 fast/css/acid2-pixel.html [ Failure ]
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/765779 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
 
-# https://crbug.com/758075: Uninvestigated timeout.
-# (apparently https://crbug.com/599670 doesn't affect the Site Isolation bot,
-# so there is no need to carry-over the [ Failure ] expectation from baseline
-# expectations in LayoutTests/TestExpectations).
-crbug.com/758075 http/tests/devtools/resource-parameters-ipv6.html [ Timeout ]
-
 # https://crbug.com/393285: Text-autosizing doesn't support OOPIFs.
 # https://crbug.com/667551: Pixel dumps don't support OOPIFs.
 # Both of the bugs above need to be fixed, before enabling the tests below.
@@ -25,9 +19,6 @@ crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure ]
 crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/narrow-iframe.html [ Failure ]
 crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/wide-iframe.html [ Failure ]
-
-# https://crbug.com/700535: Times out after r454488 landed.
-crbug.com/700535 fast/dnd/dropEffect-for-effectAllowed.html [ Timeout ]
 
 # https://crbug.com/697111: assert failures in test added in r451938.
 crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
@@ -65,14 +56,6 @@ crbug.com/608015 virtual/mojo-loading/http/tests/inspector-protocol/access-inspe
 # https://crbug.com/771003 - Dump history from all processes in layout tests
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 crbug.com/771003 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
-
-# https://crbug.com/582522 - extra mixedContent checks reported with --site-per-process
-# https://crbug.com/602497 - Inconsistent console messages about mixed content,
-#                            when running with or without --site-per-process
-crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
-crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
-crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
-crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
@@ -119,25 +102,15 @@ crbug.com/619662 http/tests/navigation/cross-origin-fragment-navigation-is-async
 crbug.com/619662 virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 crbug.com/619662 virtual/mojo-loading/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 
-# https://crbug.com/616905 - history.back() has different behavior with --site-per-process.
-crbug.com/616905 http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
-crbug.com/616905 virtual/mojo-loading/http/tests/history/cross-origin-redirect-on-back.html [ Timeout ]
-
 # https://crbug.com/623268 - Can't inspect OOPIFs from main page's DevTools window.
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
-crbug.com/623268 http/tests/inspector-protocol/request-referrer-policy.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-referrer-policy.js [ Timeout ]
 crbug.com/623268 http/tests/devtools/console-cross-origin-iframe-logging.html [ Failure ]
 crbug.com/623268 virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.html [ Failure ]
-
-# https://crbug.com/623265 - cross-site navigation in main page breaks test.
-crbug.com/623265 http/tests/devtools/indexeddb/resources-panel.html [ Timeout ]
-crbug.com/623265 virtual/mojo-loading/http/tests/devtools/indexeddb/resources-panel.html [ Timeout ]
 
 # https://crbug.com/645641 - test_runner.cc(1863) Check failed:
 # layout_test_runtime_flags_.have_top_loading_frame()
@@ -154,10 +127,6 @@ crbug.com/678485 http/tests/devtools/startup/shadow-dom-rules-restart.html [ Tim
 crbug.com/678485 virtual/mojo-loading/http/tests/devtools/startup/shadow-dom-rules-restart.html [ Timeout ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 crbug.com/678491 virtual/mojo-loading/http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
-
-# These tests sometimes fail on usual bots but crash w/ --site-per-process.
-crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Crash ]
-crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Crash ]
 
 # Slow tests. These are listed in SlowTests listed here also because
 # expectations are unfortunately not inherited automatically (e.g. see
@@ -176,9 +145,6 @@ crbug.com/650348 virtual/mojo-loading/http/tests/webaudio/autoplay-crossorigin.h
 crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
 
 # TODO(lukasza, alexmos): Triage these failures.
-Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]
-Bug(none) fast/frames/frame-limit.html [ Timeout ]
-Bug(none) fast/loader/reload-zero-byte-plugin.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_adoption01.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_adoption02.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_comments01.html [ Failure ]
@@ -225,8 +191,6 @@ Bug(none) external/wpt/html/syntax/parsing/html5lib_tests9.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_tricky01.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_webkit01.html [ Failure ]
 Bug(none) external/wpt/html/syntax/parsing/html5lib_webkit02.html [ Failure ]
-Bug(none) http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Timeout ]
 Bug(none) jquery/manipulation.html [ Timeout ]
 Bug(none) storage/indexeddb/blob-valid-after-deletion.html [ Failure ]
 Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
