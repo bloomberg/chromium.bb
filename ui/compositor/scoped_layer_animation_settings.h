@@ -34,9 +34,6 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   // This will request render surface caching on the animating layer. The cache
   // request will be removed at the end of the animation.
   void CacheRenderSurface();
-  // This will defer painting on the animating layer. The deferred paint
-  // request will be removed at the end of the animation.
-  void DeferPaint();
   base::TimeDelta GetTransitionDuration() const;
 
   // Locks transition duration in |animator_|. When transition duration

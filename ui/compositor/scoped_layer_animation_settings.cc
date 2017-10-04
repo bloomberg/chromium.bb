@@ -33,10 +33,9 @@ class CacheRenderSurfaceObserver : public ui::ImplicitAnimationObserver,
     // If animation finishes before |layer_| is destoyed, we will reset the
     // cache and remove |this| from the |layer_| observer list when deleting
     // |this|.
-    if (layer_) {
+    if (layer_)
       layer_->RemoveCacheRenderSurfaceRequest();
-      layer_->GetAnimator()->RemoveAndDestroyOwnedObserver(this);
-    }
+    delete this;
   }
 
   // ui::LayerObserver overrides:
@@ -53,54 +52,6 @@ class CacheRenderSurfaceObserver : public ui::ImplicitAnimationObserver,
 
   DISALLOW_COPY_AND_ASSIGN(CacheRenderSurfaceObserver);
 };
-
-class DeferredPaintObserver : public ui::ImplicitAnimationObserver,
-                              public ui::LayerObserver {
- public:
-  DeferredPaintObserver(ui::Layer* layer) : layer_(layer) {
-    layer_->AddObserver(this);
-    layer_->AddDeferredPaintRequest();
-  }
-  ~DeferredPaintObserver() override {
-    if (layer_)
-      layer_->RemoveObserver(this);
-  }
-
-  // ui::ImplicitAnimationObserver overrides:
-  void OnImplicitAnimationsCompleted() override {
-    // If animation finishes before |layer_| is destoyed, we will remove the
-    // request of deferred painting and remove |this| from the |layer_|
-    // observer list when deleting |this|.
-    if (layer_) {
-      layer_->RemoveDeferredPaintRequest();
-      layer_->GetAnimator()->RemoveAndDestroyOwnedObserver(this);
-    }
-  }
-
-  // ui::LayerObserver overrides:
-  void LayerDestroyed(ui::Layer* layer) override {
-    // If the animation is still going past layer destruction then we want the
-    // layer too keep being deferred paint until the animation has finished. We
-    // will defer deleting |this| until the animation finishes.
-    layer_->RemoveObserver(this);
-    layer_ = nullptr;
-  }
-
- private:
-  ui::Layer* layer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeferredPaintObserver);
-};
-
-void AddDeferredPaintObserverRecursive(
-    ui::Layer* layer,
-    ui::ScopedLayerAnimationSettings* settings) {
-  auto observer = base::MakeUnique<DeferredPaintObserver>(layer);
-  settings->AddObserver(observer.get());
-  layer->GetAnimator()->AddOwnedObserver(std::move(observer));
-  for (auto* child : layer->children())
-    AddDeferredPaintObserverRecursive(child, settings);
-}
 
 }  // namespace
 
@@ -151,14 +102,8 @@ void ScopedLayerAnimationSettings::SetTransitionDuration(
 }
 
 void ScopedLayerAnimationSettings::CacheRenderSurface() {
-  auto observer = base::MakeUnique<CacheRenderSurfaceObserver>(
-      animator_->delegate()->GetLayer());
-  AddObserver(observer.get());
-  animator_->AddOwnedObserver(std::move(observer));
-}
-
-void ScopedLayerAnimationSettings::DeferPaint() {
-  AddDeferredPaintObserverRecursive(animator_->delegate()->GetLayer(), this);
+  AddObserver(
+      new CacheRenderSurfaceObserver(animator_->delegate()->GetLayer()));
 }
 
 void ScopedLayerAnimationSettings::LockTransitionDuration() {

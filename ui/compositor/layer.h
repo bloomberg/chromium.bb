@@ -435,8 +435,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void AddDeferredPaintRequest();
   void RemoveDeferredPaintRequest();
 
-  bool IsPaintDeferredForTesting() const { return deferred_paint_requests_; }
-
   // Request trilinear filtering for layer.
   void SetTrilinearFiltering(bool trilinear_filtering);
 
