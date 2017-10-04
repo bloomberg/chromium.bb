@@ -80,6 +80,9 @@ static INLINE InterpFilters av1_broadcast_interp_filter(InterpFilter filter) {
 typedef InterpFilter InterpFilters;
 static INLINE InterpFilter av1_extract_interp_filter(InterpFilters filters,
                                                      int x_filter) {
+#ifdef NDEBUG
+  (void)x_filter;
+#endif
   assert(!x_filter);
   return filters;
 }
