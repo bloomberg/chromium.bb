@@ -94,6 +94,7 @@ PendingDecode::PendingDecode(PendingDecode&& other) = default;
 PendingDecode::~PendingDecode() = default;
 
 MediaCodecVideoDecoder::MediaCodecVideoDecoder(
+    const gpu::GpuPreferences& gpu_preferences,
     VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
     DeviceInfo* device_info,
     AVDACodecAllocator* codec_allocator,
@@ -109,6 +110,8 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       video_frame_factory_(std::move(video_frame_factory)),
       overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
+      enable_threaded_texture_mailboxes_(
+          gpu_preferences.enable_threaded_texture_mailboxes),
       context_ref_(std::move(context_ref)),
       weak_factory_(this),
       codec_allocator_weak_factory_(this) {
@@ -198,10 +201,10 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
   }
   surface_texture_bundle_ = new AVDASurfaceBundle(std::move(surface_texture));
 
-  // TODO(watk): This isn't sufficient. Overlays should also be disabled if
-  // we're using threaded texture mailboxes (http://crbug.com/582170).
-  // See gpu::GpuPreferences::enable_threaded_texture_mailboxes.
-  if (!device_info_->SupportsOverlaySurfaces()) {
+  // Overlays are disabled when |enable_threaded_texture_mailboxes| is true
+  // (http://crbug.com/582170).
+  if (enable_threaded_texture_mailboxes_ ||
+      !device_info_->SupportsOverlaySurfaces()) {
     OnSurfaceChosen(nullptr);
     return;
   }
@@ -218,6 +221,7 @@ void MediaCodecVideoDecoder::OnOverlayInfoChanged(
     const OverlayInfo& overlay_info) {
   DVLOG(2) << __func__;
   DCHECK(device_info_->SupportsOverlaySurfaces());
+  DCHECK(!enable_threaded_texture_mailboxes_);
   if (InTerminalState())
     return;
 

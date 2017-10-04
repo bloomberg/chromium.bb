@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
@@ -53,6 +54,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
       public AVDACodecAllocatorClient {
  public:
   MediaCodecVideoDecoder(
+      const gpu::GpuPreferences& gpu_preferences,
       VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
@@ -242,6 +244,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   DeviceInfo* device_info_;
+  bool enable_threaded_texture_mailboxes_;
 
   // If we're running in a service context this ref lets us keep the service
   // thread alive until destruction.

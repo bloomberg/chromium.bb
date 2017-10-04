@@ -75,10 +75,12 @@ gpu::GpuCommandBufferStub* GetGpuCommandBufferStub(
 }  // namespace
 
 GpuMojoMediaClient::GpuMojoMediaClient(
+    const gpu::GpuPreferences& gpu_preferences,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     AndroidOverlayMojoFactoryCB android_overlay_factory_cb)
-    : gpu_task_runner_(std::move(gpu_task_runner)),
+    : gpu_preferences_(gpu_preferences),
+      gpu_task_runner_(std::move(gpu_task_runner)),
       media_gpu_channel_manager_(std::move(media_gpu_channel_manager)),
       android_overlay_factory_cb_(std::move(android_overlay_factory_cb)) {}
 
@@ -111,7 +113,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       base::Bind(&GetGpuCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
   return base::MakeUnique<MediaCodecVideoDecoder>(
-      std::move(output_cb), DeviceInfo::GetInstance(),
+      gpu_preferences_, std::move(output_cb), DeviceInfo::GetInstance(),
       AVDACodecAllocator::GetInstance(),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),

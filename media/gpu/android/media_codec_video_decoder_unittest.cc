@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/decoder_buffer.h"
@@ -98,6 +99,15 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     fake_decoder_buffer_ = DecoderBuffer::CopyFrom(&data, 1);
     codec_allocator_ = base::MakeUnique<FakeCodecAllocator>();
     device_info_ = base::MakeUnique<NiceMock<MockDeviceInfo>>();
+  }
+
+  void TearDown() override {
+    // MCVD calls DeleteSoon() on itself, so we have to run a RunLoop.
+    mcvd_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void CreateMcvd() {
     auto surface_chooser = base::MakeUnique<NiceMock<FakeSurfaceChooser>>();
     surface_chooser_ = surface_chooser.get();
 
@@ -114,8 +124,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         .WillByDefault(RunCallback<0>(surface_texture));
 
     auto* observable_mcvd = new DestructionObservableMCVD(
-        base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
-        codec_allocator_.get(), std::move(surface_chooser),
+        gpu_preferences_, base::Bind(&OutputWithReleaseMailboxCb),
+        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
         base::Bind(&CreateAndroidOverlayCb),
         base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
                    base::Unretained(this)),
@@ -128,16 +138,12 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     destruction_observer_->ExpectDestruction();
   }
 
-  void TearDown() override {
-    // MCVD calls DeleteSoon() on itself, so we have to run a RunLoop.
-    mcvd_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
-
   // Just call Initialize(). MCVD will be waiting for a call to Decode() before
   // continuining initialization.
   bool Initialize(
       VideoDecoderConfig config = TestVideoConfig::Large(kCodecH264)) {
+    if (!mcvd_)
+      CreateMcvd();
     bool result = false;
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
     mcvd_->Initialize(config, false, nullptr, base::Bind(init_cb, &result),
@@ -201,6 +207,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   std::unique_ptr<DestructionObserver> destruction_observer_;
   ProvideOverlayInfoCB provide_overlay_info_cb_;
+  gpu::GpuPreferences gpu_preferences_;
 
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
   // testing the teardown path.
@@ -222,6 +229,7 @@ TEST_F(MediaCodecVideoDecoderTest, SmallVp8IsRejected) {
 }
 
 TEST_F(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
+  CreateMcvd();
   EXPECT_CALL(*video_frame_factory_, Initialize(_)).Times(0);
   EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, _)).Times(0);
@@ -248,6 +256,14 @@ TEST_F(MediaCodecVideoDecoderTest,
   Initialize();
   ON_CALL(*device_info_, SupportsOverlaySurfaces())
       .WillByDefault(Return(false));
+  mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+  ASSERT_FALSE(provide_overlay_info_cb_);
+}
+
+TEST_F(MediaCodecVideoDecoderTest,
+       OverlayInfoIsNotRequestedIfThreadedTextureMailboxesEnabled) {
+  gpu_preferences_.enable_threaded_texture_mailboxes = true;
+  Initialize();
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
   ASSERT_FALSE(provide_overlay_info_cb_);
 }
@@ -309,15 +325,6 @@ TEST_F(MediaCodecVideoDecoderTest, CodecIsReleasedOnDestruction) {
   EXPECT_CALL(*codec_allocator_, MockReleaseMediaCodec(codec, _, _));
 }
 
-TEST_F(MediaCodecVideoDecoderTest, SurfaceChooserIsUpdatedWithTheOverlay) {
-  InitializeFully_OneDecodePending();
-  OverlayInfo info;
-  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  provide_overlay_info_cb_.Run(info);
-  // The surface chooser should have an overlay factory.
-  ASSERT_TRUE(surface_chooser_->factory_);
-}
-
 TEST_F(MediaCodecVideoDecoderTest, SurfaceChooserIsUpdatedOnOverlayChanges) {
   InitializeWithSurfaceTexture_OneDecodePending();
 
@@ -325,8 +332,10 @@ TEST_F(MediaCodecVideoDecoderTest, SurfaceChooserIsUpdatedOnOverlayChanges) {
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
   provide_overlay_info_cb_.Run(info);
+  ASSERT_TRUE(surface_chooser_->factory_);
   info.routing_token = base::UnguessableToken::Deserialize(3, 4);
   provide_overlay_info_cb_.Run(info);
+  ASSERT_TRUE(surface_chooser_->factory_);
 }
 
 TEST_F(MediaCodecVideoDecoderTest, OverlayInfoUpdatesAreIgnoredInStateError) {

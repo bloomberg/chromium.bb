@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/child/service_factory.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/features.h"
 
@@ -23,6 +24,7 @@ namespace content {
 class GpuServiceFactory : public ServiceFactory {
  public:
   GpuServiceFactory(
+      const gpu::GpuPreferences& gpu_preferences,
       base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager,
       media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
   ~GpuServiceFactory() override;
@@ -39,6 +41,7 @@ class GpuServiceFactory : public ServiceFactory {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
   media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
+  gpu::GpuPreferences gpu_preferences_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceFactory);

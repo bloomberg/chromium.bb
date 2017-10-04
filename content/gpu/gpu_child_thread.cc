@@ -263,7 +263,7 @@ void GpuChildThread::CreateGpuService(
 
   // Only set once per process instance.
   service_factory_.reset(new GpuServiceFactory(
-      gpu_service_->media_gpu_channel_manager()->AsWeakPtr(),
+      gpu_preferences, gpu_service_->media_gpu_channel_manager()->AsWeakPtr(),
       overlay_factory_cb));
 
   if (GetContentClient()->gpu())  // NULL in tests.

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -29,6 +30,7 @@ CreateMediaService();
 // expected to be the GPU main thread task runner.
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
 CreateGpuMediaService(
+    const gpu::GpuPreferences& gpu_preferences,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
