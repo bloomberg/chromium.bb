@@ -3608,6 +3608,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
           constants.VMTEST_INFORMATIONAL_TEST_TYPE,
           timeout=23*60*60)],
       active_waterfall=constants.WATERFALL_INTERNAL,
+      vm_test_report_to_dashboards=True,
   )
 
   # Create our unittest stress build configs (used for tryjobs only)

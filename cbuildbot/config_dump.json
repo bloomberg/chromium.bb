@@ -115,6 +115,7 @@
         "useflags": [],
         "usepkg_build_packages": true,
         "usepkg_toolchain": true,
+        "vm_test_report_to_dashboards": false,
         "vm_test_runs": 1,
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
@@ -4017,6 +4018,7 @@
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "vm_test_report_to_dashboards": true,
         "vm_tests": [
             "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 82800\n}"
         ],

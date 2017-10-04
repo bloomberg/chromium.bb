@@ -735,6 +735,10 @@ def DefaultSettings():
       # (--vmtest command line or trybot). None means no override.
       vm_tests_override=None,
 
+      # If true, in addition to upload vm test result to artifact folder, report
+      # results to other dashboard as well.
+      vm_test_report_to_dashboards=False,
+
       # The number of times to run the VMTest stage. If this is >1, then we
       # will run the stage this many times, stopping if we encounter any
       # failures.

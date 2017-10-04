@@ -25,6 +25,7 @@ from chromite.lib import cgroups
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cts_helper
 from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import timeout_util
@@ -72,7 +73,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       results_path: Path to directory containing the test results.
       test_basename: The basename that the tests are archived to.
     """
-    test_list = ListFailedTests(results_path)
+    test_list = ListTests(results_path, show_passed=False)
     for test_name, path in test_list:
       self.PrintDownloadLink(
           os.path.join(test_basename, path), text_to_display=test_name)
@@ -117,6 +118,47 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
     # Remove the test results directory.
     osutils.RmDir(results_path, ignore_missing=True, sudo=True)
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def _ReportResultsToDashboards(self, test_results_dir):
+    """Report VMTests results to chromeperf and CTS dashboard.
+
+    Args:
+      test_results_dir: Name of the directory containing the test results.
+    """
+    # TODO(pwang): also upload to sponge and afe/tko so results show up
+    # consistently on all dashboards like wmatrix and goldeneye.
+    results_path = GetTestResultsDir(
+        self._build_root, test_results_dir)
+
+    # Skip reporting if results_path does not exist or is an empty directory.
+    if self._NoTestResults(results_path):
+      logging.info('Found no test results. Skipping upload to dashboards.')
+      return
+
+    for test_name, test_dir in ListTests(results_path):
+      if cts_helper.isCtsTest(test_name):
+        self._ReportCtsResults(test_name, test_dir)
+
+  def _ReportCtsResults(self, test_name, test_dir):
+    """Report CTS/GTS result to their dashboards.
+
+    Args:
+      test_name: name of the test.
+      test_dir: path to the test directory.
+    """
+    builder = self._run.GetBuilderName()
+    buildbucket_id = self._run.options.buildbucket_id
+    buildbucket_id = str(buildbucket_id)
+    def _uploader(gs_url, file_path, *args, **kwargs):
+      directory, filename = os.path.split(file_path)
+      logging.info('Uploading %s to %s', file_path, gs_url)
+      commands.UploadArchivedFile(
+          directory, [gs_url], filename, *args, **kwargs)
+
+    cts_helper.uploadFiles(test_dir, builder, buildbucket_id, buildbucket_id,
+                           test_name, _uploader, self._run.debug,
+                           update_list=False, acl=self.acl)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def _ArchiveVMFiles(self, test_results_dir):
@@ -198,6 +240,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       self._ArchiveVMFiles(test_results_root)
       raise
     finally:
+      if self._run.config.vm_test_report_to_dashboards:
+        self._ReportResultsToDashboards(test_results_root)
       self._ArchiveTestResults(test_results_root, test_basename)
 
 
@@ -267,26 +311,34 @@ class GCETestStage(VMTestStage):
       self._ArchiveTestResults(test_results_root, test_basename)
 
 
-def ListFailedTests(results_path):
-  """Returns a list of failed tests.
+def ListTests(results_path, show_failed=True, show_passed=True):
+  """Returns a list of tests.
 
-  Parse the test report logs from autotest to find failed tests.
+  Parse the test report logs from autotest to find tests.
 
   Args:
     results_path: Path to the directory of test results.
+    show_failed: Return failed tests.
+    show_passed: Return passed tests.
 
   Returns:
-    A lists of (test_name, relative/path/to/failed/tests)
+    A lists of (test_name, relative/path/to/tests)
   """
-  # TODO: we don't have to parse the log to find failed tests once
+  # TODO: we don't have to parse the log to find tests once
   # crbug.com/350520 is fixed.
   reports = []
   for path, _, filenames in os.walk(results_path):
     reports.extend([os.path.join(path, x) for x in filenames
                     if x == _TEST_REPORT_FILENAME])
 
-  failed_tests = []
+  tests = []
   processed_tests = []
+  match_pattern = []
+  if show_failed:
+    match_pattern.append(_TEST_FAILED)
+  if show_passed:
+    match_pattern.append(_TEST_PASSED)
+
   for report in reports:
     logging.info('Parsing test report %s', report)
     # Format used in the report:
@@ -296,12 +348,11 @@ def ListFailedTests(results_path):
     #     2_autotest_tests/results-01-security_OpenSSLBlacklist/ \
     #     security_OpenBlacklist [  FAILED  ]
     with open(report) as f:
-      failed_re = re.compile(r'([\./\w-]*)\s*\[\s*(\S+?)\s*\]')
+      folder_re = re.compile(r'([\./\w-]*)\s*\[\s*(\S+?)\s*\]')
       test_name_re = re.compile(r'results-[\d]+?-([\.\w_]*)')
       for line in f:
-        r = failed_re.search(line)
-        if r and r.group(2) == _TEST_FAILED:
-          # Process only failed tests.
+        r = folder_re.search(line)
+        if r and r.group(2) in match_pattern:
           file_path = r.group(1)
           match = test_name_re.search(file_path)
           if match:
@@ -318,10 +369,9 @@ def ListFailedTests(results_path):
             # that file_path is a chroot path, while results_path is a
             # non-chroot path, so we cannot use os.path.relpath directly.
             rel_path = file_path.split(base_dirname)[1].lstrip(os.path.sep)
-            failed_tests.append((test_name, rel_path))
+            tests.append((test_name, rel_path))
             processed_tests.append(test_name)
-
-  return failed_tests
+  return tests
 
 
 def GetTestResultsDir(buildroot, test_results_dir):

@@ -37,7 +37,7 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
       self.PatchObject(commands, cmd, autospec=True)
     for cmd in ('RunTestSuite', 'ArchiveTestResults', 'ArchiveVMFiles',
                 'RunDevModeTest', 'RunCrosVMTest',
-                'ListFailedTests', 'GetTestResultsDir',):
+                'ListTests', 'GetTestResultsDir',):
       self.PatchObject(vm_test_stages, cmd, autospec=True)
     self.PatchObject(vm_test_stages.VMTestStage, '_NoTestResults',
                      autospec=True, return_value=False)
@@ -93,7 +93,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
       self.PatchObject(commands, cmd, autospec=True)
     for cmd in ('RunTestSuite', 'ArchiveTestResults', 'ArchiveVMFiles',
                 'RunDevModeTest', 'RunCrosVMTest',
-                'ListFailedTests', 'GetTestResultsDir',):
+                'ListTests', 'GetTestResultsDir',):
       self.PatchObject(vm_test_stages, cmd, autospec=True)
     self.PatchObject(vm_test_stages.VMTestStage, '_NoTestResults',
                      autospec=True, return_value=False)
@@ -145,6 +145,14 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Tests trybot with no vm test."""
     extra_cmd_args = ['--novmtests']
     self._Prepare(extra_cmd_args=extra_cmd_args)
+    self.RunStage()
+
+  def testReportTestResults(self):
+    """Test trybot with reporting function."""
+    self._run.config['vm_tests'] = [
+        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
+    ]
+    self._run.config['vm_test_report_to_dashboards'] = True
     self.RunStage()
 
 
@@ -225,7 +233,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
         test_report_2, makedirs=True)
 
     self.assertEquals(
-        vm_test_stages.ListFailedTests(results_path),
+        vm_test_stages.ListTests(results_path, show_passed=False),
         [('has_cheese', 'taste_tests/all/results-02-has_cheese')])
 
   def testArchiveTestResults(self):

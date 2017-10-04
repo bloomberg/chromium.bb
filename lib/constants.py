@@ -312,6 +312,16 @@ INTERNAL_GERRIT_HOST = GOB_HOST % INTERNAL_GERRIT_INSTANCE
 INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
+# Tests without 'cheets_CTS_', 'cheets_GTS.' prefix will not considered
+# as CTS/GTS test in chromite.lib.cts_helper
+DEFAULT_CTS_TEST_XML_MAP = {
+    'cheets_CTS_': 'test_result.xml',
+    'cheets_GTS.': 'test_result.xml',
+}
+# Google Storage bucket URI to store results in.
+DEFAULT_CTS_RESULTS_GSURI = 'gs://chromeos-cts-results/'
+DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
+
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MASTER_ARC_DEV_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_MNC_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
