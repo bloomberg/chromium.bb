@@ -195,7 +195,7 @@ void OpenVRDevice::RequestPresent(
     VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
-    mojom::VRDisplay::RequestPresentCallback callback) {
+    mojom::VRDisplayHost::RequestPresentCallback callback) {
   std::move(callback).Run(false);
   // We don't support presentation currently.
 }
@@ -204,8 +204,9 @@ void OpenVRDevice::ExitPresent() {
   // We don't support presentation currently, so don't do anything.
 }
 
-void OpenVRDevice::GetNextMagicWindowPose(
-    mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
+void OpenVRDevice::GetPose(
+    VRDisplayImpl* display,
+    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
   std::move(callback).Run(nullptr);
 }
 

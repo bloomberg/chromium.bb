@@ -26,11 +26,14 @@ const char kRequestNotInUserGesture[] =
 
 }  // namespace
 
-VRDevice::VRDevice(VR* vr,
-                   device::mojom::blink::VRDisplayPtr display,
-                   device::mojom::blink::VRDisplayClientRequest client_request,
-                   device::mojom::blink::VRDisplayInfoPtr display_info)
+VRDevice::VRDevice(
+    VR* vr,
+    device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider,
+    device::mojom::blink::VRDisplayHostPtr display,
+    device::mojom::blink::VRDisplayClientRequest client_request,
+    device::mojom::blink::VRDisplayInfoPtr display_info)
     : vr_(vr),
+      magic_window_provider_(std::move(magic_window_provider)),
       display_(std::move(display)),
       display_client_binding_(this, std::move(client_request)) {
   SetVRDisplayInfo(std::move(display_info));

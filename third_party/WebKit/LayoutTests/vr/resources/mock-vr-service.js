@@ -2,7 +2,6 @@
 
 class MockVRDisplay {
   constructor(displayInfo, service) {
-    this.bindingSet_ = new mojo.BindingSet(device.mojom.VRDisplay);
     this.displayClient_ = new device.mojom.VRDisplayClientPtr();
     this.displayInfo_ = displayInfo;
     this.service_ = service;
@@ -27,7 +26,7 @@ class MockVRDisplay {
     }
   }
 
-  getNextMagicWindowPose() {
+  getPose() {
     return Promise.resolve({
       pose: this.presentation_provider_.pose_,
     });
@@ -38,12 +37,19 @@ class MockVRDisplay {
   }
 
   notifyClientOfDisplay() {
-    let displayPtr = new device.mojom.VRDisplayPtr();
-    let request = mojo.makeRequest(displayPtr);
-    let binding = new mojo.Binding(device.mojom.VRDisplay, this, request);
+    let displayPtr = new device.mojom.VRDisplayHostPtr();
+    let displayRequest = mojo.makeRequest(displayPtr);
+    let displayBinding =
+        new mojo.Binding(device.mojom.VRDisplayHost, this, displayRequest);
+
+    let magicWindowPtr = new device.mojom.VRMagicWindowProviderPtr();
+    let magicWindowRequest = mojo.makeRequest(magicWindowPtr);
+    let magicWindowBinding = new mojo.Binding(
+        device.mojom.VRMagicWindowProvider, this, magicWindowRequest);
+
     let clientRequest = mojo.makeRequest(this.displayClient_);
-    this.service_.client_.onDisplayConnected(displayPtr, clientRequest,
-        this.displayInfo_);
+    this.service_.client_.onDisplayConnected(magicWindowPtr, displayPtr,
+        clientRequest, this.displayInfo_);
   }
 }
 

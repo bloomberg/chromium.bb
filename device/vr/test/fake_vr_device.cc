@@ -61,7 +61,7 @@ void FakeVRDevice::RequestPresent(
     VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
-    mojom::VRDisplay::RequestPresentCallback callback) {
+    mojom::VRDisplayHost::RequestPresentCallback callback) {
   SetPresentingDisplay(display);
   std::move(callback).Run(true);
 }
@@ -70,9 +70,9 @@ void FakeVRDevice::ExitPresent() {
   OnExitPresent();
 }
 
-void FakeVRDevice::GetNextMagicWindowPose(
+void FakeVRDevice::GetPose(
     VRDisplayImpl* display,
-    mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
+    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
   std::move(callback).Run(nullptr);
 }
 

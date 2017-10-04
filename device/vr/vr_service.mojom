@@ -71,11 +71,13 @@ interface VRService {
   // takes a VRServiceClient so we will never have a half-initialized VRService.
   SetClient(VRServiceClient client) => ();
   // Inform the service that the page is listening for vrdisplayactivate events.
+  // TODO(mthiesse): Move SetListeningForActivate onto VRDisplay.
   SetListeningForActivate(bool listening);
 };
 
 interface VRServiceClient {
-  OnDisplayConnected(VRDisplay display, VRDisplayClient& request,
+  OnDisplayConnected(VRMagicWindowProvider magic_window_provider,
+                     VRDisplayHost display, VRDisplayClient& request,
                      VRDisplayInfo display_info);
 };
 
@@ -84,13 +86,18 @@ interface VRSubmitFrameClient {
   OnSubmitFrameRendered();
 };
 
-// Represents a physical VR device that can be used to present WebVR content,
-// or get orientation data (VRPose) when not presenting (aka magic window).
-interface VRDisplay {
+// Provides a communication channel from the renderer to the browser-side host
+// of a (device/) VrDisplayImpl.
+interface VRDisplayHost {
   RequestPresent(VRSubmitFrameClient client,
                  VRPresentationProvider& request) => (bool success);
   ExitPresent();
-  GetNextMagicWindowPose() => (VRPose? pose);
+};
+
+// Provides the necessary functionality for a non-presenting WebVR page to draw
+// magic window content.
+interface VRMagicWindowProvider {
+  GetPose() => (VRPose? pose);
 };
 
 // Provides the necessary functionality for a presenting WebVR page to draw

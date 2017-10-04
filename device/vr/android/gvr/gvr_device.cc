@@ -153,7 +153,7 @@ void GvrDevice::RequestPresent(
     VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
-    mojom::VRDisplay::RequestPresentCallback callback) {
+    mojom::VRDisplayHost::RequestPresentCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider)
     return std::move(callback).Run(false);
@@ -168,7 +168,7 @@ void GvrDevice::RequestPresent(
 }
 
 void GvrDevice::OnRequestPresentResult(
-    mojom::VRDisplay::RequestPresentCallback callback,
+    mojom::VRDisplayHost::RequestPresentCallback callback,
     VRDisplayImpl* display,
     bool result) {
   if (result)
@@ -183,9 +183,9 @@ void GvrDevice::ExitPresent() {
   OnExitPresent();
 }
 
-void GvrDevice::GetNextMagicWindowPose(
+void GvrDevice::GetPose(
     VRDisplayImpl* display,
-    mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
+    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
     std::move(callback).Run(nullptr);
