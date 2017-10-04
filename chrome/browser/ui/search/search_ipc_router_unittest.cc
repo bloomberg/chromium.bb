@@ -121,7 +121,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.new_tab_url = "https://foo.com/newtab?espv";
+    data.new_tab_url = "https://foo.com/newtab";
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
 
     TemplateURL* template_url =

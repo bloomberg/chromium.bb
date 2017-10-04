@@ -88,16 +88,12 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRenderer) {
   const SearchTestCase kTestCases[] = {
       {chrome::kChromeSearchLocalNtpUrl, true, "Local NTP"},
       {"https://foo.com/newtab", true, "Remote NTP"},
-      {"https://foo.com/instant?strk", false, "Instant support was removed"},
-      {"https://foo.com/instant#strk", false, "Instant support was removed"},
-      {"https://foo.com/instant?strk=0", false, "Instant support was removed"},
-      {"https://foo.com/url?strk", false, "Instant support was removed"},
-      {"https://foo.com/alt?strk", false, "Instant support was removed"},
-      {"http://foo.com/instant", false, "Instant support was removed"},
-      {"http://foo.com/instant?strk", false, "Instant support was removed"},
-      {"http://foo.com/instant?strk=1", false, "Instant support was removed"},
       {"https://foo.com/instant", false, "Instant support was removed"},
-      {"https://foo.com/?strk", false, "Instant support was removed"},
+      {"https://foo.com/url", false, "Instant support was removed"},
+      {"https://foo.com/alt", false, "Instant support was removed"},
+      {"http://foo.com/instant", false, "Instant support was removed"},
+      {"https://foo.com/instant", false, "Instant support was removed"},
+      {"https://foo.com/", false, "Instant support was removed"},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -110,23 +106,19 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRenderer) {
 
 TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
   const SearchTestCase kTestCases[] = {
-    {"chrome-search://local-ntp",      true,  "Local NTP"},
-    {"chrome-search://remote-ntp",     true,  "Remote NTP"},
-    {"invalid-scheme://local-ntp",     false, "Invalid Local NTP URL"},
-    {"invalid-scheme://online-ntp",    false, "Invalid Online NTP URL"},
-    {"chrome-search://foo.com",        false, "Search result page"},
-    {"https://foo.com/instant?strk",   false,  ""},
-    {"https://foo.com/instant#strk",   false,  ""},
-    {"https://foo.com/instant?strk=0", false,  ""},
-    {"https://foo.com/url?strk",       false,  ""},
-    {"https://foo.com/alt?strk",       false,  ""},
-    {"https://foo.com:80/instant",     false,  "HTTPS with port"},
-    {"http://foo.com/instant",         false,  "Non-HTTPS"},
-    {"http://foo.com/instant?strk",    false,  "Non-HTTPS"},
-    {"http://foo.com/instant?strk=1",  false,  "Non-HTTPS"},
-    {"http://foo.com:443/instant",     false,  "Non-HTTPS"},
-    {"https://foo.com/instant",        false,  "No search terms replacement"},
-    {"https://foo.com/?strk",          false,  "Non-exact path"},
+      {"chrome-search://local-ntp", true, "Local NTP"},
+      {"chrome-search://remote-ntp", true, "Remote NTP"},
+      {"invalid-scheme://local-ntp", false, "Invalid Local NTP URL"},
+      {"invalid-scheme://online-ntp", false, "Invalid Online NTP URL"},
+      {"chrome-search://foo.com", false, "Search result page"},
+      {"https://foo.com/instant", false, ""},
+      {"https://foo.com/url", false, ""},
+      {"https://foo.com/alt", false, ""},
+      {"https://foo.com:80/instant", false, "HTTPS with port"},
+      {"http://foo.com/instant", false, "Non-HTTPS"},
+      {"http://foo.com:443/instant", false, "Non-HTTPS"},
+      {"https://foo.com/instant", false, "No search terms replacement"},
+      {"https://foo.com/", false, "Non-exact path"},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -149,27 +141,20 @@ const struct ProcessIsolationTestCase {
   bool end_in_instant_process;
   bool same_site_instance;
 } kProcessIsolationTestCases[] = {
-  {"Local NTP -> SRP",
-   "chrome-search://local-ntp",       true,
-   "https://foo.com/url?strk",        false,  false },
-  {"Local NTP -> Regular",
-   "chrome-search://local-ntp",       true,
-   "https://foo.com/other",           false,  false },
-  {"Remote NTP -> SRP",
-   "https://foo.com/newtab?strk",     true,
-   "https://foo.com/url?strk",        false,  false },
-  {"Remote NTP -> Regular",
-   "https://foo.com/newtab?strk",     true,
-   "https://foo.com/other",           false,  false },
-  {"SRP -> SRP",
-   "https://foo.com/url?strk",        false,
-   "https://foo.com/url?strk",        false,  true  },
-  {"SRP -> Regular",
-   "https://foo.com/url?strk",        false,
-   "https://foo.com/other",           false,  true },
-  {"Regular -> SRP",
-   "https://foo.com/other",           false,
-   "https://foo.com/url?strk",        false,  true },
+    {"Local NTP -> SRP", "chrome-search://local-ntp", true,
+     "https://foo.com/url", false, false},
+    {"Local NTP -> Regular", "chrome-search://local-ntp", true,
+     "https://foo.com/other", false, false},
+    {"Remote NTP -> SRP", "https://foo.com/newtab", true, "https://foo.com/url",
+     false, false},
+    {"Remote NTP -> Regular", "https://foo.com/newtab", true,
+     "https://foo.com/other", false, false},
+    {"SRP -> SRP", "https://foo.com/url", false, "https://foo.com/url", false,
+     true},
+    {"SRP -> Regular", "https://foo.com/url", false, "https://foo.com/other",
+     false, true},
+    {"Regular -> SRP", "https://foo.com/other", false, "https://foo.com/url",
+     false, true},
 };
 
 TEST_F(SearchTest, ProcessIsolation) {
@@ -254,24 +239,19 @@ TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
 }
 
 const SearchTestCase kInstantNTPTestCases[] = {
-  {"https://foo.com/instant?strk",         false, "Valid Instant URL"},
-  {"https://foo.com/instant#strk",         false, "Valid Instant URL"},
-  {"https://foo.com/url?strk",             false, "Valid search URL"},
-  {"https://foo.com/url#strk",             false, "Valid search URL"},
-  {"https://foo.com/alt?strk",             false, "Valid alternative URL"},
-  {"https://foo.com/alt#strk",             false, "Valid alternative URL"},
-  {"https://foo.com/url?strk&bar=",        false, "No query terms"},
-  {"https://foo.com/url?strk&q=abc",       false, "No query terms key"},
-  {"https://foo.com/url?strk#bar=abc",     false, "Query terms key in ref"},
-  {"https://foo.com/url?strk&bar=abc",     false, "Has query terms"},
-  {"http://foo.com/instant?strk=1",        false, "Insecure URL"},
-  {"https://foo.com/instant",              false, "No search term replacement"},
-  {"chrome://blank/",                      false, "Chrome scheme"},
-  {"chrome-search://foo",                  false, "Chrome-search scheme"},
-  {"https://bar.com/instant?strk=1",       false, "Random non-search page"},
-  {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
-  {"https://foo.com/newtab?strk",          true,  "New tab URL"},
-  {"http://foo.com/newtab?strk",           false, "Insecure New tab URL"},
+    {"https://foo.com/instant", false, "Instant support was removed"},
+    {"https://foo.com/url", false, "Valid search URL"},
+    {"https://foo.com/alt", false, "Valid alternative URL"},
+    {"https://foo.com/url?bar=", false, "No query terms"},
+    {"https://foo.com/url?bar=abc", false, "Has query terms"},
+    {"http://foo.com/instant", false, "Insecure URL"},
+    {"https://foo.com/instant", false, "No search term replacement"},
+    {"chrome://blank/", false, "Chrome scheme"},
+    {"chrome-search://foo", false, "Chrome-search scheme"},
+    {"https://bar.com/instant", false, "Random non-search page"},
+    {chrome::kChromeSearchLocalNtpUrl, true, "Local new tab page"},
+    {"https://foo.com/newtab", true, "New tab URL"},
+    {"http://foo.com/newtab", false, "Insecure New tab URL"},
 };
 
 TEST_F(SearchTest, InstantNTPExtendedEnabled) {
@@ -396,8 +376,8 @@ TEST_F(SearchTest, IsNTPURL) {
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
   GURL remote_ntp_url(GetNewTabPageURL(profile()));
   GURL remote_ntp_service_worker_url("https://foo.com/newtab-serviceworker.js");
-  GURL search_url_with_search_terms("https://foo.com/url?strk&bar=abc");
-  GURL search_url_without_search_terms("https://foo.com/url?strk&bar");
+  GURL search_url_with_search_terms("https://foo.com/url?bar=abc");
+  GURL search_url_without_search_terms("https://foo.com/url?bar");
 
   EXPECT_FALSE(IsNTPURL(ntp_url, profile()));
   EXPECT_TRUE(IsNTPURL(local_ntp_url, profile()));
@@ -430,7 +410,7 @@ TEST_F(SearchTest, SearchProviderWithPort) {
   TemplateURLData data;
   data.SetShortName(base::ASCIIToUTF16("localhost"));
   data.SetURL("https://[::1]:1993/url?bar={searchTerms}");
-  data.new_tab_url = "https://[::1]:1993/newtab?strk";
+  data.new_tab_url = "https://[::1]:1993/newtab";
   data.alternate_urls.push_back("https://[::1]:1993/alt#quux={searchTerms}");
 
   TemplateURL* template_url =
@@ -445,7 +425,7 @@ TEST_F(SearchTest, SearchProviderWithPort) {
             GetEffectiveURLForInstant(GURL("https://[::1]:1993/newtab?lala"),
                                       profile()));
   EXPECT_FALSE(ShouldAssignURLToInstantRenderer(
-      GURL("https://[::1]:1993/unregistered-path?strk"), profile()));
+      GURL("https://[::1]:1993/unregistered-path"), profile()));
 }
 
 }  // namespace search

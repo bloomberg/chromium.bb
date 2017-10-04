@@ -22,12 +22,10 @@
       "encodings": "UTF-8",
       "icon_url": "http://www.google.com/favicon.ico",
       "id": "2",
-      "instant_url": "{google:baseURL}webhp?sourceid=chrome-instant&{google:RLZ}{google:forceInstantResults}{google:instantExtendedEnabledParameter}ie={inputEncoding}",
       "keyword": "google.com",
       "name": "Google",
       "prepopulate_id": "1",
-      "search_terms_replacement_key": "espv",
-      "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}ie={inputEncoding}",
+      "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}ie={inputEncoding}",
       "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client=chrome&q={searchTerms}&{google:cursorPosition}{google:zeroPrefixUrl}sugkey={google:suggestAPIKeyParameter}"
    },
    "dns_prefetching": {

@@ -1030,18 +1030,15 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
-      GURL("http://google.com/?espv&q=something"),
-      search_terms_data_, &result));
+      GURL("http://google.com/?q=something"), search_terms_data_, &result));
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
-      GURL("http://google.com/?espv=1&q=something"),
-      search_terms_data_, &result));
+      GURL("http://google.com/?q=something"), search_terms_data_, &result));
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
-      GURL("http://google.com/?espv=0&q=something"),
-      search_terms_data_, &result));
+      GURL("http://google.com/?q=something"), search_terms_data_, &result));
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
@@ -1050,18 +1047,15 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
-      GURL("http://google.com/alt/#espv&q=something"),
-      search_terms_data_, &result));
+      GURL("http://google.com/alt/#q=something"), search_terms_data_, &result));
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
-      GURL("http://google.com/alt/#espv=1&q=something"),
-      search_terms_data_, &result));
+      GURL("http://google.com/alt/#q=something"), search_terms_data_, &result));
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
-      GURL("http://google.com/alt/#espv=0&q=something"),
-      search_terms_data_, &result));
+      GURL("http://google.com/alt/#q=something"), search_terms_data_, &result));
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
