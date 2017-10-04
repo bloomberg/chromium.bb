@@ -24,9 +24,21 @@ declare_args() {
 }
 
 # NOTE: We would like to avoid scrambling message IDs where it doesn't add
-# value, so we limit the behavior to Mac and Windows desktop builds for now.
-enable_scrambled_message_ids = is_mac || is_win || (is_linux && !is_chromeos) ||
-                               enable_nacl || is_nacl || is_nacl_nonsfi
+# value, so we limit the behavior to desktop builds for now. There is some
+# redundancy in the conditions here, but it is tolerated for clarity:
+# We're explicit about Mac, Windows, and Linux desktop support, but it's
+# also necessary to ensure that bindings in alternate toolchains (e.g.
+# NaCl IRT) are always consistent with the default toolchain; for that
+# reason we always enable scrambling within NaCl toolchains when possible,
+# as well as within the default toolchain when NaCl is enabled.
+#
+# Finally, because we *cannot* enable scrambling on Chrome OS (it would break
+# ARC) we have to explicitly opt out there even when NaCl is enabled (and
+# consequently also when building for NaCl toolchains.) For this reason we
+# check |target_os| explicitly, as it's consistent across all toolchains.
+enable_scrambled_message_ids =
+    is_mac || is_win || (is_linux && !is_chromeos) ||
+    ((enable_nacl || is_nacl || is_nacl_nonsfi) && target_os != "chromeos")
 
 mojom_generator_root = "//mojo/public/tools/bindings"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
