@@ -252,6 +252,10 @@ LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test_util.cc
 LIBAOM_TEST_SRCS-yes          += convolve_round_test.cc
 endif
 
+ifeq (yesx,$(CONFIG_CONVOLVE_ROUND)x$(CONFIG_COMPOUND_ROUND))
+LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_convolve_scale_test.cc
+endif
+
 ifeq ($(CONFIG_GLOBAL_MOTION)$(CONFIG_AV1_ENCODER),yesyes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += corner_match_test.cc
 endif
