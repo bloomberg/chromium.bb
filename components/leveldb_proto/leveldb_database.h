@@ -59,9 +59,8 @@ class LevelDB {
   DFAKE_MUTEX(thread_checker_);
 
   // The declaration order of these members matters: |db_| depends on |env_| and
-  // |custom_block_cache_| and therefore has to be destructed first.
+  // therefore has to be destructed first.
   std::unique_ptr<leveldb::Env> env_;
-  std::unique_ptr<leveldb::Cache> custom_block_cache_;
   std::unique_ptr<leveldb::DB> db_;
   base::HistogramBase* open_histogram_;
 
