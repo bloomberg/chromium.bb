@@ -103,13 +103,20 @@ MojoResult MojoWatcher::Watch(mojo::Handle handle,
   if (result == MOJO_RESULT_OK)
     return result;
 
-  // We couldn't arm the watcher because the handle is already ready to
-  // trigger a success notification. Post a notification manually.
-  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-  task_runner_->PostTask(BLINK_FROM_HERE,
-                         WTF::Bind(&MojoWatcher::RunReadyCallback,
-                                   WrapPersistent(this), ready_result));
-  return MOJO_RESULT_OK;
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    // We couldn't arm the watcher because the handle is already ready to
+    // trigger a success notification. Post a notification manually.
+    task_runner_->PostTask(BLINK_FROM_HERE,
+                           WTF::Bind(&MojoWatcher::RunReadyCallback,
+                                     WrapPersistent(this), ready_result));
+    return MOJO_RESULT_OK;
+  }
+
+  // If MojoWatch succeeds but Arm does not, that means another thread closed
+  // the watched handle in between. Treat it like we'd treat a MojoWatch trying
+  // to watch an invalid handle.
+  watcher_handle_.reset();
+  return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
 MojoResult MojoWatcher::Arm(MojoResult* ready_result) {
@@ -127,10 +134,13 @@ MojoResult MojoWatcher::Arm(MojoResult* ready_result) {
   if (result == MOJO_RESULT_OK)
     return MOJO_RESULT_OK;
 
-  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-  DCHECK_EQ(1u, num_ready_contexts);
-  DCHECK_EQ(reinterpret_cast<uintptr_t>(this), ready_context);
-  *ready_result = local_ready_result;
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    DCHECK_EQ(1u, num_ready_contexts);
+    DCHECK_EQ(reinterpret_cast<uintptr_t>(this), ready_context);
+    *ready_result = local_ready_result;
+    return result;
+  }
+
   return result;
 }
 
@@ -184,11 +194,12 @@ void MojoWatcher::RunReadyCallback(MojoResult result) {
   if (arm_result == MOJO_RESULT_OK)
     return;
 
-  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, arm_result);
-
-  task_runner_->PostTask(BLINK_FROM_HERE,
-                         WTF::Bind(&MojoWatcher::RunReadyCallback,
-                                   WrapWeakPersistent(this), ready_result));
+  if (arm_result == MOJO_RESULT_FAILED_PRECONDITION) {
+    task_runner_->PostTask(BLINK_FROM_HERE,
+                           WTF::Bind(&MojoWatcher::RunReadyCallback,
+                                     WrapWeakPersistent(this), ready_result));
+    return;
+  }
 }
 
 }  // namespace blink
