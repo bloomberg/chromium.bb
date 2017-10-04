@@ -46,7 +46,7 @@ class BluetoothHostPairingController
       public device::BluetoothDevice::PairingDelegate {
  public:
   using Observer = HostPairingController::Observer;
-  using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
+  using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
 
   // An interface that is used for testing purpose.
   class TestDelegate {
@@ -92,7 +92,7 @@ class BluetoothHostPairingController
   void OnSendError(const std::string& error_message);
   void OnReceiveError(device::BluetoothSocket::ErrorReason reason,
                       const std::string& error_message);
-  void PowerOffAdapterIfApplicable(const std::vector<InputDeviceInfo>& devices);
+  void PowerOffAdapterIfApplicable(std::vector<InputDeviceInfoPtr> devices);
   void ResetAdapter();
   void OnForget();
 

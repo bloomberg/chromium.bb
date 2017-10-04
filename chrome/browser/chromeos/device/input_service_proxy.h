@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/input_service_linux.h"
+#include "device/hid/public/interfaces/input_service.mojom.h"
 
 namespace chromeos {
 
@@ -23,19 +24,18 @@ namespace chromeos {
 // thread.
 class InputServiceProxy {
  public:
-  typedef device::InputServiceLinux::InputDeviceInfo InputDeviceInfo;
+  typedef device::mojom::InputDeviceInfoPtr InputDeviceInfoPtr;
 
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void OnInputDeviceAdded(const InputDeviceInfo& info) = 0;
+    virtual void OnInputDeviceAdded(InputDeviceInfoPtr info) = 0;
     virtual void OnInputDeviceRemoved(const std::string& id) = 0;
   };
 
-  typedef base::Callback<void(const std::vector<InputDeviceInfo>& devices)>
+  typedef base::OnceCallback<void(
+      std::vector<device::mojom::InputDeviceInfoPtr> devices)>
       GetDevicesCallback;
-  typedef base::Callback<void(bool success, const InputDeviceInfo& info)>
-      GetDeviceInfoCallback;
 
   InputServiceProxy();
   ~InputServiceProxy();
@@ -43,9 +43,7 @@ class InputServiceProxy {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void GetDevices(const GetDevicesCallback& callback);
-  void GetDeviceInfo(const std::string& id,
-                     const GetDeviceInfoCallback& callback);
+  void GetDevices(GetDevicesCallback callback);
 
   // Returns the SequencedTaskRunner for device::InputServiceLinux. Make it
   // static so that all InputServiceProxy instances and code that needs access
@@ -58,7 +56,7 @@ class InputServiceProxy {
  private:
   class ServiceObserver;
 
-  void OnDeviceAdded(const device::InputServiceLinux::InputDeviceInfo& info);
+  void OnDeviceAdded(InputDeviceInfoPtr info);
   void OnDeviceRemoved(const std::string& id);
 
   base::ObserverList<Observer> observers_;

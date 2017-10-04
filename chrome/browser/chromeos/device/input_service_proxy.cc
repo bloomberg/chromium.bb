@@ -19,8 +19,6 @@ namespace chromeos {
 
 namespace {
 
-using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
-
 bool use_ui_thread_for_test = false;
 
 // SequencedTaskRunner could be used after InputServiceLinux and friends
@@ -58,33 +56,20 @@ class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
     delete this;
   }
 
-  std::vector<InputDeviceInfo> GetDevices() {
+  std::vector<InputDeviceInfoPtr> GetDevices() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::vector<InputDeviceInfo> devices;
+    std::vector<InputDeviceInfoPtr> devices;
     if (InputServiceLinux::HasInstance())
       InputServiceLinux::GetInstance()->GetDevices(&devices);
     return devices;
   }
 
-  void GetDeviceInfo(const std::string& id,
-                     const InputServiceProxy::GetDeviceInfoCallback& callback) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    bool success = false;
-    InputDeviceInfo info;
-    info.id = id;
-    if (InputServiceLinux::HasInstance())
-      success = InputServiceLinux::GetInstance()->GetDeviceInfo(id, &info);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(callback, success, info));
-  }
-
   // InputServiceLinux::Observer implementation:
-  void OnInputDeviceAdded(
-      const InputServiceLinux::InputDeviceInfo& info) override {
+  void OnInputDeviceAdded(InputDeviceInfoPtr info) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&InputServiceProxy::OnDeviceAdded, proxy_, info));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&InputServiceProxy::OnDeviceAdded,
+                                           proxy_, std::move(info)));
   }
 
   void OnInputDeviceRemoved(const std::string& id) override {
@@ -130,22 +115,13 @@ void InputServiceProxy::RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
 }
 
-void InputServiceProxy::GetDevices(const GetDevicesCallback& callback) {
+void InputServiceProxy::GetDevices(GetDevicesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::PostTaskAndReplyWithResult(
       GetInputServiceTaskRunner().get(), FROM_HERE,
-      base::Bind(&InputServiceProxy::ServiceObserver::GetDevices,
-                 base::Unretained(service_observer_.get())),
-      callback);
-}
-
-void InputServiceProxy::GetDeviceInfo(const std::string& id,
-                                      const GetDeviceInfoCallback& callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  GetInputServiceTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InputServiceProxy::ServiceObserver::GetDeviceInfo,
-                     base::Unretained(service_observer_.get()), id, callback));
+      base::BindOnce(&InputServiceProxy::ServiceObserver::GetDevices,
+                     base::Unretained(service_observer_.get())),
+      std::move(callback));
 }
 
 // static
@@ -162,11 +138,10 @@ void InputServiceProxy::SetUseUIThreadForTesting(bool use_ui_thread) {
   use_ui_thread_for_test = use_ui_thread;
 }
 
-void InputServiceProxy::OnDeviceAdded(
-    const InputServiceLinux::InputDeviceInfo& info) {
+void InputServiceProxy::OnDeviceAdded(InputDeviceInfoPtr info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : observers_)
-    observer.OnInputDeviceAdded(info);
+    observer.OnInputDeviceAdded(info->Clone());
 }
 
 void InputServiceProxy::OnDeviceRemoved(const std::string& id) {

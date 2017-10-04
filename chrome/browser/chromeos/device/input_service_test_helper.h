@@ -7,13 +7,12 @@
 
 #include "base/macros.h"
 #include "device/hid/input_service_linux.h"
+#include "device/hid/public/interfaces/input_service.mojom.h"
 
 namespace chromeos {
 
 class InputServiceProxy;
 class TestObserver;
-
-typedef device::InputServiceLinux::InputDeviceInfo InputDeviceInfo;
 
 class InputServiceTestHelper {
  public:
@@ -28,7 +27,7 @@ class InputServiceTestHelper {
 
   void SetProxy(InputServiceProxy* proxy);
   void ClearProxy();
-  void AddDeviceToService(bool is_mouse, InputDeviceInfo::Type type);
+  void AddDeviceToService(bool is_mouse, device::mojom::InputDeviceType type);
   void RemoveDeviceFromService(bool is_mouse);
 
  private:

@@ -17,13 +17,14 @@ class FakeInputServiceLinux : public InputServiceLinux {
   FakeInputServiceLinux();
   ~FakeInputServiceLinux() override;
 
-  void AddDeviceForTesting(const InputDeviceInfo& info);
+  void AddDeviceForTesting(device::mojom::InputDeviceInfoPtr info);
   void RemoveDeviceForTesting(const std::string& id);
   void ClearDeviceList();
 
  private:
   // InputServiceLinux override:
-  void GetDevices(std::vector<InputDeviceInfo>* devices) override;
+  void GetDevices(
+      std::vector<device::mojom::InputDeviceInfoPtr>* devices) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInputServiceLinux);
 };
