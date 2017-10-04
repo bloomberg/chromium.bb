@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/toolbar/toolbar_model.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_popup_provider.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 
@@ -20,9 +21,7 @@ class AutocompleteResult;
 class GURL;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
-@protocol OmniboxPopupPositioner;
 class WebOmniboxEditController;
-class OmniboxPopupViewIOS;
 
 namespace ios {
 class ChromeBrowserState;
@@ -36,9 +35,12 @@ class OmniboxViewIOS : public OmniboxView,
   // Retains |field|.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
-                 ios::ChromeBrowserState* browser_state,
-                 id<OmniboxPopupPositioner> positioner);
+                 ios::ChromeBrowserState* browser_state);
   ~OmniboxViewIOS() override;
+
+  void SetPopupProvider(OmniboxPopupProvider* provider) {
+    popup_provider_ = provider;
+  };
 
   // Returns a color representing |security_level|, adjusted based on whether
   // the browser is in Incognito mode.
@@ -170,7 +172,6 @@ class OmniboxViewIOS : public OmniboxView,
   base::scoped_nsobject<OmniboxTextFieldIOS> field_;
   base::scoped_nsobject<OmniboxTextFieldPasteDelegate> paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
-  std::unique_ptr<OmniboxPopupViewIOS> popup_view_;
 
   State state_before_change_;
   base::scoped_nsobject<NSString> marked_text_before_change_;
@@ -193,6 +194,8 @@ class OmniboxViewIOS : public OmniboxView,
   // Temporary pointer to the attributed display string, stored as color and
   // other emphasis attributes are applied by the superclass.
   NSMutableAttributedString* attributing_display_string_;
+
+  OmniboxPopupProvider* popup_provider_;  // weak
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_IOS_H_

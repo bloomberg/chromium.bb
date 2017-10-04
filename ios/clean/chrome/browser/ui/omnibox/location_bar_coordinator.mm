@@ -46,8 +46,7 @@
       initWithWebStateList:&(browser->web_state_list())];
   std::unique_ptr<LocationBarController> locationBar =
       base::MakeUnique<LocationBarControllerImpl>(
-          self.viewController.omnibox, browser->browser_state(),
-          nil /* OmniboxPopupPositioner */, self.mediator,
+          self.viewController.omnibox, browser->browser_state(), self.mediator,
           nil /* dispatcher */);
   [self.mediator setLocationBar:std::move(locationBar)];
   [super start];

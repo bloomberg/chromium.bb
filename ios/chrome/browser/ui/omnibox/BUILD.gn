@@ -48,6 +48,7 @@ source_set("omnibox_internal") {
     "omnibox_popup_positioner.h",
     "omnibox_popup_presenter.h",
     "omnibox_popup_presenter.mm",
+    "omnibox_popup_provider.h",
     "omnibox_popup_row.h",
     "omnibox_popup_row.mm",
     "omnibox_popup_view_controller.h",

@@ -31,16 +31,20 @@ class OmniboxViewIOS;
 @protocol OmniboxPopupPositioner;
 @class OmniboxTextFieldIOS;
 class ToolbarModel;
+class OmniboxPopupViewIOS;
 
 // Concrete implementation of the LocationBarController interface.
 class LocationBarControllerImpl : public LocationBarController {
  public:
   LocationBarControllerImpl(OmniboxTextFieldIOS* field,
                             ios::ChromeBrowserState* browser_state,
-                            id<OmniboxPopupPositioner> positioner,
                             id<LocationBarDelegate> delegate,
                             id<BrowserCommands> dispatcher);
   ~LocationBarControllerImpl() override;
+
+  // Creates a popup view and wires it to |edit_view_|.
+  std::unique_ptr<OmniboxPopupViewIOS> CreatePopupView(
+      id<OmniboxPopupPositioner> positioner);
 
   // OmniboxEditController implementation
   void OnAutocompleteAccept(const GURL& url,
@@ -84,6 +88,7 @@ class LocationBarControllerImpl : public LocationBarController {
   bool show_hint_text_;
   __strong UIButton* clear_text_button_;
   std::unique_ptr<OmniboxViewIOS> edit_view_;
+
   __strong OmniboxClearButtonBridge* clear_button_bridge_;
   // A bridge from a UIControl action to the dispatcher to display a page
   // info popup.
