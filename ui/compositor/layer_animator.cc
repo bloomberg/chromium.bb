@@ -370,6 +370,23 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
   }
 }
 
+void LayerAnimator::AddOwnedObserver(
+    std::unique_ptr<ImplicitAnimationObserver> animation_observer) {
+  owned_observer_list_.push_back(std::move(animation_observer));
+}
+
+void LayerAnimator::RemoveAndDestroyOwnedObserver(
+    ImplicitAnimationObserver* animation_observer) {
+  owned_observer_list_.erase(
+      std::remove_if(
+          owned_observer_list_.begin(), owned_observer_list_.end(),
+          [animation_observer](
+              const std::unique_ptr<ImplicitAnimationObserver>& other) {
+            return other.get() == animation_observer;
+          }),
+      owned_observer_list_.end());
+}
+
 void LayerAnimator::OnThreadedAnimationStarted(
     base::TimeTicks monotonic_time,
     cc::TargetProperty::Type target_property,
