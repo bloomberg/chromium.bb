@@ -34,8 +34,14 @@ namespace probe {
 {%- endfor %}
 {%- endmacro -%}
 
-{% if probe.is_scoped %}
+{%- macro params_list(probe) %}
+{%- for param in probe.params %}
+{{param.type}} {{param.name}}
+{%- if not loop.last %}, {% endif -%}
+{%- endfor -%}
+{%- endmacro %}
 
+{% if probe.is_scoped %}
 
 class {{export_symbol}} {{probe.name}} : public ProbeBase {
   STACK_ALLOCATED();
@@ -48,9 +54,23 @@ class {{export_symbol}} {{probe.name}} : public ProbeBase {
   {{param.member_type}} {{param.name}};
 {% endfor %}
 };
+
 {%- else %}
 
-{{export_symbol}} void {{probe.name}}({{ params_decl(probe) }});
+{{export_symbol}} void {{probe.name}}Impl({{ params_decl(probe) }});
+inline void {{probe.name}}({{params_list(probe)}}) {
+  if (!{{sink_class}}::HasAgentsGlobal(
+    {%- for agent in probe.agents %}
+    {% if not loop.first %} | {% endif -%}
+    {{sink_class}}::k{{agent | agent_name_to_class}}
+    {%- endfor %}))
+    return;
+
+  {{probe.name}}Impl(
+    {%- for param in probe.params %}
+      {% if not loop.first %}, {% endif %}{{param.name}}
+    {%- endfor %});
+}
 
 {%- endif %}
 {%- endfor %}

@@ -1,8 +1,10 @@
 {
   settings: {
+    export_header: "core/CoreExport.h",
     export_symbol: "CORE_EXPORT",
     include_path: "core/inspector",
     includes: [
+      "core/CoreProbeSink.h",
       "core/probe/CoreProbes.h",
     ],
   },

@@ -1,8 +1,10 @@
 {
   settings: {
+    export_header: "platform/PlatformExport.h",
     export_symbol: "PLATFORM_EXPORT",
     include_path: "platform/probe",
     includes: [
+      "platform/PlatformProbeSink.h",
       "platform/probe/PlatformProbes.h",
     ]
   },

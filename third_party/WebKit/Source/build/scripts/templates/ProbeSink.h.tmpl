@@ -6,11 +6,15 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 
 {% set sink_class = (name | to_singular) + "Sink" %}
+{% set export_header = config["settings"]["export_header"] %}
 {% set export_symbol = config["settings"]["export_symbol"] %}
 
 #ifndef {{sink_class}}_h
 #define {{sink_class}}_h
 
+#include <atomic>
+
+#include "{{export_header}}"
 #include "platform/heap/HeapAllocator.h"
 
 namespace blink {
@@ -19,29 +23,51 @@ namespace blink {
 class {{ agent | agent_name_to_class }};
 {% endfor %}
 
-class {{export_symbol}} {{sink_class}} : public GarbageCollected<{{sink_class}}> {
+class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink_class}}> {
   WTF_MAKE_NONCOPYABLE({{sink_class}});
 
  public:
+  enum AgentType : unsigned {
+{% for agent in agents %}
+    k{{agent | agent_name_to_class }} = 1u << {{loop.index0}},
+{% endfor %}
+  };
+
   {{sink_class}}();
+  ~{{sink_class}}();
   DECLARE_TRACE();
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
-  bool has{{class_name}}s() const { return m_has{{class_name}}s; }
+  bool has{{class_name}}s() const { return !m_{{getter_name}}s.IsEmpty(); }
   const HeapHashSet<Member<{{class_name}}>>& {{getter_name}}s() const { return m_{{getter_name}}s; }
   void add{{class_name}}({{class_name}}* agent);
   void remove{{class_name}}({{class_name}}* agent);
 
 {% endfor %}
+  // Queries process-wide. Intended for fast-return cases only.
+  static bool HasAgentsGlobal(unsigned mask) {
+    return s_existingAgents.load(std::memory_order_acquire) & mask;
+  }
+
  private:
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
   HeapHashSet<Member<{{class_name}}>> m_{{getter_name}}s;
-  bool m_has{{class_name}}s = false;
 {% endfor %}
+
+  // Number of sinks with an enabled agent of each type, used to keep
+  // |s_existingAgents| up to date.
+  // Access must be guarded by AgentCountMutex in the source file.
+{% for agent in agents %}
+  static unsigned s_numSinksWith{{agent | agent_name_to_class}};
+{% endfor %}
+
+  // Bit-set of types of enabled agent which exist in this process.
+  // Always a bitwise-or of AgentType enumerators.
+  static std::atomic<unsigned> s_existingAgents;
 };
 
 } // namespace blink
