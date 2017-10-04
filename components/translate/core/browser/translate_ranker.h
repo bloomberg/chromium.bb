@@ -49,9 +49,9 @@ class TranslateRanker : public KeyedService {
       const GURL& url,
       metrics::TranslateEventProto* translate_event) = 0;
 
-  // If override is enabled, will return true and add |event_type| to
-  // |translate_event.decision_overrides()|. If override is disabled,
-  // returns false and finalize and record |translate_event| with
+  // If override for the given |event_type| is enabled, will return true and add
+  // |event_type| to |translate_event.decision_overrides()|. If override is
+  // disabled, returns false and finalize and record |translate_event| with
   // |event_type| as |translate_event.event_type()|.  |event_type|
   // must be one of the values defined by
   // metrics::TranslateEventProto::EventType.
