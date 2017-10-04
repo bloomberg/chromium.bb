@@ -159,7 +159,7 @@ Polymer({
           this.browserProxy_.removeCookie(items[i].id);
       }
       // We just deleted all items found by the filter, let's reset the filter.
-      /** @type {SettingsSubpageSearchElement} */ (this.$.filter).setValue('');
+      this.fire('clear-subpage-search');
     }
   },
 
