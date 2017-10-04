@@ -128,7 +128,7 @@ class _ApkDelegate(object):
   def Install(self, device):
     if self._test_apk_incremental_install_json:
       installer.Install(device, self._test_apk_incremental_install_json,
-                        apk=self._apk_helper)
+                        apk=self._apk_helper, permissions=self._permissions)
     else:
       device.Install(self._apk_helper, reinstall=True,
                      permissions=self._permissions)

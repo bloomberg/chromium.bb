@@ -43,10 +43,9 @@ final class ClassLoaderPatcher {
      * Loads all dex files within |dexDir| into the app's ClassLoader.
      */
     @SuppressLint({
-            "SetWorldReadable",
-            "SetWorldWritable",
-            })
-    void loadDexFiles(File dexDir) throws ReflectiveOperationException, FileNotFoundException {
+            "SetWorldReadable", "SetWorldWritable",
+    })
+    File[] loadDexFiles(File dexDir) throws ReflectiveOperationException, FileNotFoundException {
         Log.i(TAG, "Installing dex files from: " + dexDir);
         File[] dexFilesArr = dexDir.listFiles();
         if (dexFilesArr == null) {
@@ -101,6 +100,7 @@ final class ClassLoaderPatcher {
         Object[] dexElements = (Object[]) Reflect.getField(dexPathList, "dexElements");
         dexElements = addDexElements(dexFilesArr, optimizedDir, dexElements);
         Reflect.setField(dexPathList, "dexElements", dexElements);
+        return dexFilesArr;
     }
 
     /**
