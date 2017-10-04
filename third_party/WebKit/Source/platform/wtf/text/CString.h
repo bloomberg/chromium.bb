@@ -27,12 +27,13 @@
 #ifndef CString_h
 #define CString_h
 
+#include <string.h>
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
-#include <string.h>
 
 namespace WTF {
 

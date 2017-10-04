@@ -40,24 +40,11 @@
 
 namespace WTF {
 
-#if DCHECK_IS_ON() || ENABLE_SECURITY_ASSERT
-// The debug/assertion version may get bigger.
 struct SameSizeAsRefCounted {
-  int a;
-#if ENABLE_SECURITY_ASSERT
-  bool b;
-#endif
-#if DCHECK_IS_ON()
-  bool c;
-  ThreadRestrictionVerifier d;
-#endif
-};
-#else
-struct SameSizeAsRefCounted {
-  int a;
+  uint32_t a;
   // Don't add anything here because this should stay small.
 };
-#endif
+
 template <typename T, unsigned inlineCapacity = 0>
 struct SameSizeAsVectorWithInlineCapacity;
 
@@ -76,10 +63,13 @@ struct SameSizeAsVectorWithInlineCapacity {
 #endif
 };
 
-static_assert(sizeof(std::unique_ptr<int>) == sizeof(int*),
-              "std::unique_ptr should stay small");
+#if !DCHECK_IS_ON()
 static_assert(sizeof(RefCounted<int>) == sizeof(SameSizeAsRefCounted),
               "RefCounted should stay small");
+#endif
+
+static_assert(sizeof(std::unique_ptr<int>) == sizeof(int*),
+              "std::unique_ptr should stay small");
 static_assert(sizeof(RefPtr<RefCounted<int>>) == sizeof(int*),
               "RefPtr should stay small");
 static_assert(sizeof(String) == sizeof(int*), "String should stay small");
@@ -97,4 +87,5 @@ static_assert(sizeof(Vector<int, 2>) ==
 static_assert(sizeof(Vector<int, 3>) ==
                   sizeof(SameSizeAsVectorWithInlineCapacity<int, 3>),
               "Vector should stay small");
+
 }  // namespace WTF

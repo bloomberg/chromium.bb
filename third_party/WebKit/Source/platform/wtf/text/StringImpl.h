@@ -154,6 +154,7 @@ class WTF_EXPORT StringImpl {
         is_static_(true) {}
 
  public:
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
   static StringImpl* empty_;
   static StringImpl* empty16_bit_;
 
@@ -274,6 +275,8 @@ class WTF_EXPORT StringImpl {
     if (!--ref_count_)
       DestroyIfNotStatic();
   }
+
+  ALWAYS_INLINE void Adopted() const {}
 
   // FIXME: Does this really belong in StringImpl?
   template <typename T>
