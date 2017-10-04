@@ -27,6 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import sys
 
 import hasher
@@ -72,9 +73,10 @@ class MakeNamesWriter(json5_generator.Writer):
 
         assert namespace, 'A namespace is required.'
 
+        basename, _ = os.path.splitext(os.path.basename(json5_file_path[0]))
         self._outputs = {
-            (namespace + suffix + 'Names.h'): self.generate_header,
-            (namespace + suffix + 'Names.cpp'): self.generate_implementation,
+            (basename + '.h'): self.generate_header,
+            (basename + '.cc'): self.generate_implementation,
         }
         self._template_context = {
             'namespace': namespace,
@@ -82,6 +84,7 @@ class MakeNamesWriter(json5_generator.Writer):
             'export': export,
             'entries': self.json5_file.name_dictionaries,
             'input_files': self._input_files,
+            'this_include_header_name': basename + '.h',
         }
 
     @template_expander.use_jinja("templates/MakeNames.h.tmpl", filters=filters)

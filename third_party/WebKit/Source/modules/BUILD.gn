@@ -36,10 +36,7 @@ config("modules_implementation") {
 
 make_names("module_names") {
   in_files = [ "indexeddb/IndexedDBNames.json5" ]
-  outputs = [
-    "$blink_modules_output_dir/IndexedDBNames.cpp",
-    "$blink_modules_output_dir/IndexedDBNames.h",
-  ]
+  output_dir = blink_modules_output_dir
   deps = []  # Don't use default deps (otherwise it will be circular).
 }
 

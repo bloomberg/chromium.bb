@@ -8,10 +8,7 @@ import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 make_names("make_platform_loader_generated_fetch_initiator_type_names") {
   in_files = [ "fetch/FetchInitiatorTypeNames.json5" ]
-  outputs = [
-    "$blink_platform_output_dir/loader/fetch/FetchInitiatorTypeNames.cpp",
-    "$blink_platform_output_dir/loader/fetch/FetchInitiatorTypeNames.h",
-  ]
+  output_dir = "$blink_platform_output_dir/loader/fetch"
 }
 
 jumbo_source_set("loader") {

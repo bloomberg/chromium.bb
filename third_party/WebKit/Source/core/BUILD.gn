@@ -916,65 +916,44 @@ code_generator("make_core_generated_media_feature_names") {
   ]
   other_inputs = make_names_files
   outputs = [
-    "$blink_core_output_dir/css/MediaFeatureNames.cpp",
+    "$blink_core_output_dir/css/MediaFeatureNames.cc",
     "$blink_core_output_dir/css/MediaFeatureNames.h",
   ]
 }
 
 make_names("make_core_generated_media_type_names") {
   in_files = [ "css/MediaTypeNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/MediaTypeNames.cpp",
-    "$blink_core_output_dir/MediaTypeNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_event_names") {
   in_files = [ "$blink_core_output_dir/EventNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/EventNames.cpp",
-    "$blink_core_output_dir/EventNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_event_target_names") {
   in_files = [ "events/EventTargetNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/EventTargetNames.cpp",
-    "$blink_core_output_dir/EventTargetNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_event_type_names") {
   in_files = [ "events/EventTypeNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/EventTypeNames.cpp",
-    "$blink_core_output_dir/EventTypeNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_html_tokenizer_names") {
   in_files = [ "html/parser/HTMLTokenizerNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/HTMLTokenizerNames.cpp",
-    "$blink_core_output_dir/HTMLTokenizerNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_input_type_names") {
   in_files = [ "html/forms/InputTypeNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/InputTypeNames.cpp",
-    "$blink_core_output_dir/InputTypeNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_input_mode_names") {
   in_files = [ "editing/InputModeNames.json5" ]
-  outputs = [
-    "$blink_core_output_dir/InputModeNames.cpp",
-    "$blink_core_output_dir/InputModeNames.h",
-  ]
+  output_dir = blink_core_output_dir
 }
 
 # make_qualified_names ---------------------------------------------------------

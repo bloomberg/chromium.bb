@@ -22,40 +22,14 @@ blink_platform_msa_files = [ "graphics/cpu/mips/WebGLImageConversionMSA.h" ]
 
 blink_platform_sse_files = [ "graphics/cpu/x86/WebGLImageConversionSSE.h" ]
 
-action("font_family_names") {
-  script = "../build/scripts/make_names.py"
-
-  font_family_names_in = "fonts/FontFamilyNames.json5"
-  inputs = make_names_files + [ font_family_names_in ]
-
-  outputs = [
-    "$blink_platform_output_dir/FontFamilyNames.cpp",
-    "$blink_platform_output_dir/FontFamilyNames.h",
-  ]
-
-  args = [
-    rebase_path(font_family_names_in, root_build_dir),
-    "--output_dir",
-    rebase_path(blink_platform_output_dir, root_build_dir),
-  ]
+make_names("font_family_names") {
+  in_files = [ "fonts/FontFamilyNames.json5" ]
+  output_dir = blink_platform_output_dir
 }
 
-action("http_names") {
-  script = "../build/scripts/make_names.py"
-
-  http_names_in = "network/HTTPNames.json5"
-  inputs = make_names_files + [ http_names_in ]
-
-  outputs = [
-    "$blink_platform_output_dir/HTTPNames.cpp",
-    "$blink_platform_output_dir/HTTPNames.h",
-  ]
-
-  args = [
-    rebase_path(http_names_in, root_build_dir),
-    "--output_dir",
-    rebase_path(blink_platform_output_dir, root_build_dir),
-  ]
+make_names("http_names") {
+  in_files = [ "network/HTTPNames.json5" ]
+  output_dir = blink_platform_output_dir
 }
 
 action("runtime_enabled_features") {

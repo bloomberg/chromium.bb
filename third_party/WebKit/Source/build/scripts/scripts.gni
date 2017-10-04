@@ -206,10 +206,16 @@ template("css_properties") {
 # Template to run the make_names script. This is a special case of
 # process_json5_files.
 #   in_files: input files to pass to the script
-#   outputs: expected results
+#   output_dir: output directory
 #   deps [optional]:
 #     Dependencies. See process_json5_files for definition.
 template("make_names") {
+  output_dir = invoker.output_dir
+  outputs = process_file_template(invoker.in_files,
+                                  [
+                                    "$output_dir/{{source_name_part}}.cc",
+                                    "$output_dir/{{source_name_part}}.h",
+                                  ])
   process_json5_files(target_name) {
     script = "//third_party/WebKit/Source/build/scripts/make_names.py"
     other_inputs = make_names_files
@@ -217,7 +223,6 @@ template("make_names") {
                            [
                              "deps",
                              "in_files",
-                             "outputs",
                              "public_deps",
                              "visibility",
                            ])
