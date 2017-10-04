@@ -55,9 +55,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
   void Reset() override;
   void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
                         const GetPrintersDoneCallback& done_callback) override;
-  void StartGetCapability(
-      const std::string& destination_id,
-      const PrinterHandler::GetCapabilityCallback& callback) override;
+  void StartGetCapability(const std::string& destination_id,
+                          const GetCapabilityCallback& callback) override;
   // TODO(tbarzic): It might make sense to have the strings in a single struct.
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
@@ -65,10 +64,9 @@ class ExtensionPrinterHandler : public PrinterHandler {
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedBytes>& print_data,
-                  const PrinterHandler::PrintCallback& callback) override;
-  void StartGrantPrinterAccess(
-      const std::string& printer_id,
-      const PrinterHandler::GetPrinterInfoCallback& callback) override;
+                  const PrintCallback& callback) override;
+  void StartGrantPrinterAccess(const std::string& printer_id,
+                               const GetPrinterInfoCallback& callback) override;
 
  private:
   friend class ExtensionPrinterHandlerTest;
@@ -89,29 +87,27 @@ class ExtensionPrinterHandler : public PrinterHandler {
 
   // Sets print job document data and dispatches it using printerProvider API.
   void DispatchPrintJob(
-      const PrinterHandler::PrintCallback& callback,
+      const PrintCallback& callback,
       std::unique_ptr<extensions::PrinterProviderPrintJob> print_job);
 
   // Methods used as wrappers to callbacks for extensions::PrinterProviderAPI
   // methods, primarily so the callbacks can be bound to this class' weak ptr.
   // They just propagate results to callbacks passed to them.
-  void WrapGetPrintersCallback(
-      const PrinterHandler::AddedPrintersCallback& callback,
-      const PrinterHandler::GetPrintersDoneCallback& done_callback,
-      const base::ListValue& printers,
-      bool done);
-  void WrapGetCapabilityCallback(
-      const PrinterHandler::GetCapabilityCallback& callback,
-      const base::DictionaryValue& capability);
-  void WrapPrintCallback(const PrinterHandler::PrintCallback& callback,
+  void WrapGetPrintersCallback(const AddedPrintersCallback& callback,
+                               const GetPrintersDoneCallback& done_callback,
+                               const base::ListValue& printers,
+                               bool done);
+  void WrapGetCapabilityCallback(const GetCapabilityCallback& callback,
+                                 const base::DictionaryValue& capability);
+  void WrapPrintCallback(const PrintCallback& callback,
                          bool success,
                          const std::string& status);
   void WrapGetPrinterInfoCallback(const GetPrinterInfoCallback& callback,
                                   const base::DictionaryValue& printer_info);
 
   void OnUsbDevicesEnumerated(
-      const PrinterHandler::AddedPrintersCallback& callback,
-      const PrinterHandler::GetPrintersDoneCallback& done_callback,
+      const AddedPrintersCallback& callback,
+      const GetPrintersDoneCallback& done_callback,
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
   Profile* profile_;

@@ -58,8 +58,8 @@ void PrivetPrinterHandler::Reset() {
 }
 
 void PrivetPrinterHandler::StartGetPrinters(
-    const PrinterHandler::AddedPrintersCallback& added_printers_callback,
-    const PrinterHandler::GetPrintersDoneCallback& done_callback) {
+    const AddedPrintersCallback& added_printers_callback,
+    const GetPrintersDoneCallback& done_callback) {
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
       ServiceDiscoverySharedClient::GetInstance();
@@ -72,7 +72,7 @@ void PrivetPrinterHandler::StartGetPrinters(
 
 void PrivetPrinterHandler::StartGetCapability(
     const std::string& destination_id,
-    const PrinterHandler::GetCapabilityCallback& callback) {
+    const GetCapabilityCallback& callback) {
   if (!CreateHTTP(destination_id,
                   base::Bind(&PrivetPrinterHandler::CapabilitiesUpdateClient,
                              weak_ptr_factory_.GetWeakPtr(), callback))) {
@@ -87,7 +87,7 @@ void PrivetPrinterHandler::StartPrint(
     const std::string& ticket_json,
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedBytes>& print_data,
-    const PrinterHandler::PrintCallback& callback) {
+    const PrintCallback& callback) {
   if (!CreateHTTP(
           destination_id,
           base::Bind(&PrivetPrinterHandler::PrintUpdateClient,
@@ -155,7 +155,7 @@ void PrivetPrinterHandler::StopLister() {
 }
 
 void PrivetPrinterHandler::CapabilitiesUpdateClient(
-    const PrinterHandler::GetCapabilityCallback& callback,
+    const GetCapabilityCallback& callback,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!UpdateClient(std::move(http_client))) {
     callback.Run(nullptr);
@@ -170,7 +170,7 @@ void PrivetPrinterHandler::CapabilitiesUpdateClient(
 }
 
 void PrivetPrinterHandler::OnGotCapabilities(
-    const PrinterHandler::GetCapabilityCallback& callback,
+    const GetCapabilityCallback& callback,
     const base::DictionaryValue* capabilities) {
   if (!capabilities || capabilities->HasKey(cloud_print::kPrivetKeyError) ||
       !printer_lister_) {
@@ -202,7 +202,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
 }
 
 void PrivetPrinterHandler::PrintUpdateClient(
-    const PrinterHandler::PrintCallback& callback,
+    const PrintCallback& callback,
     const base::string16& job_title,
     const scoped_refptr<base::RefCountedBytes>& print_data,
     const std::string& print_ticket,
