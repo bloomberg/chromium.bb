@@ -73,7 +73,9 @@ int NaClWin64Main() {
     base::RouteStdioToConsole(true);
 
   // Initialize the sandbox for this process.
-  bool sandbox_initialized_ok = content::InitializeSandbox(&sandbox_info);
+  bool sandbox_initialized_ok = content::InitializeSandbox(
+      service_manager::SandboxTypeFromCommandLine(command_line), &sandbox_info);
+
   // Die if the sandbox can't be enabled.
   CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
                                 << process_type;

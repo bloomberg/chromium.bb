@@ -34,14 +34,15 @@ class SandboxedProcessLauncherDelegate;
 
 #if defined(OS_WIN)
 
-// Initialize the sandbox for renderer, gpu, utility, worker, nacl, and plugin
-// processes, depending on the command line flags. Although The browser process
-// is not sandboxed, this also needs to be called because it will initialize
-// the broker code.
+// Initialize the sandbox of the given |sandbox_type|. Although The browser
+// process is not sandboxed, this also needs to be called because it will
+// initialize the broker code.
+//
 // Returns true if the sandbox was initialized succesfully, false if an error
 // occurred.  If process_type isn't one that needs sandboxing true is always
 // returned.
 CONTENT_EXPORT bool InitializeSandbox(
+    service_manager::SandboxType sandbox_type,
     sandbox::SandboxInterfaceInfo* sandbox_info);
 
 // Launch a sandboxed process. |delegate| may be NULL. If |delegate| is non-NULL
