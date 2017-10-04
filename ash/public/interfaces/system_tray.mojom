@@ -128,10 +128,6 @@ interface SystemTrayClient {
   // be any string.
   ShowNetworkSettings(string network_id);
 
-  // Attempts to sign out the user.
-  // TODO(jamescook): Migrate to a user or login service. crbug.com/665582
-  SignOut();
-
   // Attempts to restart the system for update.
   RequestRestartForUpdate();
 };

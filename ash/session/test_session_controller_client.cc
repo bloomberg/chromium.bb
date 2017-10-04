@@ -149,6 +149,10 @@ void TestSessionControllerClient::RequestLockScreen() {
   SetSessionState(session_manager::SessionState::LOCKED);
 }
 
+void TestSessionControllerClient::RequestSignOut() {
+  Reset();
+}
+
 void TestSessionControllerClient::SwitchActiveUser(
     const AccountId& account_id) {
   std::vector<uint32_t> session_order;

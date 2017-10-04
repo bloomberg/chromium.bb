@@ -184,6 +184,9 @@ interface SessionControllerClient {
   // Requests to lock screen.
   RequestLockScreen();
 
+  // Requests signing out all users, ending the current session.
+  RequestSignOut();
+
   // Switch to the active user with |account_id| (if the user has already signed
   // in).
   SwitchActiveUser(signin.mojom.AccountId account_id);
