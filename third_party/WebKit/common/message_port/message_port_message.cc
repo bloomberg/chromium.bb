@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/message_port_message.h"
+#include "third_party/WebKit/common/message_port/message_port_message.h"
 
-namespace content {
+namespace blink {
 
 MessagePortMessage::MessagePortMessage() = default;
 MessagePortMessage::~MessagePortMessage() = default;
 
-}  // namespace content
+}  // namespace blink

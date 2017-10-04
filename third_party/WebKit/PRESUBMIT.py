@@ -20,9 +20,13 @@ _EXCLUDED_PATHS = (
 
 
 def _CheckForNonBlinkVariantMojomIncludes(input_api, output_api):
+    def source_file_filter(path):
+        return input_api.FilterSourceFile(path,
+                                          black_list=[r'third_party/WebKit/common/'])
+
     pattern = input_api.re.compile(r'#include\s+.+\.mojom(.*)\.h[>"]')
     errors = []
-    for f in input_api.AffectedFiles():
+    for f in input_api.AffectedFiles(file_filter=source_file_filter):
         for line_num, line in f.ChangedContents():
             m = pattern.match(line)
             if m and m.group(1) != '-blink' and m.group(1) != '-shared':

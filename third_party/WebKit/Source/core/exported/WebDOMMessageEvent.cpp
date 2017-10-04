@@ -47,7 +47,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
     const WebString& origin,
     const WebFrame* source_frame,
     const WebDocument& target_document,
-    WebMessagePortChannelArray channels)
+    WebVector<MessagePortChannel> channels)
     : WebDOMMessageEvent(MessageEvent::Create()) {
   DOMWindow* window = nullptr;
   if (source_frame)
@@ -55,7 +55,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {
     Document* core_document = target_document;
-    ports = MessagePort::ToMessagePortArray(core_document, std::move(channels));
+    ports = MessagePort::EntanglePorts(*core_document, std::move(channels));
   }
   // Use an empty array for |ports| when it is null because this function
   // is used to implement postMessage().
@@ -77,12 +77,8 @@ WebString WebDOMMessageEvent::Origin() const {
   return WebString(ConstUnwrap<MessageEvent>()->origin());
 }
 
-WebMessagePortChannelArray WebDOMMessageEvent::ReleaseChannels() {
-  MessagePortChannelArray channels = Unwrap<MessageEvent>()->ReleaseChannels();
-  WebMessagePortChannelArray web_channels(channels.size());
-  for (size_t i = 0; i < channels.size(); ++i)
-    web_channels[i] = std::move(channels[i]);
-  return web_channels;
+WebVector<MessagePortChannel> WebDOMMessageEvent::ReleaseChannels() {
+  return Unwrap<MessageEvent>()->ReleaseChannels();
 }
 
 }  // namespace blink

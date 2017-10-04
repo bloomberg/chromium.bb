@@ -11,11 +11,11 @@
 #include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
-#include "content/common/message_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
 
@@ -195,7 +195,7 @@ bool SharedWorkerHost::IsAvailable() const {
 void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
                                  int process_id,
                                  int frame_id,
-                                 const MessagePort& port) {
+                                 const blink::MessagePortChannel& port) {
   clients_.emplace_back(std::move(client), next_connection_request_id_++,
                         process_id, frame_id);
   ClientInfo& info = clients_.back();

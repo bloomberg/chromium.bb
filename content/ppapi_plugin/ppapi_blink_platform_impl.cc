@@ -176,14 +176,6 @@ bool PpapiBlinkPlatformImpl::IsLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
-void PpapiBlinkPlatformImpl::CreateMessageChannel(
-    std::unique_ptr<blink::WebMessagePortChannel>* channel1,
-    std::unique_ptr<blink::WebMessagePortChannel>* channel2) {
-  NOTREACHED();
-  *channel1 = nullptr;
-  *channel2 = nullptr;
-}
-
 void PpapiBlinkPlatformImpl::setCookies(const blink::WebURL& url,
                                         const blink::WebURL& site_for_cookies,
                                         const blink::WebString& value) {

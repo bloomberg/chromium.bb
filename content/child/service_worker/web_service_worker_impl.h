@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
@@ -47,10 +46,11 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   blink::WebServiceWorkerProxy* Proxy() override;
   blink::WebURL Url() const override;
   blink::mojom::ServiceWorkerState GetState() const override;
-  void PostMessage(blink::WebServiceWorkerProvider* provider,
-                   const blink::WebString& message,
-                   const blink::WebSecurityOrigin& source_origin,
-                   blink::WebMessagePortChannelArray channels) override;
+  void PostMessage(
+      blink::WebServiceWorkerProvider* provider,
+      const blink::WebString& message,
+      const blink::WebSecurityOrigin& source_origin,
+      blink::WebVector<blink::MessagePortChannel> channels) override;
   void Terminate() override;
 
   // Creates WebServiceWorker::Handle object that owns a reference to the given

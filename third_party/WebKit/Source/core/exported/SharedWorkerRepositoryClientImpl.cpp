@@ -42,7 +42,6 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentSecurityPolicy.h"
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebKit.h"
@@ -115,11 +114,10 @@ static WebSharedWorkerRepositoryClient::DocumentID GetId(void* document) {
       document);
 }
 
-void SharedWorkerRepositoryClientImpl::Connect(
-    SharedWorker* worker,
-    std::unique_ptr<WebMessagePortChannel> port,
-    const KURL& url,
-    const String& name) {
+void SharedWorkerRepositoryClientImpl::Connect(SharedWorker* worker,
+                                               MessagePortChannel port,
+                                               const KURL& url,
+                                               const String& name) {
   DCHECK(client_);
 
   // No nested workers (for now) - connect() should only be called from document

@@ -17,7 +17,6 @@
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/shared_worker_devtools_agent.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
@@ -27,6 +26,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -305,15 +305,14 @@ void EmbeddedSharedWorkerStub::Shutdown() {
 
 void EmbeddedSharedWorkerStub::ConnectToChannel(
     int connection_request_id,
-    std::unique_ptr<WebMessagePortChannelImpl> channel) {
+    blink::MessagePortChannel channel) {
   impl_->Connect(std::move(channel));
   host_->OnConnected(connection_request_id);
 }
 
 void EmbeddedSharedWorkerStub::Connect(int connection_request_id,
                                        mojo::ScopedMessagePipeHandle port) {
-  auto channel =
-      std::make_unique<WebMessagePortChannelImpl>(MessagePort(std::move(port)));
+  blink::MessagePortChannel channel(std::move(port));
   if (running_) {
     ConnectToChannel(connection_request_id, std::move(channel));
   } else {

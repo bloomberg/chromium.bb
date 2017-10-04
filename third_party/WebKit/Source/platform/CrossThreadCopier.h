@@ -42,6 +42,7 @@
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/TypeTraits.h"
 #include "platform/wtf/WeakPtr.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkRefCnt;
@@ -251,6 +252,25 @@ struct CrossThreadCopier<mojo::InterfaceRequest<Interface>> {
   using Type = mojo::InterfaceRequest<Interface>;
   static Type Copy(Type request) {
     return request;  // This is in fact a move.
+  }
+};
+
+template <>
+struct CrossThreadCopier<MessagePortChannel> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = MessagePortChannel;
+  static Type Copy(Type pointer) {
+    return pointer;  // This is in fact a move.
+  }
+};
+
+template <size_t inlineCapacity, typename Allocator>
+struct CrossThreadCopier<
+    Vector<MessagePortChannel, inlineCapacity, Allocator>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = Vector<MessagePortChannel, inlineCapacity, Allocator>;
+  static Type Copy(Type pointer) {
+    return pointer;  // This is in fact a move.
   }
 };
 

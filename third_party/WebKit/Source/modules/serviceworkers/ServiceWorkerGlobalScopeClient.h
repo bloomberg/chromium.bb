@@ -37,7 +37,6 @@
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
@@ -145,7 +144,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
                                     double event_dispatch_time);
   void PostMessageToClient(const WebString& client_uuid,
                            const WebString& message,
-                           WebMessagePortChannelArray);
+                           Vector<MessagePortChannel>);
   void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
   void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
   void Focus(const WebString& client_uuid,

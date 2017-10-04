@@ -63,7 +63,6 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebContentSettingsClient.h"
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
@@ -190,8 +189,7 @@ void WebSharedWorkerImpl::DidTerminateWorkerThread() {
   delete this;
 }
 
-void WebSharedWorkerImpl::Connect(
-    std::unique_ptr<WebMessagePortChannel> web_channel) {
+void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   DCHECK(IsMainThread());
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
@@ -205,7 +203,7 @@ void WebSharedWorkerImpl::Connect(
 }
 
 void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
-    std::unique_ptr<WebMessagePortChannel> channel) {
+    MessagePortChannel channel) {
   // Wrap the passed-in channel in a MessagePort, and send it off via a connect
   // event.
   DCHECK(worker_thread_->IsCurrentThread());

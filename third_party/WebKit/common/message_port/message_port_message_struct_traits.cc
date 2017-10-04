@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/message_port_message_struct_traits.h"
+#include "third_party/WebKit/common/message_port/message_port_message_struct_traits.h"
 
 #include "base/containers/span.h"
 
 namespace mojo {
 
-bool StructTraits<content::mojom::MessagePortMessage::DataView,
-                  content::MessagePortMessage>::
-    Read(content::mojom::MessagePortMessage::DataView data,
-         content::MessagePortMessage* out) {
+bool StructTraits<blink::mojom::MessagePortMessage::DataView,
+                  blink::MessagePortMessage>::
+    Read(blink::mojom::MessagePortMessage::DataView data,
+         blink::MessagePortMessage* out) {
   if (!data.ReadEncodedMessage(&out->owned_encoded_message) ||
       !data.ReadPorts(&out->ports))
     return false;

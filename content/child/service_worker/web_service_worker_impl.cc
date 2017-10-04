@@ -12,16 +12,12 @@
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
 
-using blink::WebMessagePortChannel;
-using blink::WebMessagePortChannelArray;
-using blink::WebMessagePortChannelClient;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 
@@ -89,12 +85,11 @@ void WebServiceWorkerImpl::PostMessage(
     blink::WebServiceWorkerProvider* provider,
     const WebString& message,
     const WebSecurityOrigin& source_origin,
-    WebMessagePortChannelArray channels) {
+    blink::WebVector<blink::MessagePortChannel> channels) {
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
       handle_ref_->handle_id(),
       static_cast<WebServiceWorkerProviderImpl*>(provider)->provider_id(),
-      message.Utf16(), url::Origin(source_origin),
-      WebMessagePortChannelImpl::ExtractMessagePorts(std::move(channels))));
+      message.Utf16(), url::Origin(source_origin), channels.ReleaseVector()));
 }
 
 void WebServiceWorkerImpl::Terminate() {

@@ -20,7 +20,6 @@
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_constants.h"
@@ -569,12 +568,10 @@ void ServiceWorkerDispatcher::OnPostMessage(
     return;
   }
 
-  blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreateFromMessagePorts(params.message_ports);
-
   found->second->DispatchMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker),
-      blink::WebString::FromUTF16(params.message), std::move(ports));
+      blink::WebString::FromUTF16(params.message),
+      std::move(params.message_ports));
 }
 
 void ServiceWorkerDispatcher::OnCountFeature(int thread_id,

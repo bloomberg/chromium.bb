@@ -200,8 +200,6 @@ target(link_target_type, "child") {
     "webfallbackthemeengine_impl.h",
     "webfileutilities_impl.cc",
     "webfileutilities_impl.h",
-    "webmessageportchannel_impl.cc",
-    "webmessageportchannel_impl.h",
     "webthemeengine_impl_android.cc",
     "webthemeengine_impl_android.h",
     "webthemeengine_impl_default.cc",
