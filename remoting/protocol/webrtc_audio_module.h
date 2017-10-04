@@ -32,12 +32,8 @@ class WebrtcAudioModule : public webrtc::AudioDeviceModule {
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
 
   // webrtc::AudioDeviceModule implementation.
-  int64_t TimeUntilNextProcess() override;
-  void Process() override;
   int32_t ActiveAudioLayer(AudioLayer* audio_layer) const override;
   ErrorCode LastError() const override;
-  int32_t RegisterEventObserver(
-      webrtc::AudioDeviceObserver* event_callback) override;
   int32_t RegisterAudioCallback(
       webrtc::AudioTransport* audio_callback) override;
   int32_t Init() override;
