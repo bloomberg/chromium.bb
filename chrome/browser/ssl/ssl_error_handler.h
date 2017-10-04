@@ -66,6 +66,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   // Events for UMA. Do not rename or remove values, add new values to the end.
   // Public for testing.
+  // If you change this, change the values in CaptivePortalTest.java as well.
   enum UMAEvent {
     HANDLE_ALL = 0,
     SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE = 1,

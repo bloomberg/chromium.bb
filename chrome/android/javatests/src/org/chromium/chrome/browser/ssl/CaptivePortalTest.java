@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ssl;
 
+import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.util.Base64;
@@ -15,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -33,6 +35,8 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.CertTestUtil;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Callable;
 
 /** Tests for the Captive portal interstitial. */
@@ -46,6 +50,31 @@ import java.util.concurrent.Callable;
 public class CaptivePortalTest {
     private static final String CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX = "Connect to";
     private static final int INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS = 5;
+
+    // UMA events copied from ssl_error_handler.h.
+    @IntDef({
+            HANDLE_ALL, SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE,
+            SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE,
+            SHOW_SSL_INTERSTITIAL_OVERRIDABLE, WWW_MISMATCH_FOUND, WWW_MISMATCH_URL_AVAILABLE,
+            WWW_MISMATCH_URL_NOT_AVAILABLE, SHOW_BAD_CLOCK, CAPTIVE_PORTAL_CERT_FOUND,
+            WWW_MISMATCH_FOUND_IN_SAN, SHOW_MITM_SOFTWARE_INTERSTITIAL, OS_REPORTS_CAPTIVE_PORTAL,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface UMAEvent {}
+    private static final int HANDLE_ALL = 0;
+    private static final int SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE = 1;
+    private static final int SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE = 2;
+    private static final int SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE = 3;
+    private static final int SHOW_SSL_INTERSTITIAL_OVERRIDABLE = 4;
+    private static final int WWW_MISMATCH_FOUND =
+            5; // Deprecated in M59 by WWW_MISMATCH_FOUND_IN_SAN.
+    private static final int WWW_MISMATCH_URL_AVAILABLE = 6;
+    private static final int WWW_MISMATCH_URL_NOT_AVAILABLE = 7;
+    private static final int SHOW_BAD_CLOCK = 8;
+    private static final int CAPTIVE_PORTAL_CERT_FOUND = 9;
+    private static final int WWW_MISMATCH_FOUND_IN_SAN = 10;
+    private static final int SHOW_MITM_SOFTWARE_INTERSTITIAL = 11;
+    private static final int OS_REPORTS_CAPTIVE_PORTAL = 12;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -108,11 +137,31 @@ public class CaptivePortalTest {
                 "sha256/" + Base64.encodeToString(rootCertSPKI, Base64.NO_WRAP));
 
         navigateAndCheckCaptivePortalInterstitial();
+
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", HANDLE_ALL));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", CAPTIVE_PORTAL_CERT_FOUND));
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", OS_REPORTS_CAPTIVE_PORTAL));
     }
 
     @Test
     public void testOSReportsCaptivePortal() throws Exception {
         CaptivePortalHelper.setOSReportsCaptivePortalForTesting(true);
         navigateAndCheckCaptivePortalInterstitial();
+
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", HANDLE_ALL));
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", CAPTIVE_PORTAL_CERT_FOUND));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", OS_REPORTS_CAPTIVE_PORTAL));
     }
 }

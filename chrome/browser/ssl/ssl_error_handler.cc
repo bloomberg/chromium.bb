@@ -381,6 +381,7 @@ void ConfigSingleton::ResetForTesting() {
   error_assistant_proto_.reset();
   mitm_software_list_.reset();
   is_enterprise_managed_for_testing_ = ENTERPRISE_MANAGED_STATUS_NOT_SET;
+  os_captive_portal_status_for_testing_ = OS_CAPTIVE_PORTAL_STATUS_NOT_SET;
   captive_portal_spki_hashes_.reset();
 }
 
@@ -452,7 +453,8 @@ void ConfigSingleton::SetOSReportsCaptivePortalForTesting(
 }
 
 bool ConfigSingleton::DoesOSReportCaptivePortalForTesting() const {
-  return os_captive_portal_status_for_testing_;
+  return os_captive_portal_status_for_testing_ ==
+         OS_CAPTIVE_PORTAL_STATUS_BEHIND_PORTAL;
 }
 
 void ConfigSingleton::SetErrorAssistantProto(
@@ -470,8 +472,9 @@ void ConfigSingleton::SetErrorAssistantProto(
     // component updater component.
     error_assistant_proto_ = ReadErrorAssistantProtoFromResourceBundle();
   }
-  // Ignore versions that are not new.
-  if (error_assistant_proto_ &&
+  // Ignore versions that are not new. INT_MAX is used by tests, so always allow
+  // it.
+  if (error_assistant_proto_ && proto->version_id() != INT_MAX &&
       proto->version_id() <= error_assistant_proto_->version_id()) {
     return;
   }
