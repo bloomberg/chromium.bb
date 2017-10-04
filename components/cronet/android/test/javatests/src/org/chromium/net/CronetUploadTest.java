@@ -20,8 +20,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetUploadDataStream;
+import org.chromium.net.impl.CronetUrlRequest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,15 +43,24 @@ public class CronetUploadTest {
     private TestDrivenDataProvider mDataProvider;
     private CronetUploadDataStream mUploadDataStream;
     private TestUploadDataStreamHandler mHandler;
+    private CronetTestFramework mTestFramework;
 
     @Before
     @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
     public void setUp() throws Exception {
-        mTestRule.startCronetTestFramework();
+        mTestFramework = mTestRule.startCronetTestFramework();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         List<byte[]> reads = Arrays.asList("hello".getBytes());
         mDataProvider = new TestDrivenDataProvider(executor, reads);
-        mUploadDataStream = new CronetUploadDataStream(mDataProvider, executor);
+
+        // Creates a dummy CronetUrlRequest, which is not used to drive CronetUploadDataStream.
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                "https://dummy.url", callback, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+
+        mUploadDataStream =
+                new CronetUploadDataStream(mDataProvider, executor, (CronetUrlRequest) urlRequest);
         mHandler = new TestUploadDataStreamHandler(
                 getContext(), mUploadDataStream.createUploadDataStreamForTesting());
     }
