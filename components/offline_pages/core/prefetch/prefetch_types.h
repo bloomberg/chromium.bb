@@ -16,6 +16,24 @@
 
 namespace offline_pages {
 
+// Controls how to reschedule a background task.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
+enum class PrefetchBackgroundTaskRescheduleType {
+  // No reschedule.
+  NO_RESCHEDULE,
+  // Reschedules the task in the next available WiFi window after 15 minutes
+  // have passed.
+  RESCHEDULE_WITHOUT_BACKOFF,
+  // Reschedules the task with backoff included.
+  RESCHEDULE_WITH_BACKOFF,
+  // Reschedules the task due to the fact that it is killed due to the system
+  // constraint.
+  RESCHEDULE_DUE_TO_SYSTEM,
+  // Reschedules the task after 1 day.
+  SUSPEND
+};
+
 // Status for sending prefetch request to the server.
 enum class PrefetchRequestStatus {
   // Request completed successfully.

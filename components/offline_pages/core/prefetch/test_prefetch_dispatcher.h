@@ -26,7 +26,8 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
       const std::vector<PrefetchURL>& prefetch_urls) override;
   void RemoveAllUnprocessedPrefetchURLs(const std::string& name_space) override;
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
-  void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
+  void BeginBackgroundTask(
+      std::unique_ptr<PrefetchBackgroundTask> task) override;
   void StopBackgroundTask() override;
   void SetService(PrefetchService* service) override;
   void SchedulePipelineProcessing() override;
@@ -40,7 +41,6 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   void DownloadCompleted(
       const PrefetchDownloadResult& download_result) override;
   void ImportCompleted(int64_t offline_id, bool success) override;
-  void RequestFinishBackgroundTaskForTest() override;
 
   std::string latest_name_space;
   std::vector<PrefetchURL> latest_prefetch_urls;

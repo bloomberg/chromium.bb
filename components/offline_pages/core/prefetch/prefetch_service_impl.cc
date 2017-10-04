@@ -55,7 +55,11 @@ PrefetchServiceImpl::PrefetchServiceImpl(
   logger_.SetIsLogging(true);
 }
 
-PrefetchServiceImpl::~PrefetchServiceImpl() = default;
+PrefetchServiceImpl::~PrefetchServiceImpl() {
+  // The dispatcher needs to be disposed first because it may need to
+  // communicate with other members owned by the service at destruction time.
+  prefetch_dispatcher_.reset();
+}
 
 OfflineMetricsCollector* PrefetchServiceImpl::GetOfflineMetricsCollector() {
   return offline_metrics_collector_.get();

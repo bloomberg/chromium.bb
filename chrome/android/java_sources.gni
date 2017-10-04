@@ -721,6 +721,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageNotificationBridge.java",
   "java/src/org/chromium/chrome/browser/offlinepages/prefetch/OfflineNotificationBackgroundTask.java",
   "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTask.java",
+  "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTaskScheduler.java",
   "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchPrefs.java",
   "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchedPagesNotifier.java",
   "java/src/org/chromium/chrome/browser/omaha/ExponentialBackoffScheduler.java",
