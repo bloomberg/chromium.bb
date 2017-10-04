@@ -8208,11 +8208,12 @@ static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
   }
 #endif
   int i;
+  const int inv_precision = 30;
+  int32_t inv_block_num = block_num == 0 ? 0 : (1 << inv_precision) / block_num;
   for (i = 0; i < tx2d_size; i++) {
     int64_t curr_prob =
-        block_num == 0
-            ? 0
-            : (non_zero_count[i] << ADAPT_SCAN_PROB_PRECISION) / block_num;
+        block_num == 0 ? 0 : ((non_zero_count[i] * inv_block_num) >>
+                              (inv_precision - ADAPT_SCAN_PROB_PRECISION));
     int64_t prev_prob = prev_non_zero_prob[i];
     int64_t pred_prob =
         (curr_prob * rate +
