@@ -45,7 +45,7 @@ void IsOpenGraphArticle(content::WebContents* web_contents,
                                                   base::Bind(callback, false));
     return;
   }
-  std::string og_article_js = ResourceBundle::GetSharedInstance()
+  std::string og_article_js = ui::ResourceBundle::GetSharedInstance()
                                   .GetRawDataResource(IDR_IS_DISTILLABLE_JS)
                                   .as_string();
   RunIsolatedJavaScript(main_frame, og_article_js,
@@ -91,7 +91,7 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
     return;
   }
   std::string extract_features_js =
-      ResourceBundle::GetSharedInstance()
+      ui::ResourceBundle::GetSharedInstance()
           .GetRawDataResource(IDR_EXTRACT_PAGE_FEATURES_JS)
           .as_string();
   RunIsolatedJavaScript(

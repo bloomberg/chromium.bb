@@ -200,7 +200,7 @@ IconCacherImpl::MaybeProvideDefaultIcon(
           &IconCacherImpl::SaveAndNotifyDefaultIconForSite,
           weak_ptr_factory_.GetWeakPtr(), site, preliminary_icon_available)));
   image_fetcher_->GetImageDecoder()->DecodeImage(
-      ResourceBundle::GetSharedInstance()
+      ui::ResourceBundle::GetSharedInstance()
           .GetRawDataResource(site.default_icon_resource)
           .as_string(),
       gfx::Size(kDesiredFrameSize, kDesiredFrameSize),

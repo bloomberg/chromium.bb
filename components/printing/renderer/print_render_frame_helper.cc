@@ -605,8 +605,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::Create(&web_widget_client, frame);
 
-  base::Value html(
-      base::UTF8ToUTF16(ResourceBundle::GetSharedInstance().GetRawDataResource(
+  base::Value html(base::UTF8ToUTF16(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PRINT_PREVIEW_PAGE)));
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);

@@ -96,17 +96,19 @@ base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
 base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* ShellContentClient::GetDataResourceBytes(
     int resource_id) const {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
-  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      resource_id);
 }
 
 }  // namespace extensions

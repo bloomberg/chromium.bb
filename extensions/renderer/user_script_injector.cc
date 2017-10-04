@@ -67,7 +67,7 @@ struct GreasemonkeyApiJsString {
 // the GreasemonkeyApiJs resource.
 GreasemonkeyApiJsString::GreasemonkeyApiJsString() {
   base::StringPiece source_piece =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GREASEMONKEY_API_JS);
   source_ =
       blink::WebString::FromUTF8(source_piece.data(), source_piece.length());

@@ -34,7 +34,7 @@ class JsTranslateManagerTest : public PlatformTest {
     receiver_ = [[CRWTestJSInjectionReceiver alloc] init];
     manager_ = [[JsTranslateManager alloc] initWithReceiver:receiver_];
     base::StringPiece script =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_TRANSLATE_JS);
     [manager_ setScript:base::SysUTF8ToNSString(script.as_string() +
                                                 "('DummyKey');")];

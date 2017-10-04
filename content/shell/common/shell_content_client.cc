@@ -72,17 +72,19 @@ base::StringPiece ShellContentClient::GetDataResource(
         break;
     }
   }
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* ShellContentClient::GetDataResourceBytes(
     int resource_id) const {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
-  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      resource_id);
 }
 
 bool ShellContentClient::IsSupplementarySiteIsolationModeEnabled() {

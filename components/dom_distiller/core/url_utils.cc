@@ -93,7 +93,7 @@ bool IsDistilledPage(const GURL& url) {
 }
 
 base::StringPiece GetIsDistillableJs() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_IS_DISTILLABLE_JS);
 }
 

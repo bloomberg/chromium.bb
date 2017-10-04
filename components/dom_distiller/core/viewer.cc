@@ -106,7 +106,7 @@ std::string ReplaceHtmlTemplateValues(
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family) {
   base::StringPiece html_template =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
 
@@ -225,22 +225,25 @@ const std::string GetUnsafeArticleContentJs(
 }
 
 const std::string GetCss() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_DISTILLER_CSS).as_string();
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_DISTILLER_CSS)
+      .as_string();
 }
 
 const std::string GetLoadingImage() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_DISTILLER_LOADING_IMAGE).as_string();
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_DISTILLER_LOADING_IMAGE)
+      .as_string();
 }
 
 const std::string GetIOSCss() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_DISTILLER_IOS_CSS).as_string();
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_DISTILLER_IOS_CSS)
+      .as_string();
 }
 
 const std::string GetJavaScript() {
-  return ResourceBundle::GetSharedInstance()
+  return ui::ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_DOM_DISTILLER_VIEWER_JS)
       .as_string();
 }

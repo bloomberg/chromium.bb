@@ -194,7 +194,7 @@ base::LazyInstance<WorkerScriptContextSet>::DestructorAtExit
 Dispatcher::Dispatcher(DispatcherDelegate* delegate)
     : delegate_(delegate),
       content_watcher_(new ContentWatcher()),
-      source_map_(&ResourceBundle::GetSharedInstance()),
+      source_map_(&ui::ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
       user_script_set_manager_observer_(this),
       activity_logging_enabled_(false) {
@@ -447,7 +447,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
 
   // Fetch the source code for service_worker_bindings.js.
   base::StringPiece script_resource =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SERVICE_WORKER_BINDINGS_JS);
   v8::Local<v8::String> script = v8::String::NewExternal(
       isolate, new StaticV8ExternalOneByteStringResource(script_resource));
@@ -544,7 +544,7 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
       (extension->is_extension() || extension->is_platform_app())) {
     int resource_id = extension->is_platform_app() ? IDR_PLATFORM_APP_CSS
                                                    : IDR_EXTENSION_FONTS_CSS;
-    std::string stylesheet = ResourceBundle::GetSharedInstance()
+    std::string stylesheet = ui::ResourceBundle::GetSharedInstance()
                                  .GetRawDataResource(resource_id)
                                  .as_string();
     base::ReplaceFirstSubstringAfterOffset(
@@ -564,7 +564,7 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
       OptionsPageInfo::ShouldUseChromeStyle(extension) &&
       effective_document_url == OptionsPageInfo::GetOptionsPage(extension)) {
     base::StringPiece extension_css =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_EXTENSION_CSS);
     frame->GetDocument().InsertStyleSheet(
         WebString::FromUTF8(extension_css.data(), extension_css.length()));

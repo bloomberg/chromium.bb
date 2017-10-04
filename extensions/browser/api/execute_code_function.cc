@@ -221,7 +221,7 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
           resource_.relative_path(),
           &resource_id)) {
     base::StringPiece resource =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
     std::unique_ptr<std::string> data(
         new std::string(resource.data(), resource.size()));
 
