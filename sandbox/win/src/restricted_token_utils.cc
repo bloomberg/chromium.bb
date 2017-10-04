@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/restricted_token_utils.h"
+
 #include <aclapi.h>
 #include <sddl.h>
-#include <vector>
 
-#include "sandbox/win/src/restricted_token_utils.h"
+#include <vector>
 
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
@@ -99,9 +100,7 @@ DWORD CreateRestrictedToken(TokenLevel security_level,
       restricted_token.AddRestrictingSid(WinNullSid);
       break;
     }
-    default: {
-      return ERROR_BAD_ARGUMENTS;
-    }
+    default: { return ERROR_BAD_ARGUMENTS; }
   }
 
   DWORD err_code = ERROR_SUCCESS;
@@ -137,16 +136,17 @@ DWORD CreateRestrictedToken(TokenLevel security_level,
   return err_code;
 }
 
-DWORD SetObjectIntegrityLabel(HANDLE handle, SE_OBJECT_TYPE type,
+DWORD SetObjectIntegrityLabel(HANDLE handle,
+                              SE_OBJECT_TYPE type,
                               const wchar_t* ace_access,
                               const wchar_t* integrity_level_sid) {
   // Build the SDDL string for the label.
-  base::string16 sddl = L"S:(";   // SDDL for a SACL.
-  sddl += SDDL_MANDATORY_LABEL;   // Ace Type is "Mandatory Label".
-  sddl += L";;";                  // No Ace Flags.
-  sddl += ace_access;             // Add the ACE access.
-  sddl += L";;;";                 // No ObjectType and Inherited Object Type.
-  sddl += integrity_level_sid;    // Trustee Sid.
+  base::string16 sddl = L"S:(";  // SDDL for a SACL.
+  sddl += SDDL_MANDATORY_LABEL;  // Ace Type is "Mandatory Label".
+  sddl += L";;";                 // No Ace Flags.
+  sddl += ace_access;            // Add the ACE access.
+  sddl += L";;;";                // No ObjectType and Inherited Object Type.
+  sddl += integrity_level_sid;   // Trustee Sid.
   sddl += L")";
 
   DWORD error = ERROR_SUCCESS;
@@ -156,21 +156,19 @@ DWORD SetObjectIntegrityLabel(HANDLE handle, SE_OBJECT_TYPE type,
   BOOL sacl_present = FALSE;
   BOOL sacl_defaulted = FALSE;
 
-  if (::ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(),
-                                                             SDDL_REVISION,
-                                                             &sec_desc, NULL)) {
+  if (::ConvertStringSecurityDescriptorToSecurityDescriptorW(
+          sddl.c_str(), SDDL_REVISION, &sec_desc, NULL)) {
     if (::GetSecurityDescriptorSacl(sec_desc, &sacl_present, &sacl,
                                     &sacl_defaulted)) {
-      error = ::SetSecurityInfo(handle, type,
-                                LABEL_SECURITY_INFORMATION, NULL, NULL, NULL,
-                                sacl);
+      error = ::SetSecurityInfo(handle, type, LABEL_SECURITY_INFORMATION, NULL,
+                                NULL, NULL, sacl);
     } else {
       error = ::GetLastError();
     }
 
     ::LocalFree(sec_desc);
   } else {
-    return::GetLastError();
+    return ::GetLastError();
   }
 
   return error;
@@ -200,7 +198,6 @@ const wchar_t* GetIntegrityLevelString(IntegrityLevel integrity_level) {
   return NULL;
 }
 DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
-
   const wchar_t* integrity_level_str = GetIntegrityLevelString(integrity_level);
   if (!integrity_level_str) {
     // No mandatory level specified, we don't change it.
@@ -216,8 +213,7 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
   label.Label.Sid = integrity_sid;
 
   DWORD size = sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(integrity_sid);
-  BOOL result = ::SetTokenInformation(token, TokenIntegrityLevel, &label,
-                                      size);
+  BOOL result = ::SetTokenInformation(token, TokenIntegrityLevel, &label, size);
   auto last_error = ::GetLastError();
   ::LocalFree(integrity_sid);
 
@@ -225,7 +221,6 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
 }
 
 DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
-
   // We don't check for an invalid level here because we'll just let it
   // fail on the SetTokenIntegrityLevel call later on.
   if (integrity_level == INTEGRITY_LEVEL_LAST) {
@@ -244,12 +239,11 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
 }
 
 DWORD HardenTokenIntegrityLevelPolicy(HANDLE token) {
-
   DWORD last_error = 0;
   DWORD length_needed = 0;
 
-  ::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION,
-                            NULL, 0, &length_needed);
+  ::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION, NULL, 0,
+                            &length_needed);
 
   last_error = ::GetLastError();
   if (last_error != ERROR_INSUFFICIENT_BUFFER)
@@ -260,25 +254,24 @@ DWORD HardenTokenIntegrityLevelPolicy(HANDLE token) {
       reinterpret_cast<PSECURITY_DESCRIPTOR>(&security_desc_buffer[0]);
 
   if (!::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION,
-                                 security_desc, length_needed,
-                                 &length_needed))
+                                 security_desc, length_needed, &length_needed))
     return ::GetLastError();
 
   PACL sacl = NULL;
   BOOL sacl_present = FALSE;
   BOOL sacl_defaulted = FALSE;
 
-  if (!::GetSecurityDescriptorSacl(security_desc, &sacl_present,
-                                   &sacl, &sacl_defaulted))
+  if (!::GetSecurityDescriptorSacl(security_desc, &sacl_present, &sacl,
+                                   &sacl_defaulted))
     return ::GetLastError();
 
   for (DWORD ace_index = 0; ace_index < sacl->AceCount; ++ace_index) {
     PSYSTEM_MANDATORY_LABEL_ACE ace;
 
-    if (::GetAce(sacl, ace_index, reinterpret_cast<LPVOID*>(&ace))
-        && ace->Header.AceType == SYSTEM_MANDATORY_LABEL_ACE_TYPE) {
-      ace->Mask |= SYSTEM_MANDATORY_LABEL_NO_READ_UP
-                |  SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP;
+    if (::GetAce(sacl, ace_index, reinterpret_cast<LPVOID*>(&ace)) &&
+        ace->Header.AceType == SYSTEM_MANDATORY_LABEL_ACE_TYPE) {
+      ace->Mask |= SYSTEM_MANDATORY_LABEL_NO_READ_UP |
+                   SYSTEM_MANDATORY_LABEL_NO_EXECUTE_UP;
       break;
     }
   }
@@ -291,7 +284,6 @@ DWORD HardenTokenIntegrityLevelPolicy(HANDLE token) {
 }
 
 DWORD HardenProcessIntegrityLevelPolicy() {
-
   HANDLE token_handle;
   if (!::OpenProcessToken(GetCurrentProcess(), READ_CONTROL | WRITE_OWNER,
                           &token_handle))

@@ -95,8 +95,7 @@ void TestNtCreateKey() {
   OBJECT_ATTRIBUTES attr;
   BINDNTDLL(RtlInitUnicodeString);
 
-  RtlInitUnicodeString(&path_str,
-                       L"\\Registry\\Machine\\BADBAD");
+  RtlInitUnicodeString(&path_str, L"\\Registry\\Machine\\BADBAD");
   InitializeObjectAttributes(&attr, &path_str, OBJ_CASE_INSENSITIVE, nullptr,
                              nullptr);
 

@@ -62,15 +62,16 @@ class PreamblePatcher {
   // preamble_stub of stub_size bytes.
   // Returns An error code indicating the result of patching.
   template <class T>
-  static SideStepError Patch(T target_function, T replacement_function,
-                             void* preamble_stub, size_t stub_size) {
+  static SideStepError Patch(T target_function,
+                             T replacement_function,
+                             void* preamble_stub,
+                             size_t stub_size) {
     return RawPatchWithStub(target_function, replacement_function,
                             reinterpret_cast<unsigned char*>(preamble_stub),
                             stub_size, NULL);
   }
 
  private:
-
   // Patches a function by overwriting its first few bytes with
   // a jump to a different function.  This is similar to the RawPatch
   // function except that it uses the stub allocated by the caller
@@ -100,7 +101,7 @@ class PreamblePatcher {
   //
   // Returns An error code indicating the result of patching.
   static SideStepError RawPatchWithStub(void* target_function,
-                                        void *replacement_function,
+                                        void* replacement_function,
                                         unsigned char* preamble_stub,
                                         size_t stub_size,
                                         size_t* bytes_needed);

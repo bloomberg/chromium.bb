@@ -88,5 +88,3 @@ class ProcessMitigationsWin32KLockdownPolicy {
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_PROCESS_MITIGATIONS_WIN32K_POLICY_H_
-
-

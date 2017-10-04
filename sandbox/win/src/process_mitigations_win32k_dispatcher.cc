@@ -124,7 +124,8 @@ ProcessMitigationsWin32KDispatcher::ProcessMitigationsWin32KDispatcher(
 ProcessMitigationsWin32KDispatcher::~ProcessMitigationsWin32KDispatcher() {}
 
 bool ProcessMitigationsWin32KDispatcher::SetupService(
-    InterceptionManager* manager, int service) {
+    InterceptionManager* manager,
+    int service) {
   if (!(policy_base_->GetProcessMitigations() &
         sandbox::MITIGATION_WIN32K_DISABLE)) {
     return false;
@@ -579,4 +580,3 @@ bool ProcessMitigationsWin32KDispatcher::GetOPMInformation(
 }
 
 }  // namespace sandbox
-

@@ -4,13 +4,15 @@
 
 // This file contains unit tests for the RestrictedToken.
 
+#include "sandbox/win/src/restricted_token.h"
+
 #define _ATL_NO_EXCEPTIONS
 #include <atlbase.h>
 #include <atlsecurity.h>
+
 #include <vector>
 
 #include "base/win/scoped_handle.h"
-#include "sandbox/win/src/restricted_token.h"
 #include "sandbox/win/src/sid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -162,11 +164,8 @@ TEST(RestrictedTokenTest, ResultToken) {
 
   DWORD length = 0;
   TOKEN_TYPE type;
-  ASSERT_TRUE(::GetTokenInformation(restricted_token.Get(),
-                                    ::TokenType,
-                                    &type,
-                                    sizeof(type),
-                                    &length));
+  ASSERT_TRUE(::GetTokenInformation(restricted_token.Get(), ::TokenType, &type,
+                                    sizeof(type), &length));
 
   ASSERT_EQ(type, TokenPrimary);
 
@@ -176,11 +175,8 @@ TEST(RestrictedTokenTest, ResultToken) {
 
   ASSERT_TRUE(::IsTokenRestricted(impersonation_token.Get()));
 
-  ASSERT_TRUE(::GetTokenInformation(impersonation_token.Get(),
-                                    ::TokenType,
-                                    &type,
-                                    sizeof(type),
-                                    &length));
+  ASSERT_TRUE(::GetTokenInformation(impersonation_token.Get(), ::TokenType,
+                                    &type, sizeof(type), &length));
 
   ASSERT_EQ(type, TokenImpersonation);
 }
@@ -447,15 +443,14 @@ TEST(RestrictedTokenTest, DeletePrivilege) {
 // Checks if a sid is in the restricting list of the restricted token.
 // Asserts if it's not the case. If count is a positive number, the number of
 // elements in the restricting sids list has to be equal.
-void CheckRestrictingSid(const ATL::CAccessToken &restricted_token,
-                         ATL::CSid sid, int count) {
+void CheckRestrictingSid(const ATL::CAccessToken& restricted_token,
+                         ATL::CSid sid,
+                         int count) {
   DWORD length = 8192;
-  BYTE *memory = new BYTE[length];
-  TOKEN_GROUPS *groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
+  BYTE* memory = new BYTE[length];
+  TOKEN_GROUPS* groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
   ASSERT_TRUE(::GetTokenInformation(restricted_token.GetHandle(),
-                                    TokenRestrictedSids,
-                                    groups,
-                                    length,
+                                    TokenRestrictedSids, groups, length,
                                     &length));
 
   ATL::CTokenGroups atl_groups(*groups);
@@ -584,12 +579,10 @@ TEST(RestrictedTokenTest, AddMultipleRestrictingSids) {
   restricted_token.GetLogonSid(&session);
 
   DWORD length = 8192;
-  BYTE *memory = new BYTE[length];
-  TOKEN_GROUPS *groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
+  BYTE* memory = new BYTE[length];
+  TOKEN_GROUPS* groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
   ASSERT_TRUE(::GetTokenInformation(restricted_token.GetHandle(),
-                                    TokenRestrictedSids,
-                                    groups,
-                                    length,
+                                    TokenRestrictedSids, groups, length,
                                     &length));
 
   ATL::CTokenGroups atl_groups(*groups);

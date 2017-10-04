@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/registry_policy.h"
+
 #include <stdint.h>
 
 #include <string>
-
-#include "sandbox/win/src/registry_policy.h"
 
 #include "base/logging.h"
 #include "sandbox/win/src/ipc_tags.h"
@@ -43,8 +43,8 @@ NTSTATUS TranslateMaximumAllowed(OBJECT_ATTRIBUTES* obj_attributes,
     return status;
 
   OBJECT_BASIC_INFORMATION info = {0};
-  status = NtQueryObject(handle, ObjectBasicInformation, &info, sizeof(info),
-                         NULL);
+  status =
+      NtQueryObject(handle, ObjectBasicInformation, &info, sizeof(info), NULL);
   CHECK(NT_SUCCESS(NtClose(handle)));
   if (!NT_SUCCESS(status))
     return status;
@@ -72,14 +72,14 @@ NTSTATUS NtCreateKeyInTarget(HANDLE* target_key_handle,
   }
 
   HANDLE local_handle = INVALID_HANDLE_VALUE;
-  NTSTATUS status = NtCreateKey(&local_handle, desired_access, obj_attributes,
-                                title_index, class_name, create_options,
-                                disposition);
+  NTSTATUS status =
+      NtCreateKey(&local_handle, desired_access, obj_attributes, title_index,
+                  class_name, create_options, disposition);
   if (!NT_SUCCESS(status))
     return status;
 
-  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
-                         target_process, target_key_handle, 0, FALSE,
+  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle, target_process,
+                         target_key_handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }
@@ -106,15 +106,15 @@ NTSTATUS NtOpenKeyInTarget(HANDLE* target_key_handle,
   if (!NT_SUCCESS(status))
     return status;
 
-  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
-                         target_process, target_key_handle, 0, FALSE,
+  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle, target_process,
+                         target_key_handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }
   return STATUS_SUCCESS;
 }
 
-}
+}  // namespace
 
 namespace sandbox {
 
@@ -194,8 +194,8 @@ bool RegistryPolicy::CreateKeyAction(EvalResult eval_result,
 
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
-  InitObjectAttribs(key, attributes, root_directory, &obj_attributes,
-                    &uni_name, NULL);
+  InitObjectAttribs(key, attributes, root_directory, &obj_attributes, &uni_name,
+                    NULL);
   *nt_status = NtCreateKeyInTarget(handle, desired_access, &obj_attributes,
                                    title_index, NULL, create_options,
                                    disposition, client_info.process);
@@ -219,10 +219,10 @@ bool RegistryPolicy::OpenKeyAction(EvalResult eval_result,
 
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
-  InitObjectAttribs(key, attributes, root_directory, &obj_attributes,
-                    &uni_name, NULL);
+  InitObjectAttribs(key, attributes, root_directory, &obj_attributes, &uni_name,
+                    NULL);
   *nt_status = NtOpenKeyInTarget(handle, desired_access, &obj_attributes,
-                                client_info.process);
+                                 client_info.process);
   return true;
 }
 

@@ -4,13 +4,14 @@
 
 // This file contains unit tests for the sid class.
 
+#include "sandbox/win/src/sid.h"
+
 #define _ATL_NO_EXCEPTIONS
 #include <atlbase.h>
 #include <atlsecurity.h>
 #include <sddl.h>
 
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/sid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
@@ -39,7 +40,8 @@ struct CapabilityTestEntry {
   const wchar_t* capability_name_;
   const wchar_t* sddl_sid_;
 };
-}
+
+}  // namespace
 
 // Tests the creation of a Sid.
 TEST(SidTest, Constructors) {

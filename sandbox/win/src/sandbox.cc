@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
-#include <windows.h>
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_factory.h"
+
+#include <windows.h>
+
 #include "sandbox/win/src/broker_services.h"
+#include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/target_services.h"
 
 namespace sandbox {
 // The section for IPC and policy.
-SANDBOX_INTERCEPT HANDLE  g_shared_section;
-static bool               s_is_broker = false;
+SANDBOX_INTERCEPT HANDLE g_shared_section;
+static bool s_is_broker = false;
 
 // GetBrokerServices: the current implementation relies on a shared section
 // that is created by the broker and opened by the target.

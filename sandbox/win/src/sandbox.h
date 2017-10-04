@@ -143,5 +143,4 @@ class TargetServices {
 
 }  // namespace sandbox
 
-
 #endif  // SANDBOX_WIN_SRC_SANDBOX_H_

@@ -44,16 +44,16 @@ SBOX_TESTS_COMMAND int AddressSanitizerTests_Report(int argc, wchar_t** argv) {
   volatile int idx = 42;
   int* volatile blah = new int[42];
   blah[idx] = 42;
-  delete [] blah;
+  delete[] blah;
   return SBOX_TEST_FAILED;
 }
 
 TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
-  // This test is only supposed to work when using AddressSanitizer.
-  // However, ASan/Win is not on the CQ yet, so compiler breakages may get into
-  // the code unnoticed.  To avoid that, we compile this test in all Windows
-  // builds, but only run the AddressSanitizer-specific part of the test when
-  // compiled with AddressSanitizer.
+// This test is only supposed to work when using AddressSanitizer.
+// However, ASan/Win is not on the CQ yet, so compiler breakages may get into
+// the code unnoticed.  To avoid that, we compile this test in all Windows
+// builds, but only run the AddressSanitizer-specific part of the test when
+// compiled with AddressSanitizer.
 #if defined(ADDRESS_SANITIZER)
   bool asan_build = true;
 #else
@@ -70,8 +70,8 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
   attrs.bInheritHandle = TRUE;
   base::win::ScopedHandle tmp_handle(
       CreateFile(temp_file_name.value().c_str(), GENERIC_WRITE,
-                 FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
-                 &attrs, OPEN_EXISTING, 0, NULL));
+                 FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, &attrs,
+                 OPEN_EXISTING, 0, NULL));
   EXPECT_TRUE(tmp_handle.IsValid());
 
   TestRunner runner;
@@ -93,14 +93,17 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
     // Redirection uses a feature that was added in Windows Vista.
     ASSERT_TRUE(
         strstr(data.c_str(), "ERROR: AddressSanitizer: heap-buffer-overflow"))
-        << "There doesn't seem to be an ASan report:\n" << data;
+        << "There doesn't seem to be an ASan report:\n"
+        << data;
     ASSERT_TRUE(strstr(data.c_str(), "AddressSanitizerTests_Report"))
-        << "The ASan report doesn't appear to be symbolized:\n" << data;
+        << "The ASan report doesn't appear to be symbolized:\n"
+        << data;
     std::string source_file_basename(__FILE__);
     size_t last_slash = source_file_basename.find_last_of("/\\");
     last_slash = last_slash == std::string::npos ? 0 : last_slash + 1;
     ASSERT_TRUE(strstr(data.c_str(), &source_file_basename[last_slash]))
-        << "The stack trace doesn't have a correct filename:\n" << data;
+        << "The stack trace doesn't have a correct filename:\n"
+        << data;
   } else {
     LOG(WARNING) << "Not an AddressSanitizer build, skipping the run.";
   }

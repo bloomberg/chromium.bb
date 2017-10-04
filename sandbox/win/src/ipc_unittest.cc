@@ -15,7 +15,8 @@ namespace sandbox {
 
 // Helper function to make the fake shared memory with some
 // basic elements initialized.
-IPCControl* MakeChannels(size_t channel_size, size_t total_shared_size,
+IPCControl* MakeChannels(size_t channel_size,
+                         size_t total_shared_size,
                          size_t* base_start) {
   // Allocate memory
   char* mem = new char[total_shared_size];
@@ -23,30 +24,28 @@ IPCControl* MakeChannels(size_t channel_size, size_t total_shared_size,
   // Calculate how many channels we can fit in the shared memory.
   total_shared_size -= offsetof(IPCControl, channels);
   size_t channel_count =
-    total_shared_size / (sizeof(ChannelControl) + channel_size);
+      total_shared_size / (sizeof(ChannelControl) + channel_size);
   // Calculate the start of the first channel.
-  *base_start = (sizeof(ChannelControl)* channel_count) +
-    offsetof(IPCControl, channels);
+  *base_start =
+      (sizeof(ChannelControl) * channel_count) + offsetof(IPCControl, channels);
   // Setup client structure.
   IPCControl* client_control = reinterpret_cast<IPCControl*>(mem);
   client_control->channels_count = channel_count;
   return client_control;
 }
 
-enum TestFixMode {
-  FIX_NO_EVENTS,
-  FIX_PONG_READY,
-  FIX_PONG_NOT_READY
-};
+enum TestFixMode { FIX_NO_EVENTS, FIX_PONG_READY, FIX_PONG_NOT_READY };
 
-void FixChannels(IPCControl* client_control, size_t base_start,
-                 size_t channel_size, TestFixMode mode) {
+void FixChannels(IPCControl* client_control,
+                 size_t base_start,
+                 size_t channel_size,
+                 TestFixMode mode) {
   for (size_t ix = 0; ix != client_control->channels_count; ++ix) {
     ChannelControl& channel = client_control->channels[ix];
     channel.channel_base = base_start;
     channel.state = kFreeChannel;
     if (mode != FIX_NO_EVENTS) {
-      BOOL signaled = (FIX_PONG_READY == mode)? TRUE : FALSE;
+      BOOL signaled = (FIX_PONG_READY == mode) ? TRUE : FALSE;
       channel.ping_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
       channel.pong_event = ::CreateEventW(NULL, FALSE, signaled, NULL);
     }
@@ -161,7 +160,7 @@ TEST(IPCTest, CrossCallStrPacking) {
 
   CrossCallReturn answer;
   uint32_t tag1 = 666;
-  const wchar_t *text = L"98765 - 43210";
+  const wchar_t* text = L"98765 - 43210";
   base::string16 copied_text;
   CrossCallParamsEx* actual_params;
 
@@ -208,7 +207,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   param_size = 1;
   base::string16 copied_text_p0, copied_text_p2;
 
-  const wchar_t *text2 = L"AeFG";
+  const wchar_t* text2 = L"AeFG";
   CrossCall(client, tag1, text2, null_text, text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
   EXPECT_EQ(3u, actual_params->GetParamsCount());
@@ -237,7 +236,7 @@ TEST(IPCTest, CrossCallIntPacking) {
 
   uint32_t tag1 = 999;
   uint32_t tag2 = 111;
-  const wchar_t *text = L"godzilla";
+  const wchar_t* text = L"godzilla";
   CrossCallParamsEx* actual_params;
 
   char* mem = reinterpret_cast<char*>(client_control);
@@ -315,7 +314,7 @@ TEST(IPCTest, CrossCallValidation) {
   EXPECT_TRUE(ccp->GetBuffer() != buffer);
   EXPECT_EQ(kTag, ccp->GetTag());
   EXPECT_EQ(1u, ccp->GetParamsCount());
-  delete[] (reinterpret_cast<char*>(ccp));
+  delete[](reinterpret_cast<char*>(ccp));
 
   // Test that we handle integer overflow on the number of params
   // correctly. We use a test-only ctor for ActualCallParams that
@@ -439,7 +438,7 @@ TEST(IPCTest, ClientFastServer) {
 
   uint32_t tag = 7654;
   CrossCallReturn answer;
-  CrossCallParamsMock* params1 = new(buff1) CrossCallParamsMock(tag, 1);
+  CrossCallParamsMock* params1 = new (buff1) CrossCallParamsMock(tag, 1);
   FakeOkAnswerInChannel(buff1);
 
   ResultCode result = client.DoCall(params1, &answer);
@@ -462,7 +461,7 @@ TEST(IPCTest, ClientFastServer) {
   events.state = &client_control->channels[0].state;
 
   tag = 4567;
-  CrossCallParamsMock* params2 = new(buff0) CrossCallParamsMock(tag, 1);
+  CrossCallParamsMock* params2 = new (buff0) CrossCallParamsMock(tag, 1);
   FakeOkAnswerInChannel(buff0);
 
   result = client.DoCall(params2, &answer);
@@ -509,7 +508,7 @@ DWORD WINAPI MainServerThread(PVOID param) {
 TEST(IPCTest, ClientSlowServer) {
   size_t base_start = 0;
   IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096*2, &base_start);
+      MakeChannels(kIPCChannelSize, 4096 * 2, &base_start);
   FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_NOT_READY);
   client_control->server_alive = ::CreateMutex(NULL, FALSE, NULL);
 
@@ -538,7 +537,7 @@ TEST(IPCTest, ClientSlowServer) {
   void* buff0 = client.GetBuffer();
   uint32_t tag = 4321;
   CrossCallReturn answer;
-  CrossCallParamsMock* params1 = new(buff0) CrossCallParamsMock(tag, 1);
+  CrossCallParamsMock* params1 = new (buff0) CrossCallParamsMock(tag, 1);
   FakeOkAnswerInChannel(buff0);
 
   ResultCode result = client.DoCall(params1, &answer);
@@ -558,10 +557,7 @@ TEST(IPCTest, ClientSlowServer) {
 // but only CallOneHandler should be used.
 class UnitTestIPCDispatcher : public Dispatcher {
  public:
-  enum {
-    CALL_ONE_TAG = 78,
-    CALL_TWO_TAG = 87
-  };
+  enum { CALL_ONE_TAG = 78, CALL_TWO_TAG = 87 };
 
   UnitTestIPCDispatcher();
   ~UnitTestIPCDispatcher() override {}
@@ -595,8 +591,7 @@ UnitTestIPCDispatcher::UnitTestIPCDispatcher() {
 // and tests the packing, unpacking and call dispatching.
 TEST(IPCTest, SharedMemServerTests) {
   size_t base_start = 0;
-  IPCControl* client_control =
-      MakeChannels(kIPCChannelSize, 4096, &base_start);
+  IPCControl* client_control = MakeChannels(kIPCChannelSize, 4096, &base_start);
   client_control->server_alive = HANDLE(1);
   FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_READY);
 
@@ -619,8 +614,8 @@ TEST(IPCTest, SharedMemServerTests) {
   srv_control.dispatcher = &dispatcher;
 
   sandbox::CrossCallReturn call_return = {0};
-  EXPECT_TRUE(SharedMemIPCServer::InvokeCallback(&srv_control, buff,
-                                                 &call_return));
+  EXPECT_TRUE(
+      SharedMemIPCServer::InvokeCallback(&srv_control, buff, &call_return));
   EXPECT_EQ(SBOX_ALL_OK, call_return.call_outcome);
   EXPECT_TRUE(bar == call_return.extended[0].handle);
   EXPECT_EQ(foo, call_return.extended[1].unsigned_int);

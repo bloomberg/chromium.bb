@@ -18,10 +18,7 @@
 namespace sandbox {
 
 // The type of the token returned by the CreateNakedToken.
-enum TokenType {
-  IMPERSONATION = 0,
-  PRIMARY
-};
+enum TokenType { IMPERSONATION = 0, PRIMARY };
 
 // Creates a restricted token based on the effective token of the current
 // process. The parameter security_level determines how much the token is
@@ -43,7 +40,8 @@ DWORD CreateRestrictedToken(TokenLevel security_level,
                             base::win::ScopedHandle* token);
 
 // Sets the integrity label on a object handle.
-DWORD SetObjectIntegrityLabel(HANDLE handle, SE_OBJECT_TYPE type,
+DWORD SetObjectIntegrityLabel(HANDLE handle,
+                              SE_OBJECT_TYPE type,
                               const wchar_t* ace_access,
                               const wchar_t* integrity_level_sid);
 

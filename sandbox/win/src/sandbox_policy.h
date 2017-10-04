@@ -21,12 +21,12 @@ class TargetPolicy {
   // exactly like the CreateProcess API does. See the comment at the top of
   // process_thread_dispatcher.cc for more details.
   enum SubSystem {
-    SUBSYS_FILES,             // Creation and opening of files and pipes.
-    SUBSYS_NAMED_PIPES,       // Creation of named pipes.
-    SUBSYS_PROCESS,           // Creation of child processes.
-    SUBSYS_REGISTRY,          // Creation and opening of registry keys.
-    SUBSYS_SYNC,              // Creation of named sync objects.
-    SUBSYS_WIN32K_LOCKDOWN    // Win32K Lockdown related policy.
+    SUBSYS_FILES,           // Creation and opening of files and pipes.
+    SUBSYS_NAMED_PIPES,     // Creation of named pipes.
+    SUBSYS_PROCESS,         // Creation of child processes.
+    SUBSYS_REGISTRY,        // Creation and opening of registry keys.
+    SUBSYS_SYNC,            // Creation of named sync objects.
+    SUBSYS_WIN32K_LOCKDOWN  // Win32K Lockdown related policy.
   };
 
   // Allowable semantics when a rule is matched.
@@ -225,7 +225,8 @@ class TargetPolicy {
   //   "c:\\documents and settings\\vince\\*.dmp"
   //   "c:\\documents and settings\\*\\crashdumps\\*.dmp"
   //   "c:\\temp\\app_log_?????_chrome.txt"
-  virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
+  virtual ResultCode AddRule(SubSystem subsystem,
+                             Semantics semantics,
                              const wchar_t* pattern) = 0;
 
   // Adds a dll that will be unloaded in the target process before it gets
@@ -258,6 +259,5 @@ class TargetPolicy {
 };
 
 }  // namespace sandbox
-
 
 #endif  // SANDBOX_WIN_SRC_SANDBOX_POLICY_H_

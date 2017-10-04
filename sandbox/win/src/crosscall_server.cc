@@ -23,7 +23,7 @@ namespace {
 // The buffer for a message must match the max channel size.
 const size_t kMaxBufferSize = sandbox::kIPCChannelSize;
 
-}
+}  // namespace
 
 namespace sandbox {
 
@@ -88,9 +88,7 @@ bool IsSizeWithinRange(uint32_t buffer_size,
   return true;
 }
 
-CrossCallParamsEx::CrossCallParamsEx()
-  :CrossCallParams(0, 0) {
-}
+CrossCallParamsEx::CrossCallParamsEx() : CrossCallParams(0, 0) {}
 
 // We override the delete operator because the object's backing memory
 // is hand allocated in CreateFromBuffer. We don't override the new operator
@@ -137,8 +135,8 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     // Check against the minimum size given the number of stated params
     // if too small we bail out.
     param_count = call_params->GetParamsCount();
-    min_declared_size = sizeof(CrossCallParams) +
-                        ((param_count + 1) * sizeof(ParamInfo));
+    min_declared_size =
+        sizeof(CrossCallParams) + ((param_count + 1) * sizeof(ParamInfo));
 
     // Retrieve the declared size which if it fails returns 0.
     declared_size = GetActualBufferSize(param_count, buffer_base);
@@ -157,21 +155,21 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     // should be actually read.
     _ReadWriteBarrier();
 
-    min_declared_size = sizeof(CrossCallParams) +
-                        ((param_count + 1) * sizeof(ParamInfo));
+    min_declared_size =
+        sizeof(CrossCallParams) + ((param_count + 1) * sizeof(ParamInfo));
 
     // Check that the copied buffer is still valid.
     if (copied_params->GetParamsCount() != param_count ||
         GetActualBufferSize(param_count, backing_mem) != declared_size ||
         !IsSizeWithinRange(buffer_size, min_declared_size, declared_size)) {
-      delete [] backing_mem;
+      delete[] backing_mem;
       return NULL;
     }
 
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
     // In case of a windows exception we know it occurred while touching the
     // untrusted buffer so we bail out as is.
-    delete [] backing_mem;
+    delete[] backing_mem;
     return NULL;
   }
 
@@ -184,8 +182,8 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     uint32_t size = 0;
     ArgType type;
     char* address = reinterpret_cast<char*>(
-                        copied_params->GetRawParameter(ix, &size, &type));
-    if ((NULL == address) ||               // No null params.
+        copied_params->GetRawParameter(ix, &size, &type));
+    if ((NULL == address) ||                              // No null params.
         (INVALID_TYPE >= type) || (LAST_TYPE <= type) ||  // Unknown type.
         (address < backing_mem) ||         // Start cannot point before buffer.
         (address < first_byte) ||          // Start cannot point too low.
@@ -260,7 +258,7 @@ bool CrossCallParamsEx::GetParameterStr(uint32_t index,
   if ((NULL == start) || ((size % sizeof(wchar_t)) != 0)) {
     return false;
   }
-  string->append(reinterpret_cast<wchar_t*>(start), size/(sizeof(wchar_t)));
+  string->append(reinterpret_cast<wchar_t*>(start), size / (sizeof(wchar_t)));
   return true;
 }
 
@@ -293,7 +291,7 @@ void SetCallSuccess(CrossCallReturn* call_return) {
 }
 
 Dispatcher* Dispatcher::OnMessageReady(IPCParams* ipc,
-                                      CallbackGeneric* callback) {
+                                       CallbackGeneric* callback) {
   DCHECK(callback);
   std::vector<IPCCall>::iterator it = ipc_calls_.begin();
   for (; it != ipc_calls_.end(); ++it) {
@@ -305,10 +303,8 @@ Dispatcher* Dispatcher::OnMessageReady(IPCParams* ipc,
   return NULL;
 }
 
-Dispatcher::Dispatcher() {
-}
+Dispatcher::Dispatcher() {}
 
-Dispatcher::~Dispatcher() {
-}
+Dispatcher::~Dispatcher() {}
 
 }  // namespace sandbox

@@ -52,8 +52,8 @@ class InterceptionManager;
 // context: a user-defined pointer that was set using  ThreadProvider
 // reason: 0 if the callback was fired because of a timeout.
 //         1 if the callback was fired because of an event.
-typedef void (__stdcall * CrossCallIPCCallback)(void* context,
-                                                unsigned char reason);
+typedef void(__stdcall* CrossCallIPCCallback)(void* context,
+                                              unsigned char reason);
 
 // ThreadProvider models a thread factory. The idea is to decouple thread
 // creation and lifetime from the inner guts of the IPC. The contract is
@@ -77,7 +77,8 @@ class ThreadProvider {
   //           when the waitable object fires
   // context: a user-provider pointer that is passed back to the callback
   //          when its called
-  virtual bool RegisterWait(const void* client, HANDLE waitable_object,
+  virtual bool RegisterWait(const void* client,
+                            HANDLE waitable_object,
                             CrossCallIPCCallback callback,
                             void* context) = 0;
 
@@ -181,23 +182,55 @@ class Dispatcher {
   typedef bool (Dispatcher::*Callback0)(IPCInfo* ipc);
   typedef bool (Dispatcher::*Callback1)(IPCInfo* ipc, void* p1);
   typedef bool (Dispatcher::*Callback2)(IPCInfo* ipc, void* p1, void* p2);
-  typedef bool (Dispatcher::*Callback3)(IPCInfo* ipc, void* p1, void* p2,
+  typedef bool (Dispatcher::*Callback3)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
                                         void* p3);
-  typedef bool (Dispatcher::*Callback4)(IPCInfo* ipc, void* p1, void* p2,
-                                        void* p3, void* p4);
-  typedef bool (Dispatcher::*Callback5)(IPCInfo* ipc, void* p1, void* p2,
-                                        void* p3, void* p4, void* p5);
-  typedef bool (Dispatcher::*Callback6)(IPCInfo* ipc, void* p1, void* p2,
-                                        void* p3, void* p4, void* p5, void* p6);
-  typedef bool (Dispatcher::*Callback7)(IPCInfo* ipc, void* p1, void* p2,
-                                        void* p3, void* p4, void* p5, void* p6,
+  typedef bool (Dispatcher::*Callback4)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
+                                        void* p3,
+                                        void* p4);
+  typedef bool (Dispatcher::*Callback5)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
+                                        void* p3,
+                                        void* p4,
+                                        void* p5);
+  typedef bool (Dispatcher::*Callback6)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
+                                        void* p3,
+                                        void* p4,
+                                        void* p5,
+                                        void* p6);
+  typedef bool (Dispatcher::*Callback7)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
+                                        void* p3,
+                                        void* p4,
+                                        void* p5,
+                                        void* p6,
                                         void* p7);
-  typedef bool (Dispatcher::*Callback8)(IPCInfo* ipc, void* p1, void* p2,
-                                        void* p3, void* p4, void* p5, void* p6,
-                                        void* p7, void* p8);
-  typedef bool (Dispatcher::*Callback9)(IPCInfo* ipc, void* p1, void* p2,
-                                        void* p3, void* p4, void* p5, void* p6,
-                                        void* p7, void* p8, void* p9);
+  typedef bool (Dispatcher::*Callback8)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
+                                        void* p3,
+                                        void* p4,
+                                        void* p5,
+                                        void* p6,
+                                        void* p7,
+                                        void* p8);
+  typedef bool (Dispatcher::*Callback9)(IPCInfo* ipc,
+                                        void* p1,
+                                        void* p2,
+                                        void* p3,
+                                        void* p4,
+                                        void* p5,
+                                        void* p6,
+                                        void* p7,
+                                        void* p8,
+                                        void* p9);
 
   // Called from the  IPC implementation when an  IPC message is ready override
   // on a derived class to handle a set of  IPC messages. Return NULL if your

@@ -99,10 +99,7 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
   }
 
   // Create the destkop.
-  *desktop = ::CreateDesktop(desktop_name.c_str(),
-                             NULL,
-                             NULL,
-                             0,
+  *desktop = ::CreateDesktop(desktop_name.c_str(), NULL, NULL, 0,
                              DESKTOP_CREATEWINDOW | DESKTOP_READOBJECTS |
                                  READ_CONTROL | WRITE_DAC | WRITE_OWNER,
                              &attributes);
@@ -118,14 +115,10 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
   if (*desktop) {
     // Replace the DACL on the new Desktop with a reduced privilege version.
     // We can soft fail on this for now, as it's just an extra mitigation.
-    static const ACCESS_MASK kDesktopDenyMask = WRITE_DAC | WRITE_OWNER |
-                                                DELETE |
-                                                DESKTOP_CREATEMENU |
-                                                DESKTOP_CREATEWINDOW |
-                                                DESKTOP_HOOKCONTROL |
-                                                DESKTOP_JOURNALPLAYBACK |
-                                                DESKTOP_JOURNALRECORD |
-                                                DESKTOP_SWITCHDESKTOP;
+    static const ACCESS_MASK kDesktopDenyMask =
+        WRITE_DAC | WRITE_OWNER | DELETE | DESKTOP_CREATEMENU |
+        DESKTOP_CREATEWINDOW | DESKTOP_HOOKCONTROL | DESKTOP_JOURNALPLAYBACK |
+        DESKTOP_JOURNALRECORD | DESKTOP_SWITCHDESKTOP;
     AddKnownSidToObject(*desktop, SE_WINDOW_OBJECT, Sid(WinRestrictedCodeSid),
                         DENY_ACCESS, kDesktopDenyMask);
     return SBOX_ALL_OK;

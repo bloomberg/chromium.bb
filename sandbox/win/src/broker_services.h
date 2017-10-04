@@ -96,5 +96,4 @@ class BrokerServicesBase final : public BrokerServices,
 
 }  // namespace sandbox
 
-
 #endif  // SANDBOX_WIN_SRC_BROKER_SERVICES_H_

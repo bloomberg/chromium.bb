@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/win2k_threadpool.h"
+
 #include <stdint.h>
 
-#include "sandbox/win/src/win2k_threadpool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-void __stdcall EmptyCallBack(void*, unsigned char) {
-}
+void __stdcall EmptyCallBack(void*, unsigned char) {}
 
 void __stdcall TestCallBack(void* context, unsigned char) {
   HANDLE event = reinterpret_cast<HANDLE>(context);

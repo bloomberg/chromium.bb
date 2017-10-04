@@ -6,6 +6,7 @@
 #define SANDBOX_WIN_SRC_TARGET_PROCESS_H_
 
 #include <windows.h>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -75,14 +76,10 @@ class TargetProcess {
                   DWORD* win_error);
 
   // Returns the handle to the target process.
-  HANDLE Process() const {
-    return sandbox_process_info_.process_handle();
-  }
+  HANDLE Process() const { return sandbox_process_info_.process_handle(); }
 
   // Returns the handle to the job object that the target process belongs to.
-  HANDLE Job() const {
-    return job_;
-  }
+  HANDLE Job() const { return job_; }
 
   // Returns the address of the target main exe. This is used by the
   // interceptions framework.
@@ -91,19 +88,13 @@ class TargetProcess {
   }
 
   // Returns the name of the executable.
-  const wchar_t* Name() const {
-    return exe_name_.get();
-  }
+  const wchar_t* Name() const { return exe_name_.get(); }
 
   // Returns the process id.
-  DWORD ProcessId() const {
-    return sandbox_process_info_.process_id();
-  }
+  DWORD ProcessId() const { return sandbox_process_info_.process_id(); }
 
   // Returns the handle to the main thread.
-  HANDLE MainThread() const {
-    return sandbox_process_info_.thread_handle();
-  }
+  HANDLE MainThread() const { return sandbox_process_info_.thread_handle(); }
 
   // Transfers a 32-bit variable between the broker and the target.
   ResultCode TransferVariable(const char* name, void* address, size_t size);
@@ -140,7 +131,6 @@ class TargetProcess {
 // Creates a mock TargetProcess used for testing interceptions.
 // TODO(cpu): It seems that this method is not going to be used anymore.
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address);
-
 
 }  // namespace sandbox
 

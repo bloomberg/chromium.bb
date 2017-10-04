@@ -37,15 +37,8 @@ sandbox::SboxTestResult CreateProcessHelper(const base::string16& exe,
   sandbox::SboxTestResult ret1 = sandbox::SBOX_TEST_FAILED;
   PROCESS_INFORMATION temp_process_info = {};
   if (::CreateProcessW(exe_name,
-                       command.empty() ? NULL : writable_command.get(),
-                       NULL,
-                       NULL,
-                       FALSE,
-                       0,
-                       NULL,
-                       NULL,
-                       &si,
-                       &temp_process_info)) {
+                       command.empty() ? NULL : writable_command.get(), NULL,
+                       NULL, FALSE, 0, NULL, NULL, &si, &temp_process_info)) {
     pi.Set(temp_process_info);
     ret1 = sandbox::SBOX_TEST_SUCCEEDED;
   } else {
@@ -68,9 +61,9 @@ sandbox::SboxTestResult CreateProcessHelper(const base::string16& exe,
   std::string narrow_cmd_line =
       base::SysWideToMultiByte(command.c_str(), CP_UTF8);
   if (::CreateProcessA(
-        exe_name ? base::SysWideToMultiByte(exe_name, CP_UTF8).c_str() : NULL,
-        command.empty() ? NULL : &narrow_cmd_line[0],
-        NULL, NULL, FALSE, 0, NULL, NULL, &sia, &temp_process_info)) {
+          exe_name ? base::SysWideToMultiByte(exe_name, CP_UTF8).c_str() : NULL,
+          command.empty() ? NULL : &narrow_cmd_line[0], NULL, NULL, FALSE, 0,
+          NULL, NULL, &sia, &temp_process_info)) {
     pi.Set(temp_process_info);
     ret2 = sandbox::SBOX_TEST_SUCCEEDED;
   } else {
@@ -94,7 +87,7 @@ sandbox::SboxTestResult CreateProcessHelper(const base::string16& exe,
 
 namespace sandbox {
 
-SBOX_TESTS_COMMAND int Process_RunApp1(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_RunApp1(int argc, wchar_t** argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -107,7 +100,7 @@ SBOX_TESTS_COMMAND int Process_RunApp1(int argc, wchar_t **argv) {
   return CreateProcessHelper(path, base::string16());
 }
 
-SBOX_TESTS_COMMAND int Process_RunApp2(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_RunApp2(int argc, wchar_t** argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -123,7 +116,7 @@ SBOX_TESTS_COMMAND int Process_RunApp2(int argc, wchar_t **argv) {
   return CreateProcessHelper(base::string16(), cmd_line);
 }
 
-SBOX_TESTS_COMMAND int Process_RunApp3(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_RunApp3(int argc, wchar_t** argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -134,7 +127,7 @@ SBOX_TESTS_COMMAND int Process_RunApp3(int argc, wchar_t **argv) {
   return CreateProcessHelper(base::string16(), argv[0]);
 }
 
-SBOX_TESTS_COMMAND int Process_RunApp4(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_RunApp4(int argc, wchar_t** argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -152,7 +145,7 @@ SBOX_TESTS_COMMAND int Process_RunApp4(int argc, wchar_t **argv) {
     return SBOX_TEST_FAILED;
 
   current_directory[ret] = L'\\';
-  current_directory[ret+1] = L'\0';
+  current_directory[ret + 1] = L'\0';
   if (!::SetCurrentDirectory(system32.c_str())) {
     return SBOX_TEST_SECOND_ERROR;
   }
@@ -161,7 +154,7 @@ SBOX_TESTS_COMMAND int Process_RunApp4(int argc, wchar_t **argv) {
   return ::SetCurrentDirectory(current_directory) ? result4 : SBOX_TEST_FAILED;
 }
 
-SBOX_TESTS_COMMAND int Process_RunApp5(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_RunApp5(int argc, wchar_t** argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -177,7 +170,7 @@ SBOX_TESTS_COMMAND int Process_RunApp5(int argc, wchar_t **argv) {
   return CreateProcessHelper(base::string16(), cmd_line);
 }
 
-SBOX_TESTS_COMMAND int Process_RunApp6(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_RunApp6(int argc, wchar_t** argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
@@ -192,7 +185,7 @@ SBOX_TESTS_COMMAND int Process_RunApp6(int argc, wchar_t **argv) {
 }
 
 // Creates a process and checks if it's possible to get a handle to it's token.
-SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t** argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
@@ -206,7 +199,7 @@ SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
   PROCESS_INFORMATION temp_process_info = {};
   if (!::CreateProcessW(path.c_str(), NULL, NULL, NULL, FALSE, CREATE_SUSPENDED,
                         NULL, NULL, &si, &temp_process_info)) {
-      return SBOX_TEST_FAILED;
+    return SBOX_TEST_FAILED;
   }
   base::win::ScopedProcessInformation pi(temp_process_info);
 
@@ -256,7 +249,7 @@ SBOX_TESTS_COMMAND int Process_CreateProcessA(int argc, wchar_t** argv) {
   return SBOX_TEST_SUCCEEDED;
 }
 
-SBOX_TESTS_COMMAND int Process_OpenToken(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_OpenToken(int argc, wchar_t** argv) {
   HANDLE token;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS, &token)) {
     if (ERROR_ACCESS_DENIED == ::GetLastError()) {
@@ -270,7 +263,7 @@ SBOX_TESTS_COMMAND int Process_OpenToken(int argc, wchar_t **argv) {
   return SBOX_TEST_FAILED;
 }
 
-SBOX_TESTS_COMMAND int Process_Crash(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_Crash(int argc, wchar_t** argv) {
   __debugbreak();
   return SBOX_TEST_FAILED;
 }
@@ -344,12 +337,12 @@ SBOX_TESTS_COMMAND int Process_CreateThread(int argc, wchar_t** argv) {
 }
 
 // Creates a process and checks its exit code. Succeeds on exit code 0.
-SBOX_TESTS_COMMAND int Process_CheckExitCode(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int Process_CheckExitCode(int argc, wchar_t** argv) {
   if (argc != 3)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  if ((nullptr == argv) || (nullptr == argv[0]) ||
-      (nullptr == argv[1]) || (nullptr == argv[2])) {
+  if ((nullptr == argv) || (nullptr == argv[0]) || (nullptr == argv[1]) ||
+      (nullptr == argv[2])) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
 
@@ -378,7 +371,6 @@ SBOX_TESTS_COMMAND int Process_CheckExitCode(int argc, wchar_t **argv) {
 
   return SBOX_TEST_SUCCEEDED;
 }
-
 
 TEST(ProcessPolicyTest, TestAllAccess) {
   // Check if the "all access" rule fails to be added when the token is too
@@ -426,8 +418,8 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
   ASSERT_TRUE(0 != ret && ret < MAX_PATH);
 
   wcscat_s(current_directory, MAX_PATH, L"\\");
-  EXPECT_TRUE(runner.AddFsRule(TargetPolicy::FILES_ALLOW_DIR_ANY,
-                               current_directory));
+  EXPECT_TRUE(
+      runner.AddFsRule(TargetPolicy::FILES_ALLOW_DIR_ANY, current_directory));
 
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"Process_RunApp1 calc.exe"));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"Process_RunApp2 calc.exe"));
@@ -464,18 +456,16 @@ TEST(ProcessPolicyTest, CreateProcessWithCWD) {
     sys_path.erase(sys_path.length() - 1);
 
   base::string16 exe_path = MakePathToSys(L"cmd.exe", false);
-  base::string16 cmd_line = L"\"/c if \\\"%CD%\\\" NEQ \\\"" +
-                            sys_path + L"\\\" exit 1\"";
+  base::string16 cmd_line =
+      L"\"/c if \\\"%CD%\\\" NEQ \\\"" + sys_path + L"\\\" exit 1\"";
 
   ASSERT_TRUE(!exe_path.empty());
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
-                             TargetPolicy::PROCESS_MIN_EXEC,
-                             exe_path.c_str()));
+                             TargetPolicy::PROCESS_MIN_EXEC, exe_path.c_str()));
 
-  base::string16 command = L"Process_CheckExitCode cmd.exe " +
-                           cmd_line + L" " + sys_path;
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(command.c_str()));
+  base::string16 command =
+      L"Process_CheckExitCode cmd.exe " + cmd_line + L" " + sys_path;
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command.c_str()));
 }
 
 TEST(ProcessPolicyTest, OpenToken) {
@@ -488,8 +478,7 @@ TEST(ProcessPolicyTest, TestGetProcessTokenMinAccess) {
   base::string16 exe_path = MakePathToSys(L"findstr.exe", false);
   ASSERT_TRUE(!exe_path.empty());
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
-                             TargetPolicy::PROCESS_MIN_EXEC,
-                             exe_path.c_str()));
+                             TargetPolicy::PROCESS_MIN_EXEC, exe_path.c_str()));
 
   EXPECT_EQ(SBOX_TEST_DENIED,
             runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
@@ -500,8 +489,7 @@ TEST(ProcessPolicyTest, TestGetProcessTokenMaxAccess) {
   base::string16 exe_path = MakePathToSys(L"findstr.exe", false);
   ASSERT_TRUE(!exe_path.empty());
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
-                             TargetPolicy::PROCESS_ALL_EXEC,
-                             exe_path.c_str()));
+                             TargetPolicy::PROCESS_ALL_EXEC, exe_path.c_str()));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
@@ -512,8 +500,7 @@ TEST(ProcessPolicyTest, TestGetProcessTokenMinAccessNoJob) {
   base::string16 exe_path = MakePathToSys(L"findstr.exe", false);
   ASSERT_TRUE(!exe_path.empty());
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
-                             TargetPolicy::PROCESS_MIN_EXEC,
-                             exe_path.c_str()));
+                             TargetPolicy::PROCESS_MIN_EXEC, exe_path.c_str()));
 
   EXPECT_EQ(SBOX_TEST_DENIED,
             runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
@@ -524,8 +511,7 @@ TEST(ProcessPolicyTest, TestGetProcessTokenMaxAccessNoJob) {
   base::string16 exe_path = MakePathToSys(L"findstr.exe", false);
   ASSERT_TRUE(!exe_path.empty());
   EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
-                             TargetPolicy::PROCESS_ALL_EXEC,
-                             exe_path.c_str()));
+                             TargetPolicy::PROCESS_ALL_EXEC, exe_path.c_str()));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));

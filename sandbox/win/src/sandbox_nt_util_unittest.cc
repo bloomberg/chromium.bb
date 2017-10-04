@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
+#include "sandbox/win/src/sandbox_nt_util.h"
+
 #include <windows.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "sandbox/win/src/policy_broker.h"
-#include "sandbox/win/src/sandbox_nt_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

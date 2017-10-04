@@ -155,5 +155,4 @@ class Wow64W10ResolverThunk : public ServiceResolverThunk {
 
 }  // namespace sandbox
 
-
 #endif  // SANDBOX_SRC_SERVICE_RESOLVER_H__

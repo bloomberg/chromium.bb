@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/process_mitigations_win32k_policy.h"
+
 #include <stddef.h>
 
 #include "sandbox/win/src/process_mitigations_win32k_interception.h"
-#include "sandbox/win/src/process_mitigations_win32k_policy.h"
 
 namespace sandbox {
 
@@ -407,4 +408,3 @@ ProcessMitigationsWin32KLockdownPolicy::GetOverrideForTestCallback() {
 }
 
 }  // namespace sandbox
-

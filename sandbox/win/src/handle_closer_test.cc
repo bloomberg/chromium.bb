@@ -17,10 +17,10 @@
 
 namespace {
 
-const wchar_t *kFileExtensions[] = { L".1", L".2", L".3", L".4" };
+const wchar_t* kFileExtensions[] = {L".1", L".2", L".3", L".4"};
 
 // Returns a handle to a unique marker file that can be retrieved between runs.
-HANDLE GetMarkerFile(const wchar_t *extension) {
+HANDLE GetMarkerFile(const wchar_t* extension) {
   wchar_t path_buffer[MAX_PATH + 1];
   CHECK(::GetTempPath(MAX_PATH, path_buffer));
   base::string16 marker_path = path_buffer;
@@ -28,22 +28,21 @@ HANDLE GetMarkerFile(const wchar_t *extension) {
 
   // Generate a unique value from the exe's size and timestamp.
   CHECK(::GetModuleFileName(NULL, path_buffer, MAX_PATH));
-  base::win::ScopedHandle module(::CreateFile(path_buffer,
-                                 FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL,
-                                 OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+  base::win::ScopedHandle module(
+      ::CreateFile(path_buffer, FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL,
+                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
   CHECK(module.IsValid());
   FILETIME timestamp;
   CHECK(::GetFileTime(module.Get(), &timestamp, NULL, NULL));
-  marker_path += base::StringPrintf(L"%08x%08x%08x",
-                                    ::GetFileSize(module.Get(), NULL),
-                                    timestamp.dwLowDateTime,
-                                    timestamp.dwHighDateTime);
+  marker_path +=
+      base::StringPrintf(L"%08x%08x%08x", ::GetFileSize(module.Get(), NULL),
+                         timestamp.dwLowDateTime, timestamp.dwHighDateTime);
   marker_path += extension;
 
   // Make the file delete-on-close so cleanup is automatic.
   return CreateFile(marker_path.c_str(), FILE_ALL_ACCESS,
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      NULL, OPEN_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    NULL, OPEN_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
 }
 
 // Returns type infomation for an NT object. This routine is expected to be
@@ -57,10 +56,9 @@ NTSTATUS QueryObjectTypeInformation(HANDLE handle, void* buffer, ULONG* size) {
   NTSTATUS status = STATUS_UNSUCCESSFUL;
   __try {
     status = QueryObject(handle, ObjectTypeInformation, buffer, *size, size);
-  }
-  __except(GetExceptionCode() == STATUS_INVALID_HANDLE
-               ? EXCEPTION_EXECUTE_HANDLER
-               : EXCEPTION_CONTINUE_SEARCH) {
+  } __except (GetExceptionCode() == STATUS_INVALID_HANDLE
+                  ? EXCEPTION_EXECUTE_HANDLER
+                  : EXCEPTION_CONTINUE_SEARCH) {
     status = STATUS_INVALID_HANDLE;
   }
   return status;
@@ -77,7 +75,7 @@ namespace sandbox {
 // Checks for the presence of a list of files (in object path form).
 // Format: CheckForFileHandle (Y|N) \path\to\file1 [\path\to\file2 ...]
 // - Y or N depending if the file should exist or not.
-SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t** argv) {
   if (argc < 2)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
   bool should_find = argv[0][0] == L'Y';
@@ -207,8 +205,8 @@ TEST(HandleCloserTest, CheckForMarkerFiles) {
     command += handle_name;
   }
 
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command.c_str())) <<
-    "Failed: " << command;
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command.c_str()))
+      << "Failed: " << command;
 }
 
 TEST(HandleCloserTest, CloseMarkerFiles) {
@@ -224,13 +222,13 @@ TEST(HandleCloserTest, CloseMarkerFiles) {
     CHECK(marker.IsValid());
     CHECK(sandbox::GetHandleName(marker.Get(), &handle_name));
     CHECK_EQ(policy->AddKernelObjectToClose(L"File", handle_name.c_str()),
-              SBOX_ALL_OK);
+             SBOX_ALL_OK);
     command += (L" ");
     command += handle_name;
   }
 
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command.c_str())) <<
-    "Failed: " << command;
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(command.c_str()))
+      << "Failed: " << command;
 }
 
 TEST(HandleCloserTest, CheckStuffedHandle) {
@@ -260,7 +258,7 @@ void WINAPI ThreadPoolTask(void* event, BOOLEAN timeout) {
 }
 
 // Run a thread pool inside a sandbox without a CSRSS connection.
-SBOX_TESTS_COMMAND int RunThreadPool(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int RunThreadPool(int argc, wchar_t** argv) {
   HANDLE wait_list[20];
   finish_event = ::CreateEvent(NULL, TRUE, FALSE, NULL);
   CHECK(finish_event);

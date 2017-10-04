@@ -33,13 +33,16 @@ bool GetDefaultDacl(
 
   if (!::GetTokenInformation(token, TokenDefaultDacl, default_dacl->get(),
                              length, &length))
-      return false;
+    return false;
 
   return true;
 }
 
-bool AddSidToDacl(const Sid& sid, ACL* old_dacl, ACCESS_MODE access_mode,
-                  ACCESS_MASK access, ACL** new_dacl) {
+bool AddSidToDacl(const Sid& sid,
+                  ACL* old_dacl,
+                  ACCESS_MODE access_mode,
+                  ACCESS_MASK access,
+                  ACL** new_dacl) {
   EXPLICIT_ACCESS new_access = {0};
   new_access.grfAccessMode = access_mode;
   new_access.grfAccessPermissions = access;
@@ -116,8 +119,10 @@ bool AddUserSidToDefaultDacl(HANDLE token, ACCESS_MASK access) {
                              GRANT_ACCESS, access);
 }
 
-bool AddKnownSidToObject(HANDLE object, SE_OBJECT_TYPE object_type,
-                         const Sid& sid, ACCESS_MODE access_mode,
+bool AddKnownSidToObject(HANDLE object,
+                         SE_OBJECT_TYPE object_type,
+                         const Sid& sid,
+                         ACCESS_MODE access_mode,
                          ACCESS_MASK access) {
   PSECURITY_DESCRIPTOR descriptor = NULL;
   PACL old_dacl = NULL;
@@ -133,9 +138,9 @@ bool AddKnownSidToObject(HANDLE object, SE_OBJECT_TYPE object_type,
     return false;
   }
 
-  DWORD result = ::SetSecurityInfo(object, object_type,
-                                   DACL_SECURITY_INFORMATION, NULL, NULL,
-                                   new_dacl, NULL);
+  DWORD result =
+      ::SetSecurityInfo(object, object_type, DACL_SECURITY_INFORMATION, NULL,
+                        NULL, new_dacl, NULL);
 
   ::LocalFree(new_dacl);
   ::LocalFree(descriptor);

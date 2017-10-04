@@ -19,9 +19,9 @@ NTSTATUS EatResolverThunk::Setup(const void* target_module,
                                  void* thunk_storage,
                                  size_t storage_bytes,
                                  size_t* storage_used) {
-  NTSTATUS ret = Init(target_module, interceptor_module, target_name,
-                      interceptor_name, interceptor_entry_point,
-                      thunk_storage, storage_bytes);
+  NTSTATUS ret =
+      Init(target_module, interceptor_module, target_name, interceptor_name,
+           interceptor_entry_point, thunk_storage, storage_bytes);
   if (!NT_SUCCESS(ret))
     return ret;
 

@@ -52,15 +52,13 @@ const uint32_t kIPCChannelSize = 1024;
 // The default copy helper. It catches the general case where no other
 // specialized template matches better. We set the type to UINT32_TYPE, so this
 // only works with objects whose size is 32 bits.
-template<typename T>
+template <typename T>
 class CopyHelper {
  public:
   CopyHelper(const T& t) : t_(t) {}
 
   // Returns the pointer to the start of the input.
-  const void* GetStart() const {
-    return &t_;
-  }
+  const void* GetStart() const { return &t_; }
 
   // Update the stored value with the value in the buffer. This is not
   // supported for this type.
@@ -73,9 +71,7 @@ class CopyHelper {
   uint32_t GetSize() const { return sizeof(T); }
 
   // Returns true if the current type is used as an In or InOut parameter.
-  bool IsInOut() {
-    return false;
-  }
+  bool IsInOut() { return false; }
 
   // Returns this object's type.
   ArgType GetType() {
@@ -89,15 +85,13 @@ class CopyHelper {
 
 // This copy helper template specialization if for the void pointer
 // case both 32 and 64 bit.
-template<>
+template <>
 class CopyHelper<void*> {
  public:
   CopyHelper(void* t) : t_(t) {}
 
   // Returns the pointer to the start of the input.
-  const void* GetStart() const {
-    return &t_;
-  }
+  const void* GetStart() const { return &t_; }
 
   // Update the stored value with the value in the buffer. This is not
   // supported for this type.
@@ -110,14 +104,10 @@ class CopyHelper<void*> {
   uint32_t GetSize() const { return sizeof(t_); }
 
   // Returns true if the current type is used as an In or InOut parameter.
-  bool IsInOut() {
-    return false;
-  }
+  bool IsInOut() { return false; }
 
   // Returns this object's type.
-  ArgType GetType() {
-    return VOIDPTR_TYPE;
-  }
+  ArgType GetType() { return VOIDPTR_TYPE; }
 
  private:
   const void* t_;
@@ -125,17 +115,13 @@ class CopyHelper<void*> {
 
 // This copy helper template specialization catches the cases where the
 // parameter is a pointer to a string.
-template<>
+template <>
 class CopyHelper<const wchar_t*> {
  public:
-  CopyHelper(const wchar_t* t)
-      : t_(t) {
-  }
+  CopyHelper(const wchar_t* t) : t_(t) {}
 
   // Returns the pointer to the start of the string.
-  const void* GetStart() const {
-    return t_;
-  }
+  const void* GetStart() const { return t_; }
 
   // Update the stored value with the value in the buffer. This is not
   // supported for this type.
@@ -150,28 +136,24 @@ class CopyHelper<const wchar_t*> {
     __try {
       return (!t_) ? 0
                    : static_cast<uint32_t>(StringLength(t_) * sizeof(t_[0]));
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER) {
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
       return UINT32_MAX;
     }
   }
 
   // Returns true if the current type is used as an In or InOut parameter.
-  bool IsInOut() {
-    return false;
-  }
+  bool IsInOut() { return false; }
 
-  ArgType GetType() {
-    return WCHAR_TYPE;
-  }
+  ArgType GetType() { return WCHAR_TYPE; }
 
  private:
   // We provide our not very optimized version of wcslen(), since we don't
   // want to risk having the linker use the version in the CRT since the CRT
   // might not be present when we do an early IPC call.
   static size_t __cdecl StringLength(const wchar_t* wcs) {
-    const wchar_t *eos = wcs;
-    while (*eos++);
+    const wchar_t* eos = wcs;
+    while (*eos++)
+      ;
     return static_cast<size_t>(eos - wcs - 1);
   }
 
@@ -180,57 +162,41 @@ class CopyHelper<const wchar_t*> {
 
 // Specialization for non-const strings. We just reuse the implementation of the
 // const string specialization.
-template<>
+template <>
 class CopyHelper<wchar_t*> : public CopyHelper<const wchar_t*> {
  public:
   typedef CopyHelper<const wchar_t*> Base;
   CopyHelper(wchar_t* t) : Base(t) {}
 
-  const void* GetStart() const {
-    return Base::GetStart();
-  }
+  const void* GetStart() const { return Base::GetStart(); }
 
-  bool Update(void* buffer) {
-    return Base::Update(buffer);
-  }
+  bool Update(void* buffer) { return Base::Update(buffer); }
 
   uint32_t GetSize() const { return Base::GetSize(); }
 
-  bool IsInOut() {
-    return Base::IsInOut();
-  }
+  bool IsInOut() { return Base::IsInOut(); }
 
-  ArgType GetType() {
-    return Base::GetType();
-  }
+  ArgType GetType() { return Base::GetType(); }
 };
 
 // Specialization for wchar_t arrays strings. We just reuse the implementation
 // of the const string specialization.
-template<size_t n>
+template <size_t n>
 class CopyHelper<const wchar_t[n]> : public CopyHelper<const wchar_t*> {
  public:
   typedef const wchar_t array[n];
   typedef CopyHelper<const wchar_t*> Base;
   CopyHelper(array t) : Base(t) {}
 
-  const void* GetStart() const {
-    return Base::GetStart();
-  }
+  const void* GetStart() const { return Base::GetStart(); }
 
-  bool Update(void* buffer) {
-    return Base::Update(buffer);
-  }
+  bool Update(void* buffer) { return Base::Update(buffer); }
 
   uint32_t GetSize() const { return Base::GetSize(); }
 
-  bool IsInOut() {
-    return Base::IsInOut();
-  }
+  bool IsInOut() { return Base::IsInOut(); }
 
-  ArgType GetType() {
-    return Base::GetType();
-  }
+  ArgType GetType() { return Base::GetType(); }
 };
 
 // Generic encapsulation class containing a pointer to a buffer and the
@@ -244,15 +210,13 @@ class InOutCountedBuffer : public CountedBuffer {
 
 // This copy helper template specialization catches the cases where the
 // parameter is a an input/output buffer.
-template<>
+template <>
 class CopyHelper<InOutCountedBuffer> {
  public:
   CopyHelper(const InOutCountedBuffer t) : t_(t) {}
 
   // Returns the pointer to the start of the string.
-  const void* GetStart() const {
-    return t_.Buffer();
-  }
+  const void* GetStart() const { return t_.Buffer(); }
 
   // Updates the buffer with the value from the new buffer in parameter.
   bool Update(void* buffer) {
@@ -260,8 +224,7 @@ class CopyHelper<InOutCountedBuffer> {
     // except.
     __try {
       memcpy(t_.Buffer(), buffer, t_.Size());
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER) {
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
       return false;
     }
     return true;
@@ -272,13 +235,9 @@ class CopyHelper<InOutCountedBuffer> {
   uint32_t GetSize() const { return t_.Size(); }
 
   // Returns true if the current type is used as an In or InOut parameter.
-  bool IsInOut() {
-    return true;
-  }
+  bool IsInOut() { return true; }
 
-  ArgType GetType() {
-    return INOUTPTR_TYPE;
-  }
+  ArgType GetType() { return INOUTPTR_TYPE; }
 
  private:
   const InOutCountedBuffer t_;
@@ -287,28 +246,27 @@ class CopyHelper<InOutCountedBuffer> {
 // The following two macros make it less error prone the generation
 // of CrossCall functions with ever more input parameters.
 
-#define XCALL_GEN_PARAMS_OBJ(num, params) \
+#define XCALL_GEN_PARAMS_OBJ(num, params)                      \
   typedef ActualCallParams<num, kIPCChannelSize> ActualParams; \
-  void* raw_mem = ipc_provider.GetBuffer(); \
-  if (NULL == raw_mem) \
-    return SBOX_ERROR_NO_SPACE; \
-  ActualParams* params = new(raw_mem) ActualParams(tag);
+  void* raw_mem = ipc_provider.GetBuffer();                    \
+  if (NULL == raw_mem)                                         \
+    return SBOX_ERROR_NO_SPACE;                                \
+  ActualParams* params = new (raw_mem) ActualParams(tag);
 
-#define XCALL_GEN_COPY_PARAM(num, params) \
-  static_assert(kMaxIpcParams >= num, "too many parameters"); \
-  CopyHelper<Par##num> ch##num(p##num); \
+#define XCALL_GEN_COPY_PARAM(num, params)                                  \
+  static_assert(kMaxIpcParams >= num, "too many parameters");              \
+  CopyHelper<Par##num> ch##num(p##num);                                    \
   if (!params->CopyParamIn(num - 1, ch##num.GetStart(), ch##num.GetSize(), \
-                           ch##num.IsInOut(), ch##num.GetType())) \
+                           ch##num.IsInOut(), ch##num.GetType()))          \
     return SBOX_ERROR_NO_SPACE;
 
-#define XCALL_GEN_UPDATE_PARAM(num, params) \
-  if (!ch##num.Update(params->GetParamPtr(num-1))) {\
-    ipc_provider.FreeBuffer(raw_mem); \
-    return SBOX_ERROR_BAD_PARAMS; \
+#define XCALL_GEN_UPDATE_PARAM(num, params)            \
+  if (!ch##num.Update(params->GetParamPtr(num - 1))) { \
+    ipc_provider.FreeBuffer(raw_mem);                  \
+    return SBOX_ERROR_BAD_PARAMS;                      \
   }
 
-#define XCALL_GEN_FREE_CHANNEL() \
-  ipc_provider.FreeBuffer(raw_mem);
+#define XCALL_GEN_FREE_CHANNEL() ipc_provider.FreeBuffer(raw_mem);
 
 // CrossCall template with one input parameter
 template <typename IPCProvider, typename Par1>
