@@ -6,6 +6,5 @@ include_rules = [
   "+chrome/browser/tab_contents/tab_util.h",
   "+third_party/ocmock/OCMock/OCMock.h",
   "+third_party/ocmock/ocmock_extensions.h",
-  "+third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 ]
 

@@ -4,5 +4,7 @@ include_rules = [
   "+ash/shell.h",
   "+content/test/test_web_contents.h",
   "+services/resource_coordinator/public",
+  # No inclusion of WebKit from the browser, other than strictly enum/POD,
+  # header-only types, and some selected common code.
   "+third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h",
 ]
