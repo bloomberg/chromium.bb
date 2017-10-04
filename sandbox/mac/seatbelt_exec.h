@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/files/scoped_file.h"
-#include "base/strings/string_piece.h"
 #include "sandbox/mac/seatbelt.pb.h"
 #include "sandbox/mac/seatbelt_export.h"
 
@@ -28,15 +26,15 @@ class SEATBELT_EXPORT SeatbeltExecClient {
   // added successfully.
 
   // Set a boolean parameter in the sandbox profile.
-  bool SetBooleanParameter(const base::StringPiece key,
+  bool SetBooleanParameter(const std::string& key,
                            bool value) WARN_UNUSED_RESULT;
 
   // Set a string parameter in the sandbox profile.
-  bool SetParameter(const base::StringPiece key,
-                    const base::StringPiece value) WARN_UNUSED_RESULT;
+  bool SetParameter(const std::string& key,
+                    const std::string& value) WARN_UNUSED_RESULT;
 
   // Set the actual sandbox profile, using the scheme-like SBPL.
-  void SetProfile(const base::StringPiece policy);
+  void SetProfile(const std::string& policy);
 
   // Sends the policy to the SeatbeltExecServer and returns the communication
   // FD. The FD should be mapped into the sandboxed child process.
@@ -78,8 +76,8 @@ class SEATBELT_EXPORT SeatbeltExecServer {
   // server because the process about to initialize a sandbox may need to add
   // some extra parameters, such as the path to the executable or the current
   // PID. This must be called before InitializeSandbox().
-  bool SetParameter(const base::StringPiece key,
-                    const base::StringPiece value) WARN_UNUSED_RESULT;
+  bool SetParameter(const std::string& key,
+                    const std::string& value) WARN_UNUSED_RESULT;
 
  private:
   // Reads from the |fd_| and stores the data into a string. This does
@@ -87,7 +85,7 @@ class SEATBELT_EXPORT SeatbeltExecServer {
   bool ReadString(std::string* string);
 
   // The file descriptor used to communicate with the launcher process.
-  base::ScopedFD fd_;
+  int fd_;
 
   // Extra parameters added by the server process.
   std::map<std::string, std::string> extra_params_;
