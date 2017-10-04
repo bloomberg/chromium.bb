@@ -159,6 +159,26 @@ TEST_F(FlatTreeTraversalTest, childAt) {
   EXPECT_EQ(m00, FlatTreeTraversal::ChildAt(*s03, 0));
 }
 
+TEST_F(FlatTreeTraversalTest, ChildrenOf) {
+  SetupSampleHTML(
+      "<p id=sample>ZERO<span slot=three>three</b><span "
+      "slot=one>one</b>FOUR</p>",
+      "zero<slot name=one></slot>two<slot name=three></slot>four", 0);
+  Element* const sample = GetDocument().getElementById("sample");
+
+  HeapVector<Member<Node>> expected_nodes;
+  for (Node* runner = FlatTreeTraversal::FirstChild(*sample); runner;
+       runner = FlatTreeTraversal::NextSibling(*runner)) {
+    expected_nodes.push_back(runner);
+  }
+
+  HeapVector<Member<Node>> actual_nodes;
+  for (Node& child : FlatTreeTraversal::ChildrenOf(*sample))
+    actual_nodes.push_back(&child);
+
+  EXPECT_EQ(expected_nodes, actual_nodes);
+}
+
 // Test case for
 //  - commonAncestor
 //  - isDescendantOf

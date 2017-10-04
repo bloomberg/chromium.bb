@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "platform/wtf/Allocator.h"
@@ -80,6 +81,8 @@ class CORE_EXPORT FlatTreeTraversal {
   static Node* NextSkippingChildren(const Node&);
   static Node* NextSkippingChildren(const Node&, const Node* stay_within);
 
+  static Node* FirstWithin(const Node& current) { return FirstChild(current); }
+
   // Flat tree version of |NodeTraversal::previousSkippingChildren()|
   // similar to |previous()| but skipping child nodes of the specified node.
   static Node* PreviousSkippingChildren(const Node&);
@@ -117,6 +120,18 @@ class CORE_EXPORT FlatTreeTraversal {
 
   static Node* LastWithin(const Node&);
   static Node& LastWithinOrSelf(const Node&);
+
+  // Flat tree range helper functions for range based for statement.
+  // TODO(dom-team): We should have following functions to match with
+  // |NodeTraversal|:
+  //   - AncestorsOf()
+  //   - DescendantsOf()
+  //   - InclusiveAncestorsOf()
+  //   - InclusiveDescendantsOf()
+  //   - StartsAt()
+  //   - StartsAfter()
+  static TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
+  ChildrenOf(const Node&);
 
  private:
   enum TraversalDirection {
@@ -298,6 +313,12 @@ inline Node* FlatTreeTraversal::TraverseFirstChild(const Node& node) {
 
 inline Node* FlatTreeTraversal::TraverseLastChild(const Node& node) {
   return TraverseChild(node, kTraversalDirectionBackward);
+}
+
+// TraverseRange<T> implementations
+inline TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
+FlatTreeTraversal::ChildrenOf(const Node& parent) {
+  return TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>(&parent);
 }
 
 }  // namespace blink
