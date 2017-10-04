@@ -38,8 +38,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/test/cancelling_navigation_throttle.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -408,34 +408,35 @@ class SubresourceFilterSafeBrowsingActivationThrottleParamTest
 class SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling
     : public SubresourceFilterSafeBrowsingActivationThrottleTest,
       public ::testing::WithParamInterface<
-          std::tuple<content::CancellingNavigationThrottle::CancelTime,
-                     content::CancellingNavigationThrottle::ResultSynchrony>> {
+          std::tuple<content::TestNavigationThrottle::ThrottleMethod,
+                     content::TestNavigationThrottle::ResultSynchrony>> {
  public:
   SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling() {
-    std::tie(cancel_time_, result_sync_) = GetParam();
+    std::tie(throttle_method_, result_sync_) = GetParam();
   }
   ~SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling()
       override {}
 
   void DidStartNavigation(content::NavigationHandle* handle) override {
-    handle->RegisterThrottleForTesting(
-        base::MakeUnique<content::CancellingNavigationThrottle>(
-            handle, cancel_time_, result_sync_));
+    auto throttle = base::MakeUnique<content::TestNavigationThrottle>(handle);
+    throttle->SetResponse(throttle_method_, result_sync_,
+                          content::NavigationThrottle::CANCEL);
+    handle->RegisterThrottleForTesting(std::move(throttle));
     SubresourceFilterSafeBrowsingActivationThrottleTest::DidStartNavigation(
         handle);
   }
 
-  content::CancellingNavigationThrottle::CancelTime cancel_time() {
-    return cancel_time_;
+  content::TestNavigationThrottle::ThrottleMethod throttle_method() {
+    return throttle_method_;
   }
 
-  content::CancellingNavigationThrottle::ResultSynchrony result_sync() {
+  content::TestNavigationThrottle::ResultSynchrony result_sync() {
     return result_sync_;
   }
 
  private:
-  content::CancellingNavigationThrottle::CancelTime cancel_time_;
-  content::CancellingNavigationThrottle::ResultSynchrony result_sync_;
+  content::TestNavigationThrottle::ThrottleMethod throttle_method_;
+  content::TestNavigationThrottle::ResultSynchrony result_sync_;
 
   DISALLOW_COPY_AND_ASSIGN(
       SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling);
@@ -1109,13 +1110,13 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
        Cancel) {
   const GURL url(kURL);
-  SCOPED_TRACE(::testing::Message() << "CancelTime: " << cancel_time()
+  SCOPED_TRACE(::testing::Message() << "ThrottleMethod: " << throttle_method()
                                     << " ResultSynchrony: " << result_sync());
   ConfigureForMatch(url);
   content::NavigationThrottle::ThrottleCheckResult result =
       SimulateStart(url, main_rfh());
-  if (cancel_time() ==
-      content::CancellingNavigationThrottle::WILL_START_REQUEST) {
+  if (throttle_method() ==
+      content::TestNavigationThrottle::WILL_START_REQUEST) {
     EXPECT_EQ(content::NavigationThrottle::CANCEL, result);
     tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 0);
     return;
@@ -1123,8 +1124,8 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
 
   result = SimulateRedirect(GURL(kRedirectURL));
-  if (cancel_time() ==
-      content::CancellingNavigationThrottle::WILL_REDIRECT_REQUEST) {
+  if (throttle_method() ==
+      content::TestNavigationThrottle::WILL_REDIRECT_REQUEST) {
     EXPECT_EQ(content::NavigationThrottle::CANCEL, result);
     tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 0);
     return;
@@ -1143,12 +1144,11 @@ INSTANTIATE_TEST_CASE_P(
     SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
     ::testing::Combine(
         ::testing::Values(
-            content::CancellingNavigationThrottle::WILL_START_REQUEST,
-            content::CancellingNavigationThrottle::WILL_REDIRECT_REQUEST,
-            content::CancellingNavigationThrottle::WILL_PROCESS_RESPONSE),
-        ::testing::Values(
-            content::CancellingNavigationThrottle::SYNCHRONOUS,
-            content::CancellingNavigationThrottle::ASYNCHRONOUS)));
+            content::TestNavigationThrottle::WILL_START_REQUEST,
+            content::TestNavigationThrottle::WILL_REDIRECT_REQUEST,
+            content::TestNavigationThrottle::WILL_PROCESS_RESPONSE),
+        ::testing::Values(content::TestNavigationThrottle::SYNCHRONOUS,
+                          content::TestNavigationThrottle::ASYNCHRONOUS)));
 
 INSTANTIATE_TEST_CASE_P(
     ActivationLevelTest,
