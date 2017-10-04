@@ -230,12 +230,13 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
   ResourceFetcher* fetcher =
       ResourceFetcher::Create(context, context->GetTaskRunner());
 
-  if (context->GetSettings()->GetSavePreviousDocumentResources() !=
-      SavePreviousDocumentResources::kNever) {
-    if (DocumentLoader* previous_document_loader =
-            context->GetFrame()->Loader().GetDocumentLoader()) {
-      fetcher->HoldResourcesFromPreviousFetcher(
-          previous_document_loader->Fetcher());
+  if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
+                    SavePreviousDocumentResources::kNever) {
+    if (Document* previous_document = context->GetFrame()->GetDocument()) {
+      if (previous_document->IsSecureTransitionTo(loader->Url())) {
+        fetcher->HoldResourcesFromPreviousFetcher(
+            previous_document->Loader()->Fetcher());
+      }
     }
   }
 
