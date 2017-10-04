@@ -2485,8 +2485,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MENU_FIND_IN_PAGE" desc="Menu item allowing users to find text within the current page. [CHAR-LIMIT=27]">
         Find in page
       </message>
-      <message name="IDS_MENU_REQUEST_DESKTOP_SITE" desc="Menu item allowing user to request for the desktop site by changing browser's user-agent. [CHAR-LIMIT=24]">
-        Request desktop site
+      <message name="IDS_MENU_REQUEST_DESKTOP_SITE" desc="Menu item in Chrome's overflow/options menu. By default, when a user navigates to a web page, Chrome shows the mobile site, that is, the version of the site designed for mobile phones. If this menu item is selected, however, Chrome will try to load the 'desktop' site instead, i.e. the site designed for desktop computers or laptop computers, which have larger screens. [CHAR-LIMIT=24]">
+        Desktop site
       </message>
       <message name="IDS_MENU_REQUEST_DESKTOP_SITE_ON" desc="Accessibility description for when Request Desktop Site is enabled.">
         Turn off Request desktop site
