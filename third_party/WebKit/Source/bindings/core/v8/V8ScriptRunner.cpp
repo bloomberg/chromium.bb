@@ -471,9 +471,6 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       "v8,devtools.timeline", "v8.compile", "fileName", file_name.Utf8(),
       "data",
       InspectorCompileScriptEvent::Data(file_name, script_start_position));
-  // TODO(maxlg): probe will use a execution context once
-  // DocumentWriteEvaluator::EnsureEvaluationContext provide script state, see
-  // https://crbug.com/746961.
   probe::V8Compile probe(ExecutionContext::From(script_state), file_name,
                          script_start_position.line_.ZeroBasedInt(),
                          script_start_position.column_.ZeroBasedInt());
