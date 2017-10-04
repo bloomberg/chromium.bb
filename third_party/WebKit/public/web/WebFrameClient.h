@@ -196,10 +196,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // Returns an InterfaceProvider the frame can use to request interfaces from
   // the browser. This method may not return nullptr.
-  virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
-    NOTREACHED();
-    return nullptr;
-  }
+  virtual service_manager::InterfaceProvider* GetInterfaceProvider();
 
   // General notifications -----------------------------------------------
 

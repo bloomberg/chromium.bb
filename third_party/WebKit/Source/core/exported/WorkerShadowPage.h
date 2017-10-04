@@ -10,7 +10,6 @@
 #include "public/web/WebDocumentLoader.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebView.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -65,7 +64,6 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   // so the shadow page must also manually call Close() on the corresponding
   // frame and its widget.
   void DidFinishDocumentLoad() override;
-  service_manager::InterfaceProvider* GetInterfaceProvider() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
       SingleThreadTaskRunnerRefPtr) override;
@@ -86,7 +84,6 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   WebView* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   Client* client_;
-  service_manager::InterfaceProvider interface_provider_;
 
   State state_ = State::kUninitialized;
 };

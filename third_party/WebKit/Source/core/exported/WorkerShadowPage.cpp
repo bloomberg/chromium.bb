@@ -23,18 +23,12 @@ WorkerShadowPage::WorkerShadowPage(Client* client)
                                                      WebSandboxFlags::kNone)),
       client_(client) {
   DCHECK(IsMainThread());
+
   // TODO(http://crbug.com/363843): This needs to find a better way to
   // not create graphics layers.
   web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
 
   main_frame_->SetDevToolsAgentClient(client_);
-
-  // Create an empty InterfaceProvider because WebFrameClient subclasses are
-  // required to do it even if it's not used.
-  // See https://chromium-review.googlesource.com/c/576370
-  service_manager::mojom::InterfaceProviderPtr provider;
-  mojo::MakeRequest(&provider);
-  interface_provider_.Bind(std::move(provider));
 }
 
 WorkerShadowPage::~WorkerShadowPage() {
@@ -79,11 +73,6 @@ WorkerShadowPage::CreateApplicationCacheHost(
     WebApplicationCacheHostClient* appcache_host_client) {
   DCHECK(IsMainThread());
   return client_->CreateApplicationCacheHost(appcache_host_client);
-}
-
-service_manager::InterfaceProvider* WorkerShadowPage::GetInterfaceProvider() {
-  DCHECK(IsMainThread());
-  return &interface_provider_;
 }
 
 std::unique_ptr<blink::WebURLLoader> WorkerShadowPage::CreateURLLoader(
