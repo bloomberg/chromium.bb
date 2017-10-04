@@ -66,10 +66,7 @@ enum EffectiveConnectionType {
     Node parentTreeScope(Node node);
     [RaisesException] unsigned short compareTreeScopePosition(Node treeScope1, Node treeScope2);
     [RaisesException] unsigned long updateStyleAndReturnAffectedElementCount();
-    // Returns the number of LayoutObjects with needs-layout flag.
     [RaisesException] unsigned long needsLayoutCount();
-    // The number of force layout since Document creation.
-    [RaisesException] readonly attribute unsigned long forceLayoutCount;
     [RaisesException] unsigned long hitTestCount(Document document);
     [RaisesException] unsigned long hitTestCacheHits(Document document);
     [RaisesException] Element? elementFromPoint(Document document, double x, double y, boolean ignoreClipping, boolean allowChildFrameContent);

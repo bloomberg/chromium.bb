@@ -43,6 +43,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
@@ -70,7 +71,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
 
@@ -878,43 +878,31 @@ void HTMLSelectElement::ScrollToOption(HTMLOptionElement* option) {
     return;
   if (UsesMenuList())
     return;
-  if (GetLayoutObject()) {
-    if (GetDocument().Lifecycle().GetState() >=
-        DocumentLifecycle::kLayoutClean) {
-      ToLayoutListBox(GetLayoutObject())->ScrollToRect(option->BoundingBox());
-      return;
-    }
-    // Make sure the LayoutObject will be laid out.
-    GetLayoutObject()->SetNeedsLayout(
-        LayoutInvalidationReason::kMenuOptionsChanged);
-  }
+  bool has_pending_task = option_to_scroll_to_;
+  // We'd like to keep an HTMLOptionElement reference rather than the index of
+  // the option because the task should work even if unselected option is
+  // inserted before executing scrollToOptionTask().
   option_to_scroll_to_ = option;
-  // ScrollToOptionAfterLayout() should be called if this element is rendered.
+  if (!has_pending_task) {
+    TaskRunnerHelper::Get(TaskType::kUserInteraction, &GetDocument())
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&HTMLSelectElement::ScrollToOptionTask,
+                             WrapPersistent(this)));
+  }
 }
 
-void HTMLSelectElement::ScrollToOptionAfterLayout(
-    PaintLayerScrollableArea& scrollable_area) {
+void HTMLSelectElement::ScrollToOptionTask() {
   HTMLOptionElement* option = option_to_scroll_to_.Release();
-  if (!option || UsesMenuList())
+  if (!option || !isConnected())
     return;
-  LayoutBox* option_box = option->GetLayoutBox();
-  if (!option_box)
+  // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
+  // another owner.
+  DCHECK_EQ(option->OwnerSelectElement(), this);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
     return;
-
-  // We can't use PaintLayerScrollableArea::ScrollIntoView(), which needs
-  // absolute coordinate. We are unable to compute absolute positions because
-  // ancestors' layout aren't fixed yet.
-  LayoutSize option_offset;
-  for (LayoutObject* container = option_box; container != GetLayoutObject();
-       container = container->Container()) {
-    if (!container->Container())
-      return;
-    option_offset += container->OffsetFromContainer(container->Container());
-  }
-  scrollable_area.ScrollLocalRectIntoView(
-      LayoutRect(LayoutPoint() + option_offset, option_box->Size()),
-      ScrollAlignment::kAlignToEdgeIfNeeded,
-      ScrollAlignment::kAlignToEdgeIfNeeded, false);
+  LayoutRect bounds = option->BoundingBox();
+  ToLayoutListBox(GetLayoutObject())->ScrollToRect(bounds);
 }
 
 void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,

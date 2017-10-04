@@ -378,14 +378,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool HitTestResizerInFragments(const PaintLayerFragments&,
                                  const HitTestLocation&) const;
 
-  // Returns the new offset, after scrolling, of the given rect in parents
-  // coordinates.
-  LayoutRect ScrollLocalRectIntoView(const LayoutRect&,
-                                     const ScrollAlignment& align_x,
-                                     const ScrollAlignment& align_y,
-                                     bool is_smooth,
-                                     ScrollType = kProgrammaticScroll,
-                                     bool is_for_scroll_sequence = false);
   // Returns the new offset, after scrolling, of the given rect in absolute
   // coordinates, clipped by the parent's client rect.
   LayoutRect ScrollIntoView(const LayoutRect&,

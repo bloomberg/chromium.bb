@@ -61,7 +61,6 @@
 #include "core/frame/VisualViewport.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLSelectElement.h"
 #include "core/html/TextControlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -937,10 +936,6 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
   DisableCompositingQueryAsserts disabler;
   PositionOverflowControls();
-
-  Node* node = Box().GetNode();
-  if (auto* select = ToHTMLSelectElementOrNull(node))
-    select->ScrollToOptionAfterLayout(*this);
 }
 
 void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
@@ -1801,37 +1796,6 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   // keep the point under the cursor in view.
 }
 
-LayoutRect PaintLayerScrollableArea::ScrollLocalRectIntoView(
-    const LayoutRect& rect,
-    const ScrollAlignment& align_x,
-    const ScrollAlignment& align_y,
-    bool is_smooth,
-    ScrollType scroll_type,
-    bool is_for_scroll_sequence) {
-  LayoutRect local_expose_rect(rect);
-  local_expose_rect.Move(-Box().BorderLeft(), -Box().BorderTop());
-  LayoutRect visible_rect(IntPoint(), VisibleContentRect().Size());
-  LayoutRect r = ScrollAlignment::GetRectToExpose(
-      visible_rect, local_expose_rect, align_x, align_y);
-
-  ScrollOffset old_scroll_offset = GetScrollOffset();
-  ScrollOffset new_scroll_offset(ClampScrollOffset(RoundedIntSize(
-      ToScrollOffset(FloatPoint(r.Location()) + old_scroll_offset))));
-  if (is_for_scroll_sequence) {
-    DCHECK(scroll_type == kProgrammaticScroll);
-    ScrollBehavior behavior =
-        is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
-    GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
-                                               behavior);
-  } else {
-    SetScrollOffset(new_scroll_offset, scroll_type, kScrollBehaviorInstant);
-  }
-  ScrollOffset scroll_offset_difference =
-      ClampScrollOffset(new_scroll_offset) - old_scroll_offset;
-  local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
-  return local_expose_rect;
-}
-
 LayoutRect PaintLayerScrollableArea::ScrollIntoView(
     const LayoutRect& rect,
     const ScrollAlignment& align_x,
@@ -1843,10 +1807,27 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
       Box()
           .AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
           .BoundingBox());
-  local_expose_rect =
-      ScrollLocalRectIntoView(local_expose_rect, align_x, align_y, is_smooth,
-                              scroll_type, is_for_scroll_sequence);
+  local_expose_rect.Move(-Box().BorderLeft(), -Box().BorderTop());
   LayoutRect visible_rect(IntPoint(), VisibleContentRect().Size());
+  LayoutRect r = ScrollAlignment::GetRectToExpose(
+      visible_rect, local_expose_rect, align_x, align_y);
+
+  ScrollOffset old_scroll_offset = GetScrollOffset();
+  ScrollOffset new_scroll_offset(ClampScrollOffset(RoundedIntSize(
+      ToScrollOffset(FloatPoint(r.Location()) + old_scroll_offset))));
+  if (is_for_scroll_sequence) {
+    DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
+    ScrollBehavior behavior =
+        is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
+    GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
+                                               behavior);
+  } else {
+    SetScrollOffset(new_scroll_offset, scroll_type, kScrollBehaviorInstant);
+  }
+  ScrollOffset scroll_offset_difference =
+      ClampScrollOffset(new_scroll_offset) - old_scroll_offset;
+  local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
+
   LayoutRect intersect =
       LocalToAbsolute(Box(), Intersection(visible_rect, local_expose_rect));
   if (intersect.IsEmpty() && !visible_rect.IsEmpty() &&
