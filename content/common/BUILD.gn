@@ -302,6 +302,8 @@ source_set("common") {
     "sandbox_linux/bpf_cros_arm_gpu_policy_linux.h",
     "sandbox_linux/bpf_gpu_policy_linux.cc",
     "sandbox_linux/bpf_gpu_policy_linux.h",
+    "sandbox_linux/bpf_pdf_compositor_policy_linux.cc",
+    "sandbox_linux/bpf_pdf_compositor_policy_linux.h",
     "sandbox_linux/bpf_ppapi_policy_linux.cc",
     "sandbox_linux/bpf_ppapi_policy_linux.h",
     "sandbox_linux/bpf_renderer_policy_linux.cc",
