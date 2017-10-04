@@ -80,11 +80,16 @@ def _UninstallApk(devices, install_dict, package_name):
   device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
 
 
-def _LaunchUrl(devices, input_args, device_args_file, url, apk,
+def _LaunchUrl(devices, input_args, device_args_file, url, apk, package_name,
                wait_for_java_debugger):
   if input_args and device_args_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
+    # TODO(agrieve): Launch could be changed to require only package name by
+    #     parsing "dumpsys package" rather than relying on the apk.
+    if not apk:
+      raise Exception('Launching with URL is not supported when using '
+                      '--package-name. Use --apk-path instead.')
     view_activity = apk.GetViewActivityName()
     if not view_activity:
       raise Exception('APK does not support launching with URLs.')
@@ -92,7 +97,7 @@ def _LaunchUrl(devices, input_args, device_args_file, url, apk,
   def launch(device):
     # Set debug app in order to enable reading command line flags on user
     # builds.
-    cmd = ['am', 'set-debug-app', apk.GetPackageName()]
+    cmd = ['am', 'set-debug-app', package_name]
     if wait_for_java_debugger:
       # To wait for debugging on a non-primary process:
       #     am set-debug-app org.chromium.chrome:privileged_process0
@@ -101,21 +106,22 @@ def _LaunchUrl(devices, input_args, device_args_file, url, apk,
     device.RunShellCommand(cmd, check_return=False)
 
     # The flags are first updated with input args.
-    changer = flag_changer.FlagChanger(device, device_args_file)
-    flags = []
-    if input_args:
-      flags = shlex.split(input_args)
-    changer.ReplaceFlags(flags)
+    if device_args_file:
+      changer = flag_changer.FlagChanger(device, device_args_file)
+      flags = []
+      if input_args:
+        flags = shlex.split(input_args)
+      changer.ReplaceFlags(flags)
     # Then launch the apk.
     if url is None:
       # Simulate app icon click if no url is present.
-      cmd = ['monkey', '-p', apk.GetPackageName(), '-c',
+      cmd = ['monkey', '-p', package_name, '-c',
              'android.intent.category.LAUNCHER', '1']
       device.RunShellCommand(cmd, check_return=True)
     else:
       launch_intent = intent.Intent(action='android.intent.action.VIEW',
                                     activity=view_activity, data=url,
-                                    package=apk.GetPackageName())
+                                    package=package_name)
       device.StartActivity(launch_intent)
   device_utils.DeviceUtils.parallel(devices).pMap(launch)
 
@@ -729,7 +735,7 @@ class _Command(object):
     if not self._from_wrapper_script and self.accepts_command_line_flags:
       # Provided by wrapper scripts.
       group.add_argument(
-          '--command-line-flags-file-name',
+          '--command-line-flags-file',
           help='Name of the command-line flags file')
 
     self._RegisterExtraArgs(group)
@@ -839,9 +845,7 @@ class _LaunchCommand(_Command):
   name = 'launch'
   description = ('Sends a launch intent for the APK after first writing the '
                  'command-line flags file.')
-  # TODO(agrieve): Launch could be changed to require only package name by
-  #     parsing "dumpsys package" for launch & view activities.
-  needs_apk_path = True
+  needs_package_name = True
   accepts_command_line_flags = True
   all_devices_by_default = True
 
@@ -854,7 +858,8 @@ class _LaunchCommand(_Command):
 
   def Run(self):
     _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
-               self.args.url, self.apk_helper, self.args.wait_for_java_debugger)
+               self.args.url, self.apk_helper, self.args.package_name,
+               self.args.wait_for_java_debugger)
 
 
 class _StopCommand(_Command):
