@@ -221,6 +221,7 @@ test("components_unittests") {
       "//components/subresource_filter/content/renderer:unit_tests",
       "//components/tracing:unit_tests",
       "//components/translate/content/renderer:unit_tests",
+      "//components/ukm/content:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/wallpaper:unit_tests",
       "//components/web_cache/browser:unit_tests",
@@ -429,6 +430,7 @@ if (!is_ios) {
       "offline_pages/content/renovations/test/page_renovator_browsertest.cc",
       "password_manager/content/renderer/credential_manager_client_browsertest.cc",
       "security_state/content/content_utils_browsertest.cc",
+      "ukm/content/source_url_recorder_browsertest.cc",
     ]
 
     data = [
@@ -437,6 +439,7 @@ if (!is_ios) {
       "test/data/",
       "dom_distiller/core/javascript/",
       "security_state/content/testdata/",
+      "//content/test/data/",
       "//third_party/dom_distiller_js/dist/test/data/",
     ]
 
@@ -458,6 +461,8 @@ if (!is_ios) {
       "//components/security_state/core",
       "//components/strings",
       "//components/tracing",
+      "//components/ukm:test_support",
+      "//components/ukm/content",
       "//content/public/browser",
       "//content/shell:content_shell_lib",
       "//content/test:browsertest_support",

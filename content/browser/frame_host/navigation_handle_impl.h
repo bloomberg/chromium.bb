@@ -165,6 +165,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   RestoreType GetRestoreType() override;
   const GURL& GetBaseURLForDataURL() override;
   const GlobalRequestID& GetGlobalRequestID() override;
+  bool IsDownload() override;
 
   // Resume and CancelDeferredNavigation must only be called by the
   // NavigationThrottle that is currently deferring the navigation.
@@ -184,11 +185,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // TODO(arthursonzogni): This value is correct only when PlzNavigate is
   // enabled. Make it work in both modes.
   bool is_form_submission() const { return is_form_submission_; }
-
-  // Whether the navigation request is a download. This is useful when the
-  // navigation hasn't committed yet, in which case HasCommitted() will return
-  // false even if the navigation request is not a download.
-  bool is_download() const { return is_download_; }
 
   // The NavigatorDelegate to notify/query for various navigation events.
   // Normally this is the WebContents, except if this NavigationHandle was

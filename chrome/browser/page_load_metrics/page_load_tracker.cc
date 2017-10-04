@@ -22,7 +22,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 
@@ -336,12 +335,6 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   const std::string& mime_type =
       navigation_handle->GetWebContents()->GetContentsMimeType();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, ShouldObserveMimeType, mime_type);
-
-  // Only record page load UKM data for standard web page mime types, such as
-  // HTML and XHTML.
-  if (PageLoadMetricsObserver::IsStandardWebPageMimeType(mime_type))
-    RecordUkmSourceInfo();
-
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnCommit, navigation_handle,
                              source_id_);
   LogAbortChainHistograms(navigation_handle);
@@ -368,16 +361,6 @@ void PageLoadTracker::FailedProvisionalLoad(
   failed_provisional_load_info_.reset(new FailedProvisionalLoadInfo(
       failed_load_time - navigation_handle->NavigationStart(),
       navigation_handle->GetNetErrorCode()));
-  RecordUkmSourceInfo();
-}
-
-void PageLoadTracker::RecordUkmSourceInfo() {
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
-  if (!ukm_recorder)
-    return;
-
-  ukm_recorder->UpdateSourceURL(source_id_, start_url_);
-  ukm_recorder->UpdateSourceURL(source_id_, url_);
 }
 
 void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {

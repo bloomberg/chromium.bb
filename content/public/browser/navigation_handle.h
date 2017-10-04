@@ -239,6 +239,12 @@ class CONTENT_EXPORT NavigationHandle {
   // NavigationHandle.
   virtual const GlobalRequestID& GetGlobalRequestID() = 0;
 
+  // Returns true if this navigation resulted in a download. Returns false if
+  // this navigation did not result in a download, or if download status is not
+  // yet known for this navigation.  Download status is determined for a
+  // navigation when processing final (post redirect) HTTP response headers.
+  virtual bool IsDownload() = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

@@ -26,6 +26,7 @@
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -52,6 +53,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -340,6 +342,23 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   ~PageLoadMetricsBrowserTest() override {}
 
  protected:
+  void PreRunTestOnMainThread() override {
+    InProcessBrowserTest::PreRunTestOnMainThread();
+
+    // UKM DCHECKs if the active UkmRecorder is changed from one instance
+    // to another, rather than being changed from a nullptr; browser_tests
+    // need to circumvent that to be able to intercept UKM calls with its
+    // own TestUkmRecorder instance rather than the default UkmRecorder.
+    ukm::UkmRecorder::Set(nullptr);
+    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    ukm::kUkmFeature.name);
+  }
+
   // Force navigation to a new page, so the currently tracked page load runs its
   // OnComplete callback. You should prefer to use PageLoadMetricsWaiter, and
   // only use NavigateToUntrackedUrl for cases where the waiter isn't
@@ -366,6 +385,7 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   }
 
   base::HistogramTester histogram_tester_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsBrowserTest);
@@ -379,10 +399,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoNavigation) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  GURL url = embedded_test_server()->GetURL("/title1.html");
+
   auto waiter = CreatePageLoadMetricsWaiter();
   waiter->AddPageExpectation(TimingField::FIRST_PAINT);
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
   waiter->Wait();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
@@ -401,6 +422,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
+
+  const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(url);
+  EXPECT_NE(nullptr, source);
+  EXPECT_TRUE(
+      test_ukm_recorder_->HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmDomContentLoadedName));
+  EXPECT_TRUE(test_ukm_recorder_->HasMetric(
+      *source, internal::kUkmPageLoadEventName, internal::kUkmLoadEventName));
+  EXPECT_TRUE(test_ukm_recorder_->HasMetric(
+      *source, internal::kUkmPageLoadEventName, internal::kUkmFirstPaintName));
+  EXPECT_TRUE(
+      test_ukm_recorder_->HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFirstContentfulPaintName));
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
   // have been recorded.
