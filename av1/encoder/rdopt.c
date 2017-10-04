@@ -9654,7 +9654,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                             &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
 #endif  // CONFIG_CB4X4
 
-    if (y_skip && uv_skip) {
+    if (y_skip && (uv_skip || x->skip_chroma_rd)) {
       rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
                       av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
       rd_cost->dist = dist_y + dist_uv;
