@@ -1977,9 +1977,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #endif
 
   viz::mojom::CompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&params.compositor_frame_sink_info);
+      mojo::MakeRequest(&params.pipes.compositor_frame_sink_info);
   viz::mojom::CompositorFrameSinkClientPtr client;
-  params.client_request = mojo::MakeRequest(&client);
+  params.pipes.client_request = mojo::MakeRequest(&client);
 
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
     scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
@@ -2285,7 +2285,7 @@ void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  TRACE_EVENT0("memory","RenderThreadImpl::OnMemoryPressure");
+  TRACE_EVENT0("memory", "RenderThreadImpl::OnMemoryPressure");
   if (blink_platform_impl_) {
     blink::WebMemoryCoordinator::OnMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
