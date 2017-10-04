@@ -27,16 +27,10 @@ Polymer({
 
   properties: {
     /**
-     * The start knob time as a string to be shown on the start label bubble.
+     * Whether the element is ready and fully rendered.
      * @private
      */
-    startTime_: String,
-
-    /**
-     * The end knob time as a string to be shown on the end label bubble.
-     * @private
-     */
-    endTime_: String,
+    isReady_: Boolean,
 
     /**
      * Whether the window is in RTL locales.
@@ -53,8 +47,8 @@ Polymer({
   },
 
   observers: [
-    'customTimesChanged_(prefs.ash.night_light.custom_start_time.*, ' +
-        'prefs.ash.night_light.custom_end_time.*)',
+    'updateKnobs_(prefs.ash.night_light.custom_start_time.*, ' +
+        'prefs.ash.night_light.custom_end_time.*, isRTL_, isReady_)',
     'hourFormatChanged_(prefs.settings.clock.use_24hour_clock.*)',
   ],
 
@@ -72,11 +66,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.isRTL_ = window.getComputedStyle(this).direction == 'rtl';
-  },
-
-  /** @override */
-  ready: function() {
     // Build the legend markers.
     var markersContainer = this.$.markersContainer;
     var width = markersContainer.offsetWidth;
@@ -86,6 +75,16 @@ Polymer({
       markersContainer.appendChild(marker);
       marker.style.left = (i * 100 / HOURS_PER_DAY) + '%';
     }
+
+    this.isRTL_ = window.getComputedStyle(this).direction == 'rtl';
+
+    this.async(function() {
+      // This is needed to make sure that the positions of the knobs and their
+      // label bubbles are correctly updated when the display settings page is
+      // opened for the first time after login. The page need to be fully
+      // rendered.
+      this.isReady_ = true;
+    });
   },
 
   /**
@@ -96,9 +95,6 @@ Polymer({
   hourFormatChanged_: function() {
     this.shouldUse24Hours_ = /** @type {boolean} */ (
         this.getPref('settings.clock.use_24hour_clock').value);
-
-    // Refresh the slider.
-    this.customTimesChanged_();
   },
 
   /**
@@ -265,28 +261,28 @@ Polymer({
    * 00:00) to its language-sensitive time string representation.
    * @param {number} offsetMinutes The time of day represented as the number of
    * minutes from 00:00.
+   * @param {boolean} shouldUse24Hours Whether to use the 24-hour time format.
    * @return {string}
    * @private
    */
-  offsetMinutesToTimeString_: function(offsetMinutes) {
+  getTimeString_: function(offsetMinutes, shouldUse24Hours) {
     var hour = Math.floor(offsetMinutes / 60);
     var minute = Math.floor(offsetMinutes % 60);
 
-    return this.getLocaleTimeString_(hour, minute, this.shouldUse24Hours_);
+    return this.getLocaleTimeString_(hour, minute, shouldUse24Hours);
   },
 
   /**
-   * Handles changes in the start and end times prefs.
+   * Using the current start and end times prefs, this function updates the
+   * knobs and their label bubbles and refreshes the slider.
    * @private
    */
-  customTimesChanged_: function() {
+  updateKnobs_: function() {
     var startOffsetMinutes = /** @type {number} */ (
         this.getPref('ash.night_light.custom_start_time').value);
-    this.startTime_ = this.offsetMinutesToTimeString_(startOffsetMinutes);
     this.updateKnobLeft_(this.$.startKnob, startOffsetMinutes);
     var endOffsetMinutes = /** @type {number} */ (
         this.getPref('ash.night_light.custom_end_time').value);
-    this.endTime_ = this.offsetMinutesToTimeString_(endOffsetMinutes);
     this.updateKnobLeft_(this.$.endKnob, endOffsetMinutes);
     this.refresh_();
   },
