@@ -125,14 +125,6 @@ void SkiaPaintCanvas::clipPath(const SkPath& path,
   canvas_->clipPath(path, op, do_anti_alias);
 }
 
-bool SkiaPaintCanvas::quickReject(const SkRect& rect) const {
-  return canvas_->quickReject(rect);
-}
-
-bool SkiaPaintCanvas::quickReject(const SkPath& path) const {
-  return canvas_->quickReject(path);
-}
-
 SkRect SkiaPaintCanvas::getLocalClipBounds() const {
   return canvas_->getLocalClipBounds();
 }

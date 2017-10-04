@@ -165,14 +165,6 @@ void RecordPaintCanvas::clipPath(const SkPath& path,
   return;
 }
 
-bool RecordPaintCanvas::quickReject(const SkRect& rect) const {
-  return GetCanvas()->quickReject(rect);
-}
-
-bool RecordPaintCanvas::quickReject(const SkPath& path) const {
-  return GetCanvas()->quickReject(path);
-}
-
 SkRect RecordPaintCanvas::getLocalClipBounds() const {
   return GetCanvas()->getLocalClipBounds();
 }

@@ -86,8 +86,6 @@ class CC_PAINT_EXPORT PaintCanvas {
     clipPath(path, SkClipOp::kIntersect, do_anti_alias);
   }
 
-  virtual bool quickReject(const SkRect& rect) const = 0;
-  virtual bool quickReject(const SkPath& path) const = 0;
   virtual SkRect getLocalClipBounds() const = 0;
   virtual bool getLocalClipBounds(SkRect* bounds) const = 0;
   virtual SkIRect getDeviceClipBounds() const = 0;
