@@ -11,7 +11,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-class GURL;
 class InfoBarService;
 class PermissionPromptAndroid;
 
@@ -46,7 +45,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
   void InfoBarDismissed() override;
-  base::string16 GetLinkText() const override;
 
  private:
   GroupedPermissionInfoBarDelegate(
@@ -57,7 +55,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   Type GetInfoBarType() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
-  GURL GetLinkURL() const override;
 
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;

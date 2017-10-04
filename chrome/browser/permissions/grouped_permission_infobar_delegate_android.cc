@@ -74,10 +74,6 @@ void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
     permission_prompt_->Closing();
 }
 
-base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
-  return permission_prompt_->GetLinkText();
-}
-
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     const base::WeakPtr<PermissionPromptAndroid>& permission_prompt)
     : persist_(true), permission_prompt_(permission_prompt) {
@@ -102,10 +98,6 @@ base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_PERMISSION_ALLOW
                                                          : IDS_PERMISSION_DENY);
-}
-
-GURL GroupedPermissionInfoBarDelegate::GetLinkURL() const {
-  return permission_prompt_->GetLinkURL();
 }
 
 bool GroupedPermissionInfoBarDelegate::EqualsDelegate(

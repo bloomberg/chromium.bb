@@ -138,22 +138,6 @@ base::string16 PermissionPromptAndroid::GetMessageText() const {
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
-base::string16 PermissionPromptAndroid::GetLinkText() const {
-  if (GetContentSettingType(0) ==
-      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
-    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  }
-  return base::string16();
-}
-
-GURL PermissionPromptAndroid::GetLinkURL() const {
-  if (GetContentSettingType(0) ==
-      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
-    return GURL(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
-  }
-  return GURL();
-}
-
 // static
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents,
