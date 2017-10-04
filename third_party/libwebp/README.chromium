@@ -27,3 +27,4 @@ Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   Revert patch d1c359e: fix shared object build with -fvisibility=hidden
   f8fad4fa lossless incremental decoding: fix missing eos_ test
+  7038ca8d demux,StoreFrame: restore hdr size check to min req
