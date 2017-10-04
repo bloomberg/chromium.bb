@@ -328,6 +328,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private void updateLogoTransition() {
         boolean showLogo = mSearchProviderHasLogo && mNewTabShown && mSheet.isSheetOpen()
                 && !mActivity.getTabModelSelector().isIncognitoSelected() && mIsAttachedToWindow
+                && !mSheet.isSmallScreen()
+                && mActivity.getTabModelSelector().getModel(false).getCount() > 0
                 && FeatureUtilities.isChromeHomeDoodleEnabled();
 
         if (!showLogo) {
