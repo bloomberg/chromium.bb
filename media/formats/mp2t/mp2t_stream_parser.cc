@@ -471,8 +471,8 @@ void Mp2tStreamParser::RegisterPes(int pes_pid,
 
   switch (stream_type) {
     case kStreamTypeAVC:
-#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
       is_audio = false;
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
       if (ShouldForceEncryptedParser()) {
         es_parser = CreateEncryptedH264Parser(pes_pid);
         break;
