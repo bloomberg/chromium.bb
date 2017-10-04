@@ -8,8 +8,13 @@
 #include "base/android/scoped_java_ref.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/test_destruction_observable.h"
+#include "media/base/video_codecs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace media {
 
@@ -68,6 +73,22 @@ class MockMediaCodecBridge : public MediaCodecBridge,
   MOCK_METHOD2(SetVideoBitrate, void(int bps, int frame_rate));
   MOCK_METHOD0(RequestKeyFrameSoon, void());
   MOCK_METHOD0(IsAdaptivePlaybackSupported, bool());
+
+  // Set an optional WaitableEvent that we'll signal on destruction.
+  void SetCodecDestroyedEvent(base::WaitableEvent* event);
+
+  static std::unique_ptr<MediaCodecBridge> CreateVideoDecoder(
+      VideoCodec codec,
+      CodecType codec_type,
+      const gfx::Size& size,  // Output frame size.
+      const base::android::JavaRef<jobject>& surface,
+      const base::android::JavaRef<jobject>& media_crypto,
+      const std::vector<uint8_t>& csd0,
+      const std::vector<uint8_t>& csd1,
+      bool allow_adaptive_playback);
+
+ private:
+  base::WaitableEvent* destruction_event_ = nullptr;
 };
 
 }  // namespace media

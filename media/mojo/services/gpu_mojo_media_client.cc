@@ -113,7 +113,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       base::Bind(&GetGpuCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
   return base::MakeUnique<MediaCodecVideoDecoder>(
-      gpu_preferences_, std::move(output_cb), DeviceInfo::GetInstance(),
+      gpu_preferences_, std::move(output_cb),
+      DeviceInfo::GetInstance(gpu_task_runner_),
       AVDACodecAllocator::GetInstance(),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),

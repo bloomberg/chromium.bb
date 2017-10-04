@@ -10,9 +10,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "media/base/surface_manager.h"
+#include "media/gpu/android/fake_codec_allocator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +46,9 @@ class ContentVideoViewOverlayAllocatorTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    allocator_ = new ContentVideoViewOverlayAllocator();
+    codec_allocator_ =
+        new FakeCodecAllocator(base::SequencedTaskRunnerHandle::Get());
+    allocator_ = new ContentVideoViewOverlayAllocator(codec_allocator_);
 
     avda1_ = new MockClient();
     avda2_ = new MockClient();
@@ -59,6 +64,7 @@ class ContentVideoViewOverlayAllocatorTest : public testing::Test {
     delete avda2_;
     delete avda1_;
     delete allocator_;
+    delete codec_allocator_;
   }
 
   void SetSurfaceId(MockClient* client, int32_t surface_id) {
@@ -67,7 +73,9 @@ class ContentVideoViewOverlayAllocatorTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ContentVideoViewOverlayAllocator* allocator_;
+  FakeCodecAllocator* codec_allocator_;
 
   MockClient* avda1_;
   MockClient* avda2_;

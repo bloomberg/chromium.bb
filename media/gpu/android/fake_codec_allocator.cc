@@ -8,19 +8,22 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/avda_codec_allocator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-FakeCodecAllocator::FakeCodecAllocator() = default;
+FakeCodecAllocator::FakeCodecAllocator(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : testing::NiceMock<AVDACodecAllocator>(
+          base::BindRepeating(&MockMediaCodecBridge::CreateVideoDecoder),
+          task_runner) {}
 
 FakeCodecAllocator::~FakeCodecAllocator() = default;
 
-bool FakeCodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
-  return true;
-}
+void FakeCodecAllocator::StartThread(AVDACodecAllocatorClient* client) {}
 
 void FakeCodecAllocator::StopThread(AVDACodecAllocatorClient* client) {}
 

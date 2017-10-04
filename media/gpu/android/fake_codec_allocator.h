@@ -17,10 +17,10 @@ namespace media {
 // and lets you set expecations on the "Mock*" methods.
 class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
  public:
-  FakeCodecAllocator();
+  FakeCodecAllocator(scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~FakeCodecAllocator() override;
 
-  bool StartThread(AVDACodecAllocatorClient* client) override;
+  void StartThread(AVDACodecAllocatorClient* client) override;
   void StopThread(AVDACodecAllocatorClient* client) override;
 
   // These are called with some parameters of the codec config by our

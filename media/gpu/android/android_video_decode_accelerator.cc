@@ -366,10 +366,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     defer_surface_creation_ = true;
   }
 
-  if (!codec_allocator_->StartThread(this)) {
-    LOG(ERROR) << "Unable to start thread";
-    return false;
-  }
+  codec_allocator_->StartThread(this);
 
   // If we're supposed to use overlays all the time, then they should always
   // be marked as required.

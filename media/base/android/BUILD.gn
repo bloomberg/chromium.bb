@@ -141,7 +141,6 @@ if (is_android) {
   java_cpp_enum("java_enums") {
     sources = [
       "media_codec_bridge.h",
-      "media_codec_bridge_impl.h",
       "media_codec_direction.h",
     ]
   }

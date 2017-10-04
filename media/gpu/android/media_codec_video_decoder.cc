@@ -183,10 +183,7 @@ void MediaCodecVideoDecoder::OnKeyAdded() {
 void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
   lazy_init_pending_ = false;
-  if (!codec_allocator_->StartThread(this)) {
-    EnterTerminalState(State::kError);
-    return;
-  }
+  codec_allocator_->StartThread(this);
   video_frame_factory_->Initialize(
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
                  weak_factory_.GetWeakPtr()));
