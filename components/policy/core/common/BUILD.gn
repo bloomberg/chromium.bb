@@ -155,6 +155,7 @@ source_set("internal") {
       "shlwapi.lib",
       "userenv.lib",
       "ntdsapi.lib",
+      "netapi32.lib",
     ]
   }
 

@@ -18191,6 +18191,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="EnterpriseCheck.IsDomainJoined" enum="BooleanEnabled">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    Whether the machine is joined to an AD domain. This check is performed once
+    at start-up on Windows.
+  </summary>
+</histogram>
+
 <histogram name="EnterpriseCheck.IsEnterpriseUser" enum="BooleanEnabled">
   <owner>rogerta@chromium.org</owner>
   <summary>
@@ -18205,6 +18213,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether the machine is managed via MDM. This check is performed once at
     start-up on Windows.
+  </summary>
+</histogram>
+
+<histogram name="EnterpriseCheck.NetGetJoinInformationAddress"
+    enum="BooleanEnabled">
+  <owner>rogerta@chromium.org</owner>
+  <summary>
+    Whether we could obtain the address of the NetGetJoinInformation function.
+    This check is performed once at start-up on Windows.
   </summary>
 </histogram>
 
