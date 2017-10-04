@@ -323,7 +323,7 @@ const base::Feature kOfflinePageDownloadSuggestionsFeature{
 #if !defined(OS_ANDROID)
 // Enables or disabled the OneGoogleBar on the local NTP.
 const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Adds the base language code to the Language-Accept headers if at least one
