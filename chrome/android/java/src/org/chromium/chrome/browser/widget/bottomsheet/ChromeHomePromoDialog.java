@@ -15,6 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.PromoDialog;
 
@@ -40,7 +41,9 @@ public class ChromeHomePromoDialog extends PromoDialog {
     protected DialogParams getDialogParams() {
         PromoDialog.DialogParams params = new PromoDialog.DialogParams();
         params.headerStringResource = R.string.chrome_home_promo_dialog_title;
-        params.subheaderStringResource = R.string.chrome_home_promo_dialog_message;
+        params.subheaderStringResource = AccessibilityUtil.isAccessibilityEnabled()
+                ? R.string.chrome_home_promo_dialog_message_accessibility
+                : R.string.chrome_home_promo_dialog_message;
         params.primaryButtonStringResource = R.string.ok;
         if (SysUtils.isLowEndDevice()) {
             params.drawableResource = R.drawable.chrome_home_promo_static;
