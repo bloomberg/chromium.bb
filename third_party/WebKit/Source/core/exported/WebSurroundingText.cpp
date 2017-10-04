@@ -32,7 +32,6 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SurroundingText.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
