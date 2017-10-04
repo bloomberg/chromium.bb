@@ -70,9 +70,8 @@ Bug(none) external/wpt/service-workers/service-worker/fetch-canvas-tainting-cach
 Bug(none) external/wpt/service-workers/service-worker/fetch-canvas-tainting.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Crash ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Crash ]
+Bug(none) external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Pass Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-argument.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-response-body-with-invalid-chunk.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event.https.html [ Timeout ]
@@ -93,7 +92,7 @@ Bug(none) external/wpt/service-workers/service-worker/invalid-blobtype.https.htm
 Bug(none) external/wpt/service-workers/service-worker/invalid-header.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/iso-latin1-header.https.html [ Crash ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/opaque-response-preloaded.https.html [ Failure ]
+Bug(none) external/wpt/service-workers/service-worker/opaque-response-preloaded.https.html [ Pass Crash ]
 Bug(none) external/wpt/service-workers/service-worker/redirected-response.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/register-link-header.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/registration-security-error.https.html [ Failure ]
@@ -110,6 +109,10 @@ Bug(none) external/wpt/service-workers/service-worker/navigation-preload/redirec
 # NetworkService won't support Foreign Fetch.
 Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Skip ]
 Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Skip ]
+
+# Passes on NetworkService and fails on non-NetworkService because
+# NetworkService isn't affected by https://crbug.com/595993.
+Bug(none) external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Pass ]
 
 Bug(none) external/wpt/streams/byte-length-queuing-strategy.serviceworker.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/streams/count-queuing-strategy.serviceworker.https.html [ Crash Failure Timeout ]
