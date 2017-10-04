@@ -102,7 +102,6 @@
 #include "core/probe/CoreProbes.h"
 #include "core/resize_observer/ResizeObserverController.h"
 #include "core/style/ComputedStyle.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Histogram.h"
 #include "platform/Language.h"
@@ -1914,11 +1913,15 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
 
   if (frame_->GetDocument()->IsSVGDocument()) {
     if (SVGSVGElement* svg =
-            SVGDocumentExtensions::rootElement(*frame_->GetDocument())) {
+            ToSVGSVGElementOrNull(frame_->GetDocument()->documentElement())) {
       svg->SetupInitialView(name, anchor_node);
       if (!anchor_node)
         return true;
     }
+    // If this is not the top-level frame, then don't scroll to the
+    // anchor position.
+    if (!frame_->IsMainFrame())
+      behavior = kUrlFragmentDontScroll;
   }
 
   // Implement the rule that "" and "top" both mean top of page as in other
