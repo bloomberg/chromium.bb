@@ -301,6 +301,7 @@ InspectorLayerTreeAgent::BuildLayerTree() {
   BuildLayerIdToNodeIdMap(compositor->RootLayer(), layer_id_to_node_id_map);
   int scrolling_layer_id = inspected_frames_->Root()
                                ->View()
+                               ->LayoutViewportScrollableArea()
                                ->LayerForScrolling()
                                ->PlatformLayer()
                                ->Id();
