@@ -7,83 +7,82 @@
 #include "ipc/ipc_message_utils.h"
 #include "url/mojo/url_gurl_struct_traits.h"
 
-using namespace translate;
-
 namespace mojo {
 
-mojom::TranslateError
-EnumTraits<mojom::TranslateError, TranslateErrors::Type>::ToMojom(
-    TranslateErrors::Type input) {
+translate::mojom::TranslateError
+EnumTraits<translate::mojom::TranslateError, translate::TranslateErrors::Type>::
+    ToMojom(translate::TranslateErrors::Type input) {
   switch (input) {
-    case TranslateErrors::Type::NONE:
-      return mojom::TranslateError::NONE;
-    case TranslateErrors::Type::NETWORK:
-      return mojom::TranslateError::NETWORK;
-    case TranslateErrors::Type::INITIALIZATION_ERROR:
-      return mojom::TranslateError::INITIALIZATION_ERROR;
-    case TranslateErrors::Type::UNKNOWN_LANGUAGE:
-      return mojom::TranslateError::UNKNOWN_LANGUAGE;
-    case TranslateErrors::Type::UNSUPPORTED_LANGUAGE:
-      return mojom::TranslateError::UNSUPPORTED_LANGUAGE;
-    case TranslateErrors::Type::IDENTICAL_LANGUAGES:
-      return mojom::TranslateError::IDENTICAL_LANGUAGES;
-    case TranslateErrors::Type::TRANSLATION_ERROR:
-      return mojom::TranslateError::TRANSLATION_ERROR;
-    case TranslateErrors::Type::TRANSLATION_TIMEOUT:
-      return mojom::TranslateError::TRANSLATION_TIMEOUT;
-    case TranslateErrors::Type::UNEXPECTED_SCRIPT_ERROR:
-      return mojom::TranslateError::UNEXPECTED_SCRIPT_ERROR;
-    case TranslateErrors::Type::BAD_ORIGIN:
-      return mojom::TranslateError::BAD_ORIGIN;
-    case TranslateErrors::Type::SCRIPT_LOAD_ERROR:
-      return mojom::TranslateError::SCRIPT_LOAD_ERROR;
-    case TranslateErrors::Type::TRANSLATE_ERROR_MAX:
-      return mojom::TranslateError::TRANSLATE_ERROR_MAX;
+    case translate::TranslateErrors::Type::NONE:
+      return translate::mojom::TranslateError::NONE;
+    case translate::TranslateErrors::Type::NETWORK:
+      return translate::mojom::TranslateError::NETWORK;
+    case translate::TranslateErrors::Type::INITIALIZATION_ERROR:
+      return translate::mojom::TranslateError::INITIALIZATION_ERROR;
+    case translate::TranslateErrors::Type::UNKNOWN_LANGUAGE:
+      return translate::mojom::TranslateError::UNKNOWN_LANGUAGE;
+    case translate::TranslateErrors::Type::UNSUPPORTED_LANGUAGE:
+      return translate::mojom::TranslateError::UNSUPPORTED_LANGUAGE;
+    case translate::TranslateErrors::Type::IDENTICAL_LANGUAGES:
+      return translate::mojom::TranslateError::IDENTICAL_LANGUAGES;
+    case translate::TranslateErrors::Type::TRANSLATION_ERROR:
+      return translate::mojom::TranslateError::TRANSLATION_ERROR;
+    case translate::TranslateErrors::Type::TRANSLATION_TIMEOUT:
+      return translate::mojom::TranslateError::TRANSLATION_TIMEOUT;
+    case translate::TranslateErrors::Type::UNEXPECTED_SCRIPT_ERROR:
+      return translate::mojom::TranslateError::UNEXPECTED_SCRIPT_ERROR;
+    case translate::TranslateErrors::Type::BAD_ORIGIN:
+      return translate::mojom::TranslateError::BAD_ORIGIN;
+    case translate::TranslateErrors::Type::SCRIPT_LOAD_ERROR:
+      return translate::mojom::TranslateError::SCRIPT_LOAD_ERROR;
+    case translate::TranslateErrors::Type::TRANSLATE_ERROR_MAX:
+      return translate::mojom::TranslateError::TRANSLATE_ERROR_MAX;
   }
 
   NOTREACHED();
-  return mojom::TranslateError::NONE;
+  return translate::mojom::TranslateError::NONE;
 }
 
-bool EnumTraits<mojom::TranslateError, TranslateErrors::Type>::FromMojom(
-    mojom::TranslateError input,
-    TranslateErrors::Type* output) {
+bool EnumTraits<translate::mojom::TranslateError,
+                translate::TranslateErrors::Type>::
+    FromMojom(translate::mojom::TranslateError input,
+              translate::TranslateErrors::Type* output) {
   switch (input) {
-    case mojom::TranslateError::NONE:
-      *output = TranslateErrors::Type::NONE;
+    case translate::mojom::TranslateError::NONE:
+      *output = translate::TranslateErrors::Type::NONE;
       return true;
-    case mojom::TranslateError::NETWORK:
-      *output = TranslateErrors::Type::NETWORK;
+    case translate::mojom::TranslateError::NETWORK:
+      *output = translate::TranslateErrors::Type::NETWORK;
       return true;
-    case mojom::TranslateError::INITIALIZATION_ERROR:
-      *output = TranslateErrors::Type::INITIALIZATION_ERROR;
+    case translate::mojom::TranslateError::INITIALIZATION_ERROR:
+      *output = translate::TranslateErrors::Type::INITIALIZATION_ERROR;
       return true;
-    case mojom::TranslateError::UNKNOWN_LANGUAGE:
-      *output = TranslateErrors::Type::UNKNOWN_LANGUAGE;
+    case translate::mojom::TranslateError::UNKNOWN_LANGUAGE:
+      *output = translate::TranslateErrors::Type::UNKNOWN_LANGUAGE;
       return true;
-    case mojom::TranslateError::UNSUPPORTED_LANGUAGE:
-      *output = TranslateErrors::Type::UNSUPPORTED_LANGUAGE;
+    case translate::mojom::TranslateError::UNSUPPORTED_LANGUAGE:
+      *output = translate::TranslateErrors::Type::UNSUPPORTED_LANGUAGE;
       return true;
-    case mojom::TranslateError::IDENTICAL_LANGUAGES:
-      *output = TranslateErrors::Type::IDENTICAL_LANGUAGES;
+    case translate::mojom::TranslateError::IDENTICAL_LANGUAGES:
+      *output = translate::TranslateErrors::Type::IDENTICAL_LANGUAGES;
       return true;
-    case mojom::TranslateError::TRANSLATION_ERROR:
-      *output = TranslateErrors::Type::TRANSLATION_ERROR;
+    case translate::mojom::TranslateError::TRANSLATION_ERROR:
+      *output = translate::TranslateErrors::Type::TRANSLATION_ERROR;
       return true;
-    case mojom::TranslateError::TRANSLATION_TIMEOUT:
-      *output = TranslateErrors::Type::TRANSLATION_TIMEOUT;
+    case translate::mojom::TranslateError::TRANSLATION_TIMEOUT:
+      *output = translate::TranslateErrors::Type::TRANSLATION_TIMEOUT;
       return true;
-    case mojom::TranslateError::UNEXPECTED_SCRIPT_ERROR:
-      *output = TranslateErrors::Type::UNEXPECTED_SCRIPT_ERROR;
+    case translate::mojom::TranslateError::UNEXPECTED_SCRIPT_ERROR:
+      *output = translate::TranslateErrors::Type::UNEXPECTED_SCRIPT_ERROR;
       return true;
-    case mojom::TranslateError::BAD_ORIGIN:
-      *output = TranslateErrors::Type::BAD_ORIGIN;
+    case translate::mojom::TranslateError::BAD_ORIGIN:
+      *output = translate::TranslateErrors::Type::BAD_ORIGIN;
       return true;
-    case mojom::TranslateError::SCRIPT_LOAD_ERROR:
-      *output = TranslateErrors::Type::SCRIPT_LOAD_ERROR;
+    case translate::mojom::TranslateError::SCRIPT_LOAD_ERROR:
+      *output = translate::TranslateErrors::Type::SCRIPT_LOAD_ERROR;
       return true;
-    case mojom::TranslateError::TRANSLATE_ERROR_MAX:
-      *output = TranslateErrors::Type::TRANSLATE_ERROR_MAX;
+    case translate::mojom::TranslateError::TRANSLATE_ERROR_MAX:
+      *output = translate::TranslateErrors::Type::TRANSLATE_ERROR_MAX;
       return true;
   }
 
@@ -92,10 +91,10 @@ bool EnumTraits<mojom::TranslateError, TranslateErrors::Type>::FromMojom(
 }
 
 // static
-bool StructTraits<mojom::LanguageDetectionDetailsDataView,
-                  LanguageDetectionDetails>::
-    Read(mojom::LanguageDetectionDetailsDataView data,
-         LanguageDetectionDetails* out) {
+bool StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
+                  translate::LanguageDetectionDetails>::
+    Read(translate::mojom::LanguageDetectionDetailsDataView data,
+         translate::LanguageDetectionDetails* out) {
   if (!data.ReadTime(&out->time))
     return false;
   if (!data.ReadUrl(&out->url))
