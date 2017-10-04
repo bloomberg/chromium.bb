@@ -349,7 +349,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   // filled by the |color|.
   // Otherwise, it uses alpha channel of the rasterized |small_image| for
   // masking.
-  gfx::Image GenerateMaskedSmallIcon(SkColor color) const;
+  gfx::Image GenerateMaskedSmallIcon(int dip_size, SkColor color) const;
 
   // Buttons, with icons fetched asynchronously.
   const std::vector<ButtonInfo>& buttons() const {
