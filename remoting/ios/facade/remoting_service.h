@@ -13,7 +13,7 @@
 @protocol RemotingAuthentication;
 
 typedef NS_ENUM(NSInteger, HostListState) {
-  // Nobody has requested a host list fetch.
+  // Nobody has requested a host list fetch since login or last failure.
   HostListStateNotFetched,
 
   // The host list is currently being fetched.
@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, HostListState) {
 };
 
 typedef NS_ENUM(NSInteger, HostListFetchFailureReason) {
+  HostListFetchFailureReasonNoFailure,
   HostListFetchFailureReasonNetworkError,
   HostListFetchFailureReasonAuthError,
   HostListFetchFailureReasonUnknown,
@@ -63,6 +64,12 @@ extern NSString* const kUserInfo;
 // The Chromoting Client Runtime, this holds the threads and other shared
 // resources used by the Chromoting clients
 @property(nonatomic, readonly) remoting::ChromotingClientRuntime* runtime;
+
+// Returns the last failure reason when fetching the host list. Returns
+// HostListFetchFailureReasonNoFailure when the host list has never been fetched
+// or the last fetch has succeeded.
+@property(nonatomic, readonly)
+    HostListFetchFailureReason lastFetchFailureReason;
 
 // This must be set immediately after the authentication object is created. It
 // can only be set once.

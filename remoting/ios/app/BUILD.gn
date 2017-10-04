@@ -36,6 +36,8 @@ source_set("common_source_set") {
     "host_collection_view_cell.mm",
     "host_collection_view_controller.h",
     "host_collection_view_controller.mm",
+    "host_fetching_error_view_controller.h",
+    "host_fetching_error_view_controller.mm",
     "host_fetching_view_controller.h",
     "host_fetching_view_controller.mm",
     "host_setup_footer_view.h",

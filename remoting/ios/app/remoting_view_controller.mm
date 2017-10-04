@@ -21,6 +21,7 @@
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/client_connection_view_controller.h"
 #import "remoting/ios/app/host_collection_view_controller.h"
+#import "remoting/ios/app/host_fetching_error_view_controller.h"
 #import "remoting/ios/app/host_fetching_view_controller.h"
 #import "remoting/ios/app/host_setup_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
@@ -88,6 +89,7 @@ ConnectionType GetConnectionType() {
   MDCAppBar* _appBar;
   HostCollectionViewController* _collectionViewController;
   HostFetchingViewController* _fetchingViewController;
+  HostFetchingErrorViewController* _fetchingErrorViewController;
   HostSetupViewController* _setupViewController;
   RemotingService* _remotingService;
 
@@ -108,12 +110,21 @@ ConnectionType GetConnectionType() {
   if (self) {
     _remotingService = RemotingService.instance;
 
+    __weak RemotingViewController* weakSelf = self;
+    RemotingRefreshAction refreshAction = ^{
+      [weakSelf didSelectRefresh];
+    };
+
     _collectionViewController = [[HostCollectionViewController alloc]
         initWithCollectionViewLayout:layout];
     _collectionViewController.delegate = self;
     _collectionViewController.scrollViewDelegate = self.headerViewController;
 
     _fetchingViewController = [[HostFetchingViewController alloc] init];
+
+    _fetchingErrorViewController =
+        [[HostFetchingErrorViewController alloc] init];
+    _fetchingErrorViewController.onRetryCallback = refreshAction;
 
     _setupViewController = [[HostSetupViewController alloc] init];
     _setupViewController.scrollViewDelegate = self.headerViewController;
@@ -151,10 +162,6 @@ ConnectionType GetConnectionType() {
           [(MDCShadowLayer*)layer setElevation:elevation];
         }];
 
-    __weak RemotingViewController* weakSelf = self;
-    RemotingRefreshAction refreshAction = ^{
-      [weakSelf didSelectRefresh];
-    };
     _refreshControls = @[
       [[RefreshControlProvider instance]
           createForScrollView:_collectionViewController.collectionView
@@ -199,7 +206,7 @@ ConnectionType GetConnectionType() {
 
   [NSNotificationCenter.defaultCenter
       addObserver:self
-         selector:@selector(hostListFetchDidFailedNotification:)
+         selector:@selector(hostListFetchDidFailNotification:)
              name:kHostListFetchDidFail
            object:nil];
 }
@@ -222,25 +229,10 @@ ConnectionType GetConnectionType() {
   [self refreshContent];
 }
 
-- (void)hostListFetchDidFailedNotification:(NSNotification*)notification {
+- (void)hostListFetchDidFailNotification:(NSNotification*)notification {
   HostListFetchFailureReason reason = (HostListFetchFailureReason)
       [notification.userInfo[kHostListFetchFailureReasonKey] integerValue];
-  int messageId;
-  switch (reason) {
-    case HostListFetchFailureReasonNetworkError:
-      messageId = IDS_ERROR_NETWORK_ERROR;
-      break;
-    case HostListFetchFailureReasonAuthError:
-      messageId = IDS_ERROR_OAUTH_TOKEN_INVALID;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
-  [MDCSnackbarManager
-      showMessage:[MDCSnackbarMessage
-                      messageWithText:l10n_util::GetNSString(messageId)]];
-  [self stopAllRefreshControls];
+  [self handleHostListFetchFailure:reason];
 }
 
 #pragma mark - HostCollectionViewControllerDelegate
@@ -351,7 +343,14 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   }
 
   if (_remotingService.hostListState == HostListStateNotFetched) {
-    self.contentViewController = nil;
+    if (_remotingService.lastFetchFailureReason ==
+        HostListFetchFailureReasonNoFailure) {
+      self.contentViewController = nil;
+    } else {
+      // hostListFetchDidFailNotification might miss the first failure happened
+      // before the notification is registered. This logic covers that.
+      [self handleHostListFetchFailure:_remotingService.lastFetchFailureReason];
+    }
     return;
   }
 
@@ -379,6 +378,42 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
         .contentInsetAdjustmentBehavior =
         UIScrollViewContentInsetAdjustmentNever;
   }
+}
+
+- (void)handleHostListFetchFailure:(HostListFetchFailureReason)reason {
+  int messageId;
+  switch (reason) {
+    case HostListFetchFailureReasonNetworkError:
+      messageId = IDS_ERROR_NETWORK_ERROR;
+      break;
+    case HostListFetchFailureReasonAuthError:
+      messageId = IDS_ERROR_OAUTH_TOKEN_INVALID;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  NSString* errorText = l10n_util::GetNSString(messageId);
+  if ([self isAnyRefreshControlRefreshing]) {
+    // User could just try pull-to-refresh again to refresh. We just need to
+    // show the error as a toast.
+    [MDCSnackbarManager
+        showMessage:[MDCSnackbarMessage messageWithText:errorText]];
+    [self stopAllRefreshControls];
+    return;
+  }
+
+  // Pull-to-refresh is not available. We need to show a dedicated view to allow
+  // user to retry.
+
+  // Dismiss snackbars and hide the SSO menu so that the accessibility focus
+  // can shift into the label.
+  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
+  [AppDelegate.instance hideMenuAnimated:YES];
+
+  _fetchingErrorViewController.label.text = errorText;
+  remoting::SetAccessibilityFocusElement(_fetchingErrorViewController.label);
+  self.contentViewController = _fetchingErrorViewController;
 }
 
 - (BOOL)isAnyRefreshControlRefreshing {
