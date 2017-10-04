@@ -31,6 +31,7 @@ extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 
 #if CONFIG_ADAPT_SCAN
 #define USE_2X2_PROB 1
+#define USE_TOPOLOGICAL_SORT 0
 void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
                                   TX_SIZE tx_size, TX_TYPE tx_type,
                                   const tran_low_t *dqcoeffs, int max_scan);
@@ -40,6 +41,7 @@ void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
 // will be scanned first
 void av1_augment_prob(TX_SIZE tx_size, TX_TYPE tx_type, uint32_t *prob);
 
+#if USE_TOPOLOGICAL_SORT
 // apply quick sort on nonzero probabilities to obtain a sort order
 void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
                            const uint32_t *non_zero_prob, int16_t *sort_order);
@@ -49,6 +51,11 @@ void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
 // scanned before the to-be-scanned coefficient.
 void av1_update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
                            int16_t *iscan);
+#else   // USE_TOPOLOGICAL_SORT
+void av1_update_scan_order(TX_SIZE tx_size, TX_TYPE tx_type,
+                           uint32_t *non_zero_prob, int16_t *scan,
+                           int16_t *iscan);
+#endif  // USE_TOPOLOGICAL_SORT
 
 // For each coeff_idx in scan[], update its above and left neighbors in
 // neighbors[] accordingly.

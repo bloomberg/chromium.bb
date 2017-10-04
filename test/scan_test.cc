@@ -43,6 +43,7 @@ TEST(ScanTest, av1_augment_prob) {
   }
 }
 
+#if USE_TOPOLOGICAL_SORT
 TEST(ScanTest, av1_update_sort_order) {
   const TX_SIZE tx_size = TX_4X4;
   const TX_TYPE tx_type = DCT_DCT;
@@ -54,7 +55,9 @@ TEST(ScanTest, av1_update_sort_order) {
   av1_update_sort_order(tx_size, tx_type, prob, sort_order);
   for (int i = 0; i < 16; ++i) EXPECT_EQ(ref_sort_order[i], sort_order[i]);
 }
+#endif
 
+#if USE_TOPOLOGICAL_SORT
 TEST(ScanTest, av1_update_scan_order) {
   TX_SIZE tx_size = TX_4X4;
   const TX_TYPE tx_type = DCT_DCT;
@@ -74,6 +77,7 @@ TEST(ScanTest, av1_update_scan_order) {
     EXPECT_EQ(i, scan[ref_iscan[i]]);
   }
 }
+#endif
 
 TEST(ScanTest, av1_update_neighbors) {
   TX_SIZE tx_size = TX_4X4;

@@ -8267,23 +8267,6 @@ void av1_augment_prob(TX_SIZE tx_size, TX_TYPE tx_type, uint32_t *prob) {
   }
 }
 
-// topological sort
-static void dfs_scan(int tx1d_size, int *scan_idx, int coeff_idx, int16_t *scan,
-                     int16_t *iscan) {
-  const int r = coeff_idx / tx1d_size;
-  const int c = coeff_idx % tx1d_size;
-
-  if (iscan[coeff_idx] != -1) return;
-
-  if (r > 0) dfs_scan(tx1d_size, scan_idx, coeff_idx - tx1d_size, scan, iscan);
-
-  if (c > 0) dfs_scan(tx1d_size, scan_idx, coeff_idx - 1, scan, iscan);
-
-  scan[*scan_idx] = coeff_idx;
-  iscan[coeff_idx] = *scan_idx;
-  ++(*scan_idx);
-}
-
 void av1_update_neighbors(TX_SIZE tx_size, const int16_t *scan,
                           const int16_t *iscan, int16_t *neighbors) {
   const int tx1d_wide = tx_size_wide[tx_size];
@@ -8393,6 +8376,7 @@ static void limit_nb_scan_distance(TX_SIZE tx_size, int16_t *scan,
   assert(new_si == tx2d_size);
 }
 
+#if USE_TOPOLOGICAL_SORT
 void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
                            const uint32_t *non_zero_prob, int16_t *sort_order) {
   const SCAN_ORDER *sc = get_default_scan(tx_size, tx_type, 0);
@@ -8409,6 +8393,23 @@ void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
     const int coeff_idx = sc->scan[default_scan_idx];
     sort_order[sort_idx] = coeff_idx;
   }
+}
+
+// topological sort
+static void dfs_scan(int tx1d_size, int *scan_idx, int coeff_idx, int16_t *scan,
+                     int16_t *iscan) {
+  const int r = coeff_idx / tx1d_size;
+  const int c = coeff_idx % tx1d_size;
+
+  if (iscan[coeff_idx] != -1) return;
+
+  if (r > 0) dfs_scan(tx1d_size, scan_idx, coeff_idx - tx1d_size, scan, iscan);
+
+  if (c > 0) dfs_scan(tx1d_size, scan_idx, coeff_idx - 1, scan, iscan);
+
+  scan[*scan_idx] = coeff_idx;
+  iscan[coeff_idx] = *scan_idx;
+  ++(*scan_idx);
 }
 
 void av1_update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
@@ -8429,10 +8430,48 @@ void av1_update_scan_order(TX_SIZE tx_size, int16_t *sort_order, int16_t *scan,
     dfs_scan(tx1d_size, &scan_idx, coeff_idx, scan, iscan);
   }
 }
+#else
+
+static void filter_prob(TX_SIZE tx_size, uint32_t *prob) {
+  const int tx1d_wide = tx_size_wide[tx_size];
+  const int tx1d_high = tx_size_high[tx_size];
+  for (int r = tx1d_high - 1; r >= 0; --r) {
+    for (int c = tx1d_wide - 1; c >= 0; --c) {
+      int idx = r * tx1d_wide + c;
+      uint32_t v = prob[idx];
+      if (r > 0 && prob[idx - tx1d_wide] < v) prob[idx - tx1d_wide] = v;
+      if (c > 0 && prob[idx - 1] < v) prob[idx - 1] = v;
+    }
+  }
+}
+
+void av1_update_scan_order(TX_SIZE tx_size, TX_TYPE tx_type,
+                           uint32_t *non_zero_prob, int16_t *scan,
+                           int16_t *iscan) {
+  const SCAN_ORDER *sc = get_default_scan(tx_size, tx_type, 0);
+  uint32_t temp[COEFF_IDX_SIZE];
+  const int tx2d_size = tx_size_2d[tx_size];
+  int scan_idx;
+  assert(tx2d_size <= COEFF_IDX_SIZE);
+  memcpy(temp, non_zero_prob, tx2d_size * sizeof(*non_zero_prob));
+  filter_prob(tx_size, temp);
+  av1_augment_prob(tx_size, tx_type, temp);
+  qsort(temp, tx2d_size, sizeof(*temp), cmp_prob);
+  for (scan_idx = 0; scan_idx < tx2d_size; ++scan_idx) {
+    const int default_scan_idx =
+        (temp[scan_idx] & COEFF_IDX_MASK) ^ COEFF_IDX_MASK;
+    const int coeff_idx = sc->scan[default_scan_idx];
+    scan[scan_idx] = coeff_idx;
+    iscan[coeff_idx] = scan_idx;
+  }
+}
+#endif
 
 static void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
                                      TX_TYPE tx_type, int use_curr_frame) {
+#if USE_TOPOLOGICAL_SORT
   int16_t sort_order[COEFF_IDX_SIZE];
+#endif
   uint32_t *non_zero_prob;
   if (use_curr_frame)
     non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
@@ -8442,8 +8481,12 @@ static void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
   int16_t *iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
   int16_t *nb = get_adapt_nb(cm->fc, tx_size, tx_type);
   assert(tx_size_2d[tx_size] <= COEFF_IDX_SIZE);
+#if USE_TOPOLOGICAL_SORT
   av1_update_sort_order(tx_size, tx_type, non_zero_prob, sort_order);
   av1_update_scan_order(tx_size, sort_order, scan, iscan);
+#else
+  av1_update_scan_order(tx_size, tx_type, non_zero_prob, scan, iscan);
+#endif
   limit_nb_scan_distance(tx_size, scan, iscan);
   av1_update_neighbors(tx_size, scan, iscan, nb);
 }
