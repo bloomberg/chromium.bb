@@ -32,7 +32,6 @@ import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
-import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -68,7 +67,6 @@ public class AwShellActivity extends Activity {
         AwShellResourceProvider.registerResources(this);
 
         ContentApplication.initCommandLine(this);
-        waitForDebuggerIfNeeded();
 
         ContextUtils.initApplicationContext(getApplicationContext());
         AwBrowserProcess.loadLibrary();
@@ -268,13 +266,5 @@ public class AwShellActivity extends Activity {
         }
 
         return super.onKeyUp(keyCode, event);
-    }
-
-    private void waitForDebuggerIfNeeded() {
-        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
-            Log.e(TAG, "Waiting for Java debugger to connect...");
-            android.os.Debug.waitForDebugger();
-            Log.e(TAG, "Java debugger connected. Resuming execution.");
-        }
     }
 }
