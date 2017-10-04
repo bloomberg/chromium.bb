@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -35,7 +37,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class ListValue;
 }
 
 namespace content {
@@ -437,12 +438,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Invoked when the contents auto-resized and the container should match it.
   virtual void ResizeDueToAutoResize(WebContents* web_contents,
                                      const gfx::Size& new_size) {}
-
-  // Notification message from HTML UI.
-  virtual void WebUISend(WebContents* web_contents,
-                         const GURL& source_url,
-                         const std::string& name,
-                         const base::ListValue& args) {}
 
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting tab
