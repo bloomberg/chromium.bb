@@ -46,6 +46,7 @@
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -180,6 +181,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/mojo/services/video_decode_perf_history.h"
@@ -1675,13 +1677,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetInstance()->audio_manager();
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-  // The AudioInputRendererHost needs to be available for
-  // lookup, so it's stashed in a member variable.
-  audio_input_renderer_host_ = new AudioInputRendererHost(
+  AddFilter(new AudioInputRendererHost(
       GetID(), audio_manager, media_stream_manager,
       AudioMirroringManager::GetInstance(),
-      BrowserMainLoop::GetInstance()->user_input_monitor());
-  AddFilter(audio_input_renderer_host_.get());
+      BrowserMainLoop::GetInstance()->user_input_monitor()));
   if (!RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
     AddFilter(base::MakeRefCounted<AudioRendererHost>(
                   GetID(), audio_manager,
@@ -2914,14 +2913,6 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif
-
-  // Inform AudioInputRendererHost about the new render process PID.
-  // AudioInputRendererHost is reference counted, so its lifetime is
-  // guaranteed during the lifetime of the closure.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&AudioInputRendererHost::set_renderer_pid,
-                     audio_input_renderer_host_, peer_pid));
 }
 
 void RenderProcessHostImpl::OnChannelError() {
@@ -3131,16 +3122,6 @@ void RenderProcessHostImpl::EnableAudioDebugRecordings(
        it != aec_dump_consumers_.end(); ++it) {
     EnableAecDumpForId(file_with_extensions, *it);
   }
-
-  // Enable mic input recording. AudioInputRendererHost is reference counted, so
-  // its lifetime is guaranteed during the lifetime of the closure.
-  if (audio_input_renderer_host_) {
-    // Not null if RenderProcessHostImpl::Init has already been called.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&AudioInputRendererHost::EnableDebugRecording,
-                       audio_input_renderer_host_, file));
-  }
 }
 
 void RenderProcessHostImpl::DisableAudioDebugRecordings() {
@@ -3153,16 +3134,6 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
       FROM_HERE, base::BindOnce(&base::DoNothing),
       base::BindOnce(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                      weak_factory_.GetWeakPtr()));
-
-  // AudioInputRendererHost is reference counted, so it's lifetime is
-  // guaranteed during the lifetime of the closure.
-  if (audio_input_renderer_host_) {
-    // Not null if RenderProcessHostImpl::Init has already been called.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&AudioInputRendererHost::DisableDebugRecording,
-                       audio_input_renderer_host_));
-  }
 }
 
 bool RenderProcessHostImpl::StartWebRTCEventLog(
