@@ -50,7 +50,7 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
     self.DisableStory('multitab:misc:typical24',
                       [expectations.ALL_MAC], 'crbug.com/742475')
     self.DisableStory('browse_accessibility:tools:gmail_compose',
-                      [expectations.ALL], 'crbug.com/771332')
+                      [expectations.ALL], 'crbug.com/769809')
 
 
 class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
