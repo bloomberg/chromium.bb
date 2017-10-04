@@ -158,11 +158,13 @@ template("chrome_extra_paks") {
     }
     if (enable_extensions) {
       sources += [
+        "$root_gen_dir/chrome/extensions_resources.pak",
         "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
         "$root_gen_dir/extensions/extensions_renderer_resources.pak",
         "$root_gen_dir/extensions/extensions_resources.pak",
       ]
       deps += [
+        "//chrome/browser/resources:extensions_resources",
         "//chrome/browser/resources:sync_file_system_internals_resources",
         "//extensions:extensions_resources",
       ]

@@ -1577,8 +1577,10 @@ group("extra_resources") {
   }
 
   if (enable_extensions) {
-    public_deps +=
-        [ "//chrome/browser/resources:sync_file_system_internals_resources" ]
+    public_deps += [
+      "//chrome/browser/resources:extensions_resources",
+      "//chrome/browser/resources:sync_file_system_internals_resources",
+    ]
   }
 }
 
