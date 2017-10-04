@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/sys_byteorder.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/timestamp_constants.h"
@@ -493,8 +494,21 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
 
   last_block_timecode_ = timecode;
 
-  base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
-      (cluster_timecode_ + timecode) * timecode_multiplier_);
+  int64_t microseconds;
+
+  if (!base::CheckMul(base::CheckAdd(cluster_timecode_, timecode),
+                      timecode_multiplier_)
+           .AssignIfValid(&microseconds)) {
+    MEDIA_LOG(ERROR, media_log_) << "Invalid cluster timecode.";
+    return false;
+  }
+
+  base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(microseconds);
+
+  if (timestamp == kNoTimestamp || timestamp == kInfiniteDuration) {
+    MEDIA_LOG(ERROR, media_log_) << "Invalid block timestamp.";
+    return false;
+  }
 
   scoped_refptr<StreamParserBuffer> buffer;
   if (buffer_type != DemuxerStream::TEXT) {
