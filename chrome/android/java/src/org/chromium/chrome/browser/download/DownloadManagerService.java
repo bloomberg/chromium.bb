@@ -194,16 +194,14 @@ public class DownloadManagerService
         Context appContext = ContextUtils.getApplicationContext();
         if (sDownloadManagerService == null) {
             // TODO(crbug.com/765327): Remove temporary fix after flag is no longer being used.
-            if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isStartupSuccessfullyCompleted()
-                    || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND)) {
-                sDownloadManagerService = new DownloadManagerService(appContext,
-                        new SystemDownloadNotifier(appContext), new Handler(), UPDATE_DELAY_MILLIS);
-            } else {
-                sDownloadManagerService = new DownloadManagerService(appContext,
-                        new SystemDownloadNotifier2(appContext), new Handler(),
-                        UPDATE_DELAY_MILLIS);
-            }
+            DownloadNotifier downloadNotifier =
+                    (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                                    .isStartupSuccessfullyCompleted()
+                            || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_FOREGROUND))
+                    ? new SystemDownloadNotifier(appContext)
+                    : new SystemDownloadNotifier2(appContext);
+            sDownloadManagerService = new DownloadManagerService(
+                    appContext, downloadNotifier, new Handler(), UPDATE_DELAY_MILLIS);
         }
         return sDownloadManagerService;
     }
