@@ -6544,24 +6544,31 @@ void RenderFrameImpl::LoadDataURL(
     blink::WebHistoryLoadType history_load_type,
     bool is_client_redirect) {
   // A loadData request with a specified base URL.
-  GURL data_url = params.url;
+  DCHECK(params.url.is_valid());
 #if defined(OS_ANDROID)
+  base::StringPiece data_url = params.url.spec();
   if (!request_params.data_url_as_string.empty()) {
 #if DCHECK_IS_ON()
     {
       std::string mime_type, charset, data;
-      DCHECK(net::DataURL::Parse(data_url, &mime_type, &charset, &data));
+      DCHECK(net::DataURL::Parse(params.url, &mime_type, &charset, &data));
       DCHECK(data.empty());
     }
-#endif
-    data_url = GURL(request_params.data_url_as_string);
-    if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme)) {
-      data_url = params.url;
+#endif  // DCHECK_IS_ON()
+    if (base::StartsWith(request_params.data_url_as_string,
+                         "data:", base::CompareCase::SENSITIVE)) {
+      data_url = request_params.data_url_as_string;
     }
   }
-#endif
+#else   // defined(OS_ANDROID)
+  const GURL& data_url = params.url;
+#endif  // defined(OS_ANDROID)
   std::string mime_type, charset, data;
+#if defined(OS_ANDROID)
+  if (net::DataURL::ParseCanonicalized(data_url, &mime_type, &charset, &data)) {
+#else
   if (net::DataURL::Parse(data_url, &mime_type, &charset, &data)) {
+#endif
     const GURL base_url = params.base_url_for_data_url.is_empty() ?
         params.url : params.base_url_for_data_url;
     bool replace = load_type == WebFrameLoadType::kReloadBypassingCache ||

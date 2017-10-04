@@ -20,28 +20,26 @@
 
 namespace net {
 
-// static
-bool DataURL::Parse(const GURL& url, std::string* mime_type,
-                    std::string* charset, std::string* data) {
-  if (!url.is_valid())
-    return false;
+namespace {
 
+bool ParseInternal(base::StringPiece url,
+                   std::string* mime_type,
+                   std::string* charset,
+                   std::string* data) {
   DCHECK(mime_type->empty());
   DCHECK(charset->empty());
-  std::string::const_iterator begin = url.spec().begin();
-  std::string::const_iterator end = url.spec().end();
 
-  std::string::const_iterator after_colon = std::find(begin, end, ':');
-  if (after_colon == end)
+  size_t after_colon = url.find(':');
+  if (after_colon == base::StringPiece::npos)
     return false;
   ++after_colon;
 
-  std::string::const_iterator comma = std::find(after_colon, end, ',');
-  if (comma == end)
+  size_t comma = url.find(',', after_colon);
+  if (comma == base::StringPiece::npos)
     return false;
 
   std::vector<base::StringPiece> meta_data =
-      base::SplitStringPiece(base::StringPiece(after_colon, comma), ";",
+      base::SplitStringPiece(url.substr(after_colon, comma - after_colon), ";",
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   auto iter = meta_data.cbegin();
@@ -95,7 +93,7 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   // (Spaces in a data URL should be escaped, which is handled below, so any
   // spaces now are wrong. People expect to be able to enter them in the URL
   // bar for text, and it can't hurt, so we allow it.)
-  std::string temp_data = std::string(comma + 1, end);
+  std::string temp_data = url.substr(comma + 1).as_string();
 
   // For base64, we may have url-escaped whitespace which is not part
   // of the data, and should be stripped. Otherwise, the escaped whitespace
@@ -137,6 +135,29 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
 
   temp_data.swap(*data);
   return true;
+}
+
+}  // namespace
+
+bool DataURL::Parse(const GURL& url,
+                    std::string* mime_type,
+                    std::string* charset,
+                    std::string* data) {
+  if (!url.is_valid())
+    return false;
+  return ParseInternal(url.spec(), mime_type, charset, data);
+}
+
+bool DataURL::ParseCanonicalized(base::StringPiece url,
+                                 std::string* mime_type,
+                                 std::string* charset,
+                                 std::string* data) {
+  // The canonicalized scheme should be lowercase. While this string doesn't
+  // actually go through URL canonicalization, assume that Android WebView built
+  // an already canonical URL.
+  if (!url.starts_with("data:"))
+    return false;
+  return ParseInternal(url, mime_type, charset, data);
 }
 
 }  // namespace net

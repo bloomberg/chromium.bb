@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(() => {
+  var original_location = location.toString();
+  var long_hash = "0123456789abcdef".repeat(1048576);
+  location.hash = long_hash;
+  assert_equals(location.toString(), original_location);
+}, "test that attempts to assign an overly long hash are ignored");
+</script>

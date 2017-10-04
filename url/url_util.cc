@@ -723,7 +723,8 @@ bool Canonicalize(const char* spec,
                   CanonOutput* output,
                   Parsed* output_parsed) {
   return DoCanonicalize(spec, spec_len, trim_path_end, REMOVE_WHITESPACE,
-                        charset_converter, output, output_parsed);
+                        charset_converter, output, output_parsed) &&
+         output->length() <= kMaxURLChars;
 }
 
 bool Canonicalize(const base::char16* spec,
@@ -733,7 +734,8 @@ bool Canonicalize(const base::char16* spec,
                   CanonOutput* output,
                   Parsed* output_parsed) {
   return DoCanonicalize(spec, spec_len, trim_path_end, REMOVE_WHITESPACE,
-                        charset_converter, output, output_parsed);
+                        charset_converter, output, output_parsed) &&
+         output->length() <= kMaxURLChars;
 }
 
 bool ResolveRelative(const char* base_spec,
@@ -744,9 +746,10 @@ bool ResolveRelative(const char* base_spec,
                      CharsetConverter* charset_converter,
                      CanonOutput* output,
                      Parsed* output_parsed) {
-  return DoResolveRelative(base_spec, base_spec_len, base_parsed,
-                           relative, relative_length,
-                           charset_converter, output, output_parsed);
+  return DoResolveRelative(base_spec, base_spec_len, base_parsed, relative,
+                           relative_length, charset_converter, output,
+                           output_parsed) &&
+         output->length() <= kMaxURLChars;
 }
 
 bool ResolveRelative(const char* base_spec,
@@ -757,9 +760,10 @@ bool ResolveRelative(const char* base_spec,
                      CharsetConverter* charset_converter,
                      CanonOutput* output,
                      Parsed* output_parsed) {
-  return DoResolveRelative(base_spec, base_spec_len, base_parsed,
-                           relative, relative_length,
-                           charset_converter, output, output_parsed);
+  return DoResolveRelative(base_spec, base_spec_len, base_parsed, relative,
+                           relative_length, charset_converter, output,
+                           output_parsed) &&
+         output->length() <= kMaxURLChars;
 }
 
 bool ReplaceComponents(const char* spec,
@@ -770,7 +774,8 @@ bool ReplaceComponents(const char* spec,
                        CanonOutput* output,
                        Parsed* out_parsed) {
   return DoReplaceComponents(spec, spec_len, parsed, replacements,
-                             charset_converter, output, out_parsed);
+                             charset_converter, output, out_parsed) &&
+         output->length() <= kMaxURLChars;
 }
 
 bool ReplaceComponents(const char* spec,
@@ -781,7 +786,8 @@ bool ReplaceComponents(const char* spec,
                        CanonOutput* output,
                        Parsed* out_parsed) {
   return DoReplaceComponents(spec, spec_len, parsed, replacements,
-                             charset_converter, output, out_parsed);
+                             charset_converter, output, out_parsed) &&
+         output->length() <= kMaxURLChars;
 }
 
 void DecodeURLEscapeSequences(const char* input,
