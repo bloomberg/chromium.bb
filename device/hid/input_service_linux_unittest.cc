@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/hid/input_service_linux.h"
+#include "device/hid/public/interfaces/input_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -24,10 +25,10 @@ TEST(InputServiceLinux, Simple) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(service);
-  std::vector<InputServiceLinux::InputDeviceInfo> devices;
+  std::vector<device::mojom::InputDeviceInfoPtr> devices;
   service->GetDevices(&devices);
   for (size_t i = 0; i < devices.size(); ++i)
-    ASSERT_TRUE(!devices[i].id.empty());
+    ASSERT_TRUE(!devices[i]->id.empty());
 }
 
 }  // namespace device

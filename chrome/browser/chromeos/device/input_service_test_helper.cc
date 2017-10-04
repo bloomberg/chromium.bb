@@ -16,16 +16,18 @@ using device::FakeInputServiceLinux;
 
 namespace chromeos {
 
+typedef device::mojom::InputDeviceInfoPtr InputDeviceInfoPtr;
+
 namespace {
 
 void InitInputServiceOnInputServiceSequence() {
   InputServiceLinux::SetForTesting(base::MakeUnique<FakeInputServiceLinux>());
 }
 
-void AddDeviceOnInputServiceSequence(const InputDeviceInfo& device) {
+void AddDeviceOnInputServiceSequence(InputDeviceInfoPtr device) {
   FakeInputServiceLinux* service =
       static_cast<FakeInputServiceLinux*>(InputServiceLinux::GetInstance());
-  service->AddDeviceForTesting(device);
+  service->AddDeviceForTesting(std::move(device));
 }
 
 void RemoveDeviceOnInputServiceSequence(const std::string& id) {
@@ -46,9 +48,9 @@ class TestObserver : public InputServiceProxy::Observer {
 
   ~TestObserver() override {}
 
-  void WaitForDeviceAddition(const InputDeviceInfo& info) {
+  void WaitForDeviceAddition(InputDeviceInfoPtr info) {
     base::RunLoop run;
-    expected_info_ = info;
+    expected_info_ = std::move(info);
     wait_for_device_addition_ = true;
     done_ = run.QuitClosure();
 
@@ -71,19 +73,20 @@ class TestObserver : public InputServiceProxy::Observer {
   }
 
  private:
-  static bool Equals(const InputDeviceInfo& lhs, const InputDeviceInfo& rhs) {
-    return lhs.id == rhs.id && lhs.name == rhs.name &&
-           lhs.subsystem == rhs.subsystem && lhs.type == rhs.type &&
-           lhs.is_accelerometer == rhs.is_accelerometer &&
-           lhs.is_joystick == rhs.is_joystick && lhs.is_key == rhs.is_key &&
-           lhs.is_keyboard == rhs.is_keyboard && lhs.is_mouse == rhs.is_mouse &&
-           lhs.is_tablet == rhs.is_tablet &&
-           lhs.is_touchpad == rhs.is_touchpad &&
-           lhs.is_touchscreen == rhs.is_touchscreen;
+  static bool Equals(const InputDeviceInfoPtr& lhs,
+                     const InputDeviceInfoPtr& rhs) {
+    return lhs->id == rhs->id && lhs->name == rhs->name &&
+           lhs->subsystem == rhs->subsystem && lhs->type == rhs->type &&
+           lhs->is_accelerometer == rhs->is_accelerometer &&
+           lhs->is_joystick == rhs->is_joystick && lhs->is_key == rhs->is_key &&
+           lhs->is_keyboard == rhs->is_keyboard &&
+           lhs->is_mouse == rhs->is_mouse && lhs->is_tablet == rhs->is_tablet &&
+           lhs->is_touchpad == rhs->is_touchpad &&
+           lhs->is_touchscreen == rhs->is_touchscreen;
   }
 
   // InputServiceProxy::Observer implementation.
-  void OnInputDeviceAdded(const InputDeviceInfo& info) override {
+  void OnInputDeviceAdded(InputDeviceInfoPtr info) override {
     if (!wait_for_device_addition_)
       return;
     EXPECT_TRUE(Equals(expected_info_, info));
@@ -97,7 +100,7 @@ class TestObserver : public InputServiceProxy::Observer {
     done_.Run();
   }
 
-  InputDeviceInfo expected_info_;
+  InputDeviceInfoPtr expected_info_;
   std::string expected_id_;
 
   bool wait_for_device_addition_;
@@ -132,17 +135,19 @@ void InputServiceTestHelper::ClearProxy() {
   proxy_ = nullptr;
 }
 
-void InputServiceTestHelper::AddDeviceToService(bool is_mouse,
-                                                InputDeviceInfo::Type type) {
-  InputDeviceInfo device;
-  device.id = is_mouse ? kMouseId : kKeyboardId;
-  device.subsystem = InputDeviceInfo::SUBSYSTEM_INPUT;
-  device.type = type;
-  device.is_mouse = is_mouse;
-  device.is_keyboard = !is_mouse;
+void InputServiceTestHelper::AddDeviceToService(
+    bool is_mouse,
+    device::mojom::InputDeviceType type) {
+  InputDeviceInfoPtr device = device::mojom::InputDeviceInfo::New();
+  device->id = is_mouse ? kMouseId : kKeyboardId;
+  device->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
+  device->type = type;
+  device->is_mouse = is_mouse;
+  device->is_keyboard = !is_mouse;
   InputServiceProxy::GetInputServiceTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&AddDeviceOnInputServiceSequence, device));
-  observer_->WaitForDeviceAddition(device);
+      FROM_HERE,
+      base::BindOnce(&AddDeviceOnInputServiceSequence, device.Clone()));
+  observer_->WaitForDeviceAddition(std::move(device));
 }
 
 void InputServiceTestHelper::RemoveDeviceFromService(bool is_mouse) {
