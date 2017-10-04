@@ -5,6 +5,8 @@
 {% from 'macros.tmpl' import source_files_for_generated_file %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
+#include "platform/wtf/ThreadingPrimitives.h"
+
 {% set sink_class = (name | to_singular) + "Sink" %}
 {% for file in files %}
 #include "{{file.name}}Inl.h"
@@ -16,19 +18,63 @@
 
 namespace blink {
 
+namespace {
+
+Mutex& AgentCountMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
+  return mutex;
+}
+
+}  // namespace
+
+// static
+std::atomic<unsigned> {{sink_class}}::s_existingAgents;
+
 {{sink_class}}::{{sink_class}}() {}
+
+{{sink_class}}::~{{sink_class}}() {
+  MutexLocker lock(AgentCountMutex());
+{% for agent in agents %}
+{% set class_name = agent | agent_name_to_class %}
+  if (has{{class_name}}s() && --s_numSinksWith{{class_name}} == 0)
+    s_existingAgents &= ~k{{class_name}};
+{% endfor %}
+}
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = class_name | to_lower_case %}
+
+// static
+unsigned {{sink_class}}::s_numSinksWith{{class_name}} = 0;
+
 void {{sink_class}}::add{{class_name}}({{class_name}}* agent) {
+  bool already_had_agent = has{{class_name}}s();
   m_{{getter_name}}s.insert(agent);
-  m_has{{class_name}}s = true;
+
+  if (!already_had_agent) {
+    MutexLocker lock(AgentCountMutex());
+    if (++s_numSinksWith{{class_name}} == 1)
+      s_existingAgents |= k{{class_name}};
+  }
+
+  DCHECK(HasAgentsGlobal(k{{class_name}}));
 }
 
 void {{sink_class}}::remove{{class_name}}({{class_name}}* agent) {
+  if (!has{{class_name}}s())
+    return;
+
   m_{{getter_name}}s.erase(agent);
-  m_has{{class_name}}s = !m_{{getter_name}}s.IsEmpty();
+
+  if (!has{{class_name}}s()) {
+    MutexLocker lock(AgentCountMutex());
+    if (--s_numSinksWith{{class_name}} == 0)
+      s_existingAgents &= ~k{{class_name}};
+  }
+
+  if (has{{class_name}}s())
+    DCHECK(HasAgentsGlobal(k{{class_name}}));
 }
 
 {% endfor -%}
@@ -81,7 +127,7 @@ namespace probe {
 
 {% else -%}
 
-CORE_EXPORT void {{probe.name}}({{ params_list(probe) }}) {
+void {{probe.name}}Impl({{ params_list(probe) }}) {
   {{sink_class}}* probe_sink = To{{sink_class}}({{probe.params[0].name}});
 {% call probe_body(probe, "") %}
 {%- for param in probe.params %}
