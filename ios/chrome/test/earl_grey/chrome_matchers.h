@@ -168,6 +168,8 @@ id<GREYMatcher> ClearCacheButton();
 // panel.
 id<GREYMatcher> ClearSavedPasswordsButton();
 
+// Returns matcher for the collection view of content suggestion.
+id<GREYMatcher> ContentSuggestionCollectionView();
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

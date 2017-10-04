@@ -6,7 +6,6 @@
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/content_suggestions/sc_content_suggestions_data_source.h"
@@ -43,9 +42,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       selectElementWithMatcher:grey_allOf(matcher, grey_sufficientlyVisible(),
                                           nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
-      onElementWithMatcher:grey_accessibilityID(
-                               [ContentSuggestionsViewController
-                                   collectionAccessibilityIdentifier])];
+      onElementWithMatcher:chrome_test_util::ContentSuggestionCollectionView()];
 }
 
 // Select the cell with the |ID| by scrolling the collection.

@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
@@ -248,10 +247,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
 
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -320,10 +317,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   self.provider->FireSuggestionsChanged(self.category, ntp_home::Suggestions());
 
   // Scroll to have a position to restored.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
 
   // Save the position before navigating.
@@ -357,10 +352,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   self.provider->FireSuggestionsChanged(self.category, ntp_home::Suggestions());
 
   // Scroll to have a position to restored.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
 
   // Save the position before navigating.
@@ -441,10 +434,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                  @"The collection has not moved.");
 
   // Unfocus the omnibox.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
       performAction:grey_tapAtPoint(CGPointMake(0, offsetAfterTap.y + 100))];
 
   // Check the fake omnibox is displayed again at the same position.
@@ -467,10 +458,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   UICollectionView* collectionView = (UICollectionView*)collection;
 
   // Scroll to have a position different from the default.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, 50)];
 
   // Offset before the tap.
@@ -482,10 +471,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
 
   // Unfocus the omnibox.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   [ContentSuggestionsViewController
-                                       collectionAccessibilityIdentifier])]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          ContentSuggestionCollectionView()]
       performAction:grey_tapAtPoint(
                         CGPointMake(0, collectionView.contentOffset.y + 100))];
 
