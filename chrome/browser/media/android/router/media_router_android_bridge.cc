@@ -40,8 +40,6 @@ void MediaRouterAndroidBridge::CreateRoute(const MediaSource::Id& source_id,
       base::android::ConvertUTF8ToJavaString(env, sink_id);
   ScopedJavaLocalRef<jstring> jpresentation_id =
       base::android::ConvertUTF8ToJavaString(env, presentation_id);
-  // TODO(crbug.com/685358): Unique origins should not be considered
-  // same-origin.
   ScopedJavaLocalRef<jstring> jorigin =
       base::android::ConvertUTF8ToJavaString(env, origin.GetURL().spec());
 
