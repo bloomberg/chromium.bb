@@ -65,18 +65,21 @@ HOST_PACKAGES = (
 TARGET_GO_ENABLED = (
     'x86_64-cros-linux-gnu',
     'armv7a-cros-linux-gnueabi',
+    'armv7a-cros-linux-gnueabihf',
 )
 CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
 
 # Enable llvm's compiler-rt for these targets.
 TARGET_COMPILER_RT_ENABLED = (
     'armv7a-cros-linux-gnueabi',
+    #'armv7a-cros-linux-gnueabihf',
     'aarch64-cros-linux-gnu',
 )
 CROSSDEV_COMPILER_RT_ARGS = ['--ex-pkg', 'sys-libs/compiler-rt']
 
 TARGET_LLVM_PKGS_ENABLED = (
     'armv7a-cros-linux-gnueabi',
+    'armv7a-cros-linux-gnueabihf',
     'aarch64-cros-linux-gnu',
     'x86_64-cros-linux-gnu',
 )
@@ -91,6 +94,7 @@ CONFIG_TARGET_SUFFIXES = {
     'binutils' : {
         'armv6j-cros-linux-gnueabi': '-gold',
         'armv7a-cros-linux-gnueabi': '-gold',
+        'armv7a-cros-linux-gnueabihf': '-gold',
         'i686-pc-linux-gnu' : '-gold',
         'x86_64-cros-linux-gnu' : '-gold',
     },
