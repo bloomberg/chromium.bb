@@ -274,6 +274,8 @@ public class BottomSheetContentController extends BottomNavigationView
                 updateMenuItemSpacing();
             }
         });
+
+        updateVisuals(mTabModelSelector.isIncognitoSelected());
     }
 
     /**
