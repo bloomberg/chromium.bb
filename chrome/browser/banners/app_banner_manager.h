@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h"
 
+class InstallableManager;
 class SkBitmap;
 struct WebApplicationInfo;
 
@@ -51,38 +52,40 @@ class AppBannerManager : public content::WebContentsObserver,
                          public SiteEngagementObserver {
  public:
   enum class State {
-    // The banner pipeline has not yet been triggered for this page load.
+    // The pipeline has not yet been triggered for this page load.
     INACTIVE,
 
-    // The banner pipeline is currently running for this page load.
+    // The pipeline is running for this page load.
     ACTIVE,
 
-    // The banner pipeline is currently waiting for the page manifest to be
-    // fetched.
+    // The pipeline is waiting for the web app manifest to be fetched.
     FETCHING_MANIFEST,
 
-    // The banner pipeline is currently waiting for the installability criteria
-    // to be checked. In this state the pipeline could be paused while waiting
-    // for the site to register a service worker.
+    // The pipeline is waiting for native app data to be fetched.
+    FETCHING_NATIVE_DATA,
+
+    // The pipeline is waiting for the installability criteria to be checked.
+    // In this state, the pipeline could be paused while waiting for a service
+    // worker to be registered..
     PENDING_INSTALLABLE_CHECK,
 
-    // The banner pipeline has finished running, but is waiting for sufficient
+    // The pipeline has finished running, but is waiting for sufficient
     // engagement to trigger the banner.
     PENDING_ENGAGEMENT,
 
-    // The banner has sent the beforeinstallprompt event and is waiting for the
-    // response to the event.
+    // The beforeinstallprompt event has been sent and the pipeline is waiting
+    // for the response.
     SENDING_EVENT,
 
-    // The banner has sent the beforeinstallprompt, and the web page called
-    // prompt on the event while the event was being handled.
+    // The beforeinstallprompt event was sent, and the web page called prompt()
+    // on the event while the event was being handled.
     SENDING_EVENT_GOT_EARLY_PROMPT,
 
-    // The banner pipeline has finished running, but is waiting for the web page
-    // to call prompt on the event.
+    // The pipeline has finished running, but is waiting for the web page to
+    // call prompt() on the event.
     PENDING_PROMPT,
 
-    // The banner pipeline has finished running for this page load and no more
+    // The pipeline has finished running for this page load and no more
     // processing is to be done.
     COMPLETE,
   };

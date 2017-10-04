@@ -19,7 +19,6 @@
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "jni/AppBannerManager_jni.h"
 #include "net/base/url_util.h"
 
@@ -110,6 +109,7 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
     const JavaParamRef<jstring>& japp_title,
     const JavaParamRef<jstring>& japp_package,
     const JavaParamRef<jstring>& jicon_url) {
+  UpdateState(State::ACTIVE);
   native_app_data_.Reset(japp_data);
   native_app_title_ = ConvertJavaStringToUTF16(env, japp_title);
   native_app_package_ = ConvertJavaStringToUTF8(env, japp_package);
@@ -170,23 +170,25 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
   // Check if the manifest prefers that we show a native app banner. If so, call
   // to Java to verify the details.
   if (manifest_.prefer_related_applications &&
-      manifest_.related_applications.size()) {
+      manifest_.related_applications.size() &&
+      !java_banner_manager_.is_null()) {
+    InstallableStatusCode code = NO_ERROR_DETECTED;
     for (const auto& application : manifest_.related_applications) {
       std::string platform = base::UTF16ToUTF8(application.platform.string());
       std::string id = base::UTF16ToUTF8(application.id.string());
-      // TODO(crbug/770050): convert CanHandleNonWebApp() to return an
-      // InstallableStatusCode and pass it to StopWithCode here.
-      if (CanHandleNonWebApp(platform, application.url, id))
+      code = QueryNativeApp(platform, application.url, id);
+      if (code == NO_ERROR_DETECTED)
         return;
     }
-    Stop();
+
+    // We must have some error in |code| if we reached this point, so report it.
+    StopWithCode(code);
+    return;
   }
 
-  if (can_install_webapk_) {
-    if (!AreWebManifestUrlsWebApkCompatible(manifest_)) {
-      StopWithCode(URL_NOT_SUPPORTED_FOR_WEBAPK);
-      return;
-    }
+  if (can_install_webapk_ && !AreWebManifestUrlsWebApkCompatible(manifest_)) {
+    StopWithCode(URL_NOT_SUPPORTED_FOR_WEBAPK);
+    return;
   }
 
   // No native app banner was requested. Continue checking for a web app banner.
@@ -250,24 +252,21 @@ void AppBannerManagerAndroid::ShowBannerUi() {
   }
 }
 
-bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
-                                                 const GURL& url,
-                                                 const std::string& id) {
-  if (!CheckPlatformAndId(platform, id))
-    return false;
+InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
+    const std::string& platform,
+    const GURL& url,
+    const std::string& id) {
+  if (platform != "play")
+    return PLATFORM_NOT_SUPPORTED_ON_ANDROID;
+
+  if (id.empty())
+    return NO_ID_SPECIFIED;
 
   banners::TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_REQUESTED);
 
-  // Send the info to the Java side to get info about the app.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (java_banner_manager_.is_null())
-    return false;
-
   std::string id_from_app_url = ExtractQueryValueForName(url, "id");
-  if (id_from_app_url.size() && id != id_from_app_url) {
-    ReportStatus(web_contents(), IDS_DO_NOT_MATCH);
-    return false;
-  }
+  if (id_from_app_url.size() && id != id_from_app_url)
+    return IDS_DO_NOT_MATCH;
 
   // Attach the chrome_inline referrer value, prefixed with "&" if the referrer
   // is non empty.
@@ -276,31 +275,25 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
     referrer += "&";
   referrer += "playinline=chrome_inline";
 
+  // Send the info to the Java side to get info about the app.
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, validated_url_.spec()));
   ScopedJavaLocalRef<jstring> jpackage(ConvertUTF8ToJavaString(env, id));
   ScopedJavaLocalRef<jstring> jreferrer(ConvertUTF8ToJavaString(env, referrer));
+
+  // This async call will run OnAppDetailsRetrieved() when completed.
+  UpdateState(State::FETCHING_NATIVE_DATA);
   Java_AppBannerManager_fetchAppDetails(
       env, java_banner_manager_, jurl, jpackage, jreferrer,
       ShortcutHelper::GetIdealHomescreenIconSizeInPx());
-  return true;
+  return NO_ERROR_DETECTED;
 }
 
 void AppBannerManagerAndroid::CreateJavaBannerManager() {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_banner_manager_.Reset(
       Java_AppBannerManager_create(env, reinterpret_cast<intptr_t>(this)));
-}
-
-bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
-                                                 const std::string& id) {
-  const bool correct_platform = (platform == "play");
-  if (correct_platform && !id.empty())
-    return true;
-  ReportStatus(
-      web_contents(),
-      correct_platform ? NO_ID_SPECIFIED : PLATFORM_NOT_SUPPORTED_ON_ANDROID);
-  return false;
 }
 
 std::string AppBannerManagerAndroid::ExtractQueryValueForName(

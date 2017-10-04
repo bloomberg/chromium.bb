@@ -90,6 +90,7 @@ void LogErrorToConsole(content::WebContents* web_contents,
     case FAILED_TO_CREATE_BANNER:
     case WAITING_FOR_MANIFEST:
     case WAITING_FOR_INSTALLABLE_CHECK:
+    case WAITING_FOR_NATIVE_DATA:
     case MAX_ERROR_CODE:
       return;
     case RENDERER_EXITING:
