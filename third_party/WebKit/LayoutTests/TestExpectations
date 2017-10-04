@@ -1736,6 +1736,7 @@ crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editabl
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/requestidlecallback/basic.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-call-immediate-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-method-abort-update-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text-3/line-break/line-break-anywhere-001.html [ Failure ]
@@ -1908,12 +1909,12 @@ crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/gro
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-iframe.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-invoked.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-timeout.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-xhr-sync.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Timeout ]
+crbug.com/626703 external/wpt/requestidlecallback/callback-exception.html [ Timeout ]
+crbug.com/626703 external/wpt/requestidlecallback/callback-iframe.html [ Timeout ]
+crbug.com/626703 external/wpt/requestidlecallback/callback-invoked.html [ Timeout ]
+crbug.com/626703 external/wpt/requestidlecallback/callback-timeout.html [ Timeout ]
+crbug.com/626703 external/wpt/requestidlecallback/callback-xhr-sync.html [ Timeout ]
+crbug.com/626703 external/wpt/requestidlecallback/cancel-invoked.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/scripting/events/contextmenu-event-manual.htm [ Timeout ]
 crbug.com/626703 external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/http/basic-auth-cache-test.html [ Timeout ]
@@ -2210,9 +2211,8 @@ crbug.com/626703 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Failure ]
 crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/image-object-in-canvas.html [ Failure ]
 
-crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
-crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
-crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
+crbug.com/666993 external/wpt/requestidlecallback/callback-idle-periods.html [ Timeout ]
+crbug.com/666993 external/wpt/requestidlecallback/callback-timeout-with-raf.html [ Timeout ]
 
 crbug.com/713732 fast/dom/Window/dom-access-from-closure-iframe.html [ NeedsManualRebaseline ]
 crbug.com/713732 fast/dom/Window/dom-access-from-closure-window-with-gc.html [ NeedsManualRebaseline ]
