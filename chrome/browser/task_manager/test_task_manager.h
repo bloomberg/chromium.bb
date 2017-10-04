@@ -29,7 +29,6 @@ class TestTaskManager : public TaskManagerInterface {
   double GetPlatformIndependentCPUUsage(TaskId task_id) const override;
   base::Time GetStartTime(TaskId task_id) const override;
   base::TimeDelta GetCpuTime(TaskId task_id) const override;
-  int64_t GetMemoryFootprintUsage(TaskId task_id) const override;
   int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;
   int64_t GetPrivateMemoryUsage(TaskId task_id) const override;
   int64_t GetSharedMemoryUsage(TaskId task_id) const override;

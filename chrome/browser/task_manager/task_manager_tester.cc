@@ -102,9 +102,6 @@ void TaskManagerTester::ToggleColumnVisibility(ColumnSpecifier column) {
     case ColumnSpecifier::PROCESS_ID:
       column_id = IDS_TASK_MANAGER_PROCESS_ID_COLUMN;
       break;
-    case ColumnSpecifier::MEMORY_FOOTPRINT:
-      column_id = IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN;
-      break;
     case ColumnSpecifier::PHYSICAL_MEMORY:
       column_id = IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN;
       break;
@@ -138,10 +135,6 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
   switch (column) {
     case ColumnSpecifier::COLUMN_NONE:
     case ColumnSpecifier::MEMORY_STATE:
-      break;
-    case ColumnSpecifier::MEMORY_FOOTPRINT:
-      value = task_manager()->GetMemoryFootprintUsage(task_id);
-      success = true;
       break;
     case ColumnSpecifier::PHYSICAL_MEMORY:
       value = task_manager()->GetPhysicalMemoryUsage(task_id);
