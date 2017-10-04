@@ -243,7 +243,12 @@ cr.define('cr.login', function() {
      * @private
      */
     onContentLoad_: function(e) {
-      PostMessageChannel.init(this.webview_.contentWindow);
+      // |this.webview_.contentWindow| may be null after network error screen
+      // is shown. See crbug.com/770999.
+      if (this.webview_.contentWindow)
+        PostMessageChannel.init(this.webview_.contentWindow);
+      else
+        console.error('SamlHandler.onContentLoad_: contentWindow is null.');
     },
 
     /**
