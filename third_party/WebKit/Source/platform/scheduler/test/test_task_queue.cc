@@ -12,7 +12,11 @@ namespace scheduler {
 TestTaskQueue::TestTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl)
     : TaskQueue(std::move(impl)) {}
 
-TestTaskQueue::~TestTaskQueue() {}
+TestTaskQueue::~TestTaskQueue() {
+  // Automatically unregisters task queue upon deletion, given the fact
+  // that TestTaskQueue lives on the main thread.
+  UnregisterTaskQueue();
+}
 
 }  // namespace scheduler
 }  // namespace blink

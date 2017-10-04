@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
+#include "platform/scheduler/base/moveable_auto_lock.h"
 
 namespace base {
 namespace trace_event {
@@ -30,6 +31,7 @@ class TaskQueueImpl;
 }
 
 class TimeDomain;
+class TaskQueueManager;
 
 class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
@@ -252,7 +254,23 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   friend class task_queue_throttler_unittest::TaskQueueThrottlerTest;
 
-  const std::unique_ptr<internal::TaskQueueImpl> impl_;
+  bool IsOnMainThread() const;
+
+  base::Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
+
+  // |impl_| can be written to on the main thread but can be read from
+  // any thread.
+  // |impl_lock_| must be acquired when writing to |impl_| or when accessing
+  // it from non-main thread. Reading from the main thread does not require
+  // a lock.
+  mutable base::Lock impl_lock_;
+  std::unique_ptr<internal::TaskQueueImpl> impl_;
+
+  const base::PlatformThreadId thread_id_;
+
+  base::WeakPtr<TaskQueueManager> task_queue_manager_;
+
+  THREAD_CHECKER(main_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
