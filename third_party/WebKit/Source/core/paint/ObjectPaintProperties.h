@@ -7,11 +7,8 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/PaintChunkProperties.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/wtf/PtrUtil.h"
@@ -54,7 +51,7 @@ class CORE_EXPORT ObjectPaintProperties {
   //     |                                This is the local border box space.
   //     +---[ perspective ]              The space created by CSS perspective.
   //     |   +---[ svgLocalToBorderBoxTransform ] Additional transform for
-  //                                      children of the outermost root SVG.
+  //     |                                children of the outermost root SVG.
   //     |              OR                (SVG does not support scrolling.)
   //     |   +---[ scrollTranslation ]    The space created by overflow clip.
   //     +---[ scrollbarPaintOffset ]     TODO(trchen): Remove this once we bake
@@ -138,14 +135,6 @@ class CORE_EXPORT ObjectPaintProperties {
   const ClipPaintPropertyNode* OverflowClip() const {
     return overflow_clip_.get();
   }
-
-  // This is the complete set of property nodes that can be used to paint the
-  // contents of this object. It is similar to the local border box properties
-  // but also includes properties (e.g., overflow clip, scroll translation) that
-  // apply to an object's contents.
-  static std::unique_ptr<PropertyTreeState> ContentsProperties(
-      PropertyTreeState* local_border_box_properties,
-      ObjectPaintProperties*);
 
   // The following clear* functions return true if the property tree structure
   // changes (an existing node was deleted), and false otherwise. See the

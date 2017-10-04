@@ -7,6 +7,7 @@
 
 #include "core/paint/ClipRects.h"
 #include "core/paint/ObjectPaintProperties.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 
 namespace blink {
 
