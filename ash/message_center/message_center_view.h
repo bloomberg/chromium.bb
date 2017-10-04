@@ -93,6 +93,7 @@ class ASH_EXPORT MessageCenterView
   void OnNotificationRemoved(const std::string& id, bool by_user) override;
   void OnNotificationUpdated(const std::string& id) override;
   void OnLockedStateChanged(bool locked) override;
+  void OnQuietModeChanged(bool is_quiet_mode) override;
 
   // Overridden from MessageCenterController:
   void ClickOnNotification(const std::string& notification_id) override;

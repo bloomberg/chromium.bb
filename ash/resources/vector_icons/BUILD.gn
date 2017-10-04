@@ -74,6 +74,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_bluetooth_battery_warning.icon",
     "notification_bluetooth.icon",
     "notification_capslock.icon",
+    "notification_center_do_not_disturb_off.icon",
     "notification_charging_usb_c.icon",
     "notification_chromevox.icon",
     "notification_display_error.icon",
