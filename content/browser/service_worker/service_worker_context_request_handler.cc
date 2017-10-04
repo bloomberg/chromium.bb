@@ -149,7 +149,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
   }
 
   const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
-  int resource_id =
+  int64_t resource_id =
       version_->script_cache_map()->LookupResourceId(request->url());
   if (resource_id != kInvalidServiceWorkerResourceId) {
     if (ServiceWorkerVersion::IsInstalled(version_->status())) {

@@ -364,7 +364,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     request_->Start();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
-    int incumbent_resource_id =
+    int64_t incumbent_resource_id =
         version_->script_cache_map()->LookupResourceId(script_url_);
     EXPECT_NE(kInvalidServiceWorkerResourceId, incumbent_resource_id);
 
@@ -380,7 +380,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     return incumbent_resource_id;
   }
 
-  int GetResourceId(ServiceWorkerVersion* version) {
+  int64_t GetResourceId(ServiceWorkerVersion* version) {
     return version->script_cache_map()->LookupResourceId(script_url_);
   }
 
@@ -403,7 +403,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     return new_version;
   }
 
-  void VerifyResource(int id, const std::string& expected) {
+  void VerifyResource(int64_t id, const std::string& expected) {
     ASSERT_NE(kInvalidServiceWorkerResourceId, id);
     bool is_equal = false;
     std::unique_ptr<ServiceWorkerResponseReader> reader =

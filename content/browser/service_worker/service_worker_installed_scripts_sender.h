@@ -78,7 +78,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender {
 
   ServiceWorkerVersion* owner_;
   const GURL main_script_url_;
-  const int main_script_id_;
+  const int64_t main_script_id_;
 
   mojom::ServiceWorkerInstalledScriptsManagerPtr manager_;
   std::unique_ptr<Sender> running_sender_;
