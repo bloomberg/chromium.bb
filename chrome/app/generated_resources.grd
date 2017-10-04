@@ -1882,7 +1882,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </message>
 
       <!-- Bookmark app bubble -->
-      <if expr="use_ash">
+      <if expr="chromeos">
         <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
           Add to shelf
         </message>
@@ -1892,7 +1892,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           Add to Applications
         </message>
       </if>
-      <if expr="not use_ash and not is_macosx">
+      <if expr="not chromeos and not is_macosx">
         <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
           Add to desktop
         </message>
@@ -1922,7 +1922,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </if>
 
       <!-- "Create application shortcuts" menu item -->
-      <if expr="use_ash">
+      <if expr="chromeos">
         <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the shelf.">
           Add to shelf...
         </message>
@@ -1932,7 +1932,7 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           Add to Applications...
         </message>
       </if>
-      <if expr="not use_ash and not is_macosx">
+      <if expr="not chromeos and not is_macosx">
         <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the desktop.">
           Add to desktop...
         </message>
@@ -8724,7 +8724,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON" desc="Button in the header of desktop user menu prompting users to confirm their sync settings.">
         Open settings
       </message>
-      <if expr="use_ash">
+      <if expr="chromeos">
         <message name="IDS_SYNC_NOTIFICATION_ACCEPT" desc="A button label shown in the sync error notification when the passphrase needs to be updated.">
           Update sync passphrase
         </message>
@@ -10414,8 +10414,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
       </if>
 
-      <!-- Aura strings -->
-      <if expr="use_ash">
+      <!-- Shelf strings -->
+      <if expr="chromeos">
         <message name="IDS_LAUNCHER_CONTEXT_MENU_CLOSE" desc="Title text for the 'close' context menu item of the launcher">
           Close
         </message>
