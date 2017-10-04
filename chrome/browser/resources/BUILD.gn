@@ -124,6 +124,19 @@ if (!is_android) {
 }
 
 if (enable_extensions) {
+  grit("extensions_resources") {
+    source = "md_extensions/extensions_resources.grd"
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/extensions_resources.h",
+      "grit/extensions_resources_map.cc",
+      "grit/extensions_resources_map.h",
+      "extensions_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("sync_file_system_internals_resources") {
     source = "sync_file_system_internals_resources.grd"
     defines = chrome_grit_defines

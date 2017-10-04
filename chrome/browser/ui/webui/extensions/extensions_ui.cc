@@ -21,6 +21,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/extensions_resources.h"
+#include "chrome/grit/extensions_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
@@ -289,78 +291,18 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale()).spec()));
 
-  source->AddResourcePath("code_section.html",
-                          IDR_MD_EXTENSIONS_CODE_SECTION_HTML);
-  source->AddResourcePath("code_section.js", IDR_MD_EXTENSIONS_CODE_SECTION_JS);
-  source->AddResourcePath("extensions.js", IDR_MD_EXTENSIONS_EXTENSIONS_JS);
-  source->AddResourcePath("drag_and_drop_handler.html",
-                          IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_HTML);
+  // Add all MD Extensions resources.
+  for (size_t i = 0; i < kExtensionsResourcesSize; ++i) {
+    source->AddResourcePath(kExtensionsResources[i].name,
+                            kExtensionsResources[i].value);
+  }
+
+  // Also include drag_and_drop_handler.js and shortcut_util.js, which are
+  // shared between the old and new (MD) version of the page.
   source->AddResourcePath("drag_and_drop_handler.js",
                           IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_JS);
-  source->AddResourcePath("detail_view.html",
-                          IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML);
-  source->AddResourcePath("detail_view.js", IDR_MD_EXTENSIONS_DETAIL_VIEW_JS);
-  source->AddResourcePath("drop_overlay.html",
-                          IDR_MD_EXTENSIONS_DROP_OVERLAY_HTML);
-  source->AddResourcePath("drop_overlay.js", IDR_MD_EXTENSIONS_DROP_OVERLAY_JS);
-  source->AddResourcePath("error_page.html", IDR_MD_EXTENSIONS_ERROR_PAGE_HTML);
-  source->AddResourcePath("error_page.js", IDR_MD_EXTENSIONS_ERROR_PAGE_JS);
-  source->AddResourcePath("keyboard_shortcuts.html",
-                          IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML);
-  source->AddResourcePath("keyboard_shortcuts.js",
-                          IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_JS);
-#if defined(OS_CHROMEOS)
-  source->AddResourcePath("kiosk_browser_proxy.html",
-                          IDR_MD_EXTENSIONS_KIOSK_BROWSER_PROXY_HTML);
-  source->AddResourcePath("kiosk_browser_proxy.js",
-                          IDR_MD_EXTENSIONS_KIOSK_BROWSER_PROXY_JS);
-  source->AddResourcePath("kiosk_dialog.html",
-                          IDR_MD_EXTENSIONS_KIOSK_DIALOG_HTML);
-  source->AddResourcePath("kiosk_dialog.js", IDR_MD_EXTENSIONS_KIOSK_DIALOG_JS);
-#endif
-  source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
-  source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);
-  source->AddResourcePath("icons.html", IDR_MD_EXTENSIONS_ICONS_HTML);
-  source->AddResourcePath("item.html", IDR_MD_EXTENSIONS_ITEM_HTML);
-  source->AddResourcePath("item.js", IDR_MD_EXTENSIONS_ITEM_JS);
-  source->AddResourcePath("item_list.html", IDR_MD_EXTENSIONS_ITEM_LIST_HTML);
-  source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
-  source->AddResourcePath("item_util.html", IDR_MD_EXTENSIONS_ITEM_UTIL_HTML);
-  source->AddResourcePath("item_util.js", IDR_MD_EXTENSIONS_ITEM_UTIL_JS);
-  source->AddResourcePath("load_error.html", IDR_MD_EXTENSIONS_LOAD_ERROR_HTML);
-  source->AddResourcePath("load_error.js", IDR_MD_EXTENSIONS_LOAD_ERROR_JS);
-  source->AddResourcePath("navigation_helper.html",
-                          IDR_MD_EXTENSIONS_NAVIGATION_HELPER_HTML);
-  source->AddResourcePath("navigation_helper.js",
-                          IDR_MD_EXTENSIONS_NAVIGATION_HELPER_JS);
-  source->AddResourcePath("options_dialog.html",
-                          IDR_MD_EXTENSIONS_OPTIONS_DIALOG_HTML);
-  source->AddResourcePath("options_dialog.js",
-                          IDR_MD_EXTENSIONS_OPTIONS_DIALOG_JS);
-  source->AddResourcePath("pack_dialog.html",
-                          IDR_MD_EXTENSIONS_PACK_DIALOG_HTML);
-  source->AddResourcePath("pack_dialog.js", IDR_MD_EXTENSIONS_PACK_DIALOG_JS);
-  source->AddResourcePath("pack_dialog_alert.html",
-                          IDR_MD_EXTENSIONS_PACK_DIALOG_ALERT_HTML);
-  source->AddResourcePath("pack_dialog_alert.js",
-                          IDR_MD_EXTENSIONS_PACK_DIALOG_ALERT_JS);
-  source->AddResourcePath("service.html", IDR_MD_EXTENSIONS_SERVICE_HTML);
-  source->AddResourcePath("service.js", IDR_MD_EXTENSIONS_SERVICE_JS);
-  source->AddResourcePath("shortcut_input.html",
-                          IDR_MD_EXTENSIONS_SHORTCUT_INPUT_HTML);
-  source->AddResourcePath("shortcut_input.js",
-                          IDR_MD_EXTENSIONS_SHORTCUT_INPUT_JS);
-  source->AddResourcePath("shortcut_util.html",
-                          IDR_EXTENSIONS_SHORTCUT_UTIL_HTML);
   source->AddResourcePath("shortcut_util.js", IDR_EXTENSIONS_SHORTCUT_UTIL_JS);
-  source->AddResourcePath("sidebar.html", IDR_MD_EXTENSIONS_SIDEBAR_HTML);
-  source->AddResourcePath("sidebar.js", IDR_MD_EXTENSIONS_SIDEBAR_JS);
-  source->AddResourcePath("strings.html", IDR_MD_EXTENSIONS_STRINGS_HTML);
-  source->AddResourcePath("toolbar.html", IDR_MD_EXTENSIONS_TOOLBAR_HTML);
-  source->AddResourcePath("toolbar.js", IDR_MD_EXTENSIONS_TOOLBAR_JS);
-  source->AddResourcePath("view_manager.html",
-                          IDR_MD_EXTENSIONS_VIEW_MANAGER_HTML);
-  source->AddResourcePath("view_manager.js", IDR_MD_EXTENSIONS_VIEW_MANAGER_JS);
+
   source->SetDefaultResource(IDR_MD_EXTENSIONS_EXTENSIONS_HTML);
 
   return source;

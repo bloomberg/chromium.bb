@@ -81,17 +81,20 @@
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [11520],
+    "structures": [11470],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [11610],
-    "structures": [11860],
+    "includes": [11560],
+    "structures": [11810],
   },
   "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [11910],
+    "includes": [11860],
+  },
+  "chrome/browser/resources/md_extensions/extensions_resources.grd": {
+    "structures": [11900],
   },
   "chrome/browser/resources/net_internals_resources.grd": {
-    "includes": [11960],
+    "includes": [12000],
   },
   "chrome/browser/resources/password_manager_internals_resources.grd": {
     "includes": [12040],
