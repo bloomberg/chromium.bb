@@ -23,7 +23,7 @@ namespace sandbox {
 
 SeatbeltExtension::~SeatbeltExtension() {
   DCHECK(token_.empty() && handle_ == 0)
-      << "A SeatbeltExtension must be consumed or revoked.";
+      << "A SeatbeltExtension must be consumed permanently or revoked.";
 }
 
 // static
