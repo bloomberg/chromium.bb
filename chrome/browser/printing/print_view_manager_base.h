@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "printing/features/features.h"
-#include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_DidPrintPage_Params;
 
@@ -33,7 +32,6 @@ class PrintQueriesQueue;
 
 // Base class for managing the print commands for a WebContents.
 class PrintViewManagerBase : public content::NotificationObserver,
-                             public PrintedPagesSource,
                              public PrintManager {
  public:
   ~PrintViewManagerBase() override;
@@ -54,8 +52,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void SystemDialogCancelled();
 #endif
 
-  // PrintedPagesSource implementation.
-  base::string16 RenderSourceName() override;
+  base::string16 RenderSourceName();
 
  protected:
   explicit PrintViewManagerBase(content::WebContents* web_contents);

@@ -24,7 +24,6 @@ namespace printing {
 
 class MetafilePlayer;
 class PrintedPage;
-class PrintedPagesSource;
 class PrintingContext;
 
 // A collection of rendered pages. The settings are immutable. If the print
@@ -39,7 +38,7 @@ class PRINTING_EXPORT PrintedDocument
   // The cookie shall be unique and has a specific relationship with its
   // originating source and settings.
   PrintedDocument(const PrintSettings& settings,
-                  PrintedPagesSource* source,
+                  const base::string16& name,
                   int cookie);
 
   // Sets a page's data. 0-based. Takes metafile ownership.
@@ -71,10 +70,6 @@ class PRINTING_EXPORT PrintedDocument
   // rendered.
   // Note: locks while parsing the whole tree.
   bool IsComplete() const;
-
-  // Disconnects the PrintedPage source (PrintedPagesSource). It is done when
-  // the source is being destroyed.
-  void DisconnectSource();
 
   // Sets the number of pages in the document to be rendered. Can only be set
   // once.
@@ -122,12 +117,8 @@ class PRINTING_EXPORT PrintedDocument
   // Contains all the mutable stuff. All this stuff MUST be accessed with the
   // lock held.
   struct Mutable {
-    explicit Mutable(PrintedPagesSource* source);
+    Mutable();
     ~Mutable();
-
-    // Source that generates the PrintedPage's (i.e. a TabContents). It will be
-    // set back to NULL if the source is deleted before this object.
-    PrintedPagesSource* source_;
 
     // Contains the pages' representation. This is a collection of PrintedPage.
     // Warning: Lock must be held when accessing this member.
@@ -151,7 +142,7 @@ class PRINTING_EXPORT PrintedDocument
   // construction.
   struct Immutable {
     Immutable(const PrintSettings& settings,
-              PrintedPagesSource* source,
+              const base::string16& name,
               int cookie);
     ~Immutable();
 
