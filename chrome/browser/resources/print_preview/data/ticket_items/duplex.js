@@ -5,32 +5,28 @@
 cr.define('print_preview.ticket_items', function() {
   'use strict';
 
-  /**
-   * Duplex ticket item whose value is a {@code boolean} that indicates whether
-   * the document should be duplex printed.
-   * @param {!print_preview.AppState} appState App state used to persist collate
-   *     selection.
-   * @param {!print_preview.DestinationStore} destinationStore Destination store
-   *     used determine if a destination has the collate capability.
-   * @constructor
-   * @extends {print_preview.ticket_items.TicketItem}
-   */
-  function Duplex(appState, destinationStore) {
-    print_preview.ticket_items.TicketItem.call(
-        this, appState, print_preview.AppStateField.IS_DUPLEX_ENABLED,
-        destinationStore);
-  }
-
-  Duplex.prototype = {
-    __proto__: print_preview.ticket_items.TicketItem.prototype,
+  class Duplex extends print_preview.ticket_items.TicketItem {
+    /**
+     * Duplex ticket item whose value is a {@code boolean} that indicates
+     * whether the document should be duplex printed.
+     * @param {!print_preview.AppState} appState App state used to persist
+     *     collate selection.
+     * @param {!print_preview.DestinationStore} destinationStore Destination
+     *     store used determine if a destination has the collate capability.
+     */
+    constructor(appState, destinationStore) {
+      super(
+          appState, print_preview.AppStateField.IS_DUPLEX_ENABLED,
+          destinationStore);
+    }
 
     /** @override */
-    wouldValueBeValid: function(value) {
+    wouldValueBeValid(value) {
       return true;
-    },
+    }
 
     /** @override */
-    isCapabilityAvailable: function() {
+    isCapabilityAvailable() {
       var cap = this.getDuplexCapability_();
       if (!cap) {
         return false;
@@ -42,34 +38,34 @@ cr.define('print_preview.ticket_items', function() {
         hasSimplexOption = hasSimplexOption || option.type == 'NO_DUPLEX';
       });
       return hasLongEdgeOption && hasSimplexOption;
-    },
+    }
 
     /** @override */
-    getDefaultValueInternal: function() {
+    getDefaultValueInternal() {
       var cap = this.getDuplexCapability_();
       var defaultOptions = cap.option.filter(function(option) {
         return option.is_default;
       });
       return defaultOptions.length == 0 ? false :
                                           defaultOptions[0].type == 'LONG_EDGE';
-    },
+    }
 
     /** @override */
-    getCapabilityNotAvailableValueInternal: function() {
+    getCapabilityNotAvailableValueInternal() {
       return false;
-    },
+    }
 
     /**
      * @return {Object} Duplex capability of the selected destination.
      * @private
      */
-    getDuplexCapability_: function() {
+    getDuplexCapability_() {
       var dest = this.getSelectedDestInternal();
       return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.duplex) ||
           null;
     }
-  };
+  }
 
   // Export
   return {Duplex: Duplex};

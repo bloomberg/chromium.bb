@@ -5,18 +5,96 @@
 cr.define('print_preview.ticket_items', function() {
   'use strict';
 
-  /**
-   * Page range ticket item whose value is a {@code string} that represents
-   * which pages in the document should be printed.
-   * @param {!print_preview.DocumentInfo} documentInfo Information about the
-   *     document to print.
-   * @constructor
-   * @extends {print_preview.ticket_items.TicketItem}
-   */
-  function PageRange(documentInfo) {
-    print_preview.ticket_items.TicketItem.call(
-        this, null /*appState*/, null /*field*/, null /*destinationStore*/,
-        documentInfo);
+  class PageRange extends print_preview.ticket_items.TicketItem {
+    /**
+     * Page range ticket item whose value is a {@code string} that represents
+     * which pages in the document should be printed.
+     * @param {!print_preview.DocumentInfo} documentInfo Information about the
+     *     document to print.
+     */
+    constructor(documentInfo) {
+      super(
+          null /*appState*/, null /*field*/, null /*destinationStore*/,
+          documentInfo);
+    }
+
+    /** @override */
+    wouldValueBeValid(value) {
+      var result = pageRangeTextToPageRanges(
+          value, this.getDocumentInfoInternal().pageCount);
+      return result instanceof Array;
+    }
+
+    /**
+     * @return {!print_preview.PageNumberSet} Set of page numbers defined by the
+     *     page range string.
+     */
+    getPageNumberSet() {
+      var pageNumberList = pageRangeTextToPageList(
+          this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
+      return new print_preview.PageNumberSet(pageNumberList);
+    }
+
+    /** @override */
+    isCapabilityAvailable() {
+      return true;
+    }
+
+    /** @override */
+    getDefaultValueInternal() {
+      return '';
+    }
+
+    /** @override */
+    getCapabilityNotAvailableValueInternal() {
+      return '';
+    }
+
+    /**
+     * @return {string} The value of the ticket item as a string.
+     * @private
+     */
+    getValueAsString_() {
+      return /** @type {string} */ (this.getValue());
+    }
+
+    /**
+     * @return {!Array<Object<{from: number, to: number}>>} A list of page
+     *     ranges.
+     */
+    getPageRanges() {
+      var pageRanges = pageRangeTextToPageRanges(this.getValueAsString_());
+      return pageRanges instanceof Array ? pageRanges : [];
+    }
+
+    /**
+     * @return {!Array<Object<{from: number, to: number}>>} A list of page
+     *     ranges suitable for use in the native layer.
+     * TODO(vitalybuka): this should be removed when native layer switched to
+     *     page ranges.
+     */
+    getDocumentPageRanges() {
+      var pageRanges = pageRangeTextToPageRanges(
+          this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
+      return pageRanges instanceof Array ? pageRanges : [];
+    }
+
+    /**
+     * @return {!number} Number of pages reported by the document.
+     */
+    getDocumentNumPages() {
+      return this.getDocumentInfoInternal().pageCount;
+    }
+
+    /**
+     * @return {!PageRangeStatus}
+     */
+    checkValidity() {
+      var pageRanges = pageRangeTextToPageRanges(
+          this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
+      return pageRanges instanceof Array ? PageRangeStatus.NO_ERROR :
+                                           pageRanges;
+    }
   }
 
   /**
@@ -27,87 +105,6 @@ cr.define('print_preview.ticket_items', function() {
    */
   PageRange.MAX_PAGE_NUMBER_ = 1000000000;
 
-  PageRange.prototype = {
-    __proto__: print_preview.ticket_items.TicketItem.prototype,
-
-    /** @override */
-    wouldValueBeValid: function(value) {
-      var result = pageRangeTextToPageRanges(
-          value, this.getDocumentInfoInternal().pageCount);
-      return result instanceof Array;
-    },
-
-    /**
-     * @return {!print_preview.PageNumberSet} Set of page numbers defined by the
-     *     page range string.
-     */
-    getPageNumberSet: function() {
-      var pageNumberList = pageRangeTextToPageList(
-          this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
-      return new print_preview.PageNumberSet(pageNumberList);
-    },
-
-    /** @override */
-    isCapabilityAvailable: function() {
-      return true;
-    },
-
-    /** @override */
-    getDefaultValueInternal: function() {
-      return '';
-    },
-
-    /** @override */
-    getCapabilityNotAvailableValueInternal: function() {
-      return '';
-    },
-
-    /**
-     * @return {string} The value of the ticket item as a string.
-     * @private
-     */
-    getValueAsString_: function() {
-      return /** @type {string} */ (this.getValue());
-    },
-
-    /**
-     * @return {!Array<Object<{from: number, to: number}>>} A list of page
-     *     ranges.
-     */
-    getPageRanges: function() {
-      var pageRanges = pageRangeTextToPageRanges(this.getValueAsString_());
-      return pageRanges instanceof Array ? pageRanges : [];
-    },
-
-    /**
-     * @return {!Array<Object<{from: number, to: number}>>} A list of page
-     *     ranges suitable for use in the native layer.
-     * TODO(vitalybuka): this should be removed when native layer switched to
-     *     page ranges.
-     */
-    getDocumentPageRanges: function() {
-      var pageRanges = pageRangeTextToPageRanges(
-          this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
-      return pageRanges instanceof Array ? pageRanges : [];
-    },
-
-    /**
-     * @return {!number} Number of pages reported by the document.
-     */
-    getDocumentNumPages: function() {
-      return this.getDocumentInfoInternal().pageCount;
-    },
-
-    /**
-     * @return {!PageRangeStatus}
-     */
-    checkValidity: function() {
-      var pageRanges = pageRangeTextToPageRanges(
-          this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
-      return pageRanges instanceof Array ? PageRangeStatus.NO_ERROR :
-                                           pageRanges;
-    },
-  };
 
   // Export
   return {PageRange: PageRange};
