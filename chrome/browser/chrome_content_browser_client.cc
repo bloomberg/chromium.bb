@@ -166,7 +166,6 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
-#include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
@@ -438,7 +437,6 @@ using content::SiteInstance;
 using content::WebContents;
 using content::WebPreferences;
 using message_center::NotifierId;
-using security_interstitials::SSLErrorUI;
 
 #if defined(OS_POSIX)
 using content::PosixFileDescriptorInfo;
@@ -2218,13 +2216,6 @@ void ChromeContentBrowserClient::AllowCertificateError(
 
   // Otherwise, display an SSL blocking page. The interstitial page takes
   // ownership of ssl_blocking_page.
-  int options_mask = 0;
-  if (overridable)
-    options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
-  if (strict_enforcement)
-    options_mask |= SSLErrorUI::STRICT_ENFORCEMENT;
-  if (expired_previous_decision)
-    options_mask |= SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
 
   CertificateReportingService* cert_reporting_service =
       CertificateReportingServiceFactory::GetForBrowserContext(
@@ -2232,9 +2223,9 @@ void ChromeContentBrowserClient::AllowCertificateError(
   std::unique_ptr<CertificateReportingServiceCertReporter> cert_reporter(
       new CertificateReportingServiceCertReporter(cert_reporting_service));
 
-  SSLErrorHandler::HandleSSLError(web_contents, cert_error, ssl_info,
-                                  request_url, options_mask,
-                                  std::move(cert_reporter), callback);
+  SSLErrorHandler::HandleSSLError(
+      web_contents, cert_error, ssl_info, request_url, strict_enforcement,
+      expired_previous_decision, std::move(cert_reporter), callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(
