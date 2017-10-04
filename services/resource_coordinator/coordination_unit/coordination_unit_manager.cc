@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
@@ -23,14 +23,14 @@ class UkmEntryBuilder;
 namespace resource_coordinator {
 
 CoordinationUnitManager::CoordinationUnitManager() {
-  CoordinationUnitImpl::AssertNoActiveCoordinationUnits();
+  CoordinationUnitBase::AssertNoActiveCoordinationUnits();
 }
 
 CoordinationUnitManager::~CoordinationUnitManager() {
   // TODO(oysteine): Keep the map of coordination units as a member of this
-  // class, rather than statically inside CoordinationUnitImpl, to avoid this
+  // class, rather than statically inside CoordinationUnitBase, to avoid this
   // manual lifetime management.
-  CoordinationUnitImpl::ClearAllCoordinationUnits();
+  CoordinationUnitBase::ClearAllCoordinationUnits();
 }
 
 void CoordinationUnitManager::OnStart(
@@ -51,7 +51,7 @@ void CoordinationUnitManager::RegisterObserver(
 }
 
 void CoordinationUnitManager::OnCoordinationUnitCreated(
-    CoordinationUnitImpl* coordination_unit) {
+    CoordinationUnitBase* coordination_unit) {
   for (auto& observer : observers_) {
     if (observer->ShouldObserve(coordination_unit)) {
       coordination_unit->AddObserver(observer.get());
@@ -61,7 +61,7 @@ void CoordinationUnitManager::OnCoordinationUnitCreated(
 }
 
 void CoordinationUnitManager::OnBeforeCoordinationUnitDestroyed(
-    CoordinationUnitImpl* coordination_unit) {
+    CoordinationUnitBase* coordination_unit) {
   coordination_unit->BeforeDestroyed();
 }
 

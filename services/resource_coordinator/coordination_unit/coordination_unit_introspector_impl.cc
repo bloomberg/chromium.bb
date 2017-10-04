@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/process/process_handle.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
@@ -20,10 +20,10 @@ CoordinationUnitIntrospectorImpl::~CoordinationUnitIntrospectorImpl() = default;
 void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     const GetProcessToURLMapCallback& callback) {
   std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos;
-  std::vector<CoordinationUnitImpl*> process_cus =
-      CoordinationUnitImpl::GetCoordinationUnitsOfType(
+  std::vector<CoordinationUnitBase*> process_cus =
+      CoordinationUnitBase::GetCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  for (CoordinationUnitImpl* process_cu : process_cus) {
+  for (CoordinationUnitBase* process_cu : process_cus) {
     int64_t pid;
     if (!process_cu->GetProperty(mojom::PropertyType::kPID, &pid))
       continue;
@@ -32,10 +32,10 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     process_info->pid = pid;
     DCHECK_NE(base::kNullProcessId, process_info->pid);
 
-    std::set<CoordinationUnitImpl*> page_cus =
+    std::set<CoordinationUnitBase*> page_cus =
         process_cu->GetAssociatedCoordinationUnitsOfType(
             CoordinationUnitType::kPage);
-    for (CoordinationUnitImpl* page_cu : page_cus) {
+    for (CoordinationUnitBase* page_cu : page_cus) {
       int64_t ukm_source_id;
       if (page_cu->GetProperty(
               resource_coordinator::mojom::PropertyType::kUKMSourceId,

@@ -5,7 +5,7 @@
 #include "services/resource_coordinator/observers/metrics_collector.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
@@ -38,9 +38,9 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
 
 // Gets the number of tabs that are co-resident in all of the render processes
 // associated with a |CoordinationUnitType::kPage| coordination unit.
-size_t GetNumCoresidentTabs(const CoordinationUnitImpl* coordination_unit) {
+size_t GetNumCoresidentTabs(const CoordinationUnitBase* coordination_unit) {
   DCHECK_EQ(CoordinationUnitType::kPage, coordination_unit->id().type);
-  std::set<CoordinationUnitImpl*> coresident_tabs;
+  std::set<CoordinationUnitBase*> coresident_tabs;
   for (auto* process_coordination_unit :
        coordination_unit->GetAssociatedCoordinationUnitsOfType(
            CoordinationUnitType::kProcess)) {
@@ -63,13 +63,13 @@ MetricsCollector::MetricsCollector()
 MetricsCollector::~MetricsCollector() = default;
 
 bool MetricsCollector::ShouldObserve(
-    const CoordinationUnitImpl* coordination_unit) {
+    const CoordinationUnitBase* coordination_unit) {
   return coordination_unit->id().type == CoordinationUnitType::kFrame ||
          coordination_unit->id().type == CoordinationUnitType::kPage;
 }
 
 void MetricsCollector::OnCoordinationUnitCreated(
-    const CoordinationUnitImpl* coordination_unit) {
+    const CoordinationUnitBase* coordination_unit) {
   if (coordination_unit->id().type == CoordinationUnitType::kPage) {
     metrics_report_record_map_.emplace(coordination_unit->id(),
                                        MetricsReportRecord());
@@ -77,7 +77,7 @@ void MetricsCollector::OnCoordinationUnitCreated(
 }
 
 void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
-    const CoordinationUnitImpl* coordination_unit) {
+    const CoordinationUnitBase* coordination_unit) {
   if (coordination_unit->id().type == CoordinationUnitType::kFrame) {
     frame_data_map_.erase(coordination_unit->id());
   } else if (coordination_unit->id().type == CoordinationUnitType::kPage) {

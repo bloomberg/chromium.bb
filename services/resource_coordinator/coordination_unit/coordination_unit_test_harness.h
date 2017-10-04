@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_UNITTEST_UTIL_H_
-#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_UNITTEST_UTIL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_TEST_HARNESS_H_
+#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_TEST_HARNESS_H_
 
 #include <stdint.h>
 
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,28 +22,28 @@ struct CoordinationUnitID;
 
 class TestCoordinationUnitWrapper {
  public:
-  TestCoordinationUnitWrapper(CoordinationUnitImpl* impl) : impl_(impl) {
+  TestCoordinationUnitWrapper(CoordinationUnitBase* impl) : impl_(impl) {
     DCHECK(impl);
   }
   ~TestCoordinationUnitWrapper() { impl_->Destruct(); }
 
-  CoordinationUnitImpl* operator->() const { return impl_; }
+  CoordinationUnitBase* operator->() const { return impl_; }
 
   TestCoordinationUnitWrapper(TestCoordinationUnitWrapper&& other)
       : impl_(other.impl_) {}
 
-  CoordinationUnitImpl* get() const { return impl_; }
+  CoordinationUnitBase* get() const { return impl_; }
 
  private:
-  CoordinationUnitImpl* impl_;
+  CoordinationUnitBase* impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCoordinationUnitWrapper);
 };
 
-class CoordinationUnitImplTestBase : public testing::Test {
+class CoordinationUnitTestHarness : public testing::Test {
  public:
-  CoordinationUnitImplTestBase();
-  ~CoordinationUnitImplTestBase() override;
+  CoordinationUnitTestHarness();
+  ~CoordinationUnitTestHarness() override;
 
   // testing::Test:
   void TearDown() override;
@@ -70,4 +69,4 @@ class CoordinationUnitImplTestBase : public testing::Test {
 
 }  // namespace resource_coordinator
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_UNITTEST_UTIL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_TEST_HARNESS_H_

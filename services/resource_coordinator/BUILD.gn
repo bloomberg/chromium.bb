@@ -12,8 +12,8 @@ import("//services/service_manager/public/tools/test/service_test.gni")
 
 source_set("lib") {
   sources = [
-    "coordination_unit/coordination_unit_impl.cc",
-    "coordination_unit/coordination_unit_impl.h",
+    "coordination_unit/coordination_unit_base.cc",
+    "coordination_unit/coordination_unit_base.h",
     "coordination_unit/coordination_unit_introspector_impl.cc",
     "coordination_unit/coordination_unit_introspector_impl.h",
     "coordination_unit/coordination_unit_manager.cc",
@@ -78,9 +78,9 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "coordination_unit/coordination_unit_impl_unittest.cc",
-    "coordination_unit/coordination_unit_impl_unittest_util.cc",
-    "coordination_unit/coordination_unit_impl_unittest_util.h",
+    "coordination_unit/coordination_unit_base_unittest.cc",
+    "coordination_unit/coordination_unit_test_harness.cc",
+    "coordination_unit/coordination_unit_test_harness.h",
     "coordination_unit/mock_coordination_unit_graphs.cc",
     "coordination_unit/mock_coordination_unit_graphs.h",
     "coordination_unit/page_coordination_unit_impl_unittest.cc",

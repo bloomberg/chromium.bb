@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
@@ -14,7 +14,7 @@ namespace resource_coordinator {
 
 namespace {
 
-class PageCoordinationUnitImplTest : public CoordinationUnitImplTestBase {};
+class PageCoordinationUnitImplTest : public CoordinationUnitTestHarness {};
 
 }  // namespace
 

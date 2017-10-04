@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
@@ -26,7 +26,7 @@ CoordinationUnitProviderImpl::CoordinationUnitProviderImpl(
 CoordinationUnitProviderImpl::~CoordinationUnitProviderImpl() = default;
 
 void CoordinationUnitProviderImpl::OnConnectionError(
-    CoordinationUnitImpl* coordination_unit) {
+    CoordinationUnitBase* coordination_unit) {
   coordination_unit_manager_->OnBeforeCoordinationUnitDestroyed(
       coordination_unit);
   coordination_unit->Destruct();
@@ -35,8 +35,8 @@ void CoordinationUnitProviderImpl::OnConnectionError(
 void CoordinationUnitProviderImpl::CreateCoordinationUnit(
     mojom::CoordinationUnitRequest request,
     const CoordinationUnitID& id) {
-  CoordinationUnitImpl* coordination_unit =
-      CoordinationUnitImpl::CreateCoordinationUnit(
+  CoordinationUnitBase* coordination_unit =
+      CoordinationUnitBase::CreateCoordinationUnit(
           id, service_ref_factory_->CreateRef());
 
   coordination_unit->Bind(std::move(request));
