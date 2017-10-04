@@ -553,6 +553,7 @@ _x86_internal_release_boards = frozenset([
     'glados',
     'glimmer',
     'gnawty',
+    'grunt',
     'guado',
     'guado-accelerator',
     'guado_labstation',
@@ -656,6 +657,7 @@ _cheets_x86_boards = frozenset([
     'fizz',
     'gandof',
     'glados',
+    'grunt',
     'jadeite',
     'kahlee',
     'kunimitsu',
@@ -2304,6 +2306,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron',
       'auron_paine',
+      'grunt',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
