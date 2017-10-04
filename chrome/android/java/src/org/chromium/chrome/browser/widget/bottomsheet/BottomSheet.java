@@ -726,6 +726,8 @@ public class BottomSheet
 
         mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setPadding(0, 0, 0, mBottomNavHeight - mToolbarShadowHeight);
+        mBottomSheetContentContainer.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
