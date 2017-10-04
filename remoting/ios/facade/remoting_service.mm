@@ -54,6 +54,7 @@ NSString* const kUserInfo = @"kUserInfo";
 
 @synthesize hosts = _hosts;
 @synthesize hostListState = _hostListState;
+@synthesize lastFetchFailureReason = _lastFetchFailureReason;
 
 // RemotingService is a singleton.
 + (RemotingService*)instance {
@@ -71,6 +72,7 @@ NSString* const kUserInfo = @"kUserInfo";
     _hosts = nil;
     // TODO(yuweih): Maybe better to just cancel the previous request.
     _hostListState = HostListStateNotFetched;
+    _lastFetchFailureReason = HostListFetchFailureReasonNoFailure;
     // TODO(nicholss): This might need a pointer back to the service.
     _clientRuntimeDelegate =
         new remoting::IosClientRuntimeDelegate();
@@ -152,6 +154,9 @@ NSString* const kUserInfo = @"kUserInfo";
   if (state == _hostListState) {
     return;
   }
+  if (state == HostListStateFetching || state == HostListStateFetched) {
+    _lastFetchFailureReason = HostListFetchFailureReasonNoFailure;
+  }
   _hostListState = state;
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kHostListStateDidChange
@@ -208,22 +213,22 @@ NSString* const kUserInfo = @"kUserInfo";
           return;
         }
 
-        HostListFetchFailureReason reason;
         switch (status) {
           case RemotingAuthenticationStatusNetworkError:
-            reason = HostListFetchFailureReasonNetworkError;
+            _lastFetchFailureReason = HostListFetchFailureReasonNetworkError;
             break;
           case RemotingAuthenticationStatusAuthError:
-            reason = HostListFetchFailureReasonAuthError;
+            _lastFetchFailureReason = HostListFetchFailureReasonAuthError;
             break;
           default:
-            reason = HostListFetchFailureReasonUnknown;
+            _lastFetchFailureReason = HostListFetchFailureReasonUnknown;
         }
         [NSNotificationCenter.defaultCenter
             postNotificationName:kHostListFetchDidFail
                           object:self
                         userInfo:@{
-                          kHostListFetchFailureReasonKey : @(reason)
+                          kHostListFetchFailureReasonKey :
+                              @(_lastFetchFailureReason)
                         }];
       }];
 }
