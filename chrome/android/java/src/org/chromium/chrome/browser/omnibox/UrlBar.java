@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.text.BidiFormatter;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Selection;
@@ -649,7 +650,8 @@ public class UrlBar extends AutocompleteEditText {
         Editable url = getText();
         if (url == null || url.length() < 1) {
             int scrollX = 0;
-            if (ApiCompatibilityUtils.isLayoutRtl(this)) {
+            if (ApiCompatibilityUtils.isLayoutRtl(this)
+                    && BidiFormatter.getInstance().isRtl(getHint())) {
                 // Compared to below that uses getPrimaryHorizontal(1) due to 0 returning an
                 // invalid value, if the text is empty, getPrimaryHorizontal(0) returns the actual
                 // max scroll amount.
