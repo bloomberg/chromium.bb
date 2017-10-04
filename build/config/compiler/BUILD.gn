@@ -126,8 +126,8 @@ if (gold_path == false) {
 }
 
 if (use_debug_fission == "default") {
-  use_debug_fission =
-      is_debug && !is_android && !is_win && use_gold && cc_wrapper == ""
+  use_debug_fission = is_debug && !is_android && !is_win &&
+                      (use_gold || use_lld) && cc_wrapper == ""
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -1817,12 +1817,13 @@ config("symbols") {
     # obj/native_client/src/trusted/service_runtime/sel_asm/nacl_switch_32.o:
     # DWARF info may be corrupt; offsets in a range list entry are in different
     # sections" there.  Maybe just a bug in nacl_switch_32.S.
-    # TODO(thakis): Figure out if there's a way to make this go for official
-    # builds, currently get
-    # "third_party/binutils/Linux_x64/Release/bin/ld.gold: warning:
-    # /tmp/lto-llvm-0b5201.o: corrupt debug info in .debug_info"
     if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
-        (use_gold || use_lld) && !use_thin_lto && !is_official_build) {
+        (use_gold || use_lld)) {
+      # This flag enables the GNU-format pubnames and pubtypes sections, which
+      # lld needs in order to generate a correct GDB index.
+      # TODO(pcc): Try to make lld understand non-GNU-format pubnames sections
+      # (llvm.org/PR34820).
+      cflags += [ "-ggnu-pubnames" ]
       ldflags += [ "-Wl,--gdb-index" ]
     }
   }
