@@ -57,8 +57,8 @@ public class FirstRunFlowSequencerTest {
         public boolean shouldShowDataReductionPage;
         public boolean shouldShowSearchEnginePage;
 
-        public TestFirstRunFlowSequencer(Activity activity, Bundle launcherProvidedProperties) {
-            super(activity, launcherProvidedProperties);
+        public TestFirstRunFlowSequencer(Activity activity) {
+            super(activity);
         }
 
         @Override
@@ -130,10 +130,7 @@ public class FirstRunFlowSequencerTest {
     @Before
     public void setUp() throws Exception {
         mActivityController = Robolectric.buildActivity(Activity.class);
-        Bundle launchProperties = new Bundle();
-        launchProperties.putBoolean(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER, true);
-        mSequencer =
-                new TestFirstRunFlowSequencer(mActivityController.setup().get(), launchProperties);
+        mSequencer = new TestFirstRunFlowSequencer(mActivityController.setup().get());
     }
 
     @After
