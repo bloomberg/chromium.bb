@@ -162,7 +162,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
                     box_decoration_data.bleed_avoidance);
 
     if (box_decoration_data.has_appearance)
-      theme_painter.PaintDecorations(layout_box_, paint_info,
+      theme_painter.PaintDecorations(layout_box_.GetNode(), style, paint_info,
                                      snapped_paint_rect);
   }
 
@@ -176,7 +176,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
         (!box_decoration_data.has_appearance ||
          (!theme_painted &&
           LayoutTheme::GetTheme().Painter().PaintBorderOnly(
-              layout_box_, paint_info, snapped_paint_rect))) &&
+              layout_box_.GetNode(), style, paint_info, snapped_paint_rect))) &&
         !(layout_box_.IsTable() &&
           ToLayoutTable(&layout_box_)->ShouldCollapseBorders())) {
       BoxPainterBase::PaintBorder(

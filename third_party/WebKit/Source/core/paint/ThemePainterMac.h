@@ -35,46 +35,56 @@ class ThemePainterMac final : public ThemePainter {
   ThemePainterMac(LayoutThemeMac&);
 
  private:
-  bool PaintButton(const LayoutObject&,
+  bool PaintButton(const Node*,
+                   const ComputedStyle&,
                    const PaintInfo&,
                    const IntRect&) override;
-  bool PaintCheckbox(const LayoutObject&,
+  bool PaintCheckbox(const Node*,
+                     const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
   bool PaintCapsLockIndicator(const LayoutObject&,
                               const PaintInfo&,
                               const IntRect&) override;
-  bool PaintInnerSpinButton(const LayoutObject&,
+  bool PaintInnerSpinButton(const Node*,
+                            const ComputedStyle&,
                             const PaintInfo&,
                             const IntRect&) override;
-  bool PaintMenuList(const LayoutObject&,
+  bool PaintMenuList(const Node*,
+                     const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
-  bool PaintMenuListButton(const LayoutObject&,
+  bool PaintMenuListButton(const Node*,
+                           const ComputedStyle&,
                            const PaintInfo&,
                            const IntRect&) override;
   bool PaintProgressBar(const LayoutObject&,
                         const PaintInfo&,
                         const IntRect&) override;
-  bool PaintRadio(const LayoutObject&,
+  bool PaintRadio(const Node*,
+                  const ComputedStyle&,
                   const PaintInfo&,
                   const IntRect&) override;
-  bool PaintSliderThumb(const LayoutObject&,
+  bool PaintSliderThumb(const Node*,
+                        const ComputedStyle&,
                         const PaintInfo&,
                         const IntRect&) override;
   bool PaintSliderTrack(const LayoutObject&,
                         const PaintInfo&,
                         const IntRect&) override;
-  bool PaintSearchField(const LayoutObject&,
+  bool PaintSearchField(const Node*,
+                        const ComputedStyle&,
                         const PaintInfo&,
                         const IntRect&) override;
   bool PaintSearchFieldCancelButton(const LayoutObject&,
                                     const PaintInfo&,
                                     const IntRect&) override;
-  bool PaintTextArea(const LayoutObject&,
+  bool PaintTextArea(const Node*,
+                     const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
-  bool PaintTextField(const LayoutObject&,
+  bool PaintTextField(const Node*,
+                      const ComputedStyle&,
                       const PaintInfo&,
                       const IntRect&) override;
 

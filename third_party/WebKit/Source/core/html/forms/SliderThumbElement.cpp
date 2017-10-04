@@ -91,7 +91,7 @@ bool SliderThumbElement::MatchesReadWritePseudoClass() const {
   return HostInput() && HostInput()->MatchesReadWritePseudoClass();
 }
 
-Node* SliderThumbElement::FocusDelegate() {
+const Node* SliderThumbElement::FocusDelegate() const {
   return HostInput();
 }
 

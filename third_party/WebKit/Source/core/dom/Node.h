@@ -531,7 +531,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual int tabIndex() const;
 
-  virtual Node* FocusDelegate();
+  virtual const Node* FocusDelegate() const;
   // This is called only when the node is focused.
   virtual bool ShouldHaveFocusAppearance() const;
 

@@ -553,7 +553,8 @@ void LayoutBlock::AddVisualOverflowFromTheme() {
     return;
 
   IntRect inflated_rect = PixelSnappedBorderBoxRect();
-  LayoutTheme::GetTheme().AddVisualOverflow(*this, inflated_rect);
+  LayoutTheme::GetTheme().AddVisualOverflow(GetNode(), StyleRef(),
+                                            inflated_rect);
   AddSelfVisualOverflow(LayoutRect(inflated_rect));
 }
 
@@ -1636,8 +1637,10 @@ LayoutUnit LayoutBlock::BaselinePosition(
     //        baselines.
     // FIXME: Need to patch form controls to deal with vertical lines.
     if (Style()->HasAppearance() &&
-        !LayoutTheme::GetTheme().IsControlContainer(Style()->Appearance()))
-      return LayoutTheme::GetTheme().BaselinePosition(this);
+        !LayoutTheme::GetTheme().IsControlContainer(Style()->Appearance())) {
+      return Size().Height() + MarginTop() +
+             LayoutTheme::GetTheme().BaselinePositionAdjustment(StyleRef());
+    }
 
     LayoutUnit baseline_pos = (IsWritingModeRoot() && !IsRubyRun())
                                   ? LayoutUnit(-1)

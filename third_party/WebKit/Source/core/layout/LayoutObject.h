@@ -1910,6 +1910,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                             : LayoutRect();
   }
 
+  void InvalidateIfControlStateChanged(ControlState);
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
