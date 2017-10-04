@@ -21,7 +21,6 @@
 #include "jni/PermissionDialogDelegate_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/window_open_disposition.h"
 
 using base::android::ConvertUTF16ToJavaString;
 
@@ -47,7 +46,8 @@ bool PermissionDialogDelegate::ShouldShowDialog() {
   return base::FeatureList::IsEnabled(features::kModalPermissionPrompts);
 }
 
-void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
+void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
+                                                  TabAndroid* tab) {
   base::android::ScopedJavaLocalRef<jstring> primaryButtonText =
       ConvertUTF16ToJavaString(env,
                                l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
@@ -62,11 +62,10 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
   }
 
   j_delegate_.Reset(Java_PermissionDialogDelegate_create(
-      env, reinterpret_cast<uintptr_t>(this), tab_->GetJavaObject(),
+      env, reinterpret_cast<uintptr_t>(this), tab->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types),
       ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
-      ConvertUTF16ToJavaString(env, permission_prompt_->GetLinkText()),
       primaryButtonText, secondaryButtonText,
       permission_prompt_->ShouldShowPersistenceToggle()));
 }
@@ -92,16 +91,6 @@ void PermissionDialogDelegate::Dismissed(JNIEnv* env,
   permission_prompt_->Closing();
 }
 
-void PermissionDialogDelegate::LinkClicked(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
-  if (tab_->web_contents()) {
-    GURL linkURL = permission_prompt_->GetLinkURL();
-    tab_->web_contents()->OpenURL(content::OpenURLParams(
-        linkURL, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui::PAGE_TRANSITION_LINK, false));
-  }
-}
-
 void PermissionDialogDelegate::Destroy(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   delete this;
@@ -111,14 +100,13 @@ PermissionDialogDelegate::PermissionDialogDelegate(
     TabAndroid* tab,
     PermissionPromptAndroid* permission_prompt)
     : content::WebContentsObserver(tab->web_contents()),
-      tab_(tab),
       permission_prompt_(permission_prompt) {
-  DCHECK(tab_);
+  DCHECK(tab);
   DCHECK(permission_prompt_);
 
   // Create our Java counterpart, which manages our lifetime.
   JNIEnv* env = base::android::AttachCurrentThread();
-  CreateJavaDelegate(env);
+  CreateJavaDelegate(env, tab);
 
   // Send the Java delegate to the Java PermissionDialogController for display.
   // The controller takes over lifetime management; when the Java delegate is no
