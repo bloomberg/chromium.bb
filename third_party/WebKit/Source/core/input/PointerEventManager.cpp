@@ -262,8 +262,8 @@ void PointerEventManager::BlockTouchPointers(TimeTicks platform_time_stamp) {
     return;
   in_canceled_state_for_pointer_type_touch_ = true;
 
-  Vector<int> touch_pointer_ids = pointer_event_factory_.GetPointerIdsOfType(
-      WebPointerProperties::PointerType::kTouch);
+  Vector<int> touch_pointer_ids =
+      pointer_event_factory_.GetPointerIdsOfScrollCapablePointers();
 
   for (int pointer_id : touch_pointer_ids) {
     PointerEvent* pointer_event =

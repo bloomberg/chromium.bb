@@ -189,7 +189,8 @@ const int PointerEventFactory::kMouseId = 1;
 void PointerEventFactory::SetIdTypeButtons(
     PointerEventInit& pointer_event_init,
     const WebPointerProperties& pointer_properties,
-    unsigned buttons) {
+    unsigned buttons,
+    bool can_scroll) {
   WebPointerProperties::PointerType pointer_type =
       pointer_properties.pointer_type;
   // Tweak the |buttons| to reflect pen eraser mode only if the pen is in
@@ -205,7 +206,7 @@ void PointerEventFactory::SetIdTypeButtons(
   pointer_event_init.setButtons(buttons);
 
   const IncomingId incoming_id(pointer_type, pointer_properties.id);
-  int pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0);
+  int pointer_id = AddIdAndActiveButtons(incoming_id, buttons != 0, can_scroll);
   pointer_event_init.setPointerId(pointer_id);
   pointer_event_init.setPointerType(
       PointerTypeNameForWebPointPointerType(pointer_type));
@@ -243,7 +244,7 @@ PointerEvent* PointerEventFactory::Create(
       static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
   PointerEventInit pointer_event_init;
 
-  SetIdTypeButtons(pointer_event_init, mouse_event, buttons);
+  SetIdTypeButtons(pointer_event_init, mouse_event, buttons, false);
   SetEventSpecificFields(pointer_event_init, pointer_event_name);
 
   if (pointer_event_name == EventTypeNames::pointerdown ||
@@ -329,7 +330,7 @@ PointerEvent* PointerEventFactory::Create(
   PointerEventInit pointer_event_init;
 
   SetIdTypeButtons(pointer_event_init, touch_point,
-                   pointer_released_or_cancelled ? 0 : 1);
+                   pointer_released_or_cancelled ? 0 : 1, true);
   pointer_event_init.setButton(static_cast<int>(
       pointer_pressed_or_released ? WebPointerProperties::Button::kLeft
                                   : WebPointerProperties::Button::kNoButton));
@@ -389,7 +390,8 @@ PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
   DCHECK(pointer_id_mapping_.Contains(pointer_id));
   pointer_id_mapping_.Set(
       pointer_id,
-      PointerAttributes(pointer_id_mapping_.at(pointer_id).incoming_id, false));
+      PointerAttributes(pointer_id_mapping_.at(pointer_id).incoming_id, false,
+                        false));
 
   PointerEventInit pointer_event_init;
 
@@ -481,24 +483,27 @@ void PointerEventFactory::Clear() {
   // used with the existing APIs
   primary_id_[ToInt(WebPointerProperties::PointerType::kMouse)] = kMouseId;
   pointer_id_mapping_.insert(
-      kMouseId,
-      PointerAttributes(
-          IncomingId(WebPointerProperties::PointerType::kMouse, 0), 0));
+      kMouseId, PointerAttributes(
+                    IncomingId(WebPointerProperties::PointerType::kMouse, 0),
+                    false, false));
 
   current_id_ = PointerEventFactory::kMouseId + 1;
 }
 
 int PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
-                                               bool is_active_buttons) {
+                                               bool is_active_buttons,
+                                               bool can_scroll) {
   // Do not add extra mouse pointer as it was added in initialization
   if (p.GetPointerType() == WebPointerProperties::PointerType::kMouse) {
-    pointer_id_mapping_.Set(kMouseId, PointerAttributes(p, is_active_buttons));
+    pointer_id_mapping_.Set(kMouseId,
+                            PointerAttributes(p, is_active_buttons, false));
     return kMouseId;
   }
 
   if (pointer_incoming_id_mapping_.Contains(p)) {
     int mapped_id = pointer_incoming_id_mapping_.at(p);
-    pointer_id_mapping_.Set(mapped_id, PointerAttributes(p, is_active_buttons));
+    pointer_id_mapping_.Set(
+        mapped_id, PointerAttributes(p, is_active_buttons, can_scroll));
     return mapped_id;
   }
   int type_int = p.PointerTypeInt();
@@ -508,8 +513,8 @@ int PointerEventFactory::AddIdAndActiveButtons(const IncomingId p,
     primary_id_[type_int] = mapped_id;
   id_count_[type_int]++;
   pointer_incoming_id_mapping_.insert(p, mapped_id);
-  pointer_id_mapping_.insert(mapped_id,
-                             PointerAttributes(p, is_active_buttons));
+  pointer_id_mapping_.insert(
+      mapped_id, PointerAttributes(p, is_active_buttons, can_scroll));
   return mapped_id;
 }
 
@@ -528,16 +533,13 @@ bool PointerEventFactory::Remove(const int mapped_id) {
   return true;
 }
 
-// This function does not work with pointer type of eraser, because we save
-// them as pen type in the pointer id map.
-Vector<int> PointerEventFactory::GetPointerIdsOfType(
-    WebPointerProperties::PointerType pointer_type) const {
+Vector<int> PointerEventFactory::GetPointerIdsOfScrollCapablePointers() const {
   Vector<int> mapped_ids;
 
   for (auto iter = pointer_id_mapping_.begin();
        iter != pointer_id_mapping_.end(); ++iter) {
     int mapped_id = iter->key;
-    if (iter->value.incoming_id.GetPointerType() == pointer_type)
+    if (iter->value.can_scroll)
       mapped_ids.push_back(mapped_id);
   }
 
