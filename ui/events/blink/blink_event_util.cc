@@ -507,7 +507,7 @@ std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
     const WebGestureEvent& last_event,
     const WebGestureEvent& new_event) {
   DCHECK(!CanCoalesce(new_event, last_event))
-      << "New event can be coalesced with the last event in queue directly.";
+      << "New event can't be coalesced with the last event in queue directly.";
   DCHECK(IsContinuousGestureEvent(new_event.GetType()));
   DCHECK(IsCompatibleScrollorPinch(new_event, last_event));
   DCHECK(!second_last_event ||
