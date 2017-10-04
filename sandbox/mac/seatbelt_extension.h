@@ -25,6 +25,7 @@ class SeatbeltExtensionToken;
 class SEATBELT_EXPORT SeatbeltExtension {
  public:
   enum Type {
+    // Requires (allow file-read* (extension "com.apple.app-sandbox.read")).
     FILE_READ,
     // TODO(rsesek): Potentially support FILE_READ_WRITE, MACH and GENERIC
     // extension types.
@@ -50,8 +51,8 @@ class SEATBELT_EXPORT SeatbeltExtension {
   // Consumes the sandbox extension, giving the calling process access to the
   // resource for which the extension was issued. Returns true if the
   // extension was consumed and the resource access is now permitted, and
-  // false on error with the resource still denied. The extension can be
-  // revoked by the calling process.
+  // false on error with the resource still denied. The extension must be
+  // revoked by the calling process before being destructed.
   bool Consume();
 
   // Like Consume(), but makes it so that the extension cannot be revoked.
