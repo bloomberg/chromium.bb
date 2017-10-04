@@ -699,11 +699,8 @@ void Layer::RemoveDeferredPaintRequest() {
   --deferred_paint_requests_;
   TRACE_COUNTER_ID1("ui", "DeferredPaintRequests", this,
                     deferred_paint_requests_);
-  if (!deferred_paint_requests_ && !damaged_region_.IsEmpty()) {
+  if (!deferred_paint_requests_ && !damaged_region_.IsEmpty())
     ScheduleDraw();
-    if (layer_mask_)
-      layer_mask_->ScheduleDraw();
-  }
 }
 
 void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
