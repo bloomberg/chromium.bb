@@ -38,8 +38,8 @@ std::unique_ptr<LoopbackServerEntity>
 PersistentUniqueClientEntity::CreateFromEntity(
     const sync_pb::SyncEntity& client_entity) {
   ModelType model_type = GetModelTypeFromSpecifics(client_entity.specifics());
-  CHECK_NE(client_entity.has_client_defined_unique_tag(),
-           syncer::CommitOnlyTypes().Has(model_type))
+  DCHECK_NE(client_entity.has_client_defined_unique_tag(),
+            syncer::CommitOnlyTypes().Has(model_type))
       << "A UniqueClientEntity should have a client-defined unique tag iff it "
          "is not a CommitOnly type.";
   // Without model type specific logic for each CommitOnly type, we cannot infer
