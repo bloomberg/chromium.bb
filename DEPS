@@ -286,7 +286,7 @@ deps = {
   },
 
   'src/third_party/errorprone/lib': {
-      'url': Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '0eea83b66343133b9c76b7d3288c30321818ebcf',
+      'url': Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '0f2d079e6ae4be0880bae71952a8b7203767724f',
       'condition': 'checkout_android',
   },
 
