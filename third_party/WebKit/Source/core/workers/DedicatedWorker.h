@@ -27,7 +27,7 @@ class WorkerScriptLoader;
 // https://html.spec.whatwg.org/multipage/workers.html#worker
 //
 // Confusingly, the Worker interface is for dedicated workers, so this class is
-// called DedicatedWorker.
+// called DedicatedWorker. This lives on the main thread.
 class CORE_EXPORT DedicatedWorker final
     : public AbstractWorker,
       public ActiveScriptWrappable<DedicatedWorker> {
@@ -63,8 +63,10 @@ class CORE_EXPORT DedicatedWorker final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit DedicatedWorker(ExecutionContext*);
-  bool Initialize(ExecutionContext*, const String&, ExceptionState&);
+  DedicatedWorker(ExecutionContext*, const KURL& script_url);
+
+  // Starts the worker.
+  void Start();
 
   // Creates a proxy to allow communicating with the worker's global scope.
   // DedicatedWorker does not take ownership of the created proxy. The proxy
@@ -79,9 +81,10 @@ class CORE_EXPORT DedicatedWorker final
   // Implements EventTarget (via AbstractWorker -> EventTargetWithInlineData).
   const AtomicString& InterfaceName() const final;
 
-  RefPtr<WorkerScriptLoader> script_loader_;
+  const KURL script_url_;
+  const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
-  Member<DedicatedWorkerMessagingProxy> context_proxy_;
+  RefPtr<WorkerScriptLoader> script_loader_;
 };
 
 }  // namespace blink

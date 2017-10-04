@@ -66,9 +66,10 @@ class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
  protected:
   // Helper function that converts a URL to an absolute URL and checks the
   // result for validity.
-  KURL ResolveURL(const String& url,
-                  ExceptionState&,
-                  WebURLRequest::RequestContext);
+  static KURL ResolveURL(ExecutionContext*,
+                         const String& url,
+                         ExceptionState&,
+                         WebURLRequest::RequestContext);
 };
 
 }  // namespace blink
