@@ -371,6 +371,9 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
   status_ = status;
   DCHECK(status_ != kError || error_);
 
+  if (!GetExecutionContext())
+    return;
+
   // When promises are resolved with 'thenables', instead of the object being
   // returned directly, the 'then' method is executed (the resolver tries to
   // resolve the thenable). This can lead to synchronous script execution, so we
@@ -379,24 +382,19 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
   if (status_ == kLoaded || status_ == kError) {
     if (loaded_property_) {
       if (status_ == kLoaded) {
-        GetTaskRunner()->PostTask(
-            BLINK_FROM_HERE, WTF::Bind(&LoadedProperty::Resolve<FontFace*>,
-                                       WrapPersistent(loaded_property_.Get()),
-                                       WrapPersistent(this)));
+        TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+            ->PostTask(BLINK_FROM_HERE,
+                       WTF::Bind(&LoadedProperty::Resolve<FontFace*>,
+                                 WrapPersistent(loaded_property_.Get()),
+                                 WrapPersistent(this)));
       } else
         loaded_property_->Reject(error_.Get());
     }
 
-    GetTaskRunner()->PostTask(
-        BLINK_FROM_HERE,
-        WTF::Bind(&FontFace::RunCallbacks, WrapPersistent(this)));
+    TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&FontFace::RunCallbacks, WrapPersistent(this)));
   }
-}
-
-WebTaskRunner* FontFace::GetTaskRunner() {
-  return TaskRunnerHelper::Get(TaskType::kDOMManipulation,
-                               GetExecutionContext())
-      .get();
 }
 
 void FontFace::RunCallbacks() {
