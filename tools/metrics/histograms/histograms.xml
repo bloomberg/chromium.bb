@@ -78104,6 +78104,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SoftwareReporter.Cleaner.SettingsPageActiveOnRebootRequired"
+    enum="SoftwareReporterCleanerSettingsPageActiveOnRebootRequired">
+  <owner>ftirelo@chromium.org</owner>
+  <summary>
+    Indicates if the Settings page was the active tab once a cleanup finished
+    with reboot required.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.Cleaner.Version">
   <owner>mad@chromium.org</owner>
   <summary>The build version of the software reporter cleaner tool.</summary>

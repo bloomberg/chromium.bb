@@ -59,7 +59,7 @@ constexpr int kRebootRequiredExitCode = 15;
 constexpr int kRebootNotRequiredExitCode = 0;
 
 // These values are used to send UMA information and are replicated in the
-// histograms.xml file, so the order MUST NOT CHANGE.
+// enums.xml file, so the order MUST NOT CHANGE.
 enum CleanupResultHistogramValue {
   CLEANUP_RESULT_SUCCEEDED = 0,
   CLEANUP_RESULT_REBOOT_REQUIRED = 1,
@@ -69,13 +69,23 @@ enum CleanupResultHistogramValue {
 };
 
 // These values are used to send UMA information and are replicated in the
-// histograms.xml file, so the order MUST NOT CHANGE.
+// enums.xml file, so the order MUST NOT CHANGE.
 enum IPCDisconnectedHistogramValue {
   IPC_DISCONNECTED_SUCCESS = 0,
   IPC_DISCONNECTED_LOST_WHILE_SCANNING = 1,
   IPC_DISCONNECTED_LOST_USER_PROMPTED = 2,
 
   IPC_DISCONNECTED_MAX,
+};
+
+// These values are used to send UMA information and are replicated in the
+// enums.xml, so the order MUST NOT CHANGE
+enum SettingsPageActiveOnRebootRequiredHistogramValue {
+  SETTINGS_PAGE_ON_REBOOT_REQUIRED_NO_BROWSER = 0,
+  SETTINGS_PAGE_ON_REBOOT_REQUIRED_NOT_ACTIVE_TAB = 1,
+  SETTINGS_PAGE_ON_REBOOT_REQUIRED_ACTIVE_TAB = 2,
+
+  SETTINGS_PAGE_ON_REBOOT_REQUIRED_MAX,
 };
 
 // Attempts to change the Chrome Cleaner binary's suffix to ".exe". Will return
@@ -141,6 +151,13 @@ void RecordCleanupResultHistogram(CleanupResultHistogramValue result) {
 void RecordIPCDisconnectedHistogram(IPCDisconnectedHistogramValue error) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.IPCDisconnected", error,
                             IPC_DISCONNECTED_MAX);
+}
+
+void RecordSettingsPageActiveOnRebootRequired(
+    SettingsPageActiveOnRebootRequiredHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SoftwareReporter.Cleaner.SettingsPageActiveOnRebootRequired", value,
+      SETTINGS_PAGE_ON_REBOOT_REQUIRED_MAX);
 }
 
 }  // namespace
@@ -559,10 +576,25 @@ void ChromeCleanerControllerImpl::OnCleanerProcessDone(
       SetStateAndNotifyObservers(State::kRebootRequired);
 
       Browser* browser = chrome_cleaner_util::FindBrowser();
-      if (browser)
-        chrome_cleaner_util::OpenSettingsPage(
-            browser, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-            /*skip_if_current_tab=*/true);
+      if (!browser) {
+        RecordSettingsPageActiveOnRebootRequired(
+            SETTINGS_PAGE_ON_REBOOT_REQUIRED_NO_BROWSER);
+        return;
+      }
+
+      // No need to reopen the Settings page if it's the current active tab.
+      if (chrome_cleaner_util::SettingsPageIsActiveTab(browser)) {
+        RecordSettingsPageActiveOnRebootRequired(
+            SETTINGS_PAGE_ON_REBOOT_REQUIRED_ACTIVE_TAB);
+        return;
+      }
+
+      // Reopens the Settings page as a background tab. Eventually the user
+      // might see that a reboot is required.
+      RecordSettingsPageActiveOnRebootRequired(
+          SETTINGS_PAGE_ON_REBOOT_REQUIRED_NOT_ACTIVE_TAB);
+      chrome_cleaner_util::OpenSettingsPage(
+          browser, WindowOpenDisposition::NEW_BACKGROUND_TAB);
       return;
     }
 

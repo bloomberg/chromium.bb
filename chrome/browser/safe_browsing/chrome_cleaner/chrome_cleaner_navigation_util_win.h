@@ -13,12 +13,11 @@ namespace chrome_cleaner_util {
 // exists.
 Browser* FindBrowser();
 
+// Returns true if the settings page is the currently active tab.
+bool SettingsPageIsActiveTab(Browser* browser);
+
 // Opens a new settings tab in |browser| with the given |disposition|.
-// If |skip_if_current_tab| is true and settings is the currently displayed
-// tab, no new tab is opened.
-void OpenSettingsPage(Browser* browser,
-                      WindowOpenDisposition disposition,
-                      bool skip_if_current_tab);
+void OpenSettingsPage(Browser* browser, WindowOpenDisposition disposition);
 
 }  // namespace chrome_cleaner_util
 

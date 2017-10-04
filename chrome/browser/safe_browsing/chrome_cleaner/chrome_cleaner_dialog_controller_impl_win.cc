@@ -23,8 +23,7 @@ namespace {
 
 void OpenSettingsPage(Browser* browser) {
   chrome_cleaner_util::OpenSettingsPage(
-      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      /*skip_if_current_tab=*/false);
+      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 // These values are used to send UMA information and are replicated in the
