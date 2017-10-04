@@ -303,6 +303,91 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
       internal::kLoadingPredictorPreconnectCount, 2, 1);
 }
 
+// Tests that preconnect histograms won't be recorded if preconnect stats are
+// empty.
+TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
+  const std::string main_frame_url = "http://google.com";
+  auto stats = base::MakeUnique<PreconnectStats>(GURL(main_frame_url));
+  stats_collector_->RecordPreconnectStats(std::move(stats));
+
+  EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+
+  URLRequestSummary script = CreateURLRequestSummary(
+      1, main_frame_url, "http://cdn.google.com/script.js",
+      content::RESOURCE_TYPE_SCRIPT);
+  PageRequestSummary summary =
+      CreatePageRequestSummary(main_frame_url, main_frame_url, {script});
+  stats_collector_->RecordPageRequestSummary(summary);
+
+  // No histograms should be recorded.
+  histogram_tester_->ExpectTotalCount(
+      internal::kLoadingPredictorPreresolveHitsPercentage, 0);
+  histogram_tester_->ExpectTotalCount(
+      internal::kLoadingPredictorPreconnectHitsPercentage, 0);
+  histogram_tester_->ExpectTotalCount(
+      internal::kLoadingPredictorPreresolveCount, 0);
+  histogram_tester_->ExpectTotalCount(
+      internal::kLoadingPredictorPreconnectCount, 0);
+}
+
+// Tests that the preconnect won't divide by zero if preconnect stats contain
+// preresolve attempts only.
+TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
+  const std::string main_frame_url("http://google.com/?query=cats");
+  auto gen = [](int index) {
+    return base::StringPrintf("http://cdn%d.google.com/script.js", index);
+  };
+  EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+
+  {
+    // Initialize PreconnectStats.
+
+    // These two are hits.
+    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), false, false);
+    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), true, false);
+    // And these two are misses.
+    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false, false);
+    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), true, false);
+
+    auto stats = base::MakeUnique<PreconnectStats>(GURL(main_frame_url));
+    stats->requests_stats = {origin1, origin2, origin3, origin4};
+
+    stats_collector_->RecordPreconnectStats(std::move(stats));
+  }
+
+  {
+    // Simulate a page load with 3 origins.
+    URLRequestSummary script1 = CreateURLRequestSummary(
+        1, main_frame_url, gen(1), content::RESOURCE_TYPE_SCRIPT);
+    URLRequestSummary script2 = CreateURLRequestSummary(
+        1, main_frame_url, gen(2), content::RESOURCE_TYPE_SCRIPT);
+    URLRequestSummary script100 = CreateURLRequestSummary(
+        1, main_frame_url, gen(100), content::RESOURCE_TYPE_SCRIPT);
+    PageRequestSummary summary = CreatePageRequestSummary(
+        main_frame_url, main_frame_url, {script1, script2, script100});
+
+    stats_collector_->RecordPageRequestSummary(summary);
+  }
+
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreresolveHitsPercentage, 50, 1);
+  // Can't really report a hits percentage if there were no events.
+  histogram_tester_->ExpectTotalCount(
+      internal::kLoadingPredictorPreconnectHitsPercentage, 0);
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreresolveCount, 4, 1);
+  histogram_tester_->ExpectUniqueSample(
+      internal::kLoadingPredictorPreconnectCount, 0, 1);
+}
+
 TEST_F(LoadingStatsCollectorTest, TestSubresourceConnectDurationHistogram) {
   const std::string main_frame_url("http://google.com/?query=cats");
   auto gen = [](int index) {
