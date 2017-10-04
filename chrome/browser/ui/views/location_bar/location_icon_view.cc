@@ -107,6 +107,15 @@ void LocationIconView::SetTextVisibility(bool should_show,
   OnNativeThemeChanged(GetNativeTheme());
 }
 
+void LocationIconView::UpdateInkDropMode() {
+  // If the omnibox is empty or editing, the ink drop mode should be off
+  // since the icon isn't clickable in this state.
+  InkDropMode mode = location_bar_->GetOmniboxView()->IsEditingOrEmpty()
+                         ? InkDropMode::OFF
+                         : InkDropMode::ON;
+  SetInkDropMode(mode);
+}
+
 bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
     return false;

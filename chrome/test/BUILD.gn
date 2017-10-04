@@ -2150,6 +2150,7 @@ test("browser_tests") {
           "../browser/ui/views/extensions/media_galleries_dialog_views_browsertest.cc",
           "../browser/ui/views/frame/browser_non_client_frame_view_browsertest.cc",
           "../browser/ui/views/frame/browser_view_browsertest.cc",
+          "../browser/ui/views/location_bar/location_icon_view_browsertest.cc",
           "../browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc",
           "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
           "../browser/ui/views/page_info/page_info_bubble_view_browsertest.cc",
