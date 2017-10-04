@@ -12,6 +12,7 @@ import org.chromium.android_webview.AwConsoleMessage;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
@@ -28,6 +29,9 @@ import java.util.List;
  * AwContentsClient subclass used for testing.
  */
 public class TestAwContentsClient extends NullContentsClient {
+    private static final boolean TRACE = false;
+    private static final String TAG = "TestAwContentsClient";
+
     private boolean mAllowSslError;
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
@@ -192,6 +196,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onReceivedTitle(String title) {
+        if (TRACE) Log.i(TAG, "onReceivedTitle " + title);
         mOnReceivedTitleHelper.notifyCalled(title);
     }
 
@@ -201,31 +206,37 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onPageStarted(String url) {
+        if (TRACE) Log.i(TAG, "onPageStarted " + url);
         mOnPageStartedHelper.notifyCalled(url);
     }
 
     @Override
     public void onPageCommitVisible(String url) {
+        if (TRACE) Log.i(TAG, "onPageCommitVisible " + url);
         mOnPageCommitVisibleHelper.notifyCalled(url);
     }
 
     @Override
     public void onPageFinished(String url) {
+        if (TRACE) Log.i(TAG, "onPageFinished " + url);
         mOnPageFinishedHelper.notifyCalled(url);
     }
 
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
+        if (TRACE) Log.i(TAG, "onReceivedError " + failingUrl);
         mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
     }
 
     @Override
     public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
+        if (TRACE) Log.i(TAG, "onReceivedError2 " + request.url);
         mOnReceivedError2Helper.notifyCalled(request, error);
     }
 
     @Override
     public void onReceivedSslError(Callback<Boolean> callback, SslError error) {
+        if (TRACE) Log.i(TAG, "onReceivedSslError");
         callback.onResult(mAllowSslError);
         mOnReceivedSslErrorHelper.notifyCalled();
     }
@@ -286,6 +297,7 @@ public class TestAwContentsClient extends NullContentsClient {
             String contentDisposition,
             String mimeType,
             long contentLength) {
+        if (TRACE) Log.i(TAG, "onDownloadStart " + url);
         getOnDownloadStartHelper().notifyCalled(url, userAgent, contentDisposition, mimeType,
                 contentLength);
     }
@@ -323,6 +335,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public boolean onCreateWindow(boolean isDialog, boolean isUserGesture) {
+        if (TRACE) Log.i(TAG, "onCreateWindow");
         return mOnCreateWindowHelper.notifyCalled(isDialog, isUserGesture);
     }
 
@@ -359,11 +372,13 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onReceivedLoginRequest(String realm, String account, String args) {
+        if (TRACE) Log.i(TAG, "onReceivedLoginRequest " + realm);
         getOnReceivedLoginRequestHelper().notifyCalled(realm, account, args);
     }
 
     @Override
     public boolean onConsoleMessage(AwConsoleMessage consoleMessage) {
+        if (TRACE) Log.i(TAG, "onConsoleMessage " + consoleMessage);
         mAddMessageToConsoleHelper.notifyCalled(consoleMessage);
         return false;
     }
@@ -414,6 +429,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onScaleChangedScaled(float oldScale, float newScale) {
+        if (TRACE) Log.i(TAG, "onScaleChangedScaled " + oldScale + " -> " + newScale);
         mOnScaleChangedHelper.notifyCalled(oldScale, newScale);
     }
 
@@ -437,6 +453,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onNewPicture(Picture picture) {
+        if (TRACE) Log.i(TAG, "onNewPicture");
         mPictureListenerHelper.notifyCalled(picture);
     }
 
@@ -483,6 +500,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {
+        if (TRACE) Log.i(TAG, "shouldOverrideUrlLoading " + request.url);
         super.shouldOverrideUrlLoading(request);
         boolean returnValue =
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
@@ -518,6 +536,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void doUpdateVisitedHistory(String url, boolean isReload) {
+        if (TRACE) Log.i(TAG, "doUpdateVisitedHistory " + url);
         getDoUpdateVisitedHistoryHelper().notifyCalled(url, isReload);
     }
 
@@ -566,6 +585,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onReceivedHttpError(AwWebResourceRequest request, AwWebResourceResponse response) {
+        if (TRACE) Log.i(TAG, "onReceivedHttpError " + request.url);
         super.onReceivedHttpError(request, response);
         mOnReceivedHttpErrorHelper.notifyCalled(request, response);
     }
@@ -589,6 +609,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onReceivedIcon(Bitmap bitmap) {
+        if (TRACE) Log.i(TAG, "onReceivedIcon");
         // We don't inform the API client about the URL of the icon.
         mFaviconHelper.notifyFavicon(bitmap);
     }
@@ -616,6 +637,7 @@ public class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public void onReceivedTouchIconUrl(String url, boolean precomposed) {
+        if (TRACE) Log.i(TAG, "onReceivedTouchIconUrl " + url);
         mTouchIconHelper.notifyTouchIcon(url, precomposed);
     }
 }
