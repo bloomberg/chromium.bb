@@ -36334,6 +36334,8 @@
     },
     { "name": "ccu.plus", "include_subdomains": true, "mode": "force-https" },
     { "name": "mitm-software.badssl.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "hyatt.com", "mode": "force-https" },
+    { "name": "www.hyatt.com", "include_subdomains": true, "mode": "force-https" },
     // END OF MANUAL ENTRIES
 
     // TODO(lgarron): hstspreload.org can't scan IPv6-only sites due to Google
