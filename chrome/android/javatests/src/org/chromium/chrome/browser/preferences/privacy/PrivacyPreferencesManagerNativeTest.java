@@ -17,19 +17,18 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  *  Tests "Usage and Crash reporting" settings screen.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class PrivacyPreferencesManagerNativeTest {
     @Rule
     public final RuleChain mChain =
@@ -40,7 +39,6 @@ public class PrivacyPreferencesManagerNativeTest {
     @UiThreadTest
     @Feature({"Android-AppBase"})
     public void testSyncUsageAndCrashReporting() throws Throwable {
-        CommandLine.init(null);
         PermissionContext context = new PermissionContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
@@ -62,7 +60,6 @@ public class PrivacyPreferencesManagerNativeTest {
     @UiThreadTest
     @DisabledTest(message = "crbug.com/700500")
     public void testSetUsageAndCrashReporting() throws Throwable {
-        CommandLine.init(null);
         PermissionContext context = new PermissionContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
