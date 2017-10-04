@@ -23,7 +23,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
                                  public IPC::Listener,
                                  public base::SupportsWeakPtr<WebUIImpl> {
  public:
-  WebUIImpl(WebContents* contents, const std::string& frame_name);
+  WebUIImpl(WebContents* contents);
   ~WebUIImpl() override;
 
   // Called when a RenderFrame is created for a WebUI (reload after a renderer
@@ -47,7 +47,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void OverrideTitle(const base::string16& title) override;
   int GetBindings() const override;
   void SetBindings(int bindings) override;
-  bool HasRenderFrame() override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   void RegisterMessageCallback(const std::string& message,
@@ -91,11 +90,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // Execute a string of raw JavaScript on the page.
   void ExecuteJavascript(const base::string16& javascript);
 
-  // Finds the frame in which to execute JavaScript based on |frame_name_|. If
-  // |frame_name_| is empty, the main frame is returned. May return NULL if no
-  // frame of the specified name exists in the page.
-  RenderFrameHost* TargetFrame();
-
   // Called internally and by the owned MainFrameNavigationObserver.
   void DisallowJavascriptOnAllHandlers();
 
@@ -117,10 +111,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // Notifies this WebUI about notifications in the main frame.
   std::unique_ptr<MainFrameNavigationObserver> web_contents_observer_;
-
-  // The name of the frame this WebUI is embedded in. If empty, the main frame
-  // is used.
-  const std::string frame_name_;
 
   std::unique_ptr<WebUIController> controller_;
 

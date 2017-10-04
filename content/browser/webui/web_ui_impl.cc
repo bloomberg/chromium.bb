@@ -76,11 +76,10 @@ base::string16 WebUI::GetJavascriptCall(
   return result;
 }
 
-WebUIImpl::WebUIImpl(WebContents* contents, const std::string& frame_name)
+WebUIImpl::WebUIImpl(WebContents* contents)
     : bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents),
-      web_contents_observer_(new MainFrameNavigationObserver(this, contents)),
-      frame_name_(frame_name) {
+      web_contents_observer_(new MainFrameNavigationObserver(this, contents)) {
   DCHECK(contents);
 }
 
@@ -154,10 +153,6 @@ void WebUIImpl::SetBindings(int bindings) {
   bindings_ = bindings;
 }
 
-bool WebUIImpl::HasRenderFrame() {
-  return TargetFrame() != nullptr;
-}
-
 WebUIController* WebUIImpl::GetController() const {
   return controller_.get();
 }
@@ -167,13 +162,13 @@ void WebUIImpl::SetController(WebUIController* controller) {
 }
 
 bool WebUIImpl::CanCallJavascript() {
-  RenderFrameHost* target_frame = TargetFrame();
-  return target_frame &&
+  RenderFrameHost* frame_host = web_contents_->GetMainFrame();
+  return frame_host &&
          (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-              target_frame->GetProcess()->GetID()) ||
+              frame_host->GetProcess()->GetID()) ||
           // It's possible to load about:blank in a Web UI renderer.
           // See http://crbug.com/42547
-          target_frame->GetLastCommittedURL().spec() == url::kAboutBlankURL);
+          frame_host->GetLastCommittedURL().spec() == url::kAboutBlankURL);
 }
 
 void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name) {
@@ -276,19 +271,7 @@ void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
   if (!CanCallJavascript())
     return;
 
-  TargetFrame()->ExecuteJavaScript(javascript);
-}
-
-RenderFrameHost* WebUIImpl::TargetFrame() {
-  if (frame_name_.empty())
-    return web_contents_->GetMainFrame();
-
-  FrameTreeNode* frame_tree_node = static_cast<WebContentsImpl*>(web_contents_)
-                                       ->GetFrameTree()
-                                       ->FindByName(frame_name_);
-  if (frame_tree_node)
-    return frame_tree_node->current_frame_host();
-  return nullptr;
+  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
 }
 
 void WebUIImpl::DisallowJavascriptOnAllHandlers() {

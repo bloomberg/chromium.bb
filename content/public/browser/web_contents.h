@@ -321,15 +321,6 @@ class WebContents : public PageNavigator,
   // theme-color meta tag.
   virtual SkColor GetThemeColor() const = 0;
 
-  // Create a WebUI page for the given url. In most cases, this doesn't need to
-  // be called by embedders since content will create its own WebUI objects as
-  // necessary. However if the embedder wants to create its own WebUI object and
-  // keep track of it manually, it can use this. |frame_name| is used to
-  // identify the frame and cannot be empty.
-  virtual std::unique_ptr<WebUI> CreateSubframeWebUI(
-      const GURL& url,
-      const std::string& frame_name) = 0;
-
   // Returns the committed WebUI if one exists, otherwise the pending one.
   virtual WebUI* GetWebUI() const = 0;
   virtual WebUI* GetCommittedWebUI() const = 0;

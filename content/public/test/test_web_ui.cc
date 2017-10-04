@@ -40,10 +40,6 @@ int TestWebUI::GetBindings() const {
   return 0;
 }
 
-bool TestWebUI::HasRenderFrame() {
-  return false;
-}
-
 void TestWebUI::AddMessageHandler(
     std::unique_ptr<WebUIMessageHandler> handler) {
   handlers_.push_back(std::move(handler));

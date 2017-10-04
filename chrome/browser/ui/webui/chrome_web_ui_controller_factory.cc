@@ -660,7 +660,7 @@ WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
   if (!function)
     return NULL;
 
-  if (web_ui->HasRenderFrame())
+  if (web_ui->GetWebContents()->GetMainFrame() != nullptr)
     webui::LogWebUIUrl(url);
 
   return (*function)(web_ui, url);
