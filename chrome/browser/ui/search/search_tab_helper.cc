@@ -67,8 +67,8 @@ bool InInstantProcess(Profile* profile,
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
   return instant_service &&
-      instant_service->IsInstantProcess(
-          contents->GetRenderProcessHost()->GetID());
+         instant_service->IsInstantProcess(
+             contents->GetMainFrame()->GetProcess()->GetID());
 }
 
 // Called when an NTP finishes loading. If the load start time was noted,
