@@ -63,6 +63,9 @@ class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
   GpuClient* AddInternal(mojom::GpuRequest request);
   void OnBadMessageFromGpu();
 
+  // TODO(crbug.com/611505): this goes away after the gpu proces split in mus.
+  void InitializeGpuMain(mojom::GpuMainRequest request);
+
   // GpuHost:
   void Add(mojom::GpuRequest request) override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
@@ -103,7 +106,11 @@ class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
 
   // TODO(fsamuel): GpuHost should not be holding onto |gpu_main_impl|
   // because that will live in another process soon.
+  base::Thread gpu_thread_;
   std::unique_ptr<GpuMain> gpu_main_impl_;
+  // This is used to make sure that the |gpu_main_impl_| has been set up
+  // correctly, before we start tearing it down.
+  base::WaitableEvent gpu_main_wait_;
 
   mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 
