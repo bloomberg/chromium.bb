@@ -103,7 +103,9 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
 ServiceWorkerScriptURLLoader::~ServiceWorkerScriptURLLoader() = default;
 
 void ServiceWorkerScriptURLLoader::FollowRedirect() {
-  network_loader_->FollowRedirect();
+  // Resource requests for service worker scripts should not follow redirects.
+  // See comments in OnReceiveRedirect().
+  NOTREACHED();
 }
 
 void ServiceWorkerScriptURLLoader::SetPriority(net::RequestPriority priority,
@@ -203,8 +205,15 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
 
 void ServiceWorkerScriptURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
-  client_->OnReceiveRedirect(redirect_info, response_head);
+    const ResourceResponseHead& respoinse_head) {
+  // Resource requests for service worker scripts should not follow redirects.
+  //
+  // Step 7.5: "Set request's redirect mode to "error"."
+  // https://w3c.github.io/ServiceWorker/#update-algorithm
+  //
+  // TODO(nhiroki): Show an error message equivalent to kRedirectError in
+  // service_worker_write_to_cache_job.cc.
+  CommitCompleted(ResourceRequestCompletionStatus(net::ERR_UNSAFE_REDIRECT));
 }
 
 void ServiceWorkerScriptURLLoader::OnDataDownloaded(int64_t data_len,

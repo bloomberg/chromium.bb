@@ -22,6 +22,7 @@
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -93,6 +94,11 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     if (response.has_certificate_error) {
       ssl_info.emplace();
       ssl_info->cert_status = net::CERT_STATUS_DATE_INVALID;
+    }
+
+    if (response_head.headers->response_code() == 307) {
+      client->OnReceiveRedirect(net::RedirectInfo(), response_head);
+      return;
     }
     client->OnReceiveResponse(response_head, ssl_info, nullptr);
 
@@ -340,6 +346,24 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
 
   // The request should be failed because of the 404 response.
   EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_.completion_status().error_code);
+  EXPECT_FALSE(client_.has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_Redirect) {
+  const GURL kScriptURL("https://example.com/redirect.js");
+  mock_server_->Add(
+      kScriptURL,
+      MockHTTPServer::Response(
+          std::string("HTTP/1.1 307 Temporary Redirect\n\n"), std::string()));
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
+  client_.RunUntilComplete();
+
+  // The request should be failed because of the redirected response.
+  EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, client_.completion_status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
