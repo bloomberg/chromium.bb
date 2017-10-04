@@ -28,8 +28,11 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/common/features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/prefs/pref_service.h"
+#include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -580,6 +583,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
       Profile* const profile,
       int cert_error,
       int options_mask,
+      bool is_superfish,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const base::Callback<void(content::CertificateRequestResultType)>&
@@ -589,6 +593,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
         profile_(profile),
         cert_error_(cert_error),
         options_mask_(options_mask),
+        is_superfish_(is_superfish),
         request_url_(request_url),
         ssl_cert_reporter_(std::move(ssl_cert_reporter)),
         callback_(callback) {}
@@ -617,6 +622,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   Profile* const profile_;
   const int cert_error_;
   const int options_mask_;
+  const bool is_superfish_;
   const GURL request_url_;
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
@@ -674,7 +680,7 @@ void SSLErrorHandlerDelegateImpl::NavigateToSuggestedURL(
 }
 
 bool SSLErrorHandlerDelegateImpl::IsErrorOverridable() const {
-  return SSLBlockingPage::IsOverridable(options_mask_, profile_);
+  return SSLBlockingPage::IsOverridable(options_mask_);
 }
 
 void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
@@ -698,12 +704,10 @@ void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial() {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  (SSLBlockingPage::Create(
-       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
-       base::Time::NowFromSystemTime(), std::move(ssl_cert_reporter_),
-       base::FeatureList::IsEnabled(kSuperfishInterstitial) &&
-           IsSuperfish(ssl_info_.cert),
-       callback_))
+  (SSLBlockingPage::Create(web_contents_, cert_error_, ssl_info_, request_url_,
+                           options_mask_, base::Time::NowFromSystemTime(),
+                           std::move(ssl_cert_reporter_), is_superfish_,
+                           callback_))
       ->Show();
 }
 
@@ -715,6 +719,29 @@ void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
                             now, clock_state, std::move(ssl_cert_reporter_),
                             callback_))
       ->Show();
+}
+
+int IsCertErrorFatal(int cert_error) {
+  switch (cert_error) {
+    case net::ERR_CERT_COMMON_NAME_INVALID:
+    case net::ERR_CERT_DATE_INVALID:
+    case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+    case net::ERR_CERT_WEAK_KEY:
+    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
+    case net::ERR_CERT_VALIDITY_TOO_LONG:
+    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
+      return false;
+    case net::ERR_CERT_CONTAINS_ERRORS:
+    case net::ERR_CERT_REVOKED:
+    case net::ERR_CERT_INVALID:
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+      return true;
+    default:
+      NOTREACHED();
+      return true;
+  }
 }
 
 }  // namespace
@@ -730,7 +757,8 @@ void SSLErrorHandler::HandleSSLError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    int options_mask,
+    bool should_ssl_errors_be_fatal,
+    bool expired_previous_decision,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
@@ -738,12 +766,20 @@ void SSLErrorHandler::HandleSSLError(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  bool hard_override_disabled =
+      !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
+  bool is_superfish = base::FeatureList::IsEnabled(kSuperfishInterstitial) &&
+                      IsSuperfish(ssl_info.cert);
+  int options_mask = CalculateOptionsMask(
+      cert_error, hard_override_disabled, should_ssl_errors_be_fatal,
+      is_superfish, expired_previous_decision);
 
   SSLErrorHandler* error_handler = new SSLErrorHandler(
       std::unique_ptr<SSLErrorHandler::Delegate>(
           new SSLErrorHandlerDelegateImpl(
               web_contents, ssl_info, profile, cert_error, options_mask,
-              request_url, std::move(ssl_cert_reporter), callback)),
+              is_superfish, request_url, std::move(ssl_cert_reporter),
+              callback)),
       web_contents, profile, cert_error, ssl_info, request_url, callback);
   web_contents->SetUserData(UserDataKey(), base::WrapUnique(error_handler));
   error_handler->StartHandlingError();
@@ -1122,4 +1158,28 @@ bool SSLErrorHandler::IsOnlyCertError(
              net::MapCertStatusToNetError(only_cert_error_expected) &&
          (!net::IsCertStatusError(other_errors) ||
           net::IsCertStatusMinorError(ssl_info_.cert_status));
+}
+
+// static
+int SSLErrorHandler::CalculateOptionsMask(int cert_error,
+                                          bool hard_override_disabled,
+                                          bool should_ssl_errors_be_fatal,
+                                          bool is_superfish,
+                                          bool expired_previous_decision) {
+  int options_mask = 0;
+  if (!IsCertErrorFatal(cert_error) && !hard_override_disabled &&
+      !should_ssl_errors_be_fatal && !is_superfish) {
+    options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+  }
+  if (hard_override_disabled) {
+    options_mask |= security_interstitials::SSLErrorUI::HARD_OVERRIDE_DISABLED;
+  }
+  if (should_ssl_errors_be_fatal) {
+    options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
+  }
+  if (expired_previous_decision) {
+    options_mask |=
+        security_interstitials::SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
+  }
+  return options_mask;
 }

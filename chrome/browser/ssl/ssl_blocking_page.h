@@ -68,7 +68,7 @@ class SSLBlockingPage
 
   // Returns true if |options_mask| refers to a soft-overridable SSL error and
   // if SSL error overriding is allowed by policy.
-  static bool IsOverridable(int options_mask, const Profile* const profile);
+  static bool IsOverridable(int options_mask);
 
   void SetSSLCertReporterForTesting(
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter);

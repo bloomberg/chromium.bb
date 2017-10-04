@@ -114,7 +114,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
-      int options_mask,
+      bool should_ssl_errors_be_fatal,
+      bool expired_previous_decision,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
@@ -159,6 +160,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   void StartHandlingError();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SSLErrorHandlerTest, CalculateOptionsMask);
+
   void ShowCaptivePortalInterstitial(const GURL& landing_url);
   void ShowMITMSoftwareInterstitial(const std::string& mitm_software_name,
                                     bool is_enterprise_managed);
@@ -193,6 +196,13 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   void HandleCertDateInvalidErrorImpl(base::TimeTicks started_handling_error);
 
   bool IsOnlyCertError(net::CertStatus only_cert_error_expected) const;
+
+  // Calculates a mask encoded using flags in SSLErrorUI::SSLErrorOptionsMask.
+  static int CalculateOptionsMask(int cert_error,
+                                  bool hard_override_disabled,
+                                  bool should_ssl_errors_be_fatal,
+                                  bool is_superfish,
+                                  bool expired_previous_decision);
 
   std::unique_ptr<Delegate> delegate_;
   content::WebContents* const web_contents_;
