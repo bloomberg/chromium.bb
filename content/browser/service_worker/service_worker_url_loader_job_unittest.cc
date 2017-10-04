@@ -497,7 +497,7 @@ class ServiceWorkerURLLoaderJobTest
     StartLoaderCallback callback;
     job_ = base::MakeUnique<ServiceWorkerURLLoaderJob>(
         base::BindOnce(&ReceiveStartLoaderCallback, &callback), this, *request,
-        make_scoped_refptr<URLLoaderFactoryGetter>(
+        base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()),
         GetBlobStorageContext());
     job_->ForwardToServiceWorker();
@@ -831,7 +831,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
   StartLoaderCallback callback;
   auto job = base::MakeUnique<ServiceWorkerURLLoaderJob>(
       base::BindOnce(&ReceiveStartLoaderCallback, &callback), this, request,
-      make_scoped_refptr<URLLoaderFactoryGetter>(
+      base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()),
       GetBlobStorageContext());
   // Ask the job to fallback to network. In production code,

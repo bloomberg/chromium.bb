@@ -360,7 +360,8 @@ TEST_P(RuleIndexingTest, ReloadExtension) {
   service()->ReloadExtension(extension()->id());
   // Reloading should invalidate pointers to existing extension(). Hence reset
   // it.
-  set_extension(make_scoped_refptr(registry_observer.WaitForExtensionLoaded()));
+  set_extension(
+      base::WrapRefCounted(registry_observer.WaitForExtensionLoaded()));
 
   // Reloading the extension should cause the rules to be re-indexed in the
   // case of unpacked extensions.

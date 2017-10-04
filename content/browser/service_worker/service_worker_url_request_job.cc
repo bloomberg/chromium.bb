@@ -998,7 +998,8 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       CreateFetchRequest(), active_worker, resource_type_, timeout_,
       request()->net_log(),
       base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
-                 weak_factory_.GetWeakPtr(), make_scoped_refptr(active_worker)),
+                 weak_factory_.GetWeakPtr(),
+                 base::WrapRefCounted(active_worker)),
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();

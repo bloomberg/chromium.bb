@@ -20,7 +20,7 @@ namespace android {
 // static
 scoped_refptr<TabHandleLayer> TabHandleLayer::Create(
     LayerTitleCache* layer_title_cache) {
-  return make_scoped_refptr(new TabHandleLayer(layer_title_cache));
+  return base::WrapRefCounted(new TabHandleLayer(layer_title_cache));
 }
 
 void TabHandleLayer::SetProperties(int id,

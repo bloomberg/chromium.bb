@@ -263,7 +263,7 @@ void VideoDecoder::DecodeFrame(std::unique_ptr<EncodedFrame> encoded_frame,
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
   if (!impl_.get() || impl_->InitializationResult() != STATUS_INITIALIZED) {
-    callback.Run(make_scoped_refptr<VideoFrame>(NULL), false);
+    callback.Run(base::WrapRefCounted<VideoFrame>(NULL), false);
     return;
   }
   cast_environment_->PostTask(CastEnvironment::VIDEO,

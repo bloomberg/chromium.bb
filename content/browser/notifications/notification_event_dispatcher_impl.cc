@@ -237,7 +237,7 @@ void DoDispatchNotificationClickEvent(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK,
       base::BindOnce(
           &DispatchNotificationClickEventOnWorker,
-          make_scoped_refptr(service_worker_registration->active_version()),
+          base::WrapRefCounted(service_worker_registration->active_version()),
           notification_database_data, action_index, reply, status_callback),
       status_callback);
 }
@@ -309,7 +309,7 @@ void DoDispatchNotificationCloseEvent(
         ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE,
         base::BindOnce(
             &DispatchNotificationCloseEventOnWorker,
-            make_scoped_refptr(service_worker_registration->active_version()),
+            base::WrapRefCounted(service_worker_registration->active_version()),
             notification_database_data, dispatch_event_callback),
         dispatch_event_callback);
   } else {

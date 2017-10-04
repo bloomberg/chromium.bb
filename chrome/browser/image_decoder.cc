@@ -176,7 +176,7 @@ void ImageDecoder::StartWithOptionsImpl(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DecodeImage, base::Passed(&image_data), codec,
                      shrink_to_fit, desired_image_frame_size, callback,
-                     make_scoped_refptr(image_request->task_runner())));
+                     base::WrapRefCounted(image_request->task_runner())));
 }
 
 // static

@@ -57,7 +57,7 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&BlobURLLoader::Start, weak_factory_.GetWeakPtr(),
-                       request, make_scoped_refptr(file_system_context)));
+                       request, base::WrapRefCounted(file_system_context)));
   }
 
  private:

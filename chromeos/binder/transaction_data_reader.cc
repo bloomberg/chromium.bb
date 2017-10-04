@@ -122,7 +122,7 @@ scoped_refptr<Object> TransactionDataReader::ReadObject(
     case BINDER_TYPE_HANDLE:
       return base::MakeRefCounted<RemoteObject>(command_broker, obj.handle);
     case BINDER_TYPE_BINDER:
-      return make_scoped_refptr(reinterpret_cast<LocalObject*>(obj.cookie));
+      return base::WrapRefCounted(reinterpret_cast<LocalObject*>(obj.cookie));
   }
   return scoped_refptr<Object>();
 }

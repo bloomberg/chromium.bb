@@ -25,7 +25,7 @@ PrintQueriesQueue::~PrintQueriesQueue() {
 void PrintQueriesQueue::QueuePrinterQuery(PrinterQuery* job) {
   base::AutoLock lock(lock_);
   DCHECK(job);
-  queued_queries_.push_back(make_scoped_refptr(job));
+  queued_queries_.push_back(base::WrapRefCounted(job));
   DCHECK(job->is_valid());
 }
 

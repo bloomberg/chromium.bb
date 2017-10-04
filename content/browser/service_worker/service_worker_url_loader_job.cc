@@ -201,7 +201,8 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
       std::move(fetch_request), active_worker, resource_request_.resource_type,
       base::nullopt, net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::Bind(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
-                 weak_factory_.GetWeakPtr(), make_scoped_refptr(active_worker)),
+                 weak_factory_.GetWeakPtr(),
+                 base::WrapRefCounted(active_worker)),
       base::Bind(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr()));
   did_navigation_preload_ =

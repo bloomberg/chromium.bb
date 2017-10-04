@@ -403,7 +403,7 @@ AbortCallback ProvidedFileSystem::WriteFile(
       WRITE_FILE,
       base::WrapUnique<RequestManager::HandlerInterface>(
           new operations::WriteFile(event_router_, file_system_info_,
-                                    file_handle, make_scoped_refptr(buffer),
+                                    file_handle, base::WrapRefCounted(buffer),
                                     offset, length, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);

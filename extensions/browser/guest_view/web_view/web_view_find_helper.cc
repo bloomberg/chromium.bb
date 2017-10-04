@@ -101,8 +101,8 @@ void WebViewFindHelper::Find(
   std::pair<FindInfoMap::iterator, bool> insert_result =
       find_info_map_.insert(std::make_pair(
           current_find_request_id_,
-          make_scoped_refptr(new FindInfo(current_find_request_id_, search_text,
-                                          options, find_function))));
+          base::WrapRefCounted(new FindInfo(
+              current_find_request_id_, search_text, options, find_function))));
   // No duplicate insertions.
   DCHECK(insert_result.second);
 

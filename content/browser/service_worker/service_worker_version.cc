@@ -527,7 +527,7 @@ void ServiceWorkerVersion::ScheduleUpdate() {
 
   // Protect |this| until the timer fires, since we may be stopping
   // and soon no one might hold a reference to us.
-  context_->ProtectVersion(make_scoped_refptr(this));
+  context_->ProtectVersion(base::WrapRefCounted(this));
   update_timer_.Start(FROM_HERE, kUpdateDelay,
                       base::Bind(&ServiceWorkerVersion::StartUpdate,
                                  weak_factory_.GetWeakPtr()));

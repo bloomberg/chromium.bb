@@ -36,7 +36,7 @@ int BufferingFileStreamReader::Read(net::IOBuffer* buffer,
   // Return as much as available in the internal buffer. It may be less than
   // |buffer_length|, what is valid.
   const int bytes_read =
-      CopyFromPreloadingBuffer(make_scoped_refptr(buffer), buffer_length);
+      CopyFromPreloadingBuffer(base::WrapRefCounted(buffer), buffer_length);
   if (bytes_read)
     return bytes_read;
 
@@ -54,13 +54,12 @@ int BufferingFileStreamReader::Read(net::IOBuffer* buffer,
   }
 
   // Nothing copied, so contents have to be preloaded.
-  Preload(base::Bind(&BufferingFileStreamReader::OnReadCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Bind(&BufferingFileStreamReader::OnPreloadCompleted,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                make_scoped_refptr(buffer),
-                                buffer_length,
-                                callback)));
+  Preload(base::Bind(
+      &BufferingFileStreamReader::OnReadCompleted,
+      weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&BufferingFileStreamReader::OnPreloadCompleted,
+                 weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
+                 buffer_length, callback)));
 
   return net::ERR_IO_PENDING;
 }

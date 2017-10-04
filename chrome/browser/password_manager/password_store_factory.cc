@@ -79,7 +79,7 @@ scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
   if (access_type == ServiceAccessType::IMPLICIT_ACCESS &&
       profile->IsOffTheRecord())
     return nullptr;
-  return make_scoped_refptr(static_cast<password_manager::PasswordStore*>(
+  return base::WrapRefCounted(static_cast<password_manager::PasswordStore*>(
       GetInstance()->GetServiceForBrowserContext(profile, true).get()));
 }
 
@@ -262,7 +262,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   password_manager::DelayCleanObsoleteHttpDataForPasswordStoreAndPrefs(
       ps.get(), profile->GetPrefs(),
-      make_scoped_refptr(profile->GetRequestContext()));
+      base::WrapRefCounted(profile->GetRequestContext()));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

@@ -425,7 +425,7 @@ IOBluetoothSDPServiceRecord* RegisterL2capService(
 
 // static
 scoped_refptr<BluetoothSocketMac> BluetoothSocketMac::CreateSocket() {
-  return make_scoped_refptr(new BluetoothSocketMac());
+  return base::WrapRefCounted(new BluetoothSocketMac());
 }
 
 void BluetoothSocketMac::Connect(

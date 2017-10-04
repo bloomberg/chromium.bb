@@ -236,8 +236,8 @@ bool BackgroundSyncBrowserTest::RegistrationPending(const std::string& tag) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          &RegistrationPendingOnIOThread, make_scoped_refptr(sync_context),
-          make_scoped_refptr(service_worker_context), tag,
+          &RegistrationPendingOnIOThread, base::WrapRefCounted(sync_context),
+          base::WrapRefCounted(service_worker_context), tag,
           https_server_->GetURL(kDefaultTestURL), std::move(callback)));
 
   run_loop.Run();
@@ -254,7 +254,7 @@ void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SetMaxSyncAttemptsOnIOThread,
-                     make_scoped_refptr(sync_context), max_sync_attempts),
+                     base::WrapRefCounted(sync_context), max_sync_attempts),
       run_loop.QuitClosure());
 
   run_loop.Run();

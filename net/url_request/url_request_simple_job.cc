@@ -74,7 +74,7 @@ int URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size) {
   // See crbug.com/422489.
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&CopyData, make_scoped_refptr(buf), buf_size, data_,
+      base::Bind(&CopyData, base::WrapRefCounted(buf), buf_size, data_,
                  next_data_offset_),
       base::Bind(&URLRequestSimpleJob::ReadRawDataComplete,
                  weak_factory_.GetWeakPtr(), buf_size));

@@ -134,7 +134,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     context_ = new BackgroundFetchContext(
         browser_context(),
-        make_scoped_refptr(embedded_worker_test_helper()->context_wrapper()));
+        base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()));
 
     service_ = base::MakeUnique<BackgroundFetchServiceImpl>(
         0 /* render_process_id */, context_);

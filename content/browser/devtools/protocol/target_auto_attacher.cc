@@ -135,7 +135,7 @@ void TargetAutoAttacher::UpdateFrames() {
 }
 
 void TargetAutoAttacher::AgentHostClosed(DevToolsAgentHost* host) {
-  auto_attached_hosts_.erase(make_scoped_refptr(host));
+  auto_attached_hosts_.erase(base::WrapRefCounted(host));
 }
 
 void TargetAutoAttacher::ReattachServiceWorkers(bool waiting_for_debugger) {

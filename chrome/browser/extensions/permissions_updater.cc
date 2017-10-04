@@ -203,7 +203,8 @@ PermissionsUpdater::GetRevokablePermissions(const Extension* extension) const {
       PermissionsParser::GetRequiredPermissions(extension);
   std::unique_ptr<const PermissionSet> granted;
   std::unique_ptr<const PermissionSet> withheld;
-  ScriptingPermissionsModifier(browser_context_, make_scoped_refptr(extension))
+  ScriptingPermissionsModifier(browser_context_,
+                               base::WrapRefCounted(extension))
       .WithholdPermissions(required, &granted, &withheld, true);
   return PermissionSet::CreateDifference(
       extension->permissions_data()->active_permissions(), *granted);
@@ -235,7 +236,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
 
   std::unique_ptr<const PermissionSet> granted_permissions;
   std::unique_ptr<const PermissionSet> withheld_permissions;
-  ScriptingPermissionsModifier(browser_context_, make_scoped_refptr(extension))
+  ScriptingPermissionsModifier(browser_context_,
+                               base::WrapRefCounted(extension))
       .WithholdPermissions(*bounded_active, &granted_permissions,
                            &withheld_permissions,
                            (init_flag_ & INIT_FLAG_TRANSIENT) != 0);

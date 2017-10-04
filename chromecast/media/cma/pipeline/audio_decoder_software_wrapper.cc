@@ -59,7 +59,7 @@ MediaPipelineBackend::BufferStatus AudioDecoderSoftwareWrapper::PushBuffer(
 
   DecoderBufferBase* buffer_base = static_cast<DecoderBufferBase*>(buffer);
   if (!software_decoder_->Decode(
-          make_scoped_refptr(buffer_base),
+          base::WrapRefCounted(buffer_base),
           base::Bind(&AudioDecoderSoftwareWrapper::OnDecodedBuffer,
                      weak_factory_.GetWeakPtr()))) {
     return MediaPipelineBackend::kBufferFailed;

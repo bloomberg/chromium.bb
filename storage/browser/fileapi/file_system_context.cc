@@ -241,8 +241,8 @@ FileSystemContext::CreateQuotaReservationOnFileTaskRunner(
 void FileSystemContext::Shutdown() {
   if (!io_task_runner_->RunsTasksInCurrentSequence()) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FileSystemContext::Shutdown,
-                              make_scoped_refptr(this)));
+        FROM_HERE,
+        base::Bind(&FileSystemContext::Shutdown, base::WrapRefCounted(this)));
     return;
   }
   operation_runner_->Shutdown();

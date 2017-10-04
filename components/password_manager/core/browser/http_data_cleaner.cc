@@ -143,7 +143,7 @@ void ObsoleteHttpCleaner::OnGetPasswordStoreResults(
   for (const auto& form : blacklisted_http_forms) {
     PostHSTSQueryForHostAndRequestContext(
         form->origin, request_context(),
-        base::Bind(&RemoveLoginIfHSTS, make_scoped_refptr(store()), *form));
+        base::Bind(&RemoveLoginIfHSTS, base::WrapRefCounted(store()), *form));
   }
 
   // Return early if there are no non-blacklisted HTTP forms.
@@ -170,7 +170,7 @@ void ObsoleteHttpCleaner::OnGetPasswordStoreResults(
                            form_cmp)) {
       PostHSTSQueryForHostAndRequestContext(
           form->origin, request_context(),
-          base::Bind(&RemoveLoginIfHSTS, make_scoped_refptr(store()), *form));
+          base::Bind(&RemoveLoginIfHSTS, base::WrapRefCounted(store()), *form));
     }
   }
 }
@@ -182,7 +182,7 @@ void ObsoleteHttpCleaner::OnGetSiteStatistics(
     if (stat.origin_domain.SchemeIs(url::kHttpScheme)) {
       PostHSTSQueryForHostAndRequestContext(
           stat.origin_domain, request_context(),
-          base::Bind(&RemoveSiteStatsIfHSTS, make_scoped_refptr(store()),
+          base::Bind(&RemoveSiteStatsIfHSTS, base::WrapRefCounted(store()),
                      stat));
     }
   }
@@ -245,7 +245,7 @@ void DelayCleanObsoleteHttpDataForPasswordStoreAndPrefsImpl(
           password_manager::prefs::kWasObsoleteHttpDataCleaned)) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&InitiateCleaning, make_scoped_refptr(store), prefs,
+        base::Bind(&InitiateCleaning, base::WrapRefCounted(store), prefs,
                    request_context),
         base::TimeDelta::FromSeconds(delay_in_seconds));
   }

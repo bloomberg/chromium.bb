@@ -21,7 +21,7 @@ namespace ios {
 // static
 scoped_refptr<history::TopSites> TopSitesFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return make_scoped_refptr(static_cast<history::TopSites*>(
+  return base::WrapRefCounted(static_cast<history::TopSites*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true).get()));
 }
 

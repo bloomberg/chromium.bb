@@ -44,7 +44,8 @@ class CertificateViewerDialog : public ui::BaseShellDialogImpl {
     run_state.dialog_thread->task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&CertificateViewerDialog::ShowOnDialogThread,
-                   base::Unretained(this), run_state, make_scoped_refptr(cert)),
+                   base::Unretained(this), run_state,
+                   base::WrapRefCounted(cert)),
         base::Bind(&CertificateViewerDialog::OnDialogClosed,
                    base::Unretained(this), run_state, callback));
   }

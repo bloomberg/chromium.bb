@@ -75,13 +75,13 @@ std::unique_ptr<DeviceCapabilities> DeviceCapabilities::CreateForTesting() {
 }
 
 scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData() {
-  return make_scoped_refptr(new Data);
+  return base::WrapRefCounted(new Data);
 }
 
 scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData(
     std::unique_ptr<const base::DictionaryValue> dictionary) {
   DCHECK(dictionary.get());
-  return make_scoped_refptr(new Data(std::move(dictionary)));
+  return base::WrapRefCounted(new Data(std::move(dictionary)));
 }
 
 DeviceCapabilities::Validator::Validator(DeviceCapabilities* capabilities)

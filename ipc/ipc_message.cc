@@ -168,7 +168,7 @@ bool Message::WriteAttachment(
     scoped_refptr<base::Pickle::Attachment> attachment) {
   size_t index;
   bool success = attachment_set()->AddAttachment(
-      make_scoped_refptr(static_cast<MessageAttachment*>(attachment.get())),
+      base::WrapRefCounted(static_cast<MessageAttachment*>(attachment.get())),
       &index);
   DCHECK(success);
 

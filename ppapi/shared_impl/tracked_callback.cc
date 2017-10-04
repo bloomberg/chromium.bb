@@ -62,7 +62,7 @@ TrackedCallback::TrackedCallback(Resource* resource,
   if (resource) {
     tracker_ = PpapiGlobals::Get()->GetCallbackTrackerForInstance(
         resource->pp_instance());
-    tracker_->Add(make_scoped_refptr(this));
+    tracker_->Add(base::WrapRefCounted(this));
   }
 
   base::Lock* proxy_lock = ProxyLock::Get();

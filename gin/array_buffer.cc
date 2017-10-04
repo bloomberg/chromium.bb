@@ -167,10 +167,10 @@ scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
     CHECK_EQ(WrapperInfo::From(v8::Local<v8::Object>::Cast(array)),
              &g_array_buffer_wrapper_info)
         << "Cannot mix blink and gin ArrayBuffers";
-    return make_scoped_refptr(static_cast<Private*>(
+    return base::WrapRefCounted(static_cast<Private*>(
         array->GetAlignedPointerFromInternalField(kEncodedValueIndex)));
   }
-  return make_scoped_refptr(new Private(isolate, array));
+  return base::WrapRefCounted(new Private(isolate, array));
 }
 
 ArrayBuffer::Private::Private(v8::Isolate* isolate,

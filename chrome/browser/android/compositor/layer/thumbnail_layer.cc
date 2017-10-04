@@ -13,7 +13,7 @@ namespace android {
 
 // static
 scoped_refptr<ThumbnailLayer> ThumbnailLayer::Create() {
-  return make_scoped_refptr(new ThumbnailLayer());
+  return base::WrapRefCounted(new ThumbnailLayer());
 }
 
 void ThumbnailLayer::SetThumbnail(Thumbnail* thumbnail) {

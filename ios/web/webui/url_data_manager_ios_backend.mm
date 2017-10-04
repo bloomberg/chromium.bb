@@ -462,7 +462,7 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
 
   target_runner->PostTask(
       FROM_HERE, base::Bind(&URLDataManagerIOSBackend::CallStartRequest,
-                            make_scoped_refptr(source), path, request_id));
+                            base::WrapRefCounted(source), path, request_id));
   return true;
 }
 

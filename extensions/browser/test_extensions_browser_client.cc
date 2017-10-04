@@ -234,7 +234,7 @@ TestExtensionsBrowserClient::CreateUpdateClient(
     content::BrowserContext* context) {
   return update_client_factory_.is_null()
              ? nullptr
-             : make_scoped_refptr(update_client_factory_.Run());
+             : base::WrapRefCounted(update_client_factory_.Run());
 }
 
 bool TestExtensionsBrowserClient::IsLockScreenContext(

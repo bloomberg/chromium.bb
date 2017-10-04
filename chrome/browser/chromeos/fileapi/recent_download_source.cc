@@ -109,11 +109,11 @@ void RecentDownloadSource::ScanDirectory(const base::FilePath& path) {
   ++inflight_readdirs_;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ReadDirectoryOnIOThread,
-                     make_scoped_refptr(params_.value().file_system_context()),
-                     url,
-                     base::Bind(&RecentDownloadSource::OnReadDirectory,
-                                weak_ptr_factory_.GetWeakPtr(), path)));
+      base::BindOnce(
+          &ReadDirectoryOnIOThread,
+          base::WrapRefCounted(params_.value().file_system_context()), url,
+          base::Bind(&RecentDownloadSource::OnReadDirectory,
+                     weak_ptr_factory_.GetWeakPtr(), path)));
 }
 
 void RecentDownloadSource::OnReadDirectory(
@@ -135,7 +135,7 @@ void RecentDownloadSource::OnReadDirectory(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(
               &GetMetadataOnIOThread,
-              make_scoped_refptr(params_.value().file_system_context()), url,
+              base::WrapRefCounted(params_.value().file_system_context()), url,
               storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
               base::Bind(&RecentDownloadSource::OnGetMetadata,
                          weak_ptr_factory_.GetWeakPtr(), url)));

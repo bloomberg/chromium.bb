@@ -19,7 +19,7 @@ namespace android {
 // static
 scoped_refptr<ContentLayer> ContentLayer::Create(
     TabContentManager* tab_content_manager) {
-  return make_scoped_refptr(new ContentLayer(tab_content_manager));
+  return base::WrapRefCounted(new ContentLayer(tab_content_manager));
 }
 
 static void SetOpacityOnLeaf(scoped_refptr<cc::Layer> layer, float alpha) {

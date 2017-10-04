@@ -96,11 +96,10 @@ int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
   if (!dest_size)
     return 0;
 
-  int rv = stream_->Read(dest,
-                         dest_size,
-                         base::Bind(&URLRequestFileJob::DidRead,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    make_scoped_refptr(dest)));
+  int rv = stream_->Read(
+      dest, dest_size,
+      base::Bind(&URLRequestFileJob::DidRead, weak_ptr_factory_.GetWeakPtr(),
+                 base::WrapRefCounted(dest)));
   if (rv >= 0) {
     remaining_bytes_ -= rv;
     DCHECK_GE(remaining_bytes_, 0);

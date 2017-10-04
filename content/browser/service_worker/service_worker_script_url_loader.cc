@@ -401,7 +401,7 @@ void ServiceWorkerScriptURLLoader::WriteData(
       buffer.get(), base::strict_cast<size_t>(bytes_written),
       base::Bind(&ServiceWorkerScriptURLLoader::OnWriteDataComplete,
                  weak_factory_.GetWeakPtr(),
-                 make_scoped_refptr(pending_buffer.get()), bytes_written));
+                 base::WrapRefCounted(pending_buffer.get()), bytes_written));
   if (error == net::ERR_IO_PENDING) {
     // OnWriteDataComplete() will be called asynchronously.
     return;

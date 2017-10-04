@@ -189,7 +189,7 @@ TEST_F(PrefProviderTest, Incognito) {
       new OverlayUserPrefStore(user_prefs);
 
   sync_preferences::PrefServiceMockFactory factory;
-  factory.set_user_prefs(make_scoped_refptr(user_prefs));
+  factory.set_user_prefs(base::WrapRefCounted(user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
   sync_preferences::PrefServiceSyncable* regular_prefs =
@@ -198,7 +198,7 @@ TEST_F(PrefProviderTest, Incognito) {
   chrome::RegisterUserProfilePrefs(registry.get());
 
   sync_preferences::PrefServiceMockFactory otr_factory;
-  otr_factory.set_user_prefs(make_scoped_refptr(otr_user_prefs));
+  otr_factory.set_user_prefs(base::WrapRefCounted(otr_user_prefs));
   scoped_refptr<user_prefs::PrefRegistrySyncable> otr_registry(
       new user_prefs::PrefRegistrySyncable);
   sync_preferences::PrefServiceSyncable* otr_prefs =

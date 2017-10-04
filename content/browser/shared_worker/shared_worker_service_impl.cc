@@ -280,7 +280,7 @@ SharedWorkerServiceImpl* SharedWorkerServiceImpl::GetInstance() {
 
 void SharedWorkerServiceImpl::AddFilter(SharedWorkerMessageFilter* filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  filters_.emplace(filter->render_process_id(), make_scoped_refptr(filter));
+  filters_.emplace(filter->render_process_id(), base::WrapRefCounted(filter));
 }
 
 void SharedWorkerServiceImpl::RemoveFilter(SharedWorkerMessageFilter* filter) {

@@ -43,16 +43,16 @@ class InProcessPrefServiceFactory::RegisteringDelegate
     if (!factory_)
       return;
 
-    factory_->managed_prefs_ = make_scoped_refptr(managed_prefs);
+    factory_->managed_prefs_ = base::WrapRefCounted(managed_prefs);
     factory_->supervised_user_prefs_ =
-        make_scoped_refptr(supervised_user_prefs);
-    factory_->extension_prefs_ = make_scoped_refptr(extension_prefs);
-    factory_->command_line_prefs_ = make_scoped_refptr(command_line_prefs);
+        base::WrapRefCounted(supervised_user_prefs);
+    factory_->extension_prefs_ = base::WrapRefCounted(extension_prefs);
+    factory_->command_line_prefs_ = base::WrapRefCounted(command_line_prefs);
     if (!factory_->user_prefs_) {
       factory_->user_prefs_ =
-          make_scoped_refptr(static_cast<PersistentPrefStore*>(user_prefs));
+          base::WrapRefCounted(static_cast<PersistentPrefStore*>(user_prefs));
     }
-    factory_->recommended_prefs_ = make_scoped_refptr(recommended_prefs);
+    factory_->recommended_prefs_ = base::WrapRefCounted(recommended_prefs);
   }
 
   void InitIncognitoUserPrefs(
@@ -66,7 +66,7 @@ class InProcessPrefServiceFactory::RegisteringDelegate
   }
 
   void InitPrefRegistry(PrefRegistry* pref_registry) override {
-    factory_->pref_registry_ = make_scoped_refptr(pref_registry);
+    factory_->pref_registry_ = base::WrapRefCounted(pref_registry);
   }
 
   void UpdateCommandLinePrefStore(PrefStore* command_line_prefs) override {

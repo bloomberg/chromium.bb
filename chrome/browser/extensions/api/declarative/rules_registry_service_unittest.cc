@@ -69,8 +69,8 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
 
   // Test registration.
 
-  registry_service.RegisterRulesRegistry(make_scoped_refptr(ui_registry));
-  registry_service.RegisterRulesRegistry(make_scoped_refptr(io_registry));
+  registry_service.RegisterRulesRegistry(base::WrapRefCounted(ui_registry));
+  registry_service.RegisterRulesRegistry(base::WrapRefCounted(io_registry));
 
   EXPECT_TRUE(registry_service.GetRulesRegistry(key, "ui").get());
   EXPECT_TRUE(registry_service.GetRulesRegistry(key, "io").get());

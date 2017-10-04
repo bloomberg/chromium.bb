@@ -13,8 +13,8 @@
 namespace media {
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CreateEOSBuffer() {
-  return make_scoped_refptr(new StreamParserBuffer(NULL, 0, NULL, 0, false,
-                                                   DemuxerStream::UNKNOWN, 0));
+  return base::WrapRefCounted(new StreamParserBuffer(
+      NULL, 0, NULL, 0, false, DemuxerStream::UNKNOWN, 0));
 }
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
@@ -23,9 +23,8 @@ scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
     bool is_key_frame,
     Type type,
     TrackId track_id) {
-  return make_scoped_refptr(
-      new StreamParserBuffer(data, data_size, NULL, 0, is_key_frame, type,
-                             track_id));
+  return base::WrapRefCounted(new StreamParserBuffer(
+      data, data_size, NULL, 0, is_key_frame, type, track_id));
 }
 
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
@@ -36,7 +35,7 @@ scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
     bool is_key_frame,
     Type type,
     TrackId track_id) {
-  return make_scoped_refptr(
+  return base::WrapRefCounted(
       new StreamParserBuffer(data, data_size, side_data, side_data_size,
                              is_key_frame, type, track_id));
 }

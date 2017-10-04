@@ -65,7 +65,7 @@ void InFlightIO::DropPendingIO() {
     BackgroundIO* operation = it->get();
     operation->Cancel();
     DCHECK(io_list_.find(operation) != io_list_.end());
-    io_list_.erase(make_scoped_refptr(operation));
+    io_list_.erase(base::WrapRefCounted(operation));
   }
 }
 
@@ -99,14 +99,14 @@ void InFlightIO::InvokeCallback(BackgroundIO* operation, bool cancel_task) {
   // callback (so that a subsequent cancel does not invoke the callback again).
   DCHECK(io_list_.find(operation) != io_list_.end());
   DCHECK(!operation->HasOneRef());
-  io_list_.erase(make_scoped_refptr(operation));
+  io_list_.erase(base::WrapRefCounted(operation));
   OnOperationComplete(operation, cancel_task);
 }
 
 // Runs on the primary thread.
 void InFlightIO::OnOperationPosted(BackgroundIO* operation) {
   DCHECK(callback_task_runner_->RunsTasksInCurrentSequence());
-  io_list_.insert(make_scoped_refptr(operation));
+  io_list_.insert(base::WrapRefCounted(operation));
 }
 
 }  // namespace disk_cache

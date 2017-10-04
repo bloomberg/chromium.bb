@@ -70,7 +70,7 @@ BitmapCursorFactoryOzone::~BitmapCursorFactoryOzone() {}
 // static
 scoped_refptr<BitmapCursorOzone> BitmapCursorFactoryOzone::GetBitmapCursor(
     PlatformCursor platform_cursor) {
-  return make_scoped_refptr(ToBitmapCursorOzone(platform_cursor));
+  return base::WrapRefCounted(ToBitmapCursorOzone(platform_cursor));
 }
 
 PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(CursorType type) {

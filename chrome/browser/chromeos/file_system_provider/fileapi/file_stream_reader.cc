@@ -300,18 +300,16 @@ int FileStreamReader::Read(net::IOBuffer* buffer,
   switch (state_) {
     case NOT_INITIALIZED:
       // Lazily initialize with the first call to Read().
-    Initialize(base::Bind(&FileStreamReader::ReadAfterInitialized,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          make_scoped_refptr(buffer),
-                          buffer_length,
-                          base::Bind(&FileStreamReader::OnReadCompleted,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     callback)),
-               base::Bind(&Int64ToIntCompletionCallback,
-                          base::Bind(&FileStreamReader::OnReadCompleted,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     callback)));
-    break;
+      Initialize(
+          base::Bind(&FileStreamReader::ReadAfterInitialized,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(buffer), buffer_length,
+                     base::Bind(&FileStreamReader::OnReadCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), callback)),
+          base::Bind(&Int64ToIntCompletionCallback,
+                     base::Bind(&FileStreamReader::OnReadCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), callback)));
+      break;
 
     case INITIALIZING:
       NOTREACHED();

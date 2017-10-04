@@ -132,7 +132,7 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
       new remoting::It2MeHostFactory());
   std::unique_ptr<remoting::ChromotingHostContext> context =
       remoting::ChromotingHostContext::CreateForChromeOS(
-          make_scoped_refptr(g_browser_process->system_request_context()),
+          base::WrapRefCounted(g_browser_process->system_request_context()),
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO),
           content::BrowserThread::GetTaskRunnerForThread(

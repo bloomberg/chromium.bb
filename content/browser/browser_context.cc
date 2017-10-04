@@ -319,7 +319,7 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
-                 make_scoped_refptr(blob_context), data, length),
+                 base::WrapRefCounted(blob_context), data, length),
       callback);
 }
 
@@ -338,7 +338,7 @@ void BrowserContext::CreateFileBackedBlob(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ChromeBlobStorageContext::CreateFileBackedBlob,
-                 make_scoped_refptr(blob_context), path, offset, size,
+                 base::WrapRefCounted(blob_context), path, offset, size,
                  expected_modification_time),
       callback);
 }
@@ -400,14 +400,14 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   database_tracker->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&storage::DatabaseTracker::SetForceKeepSessionState,
-                     make_scoped_refptr(database_tracker)));
+                     base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &SaveSessionStateOnIOThread,
-            make_scoped_refptr(
+            base::WrapRefCounted(
                 BrowserContext::GetDefaultStoragePartition(browser_context)
                     ->GetURLRequestContext()),
             static_cast<AppCacheServiceImpl*>(
@@ -425,8 +425,9 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   // No task runner in unit tests.
   if (indexed_db_context_impl->TaskRunner()) {
     indexed_db_context_impl->TaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
-                                  make_scoped_refptr(indexed_db_context_impl)));
+        FROM_HERE,
+        base::BindOnce(&SaveSessionStateOnIndexedDBThread,
+                       base::WrapRefCounted(indexed_db_context_impl)));
   }
 }
 

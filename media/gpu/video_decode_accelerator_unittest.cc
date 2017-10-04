@@ -337,7 +337,7 @@ TextureRef::~TextureRef() {
 scoped_refptr<TextureRef> TextureRef::Create(
     uint32_t texture_id,
     const base::Closure& no_longer_needed_cb) {
-  return make_scoped_refptr(new TextureRef(texture_id, no_longer_needed_cb));
+  return base::WrapRefCounted(new TextureRef(texture_id, no_longer_needed_cb));
 }
 
 #if defined(OS_CHROMEOS)

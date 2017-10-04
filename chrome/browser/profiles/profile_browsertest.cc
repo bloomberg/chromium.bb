@@ -807,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReport) {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &DisablePinningBypass,
-          make_scoped_refptr(browser()->profile()->GetRequestContext())));
+          base::WrapRefCounted(browser()->profile()->GetRequestContext())));
 
   base::RunLoop wait_for_report_loop;
   // Server that HPKP reports are sent to.
@@ -843,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReportServerHangs) {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(
           &DisablePinningBypass,
-          make_scoped_refptr(browser()->profile()->GetRequestContext())));
+          base::WrapRefCounted(browser()->profile()->GetRequestContext())));
 
   base::RunLoop wait_for_report_loop;
   // Server that HPKP reports are sent to.  Have to use a class member to make

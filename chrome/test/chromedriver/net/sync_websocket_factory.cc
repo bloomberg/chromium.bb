@@ -21,5 +21,5 @@ std::unique_ptr<SyncWebSocket> CreateSyncWebSocket(
 
 SyncWebSocketFactory CreateSyncWebSocketFactory(
     URLRequestContextGetter* getter) {
-  return base::Bind(&CreateSyncWebSocket, make_scoped_refptr(getter));
+  return base::Bind(&CreateSyncWebSocket, base::WrapRefCounted(getter));
 }

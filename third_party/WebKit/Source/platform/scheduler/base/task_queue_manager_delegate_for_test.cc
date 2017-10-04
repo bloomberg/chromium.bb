@@ -17,7 +17,7 @@ scoped_refptr<TaskQueueManagerDelegateForTest>
 TaskQueueManagerDelegateForTest::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<base::TickClock> time_source) {
-  return make_scoped_refptr(
+  return base::WrapRefCounted(
       new TaskQueueManagerDelegateForTest(task_runner, std::move(time_source)));
 }
 

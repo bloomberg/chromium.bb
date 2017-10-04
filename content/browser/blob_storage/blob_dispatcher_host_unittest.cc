@@ -68,8 +68,8 @@ class TestableBlobDispatcherHost : public BlobDispatcherHost {
                              storage::FileSystemContext* file_system_context,
                              IPC::TestSink* sink)
       : BlobDispatcherHost(0 /* process_id */,
-                           make_scoped_refptr(blob_storage_context),
-                           make_scoped_refptr(file_system_context)),
+                           base::WrapRefCounted(blob_storage_context),
+                           base::WrapRefCounted(file_system_context)),
         sink_(sink) {}
 
   bool Send(IPC::Message* message) override { return sink_->Send(message); }

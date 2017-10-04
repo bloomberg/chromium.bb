@@ -48,7 +48,7 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
     if (!serial_jstring.is_null())
       serial_number = ConvertJavaStringToUTF16(env, serial_jstring);
   }
-  return make_scoped_refptr(new UsbDeviceAndroid(
+  return base::WrapRefCounted(new UsbDeviceAndroid(
       env, service,
       0x0200,  // USB protocol version, not provided by the Android API.
       Java_ChromeUsbDevice_getDeviceClass(env, wrapper),

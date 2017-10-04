@@ -718,7 +718,7 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
     // Re-run ourselves to handle the now-pending doom.
     return CreateOrFindActiveOrDoomedEntry(entry_hash, key, post_doom);
   }
-  return make_scoped_refptr(it->second);
+  return base::WrapRefCounted(it->second);
 }
 
 int SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,

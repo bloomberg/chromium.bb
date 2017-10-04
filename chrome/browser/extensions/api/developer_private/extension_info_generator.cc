@@ -517,7 +517,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Runs on all urls.
   ScriptingPermissionsModifier permissions_modifier(
-      browser_context_, make_scoped_refptr(&extension));
+      browser_context_, base::WrapRefCounted(&extension));
   info->run_on_all_urls.is_enabled =
       (FeatureSwitch::scripts_require_action()->IsEnabled() &&
        permissions_modifier.CanAffectExtension(

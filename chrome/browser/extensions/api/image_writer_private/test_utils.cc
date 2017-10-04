@@ -182,7 +182,7 @@ scoped_refptr<ImageWriterUtilityClient> CreateFakeImageWriterUtilityClient(
     ImageWriterTestUtils* utils) {
   auto* client = new FakeImageWriterClient();
   utils->OnUtilityClientCreated(client);
-  return make_scoped_refptr(client);
+  return base::WrapRefCounted(client);
 }
 #endif  // !defined(OS_CHROMEOS)
 

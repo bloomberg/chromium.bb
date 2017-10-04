@@ -77,7 +77,7 @@ void MediaLicensesCounterPlugin::Count() {
   // Cancel existing requests.
   weak_ptr_factory_.InvalidateWeakPtrs();
   scoped_refptr<storage::FileSystemContext> filesystem_context =
-      make_scoped_refptr(
+      base::WrapRefCounted(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
               ->GetFileSystemContext());
   base::PostTaskAndReplyWithResult(

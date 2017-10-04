@@ -34,7 +34,7 @@ namespace android {
 // static
 scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
     ui::ResourceManager* resource_manager) {
-  return make_scoped_refptr(new ContextualSearchLayer(resource_manager));
+  return base::WrapRefCounted(new ContextualSearchLayer(resource_manager));
 }
 
 void ContextualSearchLayer::SetProperties(

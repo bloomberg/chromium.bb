@@ -38,7 +38,8 @@ U2fInitPacket::U2fInitPacket(uint32_t channel_id,
       payload_length_(payload_length) {}
 
 scoped_refptr<net::IOBufferWithSize> U2fInitPacket::GetSerializedData() {
-  auto serialized = make_scoped_refptr(new net::IOBufferWithSize(kPacketSize));
+  auto serialized =
+      base::WrapRefCounted(new net::IOBufferWithSize(kPacketSize));
   size_t index = 0;
   // Byte at offset 0 is the report ID, which is always 0
   serialized->data()[index++] = 0;
@@ -106,7 +107,8 @@ U2fContinuationPacket::U2fContinuationPacket(const uint32_t channel_id,
 
 scoped_refptr<net::IOBufferWithSize>
 U2fContinuationPacket::GetSerializedData() {
-  auto serialized = make_scoped_refptr(new net::IOBufferWithSize(kPacketSize));
+  auto serialized =
+      base::WrapRefCounted(new net::IOBufferWithSize(kPacketSize));
   size_t index = 0;
   // Byte at offset 0 is the report ID, which is always 0
   serialized->data()[index++] = 0;

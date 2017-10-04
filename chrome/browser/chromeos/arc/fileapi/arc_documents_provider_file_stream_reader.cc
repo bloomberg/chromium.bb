@@ -80,7 +80,7 @@ int ArcDocumentsProviderFileStreamReader::Read(
   if (!content_url_resolved_) {
     pending_operations_.emplace_back(base::Bind(
         &ArcDocumentsProviderFileStreamReader::RunPendingRead,
-        base::Unretained(this), base::Passed(make_scoped_refptr(buffer)),
+        base::Unretained(this), base::Passed(base::WrapRefCounted(buffer)),
         buffer_length, callback));
     return net::ERR_IO_PENDING;
   }
