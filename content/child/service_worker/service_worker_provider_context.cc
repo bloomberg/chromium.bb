@@ -4,6 +4,7 @@
 
 #include "content/child/service_worker/service_worker_provider_context.h"
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -166,31 +167,39 @@ void ServiceWorkerProviderContext::SetController(
   DCHECK(!state->controller ||
          state->controller->handle_id() != kInvalidServiceWorkerHandleId);
 
-  if (controller) {
+  state->controller = std::move(controller);
+  state->used_features = used_features;
+
+  // Propagate the controller to workers related to this provider.
+  if (state->controller) {
     for (const auto& worker : state->worker_clients) {
       // This is a Mojo interface call to the (dedicated or shared) worker
       // thread.
-      worker->SetControllerServiceWorker(controller->version_id());
+      worker->SetControllerServiceWorker(state->controller->version_id());
     }
   }
-  state->controller = std::move(controller);
-  state->used_features = used_features;
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    storage::mojom::BlobRegistryPtr blob_registry_ptr;
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
-    auto blob_registry = base::MakeRefCounted<
-        base::RefCountedData<storage::mojom::BlobRegistryPtr>>(
-        std::move(blob_registry_ptr));
-    state->controller_connector =
-        base::MakeRefCounted<ControllerServiceWorkerConnector>(
-            container_host_.get());
-    mojo::MakeStrongBinding(
-        base::MakeUnique<ServiceWorkerSubresourceLoaderFactory>(
-            state->controller_connector, state->default_loader_factory_getter,
-            state->controller->url().GetOrigin(), std::move(blob_registry)),
-        mojo::MakeRequest(&state->subresource_loader_factory));
+
+  // S13nServiceWorker
+  // Set up the URL loader factory for sending URL requests to the controller.
+  if (!ServiceWorkerUtils::IsServicificationEnabled() || !state->controller) {
+    state->controller_connector = nullptr;
+    state->subresource_loader_factory = nullptr;
+    return;
   }
+  storage::mojom::BlobRegistryPtr blob_registry_ptr;
+  ChildThreadImpl::current()->GetConnector()->BindInterface(
+      mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
+  auto blob_registry = base::MakeRefCounted<
+      base::RefCountedData<storage::mojom::BlobRegistryPtr>>(
+      std::move(blob_registry_ptr));
+  state->controller_connector =
+      base::MakeRefCounted<ControllerServiceWorkerConnector>(
+          container_host_.get());
+  mojo::MakeStrongBinding(
+      base::MakeUnique<ServiceWorkerSubresourceLoaderFactory>(
+          state->controller_connector, state->default_loader_factory_getter,
+          state->controller->url().GetOrigin(), std::move(blob_registry)),
+      mojo::MakeRequest(&state->subresource_loader_factory));
 }
 
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {

@@ -371,6 +371,7 @@ void ServiceWorkerProviderHost::AssociateRegistration(
     ServiceWorkerRegistration* registration,
     bool notify_controllerchange) {
   CHECK(IsContextSecureForServiceWorker());
+  DCHECK(IsProviderForClient());
   DCHECK(CanAssociateRegistration(registration));
   associated_registration_ = registration;
   AddMatchingRegistration(registration);
@@ -379,6 +380,7 @@ void ServiceWorkerProviderHost::AssociateRegistration(
 }
 
 void ServiceWorkerProviderHost::DisassociateRegistration() {
+  DCHECK(IsProviderForClient());
   queued_events_.clear();
   if (!associated_registration_.get())
     return;
