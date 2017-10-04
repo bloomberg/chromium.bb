@@ -16,8 +16,8 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/android_overlay.h"
@@ -46,7 +46,8 @@ enum TaskType {
 // Configuration info for MediaCodec.
 // This is used to shuttle configuration info between threads without needing
 // to worry about the lifetime of the AVDA instance.
-class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
+class MEDIA_GPU_EXPORT CodecConfig
+    : public base::RefCountedThreadSafe<CodecConfig> {
  public:
   CodecConfig();
 
@@ -114,11 +115,23 @@ class AVDACodecAllocatorClient {
 // on them to allow software fallback if the HW path is hung up.
 class MEDIA_GPU_EXPORT AVDACodecAllocator {
  public:
-  static AVDACodecAllocator* GetInstance();
+  static AVDACodecAllocator* GetInstance(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  // Make sure the construction threads are started for |client|. Returns true
-  // on success.
-  virtual bool StartThread(AVDACodecAllocatorClient* client);
+  using CodecFactoryCB =
+      base::RepeatingCallback<std::unique_ptr<MediaCodecBridge>(
+          VideoCodec codec,
+          CodecType codec_type,
+          const gfx::Size& size,  // Output frame size.
+          const base::android::JavaRef<jobject>& surface,
+          const base::android::JavaRef<jobject>& media_crypto,
+          const std::vector<uint8_t>& csd0,
+          const std::vector<uint8_t>& csd1,
+          bool allow_adaptive_playback)>;
+
+  // Make sure the construction threads are started for |client|.  If the
+  // threads fail to start, then codec allocation may fail.
+  virtual void StartThread(AVDACodecAllocatorClient* client);
   virtual void StopThread(AVDACodecAllocatorClient* client);
 
   // Create and configure a MediaCodec synchronously.
@@ -154,17 +167,38 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
  protected:
   // |tick_clock| and |stop_event| are for tests only.
-  AVDACodecAllocator(base::TickClock* tick_clock = nullptr,
+  AVDACodecAllocator(AVDACodecAllocator::CodecFactoryCB factory_cb,
+                     scoped_refptr<base::SequencedTaskRunner> task_runner,
+                     base::TickClock* tick_clock = nullptr,
                      base::WaitableEvent* stop_event = nullptr);
   virtual ~AVDACodecAllocator();
 
+  // Struct to own a codec and surface bundle, with a custom deleter to post
+  // destruction to the right thread.
+  struct MediaCodecAndSurface {
+    MediaCodecAndSurface(std::unique_ptr<MediaCodecBridge> media_codec,
+                         scoped_refptr<AVDASurfaceBundle> surface_bundle);
+    ~MediaCodecAndSurface();
+    std::unique_ptr<MediaCodecBridge> media_codec;
+    scoped_refptr<AVDASurfaceBundle> surface_bundle;
+  };
+
   // Forward |media_codec|, which is configured to output to |surface_bundle|,
   // to |client| if |client| is still around.  Otherwise, release the codec and
-  // then drop our ref to |surface_bundle|.
-  void ForwardOrDropCodec(base::WeakPtr<AVDACodecAllocatorClient> client,
-                          TaskType task_type,
-                          scoped_refptr<AVDASurfaceBundle> surface_bundle,
-                          std::unique_ptr<MediaCodecBridge> media_codec);
+  // then drop our ref to |surface_bundle|.  This is called on |task_runner_|.
+  // It may only reference |client| from |client_task_runner|.
+  void ForwardOrDropCodec(
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      base::WeakPtr<AVDACodecAllocatorClient> client,
+      TaskType task_type,
+      scoped_refptr<AVDASurfaceBundle> surface_bundle,
+      std::unique_ptr<MediaCodecBridge> media_codec);
+
+  // Forward |surface_bundle| and |media_codec| to |client| on the right thread
+  // to access |client|.
+  void ForwardOrDropCodecOnClientThread(
+      base::WeakPtr<AVDACodecAllocatorClient> client,
+      std::unique_ptr<MediaCodecAndSurface> codec_and_surface);
 
  private:
   friend class AVDACodecAllocatorTest;
@@ -200,6 +234,13 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
     HangDetector hang_detector;
   };
 
+  // Helper function for CreateMediaCodecAsync which takes the task runner on
+  // which it should post the reply to |client|.
+  void CreateMediaCodecAsyncInternal(
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      base::WeakPtr<AVDACodecAllocatorClient> client,
+      scoped_refptr<CodecConfig> codec_config);
+
   // Return the task type to use for a new codec allocation, or nullopt if
   // both threads are hung.
   base::Optional<TaskType> TaskTypeForAllocation(bool software_codec_forbidden);
@@ -217,6 +258,11 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // after both threads are stopped.
   void StopThreadTask(size_t index);
 
+  // Task runner on which we do all our work.  All members should be accessed
+  // only from this task runner.  |task_runner_| itself may be referenced from
+  // any thread (hence const).
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // All registered AVDAs.
   std::set<AVDACodecAllocatorClient*> clients_;
 
@@ -230,13 +276,14 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // show and and request them.  The vector indicies must match TaskType.
   std::vector<ThreadAndHangDetector*> threads_;
 
-  base::ThreadChecker thread_checker_;
-
   base::WaitableEvent* stop_event_for_testing_;
 
   // Saves the TaskType used to create a given codec so it can later be released
   // on the same thread.
   std::map<MediaCodecBridge*, TaskType> codec_task_types_;
+
+  // Low-level codec factory, for testing.
+  CodecFactoryCB factory_cb_;
 
   // For canceling pending StopThreadTask()s.
   base::WeakPtrFactory<AVDACodecAllocator> weak_this_factory_;

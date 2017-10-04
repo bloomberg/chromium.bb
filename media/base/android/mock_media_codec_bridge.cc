@@ -4,6 +4,7 @@
 
 #include "media/base/android/mock_media_codec_bridge.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
 
@@ -21,7 +22,10 @@ MockMediaCodecBridge::MockMediaCodecBridge() {
       .WillByDefault(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
 }
 
-MockMediaCodecBridge::~MockMediaCodecBridge() {}
+MockMediaCodecBridge::~MockMediaCodecBridge() {
+  if (destruction_event_)
+    destruction_event_->Signal();
+}
 
 void MockMediaCodecBridge::AcceptOneInput(IsEos eos) {
   EXPECT_CALL(*this, DequeueInputBuffer(_, _))
@@ -36,6 +40,22 @@ void MockMediaCodecBridge::ProduceOneOutput(IsEos eos) {
       .WillOnce(DoAll(SetArgPointee<5>(eos == kEos ? true : false),
                       Return(MEDIA_CODEC_OK)))
       .WillRepeatedly(Return(MEDIA_CODEC_TRY_AGAIN_LATER));
+}
+
+void MockMediaCodecBridge::SetCodecDestroyedEvent(base::WaitableEvent* event) {
+  destruction_event_ = event;
+}
+
+std::unique_ptr<MediaCodecBridge> MockMediaCodecBridge::CreateVideoDecoder(
+    VideoCodec codec,
+    CodecType codec_type,
+    const gfx::Size& size,  // Output frame size.
+    const base::android::JavaRef<jobject>& surface,
+    const base::android::JavaRef<jobject>& media_crypto,
+    const std::vector<uint8_t>& csd0,
+    const std::vector<uint8_t>& csd1,
+    bool allow_adaptive_playback) {
+  return base::MakeUnique<MockMediaCodecBridge>();
 }
 
 }  // namespace media

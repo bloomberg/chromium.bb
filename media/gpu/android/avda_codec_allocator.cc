@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -36,6 +37,7 @@ constexpr base::TimeDelta kHungTaskDetectionTimeout =
 
 // This must be safe to call on any thread. Returns nullptr on failure.
 std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
+    AVDACodecAllocator::CodecFactoryCB factory_cb,
     scoped_refptr<CodecConfig> codec_config,
     bool requires_software_codec) {
   TRACE_EVENT0("media", "CreateMediaCodecInternal");
@@ -56,12 +58,11 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
     codec_type = CodecType::kSoftware;
   }
 
-  std::unique_ptr<MediaCodecBridge> codec(
-      MediaCodecBridgeImpl::CreateVideoDecoder(
-          codec_config->codec, codec_type,
-          codec_config->initial_expected_coded_size,
-          codec_config->surface_bundle->GetJavaSurface(), media_crypto,
-          codec_config->csd0, codec_config->csd1, true));
+  std::unique_ptr<MediaCodecBridge> codec(factory_cb.Run(
+      codec_config->codec, codec_type,
+      codec_config->initial_expected_coded_size,
+      codec_config->surface_bundle->GetJavaSurface(), media_crypto,
+      codec_config->csd0, codec_config->csd1, true));
 
   return codec;
 }
@@ -104,13 +105,35 @@ bool AVDACodecAllocator::HangDetector::IsThreadLikelyHung() {
 }
 
 // static
-AVDACodecAllocator* AVDACodecAllocator::GetInstance() {
-  static AVDACodecAllocator* allocator = new AVDACodecAllocator();
+AVDACodecAllocator* AVDACodecAllocator::GetInstance(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  static AVDACodecAllocator* allocator = new AVDACodecAllocator(
+      base::BindRepeating(&MediaCodecBridgeImpl::CreateVideoDecoder),
+      task_runner);
+
+  // Verify that this caller agrees on the task runner, if one was specified.
+  DCHECK(!task_runner || allocator->task_runner_ == task_runner);
+
   return allocator;
 }
 
-bool AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&AVDACodecAllocator::StartThread,
+                                      base::Unretained(this), client));
+    return;
+  }
+
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  // NOTE: |client| might not be a valid pointer anymore.  All we know is that
+  // no other client is aliased to it, as long as |client| called StopThread
+  // before it was destroyed.  The reason is that any re-use of |client| would
+  // have to also post StartThread to this thread.  Since the re-use must be
+  // ordered later with respect to deleting the original |client|, the post must
+  // also be ordered later.  So, there might be an aliased client posted, but it
+  // won't have started yet.
 
   // Cancel any pending StopThreadTask()s because we need the threads now.
   weak_this_factory_.InvalidateWeakPtrs();
@@ -121,7 +144,7 @@ bool AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
       continue;
 
     if (!thread->thread.Start())
-      return false;
+      return;
 
     // Register the hang detector to observe the thread's MessageLoop.
     thread->thread.task_runner()->PostTask(
@@ -131,11 +154,18 @@ bool AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
   }
 
   clients_.insert(client);
-  return true;
+  return;
 }
 
 void AVDACodecAllocator::StopThread(AVDACodecAllocatorClient* client) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&AVDACodecAllocator::StopThread,
+                                      base::Unretained(this), client));
+    return;
+  }
+
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   clients_.erase(client);
   if (!clients_.empty()) {
@@ -166,20 +196,21 @@ void AVDACodecAllocator::StopThread(AVDACodecAllocatorClient* client) {
 // Return the task runner for tasks of type |type|.
 scoped_refptr<base::SingleThreadTaskRunner> AVDACodecAllocator::TaskRunnerFor(
     TaskType task_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return threads_[task_type]->thread.task_runner();
 }
 
 std::unique_ptr<MediaCodecBridge> AVDACodecAllocator::CreateMediaCodecSync(
     scoped_refptr<CodecConfig> codec_config) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   auto task_type =
       TaskTypeForAllocation(codec_config->software_codec_forbidden);
   if (!task_type)
     return nullptr;
 
-  auto codec = CreateMediaCodecInternal(codec_config, task_type == SW_CODEC);
+  auto codec = CreateMediaCodecInternal(factory_cb_, codec_config,
+                                        task_type == SW_CODEC);
   if (codec)
     codec_task_types_[codec.get()] = *task_type;
   return codec;
@@ -188,78 +219,146 @@ std::unique_ptr<MediaCodecBridge> AVDACodecAllocator::CreateMediaCodecSync(
 void AVDACodecAllocator::CreateMediaCodecAsync(
     base::WeakPtr<AVDACodecAllocatorClient> client,
     scoped_refptr<CodecConfig> codec_config) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
+    // We need to be ordered with respect to any Start/StopThread from this
+    // client.  Otherwise, we might post work to the worker thread before the
+    // posted task to start the worker threads (on |task_runner_|) has run yet.
+    // We also need to avoid data races, since our member variables are all
+    // supposed to be accessed from the main thread only.
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&AVDACodecAllocator::CreateMediaCodecAsyncInternal,
+                   base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
+                   client, codec_config));
+    return;
+  }
 
+  // We're on the right thread, so just send in |task_runner_|.
+  CreateMediaCodecAsyncInternal(task_runner_, client, codec_config);
+}
+
+void AVDACodecAllocator::CreateMediaCodecAsyncInternal(
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+    base::WeakPtr<AVDACodecAllocatorClient> client,
+    scoped_refptr<CodecConfig> codec_config) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(client_task_runner);
+
+  // TODO(liberato): BindOnce more often if possible.
+
+  // Allocate the codec on the appropriate thread, and reply to this one with
+  // the result.  If |client| is gone by then, we handle cleanup.
   auto task_type =
       TaskTypeForAllocation(codec_config->software_codec_forbidden);
-  if (!task_type) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      task_type ? TaskRunnerFor(*task_type) : nullptr;
+  if (!task_type || !task_runner) {
+    // The allocator threads didn't start or are stuck.
+    // Post even if it's the current thread, to avoid re-entrancy.
+    client_task_runner->PostTask(
         FROM_HERE, base::Bind(&AVDACodecAllocatorClient::OnCodecConfigured,
                               client, nullptr, codec_config->surface_bundle));
     return;
   }
 
-  // Allocate the codec on the appropriate thread, and reply to this one with
-  // the result.  If |client| is gone by then, we handle cleanup.
   base::PostTaskAndReplyWithResult(
-      TaskRunnerFor(*task_type).get(), FROM_HERE,
-      base::Bind(&CreateMediaCodecInternal, codec_config,
-                 task_type == SW_CODEC),
-      base::Bind(&AVDACodecAllocator::ForwardOrDropCodec,
-                 base::Unretained(this), client, *task_type,
-                 codec_config->surface_bundle));
+      task_runner.get(), FROM_HERE,
+      base::BindOnce(&CreateMediaCodecInternal, factory_cb_, codec_config,
+                     task_type == SW_CODEC),
+      base::BindOnce(&AVDACodecAllocator::ForwardOrDropCodec,
+                     base::Unretained(this), client_task_runner, client,
+                     *task_type, codec_config->surface_bundle));
 }
 
 void AVDACodecAllocator::ForwardOrDropCodec(
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     base::WeakPtr<AVDACodecAllocatorClient> client,
     TaskType task_type,
     scoped_refptr<AVDASurfaceBundle> surface_bundle,
     std::unique_ptr<MediaCodecBridge> media_codec) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  // Remember: we are not necessarily on the right thread to use |client|.
 
   if (media_codec)
     codec_task_types_[media_codec.get()] = task_type;
 
-  if (!client) {
-    // |client| has been destroyed.  Free |media_codec| on the right thread.
-    // Note that this also preserves |surface_bundle| until |media_codec| has
-    // been released, in case our ref to it is the last one.
-    if (!media_codec)
-      return;
+  // We could call directly if |task_runner_| is the current thread.  Also note
+  // that there's no guarantee that |client_task_runner|'s thread is still
+  // running.  That's okay; MediaCodecAndSurface will handle it.
+  client_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AVDACodecAllocator::ForwardOrDropCodecOnClientThread,
+                     base::Unretained(this), client,
+                     base::MakeUnique<MediaCodecAndSurface>(
+                         std::move(media_codec), std::move(surface_bundle))));
+}
 
-    // If there are no registered clients, then the threads are stopped or are
-    // stopping.  We must restart them / cancel any pending stop requests before
-    // we can post codec destruction to them.  In the "restart them" case, the
-    // threads aren't running.  In the "cancel...requests" case, the threads are
-    // running, but we're trying to clear them out via a DoNothing task posted
-    // there.  Once that completes, there will be a join on the main thread.  If
-    // we post, then it will be ordered after the DoNothing, but before the join
-    // on the main thread (this thread).  If the destruction task hangs, then so
-    // will the join.
-    //
-    // We register a fake client to make sure that the threads are ready.
-    //
-    // If we can't start the thread, then, well, good luck.
-    if (!StartThread(nullptr))
-      return;
-
-    ReleaseMediaCodec(std::move(media_codec), std::move(surface_bundle));
-
-    // We can stop the threads immediately.  If other clients are around, then
-    // this will do nothing.  Otherwise, this will order the join after the
-    // release completes successfully.
-    StopThread(nullptr);
+void AVDACodecAllocator::ForwardOrDropCodecOnClientThread(
+    base::WeakPtr<AVDACodecAllocatorClient> client,
+    std::unique_ptr<MediaCodecAndSurface> codec_and_surface) {
+  // Note that if |client| has been destroyed, MediaCodecAndSurface will clean
+  // up properly on the correct thread.  Also note that |surface_bundle| will be
+  // preserved at least as long as the codec.
+  if (!client)
     return;
-  }
 
-  client->OnCodecConfigured(std::move(media_codec), std::move(surface_bundle));
+  client->OnCodecConfigured(std::move(codec_and_surface->media_codec),
+                            std::move(codec_and_surface->surface_bundle));
+}
+
+AVDACodecAllocator::MediaCodecAndSurface::MediaCodecAndSurface(
+    std::unique_ptr<MediaCodecBridge> codec,
+    scoped_refptr<AVDASurfaceBundle> surface)
+    : media_codec(std::move(codec)), surface_bundle(std::move(surface)) {}
+
+AVDACodecAllocator::MediaCodecAndSurface::~MediaCodecAndSurface() {
+  // This code may be run on any thread.
+
+  if (!media_codec)
+    return;
+
+  // If there are no registered clients, then the threads are stopped or are
+  // stopping.  We must restart them / cancel any pending stop requests before
+  // we can post codec destruction to them.  In the "restart them" case, the
+  // threads aren't running.  In the "cancel...requests" case, the threads are
+  // running, but we're trying to clear them out via a DoNothing task posted
+  // there.  Once that completes, there will be a join on the main thread.  If
+  // we post, then it will be ordered after the DoNothing, but before the join
+  // on the main thread (this thread).  If the destruction task hangs, then so
+  // will the join.
+  //
+  // We register a fake client to make sure that the threads are ready.
+  //
+  // If we can't start the thread, then ReleaseMediaCodec will free it on the
+  // current thread.
+  AVDACodecAllocator* allocator = GetInstance(nullptr);
+  allocator->StartThread(nullptr);
+  allocator->ReleaseMediaCodec(std::move(media_codec),
+                               std::move(surface_bundle));
+
+  // We can stop the threads immediately.  If other clients are around, then
+  // this will do nothing.  Otherwise, this will order the join after the
+  // release completes successfully.
+  allocator->StopThread(nullptr);
 }
 
 void AVDACodecAllocator::ReleaseMediaCodec(
     std::unique_ptr<MediaCodecBridge> media_codec,
     scoped_refptr<AVDASurfaceBundle> surface_bundle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(media_codec);
+
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
+    // See CreateMediaCodecAsync
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AVDACodecAllocator::ReleaseMediaCodec,
+                       base::Unretained(this), std::move(media_codec),
+                       std::move(surface_bundle)));
+    return;
+  }
+
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   auto task_type = codec_task_types_[media_codec.get()];
   int erased = codec_task_types_.erase(media_codec.get());
@@ -280,7 +379,16 @@ void AVDACodecAllocator::ReleaseMediaCodec(
 
   // Note that we forward |surface_bundle|, too, so that the surface outlasts
   // the codec.
-  TaskRunnerFor(task_type)->PostTaskAndReply(
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      TaskRunnerFor(task_type);
+  if (!task_runner) {
+    // Thread isn't running, so just delete it now and hope for the best.
+    media_codec.reset();
+    OnMediaCodecReleased(std::move(surface_bundle));
+    return;
+  }
+
+  task_runner->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DeleteMediaCodecAndSignal,
                  base::Passed(std::move(media_codec)), released_event),
@@ -290,7 +398,7 @@ void AVDACodecAllocator::ReleaseMediaCodec(
 
 void AVDACodecAllocator::OnMediaCodecReleased(
     scoped_refptr<AVDASurfaceBundle> surface_bundle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // This is a no-op if it's a non overlay bundle.
   pending_codec_releases_.erase(surface_bundle->overlay.get());
@@ -318,6 +426,7 @@ base::Thread& AVDACodecAllocator::GetThreadForTesting(TaskType task_type) {
 }
 
 bool AVDACodecAllocator::WaitForPendingRelease(AndroidOverlay* overlay) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!pending_codec_releases_.count(overlay))
     return true;
 
@@ -335,9 +444,15 @@ bool AVDACodecAllocator::WaitForPendingRelease(AndroidOverlay* overlay) {
   return false;
 }
 
-AVDACodecAllocator::AVDACodecAllocator(base::TickClock* tick_clock,
-                                       base::WaitableEvent* stop_event)
-    : stop_event_for_testing_(stop_event), weak_this_factory_(this) {
+AVDACodecAllocator::AVDACodecAllocator(
+    AVDACodecAllocator::CodecFactoryCB factory_cb,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::TickClock* tick_clock,
+    base::WaitableEvent* stop_event)
+    : task_runner_(task_runner),
+      stop_event_for_testing_(stop_event),
+      factory_cb_(std::move(factory_cb)),
+      weak_this_factory_(this) {
   // We leak the clock we create, but that's okay because we're a singleton.
   auto* clock = tick_clock ? tick_clock : new base::DefaultTickClock();
 

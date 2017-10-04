@@ -15,7 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -95,7 +96,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
                                          gl::GLContextAttribs());
     context_->MakeCurrent(surface_.get());
 
-    codec_allocator_ = base::MakeUnique<FakeCodecAllocator>();
+    codec_allocator_ = base::MakeUnique<FakeCodecAllocator>(
+        base::SequencedTaskRunnerHandle::Get());
     device_info_ = base::MakeUnique<NiceMock<MockDeviceInfo>>();
 
     chooser_that_is_usually_null_ =
@@ -192,10 +194,11 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     avda()->DequeueOutput();
   }
 
-  base::MessageLoop message_loop_;
+  // So that SequencedTaskRunnerHandle::Get() works.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   gpu::FakeCommandBufferServiceBase command_buffer_service_;
   gpu::gles2::TraceOutputter outputter_;
   NiceMock<gpu::gles2::MockGLES2Decoder> gl_decoder_;
