@@ -118,15 +118,17 @@ class PtrStorageImpl<T,
     if (ptr_ == val)
       return;
     Release();
-    WTF::RefIfNotNull(val);
+    if (val)
+      val->AddRef();
     ptr_ = val;
   }
 
   T* Get() const { return ptr_; }
 
   void Release() {
-    WTF::DerefIfNotNull(ptr_);
-    ptr_ = 0;
+    if (ptr_)
+      ptr_->Release();
+    ptr_ = nullptr;
   }
 
  private:

@@ -22,10 +22,11 @@
 #ifndef WTF_RefPtr_h
 #define WTF_RefPtr_h
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
+#include <algorithm>
 #include <utility>
+#include "base/memory/ref_counted.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/allocator/PartitionAllocator.h"
 
 namespace WTF {
 
@@ -37,68 +38,39 @@ class RefPtr;
 template <typename T>
 RefPtr<T> AdoptRef(T*);
 
-// requireAdoption() is not overloaded for WTF::RefCounted, which has a built-in
-// assumption that adoption is required. requireAdoption() is for bootstrapping
-// alternate reference count classes that are compatible with RefPtr
-// but cannot have adoption checks enabled by default, such as skia's
-// SkRefCnt. The purpose of requireAdoption() is to enable adoption checks only
-// once it is known that the object will be used with RefPtr.
-inline void RequireAdoption(const void*) {}
-
-template <typename T>
-ALWAYS_INLINE void RefIfNotNull(T* ptr) {
-  if (LIKELY(ptr != 0)) {
-    RequireAdoption(ptr);
-    ptr->AddRef();
-  }
-}
-
-template <typename T>
-ALWAYS_INLINE void DerefIfNotNull(T* ptr) {
-  if (LIKELY(ptr != 0))
-    ptr->Release();
-}
-
-inline void Adopted(const void*) {}
-
 template <typename T>
 class RefPtr {
   USING_FAST_MALLOC(RefPtr);
 
  public:
-  ALWAYS_INLINE RefPtr() : ptr_(nullptr) {}
-  ALWAYS_INLINE RefPtr(std::nullptr_t) : ptr_(nullptr) {}
-  ALWAYS_INLINE RefPtr(T* ptr) : ptr_(ptr) { RefIfNotNull(ptr); }
-  ALWAYS_INLINE RefPtr(const RefPtr& o) : ptr_(o.ptr_) { RefIfNotNull(ptr_); }
+  ALWAYS_INLINE RefPtr() {}
+  ALWAYS_INLINE RefPtr(std::nullptr_t) {}
+  ALWAYS_INLINE RefPtr(T* ptr) : ptr_(ptr) {}
+  ALWAYS_INLINE RefPtr(const RefPtr&) = default;
+  ALWAYS_INLINE RefPtr(RefPtr&&) = default;
+
   template <typename U>
   RefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T))
-      : ptr_(o.get()) {
-    RefIfNotNull(ptr_);
-  }
-  RefPtr(RefPtr&& o) : ptr_(o.ptr_) { o.ptr_ = nullptr; }
+      : ptr_(o.ptr_) {}
   template <typename U>
-  RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T)) : ptr_(o.ptr_) {
-    o.ptr_ = nullptr;
-  }
+  RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
+      : ptr_(std::move(o.ptr_)) {}
 
-  ALWAYS_INLINE ~RefPtr() { DerefIfNotNull(ptr_); }
+  ALWAYS_INLINE ~RefPtr() {}
 
-  ALWAYS_INLINE T* get() const { return ptr_; }
+  ALWAYS_INLINE T* get() const { return ptr_.get(); }
 
   T& operator*() const { return *ptr_; }
-  ALWAYS_INLINE T* operator->() const { return ptr_; }
+  ALWAYS_INLINE T* operator->() const { return ptr_.get(); }
 
   bool operator!() const { return !ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
-  RefPtr& operator=(RefPtr o) {
-    swap(o);
-    return *this;
-  }
+  RefPtr& operator=(const RefPtr&) = default;
+  RefPtr& operator=(RefPtr&&) = default;
+
   RefPtr& operator=(std::nullptr_t) {
-    T* ptr = ptr_;
     ptr_ = nullptr;
-    DerefIfNotNull(ptr);
     return *this;
   }
   // This is required by HashMap<RefPtr>>.
@@ -108,14 +80,13 @@ class RefPtr {
   void swap(RefPtr&);
 
  private:
-  friend RefPtr AdoptRef<T>(T*);
   template <typename U>
   friend class RefPtr;
+  friend RefPtr AdoptRef<T>(T*);
 
-  enum AdoptRefTag { kAdoptRef };
-  RefPtr(T* ptr, AdoptRefTag) : ptr_(ptr) {}
+  ALWAYS_INLINE explicit RefPtr(scoped_refptr<T> ptr) : ptr_(std::move(ptr)) {}
 
-  T* ptr_;
+  scoped_refptr<T> ptr_;
 };
 
 template <typename T>
@@ -209,8 +180,7 @@ class RefPtrValuePeeker {
 
 template <typename T>
 RefPtr<T> AdoptRef(T* p) {
-  Adopted(p);
-  return RefPtr<T>(p, RefPtr<T>::kAdoptRef);
+  return RefPtr<T>(base::AdoptRef(p));
 }
 
 template <typename T>
