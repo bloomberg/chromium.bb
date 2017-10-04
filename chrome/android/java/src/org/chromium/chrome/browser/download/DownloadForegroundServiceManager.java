@@ -197,8 +197,7 @@ public class DownloadForegroundServiceManager {
             // In the case that there was another notification pinned to the foreground, re-launch
             // that notification because it gets cancelled in the switching process.
             // This does not happen for API >= 24.
-            if (mPinnedNotificationId != INVALID_NOTIFICATION_ID
-                    && mPinnedNotificationId != notificationId && Build.VERSION.SDK_INT < 24) {
+            if (mPinnedNotificationId != notificationId && Build.VERSION.SDK_INT < 24) {
                 relaunchPinnedNotification();
             }
 
@@ -207,11 +206,16 @@ public class DownloadForegroundServiceManager {
     }
 
     private void relaunchPinnedNotification() {
-        NotificationManager notificationManager =
-                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(mPinnedNotificationId,
-                mDownloadUpdateQueue.get(mPinnedNotificationId).mNotification);
+        if (mPinnedNotificationId != INVALID_NOTIFICATION_ID
+                && mDownloadUpdateQueue.containsKey(mPinnedNotificationId)
+                && mDownloadUpdateQueue.get(mPinnedNotificationId).mDownloadStatus
+                        != DownloadStatus.CANCEL) {
+            NotificationManager notificationManager =
+                    (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(mPinnedNotificationId,
+                    mDownloadUpdateQueue.get(mPinnedNotificationId).mNotification);
+        }
     }
 
     /** Helper code to stop and unbind service. */
