@@ -3717,5 +3717,5 @@ crbug.com/770362 [ Linux Debug ] virtual/threaded/animations/unanimated-style.ht
 
 # Sheriff failures 2017-10-02
 crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]
-crbug.com/771491 [ Mac ] external/wpt/css/css-tables-3/table-model-fixup-2.html [ Failure ]
+crbug.com/771492 [ Win Linux Mac ] external/wpt/css/css-tables-3/table-model-fixup-2.html [ Failure ]
 
