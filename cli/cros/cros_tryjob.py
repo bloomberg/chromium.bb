@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2017 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -57,12 +56,16 @@ def CbuildbotArgs(options):
   """
   args = []
 
-  if options.production:
-    args.append('--buildbot')
 
-  if not options.remote:
-    # Explicitly force debug behavior if not on a builder.
-    args.extend(('--debug', '--no-buildbot-tags'))
+  if options.remote:
+    if options.production:
+      args.append('--buildbot')
+    else:
+      args.append('--remote-trybot')
+  else:
+    args.extend(('--buildroot', options.buildroot, '--no-buildbot-tags'))
+    if not options.production:
+      args.append('--debug')
 
   if options.branch:
     args.extend(('-b', options.branch))
@@ -95,7 +98,7 @@ def RunLocal(options):
   # Define the command to run.
   launcher = os.path.join(constants.CHROMITE_DIR, 'scripts', 'cbuildbot_launch')
   args = CbuildbotArgs(options)  # The requested build arguments.
-  cmd = ([launcher, '--buildroot', options.buildroot] +
+  cmd = ([launcher] +
          args +
          options.build_configs)
 
@@ -117,7 +120,6 @@ def RunRemote(options, patch_pool):
     display_group = 'Production Tryjob'
   else:
     display_group = 'Tryjob'
-    args.append('--remote-trybot')
 
   # Figure out the tryjob description.
   description = options.remote_description

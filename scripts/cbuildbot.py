@@ -632,7 +632,8 @@ def _FinishParsing(options):
       cros_build_lib.Die(
           'Must specify --branch-name with the %s config.',
           constants.BRANCH_UTIL_CONFIG)
-    if options.branch and options.branch != options.branch_name:
+    if (options.branch and options.branch != 'master' and
+        options.branch != options.branch_name):
       cros_build_lib.Die(
           'If --branch is specified with the %s config, it must'
           ' have the same value as --branch-name.',

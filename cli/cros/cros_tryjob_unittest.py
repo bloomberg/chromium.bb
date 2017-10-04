@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import mock
+
 from chromite.cli import command_unittest
 from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_tryjob
@@ -271,26 +273,38 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     result = self.helperOptionsToCbuildbotArgs([
         'foo-build'])
     self.assertEqual(result, [
-        '-b', 'master',
+        '--remote-trybot', '-b', 'master',
     ])
 
-  def testCbuildbotArgsSimple(self):
+  def testCbuildbotArgsSimpleRemote(self):
     result = self.helperOptionsToCbuildbotArgs([
-        '-b', 'master', '-g', '123', 'foo-build',
+        '-g', '123', 'foo-build',
     ])
     self.assertEqual(result, [
-        '-b', 'master', '-g', '123',
+        '--remote-trybot', '-b', 'master', '-g', '123',
     ])
 
-  def testCbuildbotArgsComplex(self):
+  def testCbuildbotArgsSimpleLocal(self):
+    result = self.helperOptionsToCbuildbotArgs([
+        '--local', '-g', '123', 'foo-build',
+    ])
+    self.assertEqual(result, [
+        '--buildroot', mock.ANY,
+        '--no-buildbot-tags', '--debug',
+        '-b', 'master',
+        '-g', '123',
+    ])
+
+  def testCbuildbotArgsComplexRemote(self):
     result = self.helperOptionsToCbuildbotArgs([
         '--yes',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
-        '--local', '--buildroot', '/buildroot',
+        '--buildroot', '/buildroot',
         '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--committer-email', 'foo@bar',
+        '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
         '--branch-name', 'test_branch', '--rename-to', 'new_branch',
         '--delete-branch', '--force-create', '--skip-remote-push',
@@ -298,7 +312,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         'lumpy-paladin', 'lumpy-release',
     ])
     self.assertEqual(result, [
-        '--debug', '--no-buildbot-tags', '-b', 'master',
+        '--remote-trybot', '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
@@ -309,10 +323,47 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--cbuild-arg', 'bar'
     ])
 
-  def testCbuildbotArgsProduction(self):
+  def testCbuildbotArgsComplexLocal(self):
+    result = self.helperOptionsToCbuildbotArgs([
+        '--local', '--yes',
+        '--latest-toolchain', '--nochromesdk',
+        '--hwtest', '--notests', '--novmtests', '--noimagetests',
+        '--buildroot', '/buildroot',
+        '--timeout', '5', '--sanity-check-build',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        '--committer-email', 'foo@bar',
+        '--branch', 'source_branch',
+        '--version', '1.2.3', '--channel', 'chan',
+        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
+        '--delete-branch', '--force-create', '--skip-remote-push',
+        '--pass-through=--cbuild-arg', '--pass-through=bar',
+        'lumpy-paladin', 'lumpy-release',
+    ])
+    self.assertEqual(result, [
+        '--buildroot', '/buildroot', '--no-buildbot-tags', '--debug',
+        '-b', 'source_branch',
+        '-g', '123', '-g', '*123', '-g', '123..456',
+        '--latest-toolchain', '--nochromesdk',
+        '--hwtest', '--notests', '--novmtests', '--noimagetests',
+        '--timeout', '5', '--sanity-check-build',
+        '--version', '1.2.3', '--channel', 'chan',
+        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
+        '--delete-branch', '--force-create', '--skip-remote-push',
+        '--cbuild-arg', 'bar'
+    ])
+
+  def testCbuildbotArgsProductionRemote(self):
     result = self.helperOptionsToCbuildbotArgs([
         '--production', 'foo-build',
     ])
     self.assertEqual(result, [
         '--buildbot', '-b', 'master',
+    ])
+
+  def testCbuildbotArgsProductionLocal(self):
+    result = self.helperOptionsToCbuildbotArgs([
+        '--local', '--production', 'foo-build',
+    ])
+    self.assertEqual(result, [
+        '--buildroot', mock.ANY, '--no-buildbot-tags', '-b', 'master',
     ])
