@@ -57,6 +57,8 @@ _EXTRA_DRIVER_TARGET_CLASS = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetClass')
 _EXTRA_TIMEOUT_SCALE = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TimeoutScale')
+_TEST_LIST_JUNIT4_RUNNERS = [
+    'org.chromium.base.test.BaseChromiumAndroidJUnitRunner']
 
 _SKIP_PARAMETERIZATION = 'SkipCommandLineParameterization'
 _COMMANDLINE_PARAMETERIZATION = 'CommandLineParameter'
@@ -467,6 +469,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._test_package = None
     self._junit3_runner_class = None
     self._junit4_runner_class = None
+    self._junit4_runner_supports_listing = None
     self._test_support_apk = None
     self._initializeApkAttributes(args, error_func)
 
@@ -594,6 +597,16 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._junit4_runner_class = (
       all_junit4_test_runner_classes[0]['android:name']
       if all_junit4_test_runner_classes else None)
+
+    if self._junit4_runner_class:
+      if self._test_apk_incremental_install_json:
+        self._junit4_runner_supports_listing = next(
+            (True for x in self._test_apk.GetAllMetadata()
+             if 'real-instr' in x[0] and x[1] in _TEST_LIST_JUNIT4_RUNNERS),
+            False)
+      else:
+        self._junit4_runner_supports_listing = (
+            self._junit4_runner_class in _TEST_LIST_JUNIT4_RUNNERS)
 
     self._package_info = None
     if self._apk_under_test:
@@ -757,6 +770,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def junit4_runner_class(self):
     return self._junit4_runner_class
+
+  @property
+  def junit4_runner_supports_listing(self):
+    return self._junit4_runner_supports_listing
 
   @property
   def should_save_logcat(self):

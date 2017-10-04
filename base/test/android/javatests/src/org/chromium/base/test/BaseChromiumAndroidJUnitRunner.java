@@ -20,8 +20,10 @@ import android.support.test.internal.runner.TestRequestBuilder;
 import android.support.test.runner.AndroidJUnitRunner;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -153,11 +155,27 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         finish(Activity.RESULT_OK, results);
     }
 
+    @SuppressFBWarnings("REC_CATCH_EXCEPTION") // For catch (Exception)
     private TestRequest createListTestRequest(Bundle arguments) {
         RunnerArgs runnerArgs =
                 new RunnerArgs.Builder().fromManifest(this).fromBundle(arguments).build();
         TestRequestBuilder builder = new TestRequestBuilder(this, arguments);
         builder.addApkToScan(getContext().getPackageCodePath());
+
+        File[] incrementalJars = null;
+        try {
+            Class<?> bootstrapClass =
+                    Class.forName("org.chromium.incrementalinstall.BootstrapApplication");
+            incrementalJars =
+                    (File[]) bootstrapClass.getDeclaredField("sIncrementalDexFiles").get(null);
+        } catch (Exception e) {
+            // Not an incremental build.
+        }
+        if (incrementalJars != null) {
+            for (File f : incrementalJars) {
+                builder.addApkToScan(f.getAbsolutePath());
+            }
+        }
         builder.addFromRunnerArgs(runnerArgs);
         return builder.build();
     }

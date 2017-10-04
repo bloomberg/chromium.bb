@@ -73,9 +73,6 @@ EXTRA_TRACE_FILE = ('org.chromium.base.test.BaseJUnit4ClassRunner.TraceFile')
 _EXTRA_TEST_LIST = (
     'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestList')
 
-_TEST_LIST_JUNIT4_RUNNERS = [
-    'org.chromium.base.test.BaseChromiumAndroidJUnitRunner']
-
 UI_CAPTURE_DIRS = ['chromium_tests_root', 'UiCapture']
 
 FEATURE_ANNOTATION = 'Feature'
@@ -167,31 +164,33 @@ class LocalDeviceInstrumentationTestRun(
           d.Install(apk, permissions=permissions)
         return install_helper_internal
 
-      def incremental_install_helper(apk, json_path):
+      def incremental_install_helper(apk, json_path, permissions):
         @trace_event.traced("apk_path")
         def incremental_install_helper_internal(d, apk_path=apk.path):
           # pylint: disable=unused-argument
-          installer.Install(d, json_path, apk=apk)
+          installer.Install(d, json_path, apk=apk, permissions=permissions)
         return incremental_install_helper_internal
 
       if self._test_instance.apk_under_test:
+        permissions = self._test_instance.apk_under_test.GetPermissions()
         if self._test_instance.apk_under_test_incremental_install_json:
           steps.append(incremental_install_helper(
                            self._test_instance.apk_under_test,
                            self._test_instance.
-                               apk_under_test_incremental_install_json))
+                               apk_under_test_incremental_install_json,
+                           permissions))
         else:
-          permissions = self._test_instance.apk_under_test.GetPermissions()
           steps.append(install_helper(self._test_instance.apk_under_test,
                                       permissions))
 
+      permissions = self._test_instance.test_apk.GetPermissions()
       if self._test_instance.test_apk_incremental_install_json:
         steps.append(incremental_install_helper(
                          self._test_instance.test_apk,
                          self._test_instance.
-                             test_apk_incremental_install_json))
+                             test_apk_incremental_install_json,
+                         permissions))
       else:
-        permissions = self._test_instance.test_apk.GetPermissions()
         steps.append(install_helper(self._test_instance.test_apk,
                                     permissions))
 
@@ -330,8 +329,7 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def _GetTests(self):
-    tests = None
-    if self._test_instance.junit4_runner_class in _TEST_LIST_JUNIT4_RUNNERS:
+    if self._test_instance.junit4_runner_supports_listing:
       raw_tests = self._GetTestsFromRunner()
       tests = self._test_instance.ProcessRawTests(raw_tests)
     else:
