@@ -233,8 +233,13 @@ static INLINE void integer_mv_precision(MV *mv) {
   }
 }
 #endif
-// Convert a global motion translation vector (which may have more bits than a
-// regular motion vector) into a motion vector
+// Convert a global motion vector into a motion vector at the centre of the
+// given block.
+//
+// The resulting motion vector will have three fractional bits of precision. If
+// allow_hp is zero, the bottom bit will always be zero. If CONFIG_AMVR and
+// is_integer is true, the bottom three bits will be zero (so the motion vector
+// represents an integer)
 static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int allow_hp, BLOCK_SIZE bsize,
                                           int mi_col, int mi_row, int block_idx
@@ -249,8 +254,22 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   int x, y, tx, ty;
 
   if (gm->wmtype == TRANSLATION) {
+    // All global motion vectors are stored with WARPEDMODEL_PREC_BITS (16)
+    // bits of fractional precision. The offset for a translation is stored in
+    // entries 0 and 1. For translations, all but the top three (two if
+    // cm->allow_high_precision_mv is false) fractional bits are always zero.
+    //
+    // After the right shifts, there are 3 fractional bits of precision. If
+    // allow_hp is false, the bottom bit is always zero (so we don't need a
+    // call to convert_to_trans_prec here)
     res.as_mv.row = gm->wmmat[0] >> GM_TRANS_ONLY_PREC_DIFF;
     res.as_mv.col = gm->wmmat[1] >> GM_TRANS_ONLY_PREC_DIFF;
+    assert(IMPLIES(1 & (res.as_mv.row | res.as_mv.col), allow_hp));
+#if CONFIG_AMVR
+    if (is_integer) {
+      integer_mv_precision(&res.as_mv);
+    }
+#endif
     return res;
   }
 
@@ -290,6 +309,7 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
 
   res.as_mv.row = ty;
   res.as_mv.col = tx;
+
 #if CONFIG_AMVR
   if (is_integer) {
     integer_mv_precision(&res.as_mv);

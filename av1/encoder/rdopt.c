@@ -11652,56 +11652,27 @@ PALETTE_EXIT:
     best_mbmode.ref_mv_idx = 0;
   }
 
-  {
+  if (best_mbmode.ref_frame[0] > INTRA_FRAME &&
+      best_mbmode.ref_frame[1] <= INTRA_FRAME) {
     int8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
     int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
-      int_mv zeromv[2];
+      int_mv zeromv;
 #if CONFIG_GLOBAL_MOTION
-      const MV_REFERENCE_FRAME refs[2] = { best_mbmode.ref_frame[0],
-                                           best_mbmode.ref_frame[1] };
-      zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[refs[0]],
-                                              cm->allow_high_precision_mv,
-                                              bsize, mi_col, mi_row, 0
+      const MV_REFERENCE_FRAME ref = best_mbmode.ref_frame[0];
+      zeromv.as_int = gm_get_motion_vector(&cm->global_motion[ref],
+                                           cm->allow_high_precision_mv, bsize,
+                                           mi_col, mi_row, 0
 #if CONFIG_AMVR
-                                              ,
-                                              cm->cur_frame_mv_precision_level
+                                           ,
+                                           cm->cur_frame_mv_precision_level
 #endif
-                                              )
-                             .as_int;
-      zeromv[1].as_int =
-          (refs[1] != NONE_FRAME)
-              ?
-#if CONFIG_AMVR
-              gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                   cm->allow_high_precision_mv, bsize, mi_col,
-                                   mi_row, 0, cm->cur_frame_mv_precision_level)
-                  .as_int
-              : 0;
+                                           )
+                          .as_int;
 #else
-              gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                   cm->allow_high_precision_mv, bsize, mi_col,
-                                   mi_row, 0)
-                  .as_int
-              : 0;
-#endif
-
-#if CONFIG_AMVR
-      lower_mv_precision(&zeromv[0].as_mv, cm->allow_high_precision_mv,
-                         cm->cur_frame_mv_precision_level);
-      lower_mv_precision(&zeromv[1].as_mv, cm->allow_high_precision_mv,
-                         cm->cur_frame_mv_precision_level);
-#else
-      lower_mv_precision(&zeromv[0].as_mv, cm->allow_high_precision_mv);
-      lower_mv_precision(&zeromv[1].as_mv, cm->allow_high_precision_mv);
-#endif
-
-#else
-      zeromv[0].as_int = zeromv[1].as_int = 0;
+      zeromv.as_int = 0;
 #endif  // CONFIG_GLOBAL_MOTION
-      if (best_mbmode.ref_frame[0] > INTRA_FRAME &&
-          best_mbmode.mv[0].as_int == zeromv[0].as_int &&
-          (best_mbmode.ref_frame[1] <= INTRA_FRAME)) {
+      if (best_mbmode.mv[0].as_int == zeromv.as_int) {
         best_mbmode.mode = ZEROMV;
       }
     }
