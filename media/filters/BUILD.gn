@@ -282,6 +282,12 @@ source_set("unit_tests") {
     deps += [ "//ui/gl" ]
   }
 
+  # libvpx for running vpx test on chromecast doesn't support high bit depth.
+  # This may cause some unit tests failure.
+  if (is_chromecast) {
+    defines = [ "LIBVPX_NO_HIGH_BIT_DEPTH" ]
+  }
+
   if (media_use_ffmpeg) {
     sources += [
       "audio_decoder_unittest.cc",
@@ -312,7 +318,7 @@ source_set("unit_tests") {
     }
   }
 
-  if (media_use_libvpx && !is_cast_audio_only) {
+  if (media_use_libvpx) {
     sources += [ "vpx_video_decoder_unittest.cc" ]
   }
 
