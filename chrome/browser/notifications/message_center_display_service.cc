@@ -107,7 +107,7 @@ void MessageCenterDisplayService::Display(
       notification.message(), notification.icon(), notification.notifier_id(),
       notification.display_source(), notification.origin_url(),
       notification.tag(), notification.rich_notification_data(),
-      make_scoped_refptr(
+      base::WrapRefCounted(
           new PassThroughDelegate(profile_, notification, notification_type)));
   ui_manager->Add(notification_with_delegate, profile_);
 }

@@ -145,7 +145,7 @@ void MockRenderThread::AddFilter(IPC::MessageFilter* filter) {
   filter->OnFilterAdded(&sink());
   // Add this filter to a vector so the MockRenderThread::RemoveFilter function
   // can check if this filter is added.
-  filters_.push_back(make_scoped_refptr(filter));
+  filters_.push_back(base::WrapRefCounted(filter));
 }
 
 void MockRenderThread::RemoveFilter(IPC::MessageFilter* filter) {

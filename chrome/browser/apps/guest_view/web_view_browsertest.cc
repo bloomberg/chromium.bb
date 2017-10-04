@@ -3245,7 +3245,7 @@ IN_PROC_BROWSER_TEST_P(
   extensions::TestRulesRegistry* rules_registry =
       new extensions::TestRulesRegistry(
           content::BrowserThread::UI, "ui", rules_registry_id);
-  registry_service->RegisterRulesRegistry(make_scoped_refptr(rules_registry));
+  registry_service->RegisterRulesRegistry(base::WrapRefCounted(rules_registry));
 
   EXPECT_TRUE(registry_service->GetRulesRegistry(
       rules_registry_id, "ui").get());

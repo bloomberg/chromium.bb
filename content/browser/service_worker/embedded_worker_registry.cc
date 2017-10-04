@@ -22,7 +22,7 @@ namespace content {
 // static
 scoped_refptr<EmbeddedWorkerRegistry> EmbeddedWorkerRegistry::Create(
     const base::WeakPtr<ServiceWorkerContextCore>& context) {
-  return make_scoped_refptr(new EmbeddedWorkerRegistry(context, 0));
+  return base::WrapRefCounted(new EmbeddedWorkerRegistry(context, 0));
 }
 
 // static

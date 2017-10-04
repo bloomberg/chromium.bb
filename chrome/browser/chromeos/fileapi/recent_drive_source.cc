@@ -119,7 +119,7 @@ void RecentDriveSource::OnSearchMetadata(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &GetMetadataOnIOThread,
-            make_scoped_refptr(params_.value().file_system_context()), url,
+            base::WrapRefCounted(params_.value().file_system_context()), url,
             storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
             base::Bind(&RecentDriveSource::OnGetMetadata,
                        weak_ptr_factory_.GetWeakPtr(), url)));

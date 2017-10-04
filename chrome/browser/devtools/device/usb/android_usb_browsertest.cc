@@ -435,7 +435,7 @@ class MockUsbDevice : public UsbDevice {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
-                       make_scoped_refptr(new MockUsbDeviceHandle<T>(this))));
+                       base::WrapRefCounted(new MockUsbDeviceHandle<T>(this))));
   }
 
   void set_open(bool open) { open_ = open; }

@@ -146,7 +146,7 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   CHECK(data[0]);
-  return make_scoped_refptr(
+  return base::WrapRefCounted(
       new AudioBuffer(sample_format, channel_layout, channel_count, sample_rate,
                       frame_count, true, data, 0, timestamp, std::move(pool)));
 }
@@ -165,7 +165,7 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyBitstreamFrom(
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   CHECK(data[0]);
-  return make_scoped_refptr(new AudioBuffer(
+  return base::WrapRefCounted(new AudioBuffer(
       sample_format, channel_layout, channel_count, sample_rate, frame_count,
       true, data, data_size, timestamp, std::move(pool)));
 }
@@ -179,7 +179,7 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateBuffer(
     int frame_count,
     scoped_refptr<AudioBufferMemoryPool> pool) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
-  return make_scoped_refptr(new AudioBuffer(
+  return base::WrapRefCounted(new AudioBuffer(
       sample_format, channel_layout, channel_count, sample_rate, frame_count,
       true, nullptr, 0, kNoTimestamp, std::move(pool)));
 }
@@ -194,7 +194,7 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateBitstreamBuffer(
     size_t data_size,
     scoped_refptr<AudioBufferMemoryPool> pool) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
-  return make_scoped_refptr(new AudioBuffer(
+  return base::WrapRefCounted(new AudioBuffer(
       sample_format, channel_layout, channel_count, sample_rate, frame_count,
       true, nullptr, data_size, kNoTimestamp, std::move(pool)));
 }
@@ -208,16 +208,16 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
     const base::TimeDelta timestamp) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   // Since data == nullptr, format doesn't matter.
-  return make_scoped_refptr(new AudioBuffer(
+  return base::WrapRefCounted(new AudioBuffer(
       kSampleFormatF32, channel_layout, channel_count, sample_rate, frame_count,
       false, nullptr, 0, timestamp, nullptr));
 }
 
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
-  return make_scoped_refptr(new AudioBuffer(kUnknownSampleFormat,
-                                            CHANNEL_LAYOUT_NONE, 0, 0, 0, false,
-                                            nullptr, 0, kNoTimestamp, nullptr));
+  return base::WrapRefCounted(
+      new AudioBuffer(kUnknownSampleFormat, CHANNEL_LAYOUT_NONE, 0, 0, 0, false,
+                      nullptr, 0, kNoTimestamp, nullptr));
 }
 
 // Convert int16_t values in the range [INT16_MIN, INT16_MAX] to [-1.0, 1.0].

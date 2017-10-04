@@ -787,7 +787,7 @@ void RemoteToLocalSyncer::DownloadFile(std::unique_ptr<SyncTaskToken> token) {
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksInCurrentSequence());
 
   storage::ScopedFile file = CreateTemporaryFile(
-      make_scoped_refptr(sync_context_->GetWorkerTaskRunner()));
+      base::WrapRefCounted(sync_context_->GetWorkerTaskRunner()));
 
   base::FilePath path = file.path();
   drive_service()->DownloadFile(

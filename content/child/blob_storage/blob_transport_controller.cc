@@ -293,7 +293,7 @@ void BlobTransportController::OnMemoryRequest(
   if (!file_requests->empty()) {
     base::PostTaskAndReplyWithResult(
         file_runner, FROM_HERE,
-        base::Bind(&WriteDiskRequests, make_scoped_refptr(consolidation),
+        base::Bind(&WriteDiskRequests, base::WrapRefCounted(consolidation),
                    base::Passed(&file_requests), file_handles),
         base::Bind(&BlobTransportController::OnFileWriteComplete,
                    weak_factory_.GetWeakPtr(), sender, uuid));

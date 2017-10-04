@@ -251,7 +251,7 @@ class FakeFileStreamReader : public FileStreamReader {
       async_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(base::IgnoreResult(&FakeFileStreamReader::ReadImpl),
-                     base::Unretained(this), make_scoped_refptr(buf),
+                     base::Unretained(this), base::WrapRefCounted(buf),
                      buf_length, done));
     } else {
       async_task_runner_->PostTask(FROM_HERE, base::Bind(done, net_error_));

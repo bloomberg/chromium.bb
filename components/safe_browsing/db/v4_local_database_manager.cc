@@ -205,7 +205,7 @@ const V4LocalDatabaseManager*
 scoped_refptr<V4LocalDatabaseManager> V4LocalDatabaseManager::Create(
     const base::FilePath& base_path,
     ExtendedReportingLevelCallback extended_reporting_level_callback) {
-  return make_scoped_refptr(new V4LocalDatabaseManager(
+  return base::WrapRefCounted(new V4LocalDatabaseManager(
       base_path, extended_reporting_level_callback, nullptr));
 }
 

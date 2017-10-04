@@ -22,7 +22,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
         origin, storage_partition_service_, this);
   }
 
-  return make_scoped_refptr(cached_areas_[origin]);
+  return base::WrapRefCounted(cached_areas_[origin]);
 }
 
 void LocalStorageCachedAreas::CacheAreaClosed(

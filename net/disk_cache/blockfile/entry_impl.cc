@@ -1047,7 +1047,7 @@ int EntryImpl::InternalReadData(int index, int offset,
 
   SyncCallback* io_callback = NULL;
   if (!callback.is_null()) {
-    io_callback = new SyncCallback(make_scoped_refptr(this), buf, callback,
+    io_callback = new SyncCallback(base::WrapRefCounted(this), buf, callback,
                                    net::NetLogEventType::ENTRY_READ_DATA);
   }
 

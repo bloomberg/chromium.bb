@@ -793,7 +793,7 @@ size_t BlobMemoryController::CollectItemsForEviction(
     size_t size = base::checked_cast<size_t>(item->item()->length());
     populated_memory_items_bytes_ -= size;
     total_items_size += size;
-    output->push_back(make_scoped_refptr(item));
+    output->push_back(base::WrapRefCounted(item));
   }
   return total_items_size.ValueOrDie();
 }

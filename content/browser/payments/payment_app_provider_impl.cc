@@ -304,8 +304,8 @@ void DidFindRegistrationOnIO(
       service_worker_registration->active_version();
   DCHECK(active_version);
 
-  auto done_callback = base::AdaptCallbackForRepeating(
-      base::BindOnce(std::move(callback), make_scoped_refptr(active_version)));
+  auto done_callback = base::AdaptCallbackForRepeating(base::BindOnce(
+      std::move(callback), base::WrapRefCounted(active_version)));
 
   active_version->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,

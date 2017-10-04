@@ -198,7 +198,7 @@ void BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch(
       event,
       base::BindOnce(&BackgroundFetchEventDispatcher::DispatchEvent, event,
                      finished_closure, loaded_callback,
-                     make_scoped_refptr(service_worker_version)),
+                     base::WrapRefCounted(service_worker_version)),
       base::BindOnce(&BackgroundFetchEventDispatcher::DidDispatchEvent, event,
                      finished_closure, DispatchPhase::STARTING));
 }

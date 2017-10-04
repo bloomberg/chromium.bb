@@ -297,9 +297,8 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
   if (file_writer_) {
     const int result = file_writer_->Write(
         buffer, num_bytes,
-        base::Bind(&ResponseWriter::DidWrite,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   make_scoped_refptr(buffer), callback));
+        base::Bind(&ResponseWriter::DidWrite, weak_ptr_factory_.GetWeakPtr(),
+                   base::WrapRefCounted(buffer), callback));
     if (result != net::ERR_IO_PENDING)
       DidWrite(buffer, net::CompletionCallback(), result);
     return result;

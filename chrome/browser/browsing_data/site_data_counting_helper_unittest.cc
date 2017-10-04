@@ -77,7 +77,7 @@ class SiteDataCountingHelperTest : public testing::Test {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&SiteDataCountingHelperTest::CreateCookiesOnIOThread,
-                       base::Unretained(this), make_scoped_refptr(rq_context),
+                       base::Unretained(this), base::WrapRefCounted(rq_context),
                        creation_time, urls));
   }
 

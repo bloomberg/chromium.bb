@@ -406,7 +406,7 @@ LayoutTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
             // device, shortly after the session starts.
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
-                base::BindOnce(&AddDevice, make_scoped_refptr(adapter_ptr),
+                base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
                                base::Passed(GetHeartRateDevice(adapter_ptr))));
             return GetDiscoverySession();
           }));
@@ -464,7 +464,7 @@ LayoutTestBluetoothAdapterProvider::GetDeviceEventAdapter() {
 
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::BindOnce(&AddDevice, make_scoped_refptr(adapter_ptr),
+                  base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
                                  base::Passed(&glucose_device)));
 
               // Add uuid and notify of device changed.
@@ -515,20 +515,20 @@ LayoutTestBluetoothAdapterProvider::GetDevicesRemovedAdapter() {
 
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE,
-                  base::BindOnce(&AddDevice, make_scoped_refptr(adapter_ptr),
+                  base::BindOnce(&AddDevice, base::WrapRefCounted(adapter_ptr),
                                  base::Passed(&glucose_device)));
 
               // Post task to remove ConnectedHeartRateDevice.
               base::ThreadTaskRunnerHandle::Get()->PostTask(
-                  FROM_HERE,
-                  base::BindOnce(&RemoveDevice, make_scoped_refptr(adapter_ptr),
-                                 connected_hr_address));
+                  FROM_HERE, base::BindOnce(&RemoveDevice,
+                                            base::WrapRefCounted(adapter_ptr),
+                                            connected_hr_address));
 
               // Post task to remove NewGlucoseDevice.
               base::ThreadTaskRunnerHandle::Get()->PostTask(
-                  FROM_HERE,
-                  base::BindOnce(&RemoveDevice, make_scoped_refptr(adapter_ptr),
-                                 glucose_address));
+                  FROM_HERE, base::BindOnce(&RemoveDevice,
+                                            base::WrapRefCounted(adapter_ptr),
+                                            glucose_address));
             }
             return GetDiscoverySession();
           }));

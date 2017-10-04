@@ -244,9 +244,9 @@ void PostCleanupSettingsResetter::ResetTaggedProfiles(
 
   // The SettingsResetter object will self-delete once |done_callback| is
   // invoked.
-  make_scoped_refptr(new SettingsResetter(std::move(profiles_to_reset),
-                                          std::move(delegate),
-                                          std::move(done_callback)))
+  base::WrapRefCounted(new SettingsResetter(std::move(profiles_to_reset),
+                                            std::move(delegate),
+                                            std::move(done_callback)))
       ->Run();
 }
 

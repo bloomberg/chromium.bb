@@ -673,13 +673,6 @@ void scoped_refptr<T>::Release(T* ptr) {
   ptr->Release();
 }
 
-// DEPRECATED(crbug.com/765333): Use WrapRefCounted<T>() instead.
-// TODO(kylechar): Delete when all uses are gone.
-template <typename T>
-scoped_refptr<T> make_scoped_refptr(T* t) {
-  return scoped_refptr<T>(t);
-}
-
 template <typename T, typename U>
 bool operator==(const scoped_refptr<T>& lhs, const U* rhs) {
   return lhs.get() == rhs;

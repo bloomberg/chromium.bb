@@ -74,7 +74,7 @@ void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&AddDataSourceOnIOThread,
                                          browser_context_->GetResourceContext(),
-                                         make_scoped_refptr(source)));
+                                         base::WrapRefCounted(source)));
 }
 
 void URLDataManager::UpdateWebUIDataSource(

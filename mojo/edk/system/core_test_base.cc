@@ -30,7 +30,7 @@ class MockDispatcher : public Dispatcher {
  public:
   static scoped_refptr<MockDispatcher> Create(
       CoreTestBase::MockHandleInfo* info) {
-    return make_scoped_refptr(new MockDispatcher(info));
+    return base::WrapRefCounted(new MockDispatcher(info));
   }
 
   // Dispatcher:

@@ -745,7 +745,7 @@ void DownloadManagerImpl::DownloadUrl(
         base::BindOnce(
             &BeginResourceDownload, std::move(params), std::move(request),
             storage_partition->url_loader_factory_getter(),
-            make_scoped_refptr(storage_partition->GetFileSystemContext()),
+            base::WrapRefCounted(storage_partition->GetFileSystemContext()),
             content::DownloadItem::kInvalidId, weak_factory_.GetWeakPtr()),
         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
                        weak_factory_.GetWeakPtr()));

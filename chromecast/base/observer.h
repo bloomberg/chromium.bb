@@ -257,7 +257,7 @@ class ObservableInternals
   // Destroy() is posted.
   class SequenceOwnedInfo {
    public:
-    SequenceOwnedInfo(const T& value) : value_(value) {}
+    explicit SequenceOwnedInfo(const T& value) : value_(value) {}
 
     const T& value() const {
       DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -400,7 +400,7 @@ void Observer<T>::OnUpdate() {
 
 template <typename T>
 Observable<T>::Observable(const T& initial_value)
-    : internals_(make_scoped_refptr(
+    : internals_(base::WrapRefCounted(
           new subtle::ObservableInternals<T>(initial_value))) {}
 
 template <typename T>

@@ -294,7 +294,7 @@ void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
 // Called on the listener's thread
 void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
   base::AutoLock auto_lock(pending_filters_lock_);
-  pending_filters_.push_back(make_scoped_refptr(filter));
+  pending_filters_.push_back(base::WrapRefCounted(filter));
   ipc_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Context::OnAddFilter, this));
 }

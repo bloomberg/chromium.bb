@@ -980,7 +980,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
     extension_registrar_->DisableExtension(extension);
     PostDeactivateExtension(extension);
   } else {
-    registry_->AddDisabled(make_scoped_refptr(extension));
+    registry_->AddDisabled(base::WrapRefCounted(extension));
     registry_->RemoveTerminated(extension->id());
   }
 }
@@ -2005,7 +2005,7 @@ void ExtensionService::TrackTerminatedExtension(
   }
 
   // No need to check for duplicates; inserting a duplicate is a no-op.
-  registry_->AddTerminated(make_scoped_refptr(extension));
+  registry_->AddTerminated(base::WrapRefCounted(extension));
   UnloadExtension(extension->id(), UnloadedExtensionReason::TERMINATE);
 }
 

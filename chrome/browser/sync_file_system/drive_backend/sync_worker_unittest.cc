@@ -66,7 +66,7 @@ class MockExtensionService : public TestExtensionService {
   ~MockExtensionService() override {}
 
   void AddExtension(const extensions::Extension* extension) override {
-    extensions_.Insert(make_scoped_refptr(extension));
+    extensions_.Insert(base::WrapRefCounted(extension));
   }
 
   const extensions::Extension* GetInstalledExtension(
@@ -88,7 +88,7 @@ class MockExtensionService : public TestExtensionService {
     if (!IsExtensionEnabled(extension_id))
       return;
     const extensions::Extension* extension = extensions_.GetByID(extension_id);
-    disabled_extensions_.Insert(make_scoped_refptr(extension));
+    disabled_extensions_.Insert(base::WrapRefCounted(extension));
   }
 
  private:

@@ -319,7 +319,7 @@ int TCPSocketPosix::Read(IOBuffer* buf,
                  // Grab a reference to |buf| so that ReadCompleted() can still
                  // use it when Read() completes, as otherwise, this transfers
                  // ownership of buf to socket.
-                 base::Unretained(this), make_scoped_refptr(buf), callback));
+                 base::Unretained(this), base::WrapRefCounted(buf), callback));
   if (rv != ERR_IO_PENDING)
     rv = HandleReadCompleted(buf, rv);
   return rv;
@@ -351,7 +351,7 @@ int TCPSocketPosix::Write(IOBuffer* buf,
                  // Grab a reference to |buf| so that WriteCompleted() can still
                  // use it when Write() completes, as otherwise, this transfers
                  // ownership of buf to socket.
-                 base::Unretained(this), make_scoped_refptr(buf), callback);
+                 base::Unretained(this), base::WrapRefCounted(buf), callback);
   int rv;
 
   if (use_tcp_fastopen_ && !tcp_fastopen_write_attempted_) {

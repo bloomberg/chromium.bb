@@ -87,7 +87,7 @@ net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
             web::URLDataManagerIOSBackend::CreateProtocolHandler(this)
                 .release());
     request_context_getter_ =
-        make_scoped_refptr(CreateRequestContext(&protocol_handlers));
+        base::WrapRefCounted(CreateRequestContext(&protocol_handlers));
   }
   return request_context_getter_.get();
 }

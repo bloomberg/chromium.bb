@@ -77,7 +77,7 @@ void RequestFileSystemNotification::ShowAutoGrantedNotification(
     bool writable) {
   DCHECK(profile);
   scoped_refptr<RequestFileSystemNotification>
-      request_file_system_notification = make_scoped_refptr(
+      request_file_system_notification = base::WrapRefCounted(
           new RequestFileSystemNotification(profile, extension));
   std::unique_ptr<message_center::Notification> notification(
       CreateAutoGrantedNotification(

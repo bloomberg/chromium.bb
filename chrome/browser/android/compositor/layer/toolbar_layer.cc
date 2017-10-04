@@ -19,7 +19,7 @@ namespace android {
 // static
 scoped_refptr<ToolbarLayer> ToolbarLayer::Create(
     ui::ResourceManager* resource_manager) {
-  return make_scoped_refptr(new ToolbarLayer(resource_manager));
+  return base::WrapRefCounted(new ToolbarLayer(resource_manager));
 }
 
 scoped_refptr<cc::Layer> ToolbarLayer::layer() {

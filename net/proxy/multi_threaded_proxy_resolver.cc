@@ -514,7 +514,7 @@ void MultiThreadedProxyResolver::AddNewExecutor() {
   Executor* executor = new Executor(this, thread_number);
   executor->StartJob(
       new CreateResolverJob(script_data_, resolver_factory_.get()));
-  executors_.push_back(make_scoped_refptr(executor));
+  executors_.push_back(base::WrapRefCounted(executor));
 }
 
 void MultiThreadedProxyResolver::OnExecutorReady(Executor* executor) {

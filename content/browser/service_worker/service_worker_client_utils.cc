@@ -478,7 +478,7 @@ void OpenWindow(const GURL& url,
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
           &OpenWindowOnUI, url, script_url, worker_process_id,
-          make_scoped_refptr(context->wrapper()), disposition,
+          base::WrapRefCounted(context->wrapper()), disposition,
           base::Bind(&DidNavigate, context, script_url.GetOrigin(), callback)));
 }
 

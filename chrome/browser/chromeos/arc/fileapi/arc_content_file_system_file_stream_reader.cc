@@ -65,7 +65,7 @@ int ArcContentFileSystemFileStreamReader::Read(
   file_system_operation_runner_util::OpenFileToReadOnIOThread(
       arc_url_,
       base::Bind(&ArcContentFileSystemFileStreamReader::OnOpenFile,
-                 weak_ptr_factory_.GetWeakPtr(), make_scoped_refptr(buffer),
+                 weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
                  buffer_length, callback));
   return net::ERR_IO_PENDING;
 }
@@ -88,7 +88,7 @@ void ArcContentFileSystemFileStreamReader::ReadInternal(
   DCHECK(file_->IsValid());
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadFile, file_.get(), make_scoped_refptr(buffer),
+      base::Bind(&ReadFile, file_.get(), base::WrapRefCounted(buffer),
                  buffer_length),
       base::Bind(&ArcContentFileSystemFileStreamReader::OnRead,
                  weak_ptr_factory_.GetWeakPtr(), callback));

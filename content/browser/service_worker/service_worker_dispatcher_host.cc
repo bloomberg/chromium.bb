@@ -656,7 +656,7 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
   }
 
   DispatchExtendableMessageEvent(
-      make_scoped_refptr(handle->version()), message, source_origin,
+      base::WrapRefCounted(handle->version()), message, source_origin,
       sent_message_ports, sender_provider_host,
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }

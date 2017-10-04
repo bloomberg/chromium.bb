@@ -21,7 +21,7 @@
 namespace extensions {
 
 FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager(bool enabled)
-    : LocalSafeBrowsingDatabaseManager(make_scoped_refptr(
+    : LocalSafeBrowsingDatabaseManager(base::WrapRefCounted(
           safe_browsing::SafeBrowsingService::CreateSafeBrowsingService())),
       enabled_(enabled) {}
 

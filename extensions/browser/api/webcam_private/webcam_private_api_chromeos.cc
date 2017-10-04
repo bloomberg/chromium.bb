@@ -83,7 +83,7 @@ bool WebcamPrivateAPI::OpenSerialWebcam(
       device_path, extension_id,
       base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
                  weak_ptr_factory_.GetWeakPtr(), extension_id, device_path,
-                 make_scoped_refptr(visca_webcam), callback));
+                 base::WrapRefCounted(visca_webcam), callback));
   return true;
 }
 

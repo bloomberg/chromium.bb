@@ -76,7 +76,7 @@ class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
     if (success) {
       fake_advertisement_ = new device::MockBluetoothAdvertisement();
       fake_synchronizer_->GetRegisterCallback(command_index)
-          .Run(make_scoped_refptr(fake_advertisement_));
+          .Run(base::WrapRefCounted(fake_advertisement_));
       return;
     }
 

@@ -199,9 +199,9 @@ void DispatchResultsClosure(
     // If someone is waiting, this should result in running the closure.
     waitable_results->AddResultsAndSignal(results_closure);
     // In case no one is waiting, post a task to run the closure.
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(&WaitableCallbackResults::Run,
-                                         make_scoped_refptr(waitable_results)));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&WaitableCallbackResults::Run,
+                                  base::WrapRefCounted(waitable_results)));
     return;
   }
   task_runner->PostTask(FROM_HERE, results_closure);

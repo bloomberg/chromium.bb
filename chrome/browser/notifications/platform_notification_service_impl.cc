@@ -467,7 +467,7 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &ReportNotificationImageOnIOThread,
-            make_scoped_refptr(g_browser_process->safe_browsing_service()),
+            base::WrapRefCounted(g_browser_process->safe_browsing_service()),
             profile, origin, notification_resources.image));
   }
 

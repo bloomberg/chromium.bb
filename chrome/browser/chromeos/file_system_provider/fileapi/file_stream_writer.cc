@@ -209,16 +209,14 @@ int FileStreamWriter::Write(net::IOBuffer* buffer,
   switch (state_) {
     case NOT_INITIALIZED:
       // Lazily initialize with the first call to Write().
-      Initialize(base::Bind(&FileStreamWriter::WriteAfterInitialized,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            make_scoped_refptr(buffer),
-                            buffer_length,
-                            base::Bind(&FileStreamWriter::OnWriteCompleted,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       callback)),
-                 base::Bind(&FileStreamWriter::OnWriteCompleted,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            callback));
+      Initialize(
+          base::Bind(&FileStreamWriter::WriteAfterInitialized,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(buffer), buffer_length,
+                     base::Bind(&FileStreamWriter::OnWriteCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), callback)),
+          base::Bind(&FileStreamWriter::OnWriteCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
       break;
 
     case INITIALIZING:

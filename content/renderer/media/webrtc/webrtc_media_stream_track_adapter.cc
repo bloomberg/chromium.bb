@@ -44,12 +44,12 @@ WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
   scoped_refptr<WebRtcMediaStreamTrackAdapter> remote_track_adapter(
       new WebRtcMediaStreamTrackAdapter(factory, main_thread));
   if (webrtc_track->kind() == webrtc::MediaStreamTrackInterface::kAudioKind) {
-    remote_track_adapter->InitializeRemoteAudioTrack(make_scoped_refptr(
+    remote_track_adapter->InitializeRemoteAudioTrack(base::WrapRefCounted(
         static_cast<webrtc::AudioTrackInterface*>(webrtc_track.get())));
   } else {
     DCHECK_EQ(webrtc_track->kind(),
               webrtc::MediaStreamTrackInterface::kVideoKind);
-    remote_track_adapter->InitializeRemoteVideoTrack(make_scoped_refptr(
+    remote_track_adapter->InitializeRemoteVideoTrack(base::WrapRefCounted(
         static_cast<webrtc::VideoTrackInterface*>(webrtc_track.get())));
   }
   return remote_track_adapter;

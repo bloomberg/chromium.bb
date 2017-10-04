@@ -296,7 +296,7 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
       //
       // This vector is cleared on the WaitSet's own sequence every time
       // RemoveHandle is called.
-      cancelled_contexts_.emplace_back(make_scoped_refptr(context));
+      cancelled_contexts_.emplace_back(base::WrapRefCounted(context));
 
       // Balanced in State::AddHandle().
       context->Release();

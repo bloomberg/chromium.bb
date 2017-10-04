@@ -57,7 +57,7 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
                                                      size_t data_size) {
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
-  return make_scoped_refptr(new DecoderBuffer(data, data_size, NULL, 0));
+  return base::WrapRefCounted(new DecoderBuffer(data, data_size, NULL, 0));
 }
 
 // static
@@ -68,13 +68,13 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
   CHECK(side_data);
-  return make_scoped_refptr(new DecoderBuffer(data, data_size,
-                                              side_data, side_data_size));
+  return base::WrapRefCounted(
+      new DecoderBuffer(data, data_size, side_data, side_data_size));
 }
 
 // static
 scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
-  return make_scoped_refptr(new DecoderBuffer(NULL, 0, NULL, 0));
+  return base::WrapRefCounted(new DecoderBuffer(NULL, 0, NULL, 0));
 }
 
 bool DecoderBuffer::MatchesForTesting(const DecoderBuffer& buffer) const {

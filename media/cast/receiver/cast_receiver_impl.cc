@@ -143,8 +143,8 @@ void CastReceiverImpl::DecodeEncodedVideoFrame(
     std::unique_ptr<EncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!encoded_frame) {
-    callback.Run(
-        make_scoped_refptr<VideoFrame>(NULL), base::TimeTicks(), false);
+    callback.Run(base::WrapRefCounted<VideoFrame>(NULL), base::TimeTicks(),
+                 false);
     return;
   }
 

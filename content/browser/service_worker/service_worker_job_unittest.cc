@@ -1001,7 +1001,7 @@ class UpdateJobTestHelper
                      version != registration->active_version();
 
     ASSERT_TRUE(version);
-    observed_versions_.push_back(make_scoped_refptr(version));
+    observed_versions_.push_back(base::WrapRefCounted(version));
     version->AddListener(this);
 
     // Simulate network access.
@@ -1134,7 +1134,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       // Evict the incumbent worker.
       ASSERT_FALSE(registration->waiting_version());
       registration->DeleteVersion(
-          make_scoped_refptr(registration->active_version()));
+          base::WrapRefCounted(registration->active_version()));
     }
     UpdateJobTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,

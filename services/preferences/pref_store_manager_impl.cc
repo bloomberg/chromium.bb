@@ -69,20 +69,20 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
     PrefRegistry* pref_registry,
     std::vector<const char*> overlay_pref_names)
     : shared_pref_registry_(base::MakeUnique<SharedPrefRegistry>(
-          make_scoped_refptr(pref_registry))),
+          base::WrapRefCounted(pref_registry))),
       weak_factory_(this) {
   // This store is done in-process so it's already "registered":
   registry_.AddInterface<prefs::mojom::PrefStoreConnector>(
       base::Bind(&PrefStoreManagerImpl::BindPrefStoreConnectorRequest,
                  base::Unretained(this)));
   persistent_pref_store_ = base::MakeUnique<PersistentPrefStoreImpl>(
-      make_scoped_refptr(user_prefs),
+      base::WrapRefCounted(user_prefs),
       base::BindOnce(&PrefStoreManagerImpl::OnPersistentPrefStoreReady,
                      base::Unretained(this)));
   if (incognito_user_prefs_underlay) {
     incognito_persistent_pref_store_underlay_ =
         base::MakeUnique<PersistentPrefStoreImpl>(
-            make_scoped_refptr(incognito_user_prefs_underlay),
+            base::WrapRefCounted(incognito_user_prefs_underlay),
             base::BindOnce(
                 &PrefStoreManagerImpl::OnIncognitoPersistentPrefStoreReady,
                 base::Unretained(this)));
@@ -144,7 +144,7 @@ void PrefStoreManagerImpl::RegisterPrefStore(PrefValueStore::PrefStoreType type,
     return;
 
   read_only_pref_stores_.emplace(
-      type, base::MakeUnique<PrefStoreImpl>(make_scoped_refptr(pref_store)));
+      type, base::MakeUnique<PrefStoreImpl>(base::WrapRefCounted(pref_store)));
 }
 
 void PrefStoreManagerImpl::ShutDown() {

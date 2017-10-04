@@ -347,7 +347,7 @@ Response ServiceWorkerHandler::DispatchSyncEvent(
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&DispatchSyncEventOnIO, context_,
-                                         make_scoped_refptr(sync_context),
+                                         base::WrapRefCounted(sync_context),
                                          GURL(origin), id, tag, last_chance));
   return Response::OK();
 }

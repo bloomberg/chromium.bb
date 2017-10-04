@@ -149,11 +149,9 @@ void SeekDeviceByAddress(const std::string& device_address,
                          const ErrorCallback& error_callback,
                          base::TaskRunner* task_runner) {
   base::PostTaskAndReplyWithResult(
-      task_runner,
-      FROM_HERE,
-      base::Bind(&SeekDeviceByAddressImpl,
-                 device_address,
-                 make_scoped_refptr(task_runner)),
+      task_runner, FROM_HERE,
+      base::Bind(&SeekDeviceByAddressImpl, device_address,
+                 base::WrapRefCounted(task_runner)),
       base::Bind(&OnSeekDeviceResult, callback, error_callback));
 }
 

@@ -39,13 +39,11 @@ int BufferingFileStreamWriter::Write(net::IOBuffer* buffer,
           base::Bind(&BufferingFileStreamWriter::
                          OnFlushIntermediateBufferForDirectWriteCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
-                     make_scoped_refptr(buffer),
-                     buffer_length,
-                     callback));
+                     base::WrapRefCounted(buffer), buffer_length, callback));
     } else {
       // Nothing to flush, so skip it.
       OnFlushIntermediateBufferForDirectWriteCompleted(
-          make_scoped_refptr(buffer), buffer_length, callback, net::OK);
+          base::WrapRefCounted(buffer), buffer_length, callback, net::OK);
     }
     return net::ERR_IO_PENDING;
   }
@@ -54,19 +52,16 @@ int BufferingFileStreamWriter::Write(net::IOBuffer* buffer,
   const int buffer_bytes =
       std::min(intermediate_buffer_length_ - buffered_bytes_, buffer_length);
 
-  CopyToIntermediateBuffer(
-      make_scoped_refptr(buffer), 0 /* buffer_offset */, buffer_bytes);
+  CopyToIntermediateBuffer(base::WrapRefCounted(buffer), 0 /* buffer_offset */,
+                           buffer_bytes);
   const int bytes_left = buffer_length - buffer_bytes;
 
   if (buffered_bytes_ == intermediate_buffer_length_) {
     FlushIntermediateBuffer(
         base::Bind(&BufferingFileStreamWriter::
                        OnFlushIntermediateBufferForBufferedWriteCompleted,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   make_scoped_refptr(buffer),
-                   buffer_bytes,
-                   bytes_left,
-                   callback));
+                   weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
+                   buffer_bytes, bytes_left, callback));
     return net::ERR_IO_PENDING;
   }
 

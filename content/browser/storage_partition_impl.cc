@@ -879,9 +879,9 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ClearCookiesOnIOThread, make_scoped_refptr(rq_context),
-                       begin, end, storage_origin, cookie_matcher,
-                       decrement_callback));
+        base::BindOnce(&ClearCookiesOnIOThread,
+                       base::WrapRefCounted(rq_context), begin, end,
+                       storage_origin, cookie_matcher, decrement_callback));
   }
 
   if (remove_mask & REMOVE_DATA_MASK_INDEXEDDB ||
@@ -893,21 +893,19 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
-                       base::Unretained(this),
-                       make_scoped_refptr(quota_manager), begin, storage_origin,
-                       make_scoped_refptr(special_storage_policy),
-                       origin_matcher, decrement_callback));
+        base::BindOnce(
+            &DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
+            base::Unretained(this), base::WrapRefCounted(quota_manager), begin,
+            storage_origin, base::WrapRefCounted(special_storage_policy),
+            origin_matcher, decrement_callback));
   }
 
   if (remove_mask & REMOVE_DATA_MASK_LOCAL_STORAGE) {
     IncrementTaskCountOnUI();
-    ClearLocalStorageOnUIThread(
-        make_scoped_refptr(dom_storage_context),
-        make_scoped_refptr(special_storage_policy),
-        origin_matcher,
-        storage_origin, begin, end,
-        decrement_callback);
+    ClearLocalStorageOnUIThread(base::WrapRefCounted(dom_storage_context),
+                                base::WrapRefCounted(special_storage_policy),
+                                origin_matcher, storage_origin, begin, end,
+                                decrement_callback);
 
     // ClearDataImpl cannot clear session storage data when a particular origin
     // is specified. Therefore we ignore clearing session storage in this case.
@@ -915,9 +913,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     if (storage_origin.is_empty()) {
       IncrementTaskCountOnUI();
       ClearSessionStorageOnUIThread(
-          make_scoped_refptr(dom_storage_context),
-          make_scoped_refptr(special_storage_policy),
-          origin_matcher,
+          base::WrapRefCounted(dom_storage_context),
+          base::WrapRefCounted(special_storage_policy), origin_matcher,
           decrement_callback);
     }
   }
@@ -935,7 +932,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     filesystem_context->default_file_task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ClearPluginPrivateDataOnFileTaskRunner,
-                       make_scoped_refptr(filesystem_context), storage_origin,
+                       base::WrapRefCounted(filesystem_context), storage_origin,
                        begin, end, decrement_callback));
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)

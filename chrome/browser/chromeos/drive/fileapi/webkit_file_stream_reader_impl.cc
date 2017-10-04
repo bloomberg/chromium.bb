@@ -53,15 +53,14 @@ int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
   net::HttpByteRange byte_range;
   byte_range.set_first_byte_position(offset_);
   stream_reader_->Initialize(
-      drive_file_path_,
-      byte_range,
-      base::Bind(&WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Bind(&WebkitFileStreamReaderImpl
-                                ::ReadAfterStreamReaderInitialized,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            make_scoped_refptr(buffer),
-                            buffer_length, callback)));
+      drive_file_path_, byte_range,
+      base::Bind(
+          &WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::Bind(
+              &WebkitFileStreamReaderImpl ::ReadAfterStreamReaderInitialized,
+              weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
+              buffer_length, callback)));
   return net::ERR_IO_PENDING;
 }
 

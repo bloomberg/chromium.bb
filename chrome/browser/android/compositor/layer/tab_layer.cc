@@ -36,7 +36,7 @@ scoped_refptr<TabLayer> TabLayer::Create(
     ui::ResourceManager* resource_manager,
     LayerTitleCache* layer_title_cache,
     TabContentManager* tab_content_manager) {
-  return make_scoped_refptr(new TabLayer(
+  return base::WrapRefCounted(new TabLayer(
       incognito, resource_manager, layer_title_cache, tab_content_manager));
 }
 

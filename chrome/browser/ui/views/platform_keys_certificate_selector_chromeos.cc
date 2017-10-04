@@ -101,7 +101,7 @@ void PlatformKeysCertificateSelector::AcceptCertificate(
     std::unique_ptr<net::ClientCertIdentity> identity) {
   DCHECK(!callback_.is_null());
   base::ResetAndReturn(&callback_)
-      .Run(make_scoped_refptr(identity->certificate()));
+      .Run(base::WrapRefCounted(identity->certificate()));
 }
 
 void ShowPlatformKeysCertificateSelector(

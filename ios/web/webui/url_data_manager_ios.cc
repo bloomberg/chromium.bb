@@ -66,7 +66,7 @@ void URLDataManagerIOS::AddDataSource(URLDataSourceIOSImpl* source) {
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&AddDataSourceOnIOThread, base::Unretained(browser_state_),
-                 make_scoped_refptr(source)));
+                 base::WrapRefCounted(source)));
 }
 
 // static

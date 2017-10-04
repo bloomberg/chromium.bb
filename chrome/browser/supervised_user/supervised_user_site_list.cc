@@ -191,7 +191,7 @@ void SupervisedUserSiteList::OnJsonLoaded(
   base::ListValue* hostname_hashes = nullptr;
   dict->GetList(kHostnameHashesKey, &hostname_hashes);
 
-  callback.Run(make_scoped_refptr(
+  callback.Run(base::WrapRefCounted(
       new SupervisedUserSiteList(id, title, GURL(entry_point_url),
                                  large_icon_path, patterns, hostname_hashes)));
 }

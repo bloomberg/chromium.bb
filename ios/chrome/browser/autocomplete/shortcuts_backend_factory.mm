@@ -43,7 +43,7 @@ scoped_refptr<ShortcutsBackend> CreateShortcutsBackend(
 // static
 scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return make_scoped_refptr(static_cast<ShortcutsBackend*>(
+  return base::WrapRefCounted(static_cast<ShortcutsBackend*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true).get()));
 }
 
@@ -51,7 +51,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::GetForBrowserState(
 scoped_refptr<ShortcutsBackend>
 ShortcutsBackendFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
-  return make_scoped_refptr(static_cast<ShortcutsBackend*>(
+  return base::WrapRefCounted(static_cast<ShortcutsBackend*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false).get()));
 }
 

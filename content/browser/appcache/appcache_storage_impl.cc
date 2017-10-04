@@ -148,7 +148,7 @@ class AppCacheStorageImpl::DatabaseTask
   }
 
   void AddDelegate(DelegateReference* delegate_reference) {
-    delegates_.push_back(make_scoped_refptr(delegate_reference));
+    delegates_.push_back(base::WrapRefCounted(delegate_reference));
   }
 
   // Schedules a task to be Run() on the DB thread. Tasks
@@ -1407,10 +1407,10 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
 
   if (database_ &&
       !db_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ClearSessionOnlyOrigins, database_,
-                         make_scoped_refptr(service_->special_storage_policy()),
-                         service()->force_keep_session_state()))) {
+          FROM_HERE, base::BindOnce(&ClearSessionOnlyOrigins, database_,
+                                    base::WrapRefCounted(
+                                        service_->special_storage_policy()),
+                                    service()->force_keep_session_state()))) {
     delete database_;
   }
   database_ = NULL;  // So no further database tasks can be scheduled.
@@ -1589,7 +1589,7 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
     ScheduleSimpleTask(base::BindOnce(
         &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
         weak_factory_.GetWeakPtr(), url, AppCacheEntry(), no_group, no_cache,
-        make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+        base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
     return;
   }
 
@@ -1613,9 +1613,9 @@ bool AppCacheStorageImpl::FindResponseForMainRequestInGroup(
 
   ScheduleSimpleTask(base::BindOnce(
       &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
-      weak_factory_.GetWeakPtr(), url, *entry, make_scoped_refptr(group),
-      make_scoped_refptr(cache),
-      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+      weak_factory_.GetWeakPtr(), url, *entry, base::WrapRefCounted(group),
+      base::WrapRefCounted(cache),
+      base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
   return true;
 }
 

@@ -562,7 +562,7 @@ class ByteAtATimeUploadElementReader : public net::UploadElementReader {
 
     base::MessageLoop::current()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&ByteAtATimeUploadElementReader::ReadImpl,
-                              base::Unretained(this), make_scoped_refptr(buf),
+                              base::Unretained(this), base::WrapRefCounted(buf),
                               buf_length, callback));
     return net::ERR_IO_PENDING;
   }

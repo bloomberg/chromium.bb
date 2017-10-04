@@ -49,7 +49,7 @@ namespace extensions {
 scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
     ExtensionService* service) {
   DCHECK(service);
-  return make_scoped_refptr(new ZipFileInstaller(service));
+  return base::WrapRefCounted(new ZipFileInstaller(service));
 }
 
 void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {

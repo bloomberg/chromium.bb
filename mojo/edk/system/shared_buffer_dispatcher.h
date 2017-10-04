@@ -90,7 +90,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
  private:
   static scoped_refptr<SharedBufferDispatcher> CreateInternal(
       scoped_refptr<PlatformSharedBuffer> shared_buffer) {
-    return make_scoped_refptr(
+    return base::WrapRefCounted(
         new SharedBufferDispatcher(std::move(shared_buffer)));
   }
 
