@@ -20,11 +20,8 @@ import "services/viz/privileged/interfaces/compositing/renderer_settings.mojom";
 // DisplayPrivate would eventually replace or be used by ContextFactoryPrivate.
 interface DisplayPrivate {
   SetDisplayVisible(bool visible);
-  ResizeDisplay(gfx.mojom.Size size_in_pixel);
   SetDisplayColorSpace(gfx.mojom.ColorSpace color_space);
   SetOutputIsSecure(bool secure);
-  SetLocalSurfaceId(LocalSurfaceId local_surface_id,
-                    float scale_factor);
 };
 
 // The FrameSinkManager interface is a privileged interface that allows the

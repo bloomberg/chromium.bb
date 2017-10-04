@@ -58,6 +58,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
+  const LocalSurfaceId& local_surface_id() const {
+    return current_surface_id_.local_surface_id();
+  }
+
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
   // Sets callback that will be provided to Surface::QueueFrame().

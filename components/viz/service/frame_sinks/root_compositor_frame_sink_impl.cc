@@ -52,10 +52,6 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
   display_->SetVisible(visible);
 }
 
-void RootCompositorFrameSinkImpl::ResizeDisplay(const gfx::Size& size) {
-  display_->Resize(size);
-}
-
 void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
     const gfx::ColorSpace& color_space) {
   display_->SetColorSpace(color_space, color_space);
@@ -63,12 +59,6 @@ void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
 
 void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
   display_->SetOutputIsSecure(secure);
-}
-
-void RootCompositorFrameSinkImpl::SetLocalSurfaceId(
-    const LocalSurfaceId& local_surface_id,
-    float scale_factor) {
-  display_->SetLocalSurfaceId(local_surface_id, scale_factor);
 }
 
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -80,6 +70,12 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
+  // Update |display_| when size or local surface id changes.
+  if (support_->local_surface_id() != local_surface_id) {
+    display_->Resize(frame.size_in_pixels());
+    display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
+  }
+
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                        std::move(hit_test_region_list))) {
     DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id;
