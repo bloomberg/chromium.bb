@@ -108,6 +108,12 @@ class URL_EXPORT SchemeHostPort {
   // SchemeHostPort object.
   explicit SchemeHostPort(const GURL& url);
 
+  // Copyable and movable.
+  SchemeHostPort(const SchemeHostPort&) = default;
+  SchemeHostPort& operator=(const SchemeHostPort&) = default;
+  SchemeHostPort(SchemeHostPort&&) = default;
+  SchemeHostPort& operator=(SchemeHostPort&&) = default;
+
   ~SchemeHostPort();
 
   // Returns the host component, in URL form. That is all IDN domain names will
