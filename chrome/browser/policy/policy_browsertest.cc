@@ -783,7 +783,7 @@ class PolicyTest : public InProcessBrowserTest {
     extensions::TestExtensionRegistryObserver observer(
         extensions::ExtensionRegistry::Get(browser()->profile()));
     extension_service()->DisableExtension(
-        id, extensions::disable_reason::DISABLE_NONE);
+        id, extensions::disable_reason::DISABLE_USER_ACTION);
     observer.WaitForExtensionUnloaded();
   }
 

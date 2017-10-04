@@ -447,8 +447,8 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CreateDisable) {
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
-  extension_service->DisableExtension(extension_id_,
-                                      extensions::disable_reason::DISABLE_NONE);
+  extension_service->DisableExtension(
+      extension_id_, extensions::disable_reason::DISABLE_USER_ACTION);
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(DoesConfigExist(kTestConfig));
   EXPECT_FALSE(DBusThreadManager::Get()
