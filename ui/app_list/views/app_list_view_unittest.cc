@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,7 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
+#include "ui/app_list/views/folder_header_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
@@ -329,14 +331,21 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     view_->Initialize(params);
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
 
-    // Add suggestion apps and app list items.
-    const int kSuggestionAppNum = 5;
+    // Add suggestion apps, a folder with apps and other app list items.
+    const int kSuggestionAppNum = 3;
+    const int kItemNumInFolder = 8;
     const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
     AppListTestModel* model = delegate_->GetTestModel();
     for (size_t i = 0; i < kSuggestionAppNum; i++)
       model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
+    AppListFolderItem* folder_item =
+        model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
     model->PopulateApps(kAppListItemNum);
     apps_grid_view()->ResetForShowApps();
+    EXPECT_EQ(static_cast<size_t>(kAppListItemNum + 1),
+              model->top_level_item_list()->item_count());
+    EXPECT_EQ(folder_item->id(),
+              model->top_level_item_list()->item_at(0)->id());
 
     // Disable animation timer.
     view_->GetWidget()->GetLayer()->GetAnimator()->set_disable_timer_for_test(
@@ -403,6 +412,20 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     return delegate_->open_search_result_count();
   }
 
+  // Test focus traversal across all the views in |view_list|. The initial focus
+  // is expected to be on the first view in |view_list|. The final focus is
+  // expected to be on the last view in |view_list| after |view_list.size()-1|
+  // key events are pressed.
+  void TestFocusTraversal(const std::vector<views::View*>& view_list,
+                          ui::KeyboardCode key_code,
+                          bool shift_down) {
+    EXPECT_EQ(view_list[0], focused_view());
+    for (size_t i = 1; i < view_list.size(); ++i) {
+      SimulateKeyPress(key_code, shift_down);
+      EXPECT_EQ(view_list[i], focused_view());
+    }
+  }
+
   AppListView* app_list_view() { return view_; }
 
   AppListMainView* main_view() { return view_->app_list_main_view(); }
@@ -418,11 +441,22 @@ class AppListViewFocusTest : public views::ViewsTestBase {
         ->apps_grid_view();
   }
 
+  AppListFolderView* app_list_folder_view() {
+    return main_view()
+        ->contents_view()
+        ->apps_container_view()
+        ->app_list_folder_view();
+  }
+
   SuggestionsContainerView* suggestions_container_view() {
     return apps_grid_view()->suggestions_container_for_test();
   }
 
   SearchBoxView* search_box_view() { return main_view()->search_box_view(); }
+
+  AppListItemView* folder_item_view() {
+    return apps_grid_view()->view_model_for_test()->view_at(0);
+  }
 
   views::View* focused_view() {
     return view_->GetWidget()->GetFocusManager()->GetFocusedView();
@@ -445,53 +479,77 @@ TEST_F(AppListViewFocusTest, InitialFocus) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
 }
 
-// Tests the focus traversal triggered by tab in peeking state.
-TEST_F(AppListViewFocusTest, FocusTraversalInPeekingState) {
+// Tests the linear focus traversal in PEEKING state.
+TEST_F(AppListViewFocusTest, LinearFocusTraversalInPeekingState) {
   Show();
   SetAppListState(AppListView::PEEKING);
 
-  // Move focus along suggestion apps.
-  for (views::View* v : suggestions_container_view()->tile_views()) {
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_EQ(v, focused_view());
-  }
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  for (int i = 0; i < suggestions_container_view()->num_results(); ++i)
+    forward_view_list.push_back(suggestions_container_view()->tile_views()[i]);
+  forward_view_list.push_back(apps_grid_view()->expand_arrow_view_for_test());
+  forward_view_list.push_back(search_box_view()->search_box());
+  std::vector<views::View*> backward_view_list = forward_view_list;
+  std::reverse(backward_view_list.begin(), backward_view_list.end());
 
-  // Move focus on expand arrow.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(apps_grid_view()->expand_arrow_view_for_test(), focused_view());
+  // Test traversal triggered by tab.
+  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
 
-  // Move focus back to search box.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  // Test traversal triggered by shift+tab.
+  TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
+
+  // Test traversal triggered by right, Left and right key are handled by
+  // search box when focus is on it, so focus will not move. Move focus to
+  // next element before testing.
+  forward_view_list.erase(forward_view_list.begin());
+  forward_view_list.front()->RequestFocus();
+  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+
+  // Test traversal triggered by left.
+  backward_view_list.erase(backward_view_list.begin());
+  backward_view_list.front()->RequestFocus();
+  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
 }
 
-// Tests the focus traversal triggered by tab in fullscreen all apps state.
-TEST_F(AppListViewFocusTest, FocusTraversalInFullscreenAllAppsState) {
+// Tests the linear focus traversal in FULLSCREEN_ALL_APPS state.
+TEST_F(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
   Show();
   SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
 
-  // Move focus along suggestion apps.
-  for (views::View* v : suggestions_container_view()->tile_views()) {
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_EQ(v, focused_view());
-  }
-
-  // Move focus along app list items.
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  for (int i = 0; i < suggestions_container_view()->num_results(); ++i)
+    forward_view_list.push_back(suggestions_container_view()->tile_views()[i]);
   const views::ViewModelT<AppListItemView>* view_model =
       apps_grid_view()->view_model_for_test();
-  for (int i = 0; i < view_model->view_size(); ++i) {
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_EQ(view_model->view_at(i), focused_view());
-  }
+  for (int i = 0; i < view_model->view_size(); ++i)
+    forward_view_list.push_back(view_model->view_at(i));
+  forward_view_list.push_back(search_box_view()->search_box());
+  std::vector<views::View*> backward_view_list = forward_view_list;
+  std::reverse(backward_view_list.begin(), backward_view_list.end());
 
-  // Move focus back to search box.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  // Test traversal triggered by tab.
+  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
+
+  // Test traversal triggered by shift+tab.
+  TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
+
+  // Test traversal triggered by right, Left and right key are handled by
+  // search box when focus is on it, so focus will not move. Move focus to
+  // next element before testing.
+  forward_view_list.erase(forward_view_list.begin());
+  forward_view_list.front()->RequestFocus();
+  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+
+  // Test traversal triggered by left.
+  backward_view_list.erase(backward_view_list.begin());
+  backward_view_list.front()->RequestFocus();
+  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
 }
 
-// Tests the focus traversal triggered by tab in half state with opened search
-// box.
-TEST_F(AppListViewFocusTest, FocusTraversalInHalfState) {
+// Tests the linear focus traversal in HALF state with opened search box.
+TEST_F(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -502,31 +560,186 @@ TEST_F(AppListViewFocusTest, FocusTraversalInHalfState) {
   const int kListResults = 2;
   SetUpSearchResults(kTileResults, kListResults);
 
-  // Move focus to close button.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(search_box_view()->close_button(), focused_view());
-
-  // Move focus along the search results.
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(search_box_view()->close_button());
   const std::vector<SearchResultTileItemView*>& tile_views =
       contents_view()
           ->search_result_tile_item_list_view_for_test()
           ->tile_views_for_test();
-  for (int i = 0; i < kTileResults; ++i) {
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_EQ(tile_views[i], focused_view());
-  }
-  const views::View* results_container =
-      contents_view()
-          ->search_result_list_view_for_test()
-          ->results_container_for_test();
-  for (int i = 0; i < kListResults; ++i) {
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_EQ(results_container->child_at(i), focused_view());
-  }
+  for (int i = 0; i < kTileResults; ++i)
+    forward_view_list.push_back(tile_views[i]);
+  views::View* results_container = contents_view()
+                                       ->search_result_list_view_for_test()
+                                       ->results_container_for_test();
+  for (int i = 0; i < kListResults; ++i)
+    forward_view_list.push_back(results_container->child_at(i));
+  forward_view_list.push_back(search_box_view()->search_box());
+  std::vector<views::View*> backward_view_list = forward_view_list;
+  std::reverse(backward_view_list.begin(), backward_view_list.end());
 
-  // Move focus back to search box.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  // Test traversal triggered by tab.
+  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
+
+  // Test traversal triggered by shift+tab.
+  TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
+
+  // Test traversal triggered by right, Left and right key are handled by
+  // search box when focus is on it, so focus will not move. Move focus to
+  // next element before testing.
+  forward_view_list.erase(forward_view_list.begin());
+  forward_view_list.front()->RequestFocus();
+  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+
+  // Test traversal triggered by left.
+  backward_view_list.erase(backward_view_list.begin());
+  backward_view_list.front()->RequestFocus();
+  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
+}
+
+// Tests the linear focus traversal in FULLSCREEN_ALL_APPS state within folder.
+TEST_F(AppListViewFocusTest, LinearFocusTraversalInFolder) {
+  Show();
+
+  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
+  SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
+  const views::ViewModelT<AppListItemView>* view_model =
+      app_list_folder_view()->items_grid_view()->view_model_for_test();
+  for (int i = 0; i < view_model->view_size(); ++i)
+    forward_view_list.push_back(view_model->view_at(i));
+  forward_view_list.push_back(search_box_view()->back_button());
+  forward_view_list.push_back(search_box_view()->search_box());
+  std::vector<views::View*> backward_view_list = forward_view_list;
+  std::reverse(backward_view_list.begin(), backward_view_list.end());
+
+  // Test traversal triggered by tab.
+  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
+
+  // Test traversal triggered by shift+tab.
+  TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
+
+  // Test traversal triggered by right, Left and right key are handled by
+  // search box when focus is on it, so focus will not move. Move focus to
+  // non-textfield element before testing.
+  forward_view_list.erase(forward_view_list.begin(),
+                          forward_view_list.begin() + 2);
+  forward_view_list.front()->RequestFocus();
+  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+
+  // Test traversal triggered by left.
+  backward_view_list.erase(backward_view_list.begin());
+  backward_view_list.erase(backward_view_list.end() - 1);
+  backward_view_list.front()->RequestFocus();
+  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
+}
+
+// Tests the vertical focus traversal by in PEEKING state.
+TEST_F(AppListViewFocusTest, VerticalFocusTraversalInPeekingState) {
+  Show();
+  SetAppListState(AppListView::PEEKING);
+
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      suggestions_container_view()->tile_views();
+  const int suggestions_num_results =
+      suggestions_container_view()->num_results();
+  forward_view_list.push_back(tile_views.front());
+  forward_view_list.push_back(apps_grid_view()->expand_arrow_view_for_test());
+  forward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by down.
+  TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
+
+  std::vector<views::View*> backward_view_list;
+  backward_view_list.push_back(search_box_view()->search_box());
+  backward_view_list.push_back(apps_grid_view()->expand_arrow_view_for_test());
+  backward_view_list.push_back(tile_views[suggestions_num_results - 1]);
+  backward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by up.
+  TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
+}
+
+// Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state.
+TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
+  Show();
+  SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
+
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      suggestions_container_view()->tile_views();
+  const int suggestions_num_results =
+      suggestions_container_view()->num_results();
+  forward_view_list.push_back(tile_views.front());
+  const views::ViewModelT<AppListItemView>* view_model =
+      apps_grid_view()->view_model_for_test();
+  for (int i = 0; i < view_model->view_size(); i += apps_grid_view()->cols())
+    forward_view_list.push_back(view_model->view_at(i));
+  forward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by down.
+  TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
+
+  std::vector<views::View*> backward_view_list;
+  backward_view_list.push_back(search_box_view()->search_box());
+  for (int i = view_model->view_size() - 1; i >= 0;
+       i -= apps_grid_view()->cols())
+    backward_view_list.push_back(view_model->view_at(i));
+  const int index = std::min(view_model->view_size() % apps_grid_view()->cols(),
+                             suggestions_num_results) -
+                    1;
+  backward_view_list.push_back(tile_views[index]);
+  backward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by up.
+  TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
+}
+
+// Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state within
+// folder.
+TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFolder) {
+  Show();
+
+  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
+  SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
+  const views::ViewModelT<AppListItemView>* view_model =
+      app_list_folder_view()->items_grid_view()->view_model_for_test();
+  for (int i = 0; i < view_model->view_size(); i += apps_grid_view()->cols())
+    forward_view_list.push_back(view_model->view_at(i));
+  forward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by down.
+  TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
+
+  std::vector<views::View*> backward_view_list;
+  backward_view_list.push_back(search_box_view()->search_box());
+  for (int i = view_model->view_size() - 1; i >= 0;
+       i -= apps_grid_view()->cols())
+    backward_view_list.push_back(view_model->view_at(i));
+  backward_view_list.push_back(
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
+  backward_view_list.push_back(search_box_view()->search_box());
+
+  // Test traversal triggered by up.
+  TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
 // Tests that the focus is set back onto search box after state transition.
@@ -557,7 +770,13 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
             AppListView::FULLSCREEN_ALL_APPS);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
 
-  // Move focus to the first suggestion app, then transition to PEEKING state.
+  // Move focus to first suggestion app, then open the folder.
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+
+  // Move focus to the first app, then transition to PEEKING state.
   SimulateKeyPress(ui::VKEY_TAB, false);
   SetAppListState(AppListView::PEEKING);
   EXPECT_EQ(app_list_view()->app_list_state(), AppListView::PEEKING);
