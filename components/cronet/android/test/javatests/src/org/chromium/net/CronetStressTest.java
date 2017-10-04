@@ -51,6 +51,7 @@ public class CronetStressTest {
         final int kNumRequest = 1000;
         final int kNumRequestHeaders = 100;
         final int kNumUploadBytes = 1000;
+        final byte[] b = new byte[kNumUploadBytes];
         for (int i = 0; i < kNumRequest; i++) {
             TestUrlRequestCallback callback = new TestUrlRequestCallback();
             UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -59,10 +60,10 @@ public class CronetStressTest {
                 builder.addHeader("header" + j, Integer.toString(j));
             }
             builder.addHeader("content-type", "useless/string");
-            byte[] b = new byte[kNumUploadBytes];
             builder.setUploadDataProvider(
                     UploadDataProviders.create(b, 0, kNumUploadBytes), callback.getExecutor());
-            builder.build().start();
+            UrlRequest request = builder.build();
+            request.start();
             callback.blockForDone();
             assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         }
