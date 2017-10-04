@@ -131,6 +131,12 @@ ChromeCleanerRunner::ChromeCleanerRunner(
     cleaner_command_line_.AppendSwitch(
         chrome_cleaner::kEnableCrashReportingSwitch);
   }
+
+  const std::string group_name = GetSRTFieldTrialGroupName();
+  if (!group_name.empty()) {
+    cleaner_command_line_.AppendSwitchASCII(
+        chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);
+  }
 }
 
 ChromeCleanerRunner::ProcessStatus
