@@ -735,67 +735,42 @@ void av1_idct32_new(const int32_t *input, int32_t *output,
 
 void av1_iadst4_new(const int32_t *input, int32_t *output,
                     const int8_t *cos_bit, const int8_t *stage_range) {
-  const int32_t size = 4;
-  const int32_t *cospi;
+  (void)cos_bit;
+  int bd = stage_range[0];
+  int64_t s0, s1, s2, s3, s4, s5, s6, s7;
 
-  int32_t stage = 0;
-  int32_t *bf0, *bf1;
-  int32_t step[4];
+  int32_t x0 = input[0];
+  int32_t x1 = input[1];
+  int32_t x2 = input[2];
+  int32_t x3 = input[3];
 
-  // stage 0;
-  range_check(stage, input, input, size, stage_range[stage]);
+  if (!(x0 | x1 | x2 | x3)) {
+    output[0] = output[1] = output[2] = output[3] = 0;
+    return;
+  }
 
-  // stage 1;
-  stage++;
-  assert(output != input);
-  bf1 = output;
-  bf1[0] = input[0];
-  bf1[1] = -input[3];
-  bf1[2] = -input[1];
-  bf1[3] = input[2];
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  s0 = sinpi_1_9 * x0;
+  s1 = sinpi_2_9 * x0;
+  s2 = sinpi_3_9 * x1;
+  s3 = sinpi_4_9 * x2;
+  s4 = sinpi_1_9 * x2;
+  s5 = sinpi_2_9 * x3;
+  s6 = sinpi_4_9 * x3;
+  s7 = HIGHBD_WRAPLOW(x0 - x2 + x3, bd);
 
-  // stage 2
-  stage++;
-  cospi = cospi_arr(cos_bit[stage]);
-  bf0 = output;
-  bf1 = step;
-  bf1[0] = bf0[0];
-  bf1[1] = bf0[1];
-  bf1[2] = half_btf(cospi[32], bf0[2], cospi[32], bf0[3], cos_bit[stage]);
-  bf1[3] = half_btf(cospi[32], bf0[2], -cospi[32], bf0[3], cos_bit[stage]);
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  s0 = s0 + s3 + s5;
+  s1 = s1 - s4 - s6;
+  s3 = s2;
+  s2 = sinpi_3_9 * s7;
 
-  // stage 3
-  stage++;
-  bf0 = step;
-  bf1 = output;
-  bf1[0] = bf0[0] + bf0[2];
-  bf1[1] = bf0[1] + bf0[3];
-  bf1[2] = bf0[0] - bf0[2];
-  bf1[3] = bf0[1] - bf0[3];
-  range_check(stage, input, bf1, size, stage_range[stage]);
-
-  // stage 4
-  stage++;
-  cospi = cospi_arr(cos_bit[stage]);
-  bf0 = output;
-  bf1 = step;
-  bf1[0] = half_btf(cospi[8], bf0[0], cospi[56], bf0[1], cos_bit[stage]);
-  bf1[1] = half_btf(cospi[56], bf0[0], -cospi[8], bf0[1], cos_bit[stage]);
-  bf1[2] = half_btf(cospi[40], bf0[2], cospi[24], bf0[3], cos_bit[stage]);
-  bf1[3] = half_btf(cospi[24], bf0[2], -cospi[40], bf0[3], cos_bit[stage]);
-  range_check(stage, input, bf1, size, stage_range[stage]);
-
-  // stage 5
-  stage++;
-  bf0 = step;
-  bf1 = output;
-  bf1[0] = bf0[1];
-  bf1[1] = bf0[2];
-  bf1[2] = bf0[3];
-  bf1[3] = bf0[0];
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  // 1-D transform scaling factor is sqrt(2).
+  // The overall dynamic range is 14b (input) + 14b (multiplication scaling)
+  // + 1b (addition) = 29b.
+  // Hence the output bit depth is 15b.
+  output[0] = HIGHBD_WRAPLOW(dct_const_round_shift(s0 + s3), bd);
+  output[1] = HIGHBD_WRAPLOW(dct_const_round_shift(s1 + s3), bd);
+  output[2] = HIGHBD_WRAPLOW(dct_const_round_shift(s2), bd);
+  output[3] = HIGHBD_WRAPLOW(dct_const_round_shift(s0 + s1 - s3), bd);
 }
 
 void av1_iadst8_new(const int32_t *input, int32_t *output,

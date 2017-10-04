@@ -121,72 +121,57 @@ static INLINE void write_buffer_4x4(__m128i *res, int32_t *output) {
 }
 
 static void fadst4x4_sse4_1(__m128i *in, int bit) {
-  const int32_t *cospi = cospi_arr(bit);
-  const __m128i cospi8 = _mm_set1_epi32(cospi[8]);
-  const __m128i cospi56 = _mm_set1_epi32(cospi[56]);
-  const __m128i cospi40 = _mm_set1_epi32(cospi[40]);
-  const __m128i cospi24 = _mm_set1_epi32(cospi[24]);
-  const __m128i cospi32 = _mm_set1_epi32(cospi[32]);
+  bit = 14;
   const __m128i rnding = _mm_set1_epi32(1 << (bit - 1));
-  const __m128i kZero = _mm_setzero_si128();
-  __m128i s0, s1, s2, s3;
+  const __m128i sinpi1 = _mm_set1_epi32(sinpi_1_9);
+  const __m128i sinpi2 = _mm_set1_epi32(sinpi_2_9);
+  const __m128i sinpi3 = _mm_set1_epi32(sinpi_3_9);
+  const __m128i sinpi4 = _mm_set1_epi32(sinpi_4_9);
+  __m128i t;
+  __m128i s0, s1, s2, s3, s4, s5, s6, s7;
+  __m128i x0, x1, x2, x3;
   __m128i u0, u1, u2, u3;
   __m128i v0, v1, v2, v3;
 
-  // stage 0
-  // stage 1
-  // stage 2
-  u0 = _mm_mullo_epi32(in[3], cospi8);
-  u1 = _mm_mullo_epi32(in[0], cospi56);
-  u2 = _mm_add_epi32(u0, u1);
-  s0 = _mm_add_epi32(u2, rnding);
-  s0 = _mm_srai_epi32(s0, bit);
+  s0 = _mm_mullo_epi32(in[0], sinpi1);
+  s1 = _mm_mullo_epi32(in[0], sinpi4);
+  s2 = _mm_mullo_epi32(in[1], sinpi2);
+  s3 = _mm_mullo_epi32(in[1], sinpi1);
+  s4 = _mm_mullo_epi32(in[2], sinpi3);
+  s5 = _mm_mullo_epi32(in[3], sinpi4);
+  s6 = _mm_mullo_epi32(in[3], sinpi2);
+  t = _mm_add_epi32(in[0], in[1]);
+  s7 = _mm_sub_epi32(t, in[3]);
 
-  v0 = _mm_mullo_epi32(in[3], cospi56);
-  v1 = _mm_mullo_epi32(in[0], cospi8);
-  v2 = _mm_sub_epi32(v0, v1);
-  s1 = _mm_add_epi32(v2, rnding);
-  s1 = _mm_srai_epi32(s1, bit);
+  t = _mm_add_epi32(s0, s2);
+  x0 = _mm_add_epi32(t, s5);
+  x1 = _mm_mullo_epi32(s7, sinpi3);
+  t = _mm_sub_epi32(s1, s3);
+  x2 = _mm_add_epi32(t, s6);
+  x3 = s4;
 
-  u0 = _mm_mullo_epi32(in[1], cospi40);
-  u1 = _mm_mullo_epi32(in[2], cospi24);
-  u2 = _mm_add_epi32(u0, u1);
-  s2 = _mm_add_epi32(u2, rnding);
-  s2 = _mm_srai_epi32(s2, bit);
+  s0 = _mm_add_epi32(x0, x3);
+  s1 = x1;
+  s2 = _mm_sub_epi32(x2, x3);
+  t = _mm_sub_epi32(x2, x0);
+  s3 = _mm_add_epi32(t, x3);
 
-  v0 = _mm_mullo_epi32(in[1], cospi24);
-  v1 = _mm_mullo_epi32(in[2], cospi40);
-  v2 = _mm_sub_epi32(v0, v1);
-  s3 = _mm_add_epi32(v2, rnding);
-  s3 = _mm_srai_epi32(s3, bit);
+  u0 = _mm_add_epi32(s0, rnding);
+  u0 = _mm_srai_epi32(u0, bit);
 
-  // stage 3
-  u0 = _mm_add_epi32(s0, s2);
-  u2 = _mm_sub_epi32(s0, s2);
-  u1 = _mm_add_epi32(s1, s3);
-  u3 = _mm_sub_epi32(s1, s3);
+  u1 = _mm_add_epi32(s1, rnding);
+  u1 = _mm_srai_epi32(u1, bit);
 
-  // stage 4
-  v0 = _mm_mullo_epi32(u2, cospi32);
-  v1 = _mm_mullo_epi32(u3, cospi32);
-  v2 = _mm_add_epi32(v0, v1);
-  s2 = _mm_add_epi32(v2, rnding);
-  u2 = _mm_srai_epi32(s2, bit);
+  u2 = _mm_add_epi32(s2, rnding);
+  u2 = _mm_srai_epi32(u2, bit);
 
-  v2 = _mm_sub_epi32(v0, v1);
-  s3 = _mm_add_epi32(v2, rnding);
-  u3 = _mm_srai_epi32(s3, bit);
+  u3 = _mm_add_epi32(s3, rnding);
+  u3 = _mm_srai_epi32(u3, bit);
 
-  // u0, u1, u2, u3
-  u2 = _mm_sub_epi32(kZero, u2);
-  u1 = _mm_sub_epi32(kZero, u1);
-
-  // u0, u2, u3, u1
-  // Transpose 4x4 32-bit
-  v0 = _mm_unpacklo_epi32(u0, u2);
-  v1 = _mm_unpackhi_epi32(u0, u2);
-  v2 = _mm_unpacklo_epi32(u3, u1);
-  v3 = _mm_unpackhi_epi32(u3, u1);
+  v0 = _mm_unpacklo_epi32(u0, u1);
+  v1 = _mm_unpackhi_epi32(u0, u1);
+  v2 = _mm_unpacklo_epi32(u2, u3);
+  v3 = _mm_unpackhi_epi32(u2, u3);
 
   in[0] = _mm_unpacklo_epi64(v0, v2);
   in[1] = _mm_unpackhi_epi64(v0, v2);

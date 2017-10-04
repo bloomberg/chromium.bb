@@ -139,20 +139,20 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
   vector<AV1FwdTxfm2dParam> param_list;
   for (int t = 0; t <= FLIPADST_ADST; ++t) {
     const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X4, 2, 0.2));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X4, 2, 0.5));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X8, 5, 0.6));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X16, 11, 1.5));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X32, 70, 7));
 
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 2.5, 0.4));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 2.5, 0.4));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 2.9, 0.55));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 3.2, 0.56));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 6.5, 1));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 6.5, 1));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 46, 7));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 30, 7));
 
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.6));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X4, 5, 0.6));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.7));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X4, 5.5, 0.9));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X32, 14, 2.1));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X8, 11, 1.6));
 

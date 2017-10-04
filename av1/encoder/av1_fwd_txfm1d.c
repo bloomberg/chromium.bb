@@ -692,66 +692,45 @@ void av1_fdct32_new(const int32_t *input, int32_t *output,
 
 void av1_fadst4_new(const int32_t *input, int32_t *output,
                     const int8_t *cos_bit, const int8_t *stage_range) {
-  const int32_t size = 4;
-  const int32_t *cospi;
+  (void)cos_bit;
+  (void)stage_range;
+  int64_t x0, x1, x2, x3;
+  int64_t s0, s1, s2, s3, s4, s5, s6, s7;
 
-  int32_t stage = 0;
-  int32_t *bf0, *bf1;
-  int32_t step[4];
+  x0 = input[0];
+  x1 = input[1];
+  x2 = input[2];
+  x3 = input[3];
 
-  // stage 0;
-  range_check(stage, input, input, size, stage_range[stage]);
+  if (!(x0 | x1 | x2 | x3)) {
+    output[0] = output[1] = output[2] = output[3] = 0;
+    return;
+  }
 
-  // stage 1;
-  stage++;
-  bf1 = output;
-  bf1[0] = input[3];
-  bf1[1] = input[0];
-  bf1[2] = input[1];
-  bf1[3] = input[2];
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  s0 = sinpi_1_9 * x0;
+  s1 = sinpi_4_9 * x0;
+  s2 = sinpi_2_9 * x1;
+  s3 = sinpi_1_9 * x1;
+  s4 = sinpi_3_9 * x2;
+  s5 = sinpi_4_9 * x3;
+  s6 = sinpi_2_9 * x3;
+  s7 = x0 + x1 - x3;
 
-  // stage 2
-  stage++;
-  cospi = cospi_arr(cos_bit[stage]);
-  bf0 = output;
-  bf1 = step;
-  bf1[0] = half_btf(cospi[8], bf0[0], cospi[56], bf0[1], cos_bit[stage]);
-  bf1[1] = half_btf(-cospi[8], bf0[1], cospi[56], bf0[0], cos_bit[stage]);
-  bf1[2] = half_btf(cospi[40], bf0[2], cospi[24], bf0[3], cos_bit[stage]);
-  bf1[3] = half_btf(-cospi[40], bf0[3], cospi[24], bf0[2], cos_bit[stage]);
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  x0 = s0 + s2 + s5;
+  x1 = sinpi_3_9 * s7;
+  x2 = s1 - s3 + s6;
+  x3 = s4;
 
-  // stage 3
-  stage++;
-  bf0 = step;
-  bf1 = output;
-  bf1[0] = bf0[0] + bf0[2];
-  bf1[1] = bf0[1] + bf0[3];
-  bf1[2] = -bf0[2] + bf0[0];
-  bf1[3] = -bf0[3] + bf0[1];
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  s0 = x0 + x3;
+  s1 = x1;
+  s2 = x2 - x3;
+  s3 = x2 - x0 + x3;
 
-  // stage 4
-  stage++;
-  cospi = cospi_arr(cos_bit[stage]);
-  bf0 = output;
-  bf1 = step;
-  bf1[0] = bf0[0];
-  bf1[1] = bf0[1];
-  bf1[2] = half_btf(cospi[32], bf0[2], cospi[32], bf0[3], cos_bit[stage]);
-  bf1[3] = half_btf(-cospi[32], bf0[3], cospi[32], bf0[2], cos_bit[stage]);
-  range_check(stage, input, bf1, size, stage_range[stage]);
-
-  // stage 5
-  stage++;
-  bf0 = step;
-  bf1 = output;
-  bf1[0] = bf0[0];
-  bf1[1] = -bf0[2];
-  bf1[2] = bf0[3];
-  bf1[3] = -bf0[1];
-  range_check(stage, input, bf1, size, stage_range[stage]);
+  // 1-D transform scaling factor is sqrt(2).
+  output[0] = (int32_t)fdct_round_shift(s0);
+  output[1] = (int32_t)fdct_round_shift(s1);
+  output[2] = (int32_t)fdct_round_shift(s2);
+  output[3] = (int32_t)fdct_round_shift(s3);
 }
 
 void av1_fadst8_new(const int32_t *input, int32_t *output,

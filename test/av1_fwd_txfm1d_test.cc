@@ -86,9 +86,10 @@ TEST(av1_fwd_txfm1d, accuracy) {
           reference_hybrid_1d(ref_input, ref_output, txfm_size, txfm_type);
 
           for (int ni = 0; ni < txfm_size; ++ni) {
-            EXPECT_LE(
+            ASSERT_LE(
                 abs(output[ni] - static_cast<int32_t>(round(ref_output[ni]))),
-                max_error);
+                max_error)
+                << "tx size = " << txfm_size << ", tx type = " << txfm_type;
           }
         }
       }
