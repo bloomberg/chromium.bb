@@ -41,6 +41,7 @@
 #include "sandbox/mac/sandbox_compiler.h"
 #include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu.sb.h"
+#include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi.sb.h"
 #include "services/service_manager/sandbox/mac/renderer.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
@@ -76,6 +77,8 @@ SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
     {service_manager::SANDBOX_TYPE_NETWORK, nullptr},
     {service_manager::SANDBOX_TYPE_CDM,
      service_manager::kSeatbeltPolicyString_ppapi},
+    {service_manager::SANDBOX_TYPE_NACL_LOADER,
+     service_manager::kSeatbeltPolicyString_nacl_loader},
 };
 
 static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) ==
@@ -96,7 +99,6 @@ const char* Sandbox::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
 const char* Sandbox::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
 const char* Sandbox::kSandboxOSVersion = "OS_VERSION";
 const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
-
 const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
 const char* Sandbox::kSandboxMacOS1013 = "MACOS_1013";
 
@@ -109,7 +111,7 @@ const char* Sandbox::kSandboxMacOS1013 = "MACOS_1013";
 //     10.5.6, 10.6.0
 
 // static
-void Sandbox::SandboxWarmup(int sandbox_type) {
+void Sandbox::SandboxWarmup(service_manager::SandboxType sandbox_type) {
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -192,10 +194,9 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
 
 // Load the appropriate template for the given sandbox type.
 // Returns the template as a string or an empty string on error.
-std::string LoadSandboxTemplate(int sandbox_type) {
+std::string LoadSandboxTemplate(service_manager::SandboxType sandbox_type) {
   // We use a custom sandbox definition to lock things down as tightly as
   // possible.
-  base::StringPiece sandbox_definition;
   auto* it = std::find_if(
       std::begin(kDefaultSandboxTypeToResourceIDMapping),
       std::end(kDefaultSandboxTypeToResourceIDMapping),
@@ -203,23 +204,12 @@ std::string LoadSandboxTemplate(int sandbox_type) {
         return element.sandbox_type == sandbox_type;
       });
 
-  if (it != std::end(kDefaultSandboxTypeToResourceIDMapping)) {
-    sandbox_definition = it->seatbelt_policy_string;
-  } else {
-    // Check if the embedder knows about this sandbox process type.
-    const char* result_string;
-    bool sandbox_type_found =
-        GetContentClient()->GetSandboxProfileForSandboxType(sandbox_type,
-                                                            &result_string);
-    CHECK(sandbox_type_found) << "Unknown sandbox type " << sandbox_type;
-    sandbox_definition = result_string;
-  }
-
-  base::StringPiece common_sandbox_definition =
-      service_manager::kSeatbeltPolicyString_common;
+  CHECK(it != std::end(kDefaultSandboxTypeToResourceIDMapping))
+      << "Unknown sandbox type " << sandbox_type;
+  base::StringPiece sandbox_definition = it->seatbelt_policy_string;
 
   // Prefix sandbox_data with common_sandbox_prefix_data.
-  std::string sandbox_profile = common_sandbox_definition.as_string();
+  std::string sandbox_profile = service_manager::kSeatbeltPolicyString_common;
   sandbox_definition.AppendToString(&sandbox_profile);
   return sandbox_profile;
 }
@@ -227,20 +217,18 @@ std::string LoadSandboxTemplate(int sandbox_type) {
 // Turns on the OS X sandbox for this process.
 
 // static
-bool Sandbox::EnableSandbox(int sandbox_type,
+bool Sandbox::EnableSandbox(service_manager::SandboxType sandbox_type,
                             const base::FilePath& allowed_dir) {
-  // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
+  // Sanity - currently only some sandboxes support a directory being
   // passed in.
-  if (sandbox_type < service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE &&
-      sandbox_type != service_manager::SANDBOX_TYPE_UTILITY) {
+  if (sandbox_type != service_manager::SANDBOX_TYPE_UTILITY) {
     DCHECK(allowed_dir.empty())
         << "Only SANDBOX_TYPE_UTILITY allows a custom directory parameter.";
   }
 
   std::string sandbox_data = LoadSandboxTemplate(sandbox_type);
-  if (sandbox_data.empty()) {
+  if (sandbox_data.empty())
     return false;
-  }
 
   sandbox::SandboxCompiler compiler(sandbox_data);
 

@@ -17,7 +17,6 @@ if (enable_nacl) {
       "nacl_messages.cc",
       "nacl_messages.h",
       "nacl_process_type.h",
-      "nacl_sandbox_type.h",
       "nacl_service.cc",
       "nacl_service.h",
       "nacl_types.cc",

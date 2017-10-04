@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "services/service_manager/sandbox/export.h"
 
 namespace service_manager {
@@ -40,6 +41,11 @@ enum SandboxType {
 
   // The CDM service process.
   SANDBOX_TYPE_CDM,
+
+#if defined(OS_MACOSX)
+  // The NaCl loader process.
+  SANDBOX_TYPE_NACL_LOADER,
+#endif  // defined(OS_MACOSX)
 
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };

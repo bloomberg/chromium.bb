@@ -160,18 +160,6 @@ class CONTENT_EXPORT ContentClient {
   // doesn't know about because they're from the embedder.
   virtual std::string GetProcessTypeNameInEnglish(int type);
 
-#if defined(OS_MACOSX)
-  // Allows the embedder to define a new |sandbox_type| by mapping it to the
-  // policy string for the sandbox profile to use. The legal values
-  // for |sandbox_type| are defined by the embedder and should start with
-  // SandboxType::SANDBOX_TYPE_AFTER_LAST_TYPE. Returns false if no sandbox
-  // profile for the given |sandbox_type| exists. Otherwise, |sandbox_profile|
-  // is set to the string to use and true is returned.
-  virtual bool GetSandboxProfileForSandboxType(
-      int sandbox_type,
-      const char** sandbox_profile) const;
-#endif
-
   // Returns whether or not V8 script extensions should be allowed for a
   // service worker.
   virtual bool AllowScriptExtensionForServiceWorker(const GURL& script_url);
