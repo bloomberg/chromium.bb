@@ -3,6 +3,7 @@ include_rules = [
     "+mojo/public",
     "+public/platform",
     "+public/web",
+    "+services/service_manager/public/cpp/interface_provider.h",
 
     # Allowed only inside INSIDE_BLINK
     "+core",

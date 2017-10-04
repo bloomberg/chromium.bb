@@ -39,6 +39,7 @@ blink_core_sources("exported") {
     "WebFormElementObserverImpl.cpp",
     "WebFormElementObserverImpl.h",
     "WebFrame.cpp",
+    "WebFrameClient.cpp",
     "WebFrameContentDumper.cpp",
     "WebFrameSerializer.cpp",
     "WebHeap.cpp",
