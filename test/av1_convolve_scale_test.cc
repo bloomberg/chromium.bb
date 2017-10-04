@@ -21,6 +21,7 @@
 #include "test/util.h"
 
 namespace {
+const int kTestIters = 10;
 const int kPerfIters = 1000;
 
 const int kVPad = 32;
@@ -117,11 +118,12 @@ class TestImage {
     dst_stride_ = src_stride_ + 16;
 
     // Allocate image data
-    src_data_.resize(src_block_size());
-    dst_data_.resize(dst_block_size());
+    src_data_.resize(2 * src_block_size());
+    dst_data_.resize(2 * dst_block_size());
   }
 
   void Initialize(ACMRandom *rnd);
+  void Check() const;
 
   int src_stride() const { return src_stride_; }
   int dst_stride() const { return dst_stride_; }
@@ -129,13 +131,13 @@ class TestImage {
   int src_block_size() const { return (h_ + 2 * kVPad) * src_stride(); }
   int dst_block_size() const { return (h_ + 2 * kVPad) * dst_stride(); }
 
-  const SrcPixel *GetSrcData(bool borders) const {
-    const SrcPixel *block = &src_data_[0];
+  const SrcPixel *GetSrcData(bool ref, bool borders) const {
+    const SrcPixel *block = &src_data_[ref ? 0 : src_block_size()];
     return borders ? block : block + kHPad + src_stride_ * kVPad;
   }
 
-  int32_t *GetDstData(bool borders) {
-    int32_t *block = &dst_data_[0];
+  int32_t *GetDstData(bool ref, bool borders) {
+    int32_t *block = &dst_data_[ref ? 0 : dst_block_size()];
     return borders ? block : block + kHPad + dst_stride_ * kVPad;
   }
 
@@ -163,7 +165,7 @@ void PrepBuffers(ACMRandom *rnd, int w, int h, int stride, int bd,
   assert(rnd);
   const Pixel mask = (1 << bd) - 1;
 
-  // Fill in the image with random data
+  // Fill in the first buffer with random data
   // Top border
   FillEdge(rnd, stride * kVPad, bd, trash_edges, data);
   for (int r = 0; r < h; ++r) {
@@ -175,12 +177,42 @@ void PrepBuffers(ACMRandom *rnd, int w, int h, int stride, int bd,
   }
   // Bottom border
   FillEdge(rnd, stride * kVPad, bd, trash_edges, data + stride * (kVPad + h));
+
+  const int bpp = sizeof(*data);
+  const int block_elts = stride * (h + 2 * kVPad);
+  const int block_size = bpp * block_elts;
+
+  // Now copy that to the second buffer
+  memcpy(data + block_elts, data, block_size);
 }
 
 template <typename SrcPixel>
 void TestImage<SrcPixel>::Initialize(ACMRandom *rnd) {
   PrepBuffers(rnd, w_, h_, src_stride_, bd_, false, &src_data_[0]);
   PrepBuffers(rnd, w_, h_, dst_stride_, bd_, true, &dst_data_[0]);
+}
+
+template <typename SrcPixel>
+void TestImage<SrcPixel>::Check() const {
+  // If memcmp returns 0, there's nothing to do.
+  const int num_pixels = dst_block_size();
+  const int32_t *ref_dst = &dst_data_[0];
+  const int32_t *tst_dst = &dst_data_[num_pixels];
+
+  if (0 == memcmp(ref_dst, tst_dst, sizeof(*ref_dst) * num_pixels)) return;
+
+  // Otherwise, iterate through the buffer looking for differences (including
+  // the edges)
+  const int stride = dst_stride_;
+  for (int r = 0; r < h_ + 2 * kVPad; ++r) {
+    for (int c = 0; c < w_ + 2 * kHPad; ++c) {
+      const int32_t ref_value = ref_dst[r * stride + c];
+      const int32_t tst_value = tst_dst[r * stride + c];
+
+      EXPECT_EQ(tst_value, ref_value)
+          << "Error at row: " << (r - kVPad) << ", col: " << (c - kHPad);
+    }
+  }
 }
 
 typedef tuple<int, int> BlockDimension;
@@ -206,7 +238,7 @@ class ConvolveScaleTestBase : public ::testing::Test {
   // be templated for low/high bit depths because they have different
   // numbers of parameters)
   virtual void SetUp() = 0;
-  virtual void RunOne() = 0;
+  virtual void RunOne(bool ref) = 0;
 
  protected:
   void SetParams(const BaseParams &params, int bd) {
@@ -225,17 +257,39 @@ class ConvolveScaleTestBase : public ::testing::Test {
     image_ = new TestImage<SrcPixel>(width_, height_, bd_);
   }
 
+  void Run() {
+    ACMRandom rnd(ACMRandom::DeterministicSeed());
+    for (int i = 0; i < kTestIters; ++i) {
+      Prep(&rnd);
+      RunOne(true);
+      RunOne(false);
+      image_->Check();
+    }
+  }
+
   void SpeedTest() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     Prep(&rnd);
 
     aom_usec_timer ref_timer;
     aom_usec_timer_start(&ref_timer);
-    for (int i = 0; i < kPerfIters; ++i) RunOne();
+    for (int i = 0; i < kPerfIters; ++i) RunOne(true);
     aom_usec_timer_mark(&ref_timer);
     const int64_t ref_time = aom_usec_timer_elapsed(&ref_timer);
 
-    std::cout << "[          ] C time = " << ref_time / 1000 << " ms\n";
+    aom_usec_timer tst_timer;
+    aom_usec_timer_start(&tst_timer);
+    for (int i = 0; i < kPerfIters; ++i) RunOne(false);
+    aom_usec_timer_mark(&tst_timer);
+    const int64_t tst_time = aom_usec_timer_elapsed(&tst_timer);
+
+    std::cout << "[          ] C time = " << ref_time / 1000
+              << " ms, SIMD time = " << tst_time / 1000 << " ms\n";
+
+    EXPECT_GT(ref_time, tst_time)
+        << "Error: CDEFSpeedTest, SIMD slower than C.\n"
+        << "C time: " << ref_time << " us\n"
+        << "SIMD time: " << tst_time << " us\n";
   }
 
   static int RandomSubpel(ACMRandom *rnd) {
@@ -272,9 +326,18 @@ class ConvolveScaleTestBase : public ::testing::Test {
 
 typedef tuple<int, int> BlockDimension;
 
+typedef void (*LowbdConvolveFunc)(const uint8_t *src, int src_stride,
+                                  int32_t *dst, int dst_stride, int w, int h,
+                                  InterpFilterParams *filter_params_x,
+                                  InterpFilterParams *filter_params_y,
+                                  const int subpel_x_qn, const int x_step_qn,
+                                  const int subpel_y_qn, const int y_step_qn,
+                                  ConvolveParams *conv_params);
+
 // Test parameter list:
 //  <tst_fun, dims, ntaps_x, ntaps_y, avg>
-typedef tuple<BlockDimension, NTaps, NTaps, bool> LowBDParams;
+typedef tuple<LowbdConvolveFunc, BlockDimension, NTaps, NTaps, bool>
+    LowBDParams;
 
 class LowBDConvolveScaleTest
     : public ConvolveScaleTestBase<uint8_t>,
@@ -283,25 +346,36 @@ class LowBDConvolveScaleTest
   virtual ~LowBDConvolveScaleTest() {}
 
   void SetUp() {
-    const BlockDimension &block = GET_PARAM(0);
-    const NTaps ntaps_x = GET_PARAM(1);
-    const NTaps ntaps_y = GET_PARAM(2);
+    tst_fun_ = GET_PARAM(0);
+
+    const BlockDimension &block = GET_PARAM(1);
+    const NTaps ntaps_x = GET_PARAM(2);
+    const NTaps ntaps_y = GET_PARAM(3);
     const int bd = 8;
-    const bool avg = GET_PARAM(3);
+    const bool avg = GET_PARAM(4);
 
     SetParams(BaseParams(block, ntaps_x, ntaps_y, avg), bd);
   }
 
-  void RunOne() {
-    const uint8_t *src = image_->GetSrcData(false);
-    CONV_BUF_TYPE *dst = image_->GetDstData(false);
+  void RunOne(bool ref) {
+    const uint8_t *src = image_->GetSrcData(ref, false);
+    CONV_BUF_TYPE *dst = image_->GetDstData(ref, false);
     const int src_stride = image_->src_stride();
     const int dst_stride = image_->dst_stride();
 
-    av1_convolve_2d_scale_c(src, src_stride, dst, dst_stride, width_, height_,
-                            &filter_x_.params_, &filter_y_.params_, subpel_x_,
-                            kXStepQn, subpel_y_, kYStepQn, &convolve_params_);
+    if (ref) {
+      av1_convolve_2d_scale_c(src, src_stride, dst, dst_stride, width_, height_,
+                              &filter_x_.params_, &filter_y_.params_, subpel_x_,
+                              kXStepQn, subpel_y_, kYStepQn, &convolve_params_);
+    } else {
+      tst_fun_(src, src_stride, dst, dst_stride, width_, height_,
+               &filter_x_.params_, &filter_y_.params_, subpel_x_, kXStepQn,
+               subpel_y_, kYStepQn, &convolve_params_);
+    }
   }
+
+ private:
+  LowbdConvolveFunc tst_fun_;
 };
 
 const BlockDimension kBlockDim[] = {
@@ -315,11 +389,13 @@ const BlockDimension kBlockDim[] = {
 
 const NTaps kNTaps[] = { EIGHT_TAP, TEN_TAP, TWELVE_TAP };
 
+TEST_P(LowBDConvolveScaleTest, Check) { Run(); }
 TEST_P(LowBDConvolveScaleTest, DISABLED_Speed) { SpeedTest(); }
 
-INSTANTIATE_TEST_CASE_P(SSE4_1, LowBDConvolveScaleTest,
-                        ::testing::Combine(::testing::ValuesIn(kBlockDim),
-                                           ::testing::ValuesIn(kNTaps),
-                                           ::testing::ValuesIn(kNTaps),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_CASE_P(
+    SSE4_1, LowBDConvolveScaleTest,
+    ::testing::Combine(::testing::Values(av1_convolve_2d_scale_sse4_1),
+                       ::testing::ValuesIn(kBlockDim),
+                       ::testing::ValuesIn(kNTaps), ::testing::ValuesIn(kNTaps),
+                       ::testing::Bool()));
 }  // namespace
