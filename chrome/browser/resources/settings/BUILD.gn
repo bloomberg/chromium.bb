@@ -15,7 +15,7 @@ optimize_webui("build") {
     "vulcanized.html",
     "lazy_load.vulcanized.html",
   ]
-  insert_in_head = "<base href=\"chrome://\$i18n{hostname}\">"
+  insert_in_head = "<base href=\"chrome://settings\">"
   input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
   js_out_files = [
     "crisper.js",

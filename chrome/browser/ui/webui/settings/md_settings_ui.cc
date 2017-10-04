@@ -189,9 +189,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
-  // This is used by a <base> tag in c/b/r/settings/BUILD.gn. TODO(dbeam): Is
-  // this still needed now that there's only 1 host name?
-  html_source->AddString("hostname", chrome::kChromeUISettingsHost);
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
