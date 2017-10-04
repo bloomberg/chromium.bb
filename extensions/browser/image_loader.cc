@@ -71,7 +71,7 @@ void LoadResourceOnUIThread(int resource_id, SkBitmap* bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   gfx::ImageSkia image(
-      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
   image.MakeThreadSafe();
   *bitmap = *image.bitmap();
 }

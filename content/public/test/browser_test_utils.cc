@@ -1118,7 +1118,7 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
        iter != ids.end();
        ++iter) {
     scoped_refptr<base::RefCountedMemory> bytes =
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(*iter);
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(*iter);
 
     if (HasGzipHeader(*bytes))
       AppendGzippedResource(*bytes, &script);

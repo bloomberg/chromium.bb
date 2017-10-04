@@ -36,7 +36,7 @@ class HeadlessJsBindingsTest
     base::FilePath pak_path;
     ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &pak_path));
     pak_path = pak_path.AppendASCII("headless_browser_tests.pak");
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path, ui::SCALE_FACTOR_NONE);
   }
 
@@ -54,7 +54,7 @@ class HeadlessJsBindingsTest
   void OnInstalledHeadlessTabSocket(int v8_exection_context_id) {
     main_world_execution_context_id_ = v8_exection_context_id;
     devtools_client_->GetRuntime()->Evaluate(
-        ResourceBundle::GetSharedInstance()
+        ui::ResourceBundle::GetSharedInstance()
             .GetRawDataResource(DEVTOOLS_BINDINGS_TEST)
             .as_string(),
         base::Bind(&HeadlessJsBindingsTest::OnEvaluateResult,

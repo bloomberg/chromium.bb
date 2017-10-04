@@ -32,7 +32,7 @@ const char* kStringifyPlaceholder = "$$STRINGIFY";
 std::string GetDistillerScriptWithOptions(
     const dom_distiller::proto::DomDistillerOptions& options,
     bool stringify_output) {
-  std::string script = ResourceBundle::GetSharedInstance()
+  std::string script = ui::ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_DISTILLER_JS)
                            .as_string();
   if (script.empty()) {

@@ -276,7 +276,7 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
       locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
 #ifdef HEADLESS_USE_EMBEDDED_RESOURCES
-  ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
       base::StringPiece(
           reinterpret_cast<const char*>(kHeadlessResourcePak.contents),
           kHeadlessResourcePak.length),
@@ -294,7 +294,7 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
   base::FilePath headless_pak =
       dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
   if (base::PathExists(headless_pak)) {
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         headless_pak, ui::SCALE_FACTOR_NONE);
     return;
   }
@@ -320,11 +320,11 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
   }
 #endif
 
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pak, ui::SCALE_FACTOR_NONE);
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       chrome_100_pak, ui::SCALE_FACTOR_100P);
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       chrome_200_pak, ui::SCALE_FACTOR_200P);
 #endif
 }

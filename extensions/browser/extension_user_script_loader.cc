@@ -75,7 +75,7 @@ bool LoadScriptContent(const HostID& host_id,
             ->IsComponentExtensionResource(script_file->extension_root(),
                                            script_file->relative_path(),
                                            &resource_id)) {
-      const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       content = rb.GetRawDataResource(resource_id).as_string();
     } else {
       LOG(WARNING) << "Failed to get file path to "

@@ -208,7 +208,7 @@ bool TopSitesImpl::GetPageThumbnail(
   for (const auto& prepopulated_page : prepopulated_pages_) {
     if (url == prepopulated_page.most_visited.url) {
       *bytes =
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
               prepopulated_page.thumbnail_id, ui::SCALE_FACTOR_100P);
       return true;
     }

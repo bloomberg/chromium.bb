@@ -115,7 +115,7 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
   PopulateInterstitialStrings(&load_time_data);
   webui::SetLoadTimeDataDefaults(
       controller()->GetApplicationLocale(), &load_time_data);
-  std::string html = ResourceBundle::GetSharedInstance()
+  std::string html = ui::ResourceBundle::GetSharedInstance()
                          .GetRawDataResource(GetHTMLTemplateId())
                          .as_string();
   webui::AppendWebUiCssTextDefaults(&html);

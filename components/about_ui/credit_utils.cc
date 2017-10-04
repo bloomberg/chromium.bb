@@ -21,7 +21,7 @@ namespace about_ui {
 std::string GetCredits(bool include_scripts) {
   std::string response;
   base::StringPiece raw_response =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_UI_CREDITS_HTML);
   const uint8_t* next_encoded_byte =
       reinterpret_cast<const uint8_t*>(raw_response.data());
