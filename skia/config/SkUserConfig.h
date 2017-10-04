@@ -220,10 +220,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_FONTMGR_API
-#define SK_SUPPORT_LEGACY_FONTMGR_API
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_SAFESIZE64
 #define SK_SUPPORT_LEGACY_SAFESIZE64
 #endif

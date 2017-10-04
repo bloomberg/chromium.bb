@@ -25,9 +25,7 @@ bool g_default_impl_initialized = false;
 
 bool IsFontFamilyAvailable(const std::string& family, SkFontMgr* fontManager) {
 #if defined(OS_LINUX)
-  sk_sp<SkTypeface> typeface(
-      fontManager->legacyCreateTypeface(family.c_str(), SkFontStyle()));
-  return typeface;
+  return fontManager->legacyMakeTypeface(family.c_str(), SkFontStyle());
 #else
   sk_sp<SkFontStyleSet> set(fontManager->matchFamily(family.c_str()));
   return set && set->count();

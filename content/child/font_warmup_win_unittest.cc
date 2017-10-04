@@ -17,6 +17,7 @@
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -178,23 +179,25 @@ class TestSkFontMgr : public SkFontMgr {
     return nullptr;
   }
 
-  SkTypeface* onCreateFromData(SkData*, int ttcIndex) const override {
+  sk_sp<SkTypeface> onMakeFromData(sk_sp<SkData>, int ttcIndex) const override {
     ADD_FAILURE();
     return nullptr;
   }
 
-  SkTypeface* onCreateFromStream(SkStreamAsset*, int ttcIndex) const override {
+  sk_sp<SkTypeface> onMakeFromStreamIndex(std::unique_ptr<SkStreamAsset>,
+                                          int ttcIndex) const override {
     ADD_FAILURE();
     return nullptr;
   }
 
-  SkTypeface* onCreateFromFile(const char path[], int ttcIndex) const override {
+  sk_sp<SkTypeface> onMakeFromFile(const char path[],
+                                   int ttcIndex) const override {
     ADD_FAILURE();
     return nullptr;
   }
 
-  SkTypeface* onLegacyCreateTypeface(const char familyName[],
-                                     SkFontStyle style) const override {
+  sk_sp<SkTypeface> onLegacyMakeTypeface(const char familyName[],
+                                         SkFontStyle style) const override {
     ADD_FAILURE();
     return nullptr;
   }

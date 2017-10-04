@@ -158,7 +158,7 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
   for (std::vector<std::string>::const_iterator i(files.begin());
        i != files.end();
        ++i) {
-    SkTypeface* typeface = fontmgr->createFromFile(i->c_str());
+    SkTypeface* typeface = fontmgr->makeFromFile(i->c_str()).release();
     blink::WebFontRendering::AddSideloadedFontForTesting(typeface);
   }
 }
