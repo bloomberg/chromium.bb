@@ -126,6 +126,9 @@ var LOG_TYPE = {
   NTP_CTA_LOGO_CLICKED: 35,
   // An animated Doodle was clicked.
   NTP_ANIMATED_LOGO_CLICKED: 36,
+
+  // The One Google Bar was shown.
+  NTP_ONE_GOOGLE_BAR_SHOWN: 37,
 };
 
 
@@ -751,6 +754,8 @@ function injectOneGoogleBar(ogb) {
   endOfBodyScript.type = 'text/javascript';
   endOfBodyScript.appendChild(document.createTextNode(ogb.endOfBodyScript));
   document.body.appendChild(endOfBodyScript);
+
+  ntpApiHandle.logEvent(LOG_TYPE.NTP_ONE_GOOGLE_BAR_SHOWN);
 }
 
 

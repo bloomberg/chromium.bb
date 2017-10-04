@@ -271,6 +271,9 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                 LoggingEventToLogoClick(event),
                                 LOGO_CLICK_TYPE_MAX);
       break;
+    case NTP_ONE_GOOGLE_BAR_SHOWN:
+      UMA_HISTOGRAM_LOAD_TIME("NewTabPage.OneGoogleBar.ShownTime", time);
+      break;
   }
 }
 
