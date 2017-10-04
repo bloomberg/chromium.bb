@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/installer/util/experiment_metrics.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
@@ -23,6 +24,7 @@ class SingletonHwndObserver;
 }
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -41,7 +43,8 @@ class Widget;
 //
 // Some variants do not have body text, or only have one button.
 class TryChromeDialog : public views::ButtonListener,
-                        public views::WidgetObserver {
+                        public views::WidgetObserver,
+                        public ui::EventHandler {
  public:
   // Receives a closure to run upon process singleton notification when the
   // modal dialog is open, or a null closure when the active dialog is
@@ -127,15 +130,24 @@ class TryChromeDialog : public views::ButtonListener,
   // singleton. Triggers completion of the interaction by closing the dialog.
   void OnProcessNotification();
 
+  // Handles for events sent by the dialog's Widget.
+  void GainedMouseHover();
+  void LostMouseHover();
+
   // views::ButtonListener:
   // Updates the result_ and state_ based on which button was pressed and
   // closes the dialog.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetObserver:
-  // Completes the interaction.
+  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetCreated(views::Widget* widget) override;
   void OnWidgetDestroyed(views::Widget* widget) override;
+
   Result result() const { return result_; }
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // A gfx::SingletonHwndObserver::WndProc for handling WM_ENDSESSION messages.
   void OnWindowMessage(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
@@ -163,6 +175,12 @@ class TryChromeDialog : public views::ButtonListener,
 
   // Unowned; |popup_| owns itself.
   views::Widget* popup_ = nullptr;
+
+  // The close button; owned by |popup_|.
+  views::View* close_button_ = nullptr;
+
+  // True when the mouse is considered to be hovering over the dialog.
+  bool has_hover_ = false;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
 

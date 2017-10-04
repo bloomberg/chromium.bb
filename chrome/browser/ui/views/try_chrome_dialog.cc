@@ -23,6 +23,7 @@
 #include "chrome/installer/util/experiment.h"
 #include "chrome/installer/util/experiment_storage.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -37,6 +38,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -56,7 +58,6 @@ enum class ButtonTag { CLOSE_BUTTON, OK_BUTTON, NO_THANKS_BUTTON };
 
 // Experiment specification information needed for layout.
 // TODO(skare): Suppress x-to-close in relevant variations.
-// TODO(skare): Implement hover behavior for x-to-close.
 struct ExperimentVariations {
   // Resource ID for header message string.
   int heading_id;
@@ -122,6 +123,25 @@ std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
   button->SetMinSize(gfx::Size(160, 32));
   button->SetMaxSize(gfx::Size(0, 32));
   return button;
+}
+
+// A View that unconditionally reports that it handles mouse presses. This
+// results in the widget capturing the mouse so that it receives a
+// ET_MOUSE_CAPTURE_CHANGED event upon button release following a drag out of
+// the background of the widget.
+class ClickableView : public views::View {
+ public:
+  ClickableView() = default;
+
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ClickableView);
+};
+
+bool ClickableView::OnMousePressed(const ui::MouseEvent& event) {
+  return true;
 }
 
 }  // namespace
@@ -262,19 +282,20 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
   // An approximate window size. Layout() can adjust.
   params.bounds = gfx::Rect(kToastWidth, 120);
   popup_ = new views::Widget;
-  popup_->Init(params);
   popup_->AddObserver(this);
+  popup_->Init(params);
 
-  views::View* root_view = popup_->GetRootView();
-  root_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(root_view);
+  auto contents_view = std::make_unique<ClickableView>();
+  contents_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  views::GridLayout* layout =
+      views::GridLayout::CreateAndInstall(contents_view.get());
   layout->set_minimum_size(gfx::Size(kToastWidth, 0));
   views::ColumnSet* columns;
 
   // Note the right padding is smaller than other dimensions,
   // to acommodate the close 'x' button.
   static constexpr gfx::Insets kInsets(10, 10, 12, 3);
-  root_view->SetBorder(views::CreatePaddedBorder(
+  contents_view->SetBorder(views::CreatePaddedBorder(
       views::CreateSolidBorder(1, kBorderColor), kInsets));
 
   static constexpr int kLabelSpacing = 10;
@@ -331,7 +352,9 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kInactiveToastCloseIcon, kBodyColor));
   close_button->set_tag(static_cast<int>(ButtonTag::CLOSE_BUTTON));
+  close_button_ = close_button.get();
   layout->AddView(close_button.release());
+  close_button_->SetVisible(false);
 
   // Second row: May have text or may be blank.
   layout->StartRow(0, 1);
@@ -363,7 +386,7 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
   }
 
   // Padding between buttons and the edge of the view is via the border.
-  gfx::Size preferred = layout->GetPreferredSize(root_view);
+  gfx::Size preferred = layout->GetPreferredSize(contents_view.get());
 
   installer::ExperimentMetrics::ToastLocation location =
       installer::ExperimentMetrics::kOverTaskbarPin;
@@ -374,7 +397,7 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
   }
 
   popup_->SetBounds(bounds);
-  layout->Layout(root_view);
+  popup_->SetContentsView(contents_view.release());
 
   popup_->Show();
   delegate_->SetToastLocation(location);
@@ -453,6 +476,7 @@ gfx::Rect TryChromeDialog::ComputePopupBoundsOverNoficationArea(
 }
 
 void TryChromeDialog::CompleteInteraction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   endsession_observer_.reset();
   delegate_->SetExperimentState(state_);
   delegate_->InteractionComplete();
@@ -495,6 +519,18 @@ void TryChromeDialog::OnWindowMessage(HWND window,
   delegate_->SetExperimentState(state_);
 }
 
+void TryChromeDialog::GainedMouseHover() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK(close_button_);
+  close_button_->SetVisible(true);
+}
+
+void TryChromeDialog::LostMouseHover() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK(close_button_);
+  close_button_->SetVisible(false);
+}
+
 void TryChromeDialog::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
@@ -526,12 +562,59 @@ void TryChromeDialog::ButtonPressed(views::Button* sender,
   popup_->Close();
 }
 
+void TryChromeDialog::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK_EQ(widget, popup_);
+
+  popup_->GetNativeWindow()->RemovePreTargetHandler(this);
+}
+
+void TryChromeDialog::OnWidgetCreated(views::Widget* widget) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK_EQ(widget, popup_);
+
+  popup_->GetNativeWindow()->AddPreTargetHandler(this);
+}
+
 void TryChromeDialog::OnWidgetDestroyed(views::Widget* widget) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(widget, popup_);
 
   popup_->RemoveObserver(this);
   popup_ = nullptr;
+  close_button_ = nullptr;
 
   CompleteInteraction();
+}
+
+void TryChromeDialog::OnMouseEvent(ui::MouseEvent* event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  DCHECK(popup_);
+
+  switch (event->type()) {
+    // A MOUSE_ENTERED event is received if the mouse is over the dialog when it
+    // opens.
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_MOVED:
+      if (!has_hover_) {
+        has_hover_ = true;
+        GainedMouseHover();
+      }
+      break;
+    case ui::ET_MOUSE_EXITED:
+      if (has_hover_) {
+        has_hover_ = false;
+        LostMouseHover();
+      }
+      break;
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
+      if (has_hover_ && !display::Screen::GetScreen()->IsWindowUnderCursor(
+                            popup_->GetNativeWindow())) {
+        has_hover_ = false;
+        LostMouseHover();
+      }
+      break;
+    default:
+      break;
+  }
 }
