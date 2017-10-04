@@ -252,7 +252,7 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="common/ntp_welcome_thumb.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="ntp_webstore_thumb.png" />
-      <if expr="use_ash">
+      <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ALERT" file="common/notification_alert.png" />
       </if>
       <if expr="chromeos">
