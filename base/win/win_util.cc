@@ -91,6 +91,29 @@ POWER_PLATFORM_ROLE GetPlatformRole() {
   return PowerDeterminePlatformRoleEx(POWER_PLATFORM_ROLE_V2);
 }
 
+// Method used for Windows 8.1 and later.
+// Since we support versions earlier than 8.1, we must dynamically load this
+// function from user32.dll, so it won't fail to load in runtime. For earlier
+// Windows versions GetProcAddress will return null and report failure so that
+// callers can fall back on the deprecated SetProcessDPIAware.
+bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
+  decltype(&::SetProcessDpiAwareness) set_process_dpi_awareness_func =
+      reinterpret_cast<decltype(&::SetProcessDpiAwareness)>(GetProcAddress(
+          GetModuleHandle(L"user32.dll"), "SetProcessDpiAwarenessInternal"));
+  if (set_process_dpi_awareness_func) {
+    HRESULT hr = set_process_dpi_awareness_func(value);
+    if (SUCCEEDED(hr))
+      return true;
+    DLOG_IF(ERROR, hr == E_ACCESSDENIED)
+        << "Access denied error from SetProcessDpiAwareness. Function called "
+           "twice, or manifest was used.";
+  }
+  // TODO(pbos): Consider DCHECKing / NOTREACHED here if the platform version is
+  // >= 8.1. That way we can detect future name changes instead of having to
+  // discover silent failures.
+  return false;
+}
+
 }  // namespace
 
 // Uses the Windows 10 WRL API's to query the current system state. The API's
@@ -637,6 +660,20 @@ bool IsProcessPerMonitorDpiAware() {
     }
   }
   return per_monitor_dpi_aware == PerMonitorDpiAware::PER_MONITOR_DPI_AWARE;
+}
+
+void EnableHighDPISupport() {
+  // Enable per-monitor DPI for Win10 or above instead of Win8.1 since Win8.1
+  // does not have EnableChildWindowDpiMessage, necessary for correct non-client
+  // area scaling across monitors.
+  PROCESS_DPI_AWARENESS process_dpi_awareness =
+      GetVersion() >= VERSION_WIN10 ? PROCESS_PER_MONITOR_DPI_AWARE
+                                    : PROCESS_SYSTEM_DPI_AWARE;
+  if (!SetProcessDpiAwarenessWrapper(process_dpi_awareness)) {
+    // For windows versions where SetProcessDpiAwareness is not available or
+    // failed, try its predecessor.
+    ::SetProcessDPIAware();
+  }
 }
 
 }  // namespace win
