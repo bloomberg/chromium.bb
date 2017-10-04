@@ -329,6 +329,8 @@ TEST_F(VpxVideoDecoderTest, StaleFramesAreExpired) {
   EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
 }
 
+// The test stream uses profile 2, which needs high bit depth support in libvpx.
+#if !defined(LIBVPX_NO_HIGH_BIT_DEPTH)
 TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
   // Initialize with dummy data, we could read it from the test clip, but it's
   // not necessary for this test.
@@ -382,5 +384,6 @@ TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
   memset(last_frame->data(VideoFrame::kYPlane), 0,
          last_frame->row_bytes(VideoFrame::kYPlane));
 }
+#endif  // !defined(LIBVPX_NO_HIGH_BIT_DEPTH)
 
 }  // namespace media
