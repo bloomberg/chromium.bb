@@ -41,6 +41,9 @@ macro (fix_experiment_configs)
 
   if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16 OR
       CONFIG_DAALA_DCT32 OR CONFIG_DAALA_DCT64)
+    if (CONFIG_TXMG)
+      change_config_and_warn(CONFIG_TXMG 0 CONFIG_DAALA_DCTx)
+    endif ()
     if (CONFIG_LGT)
       change_config_and_warn(CONFIG_LGT 0 CONFIG_DAALA_DCTx)
     endif ()
