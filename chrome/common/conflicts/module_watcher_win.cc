@@ -131,12 +131,12 @@ std::unique_ptr<ModuleWatcher> ModuleWatcher::Create(
 }
 
 ModuleWatcher::~ModuleWatcher() {
+  UnregisterDllNotificationCallback();
   // As soon as |g_module_watcher_instance| is null any dispatched callbacks
   // will be silently absorbed by LoaderNotificationCallback.
   base::AutoLock lock(g_module_watcher_lock.Get());
   DCHECK_EQ(g_module_watcher_instance, this);
   g_module_watcher_instance = nullptr;
-  UnregisterDllNotificationCallback();
 }
 
 // Initializes the ModuleWatcher instance.
