@@ -2,6 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Sets the list of current sessions.
+ * @param {!Array<string>} sessions List of session names.
+ */
+policy.Page.setSessionsList = function(sessions) {
+  var list = $('session-list');
+
+  // Clear the sessions list.
+  list.innerHTML = '';
+
+  // Set the new sessions list.
+  for (var i = 0; i < sessions.length; ++i) {
+    var option = document.createElement('OPTION');
+    option.value = sessions[i];
+    option.textContent = sessions[i];
+    list.appendChild(option);
+  }
+};
+
 // Override some methods of policy.Page.
 
 /**
