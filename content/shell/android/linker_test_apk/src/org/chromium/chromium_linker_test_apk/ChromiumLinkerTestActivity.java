@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -63,7 +62,6 @@ public class ChromiumLinkerTestActivity extends Activity {
                 CommandLine.getInstance().appendSwitchesAndArguments(commandLineParams);
             }
         }
-        waitForDebuggerIfNeeded();
 
         // CommandLine.getInstance().hasSwitch() doesn't work here for some funky
         // reason, so parse the command-line differently here:
@@ -175,14 +173,6 @@ public class ChromiumLinkerTestActivity extends Activity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mWindowAndroid.saveInstanceState(outState);
-    }
-
-    private void waitForDebuggerIfNeeded() {
-        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
-            Log.e(TAG, "Waiting for Java debugger to connect...");
-            android.os.Debug.waitForDebugger();
-            Log.e(TAG, "Java debugger connected. Resuming execution.");
-        }
     }
 
     @Override

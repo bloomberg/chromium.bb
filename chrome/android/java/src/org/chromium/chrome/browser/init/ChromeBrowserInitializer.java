@@ -18,7 +18,6 @@ import com.squareup.leakcanary.LeakCanary;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -214,7 +213,6 @@ public class ChromeBrowserInitializer {
         // behind long-running accesses in next phase.
         // Don't do any large file access here!
         ContentApplication.initCommandLine(mApplication);
-        waitForDebuggerIfNeeded();
         ChromeStrictMode.configureStrictMode();
         ChromeWebApkHost.init();
 
@@ -399,14 +397,6 @@ public class ChromeBrowserInitializer {
                 AsyncTask.THREAD_POOL_EXECUTOR.execute(new LogcatExtractionRunnable(minidump));
             }
         });
-    }
-
-    private void waitForDebuggerIfNeeded() {
-        if (CommandLine.getInstance().hasSwitch(BaseSwitches.WAIT_FOR_JAVA_DEBUGGER)) {
-            Log.e(TAG, "Waiting for Java debugger to connect...");
-            android.os.Debug.waitForDebugger();
-            Log.e(TAG, "Java debugger connected. Resuming execution.");
-        }
     }
 
     private ActivityStateListener createActivityStateListener() {
