@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/mock_session_manager_client.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,12 +30,12 @@ namespace chromeos {
 
 class DBusThreadManagerSetter;
 
-// A helper class for tests mocking out session_manager's device settings
+// A helper class for tests faking session_manager's device settings
 // interface. The pattern is to initialize DeviceSettingsService with the helper
 // for the SessionManagerClient pointer. The helper records calls made by
 // DeviceSettingsService. The test can then verify state, after which it should
 // call one of the Flush() variants that will resume processing.
-class DeviceSettingsTestHelper : public MockSessionManagerClient {
+class DeviceSettingsTestHelper : public FakeSessionManagerClient {
  public:
   // Wraps a device settings service instance for testing.
   DeviceSettingsTestHelper();
