@@ -301,16 +301,6 @@ void StatisticsRecorder::PrepareDeltas(
 }
 
 // static
-void StatisticsRecorder::ValidateAllHistograms(int identifier) {
-  ImportGlobalPersistentHistograms();
-
-  auto known = GetKnownHistograms(/*include_persistent=*/true);
-
-  for (HistogramBase* h : known)
-    h->ValidateHistogramContents(true, identifier);
-}
-
-// static
 void StatisticsRecorder::InitLogOnShutdown() {
   if (!histograms_)
     return;
