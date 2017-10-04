@@ -989,7 +989,6 @@ class CORE_EXPORT Document : public ContainerNode,
   uint64_t DomTreeVersion() const { return dom_tree_version_; }
 
   uint64_t StyleVersion() const { return style_version_; }
-  unsigned ForceLayoutCountForTesting() const { return force_layout_count_; }
 
   enum PendingSheetLayout {
     kNoLayoutWithPendingSheets,
@@ -1563,7 +1562,6 @@ class CORE_EXPORT Document : public ContainerNode,
   static uint64_t global_tree_version_;
 
   uint64_t style_version_;
-  unsigned force_layout_count_ = 0;
 
   HeapHashSet<WeakMember<NodeIterator>> node_iterators_;
   using AttachedRangeSet = HeapHashSet<WeakMember<Range>>;
