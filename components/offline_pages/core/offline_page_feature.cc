@@ -58,7 +58,7 @@ const base::Feature kOfflinePagesCTV2Feature{"OfflinePagesCTV2",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesPrefetchingUIFeature{
-    "OfflinePagesPrefetchingUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OfflinePagesPrefetchingUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsOfflineBookmarksEnabled() {
   return base::FeatureList::IsEnabled(kOfflineBookmarksFeature);
@@ -94,7 +94,8 @@ bool IsPrefetchingOfflinePagesEnabled() {
 }
 
 bool IsOfflinePagesPrefetchingUIEnabled() {
-  return base::FeatureList::IsEnabled(kOfflinePagesPrefetchingUIFeature);
+  return IsPrefetchingOfflinePagesEnabled() &&
+         base::FeatureList::IsEnabled(kOfflinePagesPrefetchingUIFeature);
 }
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {
