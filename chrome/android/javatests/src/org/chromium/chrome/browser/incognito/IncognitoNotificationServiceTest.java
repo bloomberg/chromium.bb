@@ -7,20 +7,30 @@ package org.chromium.chrome.browser.incognito;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.util.Pair;
 
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabStateInfo;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -31,36 +41,37 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the Incognito Notification service.
  */
-public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBase {
-
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        // Each test will start its own activity as needed.
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class IncognitoNotificationServiceTest {
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private void createTabOnUiThread() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().getTabCreator(true).createNewTab(new LoadUrlParams("about:blank"),
-                        TabLaunchType.FROM_CHROME_UI, null);
+                mActivityTestRule.getActivity().getTabCreator(true).createNewTab(
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
             }
         });
     }
 
     private void sendClearIncognitoIntent() throws CanceledException {
-        PendingIntent clearIntent =
-                IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(
-                        getInstrumentation().getTargetContext());
+        PendingIntent clearIntent = IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(
+                InstrumentationRegistry.getTargetContext());
         clearIntent.send();
-
     }
 
+    @Test
     @Feature("Incognito")
     @MediumTest
     public void testSingleRunningChromeTabbedActivity()
             throws InterruptedException, CanceledException {
-        startMainActivityOnBlankPage();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         createTabOnUiThread();
         createTabOnUiThread();
@@ -68,7 +79,10 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
         CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return getActivity().getTabModelSelector().getModel(true).getCount();
+                return mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getModel(true)
+                        .getCount();
             }
         }));
 
@@ -76,14 +90,17 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
                 new Callable<Profile>() {
                     @Override
                     public Profile call() throws Exception {
-                        return getActivity().getTabModelSelector().getModel(true).getProfile();
+                        return mActivityTestRule.getActivity()
+                                .getTabModelSelector()
+                                .getModel(true)
+                                .getProfile();
                     }
                 });
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(incognitoProfile.isOffTheRecord());
-                assertTrue(incognitoProfile.isNativeInitialized());
+                Assert.assertTrue(incognitoProfile.isOffTheRecord());
+                Assert.assertTrue(incognitoProfile.isNativeInitialized());
             }
         });
 
@@ -92,7 +109,10 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
         CriteriaHelper.pollUiThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return getActivity().getTabModelSelector().getModel(true).getCount();
+                return mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getModel(true)
+                        .getCount();
             }
         }));
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -103,11 +123,12 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
         });
     }
 
+    @Test
     @Feature("Incognito")
     @MediumTest
     @RetryOnFailure
     public void testNoAliveProcess() throws Exception {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         final TestTabModelDirectory tabbedModeDirectory = new TestTabModelDirectory(
                 context, "tabs", String.valueOf(0));
 
@@ -132,8 +153,8 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
         TabPersistentStore.setBaseStateDirectoryForTests(tabbedModeDirectory.getBaseDirectory());
 
         File[] tabbedModeFiles = tabbedModeDirectory.getDataDirectory().listFiles();
-        assertNotNull(tabbedModeFiles);
-        assertEquals(5, tabbedModeFiles.length);
+        Assert.assertNotNull(tabbedModeFiles);
+        Assert.assertEquals(5, tabbedModeFiles.length);
 
         int incognitoCount = 0;
         int normalCount = 0;
@@ -143,8 +164,8 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
             if (tabFileInfo.second) incognitoCount++;
             else normalCount++;
         }
-        assertEquals(2, normalCount);
-        assertEquals(3, incognitoCount);
+        Assert.assertEquals(2, normalCount);
+        Assert.assertEquals(3, incognitoCount);
 
         sendClearIncognitoIntent();
 
@@ -181,9 +202,8 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertFalse(LibraryLoader.isInitialized());
+                Assert.assertFalse(LibraryLoader.isInitialized());
             }
         });
     }
-
 }
