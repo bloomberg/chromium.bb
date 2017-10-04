@@ -126,7 +126,7 @@ class TaskQueueSelectorTest : public ::testing::Test {
       // manually remove |task_queue| from the |selector_|.  Normally
       // UnregisterTaskQueue would do that.
       selector_.RemoveQueue(task_queue.get());
-      task_queue->UnregisterTaskQueue(nullptr);
+      task_queue->UnregisterTaskQueue();
     }
   }
 
@@ -459,7 +459,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   task_queue->SetQueueEnabledForTest(true);
   selector.EnableQueue(task_queue.get());
   selector.RemoveQueue(task_queue.get());
-  task_queue->UnregisterTaskQueue(nullptr);
+  task_queue->UnregisterTaskQueue();
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
@@ -504,14 +504,14 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   // Removing the second queue and selecting again should result in another
   // notification.
   selector.RemoveQueue(task_queue.get());
-  task_queue->UnregisterTaskQueue(nullptr);
+  task_queue->UnregisterTaskQueue();
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
   task_queue2->SetQueueEnabledForTest(true);
   selector.EnableQueue(task_queue2.get());
   selector.RemoveQueue(task_queue2.get());
-  task_queue2->UnregisterTaskQueue(nullptr);
+  task_queue2->UnregisterTaskQueue();
 }
 
 struct ChooseOldestWithPriorityTestParam {

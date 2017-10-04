@@ -109,7 +109,6 @@ class PLATFORM_EXPORT TaskQueueManager
                                                Args&&... args) {
     scoped_refptr<TaskQueueType> task_queue(new TaskQueueType(
         CreateTaskQueueImpl(spec), std::forward<Args>(args)...));
-    RegisterTaskQueue(task_queue);
     return task_queue;
   }
 
@@ -155,6 +154,13 @@ class PLATFORM_EXPORT TaskQueueManager
 
   // Removes all canceled delayed tasks.
   void SweepCanceledDelayedTasks();
+
+  // Unregisters a TaskQueue previously created by |NewTaskQueue()|.
+  // No tasks will run on this queue after this call.
+  void UnregisterTaskQueueImpl(
+      std::unique_ptr<internal::TaskQueueImpl> task_queue);
+
+  base::WeakPtr<TaskQueueManager> GetWeakPtr();
 
  protected:
   friend class LazyNow;
@@ -228,9 +234,6 @@ class PLATFORM_EXPORT TaskQueueManager
     friend class base::RefCounted<DeletionSentinel>;
     ~DeletionSentinel() {}
   };
-
-  // Unregisters a TaskQueue previously created by |NewTaskQueue()|.
-  void UnregisterTaskQueue(scoped_refptr<TaskQueue> task_queue);
 
   // TaskQueueSelector::Observer implementation:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
@@ -312,16 +315,22 @@ class PLATFORM_EXPORT TaskQueueManager
 
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec);
-  void RegisterTaskQueue(scoped_refptr<TaskQueue> task_queue);
+
+  // Deletes queues marked for deletion and empty queues marked for shutdown.
+  void CleanUpQueues();
 
   std::set<TimeDomain*> time_domains_;
   std::unique_ptr<RealTimeDomain> real_time_domain_;
 
-  std::set<scoped_refptr<TaskQueue>> queues_;
+  // List of task queues managed by this TaskQueueManager.
+  // - active_queues contains queues owned by relevant TaskQueues.
+  // - queues_to_delete contains soon-to-be-deleted queues, because some
+  // internal
+  //   scheduling code does not expect queues to be pulled from underneath.
 
-  // We have to be careful when deleting a queue because some of the code uses
-  // raw pointers and doesn't expect the rug to be pulled out from underneath.
-  std::set<scoped_refptr<TaskQueue>> queues_to_delete_;
+  std::set<internal::TaskQueueImpl*> active_queues_;
+  std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
+      queues_to_delete_;
 
   internal::EnqueueOrderGenerator enqueue_order_generator_;
   base::debug::TaskAnnotator task_annotator_;

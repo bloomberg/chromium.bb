@@ -75,7 +75,7 @@ class TimeDomainTest : public ::testing::Test {
 
   void TearDown() final {
     if (task_queue_)
-      task_queue_->UnregisterTaskQueue(nullptr);
+      task_queue_->UnregisterTaskQueue();
   }
 
   virtual MockTimeDomain* CreateMockTimeDomain() {
@@ -173,9 +173,9 @@ TEST_F(TimeDomainTest, RequestWakeUpAt_OnlyCalledForEarlierTasks) {
 
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, _));
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(_)).Times(2);
-  task_queue2->UnregisterTaskQueue(nullptr);
-  task_queue3->UnregisterTaskQueue(nullptr);
-  task_queue4->UnregisterTaskQueue(nullptr);
+  task_queue2->UnregisterTaskQueue();
+  task_queue3->UnregisterTaskQueue();
+  task_queue4->UnregisterTaskQueue();
 }
 
 TEST_F(TimeDomainTest, UnregisterQueue) {
@@ -261,7 +261,7 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue2.get(), next_task_queue);
 
-  task_queue2->UnregisterTaskQueue(nullptr);
+  task_queue2->UnregisterTaskQueue();
 }
 
 TEST_F(TimeDomainTest, CancelDelayedWork) {
@@ -318,7 +318,7 @@ TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(_)).Times(AnyNumber());
 
   // Tidy up.
-  task_queue2->UnregisterTaskQueue(nullptr);
+  task_queue2->UnregisterTaskQueue();
 }
 
 }  // namespace scheduler

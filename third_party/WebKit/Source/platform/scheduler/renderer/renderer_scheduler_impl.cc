@@ -399,6 +399,9 @@ RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
 
 void RendererSchedulerImpl::OnUnregisterTaskQueue(
     const scoped_refptr<MainThreadTaskQueue>& task_queue) {
+  if (main_thread_only().was_shutdown)
+    return;
+
   if (task_queue_throttler_)
     task_queue_throttler_->UnregisterTaskQueue(task_queue.get());
 

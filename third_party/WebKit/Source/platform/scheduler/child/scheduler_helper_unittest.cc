@@ -215,6 +215,7 @@ TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
   RunUntilIdle();
 
   scheduler_helper_->SetObserver(nullptr);
+  task_queue->UnregisterTaskQueue();
 }
 }  // namespace scheduler_helper_unittest
 }  // namespace scheduler
