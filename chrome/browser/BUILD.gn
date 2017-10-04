@@ -602,8 +602,6 @@ split_static_library("browser") {
     "mac/nsprocessinfo_additions.mm",
     "mac/relauncher.h",
     "mac/relauncher.mm",
-    "mac/security_wrappers.cc",
-    "mac/security_wrappers.h",
     "media/cast_remoting_connector.cc",
     "media/cast_remoting_connector.h",
     "media/cast_remoting_sender.cc",
