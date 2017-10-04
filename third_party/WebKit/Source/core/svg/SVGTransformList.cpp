@@ -23,13 +23,13 @@
 
 #include "core/svg/SVGTransformList.h"
 
-#include "core/SVGNames.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGTransformDistance.h"
+#include "core/svg_names.h"
 #include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"

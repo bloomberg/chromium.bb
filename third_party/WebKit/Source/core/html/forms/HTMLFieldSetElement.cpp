@@ -24,11 +24,11 @@
 
 #include "core/html/forms/HTMLFieldSetElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/forms/HTMLLegendElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutFieldset.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/wtf/StdLibExtras.h"

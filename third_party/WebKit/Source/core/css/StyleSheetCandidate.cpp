@@ -26,13 +26,13 @@
 
 #include "core/css/StyleSheetCandidate.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/imports/HTMLImport.h"
+#include "core/html_names.h"
 #include "core/svg/SVGStyleElement.h"
 
 namespace blink {

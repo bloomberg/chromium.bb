@@ -31,12 +31,12 @@
 
 #include "core/html/forms/BaseCheckableInputType.h"
 
-#include "core/HTMLNames.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/html_names.h"
 
 namespace blink {
 

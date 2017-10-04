@@ -31,11 +31,11 @@
 
 #include "core/html/forms/HTMLDataListElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/HTMLDataListOptionsCollection.h"
+#include "core/html_names.h"
 
 namespace blink {
 

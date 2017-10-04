@@ -4,8 +4,8 @@
 
 #include "core/html/parser/HTMLDocumentParser.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/html_names.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/testing/HistogramTester.h"

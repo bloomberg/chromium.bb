@@ -21,9 +21,9 @@
 #ifndef SVGPolyElement_h
 #define SVGPolyElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedPointList.h"
 #include "core/svg/SVGGeometryElement.h"
+#include "core/svg_names.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

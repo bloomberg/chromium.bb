@@ -4,7 +4,6 @@
 
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -15,6 +14,7 @@
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLAudioElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html_names.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/device_orientation/DeviceOrientationController.h"

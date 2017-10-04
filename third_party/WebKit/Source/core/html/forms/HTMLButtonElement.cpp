@@ -25,11 +25,11 @@
 
 #include "core/html/forms/HTMLButtonElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutButton.h"
 #include "platform/wtf/StdLibExtras.h"
 

@@ -4,10 +4,10 @@
 
 #include "core/editing/CaretDisplayItemClient.h"
 
-#include "core/HTMLNames.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/FocusController.h"

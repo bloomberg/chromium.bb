@@ -21,12 +21,12 @@
 #ifndef SVGGradientElement_h
 #define SVGGradientElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
+#include "core/svg_names.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/heap/Handle.h"
 

@@ -21,7 +21,6 @@
 #ifndef SVGEllipseElement_h
 #define SVGEllipseElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "platform/heap/Handle.h"

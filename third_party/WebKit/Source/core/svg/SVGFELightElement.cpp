@@ -21,11 +21,11 @@
 
 #include "core/svg/SVGFELightElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 #include "core/svg/SVGFESpecularLightingElement.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

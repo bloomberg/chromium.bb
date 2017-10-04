@@ -5,7 +5,6 @@
 #include "core/animation/SVGInterpolationTypesMap.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
@@ -19,6 +18,7 @@
 #include "core/animation/SVGRectInterpolationType.h"
 #include "core/animation/SVGTransformListInterpolationType.h"
 #include "core/animation/SVGValueInterpolationType.h"
+#include "core/html_names.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

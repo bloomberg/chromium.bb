@@ -31,7 +31,7 @@
 #include "core/html/HTMLOutputElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
+#include "core/html_names.h"
 
 namespace blink {
 

@@ -26,7 +26,6 @@
 
 #include <limits>
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/dom/events/EventListener.h"
 #include "core/events/MouseEvent.h"
@@ -45,6 +44,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

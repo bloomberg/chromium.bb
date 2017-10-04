@@ -30,7 +30,6 @@
 
 #include "core/dom/V0InsertionPoint.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementShadowV0.h"
@@ -38,6 +37,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/WhitespaceAttacher.h"
+#include "core/html_names.h"
 
 namespace blink {
 

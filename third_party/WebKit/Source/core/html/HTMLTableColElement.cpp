@@ -26,11 +26,11 @@
 
 #include <algorithm>
 #include "core/CSSPropertyNames.h"
-#include "core/HTMLNames.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/TableConstants.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTableCol.h"
 
 namespace blink {

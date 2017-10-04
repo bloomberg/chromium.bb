@@ -6,13 +6,13 @@
 
 #include <ios>
 #include <memory>
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "core/html/custom/CustomElementRegistry.h"
 #include "core/html/custom/CustomElementTestHelpers.h"
+#include "core/html_names.h"
+#include "core/svg_names.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

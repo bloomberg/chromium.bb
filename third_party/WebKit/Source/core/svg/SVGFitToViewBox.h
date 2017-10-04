@@ -22,7 +22,6 @@
 #ifndef SVGFitToViewBox_h
 #define SVGFitToViewBox_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGPreserveAspectRatio.h"

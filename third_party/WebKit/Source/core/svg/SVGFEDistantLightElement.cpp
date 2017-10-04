@@ -19,7 +19,7 @@
 
 #include "core/svg/SVGFEDistantLightElement.h"
 
-#include "core/SVGNames.h"
+#include "core/svg_names.h"
 #include "platform/graphics/filters/DistantLightSource.h"
 
 namespace blink {

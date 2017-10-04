@@ -27,7 +27,6 @@
 
 #include <algorithm>
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -37,6 +36,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"
+#include "core/xlink_names.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/StdLibExtras.h"

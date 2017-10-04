@@ -30,7 +30,7 @@
 
 #include "core/svg/SVGDiscardElement.h"
 
-#include "core/SVGNames.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

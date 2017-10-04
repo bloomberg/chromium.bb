@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "core/HTMLNames.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
@@ -38,6 +37,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutHTMLCanvas.h"

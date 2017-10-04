@@ -20,7 +20,6 @@
 #ifndef SVGTextPathElement_h
 #define SVGTextPathElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGTextContentElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/heap/Handle.h"

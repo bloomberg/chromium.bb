@@ -22,9 +22,9 @@
 
 #include "core/svg/SVGMarkerElement.h"
 
-#include "core/SVGNames.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 #include "core/svg/SVGAngleTearOff.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

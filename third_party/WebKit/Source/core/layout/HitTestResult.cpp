@@ -21,7 +21,6 @@
 
 #include "core/layout/HitTestResult.h"
 
-#include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/PseudoElement.h"
@@ -38,6 +37,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutImage.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/Region.h"

@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGAnimateElement.h"
 
-#include "core/XLinkNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StylePropertySet.h"
@@ -35,6 +34,7 @@
 #include "core/svg/SVGString.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGProperty.h"
+#include "core/xlink_names.h"
 
 namespace blink {
 

@@ -19,7 +19,7 @@
 
 #include "core/svg/SVGFESpotLightElement.h"
 
-#include "core/SVGNames.h"
+#include "core/svg_names.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SpotLightSource.h"
 

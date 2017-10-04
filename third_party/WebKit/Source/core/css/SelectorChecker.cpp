@@ -29,7 +29,6 @@
 
 #include "core/css/SelectorChecker.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
@@ -53,6 +52,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/track/vtt/VTTElement.h"
+#include "core/html_names.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"

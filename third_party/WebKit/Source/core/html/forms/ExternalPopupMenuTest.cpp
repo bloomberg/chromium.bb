@@ -5,12 +5,12 @@
 #include "core/html/forms/ExternalPopupMenu.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/PopupMenu.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"

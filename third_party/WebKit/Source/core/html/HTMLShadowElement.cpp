@@ -30,10 +30,10 @@
 
 #include "core/html/HTMLShadowElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
+#include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 
 namespace blink {

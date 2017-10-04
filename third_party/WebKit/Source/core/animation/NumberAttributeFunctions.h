@@ -5,7 +5,7 @@
 #ifndef NumberAttributeFunctions_h
 #define NumberAttributeFunctions_h
 
-#include "core/SVGNames.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

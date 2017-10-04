@@ -21,7 +21,6 @@
 #ifndef SVGPolygonElement_h
 #define SVGPolygonElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGPolyElement.h"
 
 namespace blink {

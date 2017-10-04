@@ -21,8 +21,8 @@
 #include "core/html/forms/StepRange.h"
 
 #include <float.h>
-#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/WTFString.h"
 

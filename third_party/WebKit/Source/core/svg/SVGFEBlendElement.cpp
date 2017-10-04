@@ -20,8 +20,8 @@
 
 #include "core/svg/SVGFEBlendElement.h"
 
-#include "core/SVGNames.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "core/svg_names.h"
 #include "platform/graphics/filters/FEBlend.h"
 
 namespace blink {

@@ -851,8 +851,8 @@ process_json5_files("make_core_generated_html_element_factory") {
   outputs = [
     "$blink_core_output_dir/HTMLElementFactory.cpp",
     "$blink_core_output_dir/HTMLElementFactory.h",
-    "$blink_core_output_dir/HTMLNames.cpp",
-    "$blink_core_output_dir/HTMLNames.h",
+    "$blink_core_output_dir/html_names.cc",
+    "$blink_core_output_dir/html_names.h",
   ]
 }
 
@@ -878,8 +878,8 @@ process_json5_files("make_core_generated_svg_names") {
   outputs = [
     "$blink_core_output_dir/SVGElementFactory.cpp",
     "$blink_core_output_dir/SVGElementFactory.h",
-    "$blink_core_output_dir/SVGNames.cpp",
-    "$blink_core_output_dir/SVGNames.h",
+    "$blink_core_output_dir/svg_names.cc",
+    "$blink_core_output_dir/svg_names.h",
   ]
 }
 
@@ -964,32 +964,32 @@ make_qualified_names("make_core_generated_math_ml_names") {
     "html/parser/MathMLAttributeNames.json5",
   ]
   outputs = [
-    "$blink_core_output_dir/MathMLNames.cpp",
-    "$blink_core_output_dir/MathMLNames.h",
+    "$blink_core_output_dir/mathml_names.cc",
+    "$blink_core_output_dir/mathml_names.h",
   ]
 }
 
 make_qualified_names("make_core_generated_xlink_names") {
   in_files = [ "svg/xlinkattrs.json5" ]
   outputs = [
-    "$blink_core_output_dir/XLinkNames.cpp",
-    "$blink_core_output_dir/XLinkNames.h",
+    "$blink_core_output_dir/xlink_names.cc",
+    "$blink_core_output_dir/xlink_names.h",
   ]
 }
 
 make_qualified_names("make_core_generated_xml_ns_names") {
   in_files = [ "xml/xmlnsattrs.json5" ]
   outputs = [
-    "$blink_core_output_dir/XMLNSNames.cpp",
-    "$blink_core_output_dir/XMLNSNames.h",
+    "$blink_core_output_dir/xmlns_names.cc",
+    "$blink_core_output_dir/xmlns_names.h",
   ]
 }
 
 make_qualified_names("make_core_generated_xml_names") {
   in_files = [ "xml/xmlattrs.json5" ]
   outputs = [
-    "$blink_core_output_dir/XMLNames.cpp",
-    "$blink_core_output_dir/XMLNames.h",
+    "$blink_core_output_dir/xml_names.cc",
+    "$blink_core_output_dir/xml_names.h",
   ]
 }
 

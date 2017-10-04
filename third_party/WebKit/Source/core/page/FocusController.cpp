@@ -26,7 +26,6 @@
 
 #include "core/page/FocusController.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
@@ -52,6 +51,7 @@
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/html/TextControlElement.h"
+#include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"

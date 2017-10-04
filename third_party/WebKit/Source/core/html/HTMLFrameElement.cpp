@@ -23,9 +23,9 @@
 
 #include "core/html/HTMLFrameElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLFrameSetElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutFrame.h"
 
 namespace blink {

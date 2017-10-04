@@ -55,9 +55,9 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/WindowProxy.h"
-#include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
+#include "core/html_names.h"
 
 namespace blink {
 

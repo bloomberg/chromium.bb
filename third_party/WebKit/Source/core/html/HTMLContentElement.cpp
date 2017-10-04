@@ -26,7 +26,6 @@
 
 #include "core/html/HTMLContentElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/ElementShadow.h"
@@ -34,6 +33,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
+#include "core/html_names.h"
 
 namespace blink {
 

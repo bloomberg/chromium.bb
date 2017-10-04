@@ -527,9 +527,10 @@ def scoped_content_attribute_name(interface, attribute):
     content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
     if interface.name.startswith('SVG'):
         namespace = 'SVGNames'
+        includes.add('core/svg_names.h')
     else:
         namespace = 'HTMLNames'
-    includes.add('core/%s.h' % namespace)
+        includes.add('core/html_names.h')
     return '%s::%sAttr' % (namespace, content_attribute_name)
 
 

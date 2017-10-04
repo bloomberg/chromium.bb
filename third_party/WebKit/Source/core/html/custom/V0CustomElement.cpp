@@ -30,15 +30,15 @@
 
 #include "core/html/custom/V0CustomElement.h"
 
-#include "core/HTMLNames.h"
-#include "core/MathMLNames.h"
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/custom/V0CustomElementMicrotaskRunQueue.h"
 #include "core/html/custom/V0CustomElementObserver.h"
 #include "core/html/custom/V0CustomElementScheduler.h"
+#include "core/html_names.h"
+#include "core/mathml_names.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

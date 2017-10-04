@@ -22,12 +22,12 @@
 #include "core/layout/LayoutCounter.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/PseudoElement.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/html/ListItemOrdinal.h"
+#include "core/html_names.h"
 #include "core/layout/CounterNode.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutView.h"

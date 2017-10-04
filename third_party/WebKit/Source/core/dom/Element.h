@@ -26,12 +26,12 @@
 #define Element_h
 
 #include "core/CoreExport.h"
-#include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ElementData.h"
 #include "core/dom/WhitespaceAttacher.h"
+#include "core/html_names.h"
 #include "core/resize_observer/ResizeObserver.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"

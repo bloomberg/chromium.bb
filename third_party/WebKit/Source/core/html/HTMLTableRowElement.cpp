@@ -26,7 +26,6 @@
 #include "core/html/HTMLTableRowElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeListsNodeData.h"
@@ -35,6 +34,7 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTableSectionElement.h"
+#include "core/html_names.h"
 
 namespace blink {
 

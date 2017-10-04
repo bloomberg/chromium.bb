@@ -30,8 +30,6 @@
 
 #include "core/css/resolver/StyleAdjuster.h"
 
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -48,11 +46,13 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGSVGElement.h"
+#include "core/svg_names.h"
 #include "platform/Length.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/wtf/Assertions.h"

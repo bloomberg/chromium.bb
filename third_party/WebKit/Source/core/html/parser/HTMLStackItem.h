@@ -26,11 +26,11 @@
 #ifndef HTMLStackItem_h
 #define HTMLStackItem_h
 
-#include "core/HTMLNames.h"
-#include "core/MathMLNames.h"
-#include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/parser/AtomicHTMLToken.h"
+#include "core/html_names.h"
+#include "core/mathml_names.h"
+#include "core/svg_names.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {

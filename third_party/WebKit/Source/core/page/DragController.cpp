@@ -30,7 +30,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "build/build_config.h"
-#include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"

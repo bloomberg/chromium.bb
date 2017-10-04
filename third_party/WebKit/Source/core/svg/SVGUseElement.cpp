@@ -25,8 +25,6 @@
 
 #include "core/svg/SVGUseElement.h"
 
-#include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementShadow.h"
@@ -41,6 +39,8 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGSymbolElement.h"
 #include "core/svg/SVGTitleElement.h"
+#include "core/svg_names.h"
+#include "core/xlink_names.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"

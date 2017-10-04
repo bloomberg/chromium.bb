@@ -27,9 +27,6 @@
 
 #include "core/editing/serializers/MarkupAccumulator.h"
 
-#include "core/XLinkNames.h"
-#include "core/XMLNSNames.h"
-#include "core/XMLNames.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
@@ -41,6 +38,9 @@
 #include "core/editing/Editor.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLTemplateElement.h"
+#include "core/xlink_names.h"
+#include "core/xml_names.h"
+#include "core/xmlns_names.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/CharacterNames.h"
 

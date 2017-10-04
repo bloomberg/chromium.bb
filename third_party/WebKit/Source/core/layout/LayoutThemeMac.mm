@@ -25,8 +25,8 @@
 #import <Cocoa/Cocoa.h>
 #import <math.h>
 #import "core/CSSValueKeywords.h"
-#import "core/HTMLNames.h"
 #import "core/fileapi/FileList.h"
+#import "core/html_names.h"
 #import "core/layout/LayoutProgress.h"
 #import "core/layout/LayoutView.h"
 #import "core/style/ShadowList.h"

@@ -20,10 +20,10 @@
 
 #include "core/svg/SVGTextPositioningElement.h"
 
-#include "core/SVGNames.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumberList.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

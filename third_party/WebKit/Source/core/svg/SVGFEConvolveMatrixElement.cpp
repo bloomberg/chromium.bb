@@ -19,9 +19,9 @@
 
 #include "core/svg/SVGFEConvolveMatrixElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "core/svg_names.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
 

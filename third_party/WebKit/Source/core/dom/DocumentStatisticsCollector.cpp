@@ -4,7 +4,6 @@
 
 #include "core/dom/DocumentStatisticsCollector.h"
 
-#include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -14,6 +13,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "core/html_names.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "public/platform/Platform.h"

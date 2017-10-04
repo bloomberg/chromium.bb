@@ -32,7 +32,6 @@
 #ifndef SliderThumbElement_h
 #define SliderThumbElement_h
 
-#include "core/HTMLNames.h"
 #include "core/html/HTMLDivElement.h"
 #include "platform/wtf/Forward.h"
 

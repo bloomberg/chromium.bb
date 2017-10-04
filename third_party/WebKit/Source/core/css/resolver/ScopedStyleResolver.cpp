@@ -28,7 +28,6 @@
 
 #include "core/css/resolver/ScopedStyleResolver.h"
 
-#include "core/HTMLNames.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
@@ -44,6 +43,7 @@
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html_names.h"
 #include "core/svg/SVGStyleElement.h"
 
 namespace blink {

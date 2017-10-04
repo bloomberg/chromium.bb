@@ -32,13 +32,13 @@
 
 #include "bindings/core/v8/V0CustomElementConstructorBuilder.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/custom/CustomElementRegistry.h"
 #include "core/html/custom/V0CustomElementException.h"
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
+#include "core/html_names.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

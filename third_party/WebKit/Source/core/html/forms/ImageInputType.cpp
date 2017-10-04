@@ -23,7 +23,6 @@
 
 #include "core/html/forms/ImageInputType.h"
 
-#include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/SyncReattachContext.h"
@@ -35,6 +34,7 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
 #include "platform/wtf/text/StringBuilder.h"

@@ -25,7 +25,6 @@
 
 #include "core/html/HTMLTrackElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
@@ -33,6 +32,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/LoadableTextTrack.h"
+#include "core/html_names.h"
 
 #define TRACK_LOG_LEVEL 3
 

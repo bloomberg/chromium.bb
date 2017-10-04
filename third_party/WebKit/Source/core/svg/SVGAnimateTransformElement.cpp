@@ -22,9 +22,9 @@
 
 #include "core/svg/SVGAnimateTransformElement.h"
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

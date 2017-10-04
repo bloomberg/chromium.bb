@@ -4,9 +4,9 @@
 
 #include "core/page/ChromeClient.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
+#include "core/html_names.h"
 #include "core/layout/HitTestResult.h"
 #include "core/loader/EmptyClients.h"
 #include "testing/gtest/include/gtest/gtest.h"

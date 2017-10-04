@@ -4,11 +4,11 @@
 
 #include "core/html/HTMLPictureElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLSourceElement.h"
+#include "core/html_names.h"
 #include "core/loader/ImageLoader.h"
 
 namespace blink {

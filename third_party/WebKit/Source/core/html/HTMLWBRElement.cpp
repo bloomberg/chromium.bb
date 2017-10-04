@@ -30,7 +30,7 @@
 
 #include "core/html/HTMLWBRElement.h"
 
-#include "core/HTMLNames.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutWordBreak.h"
 
 namespace blink {

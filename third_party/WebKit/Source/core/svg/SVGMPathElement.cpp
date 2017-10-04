@@ -19,11 +19,11 @@
 
 #include "core/svg/SVGMPathElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/svg/SVGAnimateMotionElement.h"
 #include "core/svg/SVGPathElement.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

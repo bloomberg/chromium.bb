@@ -20,11 +20,11 @@
 
 #include "core/css/StyleSheetList.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html_names.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

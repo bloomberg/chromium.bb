@@ -27,10 +27,10 @@
 #define SVGSMILElement_h
 
 #include "core/CoreExport.h"
-#include "core/SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/animation/SMILTime.h"
+#include "core/svg_names.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 

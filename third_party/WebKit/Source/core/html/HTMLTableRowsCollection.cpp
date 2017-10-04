@@ -28,10 +28,10 @@
 
 #include "core/html/HTMLTableRowsCollection.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
+#include "core/html_names.h"
 
 namespace blink {
 

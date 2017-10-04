@@ -4,10 +4,10 @@
 
 #include "core/svg/SVGAnimatedHref.h"
 
-#include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg_names.h"
+#include "core/xlink_names.h"
 
 namespace blink {
 

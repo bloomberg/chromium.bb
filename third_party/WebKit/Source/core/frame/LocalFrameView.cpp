@@ -28,7 +28,6 @@
 
 #include <algorithm>
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/FontFaceSetDocument.h"
@@ -59,6 +58,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/TextControlElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/intersection_observer/IntersectionObserverController.h"

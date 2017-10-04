@@ -5,7 +5,6 @@
 #include "core/animation/AnimationInputHelpers.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/SVGNames.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSVariableParser.h"
@@ -13,6 +12,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include "core/svg_names.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
