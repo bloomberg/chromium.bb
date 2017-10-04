@@ -40,3 +40,4 @@ Navigator implements NavigatorCookies;
 Navigator implements NavigatorID;
 Navigator implements NavigatorLanguage;
 Navigator implements NavigatorOnLine;
+Navigator implements NavigatorAutomationInformation;

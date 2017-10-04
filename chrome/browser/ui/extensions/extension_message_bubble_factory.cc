@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/feature_switch.h"
 
 namespace {

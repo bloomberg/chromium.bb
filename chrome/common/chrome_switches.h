@@ -98,7 +98,6 @@ extern const char kDnsLogDetails[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];
-extern const char kEnableAutomation[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableClearBrowsingDataCounters[];
 extern const char kEnableCloudPrintProxy[];

@@ -486,4 +486,8 @@ void WebRuntimeFeatures::EnableV8ContextSnapshot(bool enable) {
   RuntimeEnabledFeatures::SetV8ContextSnapshotEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAutomationControlled(bool enable) {
+  RuntimeEnabledFeatures::SetAutomationControlledEnabled(enable);
+}
+
 }  // namespace blink

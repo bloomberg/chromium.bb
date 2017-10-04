@@ -1040,6 +1040,9 @@ const char kEnableOSKOverscroll[]               = "enable-osk-overscroll";
 const char kEnableAggressiveDOMStorageFlushing[] =
     "enable-aggressive-domstorage-flushing";
 
+// Enable indication that browser is controlled by automation.
+const char kEnableAutomation[] = "enable-automation";
+
 // Enable audio for desktop share.
 const char kDisableAudioSupportForDesktopShare[] =
     "disable-audio-support-for-desktop-share";
