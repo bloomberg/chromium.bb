@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 
 namespace resource_coordinator {
 

@@ -13,16 +13,16 @@ namespace resource_coordinator {
 PageCoordinationUnitImpl::PageCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitImpl(id, std::move(service_ref)) {}
+    : CoordinationUnitBase(id, std::move(service_ref)) {}
 
 PageCoordinationUnitImpl::~PageCoordinationUnitImpl() = default;
 
-std::set<CoordinationUnitImpl*>
+std::set<CoordinationUnitBase*>
 PageCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     CoordinationUnitType type) const {
   switch (type) {
     case CoordinationUnitType::kProcess: {
-      std::set<CoordinationUnitImpl*> process_coordination_units;
+      std::set<CoordinationUnitBase*> process_coordination_units;
 
       // There is currently not a direct relationship between processes and
       // pages. However, frames are children of both processes and frames, so we
@@ -42,7 +42,7 @@ PageCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     case CoordinationUnitType::kFrame:
       return GetChildCoordinationUnitsOfType(type);
     default:
-      return std::set<CoordinationUnitImpl*>();
+      return std::set<CoordinationUnitBase*>();
   }
 }
 
@@ -110,7 +110,7 @@ bool PageCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
     int64_t* output) {
   // Calculate the EQT for the process of the main frame only because
   // the smoothness of the main frame may affect the users the most.
-  CoordinationUnitImpl* main_frame_cu = GetMainFrameCoordinationUnit();
+  CoordinationUnitBase* main_frame_cu = GetMainFrameCoordinationUnit();
   if (!main_frame_cu)
     return false;
 
@@ -129,7 +129,7 @@ bool PageCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
       ->GetProperty(mojom::PropertyType::kExpectedTaskQueueingDuration, output);
 }
 
-CoordinationUnitImpl* PageCoordinationUnitImpl::GetMainFrameCoordinationUnit() {
+CoordinationUnitBase* PageCoordinationUnitImpl::GetMainFrameCoordinationUnit() {
   for (auto* cu :
        GetAssociatedCoordinationUnitsOfType(CoordinationUnitType::kFrame)) {
     if (ToFrameCoordinationUnit(cu)->IsMainFrame())

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/values.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -28,7 +28,7 @@ void TabSignalGeneratorImpl::AddObserver(mojom::TabSignalObserverPtr observer) {
 }
 
 bool TabSignalGeneratorImpl::ShouldObserve(
-    const CoordinationUnitImpl* coordination_unit) {
+    const CoordinationUnitBase* coordination_unit) {
   auto coordination_unit_type = coordination_unit->id().type;
   return coordination_unit_type == CoordinationUnitType::kPage ||
          coordination_unit_type == CoordinationUnitType::kFrame;

@@ -7,7 +7,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 
 namespace resource_coordinator {
 
@@ -16,9 +16,9 @@ const base::TimeDelta kTestMetricsReportDelayTimeout =
 const base::TimeDelta kTestMaxAudioSlientTimeout =
     kMaxAudioSlientTimeout + base::TimeDelta::FromSeconds(1);
 
-class MetricsCollectorTest : public CoordinationUnitImplTestBase {
+class MetricsCollectorTest : public CoordinationUnitTestHarness {
  public:
-  MetricsCollectorTest() : CoordinationUnitImplTestBase() {}
+  MetricsCollectorTest() : CoordinationUnitTestHarness() {}
 
   void SetUp() override {
     MetricsCollector* metrics_collector = new MetricsCollector();

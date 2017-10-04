@@ -14,11 +14,11 @@ namespace resource_coordinator {
 ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitImpl(id, std::move(service_ref)) {}
+    : CoordinationUnitBase(id, std::move(service_ref)) {}
 
 ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() = default;
 
-std::set<CoordinationUnitImpl*>
+std::set<CoordinationUnitBase*>
 ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     CoordinationUnitType type) const {
   switch (type) {
@@ -27,7 +27,7 @@ ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
       // pages. However, frames are children of both processes and frames, so we
       // find all of the pages that are reachable from the process's child
       // frames.
-      std::set<CoordinationUnitImpl*> page_cus;
+      std::set<CoordinationUnitBase*> page_cus;
 
       for (auto* frame_cu :
            GetChildCoordinationUnitsOfType(CoordinationUnitType::kFrame)) {
@@ -42,7 +42,7 @@ ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     case CoordinationUnitType::kFrame:
       return GetChildCoordinationUnitsOfType(type);
     default:
-      return std::set<CoordinationUnitImpl*>();
+      return std::set<CoordinationUnitBase*>();
   }
 }
 

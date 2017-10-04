@@ -4,8 +4,8 @@
 
 #include "services/resource_coordinator/observers/tab_signal_generator_impl.h"
 
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
@@ -29,7 +29,7 @@ class MockTabSignalGeneratorImpl : public TabSignalGeneratorImpl {
   size_t eqt_change_count_ = 0;
 };
 
-class TabSignalGeneratorImplTest : public CoordinationUnitImplTestBase {
+class TabSignalGeneratorImplTest : public CoordinationUnitTestHarness {
  protected:
   MockTabSignalGeneratorImpl* tab_signal_generator() {
     return &tab_signal_generator_;

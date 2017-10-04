@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_H_
-#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
+#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
 
 #include <memory>
 #include <set>
@@ -26,25 +26,28 @@ class CoordinationUnitGraphObserver;
 class FrameCoordinationUnitImpl;
 class PageCoordinationUnitImpl;
 
-class CoordinationUnitImpl : public mojom::CoordinationUnit {
+// CoordinationUnitBase implements shared functionality among different types of
+// coordination units. A specific type of coordination unit will derive from
+// this class and can override shared funtionality when needed.
+class CoordinationUnitBase : public mojom::CoordinationUnit {
  public:
-  CoordinationUnitImpl(
+  CoordinationUnitBase(
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 
-  ~CoordinationUnitImpl() override;
+  ~CoordinationUnitBase() override;
 
   static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
-      const CoordinationUnitImpl* coordination_unit);
+      const CoordinationUnitBase* coordination_unit);
   static PageCoordinationUnitImpl* ToPageCoordinationUnit(
-      CoordinationUnitImpl* coordination_unit);
+      CoordinationUnitBase* coordination_unit);
   static const PageCoordinationUnitImpl* ToPageCoordinationUnit(
-      const CoordinationUnitImpl* coordination_unit);
+      const CoordinationUnitBase* coordination_unit);
 
-  static std::vector<CoordinationUnitImpl*> GetCoordinationUnitsOfType(
+  static std::vector<CoordinationUnitBase*> GetCoordinationUnitsOfType(
       CoordinationUnitType type);
 
-  static CoordinationUnitImpl* CreateCoordinationUnit(
+  static CoordinationUnitBase* CreateCoordinationUnit(
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 
@@ -62,11 +65,11 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void SendEvent(mojom::Event event) override;
   void SetProperty(mojom::PropertyType property_type, int64_t value) override;
 
-  // Return all of the reachable |CoordinationUnitImpl| instances
+  // Return all of the reachable |CoordinationUnitBase| instances
   // of type |CoordinationUnitType|. Note that a callee should
   // never be associated with itself.
-  virtual std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
-      CoordinationUnitType type) const;
+  virtual std::set<CoordinationUnitBase*> GetAssociatedCoordinationUnitsOfType(
+      CoordinationUnitType type) const = 0;
   // Recalculate property internally.
   virtual void RecalculateProperty(const mojom::PropertyType property_type) {}
 
@@ -79,46 +82,44 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void AddObserver(CoordinationUnitGraphObserver* observer);
   void RemoveObserver(CoordinationUnitGraphObserver* observer);
 
+  // Coordination unit graph traversal helper functions.
+  std::set<CoordinationUnitBase*> GetChildCoordinationUnitsOfType(
+      CoordinationUnitType type) const;
+  std::set<CoordinationUnitBase*> GetParentCoordinationUnitsOfType(
+      CoordinationUnitType type) const;
+
   // Getters and setters.
   const CoordinationUnitID& id() const { return id_; }
-  const std::set<CoordinationUnitImpl*>& children() const { return children_; }
-  const std::set<CoordinationUnitImpl*>& parents() const { return parents_; }
+  const std::set<CoordinationUnitBase*>& children() const { return children_; }
+  const std::set<CoordinationUnitBase*>& parents() const { return parents_; }
   const std::map<mojom::PropertyType, int64_t>& properties_for_testing() const {
     return properties_;
   }
   mojo::Binding<mojom::CoordinationUnit>& binding() { return binding_; }
 
  protected:
-  friend class FrameCoordinationUnitImpl;
-
   virtual void OnEventReceived(const mojom::Event event);
   virtual void OnPropertyChanged(const mojom::PropertyType property_type,
                                  int64_t value);
-  // Propagate property change to relevant |CoordinationUnitImpl| instances.
+  // Propagate property change to relevant |CoordinationUnitBase| instances.
   virtual void PropagateProperty(mojom::PropertyType property_type,
                                  int64_t value) {}
-
-  // Coordination unit graph traversal helper functions.
-  std::set<CoordinationUnitImpl*> GetChildCoordinationUnitsOfType(
-      CoordinationUnitType type) const;
-  std::set<CoordinationUnitImpl*> GetParentCoordinationUnitsOfType(
-      CoordinationUnitType type) const;
 
   const base::ObserverList<CoordinationUnitGraphObserver>& observers() const {
     return observers_;
   }
 
   const CoordinationUnitID id_;
-  std::set<CoordinationUnitImpl*> children_;
-  std::set<CoordinationUnitImpl*> parents_;
+  std::set<CoordinationUnitBase*> children_;
+  std::set<CoordinationUnitBase*> parents_;
 
  private:
-  bool AddChild(CoordinationUnitImpl* child);
-  bool RemoveChild(CoordinationUnitImpl* child);
-  void AddParent(CoordinationUnitImpl* parent);
-  void RemoveParent(CoordinationUnitImpl* parent);
-  bool HasAncestor(CoordinationUnitImpl* ancestor);
-  bool HasDescendant(CoordinationUnitImpl* descendant);
+  bool AddChild(CoordinationUnitBase* child);
+  bool RemoveChild(CoordinationUnitBase* child);
+  void AddParent(CoordinationUnitBase* parent);
+  void RemoveParent(CoordinationUnitBase* parent);
+  bool HasAncestor(CoordinationUnitBase* unit);
+  bool HasDescendant(CoordinationUnitBase* unit);
 
   std::map<mojom::PropertyType, int64_t> properties_;
 
@@ -128,9 +129,9 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   base::ObserverList<CoordinationUnitGraphObserver> observers_;
   mojo::Binding<mojom::CoordinationUnit> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitBase);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_BASE_H_
