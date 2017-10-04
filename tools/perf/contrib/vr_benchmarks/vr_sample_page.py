@@ -15,16 +15,18 @@ SAMPLE_DIR = os.path.join(
 class VrSamplePage(page.Page):
   """Superclass for all VR sample pages."""
 
-  def __init__(self, sample_page, page_set, get_parameters=None):
+  def __init__(self, sample_page, page_set, url_parameters=None,
+      extra_browser_args=None):
     url = '%s.html' % sample_page
-    if get_parameters is not None:
-      url += '?' + '&'.join(get_parameters)
+    if url_parameters is not None:
+      url += '?' + '&'.join(url_parameters)
     name = url.replace('.html', '')
     url = 'file://' + os.path.join(SAMPLE_DIR, url)
     super(VrSamplePage, self).__init__(
         url=url,
         page_set=page_set,
         name=name,
+        extra_browser_args=extra_browser_args,
         shared_page_state_class=vr_state.SharedAndroidVrPageState)
     self._shared_page_state = None
 
