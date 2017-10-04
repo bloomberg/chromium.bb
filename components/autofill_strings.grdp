@@ -165,11 +165,16 @@
   <message name="IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE" desc="Chrome can help the user fill login web forms by showing a pop-up with text suggestions next to a focused text field. If the form is on an insecure site (e.g., http://), this text is shown on top of those suggestions.">
     Login not secure
   </message>
-
+  <if expr="not use_titlecase">
   <message name="IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK" desc="The text shown as an option in the suggestion drop down when a password field is clicked">
     Show all saved passwords
   </message>
-
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK" desc="Mac/In Title Case::The text shown as an option in the suggestion drop down when a password field is clicked">
+    Show all Saved Passwords
+  </message>
+  </if>
   <message name="IDS_AUTOFILL_GENERATE_PASSWORD_FALLBACK" desc="The text shown as an option in the suggestion drop down when a password field is clicked">
     Generate a strong password...
   </message>
