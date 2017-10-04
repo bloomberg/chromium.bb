@@ -56,8 +56,8 @@ struct TestItem {
         base::ASCIIToUTF16("searchurl/?q=tractor+supply"),
     },
     {
-        GURL("http://google.com/search?q=tractor+supply&espv=1"),
-        base::ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
+        GURL("http://google.com/search?q=tractor+supply"),
+        base::ASCIIToUTF16("google.com/search?q=tractor+supply"),
     },
     {
         GURL("https://google.ca/search?q=tractor+supply"),

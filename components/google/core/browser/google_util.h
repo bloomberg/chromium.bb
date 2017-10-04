@@ -22,14 +22,6 @@ namespace google_util {
 // returned by GURL::query() or GURL::ref().
 bool HasGoogleSearchQueryParam(base::StringPiece str);
 
-// The query key that identifies a Google Extended API request for Instant.
-const char kInstantExtendedAPIParam[] = "espv";
-
-constexpr char kGoogleInstantExtendedEnabledKey[] =
-    "google:instantExtendedEnabledKey";
-constexpr char kGoogleInstantExtendedEnabledKeyFull[] =
-    "{google:instantExtendedEnabledKey}";
-
 GURL LinkDoctorBaseURL();
 void SetMockLinkDoctorBaseURLForTesting();
 
