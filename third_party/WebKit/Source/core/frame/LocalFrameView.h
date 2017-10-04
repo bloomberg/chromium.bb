@@ -49,6 +49,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayerClient.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
