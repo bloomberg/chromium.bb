@@ -28,14 +28,8 @@ void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     viz::mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  if (local_surface_id != local_surface_id_) {
-    local_surface_id_ = local_surface_id;
-    display_private_->ResizeDisplay(frame.size_in_pixels());
-    display_private_->SetLocalSurfaceId(local_surface_id_,
-                                        frame.device_scale_factor());
-  }
   compositor_frame_sink_->SubmitCompositorFrame(
-      local_surface_id_, std::move(frame), std::move(hit_test_region_list),
+      local_surface_id, std::move(frame), std::move(hit_test_region_list),
       submit_time);
 }
 

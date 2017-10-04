@@ -43,11 +43,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
-  void ResizeDisplay(const gfx::Size& size) override;
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space) override;
   void SetOutputIsSecure(bool secure) override;
-  void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id,
-                         float scale_factor) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;

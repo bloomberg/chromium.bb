@@ -6,7 +6,6 @@
 #define SERVICES_UI_WS_COMPOSITOR_FRAME_SINK_CLIENT_BINDING_H_
 
 #include "base/macros.h"
-#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -41,9 +40,6 @@ class CompositorFrameSinkClientBinding
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> binding_;
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;
   viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink_;
-  viz::LocalSurfaceId local_surface_id_;
-  viz::LocalSurfaceIdAllocator id_allocator_;
-  gfx::Size last_submitted_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkClientBinding);
 };
