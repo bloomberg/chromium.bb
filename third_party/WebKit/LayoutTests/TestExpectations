@@ -3713,7 +3713,6 @@ crbug.com/767469 virtual/mojo-loading/http/tests/navigation/start-load-during-pr
 crbug.com/767892 [ Win Linux Mac ] virtual/mojo-loading/http/tests/devtools/startup/database-open.html [ Pass Timeout ]
 
 # Sheriff failures 2017-09-29
-crbug.com/770362 [ Linux Debug ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
 
 # Sheriff failures 2017-10-02
 crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]

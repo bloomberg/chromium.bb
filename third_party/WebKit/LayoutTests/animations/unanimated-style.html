@@ -15,7 +15,7 @@
             animation: move 1s linear;
             left: 400px;
         }
-        
+
         @keyframes move {
             from {
             }
@@ -23,7 +23,7 @@
                 left: 500px;
             }
         }
-        
+
         #result {
             margin-top: 130px;
         }
@@ -31,23 +31,22 @@
     <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
 
-    if (window.testRunner)
+      if (window.testRunner)
         testRunner.waitUntilDone();
 
       const expectedValues = [
         // [time, element-id, property, expected-value, tolerance]
-        [0.5, "test", "left", 450, 8],
+        [0.5, "test", "left", 450, 0],
       ];
 
       function setupTest()
       {
-        document.getElementById('test').className = 'animating box';
+        test.offsetTop; // force style recalc
+        test.className = 'animating box';
         runAnimationTest(expectedValues);
       }
-      
-      window.addEventListener('load', function() {
-          window.setTimeout(setupTest, 0);
-      }, false);
+
+      window.addEventListener('load', setupTest, false);
 
     </script>
 </head>
