@@ -851,6 +851,11 @@ var targetDoodle = {
  * @param {HTMLElement} element
  */
 var startFadeOut = function(element) {
+  // Compute style now, to ensure that the transition from 1 -> 0 is properly
+  // recognized. Otherwise, if a 0 -> 1 -> 0 transition is too fast, the
+  // element might stay invisible instead of appearing then fading out.
+  window.getComputedStyle(element).opacity;
+
   element.classList.add(CLASSES.FADE);
   element.addEventListener('transitionend', onDoodleTransitionEnd);
   element.style.opacity = 0;
