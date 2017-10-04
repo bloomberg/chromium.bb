@@ -582,6 +582,23 @@ void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
     observer.OnGaiaPasswordChanged();
 }
 
+bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
+    content::WebContents* web_contents) {
+  SBThreatType current_threat_type;
+  if (!ui_manager_->IsUrlWhitelistedOrPendingForWebContents(
+          web_contents->GetLastCommittedURL().GetWithEmptyPath(),
+          /*is_subresource=*/false,
+          web_contents->GetController().GetLastCommittedEntry(), web_contents,
+          /*whitelist_only=*/true, &current_threat_type)) {
+    return false;
+  }
+  return current_threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         current_threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         current_threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+         current_threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+         current_threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
+}
+
 void ChromePasswordProtectionService::InitializeAccountInfo() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile_);

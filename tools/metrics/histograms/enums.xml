@@ -3154,6 +3154,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Clicked"/>
 </enum>
 
+<enum name="BooleanClickedThroughSBInterstitial">
+  <int value="0" label="Didn't click through"/>
+  <int value="1" label="Clicked through"/>
+</enum>
+
 <enum name="BooleanCloned">
   <int value="0" label="Not cloned"/>
   <int value="1" label="Cloned"/>

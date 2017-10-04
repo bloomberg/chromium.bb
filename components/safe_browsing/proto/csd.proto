@@ -242,6 +242,9 @@ message LoginReputationClientRequest {
 
   // Chrome user population.
   optional ChromeUserPopulation population = 6;
+
+  // If user clicked through safe browsing interstitial on this page.
+  optional bool clicked_through_interstitial = 7;
 }
 
 // The message is used for client response for login reputation requests.
