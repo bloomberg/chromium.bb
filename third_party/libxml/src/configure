@@ -2629,7 +2629,7 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 LIBXML_MAJOR_VERSION=2
 LIBXML_MINOR_VERSION=9
-LIBXML_MICRO_VERSION=4
+LIBXML_MICRO_VERSION=5
 LIBXML_MICRO_VERSION_SUFFIX=
 LIBXML_VERSION=$LIBXML_MAJOR_VERSION.$LIBXML_MINOR_VERSION.$LIBXML_MICRO_VERSION$LIBXML_MICRO_VERSION_SUFFIX
 LIBXML_VERSION_INFO=`expr $LIBXML_MAJOR_VERSION + $LIBXML_MINOR_VERSION`:$LIBXML_MICRO_VERSION:$LIBXML_MINOR_VERSION
@@ -13184,8 +13184,8 @@ else
     # If this succeeeds, we ignore the WITH_ZLIB directory.
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Z" >&5
-$as_echo_n "checking for Z... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zlib" >&5
+$as_echo_n "checking for zlib... " >&6; }
 
 if test -n "$Z_CFLAGS"; then
     pkg_cv_Z_CFLAGS="$Z_CFLAGS"
@@ -13225,7 +13225,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -13243,7 +13243,7 @@ fi
 
 	have_libz=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_libz=no
 else
@@ -13361,8 +13361,8 @@ else
     # If this succeeeds, we ignore the WITH_LZMA directory.
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LZMA" >&5
-$as_echo_n "checking for LZMA... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for liblzma" >&5
+$as_echo_n "checking for liblzma... " >&6; }
 
 if test -n "$LZMA_CFLAGS"; then
     pkg_cv_LZMA_CFLAGS="$LZMA_CFLAGS"
@@ -13402,7 +13402,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -13420,7 +13420,7 @@ fi
 
 	have_liblzma=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_liblzma=no
 else
@@ -16242,8 +16242,8 @@ else
     # If this succeeeds, we ignore the WITH_ICU directory.
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ICU" >&5
-$as_echo_n "checking for ICU... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for icu-i18n" >&5
+$as_echo_n "checking for icu-i18n... " >&6; }
 
 if test -n "$ICU_CFLAGS"; then
     pkg_cv_ICU_CFLAGS="$ICU_CFLAGS"
@@ -16283,7 +16283,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -16301,7 +16301,7 @@ fi
 
 	have_libicu=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_libicu=no
 else

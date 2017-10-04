@@ -5,7 +5,7 @@
 #define GETHOSTBYNAME_ARG_CAST /**/
 
 /* Define to 1 if you have the <ansidecl.h> header file. */
-/* #undef HAVE_ANSIDECL_H */
+#define HAVE_ANSIDECL_H 1
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #define HAVE_ARPA_INET_H 1
@@ -312,7 +312,7 @@
 #define VA_LIST_IS_ARRAY 1
 
 /* Version number of package */
-#define VERSION "2.9.4"
+#define VERSION "2.9.5"
 
 /* Determine what socket length (socklen_t) data type is */
 #define XML_SOCKLEN_T socklen_t
