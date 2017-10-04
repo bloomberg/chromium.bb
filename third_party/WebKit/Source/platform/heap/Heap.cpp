@@ -318,6 +318,15 @@ void ThreadHeap::DecommitCallbackStacks() {
 }
 
 void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
+  bool complete = AdvanceMarkingStackProcessing(
+      visitor, std::numeric_limits<double>::infinity());
+  CHECK(complete);
+}
+
+bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
+                                               double deadline_seconds) {
+  const size_t kDeadlineCheckInterval = 2500;
+  size_t processed_callback_count = 0;
   // Ephemeron fixed point loop.
   do {
     {
@@ -325,6 +334,12 @@ void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
       // currently pushed onto the marking stack.
       TRACE_EVENT0("blink_gc", "ThreadHeap::processMarkingStackSingleThreaded");
       while (PopAndInvokeTraceCallback(visitor)) {
+        processed_callback_count++;
+        if (processed_callback_count % kDeadlineCheckInterval == 0) {
+          if (deadline_seconds <= MonotonicallyIncreasingTime()) {
+            return false;
+          }
+        }
       }
     }
 
@@ -337,6 +352,7 @@ void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_stack_->IsEmpty());
+  return true;
 }
 
 void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
