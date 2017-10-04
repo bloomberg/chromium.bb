@@ -2178,7 +2178,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfNotMoveOnKeyboardOpen) {
   layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
   layout_manager->LayoutShelf();
 
-  // Shelf posiion should not be changed.
+  // Shelf position should not be changed.
   EXPECT_EQ(orig_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 }
 
