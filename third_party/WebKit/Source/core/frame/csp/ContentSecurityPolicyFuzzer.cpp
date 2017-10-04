@@ -5,6 +5,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
 #include "core/testing/DummyPageHolder.h"
+#include "platform/heap/Handle.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/wtf/text/WTFString.h"
@@ -16,6 +17,7 @@ namespace blink {
 DummyPageHolder* g_page_holder = nullptr;
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  LEAK_SANITIZER_DISABLED_SCOPE;
   static BlinkFuzzerTestSupport test_support = BlinkFuzzerTestSupport();
   g_page_holder = DummyPageHolder::Create().release();
   return 0;
