@@ -153,6 +153,12 @@ class AURA_EXPORT WindowTreeClient
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
+  // Schedules an embed of a client. See
+  // mojom::WindowTreeClient::ScheduleEmbed() for details.
+  void ScheduleEmbed(
+      ui::mojom::WindowTreeClientPtr client,
+      base::OnceCallback<void(const base::UnguessableToken&)> callback);
+
   void AttachCompositorFrameSink(
       Id window_id,
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,

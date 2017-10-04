@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "mojo/common/unguessable_token.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
@@ -245,6 +246,24 @@ interface WindowTree {
   //
   // The callback returns whether the embedding was successful.
   Embed(uint32 window_id, WindowTreeClient client, uint32 embed_flags)
+      => (bool success);
+
+  // Schedules a future call to Embed() using the returned token. This is used
+  // when two clients need to work together to complete an embedding without
+  // passing the WindowTreeClient between the two. This ensures a client isn't
+  // able to spoof another client (say by directly passing events to the
+  // client).
+  //
+  // For example, client A embeds client B in a window. Client A wants client B
+  // to embed a WindowTreeClient in a window created by client B. This can be
+  // accomplished by client A calling ScheduleEmbed() and then passing the
+  // token returned from ScheduleEmbed() to client B (using a separate pipe) so
+  // that client B may call EmbedUsingToken().
+  ScheduleEmbed(WindowTreeClient client)
+      => (mojo.common.mojom.UnguessableToken token);
+  EmbedUsingToken(uint32 window_id,
+                  mojo.common.mojom.UnguessableToken token,
+                  uint32 embed_flags)
       => (bool success);
 
   // Sets focus to the specified window, use 0 to clear focus. For a window to
