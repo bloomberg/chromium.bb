@@ -10,6 +10,11 @@
  *
  */
 
+/* To avoid EBCDIC trouble when parsing on zOS */
+#if defined(__MVS__)
+#pragma convert("ISO8859-1")
+#endif
+
 #define IN_LIBXML
 #include "libxml.h"
 
@@ -4759,8 +4764,8 @@ xmlGetNodePath(const xmlNode *node)
             if (occur == 0) {
                 tmp = cur->next;
                 while (tmp != NULL && occur == 0) {
-		  if (tmp->type == XML_COMMENT_NODE)
-		    occur++;
+		    if (tmp->type == XML_COMMENT_NODE)
+		        occur++;
                     tmp = tmp->next;
                 }
                 if (occur != 0)
