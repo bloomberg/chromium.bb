@@ -76,6 +76,9 @@ GURL GetSRTDownloadURL();
 // Returns the value of the incoming SRT seed.
 std::string GetIncomingSRTSeed();
 
+// Returns the group name in the SRTPrompt field trial.
+std::string GetSRTFieldTrialGroupName();
+
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);
 

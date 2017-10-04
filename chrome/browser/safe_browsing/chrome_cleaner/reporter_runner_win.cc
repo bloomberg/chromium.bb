@@ -955,9 +955,16 @@ class ReporterRunner : public chrome::BrowserListObserver {
                             Now().ToInternalValue());
     }
 
-    if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+    if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
       next_invocation->command_line.AppendSwitch(
           chrome_cleaner::kEnableCrashReportingSwitch);
+    }
+
+    const std::string group_name = GetSRTFieldTrialGroupName();
+    if (!group_name.empty()) {
+      next_invocation->command_line.AppendSwitchASCII(
+          chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);
+    }
   }
 
   // Adds switches to be sent to the Software Reporter when the user opted into

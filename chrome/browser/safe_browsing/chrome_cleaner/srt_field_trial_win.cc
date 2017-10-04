@@ -107,6 +107,10 @@ std::string GetIncomingSRTSeed() {
                                             kSRTPromptSeedParam);
 }
 
+std::string GetSRTFieldTrialGroupName() {
+  return base::FieldTrialList::FindFullName(kSRTPromptTrial);
+}
+
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.PromptUsage", value,
                             SRT_PROMPT_MAX);

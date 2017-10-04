@@ -59,6 +59,9 @@ extern const char kRegistrySuffixSwitch[];
 /// binary, each generating a report). An ASCII, base-64 encoded random string.
 extern const char kSessionIdSwitch[];
 
+// Indicates the group name for the SRTPrompt field trial.
+extern const char kSRTPromptFieldTrialGroupNameSwitch[];
+
 // Indicates that metrics reporting is enabled for the current user.
 extern const char kUmaUserSwitch[];
 
