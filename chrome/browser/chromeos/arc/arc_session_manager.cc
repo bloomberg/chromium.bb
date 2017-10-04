@@ -513,11 +513,6 @@ void ArcSessionManager::NotifyArcPlayStoreEnabledChanged(bool enabled) {
     observer.OnArcPlayStoreEnabledChanged(enabled);
 }
 
-bool ArcSessionManager::IsSessionStopped() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return arc_session_runner_->IsStopped();
-}
-
 // This is the special method to support enterprise mojo API.
 // TODO(hidehiko): Remove this.
 void ArcSessionManager::StopAndEnableArc() {
