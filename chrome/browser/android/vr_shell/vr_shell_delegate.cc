@@ -366,7 +366,7 @@ void VrShellDelegate::SetListeningForActivate(bool listening) {
 void VrShellDelegate::GetNextMagicWindowPose(
     gvr::GvrApi* gvr_api,
     device::VRDisplayImpl* display,
-    device::mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
+    device::mojom::VRMagicWindowProvider::GetPoseCallback callback) {
   content::RenderFrameHost* host = GetHostForDisplay(display);
   if (vr_shell_ || host == nullptr || !host->GetView()->HasFocus()) {
     std::move(callback).Run(nullptr);

@@ -54,15 +54,17 @@ void VRController::SetListeningForActivate(bool listening) {
     service_->SetListeningForActivate(listening);
 }
 
-// Each time a new VRDisplay is connected we'll recieve a VRDisplayPtr for it
+// Each time a new VRDisplay is connected we'll receive a VRDisplayPtr for it
 // here. Upon calling SetClient in the constructor we should receive one call
 // for each VRDisplay that was already connected at the time.
 void VRController::OnDisplayConnected(
-    device::mojom::blink::VRDisplayPtr display,
+    device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider,
+    device::mojom::blink::VRDisplayHostPtr display,
     device::mojom::blink::VRDisplayClientRequest request,
     device::mojom::blink::VRDisplayInfoPtr display_info) {
   VRDisplay* vr_display =
-      new VRDisplay(navigator_vr_, std::move(display), std::move(request));
+      new VRDisplay(navigator_vr_, std::move(magic_window_provider),
+                    std::move(display), std::move(request));
   vr_display->Update(display_info);
   vr_display->OnConnected();
   vr_display->FocusChanged();

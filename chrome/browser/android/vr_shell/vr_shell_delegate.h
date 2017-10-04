@@ -79,8 +79,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void GetNextMagicWindowPose(
       gvr::GvrApi* gvr_api,
       device::VRDisplayImpl* display,
-      device::mojom::VRDisplay::GetNextMagicWindowPoseCallback callback)
-      override;
+      device::mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
   void OnActivateDisplayHandled(bool will_not_present);
   void OnFocusedAndActivatable(device::VRDisplayImpl* display);

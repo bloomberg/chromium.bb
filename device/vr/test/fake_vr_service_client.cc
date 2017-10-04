@@ -13,7 +13,8 @@ FakeVRServiceClient::FakeVRServiceClient(mojom::VRServiceClientRequest request)
 FakeVRServiceClient::~FakeVRServiceClient() {}
 
 void FakeVRServiceClient::OnDisplayConnected(
-    mojom::VRDisplayPtr display,
+    mojom::VRMagicWindowProviderPtr magic_window_provider,
+    mojom::VRDisplayHostPtr display,
     mojom::VRDisplayClientRequest request,
     mojom::VRDisplayInfoPtr displayInfo) {
   displays_.push_back(std::move(displayInfo));

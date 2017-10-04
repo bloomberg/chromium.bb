@@ -36,7 +36,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual void GetNextMagicWindowPose(
       gvr::GvrApi* gvr_api,
       VRDisplayImpl* display,
-      mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) = 0;
+      mojom::VRMagicWindowProvider::GetPoseCallback callback) = 0;
 
  protected:
   virtual ~GvrDelegateProvider() {}

@@ -103,6 +103,8 @@ static_library("vr_common") {
     "model/model.h",
     "service/vr_device_manager.cc",
     "service/vr_device_manager.h",
+    "service/vr_display_host.cc",
+    "service/vr_display_host.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
     "target_property.h",

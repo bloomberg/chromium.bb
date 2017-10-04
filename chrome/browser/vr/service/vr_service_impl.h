@@ -13,11 +13,9 @@
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace device {
-class VRDisplayImpl;
-}
-
 namespace vr {
+
+class VRDisplayHost;
 
 // Browser process representation of a WebVR site session. Instantiated through
 // Mojo once the user loads a page containing WebVR.
@@ -42,13 +40,9 @@ class VRServiceImpl : public device::mojom::VRService {
   void ConnectDevice(device::VRDevice* device);
 
  private:
-  // TODO(mthiesse): Make testable parts protected and have the test expose them
-  // through getters in a subclass.
-  friend class VRDisplayImplTest;
-
   void SetListeningForActivate(bool listening) override;
 
-  std::map<device::VRDevice*, std::unique_ptr<device::VRDisplayImpl>> displays_;
+  std::map<device::VRDevice*, std::unique_ptr<VRDisplayHost>> displays_;
 
   device::mojom::VRServiceClientPtr client_;
 
@@ -56,9 +50,6 @@ class VRServiceImpl : public device::mojom::VRService {
   const int render_frame_routing_id_;
 
   base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_;
-
-  // Getter for testing.
-  device::VRDisplayImpl* GetVRDisplayImplForTesting(device::VRDevice* device);
 
   DISALLOW_COPY_AND_ASSIGN(VRServiceImpl);
 };

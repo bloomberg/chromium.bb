@@ -35,8 +35,8 @@ class VRDisplayImplTest : public testing::Test {
   }
 
   std::unique_ptr<VRDisplayImpl> MakeDisplay() {
-    return std::make_unique<VRDisplayImpl>(device(), 0, 0, client(),
-                                           device()->GetVRDisplayInfo());
+    return std::make_unique<VRDisplayImpl>(
+        device(), 0, 0, client(), device()->GetVRDisplayInfo(), nullptr);
   }
 
   void RequestPresent(VRDisplayImpl* display_impl) {

@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
+#include "chrome/browser/vr/service/vr_display_host.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_display_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -67,7 +67,7 @@ void VRServiceImpl::ConnectDevice(device::VRDevice* device) {
   DCHECK(display_info);
   if (!display_info)
     return;
-  displays_[device] = std::make_unique<device::VRDisplayImpl>(
+  displays_[device] = std::make_unique<VRDisplayHost>(
       device, render_frame_process_id_, render_frame_routing_id_, client_.get(),
       std::move(display_info));
 }
@@ -76,12 +76,6 @@ void VRServiceImpl::SetListeningForActivate(bool listening) {
   for (const auto& display : displays_) {
     display.second->SetListeningForActivate(listening);
   }
-}
-
-device::VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(
-    device::VRDevice* device) {
-  auto it = displays_.find(device);
-  return (it == displays_.end()) ? nullptr : it->second.get();
 }
 
 }  // namespace vr
