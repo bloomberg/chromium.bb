@@ -1,0 +1,354 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 170, 407, 72],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 242, 406, 126],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 224, 406, 126],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 80, 406, 108],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 476, 406, 90],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 188, 406, 72],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 422, 355, 54],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 404, 355, 36],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 386, 355, 36],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 368, 304, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [178, 350, 145, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 350, 145, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='pinkFloat'",
+          "rect": [378, 138, 70, 30],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 353, 48, 65],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 335, 48, 65],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [305, 170, 40, 18],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 188, 40, 18],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='pinkFloat'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'The chief difficulty Alice found at first was in'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'managing her\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'flamingo: she succeeded in getting its'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'body tucked away,\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'comfortably enough, under her'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'arm, with its legs hanging down,\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'but generally, just as'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'she had got its neck nicely straightened\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'out, and was going to'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'give the hedgehog a blow with its head, it\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'would'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox ' twist itself'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'round and look up in her face, with\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'such a puzzled expression'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'that she could not help bursting out\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'laughing: and when she'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'had got its head down, and was going to\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'begin again, it was'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'very provoking to find that the hedgehog had\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'unrolled itself,'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'and was in the act of crawling away: besides all\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'this, there was'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'generally a ridge or furrow in the way wherever\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'she wanted to'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'send the hedgehog to, and, as the doubled-up\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'soldiers were'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'always getting up and walking off to other parts of\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'the ground,'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'Alice soon came to the conclusion that it was a very'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'difficult game indeed.\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'The players all played at once without waiting'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'for turns,\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'the Queen'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'was in a furious passion, and went\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'stamping about, and'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'her head!\u2019'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'about once in a minute.\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'yet'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'had any dispute with the Queen, but she knew that it might'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'become of\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'here; the great\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+      "reason": "geometry"
+    }
+  ]
+}
+

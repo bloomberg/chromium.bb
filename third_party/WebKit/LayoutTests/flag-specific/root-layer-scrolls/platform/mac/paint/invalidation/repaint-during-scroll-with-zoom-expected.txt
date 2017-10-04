@@ -1,0 +1,87 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#C0C0C0"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#C0C0C0",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [3, 65, 250, 250],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [3, 65, 235, 235],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [3, 300, 235, 15],
+          "reason": "scroll control"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [3, 65, 225, 235],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 65, 58, 16],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [238, 65, 15, 235],
+          "reason": "scroll control"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'scroll me'",
+      "reason": "subtree"
+    }
+  ]
+}
+

@@ -1,0 +1,107 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 122, 196, 79],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 82, 190, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutInline SPAN id='t'",
+          "rect": [47, 92, 33, 49],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='t'",
+          "rect": [77, 122, 33, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [77, 122, 33, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [47, 122, 33, 19],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'Cras faucibus. Nunc adipiscing,'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'enim in scelerisque convallis,'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'augue '",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN id='t'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'purus'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox ' eleifend lacus, at'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'sagittis eros leo pulvinar velit.'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'Integer sollicitudin nisi ut urna'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'blandit convallis.'",
+      "reason": "geometry"
+    }
+  ]
+}
+

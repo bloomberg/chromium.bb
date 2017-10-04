@@ -1,0 +1,71 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 380, 304, 59],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [297, 420, 72, 19],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'for'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'turns,\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'hedgehogs; and in\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN id='theQueen'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'the Queen'",
+      "reason": "style change"
+    }
+  ]
+}
+
