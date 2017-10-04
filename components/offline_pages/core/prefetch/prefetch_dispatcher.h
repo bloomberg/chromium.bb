@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 namespace offline_pages {
+class PrefetchBackgroundTask;
 class PrefetchService;
 
 // Serves as the entry point for external signals into the prefetching system.
@@ -43,19 +44,6 @@ class PrefetchService;
 //    Reconcilers during BackgroundTask processing.
 class PrefetchDispatcher {
  public:
-  // A |ScopedBackgroundTask| is created when we are running in a background
-  // task.  Destroying this object should notify the system that we are done
-  // processing the background task.
-  class ScopedBackgroundTask {
-   public:
-    ScopedBackgroundTask() = default;
-    virtual ~ScopedBackgroundTask() = default;
-
-    // Used on destruction to inform the system about whether rescheduling with
-    // or without backoff is required.
-    virtual void SetNeedsReschedule(bool reschedule, bool backoff) = 0;
-  };
-
   virtual ~PrefetchDispatcher() = default;
 
   // Initializes the dispatcher with its respective service instance. This must
@@ -92,15 +80,13 @@ class PrefetchDispatcher {
   // If multiple have the same |client_id|, they will all be removed.
   virtual void RemovePrefetchURLsByClientId(const ClientId& client_id) = 0;
 
-  // Called when Android OS has scheduled us for background work.  When
-  // destroyed, |task| will call back and inform the OS that we are done work
-  // (if required).  |task| also manages rescheduling behavior.
+  // Called when the background task starts. The passed |task| should be held
+  // until all the prefetch processing is done or the system has decided to kill
+  // us.
   virtual void BeginBackgroundTask(
-      std::unique_ptr<ScopedBackgroundTask> task) = 0;
+      std::unique_ptr<PrefetchBackgroundTask> task) = 0;
 
-  // Called when a task must stop immediately due to system constraints. After
-  // this call completes, the system will reschedule the task based on whether
-  // SetNeedsReschedule has been called.
+  // Called when the background task needs to stop
   virtual void StopBackgroundTask() = 0;
 
   // Called when the GCM app handler receives a GCM message with an embeddeed
@@ -124,9 +110,6 @@ class PrefetchDispatcher {
 
   // Called when an archive import is completed successfully or fails.
   virtual void ImportCompleted(int64_t offline_id, bool success) = 0;
-
-  // Used by the test to signal the completion of the background task.
-  virtual void RequestFinishBackgroundTaskForTest() = 0;
 };
 
 }  // namespace offline_pages

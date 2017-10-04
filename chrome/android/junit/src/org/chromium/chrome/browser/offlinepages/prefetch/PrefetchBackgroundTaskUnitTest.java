@@ -137,11 +137,12 @@ public class PrefetchBackgroundTaskUnitTest {
     @Test
     public void scheduleTask() {
         final int additionalDelaySeconds = 15;
-        PrefetchBackgroundTask.scheduleTask(additionalDelaySeconds, true);
+        PrefetchBackgroundTaskScheduler.scheduleTask(additionalDelaySeconds);
         TaskInfo scheduledTask =
                 mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
-        assertEquals(TimeUnit.SECONDS.toMillis(PrefetchBackgroundTask.DEFAULT_START_DELAY_SECONDS
+        assertEquals(TimeUnit.SECONDS.toMillis(
+                             PrefetchBackgroundTaskScheduler.DEFAULT_START_DELAY_SECONDS
                              + additionalDelaySeconds),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
         assertEquals(true, scheduledTask.isPersisted());
@@ -154,13 +155,14 @@ public class PrefetchBackgroundTaskUnitTest {
                 mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNull(scheduledTask);
 
-        PrefetchBackgroundTask.scheduleTask(0, true);
+        PrefetchBackgroundTaskScheduler.scheduleTask(0);
         scheduledTask = mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
-        assertEquals(TimeUnit.SECONDS.toMillis(PrefetchBackgroundTask.DEFAULT_START_DELAY_SECONDS),
+        assertEquals(TimeUnit.SECONDS.toMillis(
+                             PrefetchBackgroundTaskScheduler.DEFAULT_START_DELAY_SECONDS),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
 
-        PrefetchBackgroundTask.cancelTask();
+        PrefetchBackgroundTaskScheduler.cancelTask();
         scheduledTask = mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNull(scheduledTask);
     }

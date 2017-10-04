@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 
 import android.content.Context;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -14,30 +13,16 @@ import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTas
 import org.chromium.chrome.browser.offlinepages.DeviceConditions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
-import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
-import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
-import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Handles servicing background offlining requests.
- *
- * Can schedule or cancel tasks, and handles the actual initialization that
- * happens when a task fires.
  */
 @JNINamespace("offline_pages::prefetch")
 public class PrefetchBackgroundTask extends NativeBackgroundTask {
-    public static final long DEFAULT_START_DELAY_SECONDS = 15 * 60;
     private static final int MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING = 50;
-
-    private static final String TAG = "OPPrefetchBGTask";
-
-    private static BackgroundTaskScheduler sSchedulerInstance;
-
     private static boolean sSkipConditionCheckingForTesting = false;
 
     private long mNativeTask = 0;
@@ -51,49 +36,9 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     public PrefetchBackgroundTask() {}
 
-    static BackgroundTaskScheduler getScheduler() {
-        if (sSchedulerInstance != null) {
-            return sSchedulerInstance;
-        }
-        return BackgroundTaskSchedulerFactory.getScheduler();
-    }
-
     protected Profile getProfile() {
         if (mProfile == null) mProfile = Profile.getLastUsedProfile();
         return mProfile;
-    }
-
-    /**
-     * Schedules the default 'NWake' task for the prefetching service.
-     *
-     * This task will only be scheduled on a good network type.
-     * TODO(dewittj): Handle skipping work if the battery percentage is too low.
-     */
-    @CalledByNative
-    public static void scheduleTask(int additionalDelaySeconds, boolean updateCurrent) {
-        TaskInfo taskInfo =
-                TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID,
-                                PrefetchBackgroundTask.class,
-                                // Minimum time to wait
-                                TimeUnit.SECONDS.toMillis(
-                                        DEFAULT_START_DELAY_SECONDS + additionalDelaySeconds),
-                                // Maximum time to wait.  After this interval the event will fire
-                                // regardless of whether the conditions are right.
-                                TimeUnit.DAYS.toMillis(7))
-                        .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED)
-                        .setIsPersisted(true)
-                        .setUpdateCurrent(updateCurrent)
-                        .build();
-        getScheduler().schedule(ContextUtils.getApplicationContext(), taskInfo);
-    }
-
-    /**
-     * Cancels the default 'NWake' task for the prefetching service.
-     */
-    @CalledByNative
-    public static void cancelTask() {
-        getScheduler().cancel(
-                ContextUtils.getApplicationContext(), TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
     }
 
     @Override
@@ -158,7 +103,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @Override
     public void reschedule(Context context) {
         // TODO(dewittj): Set the backoff time appropriately.
-        scheduleTask(0, true);
+        PrefetchBackgroundTaskScheduler.scheduleTask(0);
     }
 
     /**
@@ -199,14 +144,9 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     }
 
     @VisibleForTesting
-    static void setSchedulerForTesting(BackgroundTaskScheduler scheduler) {
-        sSchedulerInstance = scheduler;
-    }
-
-    @VisibleForTesting
-    void setTaskReschedulingForTesting(boolean reschedule, boolean backoff) {
+    void setTaskReschedulingForTesting(int rescheduleType) {
         if (mNativeTask == 0) return;
-        nativeSetTaskReschedulingForTesting(mNativeTask, reschedule, backoff);
+        nativeSetTaskReschedulingForTesting(mNativeTask, rescheduleType);
     }
 
     @VisibleForTesting
@@ -220,6 +160,6 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @VisibleForTesting
     native boolean nativeOnStopTask(long nativePrefetchBackgroundTaskAndroid);
     native void nativeSetTaskReschedulingForTesting(
-            long nativePrefetchBackgroundTaskAndroid, boolean reschedule, boolean backoff);
+            long nativePrefetchBackgroundTaskAndroid, int rescheduleType);
     native void nativeSignalTaskFinishedForTesting(long nativePrefetchBackgroundTaskAndroid);
 }
