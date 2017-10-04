@@ -2538,6 +2538,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableV8IdleTasks,
     switches::kDisableWebGLImageChromium,
     switches::kDomAutomationController,
+    switches::kEnableAutomation,
     switches::kEnableBrowserSideNavigation,
     switches::kEnableCompositorImageAnimations,
     switches::kEnableDisplayList2dCanvas,

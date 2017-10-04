@@ -293,9 +293,6 @@ const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 const char kEnableAudioDebugRecordingsFromExtension[] =
     "enable-audio-debug-recordings-from-extension";
 
-// Inform users that their browser is being controlled by an automated test.
-const char kEnableAutomation[] = "enable-automation";
-
 // Enables the multi-level undo system for bookmarks.
 const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 

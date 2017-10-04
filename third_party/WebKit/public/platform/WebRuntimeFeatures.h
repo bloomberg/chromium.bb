@@ -184,6 +184,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMediaEngagementBypassAutoplayPolicies(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableV8ContextSnapshot(bool);
+  BLINK_PLATFORM_EXPORT static void EnableAutomationControlled(bool);
 
  private:
   WebRuntimeFeatures();

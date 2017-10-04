@@ -483,6 +483,7 @@ core_dependency_idl_files =
                     "dom/events/EventListener.idl",
                     "events/NavigatorEvents.idl",
                     "fileapi/URLFileAPI.idl",
+                    "frame/NavigatorAutomationInformation.idl",
                     "frame/NavigatorClipboard.idl",
                     "frame/NavigatorConcurrentHardware.idl",
                     "frame/NavigatorCookies.idl",
