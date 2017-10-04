@@ -27,6 +27,7 @@ import org.robolectric.shadows.ShadowBitmap;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -102,6 +103,7 @@ public class WebApkUpdateManagerTest {
     }
 
     private static class TestWebApkUpdateManager extends WebApkUpdateManager {
+        private WebappDataStorage mStorage;
         private TestWebApkUpdateDataFetcher mFetcher;
         private boolean mUpdateRequested;
         private String mUpdateName;
@@ -110,6 +112,7 @@ public class WebApkUpdateManagerTest {
 
         public TestWebApkUpdateManager(WebappDataStorage storage) {
             super(null, storage);
+            mStorage = storage;
         }
 
         /**
@@ -144,14 +147,15 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        protected void buildProtoAndScheduleUpdate(WebApkInfo info, String primaryIconUrl,
+        protected void buildUpdateRequestAndSchedule(WebApkInfo info, String primaryIconUrl,
                 String badgeIconUrl, boolean isManifestStale) {
             mUpdateName = info.name();
-            scheduleUpdate(info, new byte[0]);
+            String updateRequestPath = mStorage.createAndSetUpdateRequestFilePath(info);
+            scheduleUpdate(updateRequestPath);
         }
 
         @Override
-        protected void updateAsyncImpl(WebApkInfo info, byte[] serializedProto) {
+        protected void updateAsyncImpl(String updateRequestPath) {
             mUpdateRequested = true;
         }
 
@@ -336,6 +340,7 @@ public class WebApkUpdateManagerTest {
     @Before
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        PathUtils.setPrivateDataDirectorySuffix("chrome");
         CommandLine.init(null);
 
         registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION);

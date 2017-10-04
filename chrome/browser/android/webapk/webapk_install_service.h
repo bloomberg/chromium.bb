@@ -20,6 +20,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -70,11 +74,10 @@ class WebApkInstallService : public KeyedService {
                     webapk::InstallSource install_source);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
-  // the Google Play server to install the downloaded WebAPK. Calls
-  // |finish_callback| once the update completed or failed.
-  void UpdateAsync(const std::string& webapk_package,
-                   const base::string16& short_name,
-                   std::unique_ptr<std::vector<uint8_t>> serialized_proto,
+  // the Google Play server to install the downloaded WebAPK.
+  // |update_request_path| is the path of the file with the update request.
+  // Calls |finish_callback| once the update completed or failed.
+  void UpdateAsync(const base::FilePath& update_request_path,
                    const FinishCallback& finish_callback);
 
  private:

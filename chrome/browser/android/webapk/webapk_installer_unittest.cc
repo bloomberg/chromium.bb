@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -111,20 +112,12 @@ class WebApkInstallerRunner {
     run_loop.Run();
   }
 
-  void RunUpdateWebApk(const std::string& serialized_proto) {
+  void RunUpdateWebApk(const base::FilePath& update_request_path) {
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
 
-    std::map<std::string, std::string> icon_url_to_murmur2_hash{
-        {best_primary_icon_url_.spec(), "0"},
-        {best_badge_icon_url_.spec(), "0"}};
-    std::unique_ptr<std::vector<uint8_t>> serialized_proto_vector =
-        base::MakeUnique<std::vector<uint8_t>>(serialized_proto.begin(),
-                                               serialized_proto.end());
-
     WebApkInstaller::UpdateAsyncForTesting(
-        CreateWebApkInstaller(), kDownloadedWebApkPackageName,
-        base::string16() /* short_name */, std::move(serialized_proto_vector),
+        CreateWebApkInstaller(), update_request_path,
         base::Bind(&WebApkInstallerRunner::OnCompleted,
                    base::Unretained(this)));
 
@@ -161,6 +154,30 @@ class WebApkInstallerRunner {
   WebApkInstallResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
+};
+
+// Helper class for calling WebApkInstaller::StoreUpdateRequestToFile()
+// synchronously.
+class UpdateRequestStorer {
+ public:
+  UpdateRequestStorer() {}
+
+  void StoreSync(const base::FilePath& update_request_path) {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    WebApkInstaller::StoreUpdateRequestToFile(
+        update_request_path, ShortcutInfo((GURL())), SkBitmap(), SkBitmap(), "",
+        "", std::map<std::string, std::string>(), false,
+        base::Bind(&UpdateRequestStorer::OnComplete, base::Unretained(this)));
+    run_loop.Run();
+  }
+
+ private:
+  void OnComplete(bool success) { quit_closure_.Run(); }
+
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateRequestStorer);
 };
 
 // Builds a webapk::WebApkResponse with |token| as the token from the WebAPK
@@ -213,11 +230,9 @@ class BuildProtoRunner {
 
  private:
   // Called when the |webapk_request_| is populated.
-  void OnBuiltWebApkProto(
-      std::unique_ptr<std::vector<uint8_t>> serialized_proto) {
+  void OnBuiltWebApkProto(std::unique_ptr<std::string> serialized_proto) {
     webapk_request_ = base::MakeUnique<webapk::WebApk>();
-    webapk_request_->ParseFromArray(serialized_proto->data(),
-                                    serialized_proto->size());
+    webapk_request_->ParseFromString(*serialized_proto);
     on_completed_callback_.Run();
   }
 
@@ -228,6 +243,22 @@ class BuildProtoRunner {
   base::Closure on_completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BuildProtoRunner);
+};
+
+class ScopedTempFile {
+ public:
+  ScopedTempFile() { CHECK(base::CreateTemporaryFile(&file_path_)); }
+
+  ~ScopedTempFile() {
+    base::DeleteFile(file_path_, false);
+  }
+
+  const base::FilePath& GetFilePath() { return file_path_; }
+
+ private:
+  base::FilePath file_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTempFile);
 };
 
 }  // anonymous namespace
@@ -385,31 +416,74 @@ TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
 
 // Test update succeeding.
 TEST_F(WebApkInstallerTest, UpdateSuccess) {
+  ScopedTempFile scoped_file;
+  base::FilePath update_request_path = scoped_file.GetFilePath();
+  UpdateRequestStorer().StoreSync(update_request_path);
+  ASSERT_TRUE(base::PathExists(update_request_path));
+
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunUpdateWebApk("non-empty");
+  runner->RunUpdateWebApk(update_request_path);
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
 }
 
 // Test that an update suceeds if the WebAPK server returns a HTTP response with
-// an empty token. The WebAPK server sends an empty download URL when:
+// an empty token. The WebAPK server sends an empty token when:
 // - The server is unable to update the WebAPK in the way that the client
 //   requested.
 // AND
 // - The most up to date version of the WebAPK on the server is identical to the
 //   one installed on the client.
-TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyDownloadUrlInResponse) {
+TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyTokenInResponse) {
   SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, ""));
 
+  ScopedTempFile scoped_file;
+  base::FilePath update_request_path = scoped_file.GetFilePath();
+  UpdateRequestStorer().StoreSync(update_request_path);
+  ASSERT_TRUE(base::PathExists(update_request_path));
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunUpdateWebApk("non-empty");
+  runner->RunUpdateWebApk(update_request_path);
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
 }
 
-// Test that an update fails if an empty proto is passed to UpdateAsync().
-TEST_F(WebApkInstallerTest, UpdateFailsEmptyProto) {
+// Test that an update fails if the "update request path" points to an update
+// file with the incorrect format.
+TEST_F(WebApkInstallerTest, UpdateFailsUpdateRequestWrongFormat) {
+  ScopedTempFile scoped_file;
+  base::FilePath update_request_path = scoped_file.GetFilePath();
+  base::WriteFile(update_request_path, "😀", 1);
+
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunUpdateWebApk("");
+  runner->RunUpdateWebApk(update_request_path);
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
+}
+
+// Test that an update fails if the "update request path" points to a
+// non-existing file.
+TEST_F(WebApkInstallerTest, UpdateFailsUpdateRequestFileDoesNotExist) {
+  base::FilePath update_request_path;
+  {
+    ScopedTempFile scoped_file;
+    update_request_path = scoped_file.GetFilePath();
+  }
+  ASSERT_FALSE(base::PathExists(update_request_path));
+
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->RunUpdateWebApk(update_request_path);
+  EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
+}
+
+// Test that StoreUpdateRequestToFile() creates directories if needed when
+// writing to the passed in |update_file_path|.
+TEST_F(WebApkInstallerTest, StoreUpdateRequestToFileCreatesDirectories) {
+  base::FilePath outer_file_path;
+  ASSERT_TRUE(CreateNewTempDirectory("", &outer_file_path));
+  base::FilePath update_request_path =
+      outer_file_path.Append("deep").Append("deeper");
+  UpdateRequestStorer().StoreSync(update_request_path);
+  EXPECT_TRUE(base::PathExists(update_request_path));
+
+  // Clean up
+  base::DeleteFile(outer_file_path, true /* recursive */);
 }
 
 // When there is no Web Manifest available for a site, an empty

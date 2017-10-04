@@ -8,7 +8,6 @@
 #include <jni.h>
 #include <map>
 #include <memory>
-#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -24,6 +23,7 @@
 
 namespace base {
 class ElapsedTimer;
+class FilePath;
 }
 
 namespace content {
@@ -51,12 +51,10 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Creates a self-owned WebApkInstaller instance and talks to the Chrome
   // WebAPK server to update a WebAPK on the server and locally requests the
   // APK to be installed. Calls |callback| once the install completed or failed.
-  static void UpdateAsync(
-      content::BrowserContext* context,
-      const std::string& webapk_package,
-      const base::string16& short_name,
-      std::unique_ptr<std::vector<uint8_t>> serialized_proto,
-      const FinishCallback& callback);
+  // |update_request_path| is the path of the file with the update request.
+  static void UpdateAsync(content::BrowserContext* context,
+                          const base::FilePath& update_request_path,
+                          const FinishCallback& callback);
 
   // Calls the private function |InstallAsync| for testing.
   // Should be used only for testing.
@@ -64,16 +62,13 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                                      const ShortcutInfo& shortcut_info,
                                      const SkBitmap& primary_icon,
                                      const SkBitmap& badge_icon,
-                                     const FinishCallback& finish_callback);
+                                     const FinishCallback& callback);
 
   // Calls the private function |UpdateAsync| for testing.
   // Should be used only for testing.
-  static void UpdateAsyncForTesting(
-      WebApkInstaller* installer,
-      const std::string& webapk_package,
-      const base::string16& short_name,
-      std::unique_ptr<std::vector<uint8_t>> serialized_proto,
-      const FinishCallback& callback);
+  static void UpdateAsyncForTesting(WebApkInstaller* installer,
+                                    const base::FilePath& update_request_path,
+                                    const FinishCallback& callback);
 
   // Sets the timeout for the server requests.
   void SetTimeoutMs(int timeout_ms);
@@ -93,8 +88,21 @@ class WebApkInstaller : public net::URLFetcherDelegate {
       const std::string& version,
       const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
       bool is_manifest_stale,
-      const base::Callback<void(std::unique_ptr<std::vector<uint8_t>>)>&
-          callback);
+      const base::Callback<void(std::unique_ptr<std::string>)>& callback);
+
+  // Builds the WebAPK proto for an update or an install request and stores it
+  // to |update_request_path|. Runs |callback| with a boolean indicating
+  // whether the proto was successfully written to disk.
+  static void StoreUpdateRequestToFile(
+      const base::FilePath& update_request_path,
+      const ShortcutInfo& shortcut_info,
+      const SkBitmap& primary_icon,
+      const SkBitmap& badge_icon,
+      const std::string& package_name,
+      const std::string& version,
+      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      bool is_manifest_stale,
+      const base::Callback<void(bool)> callback);
 
  protected:
   explicit WebApkInstaller(content::BrowserContext* browser_context);
@@ -127,12 +135,14 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                     const FinishCallback& finish_callback);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
-  // the Google Play server to install the downloaded WebAPK. Calls
-  // |finish_callback| once the update completed or failed.
-  void UpdateAsync(const std::string& webapk_package,
-                   const base::string16& short_name,
-                   const std::unique_ptr<std::vector<uint8_t>> serialized_proto,
-                   const FinishCallback& callback);
+  // the Google Play server to install the downloaded WebAPK.
+  // |update_request_path| is the path of the file with the update request.
+  // Calls |finish_callback| once the update completed or failed.
+  void UpdateAsync(const base::FilePath& update_request_path,
+                   const FinishCallback& finish_callback);
+
+  // Called with the contents of the update request file.
+  void OnReadUpdateRequest(std::unique_ptr<std::string> update_request);
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -150,7 +160,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Sends a request to WebAPK server to create/update WebAPK. During a
   // successful request the WebAPK server responds with a token to send to
   // Google Play.
-  void SendRequest(std::unique_ptr<std::vector<uint8_t>> serialized_proto);
+  void SendRequest(std::unique_ptr<std::string> serialized_proto);
 
   net::URLRequestContextGetter* request_context_getter_;
 
@@ -172,7 +182,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   SkBitmap install_primary_icon_;
   SkBitmap install_badge_icon_;
 
-  GURL start_url_;
   base::string16 short_name_;
 
   // WebAPK server URL.
