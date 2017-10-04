@@ -53,7 +53,7 @@ const char kPasswordFormTooComplex[] =
     "   <input type='password' autocomplete='new-password'>"
     "</form>";
 
-const char kInferredAutocompleteAttributes[] =
+const char kInferredPasswordAutocompleteAttributes[] =
     // Login form.
     "<form>"
     "   <input type='text'>"
@@ -71,6 +71,26 @@ const char kInferredAutocompleteAttributes[] =
     "   <input type='password'>"
     "   <input type='password'>"
     "   <input type='password'>"
+    "</form>";
+
+const char kInferredUsernameAutocompleteAttributes[] =
+    // Login form.
+    "<form>"
+    "   <input type='text'>"
+    "   <input type='password' autocomplete='current-password'>"
+    "</form>"
+    // Registration form.
+    "<form>"
+    "   <input type='text'>"
+    "   <input type='password' autocomplete='new-password'>"
+    "   <input type='password' autocomplete='new-password'>"
+    "</form>"
+    // Change password form with username.
+    "<form>"
+    "   <input type='text'>"
+    "   <input type='password' autocomplete='current-password'>"
+    "   <input type='password' autocomplete='new-password'>"
+    "   <input type='password' autocomplete='new-password'>"
     "</form>";
 
 const std::string AutocompleteSuggestionString(const std::string& suggestion) {
@@ -167,36 +187,61 @@ TEST_F(PagePasswordsAnalyserTest, PasswordFormTooComplex) {
   RunTestCase();
 }
 
-TEST_F(PagePasswordsAnalyserTest, InferredAutocompleteAttributes) {
-  LoadTestCase(kInferredAutocompleteAttributes);
+TEST_F(PagePasswordsAnalyserTest, InferredPasswordAutocompleteAttributes) {
+  LoadTestCase(kInferredPasswordAutocompleteAttributes);
   size_t element_index = 0;
 
   // Login form.
-  element_index++;
-  Expect(AutocompleteSuggestionString("username"),
-         PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+  element_index++;  // Skip form element.
+  element_index++;  // Skip username field.
   Expect(AutocompleteSuggestionString("current-password"),
          PagePasswordsAnalyserLogger::kVerbose, {element_index++});
 
   // Registration form.
-  element_index++;
-  Expect(AutocompleteSuggestionString("username"),
-         PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+  element_index++;  // Skip form element.
+  element_index++;  // Skip username field.
   Expect(AutocompleteSuggestionString("new-password"),
          PagePasswordsAnalyserLogger::kVerbose, {element_index++});
   Expect(AutocompleteSuggestionString("new-password"),
          PagePasswordsAnalyserLogger::kVerbose, {element_index++});
 
   // Change password form.
-  element_index++;
-  Expect(AutocompleteSuggestionString("username"),
-         PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+  element_index++;  // Skip form element.
+  element_index++;  // Skip username field.
   Expect(AutocompleteSuggestionString("current-password"),
          PagePasswordsAnalyserLogger::kVerbose, {element_index++});
   Expect(AutocompleteSuggestionString("new-password"),
          PagePasswordsAnalyserLogger::kVerbose, {element_index++});
   Expect(AutocompleteSuggestionString("new-password"),
          PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+
+  RunTestCase();
+}
+
+TEST_F(PagePasswordsAnalyserTest, InferredUsernameAutocompleteAttributes) {
+  LoadTestCase(kInferredUsernameAutocompleteAttributes);
+  size_t element_index = 0;
+
+  // Login form.
+  element_index++;  // Skip form element.
+  Expect(AutocompleteSuggestionString("username"),
+         PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+  element_index++;  // Skip already annotated password field.
+
+  // Registration form.
+  element_index++;  // Skip form element.
+  Expect(AutocompleteSuggestionString("username"),
+         PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+  element_index++;  // Skip already annotated password field.
+  element_index++;  // Skip already annotated password field.
+
+  // Change password form with username.
+  element_index++;  // Skip form element.
+  Expect(AutocompleteSuggestionString("username"),
+         PagePasswordsAnalyserLogger::kVerbose, {element_index++});
+  element_index++;  // Skip already annotated password field.
+  element_index++;  // Skip already annotated password field.
+  element_index++;  // Skip already annotated password field.
 
   RunTestCase();
 }
