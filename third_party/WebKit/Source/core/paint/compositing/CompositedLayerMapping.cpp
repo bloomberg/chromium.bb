@@ -164,6 +164,33 @@ static inline bool IsAcceleratedContents(LayoutObject& layout_object) {
          layout_object.IsVideo();
 }
 
+// Returns true if the compositor will be responsible for applying the sticky
+// position offset for this composited layer.
+static bool UsesCompositedStickyPosition(PaintLayer& layer) {
+  return layer.GetLayoutObject().Style()->HasStickyConstrainedPosition() &&
+         (layer.AncestorOverflowLayer()->IsRootLayer()
+              ? layer.GetLayoutObject().View()->GetFrameView()->IsScrollable()
+              : layer.AncestorOverflowLayer()->NeedsCompositedScrolling());
+}
+
+// Returns the sticky position offset that should be removed from a given layer
+// for use in CompositedLayerMapping.
+//
+// If the layer is not using composited sticky position, this will return
+// FloatPoint().
+static FloatPoint StickyPositionOffsetForLayer(PaintLayer& layer) {
+  if (!UsesCompositedStickyPosition(layer))
+    return FloatPoint();
+
+  const StickyConstraintsMap& constraints_map = layer.AncestorOverflowLayer()
+                                                    ->GetScrollableArea()
+                                                    ->GetStickyConstraintsMap();
+  const StickyPositionScrollingConstraints& constraints =
+      constraints_map.at(&layer);
+
+  return FloatPoint(constraints.GetOffsetForStickyPosition(constraints_map));
+}
+
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
       content_offset_in_compositing_layer_dirty_(false),
@@ -288,18 +315,10 @@ void CompositedLayerMapping::UpdateBackdropFilters(const ComputedStyle& style) {
       OwningLayer().CreateCompositorFilterOperationsForBackdropFilter(style));
 }
 
-bool CompositedLayerMapping::UsesCompositedStickyPosition() const {
-  return GetLayoutObject().Style()->HasStickyConstrainedPosition() &&
-         (owning_layer_.AncestorOverflowLayer()->IsRootLayer()
-              ? GetLayoutObject().View()->GetFrameView()->IsScrollable()
-              : owning_layer_.AncestorOverflowLayer()
-                    ->NeedsCompositedScrolling());
-}
-
 void CompositedLayerMapping::UpdateStickyConstraints(
     const ComputedStyle& style) {
   WebLayerStickyPositionConstraint web_constraint;
-  if (!UsesCompositedStickyPosition()) {
+  if (!UsesCompositedStickyPosition(owning_layer_)) {
     // Clear the previous sticky position constraint - if set.
     graphics_layer_->SetStickyPositionConstraint(web_constraint);
     return;
@@ -841,7 +860,8 @@ static IntRect ClipBox(LayoutBox& layout_object) {
 static LayoutPoint ComputeOffsetFromCompositedAncestor(
     const PaintLayer* layer,
     const PaintLayer* composited_ancestor,
-    const LayoutPoint& local_representative_point_for_fragmentation) {
+    const LayoutPoint& local_representative_point_for_fragmentation,
+    const FloatPoint& offset_for_sticky_position) {
   // Add in the offset of the composited bounds from the coordinate space of
   // the PaintLayer, since visualOffsetFromAncestor() requires the pre-offset
   // input to be in the space of the PaintLayer. We also need to add in this
@@ -867,6 +887,7 @@ static LayoutPoint ComputeOffsetFromCompositedAncestor(
                     .SubpixelAccumulation());
   }
   offset.MoveBy(-local_representative_point_for_fragmentation);
+  offset.MoveBy(-LayoutPoint(offset_for_sticky_position));
   return offset;
 }
 
@@ -882,9 +903,14 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
     local_representative_point_for_fragmentation =
         ToLayoutInline(owning_layer_.GetLayoutObject()).FirstLineBoxTopLeft();
   }
+  // Blink will already have applied any necessary offset for sticky positioned
+  // elements. If the compositor is handling sticky offsets for this layer, we
+  // need to remove the Blink-side offset to avoid double-counting.
+  FloatPoint offset_for_sticky_position =
+      StickyPositionOffsetForLayer(owning_layer_);
   offset_from_composited_ancestor = ComputeOffsetFromCompositedAncestor(
       &owning_layer_, composited_ancestor,
-      local_representative_point_for_fragmentation);
+      local_representative_point_for_fragmentation, offset_for_sticky_position);
   snapped_offset_from_composited_ancestor =
       IntPoint(offset_from_composited_ancestor.X().Round(),
                offset_from_composited_ancestor.Y().Round());
@@ -1189,25 +1215,8 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& relative_compositing_bounds,
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
-  // Find and remove the offset applied for sticky position if the compositor
-  // will shift the layer for sticky position to avoid offsetting the layer
-  // twice.
-  FloatSize offset_for_sticky_position;
-  if (UsesCompositedStickyPosition()) {
-    const StickyConstraintsMap& constraints_map =
-        owning_layer_.AncestorOverflowLayer()
-            ->GetScrollableArea()
-            ->GetStickyConstraintsMap();
-    const StickyPositionScrollingConstraints& constraints =
-        constraints_map.at(&owning_layer_);
-
-    offset_for_sticky_position =
-        constraints.GetOffsetForStickyPosition(constraints_map);
-  }
-  graphics_layer_->SetPosition(
-      FloatPoint(relative_compositing_bounds.Location() -
-                 graphics_layer_parent_location) -
-      offset_for_sticky_position);
+  graphics_layer_->SetPosition(FloatPoint(
+      relative_compositing_bounds.Location() - graphics_layer_parent_location));
   graphics_layer_->SetOffsetFromLayoutObject(
       ToIntSize(local_compositing_bounds.Location()));
 

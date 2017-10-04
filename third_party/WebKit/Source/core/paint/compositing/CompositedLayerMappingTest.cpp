@@ -2109,21 +2109,26 @@ TEST_P(CompositedLayerMappingTest,
       "<style>"
       " .scroller { overflow: scroll; width: 200px; height: 600px; }"
       " .composited { will-change:transform; }"
+      " .perspective { perspective: 150px; }"
       " .box { position: sticky; width: 185px; height: 50px; top: 0px; }"
       " .container { width: 100%; height: 1000px; }"
       "</style>"
       "<div id='scroller' class='composited scroller'>"
       " <div class='composited container'>"
-      "  <div id='sticky' class='box'></div>"
+      "  <div id='sticky' class='perspective box'></div>"
       " </div>"
       "</div>");
 
+  LayoutBoxModelObject* sticky =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
   CompositedLayerMapping* mapping =
-      ToLayoutBlock(GetLayoutObjectByElementId("sticky"))
-          ->Layer()
-          ->GetCompositedLayerMapping();
+      sticky->Layer()->GetCompositedLayerMapping();
   ASSERT_TRUE(mapping);
   GraphicsLayer* main_graphics_layer = mapping->MainGraphicsLayer();
+  GraphicsLayer* child_transform_layer = mapping->ChildTransformLayer();
+
+  ASSERT_TRUE(main_graphics_layer);
+  ASSERT_TRUE(child_transform_layer);
 
   PaintLayer* scroller =
       ToLayoutBlock(GetLayoutObjectByElementId("scroller"))->Layer();
@@ -2132,8 +2137,21 @@ TEST_P(CompositedLayerMappingTest,
       FloatPoint(scrollable_area->ScrollPosition().Y(), 100));
   GetDocument().View()->UpdateAllLifecyclePhases();
 
+  // On the blink side, a sticky offset of (0, 100) should have been applied to
+  // the sticky element.
+  LayoutSize blink_sticky_offset = sticky->StickyPositionOffset();
+  EXPECT_FLOAT_EQ(0, blink_sticky_offset.Width());
+  EXPECT_FLOAT_EQ(100, blink_sticky_offset.Height());
+
+  // On the CompositedLayerMapping side however, the offset should have been
+  // removed so that the compositor can take care of it.
   EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().X());
   EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().Y());
+
+  // The child transform layer for the perspective shifting should also not be
+  // moved by the sticky offset.
+  EXPECT_FLOAT_EQ(0, child_transform_layer->GetPosition().X());
+  EXPECT_FLOAT_EQ(0, child_transform_layer->GetPosition().Y());
 }
 
 TEST_P(CompositedLayerMappingTest,
