@@ -446,8 +446,13 @@ Status ExecuteSwitchToWindow(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
   std::string name;
-  if (!params.GetString("name", &name))
-    return Status(kUnknownError, "'name' must be a string");
+  if (session->w3c_compliant) {
+    if (!params.GetString("handle", &name))
+      return Status(kInvalidArgument, "'handle' must be a string");
+  } else {
+    if (!params.GetString("name", &name))
+      return Status(kUnknownError, "'name' must be a string");
+  }
 
   std::list<std::string> web_view_ids;
   Status status = session->chrome->GetWebViewIds(&web_view_ids,
