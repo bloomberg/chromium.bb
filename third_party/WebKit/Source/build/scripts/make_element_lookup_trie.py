@@ -39,6 +39,7 @@ class ElementLookupTrieWriter(json5_generator.Writer):
     default_parameters = {
         'JSInterfaceName': {},
         'constructorNeedsCreatedByParser': {},
+        'interfaceHeaderDir': {},
         'interfaceName': {},
         'noConstructor': {},
         'runtimeEnabled': {},

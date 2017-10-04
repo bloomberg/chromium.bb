@@ -42,6 +42,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         'JSInterfaceName': {},
         'Conditional': {},
         'constructorNeedsCreatedByParser': {},
+        'interfaceHeaderDir': {},
         'interfaceName': {},
         'noConstructor': {},
         'noTypeHelpers': {},
@@ -73,8 +74,9 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
             tag['has_js_interface'] = self._has_js_interface(tag)
             tag['js_interface'] = self._js_interface(tag)
             tag['interface'] = self._interface(tag)
-            tag['interface_header'] = self.get_file_basename(
-                tag['interface']) + '.h'
+            tag['interface_header'] = '%s/%s.h' % (
+                self._interface_header_dir(tag),
+                self.get_file_basename(tag['interface']))
             interface_counts[tag['interface']] += 1
 
         for tag in tags:
@@ -116,6 +118,11 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
 
     def _has_js_interface(self, tag):
         return not tag['noConstructor'] and self._js_interface(tag) != ('%sElement' % self.namespace)
+
+    def _interface_header_dir(self, tag):
+        if tag['interfaceHeaderDir']:
+            return tag['interfaceHeaderDir']
+        return 'core/' + self.namespace.lower()
 
 
 if __name__ == "__main__":
