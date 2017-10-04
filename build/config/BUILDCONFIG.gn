@@ -527,6 +527,7 @@ default_compiler_configs = [
   "//build/config/compiler:default_symbols",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
+  "//build/config/coverage:default_coverage",
   "//build/config/sanitizers:default_sanitizer_flags",
 ]
 if (is_win) {
