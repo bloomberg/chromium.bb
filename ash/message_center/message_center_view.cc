@@ -428,6 +428,11 @@ void MessageCenterView::OnLockedStateChanged(bool locked) {
   Update(true /* animate */);
 }
 
+void MessageCenterView::OnQuietModeChanged(bool is_quiet_mode) {
+  settings_view_->SetQuietModeState(is_quiet_mode);
+  button_bar_->SetQuietModeState(is_quiet_mode);
+}
+
 void MessageCenterView::ClickOnNotification(
     const std::string& notification_id) {
   message_center_->ClickOnNotification(notification_id);

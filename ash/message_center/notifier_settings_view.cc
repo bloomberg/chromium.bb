@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/message_center/message_center_view.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -32,6 +34,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -46,6 +49,7 @@
 
 namespace ash {
 
+using message_center::MessageCenter;
 using message_center::Notifier;
 using message_center::NotifierGroup;
 using message_center::NotifierId;
@@ -53,13 +57,12 @@ using message_center::NotifierSettingsProvider;
 
 namespace {
 
+const SkColor kSettingsBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 const SkColor kEntrySeparatorColor = SkColorSetARGB(0.1 * 255, 0, 0, 0);
 const int kEntryHeight = 45;
 const int kEntrySeparatorHeight = 1;
 const int kHorizontalMargin = 10;
-const int kTopMargin = 20;
 const int kEntryIconSize = 16;
-const int kDescriptionToSwitcherSpace = 15;
 const int kInternalHorizontalSpacing = 10;
 const int kCheckboxSizeWithPadding = 24;
 
@@ -78,19 +81,6 @@ const int kLearnMoreTargetHeight = 40;
 // The minimum height of the settings pane in pixels.
 const int kMinimumHeight = 480;
 
-// The horizontal margin of the title area of the settings pane in addition to
-// the standard margin from kHorizontalMargin.
-const int kTitleMargin = 20;
-
-// The innate vertical blank space in the label for the title of the settings
-// pane.
-const int kInnateTitleBottomMargin = 1;
-const int kInnateTitleTopMargin = 7;
-
-// The innate top blank space in the label for the description of the settings
-// pane.
-const int kInnateDescriptionTopMargin = 2;
-
 // Checkboxes have some built-in right padding blank space.
 const int kInnateCheckboxRightPadding = 2;
 
@@ -100,25 +90,33 @@ const int kInnateCheckboxRightPadding = 2;
 constexpr int kComputedCheckboxSize =
     kCheckboxSizeWithPadding - kInnateCheckboxRightPadding;
 
-// The spec doesn't include the bottom blank area of the title bar or the innate
-// blank area in the description label, so we'll use this as the space between
-// the title and description.
-constexpr int kComputedTitleBottomMargin = kDescriptionToSwitcherSpace -
-                                           kInnateTitleBottomMargin -
-                                           kInnateDescriptionTopMargin;
-
-// The blank space above the title needs to be adjusted by the amount of blank
-// space included in the title label.
-constexpr int kComputedTitleTopMargin = kTopMargin - kInnateTitleTopMargin;
-
-// The switcher has a lot of blank space built in so we should include that when
-// spacing the title area vertically.
-constexpr int kComputedTitleElementSpacing = kDescriptionToSwitcherSpace - 6;
-
 // A function to create a focus border.
 std::unique_ptr<views::Painter> CreateFocusPainter() {
   return views::Painter::CreateSolidFocusPainter(
       message_center::kFocusBorderColor, gfx::Insets(1, 2, 3, 2));
+}
+
+// TODO(tetsui): Give more general names and remove kEntryHeight, kEntryIconSize
+// etc.
+constexpr gfx::Insets kTopLabelPadding(16, 18, 15, 0);
+const int kQuietModeViewSpacing = 18;
+const int kQuietModeIconSize = 20;
+
+constexpr gfx::Insets kHeaderViewPadding(4, 0, 4, 0);
+constexpr gfx::Insets kQuietModeViewPadding(16, 18, 15, 14);
+constexpr SkColor kQuietModeIconColor = SkColorSetARGB(0x8A, 0x5A, 0x5A, 0x5A);
+constexpr SkColor kTopLabelColor = SkColorSetRGB(0x42, 0x85, 0xF4);
+constexpr SkColor kLabelColor = SkColorSetARGB(0xDE, 0x0, 0x0, 0x0);
+const int kLabelFontSize = 13;
+
+// "Roboto-Regular, 13sp" is specified in the mock.
+gfx::FontList GetFontListForLabel() {
+  gfx::Font default_font;
+  int font_size_delta = kLabelFontSize - default_font.GetFontSize();
+  gfx::Font font = default_font.Derive(font_size_delta, gfx::Font::NORMAL,
+                                       gfx::Font::Weight::NORMAL);
+  DCHECK_EQ(kLabelFontSize, font.GetFontSize());
+  return gfx::FontList(font);
 }
 
 // EntryView ------------------------------------------------------------------
@@ -372,7 +370,7 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more) {
 
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
     : title_arrow_(nullptr),
-      title_label_(nullptr),
+      header_view_(nullptr),
       scroller_(nullptr),
       provider_(provider) {
   // |provider_| may be null in tests.
@@ -380,23 +378,56 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
     provider_->AddObserver(this);
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetBackground(
-      views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kSettingsBackgroundColor));
   SetPaintToLayer();
 
-  title_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SETTINGS_TITLE),
-      views::style::CONTEXT_DIALOG_TITLE);
-  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetMultiLine(true);
-  title_label_->SetBorder(
-      views::CreateEmptyBorder(kComputedTitleTopMargin, kTitleMargin,
-                               kComputedTitleBottomMargin, kTitleMargin));
+  header_view_ = new views::View;
+  header_view_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, kHeaderViewPadding, 0));
 
-  AddChildView(title_label_);
+  views::View* quiet_mode_view = new views::View;
+
+  views::BoxLayout* quiet_mode_layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, kQuietModeViewPadding,
+                           kQuietModeViewSpacing);
+  quiet_mode_view->SetLayoutManager(quiet_mode_layout);
+
+  views::ImageView* quiet_mode_icon = new views::ImageView();
+  quiet_mode_icon->SetImage(
+      gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
+                            kQuietModeIconSize, kQuietModeIconColor));
+  quiet_mode_view->AddChildView(quiet_mode_icon);
+
+  views::Label* quiet_mode_label = new views::Label(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
+  quiet_mode_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  quiet_mode_label->SetFontList(GetFontListForLabel());
+  quiet_mode_label->SetAutoColorReadabilityEnabled(false);
+  quiet_mode_label->SetEnabledColor(kLabelColor);
+  quiet_mode_view->AddChildView(quiet_mode_label);
+  quiet_mode_layout->SetFlexForView(quiet_mode_label, 1);
+
+  quiet_mode_toggle_ = new views::ToggleButton(this);
+  SetQuietModeState(MessageCenter::Get()->IsQuietMode());
+  quiet_mode_view->AddChildView(quiet_mode_toggle_);
+  header_view_->AddChildView(quiet_mode_view);
+
+  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+  top_label->SetBorder(views::CreateEmptyBorder(kTopLabelPadding));
+  // "Roboto-Medium, 13sp" is specified in the mock.
+  top_label->SetFontList(GetFontListForLabel().Derive(
+      0, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+  top_label->SetAutoColorReadabilityEnabled(false);
+  top_label->SetEnabledColor(kTopLabelColor);
+  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  top_label->SetMultiLine(true);
+  header_view_->AddChildView(top_label);
+
+  AddChildView(header_view_);
 
   scroller_ = new views::ScrollView();
-  scroller_->SetBackgroundColor(MessageCenterView::kBackgroundColor);
+  scroller_->SetBackgroundColor(kSettingsBackgroundColor);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   AddChildView(scroller_);
@@ -416,6 +447,10 @@ NotifierSettingsView::~NotifierSettingsView() {
 
 bool NotifierSettingsView::IsScrollable() {
   return scroller_->height() < scroller_->contents()->height();
+}
+
+void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
+  quiet_mode_toggle_->SetIsOn(is_quiet_mode, false /* animate */);
 }
 
 void NotifierSettingsView::UpdateIconImage(const NotifierId& notifier_id,
@@ -448,21 +483,6 @@ void NotifierSettingsView::UpdateContentsView(
   contents_view->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
 
-  views::View* contents_title_view = new views::View();
-  contents_title_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
-                           kComputedTitleElementSpacing));
-
-  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
-  top_label->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kTitleMargin - kHorizontalMargin)));
-  top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  top_label->SetMultiLine(true);
-
-  contents_title_view->AddChildView(top_label);
-  contents_view->AddChildView(contents_title_view);
-
   size_t notifier_count = notifiers.size();
   for (size_t i = 0; i < notifier_count; ++i) {
     NotifierButton* button =
@@ -491,23 +511,23 @@ void NotifierSettingsView::UpdateContentsView(
 }
 
 void NotifierSettingsView::Layout() {
-  int title_height = title_label_->GetHeightForWidth(width());
-  title_label_->SetBounds(0, 0, width(), title_height);
+  int header_height = header_view_->GetHeightForWidth(width());
+  header_view_->SetBounds(0, 0, width(), header_height);
 
   views::View* contents_view = scroller_->contents();
   int content_width = width();
   int content_height = contents_view->GetHeightForWidth(content_width);
-  if (title_height + content_height > height()) {
+  if (header_height + content_height > height()) {
     content_width -= scroller_->GetScrollBarLayoutWidth();
     content_height = contents_view->GetHeightForWidth(content_width);
   }
   contents_view->SetBounds(0, 0, content_width, content_height);
-  scroller_->SetBounds(0, title_height, width(), height() - title_height);
+  scroller_->SetBounds(0, header_height, width(), height() - header_height);
 }
 
 gfx::Size NotifierSettingsView::GetMinimumSize() const {
   gfx::Size size(kWidth, kMinimumHeight);
-  int total_height = title_label_->GetPreferredSize().height() +
+  int total_height = header_view_->GetPreferredSize().height() +
                      scroller_->contents()->GetPreferredSize().height();
   if (total_height > kMinimumHeight)
     size.Enlarge(scroller_->GetScrollBarLayoutWidth(), 0);
@@ -516,10 +536,10 @@ gfx::Size NotifierSettingsView::GetMinimumSize() const {
 
 gfx::Size NotifierSettingsView::CalculatePreferredSize() const {
   gfx::Size preferred_size;
-  gfx::Size title_size = title_label_->GetPreferredSize();
+  gfx::Size header_size = header_view_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();
-  return gfx::Size(std::max(title_size.width(), content_size.width()),
-                   title_size.height() + content_size.height());
+  return gfx::Size(std::max(header_size.width(), content_size.width()),
+                   header_size.height() + content_size.height());
 }
 
 bool NotifierSettingsView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -540,6 +560,11 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
   if (sender == title_arrow_) {
     MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
     center_view->SetSettingsVisible(!center_view->settings_visible());
+    return;
+  }
+
+  if (sender == quiet_mode_toggle_) {
+    MessageCenter::Get()->SetQuietMode(quiet_mode_toggle_->is_on());
     return;
   }
 

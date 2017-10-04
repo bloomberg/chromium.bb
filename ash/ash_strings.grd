@@ -1165,7 +1165,7 @@ Subsequent notifications, windows and dialogs may be split between desktops.
         Settings
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="A message to describe a list of toggle-able notification sources.">
-        Allow notifications from the following:
+        Allow notifications from the following
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_FOOTER_TITLE" desc="The label in the footer of the message center">
         Notifications

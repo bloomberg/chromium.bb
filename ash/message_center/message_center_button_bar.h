@@ -38,6 +38,8 @@ class MessageCenterButtonBar : public views::View,
       const base::string16& title);
   ~MessageCenterButtonBar() override;
 
+  void SetQuietModeState(bool is_quiet_mode);
+
   // Overridden from views::View:
   void ChildVisibilityChanged(views::View* child) override;
 
