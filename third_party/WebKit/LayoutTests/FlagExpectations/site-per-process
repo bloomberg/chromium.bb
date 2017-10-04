@@ -62,17 +62,17 @@ crbug.com/582176 virtual/mojo-loading/http/tests/devtools/console-cd.html [ Fail
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 crbug.com/608015 virtual/mojo-loading/http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 
-# https://crbug.com/602493 - Layout tests harness doesn't support history dump across OOPIFs
-crbug.com/602493 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
-crbug.com/602493 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Crash ]
+# https://crbug.com/771003 - Dump history from all processes in layout tests
+crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+crbug.com/771003 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
 # https://crbug.com/582522 - extra mixedContent checks reported with --site-per-process
 # https://crbug.com/602497 - Inconsistent console messages about mixed content,
 #                            when running with or without --site-per-process
 crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 crbug.com/602497 http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
-crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
+crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
 
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
