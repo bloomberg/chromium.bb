@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "jni/AwContentsBackgroundThreadClient_jni.h"
 #include "jni/AwContentsIoThreadClient_jni.h"
+#include "net/base/data_url.h"
 #include "net/url_request/url_request.h"
 
 using base::android::AttachCurrentThread;
@@ -351,9 +352,23 @@ void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
                                                                 java_object_));
   }
   if (!bg_thread_client_object_.is_null()) {
-    get_response = base::Bind(
-        &RunShouldInterceptRequest, AwWebResourceRequest(*request),
-        JavaObjectWeakGlobalRef(env, bg_thread_client_object_.obj()));
+    // Skip ShouldInterceptRequest for request of a LoadDataWithBaseURL
+    // navigation. Note this is a short term hack so that PlznNavigate matches
+    // previous behavior. Logic specifically checks for an empty data URL,
+    // which through a quirk in content is what's sent up as the URL here.
+    // Long term, need to either remove the hack (with behavior change), or
+    // re-implement the same logic with changes in content rather than relying
+    // on a quirk of content behavior. crbug.com/769126
+    string mime_type;
+    string charset;
+    string data;
+    bool parse_result =
+        net::DataURL::Parse(request->url(), &mime_type, &charset, &data);
+    if (!parse_result || !data.empty()) {
+      get_response = base::Bind(
+          &RunShouldInterceptRequest, AwWebResourceRequest(*request),
+          JavaObjectWeakGlobalRef(env, bg_thread_client_object_.obj()));
+    }
   }
   base::PostTaskAndReplyWithResult(sequenced_task_runner_.get(), FROM_HERE,
                                    get_response, callback);
