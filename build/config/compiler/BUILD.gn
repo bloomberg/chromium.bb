@@ -265,8 +265,6 @@ config("compiler") {
     # and build system rebuild things when their commandline changes). Nothing
     # should ever read this define.
     defines += [ "CR_CLANG_REVISION=\"$clang_revision\"" ]
-
-    configs += [ "//build/config/coverage" ]
   }
 
   # Non-Mac Posix compiler flags setup.
@@ -1723,6 +1721,12 @@ config("default_optimization") {
     configs = [ ":no_optimize" ]
   } else if (optimize_for_fuzzing) {
     assert(!is_win, "Fuzzing optimize level not supported on Windows")
+
+    # Coverage build is quite slow. Using "optimize_for_fuzzing" makes it even
+    # slower as it uses "-O1" instead of "-O3". Prevent that from happening.
+    assert(!use_clang_coverage,
+           "optimize_for_fuzzing=true should not be used with " +
+               "use_clang_coverage=true.")
     configs = [ ":optimize_fuzzing" ]
   } else {
     configs = [ ":optimize" ]

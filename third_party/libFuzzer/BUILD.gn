@@ -2,11 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Engine should be compiled without coverage (infinite loop in trace_cmp).
+fuzzing_engine_remove_configs = [
+  "//build/config/coverage:default_coverage",
+  "//build/config/sanitizers:default_sanitizer_flags",
+]
+
+fuzzing_engine_add_configs =
+    [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
+
 source_set("libfuzzer") {
-  # libfuzzer should be compiled without coverage (infinite loop in trace_cmp).
-  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
-  configs +=
-      [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
   sources = [
     "src/FuzzerCrossOver.cpp",
     "src/FuzzerDriver.cpp",
@@ -32,15 +37,16 @@ source_set("libfuzzer") {
     "src/FuzzerUtilPosix.cpp",
     "src/FuzzerUtilWindows.cpp",
   ]
+
+  configs -= fuzzing_engine_remove_configs
+  configs += fuzzing_engine_add_configs
 }
 
 source_set("afl_driver") {
-  # AFL should be compiled without coverage (infinite loop in trace_cmp).
-  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
-  configs +=
-      [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
-
   sources = [
     "src/afl/afl_driver.cpp",
   ]
+
+  configs -= fuzzing_engine_remove_configs
+  configs += fuzzing_engine_add_configs
 }
