@@ -3719,3 +3719,8 @@ crbug.com/770362 [ Linux Debug ] virtual/threaded/animations/unanimated-style.ht
 crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]
 crbug.com/771492 [ Win Linux Mac ] external/wpt/css/css-tables-3/table-model-fixup-2.html [ Failure ]
 
+# Sheriff failures 2017-10-04
+crbug.com/770691 [ Win7 ] media/controls/lazy-loaded-style.html [ Failure Pass ]
+crbug.com/770691 [ Win7 ] virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure Pass ]
+crbug.com/771518 [ Win7 ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.html [ Pass Failure ]
+crbug.com/771518 [ Win7 ] virtual/mojo-loading/http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.html [ Pass Failure ]
