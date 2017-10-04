@@ -41,7 +41,7 @@ URL_EXPORT extern const char kHttpsSuboriginScheme[];
 // Used to separate a standard scheme and the hostname: "://".
 URL_EXPORT extern const char kStandardSchemeSeparator[];
 
-URL_EXPORT extern const size_t kMaxURLChars;
+constexpr int kMaxURLChars = 2 * 1024 * 1024;
 
 }  // namespace url
 

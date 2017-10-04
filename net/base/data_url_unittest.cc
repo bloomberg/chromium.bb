@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "net/base/data_url.h"
+
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -234,15 +236,31 @@ TEST(DataURLTest, Parse) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::string mime_type;
-    std::string charset;
-    std::string data;
-    bool ok = DataURL::Parse(GURL(tests[i].url), &mime_type, &charset, &data);
-    EXPECT_EQ(ok, tests[i].is_valid);
-    if (tests[i].is_valid) {
-      EXPECT_EQ(tests[i].mime_type, mime_type);
-      EXPECT_EQ(tests[i].charset, charset);
-      EXPECT_EQ(tests[i].data, data);
+    {
+      std::string mime_type;
+      std::string charset;
+      std::string data;
+      bool ok = DataURL::Parse(GURL(tests[i].url), &mime_type, &charset, &data);
+      EXPECT_EQ(ok, tests[i].is_valid);
+      if (tests[i].is_valid) {
+        EXPECT_EQ(tests[i].mime_type, mime_type);
+        EXPECT_EQ(tests[i].charset, charset);
+        EXPECT_EQ(tests[i].data, data);
+      }
+    }
+
+    {
+      std::string mime_type;
+      std::string charset;
+      std::string data;
+      bool ok = DataURL::ParseCanonicalized(tests[i].url, &mime_type, &charset,
+                                            &data);
+      EXPECT_EQ(ok, tests[i].is_valid);
+      if (tests[i].is_valid) {
+        EXPECT_EQ(tests[i].mime_type, mime_type);
+        EXPECT_EQ(tests[i].charset, charset);
+        EXPECT_EQ(tests[i].data, data);
+      }
     }
   }
 }

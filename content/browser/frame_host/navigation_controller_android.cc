@@ -218,11 +218,18 @@ void NavigationControllerAndroid::LoadUrl(
   }
 
   if (data_url_as_string) {
-    // Treat |data_url_as_string| as if we were intending to put it into a GURL
-    // field. Note that kMaxURLChars is only enforced when serializing URLs
-    // for IPC.
-    GURL data_url = GURL(ConvertJavaStringToUTF8(env, data_url_as_string));
-    DCHECK(data_url.SchemeIs(url::kDataScheme));
+    // Note that this doesn't use GURL, since //url enforces a max length limit.
+    std::string data_url = ConvertJavaStringToUTF8(env, data_url_as_string);
+    // Sanity check that Java handed off a valid-looking data: URL.
+    DCHECK(base::StartsWith(data_url, "data:", base::CompareCase::SENSITIVE));
+#if DCHECK_IS_ON()
+    {
+      std::string mime_type, charset, data;
+      DCHECK(net::DataURL::ParseCanonicalized(data_url, &mime_type, &charset,
+                                              &data));
+    }
+#endif  // DCHECK_IS_ON()
+    // params.url should be the empty data URL as well.
     DCHECK(params.url.SchemeIs(url::kDataScheme));
 #if DCHECK_IS_ON()
     {
@@ -230,9 +237,8 @@ void NavigationControllerAndroid::LoadUrl(
       DCHECK(net::DataURL::Parse(params.url, &mime_type, &charset, &data));
       DCHECK(data.empty());
     }
-#endif
-    std::string s = data_url.spec();
-    params.data_url_as_string = base::RefCountedString::TakeString(&s);
+#endif  // DCHECK_IS_ON()
+    params.data_url_as_string = base::RefCountedString::TakeString(&data_url);
   }
 
   if (j_referrer_url) {
