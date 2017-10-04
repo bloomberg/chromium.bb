@@ -174,10 +174,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // subscribe to ArcSessionManager, and ArcSessionManager proxies the event.
   void NotifyArcPlayStoreEnabledChanged(bool enabled);
 
-  // Returns true if ARC instance is stopped.
-  // See ArcSessionRunner::IsStopped() for details.
-  bool IsSessionStopped() const;
-
   // Called from ARC support platform app when user cancels signing.
   void CancelAuthCode();
 
