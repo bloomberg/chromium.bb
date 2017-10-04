@@ -84,11 +84,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(USE_ASH)
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
 #include "ui/views/test/test_desktop_screen_x11.h"
@@ -179,7 +176,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
 #endif
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   DefaultAshEventGeneratorDelegate::GetInstance();
 #endif
 }
@@ -533,7 +530,7 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   const BrowserList* active_browser_list = BrowserList::GetInstance();
   if (!active_browser_list->empty()) {
     browser_ = active_browser_list->get(0);
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())
       browser_->window()->Restore();

@@ -900,10 +900,12 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());
 #else
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
-#if defined(USE_ASH)
+#endif
+#endif
+
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Combine with ChromeBrowserMainPartsChromeos.
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
-#endif
-#endif
 #endif
 
 #if defined(USE_X11)

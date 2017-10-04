@@ -13,8 +13,8 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 
-#if defined(USE_ASH)
-#include "ash/accelerators/accelerator_table.h"  // nogncheck
+#if defined(OS_CHROMEOS)
+#include "ash/accelerators/accelerator_table.h"
 #endif
 
 namespace {
@@ -274,7 +274,7 @@ const int kRepeatableCommandIds[] = {
 };
 const size_t kRepeatableCommandIdsLength = arraysize(kRepeatableCommandIds);
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 // Below we map Chrome command ids to Ash action ids for commands that have
 // an shortcut that is handled by Ash (instead of Chrome). Adding entries
 // here will show shortcut text on menus. See comment above.
@@ -298,7 +298,7 @@ const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
 };
 const size_t kChromeCmdId2AshActionIdLength =
     arraysize(kChromeCmdId2AshActionId);
-#endif // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 } // namespace
 
@@ -311,7 +311,7 @@ std::vector<AcceleratorMapping> GetAcceleratorList() {
 
 bool GetAshAcceleratorForCommandId(int command_id,
                                    ui::Accelerator* accelerator) {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   for (size_t i = 0; i < kChromeCmdId2AshActionIdLength; ++i) {
     if (command_id == kChromeCmdId2AshActionId[i].chrome_cmd_id) {
       for (size_t j = 0; j < ash::kAcceleratorDataLength; ++j) {
@@ -324,7 +324,7 @@ bool GetAshAcceleratorForCommandId(int command_id,
       }
     }
   }
-#endif // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
   return false;
 }
 

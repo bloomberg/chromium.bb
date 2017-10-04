@@ -16,7 +16,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/test/views_test_base.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 #include "ui/aura/window.h"
 #endif
 
@@ -347,7 +347,7 @@ TEST_F(IconLabelBubbleViewTest, GestureInkDropState) {
 }
 #endif
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 // Verifies IconLabelBubbleView::CalculatePreferredSize() doesn't crash when
 // there is a widget but no compositor.
 using IconLabelBubbleViewCrashTest = views::ViewsTestBase;

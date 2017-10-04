@@ -13,7 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #endif
 
@@ -25,7 +25,7 @@ AuraDesktopCapturer::AuraDesktopCapturer()
 AuraDesktopCapturer::~AuraDesktopCapturer() {}
 
 void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   if (ash::Shell::HasInstance()) {
     // TODO(kelvinp): Use ash::Shell::GetAllRootWindows() when multiple monitor
     // support is implemented.

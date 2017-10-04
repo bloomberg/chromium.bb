@@ -29,7 +29,7 @@ namespace {
 
 const int kDesktopMediaSourceViewGroupId = 1;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 // Here we are going to display default app icon for app windows without an
 // icon, and display product logo for chrome browser windows.
 gfx::ImageSkia LoadDefaultIcon(aura::Window* window) {
@@ -175,7 +175,7 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
   source_view->SetGroup(kDesktopMediaSourceViewGroupId);
   if (source.id.type == DesktopMediaID::TYPE_WINDOW) {
     gfx::ImageSkia icon_image = GetWindowIcon(source.id);
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
     // Empty icons are used to represent default icon for aura windows. By
     // detecting this, we load the default icon from resource.
     if (icon_image.isNull()) {

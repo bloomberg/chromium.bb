@@ -30,7 +30,7 @@ const gfx::FontList& LegacyTypographyProvider::GetFont(int context,
   gfx::Font::Weight font_weight;
   GetDefaultFont(context, style, &size_delta, &font_weight);
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   ash::ApplyAshFontStyles(context, style, &size_delta, &font_weight);
 #endif
 

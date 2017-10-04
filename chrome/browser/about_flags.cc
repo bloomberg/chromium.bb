@@ -1487,9 +1487,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
-    {"mus", flag_descriptions::kUseMusName,
-     flag_descriptions::kUseMusDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kUseMusChoices)},
+    {"ash-enable-night-light", flag_descriptions::kEnableNightLightName,
+     flag_descriptions::kEnableNightLightDescription, kOsAll,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableNightLight)},
     {"allow-touchpad-three-finger-click",
      flag_descriptions::kAllowTouchpadThreeFingerClickName,
      flag_descriptions::kAllowTouchpadThreeFingerClickDescription, kOsCrOS,
@@ -1498,16 +1498,62 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
+    {
+        "disable-boot-animation", flag_descriptions::kBootAnimationName,
+        flag_descriptions::kBootAnimationDescription, kOsCrOSOwnerOnly,
+        SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
+    },
     {"disable-easy-unlock-bluetooth-low-energy-detection",
      flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryName,
      flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryDescription,
      kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(
          proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)},
+    {
+        "disable-office-editing-component-app",
+        flag_descriptions::kOfficeEditingComponentAppName,
+        flag_descriptions::kOfficeEditingComponentAppDescription, kOsCrOS,
+        SINGLE_DISABLE_VALUE_TYPE(
+            chromeos::switches::kDisableOfficeEditingComponentApp),
+    },
+    {
+        "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
+        flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
+        FEATURE_VALUE_TYPE(app_list::features::kEnableBackgroundBlur),
+    },
     {"enable-easyunlock-promotions",
      flag_descriptions::kEasyUnlockPromotionsName,
      flag_descriptions::kEasyUnlockPromotionsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEasyUnlockPromotions)},
+    {
+        "enable-fullscreen-app-list",
+        flag_descriptions::kEnableFullscreenAppListName,
+        flag_descriptions::kEnableFullscreenAppListDescription, kOsCrOS,
+        FEATURE_VALUE_TYPE(app_list::features::kEnableFullscreenAppList),
+    },
+    {
+        "enable-pinch", flag_descriptions::kPinchScaleName,
+        flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,
+        ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch,
+                                  switches::kDisablePinch),
+    },
+    {"enable-video-player-chromecast-support",
+     flag_descriptions::kVideoPlayerChromecastSupportName,
+     flag_descriptions::kVideoPlayerChromecastSupportDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         chromeos::switches::kEnableVideoPlayerChromecastSupport)},
+    {"instant-tethering", flag_descriptions::kTetherName,
+     flag_descriptions::kTetherDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kInstantTethering)},
+    {"multidevice", flag_descriptions::kMultideviceName,
+     flag_descriptions::kMultideviceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kMultidevice)},
+    {"mus", flag_descriptions::kUseMusName,
+     flag_descriptions::kUseMusDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kUseMusChoices)},
+    {"show-touch-hud", flag_descriptions::kShowTouchHudName,
+     flag_descriptions::kShowTouchHudDescription, kOsAll,
+     SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
     {"spurious-power-button-window",
      flag_descriptions::kSpuriousPowerButtonWindowName,
      flag_descriptions::kSpuriousPowerButtonWindowDescription, kOsCrOS,
@@ -1528,56 +1574,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSpuriousPowerButtonLidAngleChangeName,
      flag_descriptions::kSpuriousPowerButtonLidAngleChangeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kSpuriousPowerButtonLidAngleChangeChoices)},
-#endif  // OS_CHROMEOS
-#if defined(USE_ASH)
-    {"ash-enable-night-light", flag_descriptions::kEnableNightLightName,
-     flag_descriptions::kEnableNightLightDescription, kOsAll,
-     SINGLE_VALUE_TYPE(ash::switches::kAshEnableNightLight)},
-    {"show-touch-hud", flag_descriptions::kShowTouchHudName,
-     flag_descriptions::kShowTouchHudDescription, kOsAll,
-     SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
-    {
-        "enable-pinch", flag_descriptions::kPinchScaleName,
-        flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,
-        ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch,
-                                  switches::kDisablePinch),
-    },
-#endif  // USE_ASH
-#if defined(OS_CHROMEOS)
-    {
-        "disable-boot-animation", flag_descriptions::kBootAnimationName,
-        flag_descriptions::kBootAnimationDescription, kOsCrOSOwnerOnly,
-        SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
-    },
-    {"enable-video-player-chromecast-support",
-     flag_descriptions::kVideoPlayerChromecastSupportName,
-     flag_descriptions::kVideoPlayerChromecastSupportDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kEnableVideoPlayerChromecastSupport)},
-    {
-        "disable-office-editing-component-app",
-        flag_descriptions::kOfficeEditingComponentAppName,
-        flag_descriptions::kOfficeEditingComponentAppDescription, kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(
-            chromeos::switches::kDisableOfficeEditingComponentApp),
-    },
-    {
-        "enable-fullscreen-app-list",
-        flag_descriptions::kEnableFullscreenAppListName,
-        flag_descriptions::kEnableFullscreenAppListDescription, kOsCrOS,
-        FEATURE_VALUE_TYPE(app_list::features::kEnableFullscreenAppList),
-    },
-    {
-        "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
-        flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
-        FEATURE_VALUE_TYPE(app_list::features::kEnableBackgroundBlur),
-    },
-    {"instant-tethering", flag_descriptions::kTetherName,
-     flag_descriptions::kTetherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kInstantTethering)},
-    {"multidevice", flag_descriptions::kMultideviceName,
-     flag_descriptions::kMultideviceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kMultidevice)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",
@@ -3120,14 +3116,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     "PauseBackgroundTabs")},
 #endif
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
     {"ash-disable-smooth-screen-rotation",
      flag_descriptions::kAshDisableSmoothScreenRotationName,
      flag_descriptions::kAshDisableSmoothScreenRotationDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableSmoothScreenRotation)},
-#endif  // defined(USE_ASH)
-
-#if defined(OS_CHROMEOS)
     {"enable-zip-archiver-on-file-manager",
      flag_descriptions::kEnableZipArchiverOnFileManagerName,
      flag_descriptions::kEnableZipArchiverOnFileManagerDescription, kOsCrOS,

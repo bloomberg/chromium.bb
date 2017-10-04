@@ -61,7 +61,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
@@ -230,17 +230,17 @@ int GetDetachY(TabStrip* tab_strip) {
 }
 
 bool GetIsDragged(Browser* browser) {
-#if !defined(USE_ASH) || defined(OS_WIN)  // TODO(win_ash)
-  return false;
-#else
+#if defined(OS_CHROMEOS)
   return ash::wm::GetWindowState(browser->window()->GetNativeWindow())->
       is_dragged();
+#else
+  return false;
 #endif
 }
 
 }  // namespace
 
-#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+#if defined(OS_CHROMEOS)
 class ScreenEventGeneratorDelegate
     : public aura::test::EventGeneratorDelegateAura {
  public:
@@ -2456,7 +2456,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 
 #endif  // OS_CHROMEOS
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));

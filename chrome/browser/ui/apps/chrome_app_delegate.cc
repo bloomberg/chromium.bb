@@ -43,11 +43,8 @@
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
-#if defined(USE_ASH)
-#include "ash/shelf/shelf_constants.h"  // nogncheck
-#endif
-
 #if defined(OS_CHROMEOS)
+#include "ash/shelf/shelf_constants.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #endif
 
@@ -285,7 +282,7 @@ bool ChromeAppDelegate::CheckMediaAccessPermission(
 }
 
 int ChromeAppDelegate::PreferredIconSize() const {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   return ash::kShelfSize;
 #else
   return extension_misc::EXTENSION_ICON_SMALL;

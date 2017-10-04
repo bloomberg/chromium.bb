@@ -81,7 +81,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 ui::WebDialogDelegate* delegate);
 #endif  // !defined(OS_MACOSX)
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 // Creates and shows an HTML dialog with the given delegate and browser context.
 // The dialog is placed in the ash window hierarchy in the given container. The
 // window is automatically destroyed when it is closed.
@@ -91,7 +91,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
 gfx::NativeWindow ShowWebDialogInContainer(int container_id,
                                            content::BrowserContext* context,
                                            ui::WebDialogDelegate* delegate);
-#endif  // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 // Shows the create chrome app shortcut dialog box.
 // |close_callback| may be null.

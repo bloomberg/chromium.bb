@@ -74,6 +74,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/shell.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -82,10 +83,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/enumerate_modules_model.h"
 #include "content/public/browser/gpu_data_manager.h"
-#endif
-
-#if defined(USE_ASH)
-#include "ash/shell.h"  // nogncheck
 #endif
 
 using base::UserMetricsAction;

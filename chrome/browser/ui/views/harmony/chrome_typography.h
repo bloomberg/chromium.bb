@@ -10,12 +10,13 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
+// gn check complains on Linux Ozone.
 #include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
 
 enum ChromeTextContext {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   CHROME_TEXT_CONTEXT_START = ash::ASH_TEXT_CONTEXT_END,
 #else
   CHROME_TEXT_CONTEXT_START = views::style::VIEWS_TEXT_CONTEXT_END,

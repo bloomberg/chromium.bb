@@ -65,9 +65,6 @@ config("feature_flags") {
     # TODO(brettw) should probably be "=1".
     defines += [ "USE_UDEV" ]
   }
-  if (use_ash) {
-    defines += [ "USE_ASH=1" ]
-  }
   if (use_aura) {
     defines += [ "USE_AURA=1" ]
   }

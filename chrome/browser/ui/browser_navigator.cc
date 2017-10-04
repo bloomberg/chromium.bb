@@ -36,7 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #endif
@@ -435,7 +435,7 @@ void Navigate(NavigateParams* params) {
   if (!params->browser)
     return;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   if (source_browser && source_browser != params->browser) {
     // When the newly created browser was spawned by a browser which visits
     // another user's desktop, it should be shown on the same desktop as the

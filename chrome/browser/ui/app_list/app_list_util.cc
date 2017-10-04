@@ -12,7 +12,7 @@
 bool IsAppLauncherEnabled() {
 #if !BUILDFLAG(ENABLE_APP_LIST)
   return false;
-#elif defined(OS_CHROMEOS) || defined(USE_ASH)
+#elif defined(OS_CHROMEOS)
   return true;
 #else
   PrefService* prefs = g_browser_process->local_state();

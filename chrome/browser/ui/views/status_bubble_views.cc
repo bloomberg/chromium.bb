@@ -39,9 +39,9 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-#if defined(USE_ASH)
-#include "ash/shell.h"            // nogncheck
-#include "ash/wm/window_state.h"  // nogncheck
+#if defined(OS_CHROMEOS)
+#include "ash/shell.h"
+#include "ash/wm/window_state.h"
 #endif
 
 #if defined(USE_AURA)

@@ -149,8 +149,8 @@ bool IsAppsShortcutEnabled(Profile* profile) {
   if (profile->IsLegacySupervised())
     return false;
 
-#if defined(USE_ASH)
-  // Don't show the apps shortcut in ash since the app launcher is enabled.
+#if defined(OS_CHROMEOS)
+  // Chrome OS uses the app list / app launcher.
   return false;
 #else
   return search::IsInstantExtendedAPIEnabled() && !profile->IsOffTheRecord();

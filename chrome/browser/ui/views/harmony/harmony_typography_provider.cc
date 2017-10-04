@@ -17,7 +17,8 @@
 #include "ui/native_theme/native_theme_win.h"
 #endif
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
+// gn check complains on Linux Ozone.
 #include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
 
@@ -114,7 +115,7 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   ash::ApplyAshFontStyles(context, style, &size_delta, &font_weight);
 #endif
 

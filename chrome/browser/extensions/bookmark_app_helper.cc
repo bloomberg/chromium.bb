@@ -80,9 +80,10 @@
 #include "base/win/shortcut.h"
 #endif  // defined(OS_WIN)
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
+// gn check complains on Linux Ozone.
 #include "ash/public/cpp/shelf_model.h"  // nogncheck
-#include "ash/shell.h"                   // nogncheck
+#include "ash/shell.h"
 #endif
 
 namespace {
@@ -750,15 +751,15 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     return;
   }
 
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
   // Pin the app to the relevant launcher depending on the OS.
   Profile* current_profile = profile_->GetOriginalProfile();
-#endif  // !defined(USE_ASH)
+#endif  // !defined(OS_CHROMEOS)
 
 // On Mac, shortcuts are automatically created for hosted apps when they are
 // installed, so there is no need to create them again.
 #if !defined(OS_MACOSX)
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
   web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX) || defined(OS_WIN)
   creation_locations.on_desktop = true;
@@ -772,7 +773,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
                            creation_locations, current_profile, extension);
 #else
   ash::Shell::Get()->shelf_model()->PinAppWithID(extension->id());
-#endif  // !defined(USE_ASH)
+#endif  // !defined(OS_CHROMEOS)
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_MACOSX)

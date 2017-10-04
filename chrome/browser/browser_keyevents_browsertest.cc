@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
       "U 18 0 false false true false" }
   };
 
-#if !defined(USE_ASH)
+#if !defined(OS_CHROMEOS)
   static const KeyEventTestData kTestAccess1 = {
     ui::VKEY_1, false, false, true, false,
     false, false, false, false, 4,
@@ -649,9 +649,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
   EXPECT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L""));
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
-#if !defined(USE_ASH)
-  // On Ash, alt-1..9 are assigned as window selection global accelerators, so
-  // they can not be used as accesskeys.
+#if !defined(OS_CHROMEOS)
+  // On Chrome OS, alt-1..9 are assigned as window selection global
+  // accelerators, so they cannot be used as accesskeys.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccess1));
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"1"));
 #endif

@@ -2144,7 +2144,7 @@ bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
 }
 
 void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // Ash does not paint the bookmarks separator line because it looks odd on
   // the flat background.  We keep it present for layout, but don't draw it.
   bookmarks_separator_view_->SetVisible(false);

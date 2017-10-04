@@ -2736,7 +2736,7 @@ const char kWebrtcH264WithOpenh264FfmpegDescription[] =
 
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 
 const char kAshDisableSmoothScreenRotationName[] =
     "Disable smooth rotation animations.";
@@ -2791,7 +2791,7 @@ const char kUiShowCompositedLayerBordersAll[] = "All";
 const char kUiSlowAnimationsName[] = "Slow UI animations";
 const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
-#endif  // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 

@@ -1685,7 +1685,7 @@ extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 
 extern const char kAshDisableSmoothScreenRotationName[];
 extern const char kAshDisableSmoothScreenRotationDescription[];
@@ -1723,7 +1723,7 @@ extern const char kUiShowCompositedLayerBordersAll[];
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
-#endif  // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
