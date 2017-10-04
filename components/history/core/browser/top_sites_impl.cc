@@ -96,10 +96,8 @@ constexpr base::TimeDelta kFirstDelayAtStartup =
 // being not updated often enough since the app isn't usually running for long
 // stretches of time.
 constexpr base::TimeDelta kDelayForUpdates = base::TimeDelta::FromMinutes(5);
-;
 #else
 constexpr base::TimeDelta kDelayForUpdates = base::TimeDelta::FromMinutes(60);
-;
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 
 // Use 100 quality (highest quality) because we're very sensitive to
