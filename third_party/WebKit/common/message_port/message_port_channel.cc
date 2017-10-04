@@ -60,32 +60,30 @@ std::vector<MessagePortChannel> MessagePortChannel::CreateFromHandles(
 void MessagePortChannel::PostMessage(const uint8_t* encoded_message,
                                      size_t encoded_message_size,
                                      std::vector<MessagePortChannel> ports) {
+  MessagePortMessage msg;
+  msg.encoded_message = base::make_span(encoded_message, encoded_message_size);
+  msg.ports = ReleaseHandles(ports);
+  PostMojoMessage(mojom::MessagePortMessage::SerializeAsMessage(&msg));
+}
+
+void MessagePortChannel::PostMojoMessage(mojo::Message message) {
   DCHECK(state_->handle().is_valid());
 
   // NOTE: It is OK to ignore the return value of mojo::WriteMessageNew here.
   // HTML MessagePorts have no way of reporting when the peer is gone.
-
-  MessagePortMessage msg;
-  msg.encoded_message = base::make_span(encoded_message, encoded_message_size);
-  msg.ports = ReleaseHandles(ports);
-  mojo::Message mojo_message =
-      mojom::MessagePortMessage::SerializeAsMessage(&msg);
-  mojo::WriteMessageNew(state_->handle().get(), mojo_message.TakeMojoMessage(),
+  mojo::WriteMessageNew(state_->handle().get(), message.TakeMojoMessage(),
                         MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
 bool MessagePortChannel::GetMessage(std::vector<uint8_t>* encoded_message,
                                     std::vector<MessagePortChannel>* ports) {
-  DCHECK(state_->handle().is_valid());
-  mojo::ScopedMessageHandle message_handle;
-  MojoResult rv = mojo::ReadMessageNew(state_->handle().get(), &message_handle,
-                                       MOJO_READ_MESSAGE_FLAG_NONE);
-  if (rv != MOJO_RESULT_OK)
+  mojo::Message message;
+  bool success = GetMojoMessage(&message);
+  if (!success)
     return false;
 
-  mojo::Message message(std::move(message_handle));
   MessagePortMessage msg;
-  bool success = mojom::MessagePortMessage::DeserializeFromMessage(
+  success = mojom::MessagePortMessage::DeserializeFromMessage(
       std::move(message), &msg);
   if (!success)
     return false;
@@ -93,6 +91,18 @@ bool MessagePortChannel::GetMessage(std::vector<uint8_t>* encoded_message,
   *encoded_message = std::move(msg.owned_encoded_message);
   *ports = CreateFromHandles(std::move(msg.ports));
 
+  return true;
+}
+
+bool MessagePortChannel::GetMojoMessage(mojo::Message* message) {
+  DCHECK(state_->handle().is_valid());
+  mojo::ScopedMessageHandle message_handle;
+  MojoResult rv = mojo::ReadMessageNew(state_->handle().get(), &message_handle,
+                                       MOJO_READ_MESSAGE_FLAG_NONE);
+  if (rv != MOJO_RESULT_OK)
+    return false;
+
+  *message = std::move(message_handle);
   return true;
 }
 

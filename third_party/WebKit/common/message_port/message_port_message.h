@@ -13,7 +13,7 @@
 namespace blink {
 
 // This struct represents messages as they are posted over a message port. This
-// type can be serialized as a content::mojom::MessagePortMessage struct.
+// type can be serialized as a blink::mojom::MessagePortMessage struct.
 struct MessagePortMessage {
   MessagePortMessage();
   ~MessagePortMessage();
