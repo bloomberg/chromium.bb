@@ -73,8 +73,8 @@
         -webkit-margin-end: 22px;  /* 24px - 2px from margin for outline. */
       }
 
-      .separator {
-        /* Per Alan@, this line is different from the other separator lines. */
+      #menuSeparator {
+        /* Per bettes@, this is different from the other separator lines. */
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         margin-bottom: 8px;
         margin-top: 8px;
@@ -188,7 +188,7 @@
           </a>
         </iron-selector>
       </iron-collapse>
-      <div class="separator"></div>
+      <div id="menuSeparator"></div>
       <a id="about-menu" href="/help">$i18n{aboutPageTitle}</a>
     </iron-selector>
   </template>
