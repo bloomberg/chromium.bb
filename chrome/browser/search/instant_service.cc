@@ -153,8 +153,7 @@ void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
   if (auto* channel = rph->GetChannel()) {
     chrome::mojom::SearchBouncerAssociatedPtr client;
     channel->GetRemoteAssociatedInterface(&client);
-    client->SetSearchURLs(search::GetSearchURLs(profile_),
-                          search::GetNewTabPageURL(profile_));
+    client->SetNewTabPageURL(search::GetNewTabPageURL(profile_));
   }
 }
 

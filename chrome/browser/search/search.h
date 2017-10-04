@@ -71,9 +71,6 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
 // by Instant.
 bool IsInstantNTPURL(const GURL& url, Profile* profile);
 
-// Returns URLs associated with the default search engine for |profile|.
-std::vector<GURL> GetSearchURLs(Profile* profile);
-
 
 // Transforms the input |url| into its "effective URL". |url| must be an
 // Instant URL, i.e. ShouldAssignURLToInstantRenderer must return true. The

@@ -394,13 +394,6 @@ TEST_F(SearchTest, IsNTPURL) {
   EXPECT_FALSE(IsNTPURL(search_url_without_search_terms, NULL));
 }
 
-TEST_F(SearchTest, GetSearchURLs) {
-  std::vector<GURL> search_urls = GetSearchURLs(profile());
-  EXPECT_EQ(2U, search_urls.size());
-  EXPECT_EQ("http://foo.com/alt#quux=", search_urls[0].spec());
-  EXPECT_EQ("http://foo.com/url?bar=", search_urls[1].spec());
-}
-
 // Regression test for https://crbug.com/605720: Set up a search provider backed
 // by localhost on a specific port, like browsertests do.  The chrome-search://
 // URLs generated in this mode should not have ports.

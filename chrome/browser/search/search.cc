@@ -81,13 +81,6 @@ const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   return NULL;
 }
 
-GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
-                          const SearchTermsData& search_terms_data) {
-  TemplateURLRef::SearchTermsArgs search_terms_args =
-      TemplateURLRef::SearchTermsArgs(base::string16());
-  return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
-}
-
 // Returns true if |url| can be used as an Instant URL for |profile|.
 bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
@@ -169,8 +162,9 @@ struct NewTabURLDetails {
     if (!profile || !template_url)
       return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);
 
-    GURL search_provider_url = TemplateURLRefToGURL(
-        template_url->new_tab_url_ref(), UIThreadSearchTermsData(profile));
+    GURL search_provider_url(template_url->new_tab_url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(base::string16()),
+        UIThreadSearchTermsData(profile)));
 
     if (ShouldShowLocalNewTab(search_provider_url, profile))
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
@@ -287,20 +281,6 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
 bool IsSuggestPrefEnabled(Profile* profile) {
   return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
          profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
-}
-
-// Returns URLs associated with the default search engine for |profile|.
-std::vector<GURL> GetSearchURLs(Profile* profile) {
-  std::vector<GURL> result;
-  const TemplateURL* template_url =
-      GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return result;
-  for (const TemplateURLRef& ref : template_url->url_refs()) {
-    result.push_back(
-        TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile)));
-  }
-  return result;
 }
 
 GURL GetNewTabPageURL(Profile* profile) {

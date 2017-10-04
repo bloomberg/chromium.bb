@@ -114,11 +114,9 @@ interface EmbeddedSearchClient {
                             bool identity_match);
 };
 
-// SearchBouncer tracks a set of URLs that should be transferred back to the
-// browser process for potential reassignment to an Instant renderer process.
+// SearchBouncer tracks the NTP URL specified by the default search provider,
+// which should be transferred back to the browser process for potential
+// reassignment to an Instant renderer process.
 interface SearchBouncer {
-  // Sets the URLs that the renderer should send back to the browser process for
-  // reassignment to an Instant renderer.
-  SetSearchURLs(array<url.mojom.Url> search_urls,
-                url.mojom.Url new_tab_page_url);
+  SetNewTabPageURL(url.mojom.Url new_tab_page_url);
 };
