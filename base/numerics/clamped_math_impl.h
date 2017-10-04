@@ -82,30 +82,31 @@ struct ClampedAddOp<T,
     if (ClampedAddFastOp<T, U>::is_supported)
       return ClampedAddFastOp<T, U>::template Do<V>(x, y);
 
-    // This is structured as a nested ternary to trigger the necessary
-    // optimization heuristics in MSVC and Clang.
-    const V saturated =
-        IsTypeInRangeForNumericType<V, T>::value
-            ? (IsTypeInRangeForNumericType<V, U>::value
-                   // Optimize for a compile-time constant in the common case.
-                   ? CommonMaxOrMin<V>(
-                         (IsCompileTimeConstant(x) && IsValueNegative(x)) ||
-                         IsValueNegative(y))
-                   // Otherwise the out-of-range-type determines the saturation.
-                   : CommonMaxOrMin<V>(IsValueNegative(y)))
-            : CommonMaxOrMin<V>(IsValueNegative(x));
-
     // Pick a destination type wide enough to compute the saturation direction.
-    // We already computed the saturation value, so it's structured this way to
-    // avoid run-time conversions when we have a compile-time-constant.
+    // The saturation check in the final return statement covers the case where
+    // one type is out-of-bounds. It's structured this way to avoid unnecessary
+    // run-time conversions when we have a compile-time-constant.
     using Promotion = typename std::conditional_t<
         IsTypeInRangeForNumericType<V, T>::value ||
             IsTypeInRangeForNumericType<V, U>::value,
         V, typename BigEnoughPromotion<T, U>::type>;
     Promotion result;
-    return BASE_NUMERICS_LIKELY((CheckedAddOp<T, U>::Do(x, y, &result)))
-               ? saturated_cast<V>(result)
-               : saturated;
+    if (BASE_NUMERICS_LIKELY((CheckedAddOp<T, U>::Do(x, y, &result))))
+      return saturated_cast<V>(result);
+
+    // This is the normal saturation case, which includes a compile-time
+    // constant optimization.
+    if (IsTypeInRangeForNumericType<V, T>::value &&
+        IsTypeInRangeForNumericType<V, U>::value) {
+      return CommonMaxOrMin<V>(
+          (IsCompileTimeConstant(x) && IsValueNegative(x)) ||
+          IsValueNegative(y));
+    }
+
+    // Otherwise the out-of-range-type determines the saturation direction.
+    return IsTypeInRangeForNumericType<V, T>::value
+               ? CommonMaxOrMin<V>(IsValueNegative(y))
+               : CommonMaxOrMin<V>(IsValueNegative(x));
   }
 };
 
@@ -124,30 +125,31 @@ struct ClampedSubOp<T,
     if (ClampedSubFastOp<T, U>::is_supported)
       return ClampedSubFastOp<T, U>::template Do<V>(x, y);
 
-    // This is structured as a nested ternary to trigger the necessary
-    // optimization heuristics in MSVC and Clang.
-    const V saturated =
-        IsTypeInRangeForNumericType<V, T>::value
-            ? (IsTypeInRangeForNumericType<V, U>::value
-                   // Optimize for a compile-time constant in the common case.
-                   ? CommonMaxOrMin<V>(
-                         (IsCompileTimeConstant(x) && IsValueNegative(x)) ||
-                         !IsValueNegative(y))
-                   // Otherwise the out-of-range-type determines the saturation.
-                   : CommonMaxOrMin<V>(!IsValueNegative(y)))
-            : CommonMaxOrMin<V>(IsValueNegative(x));
-
     // Pick a destination type wide enough to compute the saturation direction.
-    // We already computed the saturation value, so it's structured this way to
-    // avoid run-time conversions when we have a compile-time-constant.
+    // The saturation check in the final return statement covers the case where
+    // one type is out-of-bounds. It's structured this way to avoid unnecessary
+    // run-time conversions when we have a compile-time-constant.
     using Promotion = typename std::conditional_t<
         IsTypeInRangeForNumericType<V, T>::value ||
             IsTypeInRangeForNumericType<V, U>::value,
         V, typename BigEnoughPromotion<T, U>::type>;
     Promotion result;
-    return BASE_NUMERICS_LIKELY((CheckedSubOp<T, U>::Do(x, y, &result)))
-               ? saturated_cast<V>(result)
-               : saturated;
+    if (BASE_NUMERICS_LIKELY((CheckedSubOp<T, U>::Do(x, y, &result))))
+      return saturated_cast<V>(result);
+
+    // This is the normal saturation case, which includes a compile-time
+    // constant optimization.
+    if (IsTypeInRangeForNumericType<V, T>::value &&
+        IsTypeInRangeForNumericType<V, U>::value) {
+      return CommonMaxOrMin<V>(
+          (IsCompileTimeConstant(x) && IsValueNegative(x)) ||
+          !IsValueNegative(y));
+    }
+
+    // Otherwise the out-of-range-type determines the saturation direction.
+    return IsTypeInRangeForNumericType<V, T>::value
+               ? CommonMaxOrMin<V>(!IsValueNegative(y))
+               : CommonMaxOrMin<V>(IsValueNegative(x));
   }
 };
 
