@@ -20,11 +20,11 @@
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
-#include "content/common/message_port.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/bind_interface_helpers.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 
 namespace content {
 namespace {
@@ -201,7 +201,7 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
         int render_process_id,
         int render_frame_route_id,
         mojom::SharedWorkerClientPtr client,
-        const MessagePort& message_port,
+        const blink::MessagePortChannel& message_port,
         blink::mojom::SharedWorkerCreationContextType creation_context_type)
         : render_process_id(render_process_id),
           render_frame_route_id(render_frame_route_id),
@@ -211,7 +211,7 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
     const int render_process_id;
     const int render_frame_route_id;
     mojom::SharedWorkerClientPtr client;
-    MessagePort message_port;
+    blink::MessagePortChannel message_port;
     const blink::mojom::SharedWorkerCreationContextType creation_context_type;
   };
 
@@ -370,7 +370,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     mojom::SharedWorkerInfoPtr info,
     mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
-    const MessagePort& port,
+    const blink::MessagePortChannel& port,
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

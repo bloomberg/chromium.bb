@@ -22,13 +22,15 @@
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
-#include "content/common/message_port.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
+
+using blink::MessagePortChannel;
 
 namespace content {
 
@@ -143,13 +145,13 @@ std::vector<uint8_t> StringPieceToVector(base::StringPiece s) {
   return std::vector<uint8_t>(s.begin(), s.end());
 }
 
-void BlockingReadFromMessagePort(MessagePort port,
+void BlockingReadFromMessagePort(MessagePortChannel port,
                                  std::vector<uint8_t>* message) {
   base::RunLoop run_loop;
   port.SetCallback(run_loop.QuitClosure());
   run_loop.Run();
 
-  std::vector<MessagePort> should_be_empty;
+  std::vector<MessagePortChannel> should_be_empty;
   EXPECT_TRUE(port.GetMessage(message, &should_be_empty));
   EXPECT_TRUE(should_be_empty.empty());
 }
@@ -189,7 +191,8 @@ class MockSharedWorker : public mojom::SharedWorker {
   explicit MockSharedWorker(mojom::SharedWorkerRequest request)
       : binding_(this, std::move(request)) {}
 
-  void CheckReceivedConnect(int* connection_request_id, MessagePort* port) {
+  void CheckReceivedConnect(int* connection_request_id,
+                            MessagePortChannel* port) {
     ASSERT_FALSE(connect_received_.empty());
     if (connection_request_id)
       *connection_request_id = connect_received_.front().first;
@@ -210,7 +213,7 @@ class MockSharedWorker : public mojom::SharedWorker {
   void Connect(int connection_request_id,
                mojo::ScopedMessagePipeHandle port) override {
     connect_received_.emplace(connection_request_id,
-                              MessagePort(std::move(port)));
+                              MessagePortChannel(std::move(port)));
   }
   void Terminate() override {
     // Allow duplicate events.
@@ -218,7 +221,7 @@ class MockSharedWorker : public mojom::SharedWorker {
   }
 
   mojo::Binding<mojom::SharedWorker> binding_;
-  std::queue<std::pair<int, MessagePort>> connect_received_;
+  std::queue<std::pair<int, MessagePortChannel>> connect_received_;
   bool terminate_received_ = false;
 };
 
@@ -400,7 +403,7 @@ class MockSharedWorkerConnector {
         false /* data_saver_enabled */));
 
     mojo::MessagePipe message_pipe;
-    local_port_ = MessagePort(std::move(message_pipe.handle0));
+    local_port_ = MessagePortChannel(std::move(message_pipe.handle0));
 
     mojom::SharedWorkerClientPtr client_proxy;
     client->Bind(mojo::MakeRequest(&client_proxy));
@@ -409,11 +412,12 @@ class MockSharedWorkerConnector {
                        blink::mojom::SharedWorkerCreationContextType::kSecure,
                        std::move(message_pipe.handle1));
   }
-  MessagePort local_port() { return local_port_; }
+  MessagePortChannel local_port() { return local_port_; }
+
  private:
   mojom::SharedWorkerClientRequest client_request_;
   MockRendererProcessHost* renderer_host_;
-  MessagePort local_port_;
+  MessagePortChannel local_port_;
 };
 
 }  // namespace
@@ -446,7 +450,7 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   RunAllPendingInMessageLoop();
 
   int connection_request_id;
-  MessagePort port;
+  MessagePortChannel port;
   worker.CheckReceivedConnect(&connection_request_id, &port);
 
   client.CheckReceivedOnCreated();
@@ -463,7 +467,7 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   std::vector<uint8_t> expected_message(StringPieceToVector("test1"));
   connector->local_port().PostMessage(expected_message.data(),
                                       expected_message.size(),
-                                      std::vector<MessagePort>());
+                                      std::vector<MessagePortChannel>());
   std::vector<uint8_t> received_message;
   BlockingReadFromMessagePort(port, &received_message);
   EXPECT_EQ(expected_message, received_message);
@@ -518,7 +522,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   RunAllPendingInMessageLoop();
 
   int connection_request_id0;
-  MessagePort port0;
+  MessagePortChannel port0;
   worker.CheckReceivedConnect(&connection_request_id0, &port0);
 
   client0.CheckReceivedOnCreated();
@@ -535,7 +539,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   std::vector<uint8_t> expected_message0(StringPieceToVector("test1"));
   connector0->local_port().PostMessage(expected_message0.data(),
                                        expected_message0.size(),
-                                       std::vector<MessagePort>());
+                                       std::vector<MessagePortChannel>());
   std::vector<uint8_t> received_message0;
   BlockingReadFromMessagePort(port0, &received_message0);
   EXPECT_EQ(expected_message0, received_message0);
@@ -572,7 +576,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   CheckNotReceivedFactoryRequest();
 
   int connection_request_id1;
-  MessagePort port1;
+  MessagePortChannel port1;
   worker.CheckReceivedConnect(&connection_request_id1, &port1);
 
   client1.CheckReceivedOnCreated();
@@ -592,7 +596,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   std::vector<uint8_t> expected_message1(StringPieceToVector("test2"));
   connector1->local_port().PostMessage(expected_message1.data(),
                                        expected_message1.size(),
-                                       std::vector<MessagePort>());
+                                       std::vector<MessagePortChannel>());
   std::vector<uint8_t> received_message1;
   BlockingReadFromMessagePort(port1, &received_message1);
   EXPECT_EQ(expected_message1, received_message1);

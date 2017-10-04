@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
@@ -29,7 +28,6 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "storage/public/interfaces/blobs.mojom.h"
-#include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
@@ -234,9 +232,10 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   CreateServiceWorkerFetchContext() override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
-  void PostMessageToClient(const blink::WebString& uuid,
-                           const blink::WebString& message,
-                           blink::WebMessagePortChannelArray channels) override;
+  void PostMessageToClient(
+      const blink::WebString& uuid,
+      const blink::WebString& message,
+      blink::WebVector<blink::MessagePortChannel> channels) override;
   void Focus(const blink::WebString& uuid,
              std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void Navigate(

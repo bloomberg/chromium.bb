@@ -47,7 +47,6 @@
 #include "WebGamepadListener.h"
 #include "WebGestureDevice.h"
 #include "WebLocalizedString.h"
-#include "WebMessagePortChannel.h"
 #include "WebPlatformEventType.h"
 #include "WebSize.h"
 #include "WebSpeechSynthesizer.h"
@@ -325,18 +324,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns a unique FrameSinkID for the current renderer process
   virtual viz::FrameSinkId GenerateFrameSinkId() { return viz::FrameSinkId(); }
-
-  // Message Ports -------------------------------------------------------
-
-  // Creates a Message Port Channel pair. This can be called on any thread.
-  // The returned objects should only be used on the thread they were created
-  // on.
-  virtual void CreateMessageChannel(
-      std::unique_ptr<WebMessagePortChannel>* channel1,
-      std::unique_ptr<WebMessagePortChannel>* channel2) {
-    *channel1 = nullptr;
-    *channel2 = nullptr;
-  }
 
   // Network -------------------------------------------------------------
 

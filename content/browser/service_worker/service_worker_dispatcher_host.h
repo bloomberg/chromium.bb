@@ -23,13 +23,16 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
+namespace blink {
+class MessagePortChannel;
+}
+
 namespace url {
 class Origin;
 }  // namespace url
 
 namespace content {
 
-class MessagePort;
 class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
@@ -174,7 +177,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       int provider_id,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<MessagePort>& sent_message_ports);
+      const std::vector<blink::MessagePortChannel>& sent_message_ports);
 
   void OnTerminateWorker(int handle_id);
 
@@ -182,7 +185,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<MessagePort>& sent_message_ports,
+      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const StatusCallback& callback);
   template <typename SourceInfo>
@@ -190,7 +193,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<MessagePort>& sent_message_ports,
+      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       const base::Optional<base::TimeDelta>& timeout,
       const StatusCallback& callback,
       const SourceInfo& source_info);
@@ -198,13 +201,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<MessagePort>& sent_message_ports,
+      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       const ExtendableMessageEventSource& source,
       const base::Optional<base::TimeDelta>& timeout,
       const StatusCallback& callback);
   template <typename SourceInfo>
   void DidFailToDispatchExtendableMessageEvent(
-      const std::vector<MessagePort>& sent_message_ports,
+      const std::vector<blink::MessagePortChannel>& sent_message_ports,
       const SourceInfo& source_info,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);

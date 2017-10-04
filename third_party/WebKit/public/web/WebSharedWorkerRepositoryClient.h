@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class WebMessagePortChannel;
+class MessagePortChannel;
 class WebSharedWorkerConnectListener;
 class WebString;
 class WebURL;
@@ -49,17 +49,17 @@ class WebSharedWorkerRepositoryClient {
   using DocumentID = unsigned long long;
 
   // Connects to a shared worker.
-  virtual void Connect(const WebURL& url,
-                       const WebString& name,
-                       DocumentID id,
-                       const WebString& content_security_policy,
-                       WebContentSecurityPolicyType,
-                       WebAddressSpace,
-                       mojom::SharedWorkerCreationContextType,
-                       bool data_saver_enabled,
-                       std::unique_ptr<WebMessagePortChannel>,
-                       std::unique_ptr<blink::WebSharedWorkerConnectListener>) {
-  }
+  virtual void Connect(
+      const WebURL&,
+      const WebString& name,
+      DocumentID,
+      const WebString& content_security_policy,
+      WebContentSecurityPolicyType,
+      WebAddressSpace,
+      mojom::SharedWorkerCreationContextType,
+      bool data_saver_enabled,
+      MessagePortChannel,
+      std::unique_ptr<blink::WebSharedWorkerConnectListener>) = 0;
 
   // Invoked when a document has been detached. DocumentID can be re-used after
   // documentDetached() is invoked.

@@ -98,7 +98,7 @@ MessageEvent::MessageEvent(RefPtr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
-                           MessagePortChannelArray channels,
+                           Vector<MessagePortChannel> channels,
                            const String& suborigin)
     : Event(EventTypeNames::message, false, false),
       data_type_(kDataTypeSerializedScriptValue),
