@@ -8,6 +8,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
+#include "cc/animation/animation_ticker.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
@@ -302,43 +303,43 @@ void AddAnimationToElementWithPlayer(ElementId element_id,
   player->AddAnimation(std::move(animation));
 }
 
-void AddAnimationToElementWithExistingPlayer(
+void AddAnimationToElementWithExistingTicker(
     ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     std::unique_ptr<Animation> animation) {
   scoped_refptr<ElementAnimations> element_animations =
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
-  DCHECK(element_animations->players_list().might_have_observers());
-  AnimationPlayer* player = &*element_animations->players_list().begin();
-  DCHECK(player);
-  player->AddAnimation(std::move(animation));
+  DCHECK(element_animations->tickers_list().might_have_observers());
+  AnimationTicker* ticker = &*element_animations->tickers_list().begin();
+  DCHECK(ticker);
+  ticker->AddAnimation(std::move(animation));
 }
 
-void RemoveAnimationFromElementWithExistingPlayer(
+void RemoveAnimationFromElementWithExistingTicker(
     ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id) {
   scoped_refptr<ElementAnimations> element_animations =
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
-  DCHECK(element_animations->players_list().might_have_observers());
-  AnimationPlayer* player = &*element_animations->players_list().begin();
-  DCHECK(player);
-  player->RemoveAnimation(animation_id);
+  DCHECK(element_animations->tickers_list().might_have_observers());
+  AnimationTicker* ticker = &*element_animations->tickers_list().begin();
+  DCHECK(ticker);
+  ticker->RemoveAnimation(animation_id);
 }
 
-Animation* GetAnimationFromElementWithExistingPlayer(
+Animation* GetAnimationFromElementWithExistingTicker(
     ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id) {
   scoped_refptr<ElementAnimations> element_animations =
       timeline->animation_host()->GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
-  DCHECK(element_animations->players_list().might_have_observers());
-  AnimationPlayer* player = &*element_animations->players_list().begin();
-  DCHECK(player);
-  return player->GetAnimationById(animation_id);
+  DCHECK(element_animations->tickers_list().might_have_observers());
+  AnimationTicker* ticker = &*element_animations->tickers_list().begin();
+  DCHECK(ticker);
+  return ticker->GetAnimationById(animation_id);
 }
 
 int AddAnimatedFilterToElementWithPlayer(
