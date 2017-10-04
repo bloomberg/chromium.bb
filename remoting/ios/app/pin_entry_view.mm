@@ -14,7 +14,7 @@
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-static const CGFloat kMargin = 5.f;
+static const CGFloat kMargin = 6.f;
 static const CGFloat kPadding = 8.f;
 static const CGFloat kLineSpace = 12.f;
 
@@ -148,7 +148,7 @@ static const int kMinPinLength = 6;
     [_pairingView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
     [_pairingView.heightAnchor
         constraintEqualToAnchor:_pairingLabel.heightAnchor
-                       constant:kMargin],
+                       constant:2 * kMargin],
     [_pairingView.leadingAnchor
         constraintEqualToAnchor:_pairingSwitch.leadingAnchor
                        constant:-kMargin],
