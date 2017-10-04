@@ -89,6 +89,12 @@ class URL_EXPORT Origin {
   // 3. 'file' URLs all parse as ("file", "", 0).
   explicit Origin(const GURL& url);
 
+  // Copyable and movable.
+  Origin(const Origin&) = default;
+  Origin& operator=(const Origin&) = default;
+  Origin(Origin&&) = default;
+  Origin& operator=(Origin&&) = default;
+
   // Creates an Origin from a |scheme|, |host|, |port| and |suborigin|. All the
   // parameters must be valid and canonicalized. Do not use this method to
   // create unique origins. Use Origin() for that.
