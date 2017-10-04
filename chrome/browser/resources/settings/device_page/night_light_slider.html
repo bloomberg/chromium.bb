@@ -143,11 +143,13 @@
       <div id="labelContainer">
         <div id="startLabel" class="label"
             aria-label="$i18n{displayNightLightStartTime}">
-          [[startTime_]]
+          [[getTimeString_(prefs.ash.night_light.custom_start_time.value,
+                           shouldUse24Hours_)]]
         </div>
         <div id="endLabel" class="label"
             aria-label="$i18n{displayNightLightStopTime}">
-          [[endTime_]]
+          [[getTimeString_(prefs.ash.night_light.custom_end_time.value,
+                           shouldUse24Hours_)]]
         </div>
       </div>
       <div id="sliderBar">
