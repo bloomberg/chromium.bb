@@ -227,8 +227,7 @@ struct FrameFetchContext::FrozenState final
 ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
   FrameFetchContext* context = new FrameFetchContext(loader, document);
-  ResourceFetcher* fetcher =
-      ResourceFetcher::Create(context, context->GetTaskRunner());
+  ResourceFetcher* fetcher = ResourceFetcher::Create(context);
 
   if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
                     SavePreviousDocumentResources::kNever) {
@@ -286,8 +285,10 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
   return frame;
 }
 
-RefPtr<WebTaskRunner> FrameFetchContext::GetTaskRunner() const {
-  return GetFrame()->FrameScheduler()->LoadingTaskRunner();
+RefPtr<WebTaskRunner> FrameFetchContext::GetLoadingTaskRunner() {
+  if (IsDetached())
+    return FetchContext::GetLoadingTaskRunner();
+  return TaskRunnerHelper::Get(TaskType::kNetworking, GetFrame());
 }
 
 WebFrameScheduler* FrameFetchContext::GetFrameScheduler() {
@@ -1139,19 +1140,9 @@ void FrameFetchContext::ParseAndPersistClientHints(
 }
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
-    const ResourceRequest& request) {
+    const ResourceRequest& request,
+    WebTaskRunner* task_runner) {
   DCHECK(!IsDetached());
-
-  RefPtr<WebTaskRunner> task_runner;
-  if (request.GetKeepalive()) {
-    // The loader should be able to work after the frame destruction, so we
-    // cannot use the task runner associated with the frame.
-    task_runner =
-        Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner();
-  } else {
-    task_runner = GetTaskRunner();
-  }
-
   if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
     WrappedResourceRequest webreq(request);
     auto loader =
@@ -1162,7 +1153,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
       return loader;
   }
 
-  return GetFrame()->CreateURLLoader(request, task_runner.get());
+  return GetFrame()->CreateURLLoader(request, task_runner);
 }
 
 FetchContext* FrameFetchContext::Detach() {

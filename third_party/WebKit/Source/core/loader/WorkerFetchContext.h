@@ -64,8 +64,8 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   // FetchContext implementation:
   SecurityOrigin* GetSecurityOrigin() const override;
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest&) override;
+  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
+                                                WebTaskRunner*) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;
   int ApplicationCacheHostID() const override;
@@ -100,6 +100,7 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
+  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
 
   DECLARE_VIRTUAL_TRACE();
 

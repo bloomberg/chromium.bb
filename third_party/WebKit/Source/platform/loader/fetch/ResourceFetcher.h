@@ -30,7 +30,6 @@
 #include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/Timer.h"
-#include "platform/heap/SelfKeepAlive.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -67,12 +66,8 @@ class PLATFORM_EXPORT ResourceFetcher
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
-  static ResourceFetcher* Create(FetchContext* context,
-                                 RefPtr<WebTaskRunner> task_runner = nullptr) {
-    return new ResourceFetcher(
-        context, task_runner
-                     ? std::move(task_runner)
-                     : context->GetFrameScheduler()->LoadingTaskRunner());
+  static ResourceFetcher* Create(FetchContext* context) {
+    return new ResourceFetcher(context);
   }
   virtual ~ResourceFetcher();
   DECLARE_VIRTUAL_TRACE();
@@ -173,7 +168,7 @@ class PLATFORM_EXPORT ResourceFetcher
     kIncludingKeepaliveLoaders,
   };
 
-  ResourceFetcher(FetchContext*, RefPtr<WebTaskRunner>);
+  ResourceFetcher(FetchContext*);
 
   void InitializeRevalidation(ResourceRequest&, Resource*);
   Resource* CreateResourceForLoading(FetchParameters&,
@@ -211,7 +206,7 @@ class PLATFORM_EXPORT ResourceFetcher
   bool IsImageResourceDisallowedToBeReused(const Resource&) const;
 
   void StopFetchingInternal(StopFetchingTarget);
-  void StopFetchingIncludingKeepaliveLoaders(TimerBase*);
+  void StopFetchingIncludingKeepaliveLoaders();
 
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { kUse, kRevalidate, kReload, kLoad };
@@ -290,8 +285,7 @@ class PLATFORM_EXPORT ResourceFetcher
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 
   // Timeout timer for keepalive requests.
-  TaskRunnerTimer<ResourceFetcher> keepalive_loaders_timer_;
-  SelfKeepAlive<ResourceFetcher> self_keep_alive_;
+  TaskHandle keepalive_loaders_task_handle_;
 
   // 28 bits left
   bool auto_load_images_ : 1;

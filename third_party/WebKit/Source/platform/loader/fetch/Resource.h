@@ -231,7 +231,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   void MarkAsPreload();
   // Returns true if |this| resource is matched with the given parameters.
-  virtual bool MatchPreload(const FetchParameters&);
+  virtual bool MatchPreload(const FetchParameters&, WebTaskRunner*);
 
   bool CanReuseRedirectChain() const;
   bool MustRevalidateDueToCacheHeaders() const;
@@ -404,8 +404,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   class CachedMetadataHandlerImpl;
   class ServiceWorkerResponseCachedMetadataHandler;
 
-  void CancelTimerFired(TimerBase*);
-
   void RevalidationSucceeded(const ResourceResponse&);
   void RevalidationFailed();
 
@@ -472,7 +470,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   double response_timestamp_;
 
-  TaskRunnerTimer<Resource> cancel_timer_;
   TaskHandle async_finish_pending_clients_task_;
 
   ResourceRequest resource_request_;

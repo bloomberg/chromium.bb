@@ -108,9 +108,8 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   KURL secure_url(kParsedURLString, "https://secureorigin.test/image.png");
   // Try to request a url. The request should fail, and a resource in an error
   // state should be returned, and no resource should be present in the cache.
-  ResourceFetcher* fetcher = ResourceFetcher::Create(
-      &FetchContext::NullInstance(),
-      Platform::Current()->CurrentThread()->GetWebTaskRunner());
+  ResourceFetcher* fetcher =
+      ResourceFetcher::Create(&FetchContext::NullInstance());
 
   ResourceRequest resource_request(secure_url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);

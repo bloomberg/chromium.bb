@@ -669,8 +669,7 @@ Document::Document(const DocumentInit& initializer,
   } else if (imports_controller_) {
     fetcher_ = FrameFetchContext::CreateFetcherFromDocument(this);
   } else {
-    fetcher_ = ResourceFetcher::Create(
-        nullptr, Platform::Current()->CurrentThread()->GetWebTaskRunner());
+    fetcher_ = ResourceFetcher::Create(nullptr);
   }
   DCHECK(fetcher_);
 
