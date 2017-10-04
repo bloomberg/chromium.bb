@@ -70,6 +70,8 @@ const SkColor kHeaderBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
 const SkColor kHeaderTextColorHover = SkColorSetARGB(0xd3, 0, 0, 0);
 
+const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
+
 const int kTrayPopupMinWidth = 300;
 const int kTrayPopupMaxWidth = 500;
 const int kNotificationIconWidth = 40;

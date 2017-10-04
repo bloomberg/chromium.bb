@@ -52,6 +52,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
@@ -76,6 +77,8 @@ namespace tray {
 namespace {
 
 const int64_t kBluetoothTimeoutDelaySeconds = 2;
+const int kMobileNetworkBatteryIconSize = 14;
+const int kPowerStatusPaddingRight = 10;
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
@@ -703,7 +706,19 @@ bool NetworkListView::ShouldMobileDataSectionBeShown() {
 void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
                                            const NetworkInfo& info) {
   view->Reset();
-  view->AddIconAndLabel(info.image, info.label);
+  gfx::ImageSkia network_image;
+  if (info.type == NetworkInfo::Type::MOBILE &&
+      (!info.connected && !info.connecting)) {
+    // Mobile icons which are not connecting or connected should display a small
+    // "X" icon superimposed so that it is clear that they are disconnected.
+    network_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
+        info.image, gfx::CreateVectorIcon(kNetworkMobileNotConnectedXIcon,
+                                          info.image.height(),
+                                          kMobileNotConnectedXIconColor));
+  } else {
+    network_image = info.image;
+  }
+  view->AddIconAndLabel(network_image, info.label);
   if (info.connected)
     SetupConnectedScrollListItem(view);
   else if (info.connecting)
@@ -714,7 +729,10 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
   // that require it (e.g. Tether, controlled by extension).
   views::View* power_icon = CreatePowerStatusView(info);
   if (power_icon) {
-    view->AddRightView(power_icon);
+    view->AddRightView(
+        power_icon, views::CreateEmptyBorder(
+                        gfx::Insets(0 /* top */, 0 /* left */, 0 /* bottom */,
+                                    kPowerStatusPaddingRight)));
   } else {
     views::View* controlled_icon = CreateControlledByExtensionView(info);
     if (controlled_icon)
@@ -740,8 +758,9 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   views::ImageView* icon = TrayPopupUtils::CreateMoreImageView();
   PowerStatus::BatteryImageInfo icon_info;
   icon_info.charge_percent = network->battery_percentage();
-  icon->SetImage(PowerStatus::GetBatteryImage(
-      icon_info, kMenuIconSize, kMenuIconColorDisabled, kMenuIconColor));
+  icon->SetImage(
+      PowerStatus::GetBatteryImage(icon_info, kMobileNetworkBatteryIconSize,
+                                   kMenuIconColorDisabled, kMenuIconColor));
 
   // Show the numeric battery percentage on hover.
   icon->SetTooltipText(base::FormatPercent(network->battery_percentage()));

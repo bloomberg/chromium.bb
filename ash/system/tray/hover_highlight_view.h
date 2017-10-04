@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_HOVER_HIGHLIGHT_VIEW_H_
 #define ASH_SYSTEM_TRAY_HOVER_HIGHLIGHT_VIEW_H_
 
+#include <memory>
+
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "base/macros.h"
@@ -12,6 +14,7 @@
 #include "ui/gfx/text_constants.h"
 
 namespace views {
+class Border;
 class ImageView;
 class Label;
 }
@@ -64,7 +67,8 @@ class HoverHighlightView : public ActionableView {
   void AddRightIcon(const gfx::ImageSkia& image, int icon_size);
 
   // Adds an optional right view to an already populated view.
-  void AddRightView(views::View* view);
+  void AddRightView(views::View* view,
+                    std::unique_ptr<views::Border> border = nullptr);
 
   // Hides or shows the right view for an already populated view.
   void SetRightViewVisible(bool visible);

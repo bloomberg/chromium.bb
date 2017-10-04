@@ -62,6 +62,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "network_badge_vpn.icon",
     "network_ethernet.1x.icon",
     "network_ethernet.icon",
+    "network_mobile_not_connected_x.1x.icon",
+    "network_mobile_not_connected_x.icon",
     "network_vpn.1x.icon",
     "network_vpn.icon",
     "notification_accessibility.icon",
