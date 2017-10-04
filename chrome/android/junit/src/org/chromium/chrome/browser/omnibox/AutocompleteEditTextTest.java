@@ -1237,4 +1237,23 @@ public class AutocompleteEditTextTest {
         // Works again.
         assertTrue(mAutocomplete.shouldAutocomplete());
     }
+
+    // crbug.com/768323
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testFocusLossHidesCursorWithSpannableModel() {
+        assertTrue(mAutocomplete.isFocused());
+        assertTrue(mAutocomplete.isCursorVisible());
+
+        // AutocompleteEditText loses focus, and this hides cursor.
+        assertTrue(mFocusPlaceHolder.requestFocus());
+
+        assertFalse(mAutocomplete.isFocused());
+        assertFalse(mAutocomplete.isCursorVisible());
+
+        // Some IME operations may arrive after focus loss, but this should never show cursor.
+        mInputConnection.getTextBeforeCursor(1, 0);
+        assertFalse(mAutocomplete.isCursorVisible());
+    }
 }

@@ -39,6 +39,8 @@ public interface AutocompleteEditTextModelBase {
         int getHighlightColor();
         /** @see TextView#setCursorVisible(boolean) */
         void setCursorVisible(boolean visible);
+        /** @see TextView#isFocused() */
+        boolean isFocused();
         /** @see TextView#sendAccessibilityEventUnchecked(AccessibilityEvent) */
         void sendAccessibilityEventUnchecked(AccessibilityEvent event);
 

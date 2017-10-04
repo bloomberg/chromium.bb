@@ -423,8 +423,12 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
             // Keep the original selection before adding spannable string.
             Selection.setSelection(editable, sel, sel);
-            mDelegate.setCursorVisible(false);
+            setCursorVisible(false);
             if (DEBUG) Log.i(TAG, "setSpan: " + getEditableDebugString(editable));
+        }
+
+        private void setCursorVisible(boolean visible) {
+            if (mDelegate.isFocused()) mDelegate.setCursorVisible(visible);
         }
 
         private int getSpanIndex(Editable editable) {
@@ -433,7 +437,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         }
 
         public boolean removeSpan() {
-            mDelegate.setCursorVisible(true);
+            setCursorVisible(true);
             Editable editable = mDelegate.getEditableText();
             int idx = getSpanIndex(editable);
             if (idx == -1) return false;
@@ -449,7 +453,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
         public void commitSpan() {
             mDelegate.getEditableText().removeSpan(mSpan);
-            mDelegate.setCursorVisible(true);
+            setCursorVisible(true);
         }
 
         public void reflectTextUpdateInState(AutocompleteState state, CharSequence text) {
