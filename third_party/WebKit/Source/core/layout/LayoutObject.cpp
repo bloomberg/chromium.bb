@@ -3519,6 +3519,13 @@ void LayoutObject::InvalidatePaintForSelection() {
   }
 }
 
+void LayoutObject::InvalidateIfControlStateChanged(ControlState control_state) {
+  if (LayoutTheme::GetTheme().ControlStateChanged(GetNode(), StyleRef(),
+                                                  control_state)) {
+    SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+  }
+}
+
 // Note about ::first-letter pseudo-element:
 //   When an element has ::first-letter pseudo-element, first letter characters
 //   are taken from |Text| node and first letter characters are considered

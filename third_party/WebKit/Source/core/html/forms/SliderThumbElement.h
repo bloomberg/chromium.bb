@@ -65,7 +65,7 @@ class SliderThumbElement final : public HTMLDivElement {
   bool IsDisabledFormControl() const override;
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
-  Node* FocusDelegate() override;
+  const Node* FocusDelegate() const override;
   void StartDragging();
 
   bool

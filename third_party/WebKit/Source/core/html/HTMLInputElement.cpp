@@ -68,7 +68,6 @@
 #include "core/html/forms/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/Language.h"
@@ -954,10 +953,8 @@ void HTMLInputElement::setChecked(bool now_checked,
 
   if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())
     scope->UpdateCheckedState(this);
-  if (GetLayoutObject())
-    LayoutTheme::GetTheme().ControlStateChanged(*GetLayoutObject(),
-                                                kCheckedControlState);
-
+  if (LayoutObject* o = GetLayoutObject())
+    o->InvalidateIfControlStateChanged(kCheckedControlState);
   SetNeedsValidityCheck();
 
   // Ideally we'd do this from the layout tree (matching
@@ -991,9 +988,8 @@ void HTMLInputElement::setIndeterminate(bool new_value) {
 
   PseudoStateChanged(CSSSelector::kPseudoIndeterminate);
 
-  if (GetLayoutObject())
-    LayoutTheme::GetTheme().ControlStateChanged(*GetLayoutObject(),
-                                                kCheckedControlState);
+  if (LayoutObject* o = GetLayoutObject())
+    o->InvalidateIfControlStateChanged(kCheckedControlState);
 }
 
 int HTMLInputElement::size() const {

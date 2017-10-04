@@ -882,7 +882,7 @@ bool Node::InActiveDocument() const {
   return isConnected() && GetDocument().IsActive();
 }
 
-Node* Node::FocusDelegate() {
+const Node* Node::FocusDelegate() const {
   return this;
 }
 
