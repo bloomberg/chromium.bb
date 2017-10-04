@@ -117,6 +117,9 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   if (!frame || !texture_ref)
     return;
 
+  // Try to render this frame if possible.
+  internal::MaybeRenderEarly(&images_);
+
   // TODO(sandersd, watk): The VideoFrame release callback will not be called
   // after MojoVideoDecoderService is destructed, so we have to release all
   // our TextureRefs when |this| is destructed. This can unback outstanding
@@ -157,26 +160,27 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
 
   gfx::Size size = output_buffer->size();
   gfx::Rect visible_rect(size);
+  // The pixel format doesn't matter as long as it's valid for texture frames.
+  VideoPixelFormat pixel_format = PIXEL_FORMAT_ARGB;
+
   // Check that we can create a VideoFrame for this config before creating the
   // TextureRef so that we don't have to clean up the TextureRef if creating the
   // frame fails.
-  if (!VideoFrame::IsValidConfig(PIXEL_FORMAT_ARGB, VideoFrame::STORAGE_OPAQUE,
-                                 size, visible_rect, natural_size)) {
+  if (!VideoFrame::IsValidConfig(pixel_format, VideoFrame::STORAGE_OPAQUE, size,
+                                 visible_rect, natural_size)) {
     return;
   }
 
-  // Create a new Texture.
-  auto texture_ref = decoder_helper_->CreateTexture(
-      GL_TEXTURE_EXTERNAL_OES, GL_RGBA, size.width(), size.height(), GL_RGBA,
-      GL_UNSIGNED_BYTE);
-
-  // Create a new CodecImage to back the texture and try to render it early.
+  // Create a Texture and a CodecImage to back it.
+  scoped_refptr<gpu::gles2::TextureRef> texture_ref =
+      decoder_helper_->CreateTexture(GL_TEXTURE_EXTERNAL_OES, GL_RGBA,
+                                     size.width(), size.height(), GL_RGBA,
+                                     GL_UNSIGNED_BYTE);
   auto image = base::MakeRefCounted<CodecImage>(
       std::move(output_buffer), surface_texture,
       base::Bind(&GpuVideoFrameFactory::OnImageDestructed,
                  weak_factory_.GetWeakPtr()));
   images_.push_back(image.get());
-  internal::MaybeRenderEarly(&images_);
 
   // Attach the image to the texture.
   // If we're attaching a SurfaceTexture backed image, we set the state to
@@ -200,10 +204,14 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   mailbox_holders[0] =
       gpu::MailboxHolder(mailbox, gpu::SyncToken(), GL_TEXTURE_EXTERNAL_OES);
 
-  // Note: The pixel format doesn't matter.
   auto frame = VideoFrame::WrapNativeTextures(
-      PIXEL_FORMAT_ARGB, mailbox_holders, VideoFrame::ReleaseMailboxCB(), size,
+      pixel_format, mailbox_holders, VideoFrame::ReleaseMailboxCB(), size,
       visible_rect, natural_size, timestamp);
+
+  // The frames must be copied when threaded texture mailboxes are in use
+  // (http://crbug.com/582170).
+  if (stub_->GetGpuPreferences().enable_threaded_texture_mailboxes)
+    frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
 
   *video_frame_out = std::move(frame);
   *texture_ref_out = std::move(texture_ref);
