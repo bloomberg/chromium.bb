@@ -607,6 +607,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     StateTracer<kTracingCategoryNameDefault> use_case_tracer;
     StateTracer<kTracingCategoryNameDefault> backgrounding_tracer;
     StateTracer<kTracingCategoryNameDefault> audio_playing_tracer;
+    StateTracer<kTracingCategoryNameDefault> touchstart_expected_soon_tracer;
+    StateTracer<kTracingCategoryNameInfo> loading_tasks_seem_expensive_tracer;
+    StateTracer<kTracingCategoryNameInfo> timer_tasks_seem_expensive_tracer;
   };
 
   struct AnyThread {
