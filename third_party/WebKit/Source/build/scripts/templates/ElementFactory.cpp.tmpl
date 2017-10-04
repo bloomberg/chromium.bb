@@ -7,7 +7,7 @@
 
 #include "{{namespace}}Names.h"
 {% for header in tags|groupby('interface_header') %}
-#include "core/{{namespace|lower}}/{{header[0]}}"
+#include "{{header[0]}}"
 {% endfor %}
 {% if fallback_interface %}
 #include "core/{{namespace|lower}}/{{fallback_interface_header}}"
