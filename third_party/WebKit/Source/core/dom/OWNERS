@@ -1,5 +1,8 @@
 hayato@chromium.org
 tkent@chromium.org
 
+per-file *StructTraits*.*=set noparent
+per-file *StructTraits*.*=file://ipc/SECURITY_OWNERS
+
 # TEAM: dom-dev@chromium.org
 # COMPONENT: Blink>DOM

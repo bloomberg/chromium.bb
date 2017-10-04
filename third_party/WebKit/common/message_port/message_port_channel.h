@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/watcher.h"
 #include "third_party/WebKit/common/common_export.h"
@@ -67,10 +68,17 @@ class BLINK_COMMON_EXPORT MessagePortChannel {
                    size_t encoded_message_size,
                    std::vector<MessagePortChannel> ports);
 
+  // Sends a serialized mojom::MessagePortMessage to this port's peer.
+  void PostMojoMessage(mojo::Message message);
+
   // Get the next available encoded message if any. Returns true if a message
   // was read.
   bool GetMessage(std::vector<uint8_t>* encoded_message,
                   std::vector<MessagePortChannel>* ports);
+
+  // Get the next available serialized message if any. Returns true if a message
+  // was read.
+  bool GetMojoMessage(mojo::Message* message);
 
   // This callback will be invoked on a background thread when messages are
   // available to be read via GetMessage. It must not synchronously call back

@@ -72,8 +72,7 @@ test("blink_common_unittests") {
 }
 
 mojom("mojo_bindings") {
-  # This interface is internal to blink_common.
-  visibility = [ "//third_party/WebKit/common/*" ]
+  visibility = [ "//third_party/WebKit/*" ]
 
   sources = [
     "message_port/message_port.mojom",

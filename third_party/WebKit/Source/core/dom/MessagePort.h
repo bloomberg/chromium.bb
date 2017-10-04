@@ -41,6 +41,7 @@
 
 namespace blink {
 
+struct BlinkMessagePortMessage;
 class ExceptionState;
 class ExecutionContext;
 class ScriptState;
@@ -126,8 +127,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
  protected:
   explicit MessagePort(ExecutionContext&);
-  bool TryGetMessage(RefPtr<SerializedScriptValue>& message,
-                     Vector<MessagePortChannel>& channels);
+  bool TryGetMessage(BlinkMessagePortMessage&);
 
  private:
   void MessageAvailable();
