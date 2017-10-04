@@ -38,10 +38,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_ASH)
-#include "extensions/browser/app_window/app_window_registry.h"
-#endif
-
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;

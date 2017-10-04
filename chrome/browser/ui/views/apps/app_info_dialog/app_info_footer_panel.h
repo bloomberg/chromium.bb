@@ -62,7 +62,7 @@ class AppInfoFooterPanel
   void CreateShortcuts();
   bool CanCreateShortcuts() const;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // Pins and unpins the app from the shelf. Must only be called if
   // CanSetPinnedToShelf() returns true.
   void SetPinnedToShelf(bool value);

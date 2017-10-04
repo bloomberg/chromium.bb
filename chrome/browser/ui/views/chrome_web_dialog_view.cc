@@ -8,13 +8,14 @@
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
+// gn check complains on Linux Ozone.
 #include "ash/public/cpp/shell_window_ids.h"  // nogncheck
-#include "ash/shell.h"                        // nogncheck
+#include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#endif  // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 namespace chrome {
 namespace {
@@ -49,7 +50,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
   return ShowWebDialogWidget(params, view);
 }
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 gfx::NativeWindow ShowWebDialogInContainer(int container_id,
                                            content::BrowserContext* context,
                                            ui::WebDialogDelegate* delegate) {
@@ -68,6 +69,6 @@ gfx::NativeWindow ShowWebDialogInContainer(int container_id,
   }
   return ShowWebDialogWidget(params, view);
 }
-#endif  // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace chrome

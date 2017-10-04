@@ -22,11 +22,11 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"  // nogncheck
-#include "ash/shell.h"  // nogncheck
-#include "ash/wm/window_positioner.h"  // nogncheck
-#include "chrome/browser/ui/ash/ash_util.h"  // nogncheck
+#include "ash/shell.h"
+#include "ash/wm/window_positioner.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
 namespace {
@@ -147,7 +147,7 @@ class DefaultTargetDisplayProvider : public WindowSizer::TargetDisplayProvider {
 
   display::Display GetTargetDisplay(const display::Screen* screen,
                                     const gfx::Rect& bounds) const override {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
     // Use the target display on ash.
     if (ash_util::ShouldOpenAshOnStartup()) {
       aura::Window* target = ash::Shell::GetRootWindowForNewWindows();
@@ -223,7 +223,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
   *show_state = GetWindowDefaultShowState();
   *bounds = specified_bounds;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // See if ash should decide the window placement.
   if (GetBrowserBoundsAsh(bounds, show_state))
     return;
@@ -288,7 +288,7 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds,
 void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
                                          gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
   if (ash_util::ShouldOpenAshOnStartup()) {
     *default_bounds = ash::WindowPositioner::GetDefaultWindowBounds(display);

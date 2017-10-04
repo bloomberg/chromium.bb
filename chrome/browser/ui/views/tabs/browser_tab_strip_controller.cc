@@ -81,7 +81,7 @@ TabRendererData::NetworkState TabContentsNetworkState(
 bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   *adjust_layout = false;
   // For ash, always allow entering stacked mode.
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   *adjust_layout = true;
   return prefs->GetBoolean(prefs::kTabStripStackedLayout);
 #else

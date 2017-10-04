@@ -130,7 +130,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
     if (relative_change < kRelativeIntervalDifferenceThreshold) {
       if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
           new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
         // On ash platforms (ChromeOS essentially), the real refresh interval is
         // queried from XRandR, regardless of the value calculated here, and
         // this value is overriden by ui::CompositorVSyncManager.  The log
@@ -140,7 +140,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
         LOG(ERROR)
 #else
         LOG(FATAL)
-#endif  // USE_ASH
+#endif  // OS_CHROMEOS
             << "Calculated bogus refresh interval=" << new_interval
             << ", last_timebase_=" << last_timebase_
             << ", timebase=" << timebase

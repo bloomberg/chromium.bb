@@ -177,7 +177,7 @@ ui::WindowShowState DetermineWindowShowState(
   if (chrome::IsRunningInForcedAppMode())
     return ui::SHOW_STATE_FULLSCREEN;
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // In ash, LAUNCH_TYPE_FULLSCREEN launches in a maximized app window and
   // LAUNCH_TYPE_WINDOW launches in a default app window.
   extensions::LaunchType launch_type =
@@ -304,7 +304,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     contents = params.target_contents;
   }
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   // In ash, LAUNCH_FULLSCREEN launches in the OpenApplicationWindow function
   // i.e. it should not reach here.
   DCHECK(launch_type != extensions::LAUNCH_TYPE_FULLSCREEN);
@@ -317,7 +317,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
       !browser->window()->IsFullscreen()) {
     chrome::ToggleFullscreenMode(browser);
   }
-#endif  // USE_ASH
+#endif  // OS_CHROMEOS
   return contents;
 }
 

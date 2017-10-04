@@ -258,6 +258,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
@@ -277,10 +281,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
-#endif
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -638,7 +638,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterInvertBubbleUserPrefs(registry);
 #endif
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   RegisterChromeLauncherUserPrefs(registry);
 #endif
 

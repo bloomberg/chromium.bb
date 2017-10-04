@@ -8,14 +8,14 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "ui/base/accelerators/accelerator.h"
 
-#if defined(USE_ASH)
-#include "ash/accelerators/accelerator_table.h"  // nogncheck
-#endif  // USE_ASH
+#if defined(OS_CHROMEOS)
+#include "ash/accelerators/accelerator_table.h"
+#endif
 
 namespace chrome {
 
 bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {
     const ash::AcceleratorData& accel_data = ash::kAcceleratorData[i];
     if (accel_data.keycode == accelerator.key_code() &&
