@@ -31,3 +31,7 @@ tbody.value-editing-on .value {
 #invalid-session-name-error:not(hidden) {
   display: block;
 }
+
+#session-list {
+  background: white;
+}

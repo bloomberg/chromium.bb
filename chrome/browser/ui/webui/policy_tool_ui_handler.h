@@ -46,6 +46,8 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   // decreasing order.
   base::ListValue GetSessionsList();
 
+  void OnSessionsListReceived(base::ListValue list);
+
   void SetDefaultSessionName();
 
   base::FilePath sessions_dir_;
