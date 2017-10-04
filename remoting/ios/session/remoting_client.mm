@@ -353,11 +353,15 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 #pragma mark - GlDisplayHandlerDelegate
 
 - (void)canvasSizeChanged:(CGSize)size {
-  _gestureInterpreter->OnDesktopSizeChanged(size.width, size.height);
+  if (_gestureInterpreter) {
+    _gestureInterpreter->OnDesktopSizeChanged(size.width, size.height);
+  }
 }
 
 - (void)rendererTicked {
-  _gestureInterpreter->ProcessAnimations();
+  if (_gestureInterpreter) {
+    _gestureInterpreter->ProcessAnimations();
+  }
 }
 
 @end
