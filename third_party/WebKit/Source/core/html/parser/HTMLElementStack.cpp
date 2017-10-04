@@ -26,13 +26,13 @@
 
 #include "core/html/parser/HTMLElementStack.h"
 
-#include "core/HTMLNames.h"
-#include "core/MathMLNames.h"
-#include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html_names.h"
+#include "core/mathml_names.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

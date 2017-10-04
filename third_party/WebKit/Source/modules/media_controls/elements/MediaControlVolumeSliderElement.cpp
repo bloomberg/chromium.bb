@@ -4,9 +4,9 @@
 
 #include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"

@@ -35,7 +35,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/CoreInitializer.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/MessageEvent.h"
@@ -54,6 +53,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/HitTestResult.h"

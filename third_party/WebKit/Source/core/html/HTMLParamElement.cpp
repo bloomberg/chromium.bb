@@ -22,9 +22,9 @@
 
 #include "core/html/HTMLParamElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
+#include "core/html_names.h"
 
 namespace blink {
 

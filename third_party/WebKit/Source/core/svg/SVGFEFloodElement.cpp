@@ -20,10 +20,10 @@
 
 #include "core/svg/SVGFEFloodElement.h"
 
-#include "core/SVGNames.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/SVGComputedStyle.h"
+#include "core/svg_names.h"
 #include "platform/graphics/filters/FEFlood.h"
 
 namespace blink {

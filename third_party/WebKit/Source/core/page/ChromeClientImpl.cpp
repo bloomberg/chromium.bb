@@ -36,7 +36,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "build/build_config.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/events/WebInputEventConversion.h"

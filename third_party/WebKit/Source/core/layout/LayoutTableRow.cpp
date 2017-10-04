@@ -26,7 +26,7 @@
 
 #include "core/layout/LayoutTableRow.h"
 
-#include "core/HTMLNames.h"
+#include "core/html_names.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutState.h"

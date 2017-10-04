@@ -31,12 +31,12 @@
 
 #include "core/dom/TreeOrderedMap.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TreeScope.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/html/HTMLSlotElement.h"
+#include "core/html_names.h"
 
 namespace blink {
 

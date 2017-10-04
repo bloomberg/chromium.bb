@@ -21,7 +21,6 @@
 #include "core/html/HTMLSummaryElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
@@ -29,6 +28,7 @@
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {

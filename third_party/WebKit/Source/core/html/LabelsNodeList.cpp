@@ -23,11 +23,11 @@
 
 #include "core/html/LabelsNodeList.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/LabelableElement.h"
+#include "core/html_names.h"
 
 namespace blink {
 

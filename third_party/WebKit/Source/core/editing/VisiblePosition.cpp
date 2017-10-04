@@ -29,13 +29,13 @@
 
 #include <ostream>  // NOLINT
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLElement.h"
+#include "core/html_names.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/wtf/text/CString.h"
 

@@ -30,13 +30,13 @@
 
 #include "core/css/CSSDefaultStyleSheets.h"
 
-#include "core/MathMLNames.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/mathml_names.h"
 #include "platform/DataResourceHelper.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/LeakAnnotations.h"

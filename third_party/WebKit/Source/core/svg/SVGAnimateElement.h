@@ -23,12 +23,12 @@
 #ifndef SVGAnimateElement_h
 #define SVGAnimateElement_h
 
+#include <base/gtest_prod_util.h>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimationElement.h"
+#include "core/svg_names.h"
 #include "platform/heap/Handle.h"
-#include <base/gtest_prod_util.h>
 
 namespace blink {
 

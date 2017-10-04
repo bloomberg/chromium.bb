@@ -5,7 +5,6 @@
 #include "core/html/forms/InternalPopupMenu.h"
 
 #include "build/build_config.h"
-#include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/ElementTraversal.h"
@@ -20,6 +19,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/PagePopup.h"

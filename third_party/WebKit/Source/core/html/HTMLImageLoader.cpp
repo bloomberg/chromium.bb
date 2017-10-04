@@ -21,13 +21,13 @@
 
 #include "core/html/HTMLImageLoader.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/events/Event.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 

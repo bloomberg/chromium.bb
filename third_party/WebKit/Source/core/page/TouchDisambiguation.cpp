@@ -32,7 +32,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"

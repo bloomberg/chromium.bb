@@ -31,7 +31,6 @@
 #include "public/web/WebAXObject.h"
 
 #include "SkMatrix44.h"
-#include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Node.h"
 #include "core/editing/VisiblePosition.h"
@@ -40,6 +39,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/html_names.h"
 #include "core/input/KeyboardEventManager.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/api/LayoutAPIShim.h"

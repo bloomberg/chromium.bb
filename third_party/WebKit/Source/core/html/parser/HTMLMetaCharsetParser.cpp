@@ -25,10 +25,10 @@
 
 #include "core/html/parser/HTMLMetaCharsetParser.h"
 
-#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "core/html_names.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"
 #include "platform/wtf/text/WTFString.h"
 

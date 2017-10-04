@@ -5,7 +5,7 @@
 
 #include "{{namespace}}ElementFactory.h"
 
-#include "{{namespace}}Names.h"
+#include "core/{{namespace|lower}}_names.h"
 {% for header in tags|groupby('interface_header') %}
 #include "{{header[0]}}"
 {% endfor %}

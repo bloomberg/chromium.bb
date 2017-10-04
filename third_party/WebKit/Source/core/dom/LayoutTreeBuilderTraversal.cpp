@@ -26,9 +26,9 @@
 
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/PseudoElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {

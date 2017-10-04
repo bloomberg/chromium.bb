@@ -28,13 +28,13 @@
 
 #include "core/layout/LayoutImage.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/PseudoElement.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html_names.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/resource/ImageResourceContent.h"

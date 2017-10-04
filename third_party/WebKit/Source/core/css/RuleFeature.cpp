@@ -30,7 +30,6 @@
 
 #include "core/css/RuleFeature.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSSelector.h"

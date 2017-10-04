@@ -24,9 +24,9 @@
 
 #include "core/html/parser/TextDocumentParser.h"
 
-#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
+#include "core/html_names.h"
 
 namespace blink {
 

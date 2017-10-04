@@ -25,7 +25,6 @@
 
 #include "core/editing/commands/BreakBlockquoteCommand.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
@@ -36,6 +35,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLQuoteElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutListItem.h"
 
 namespace blink {

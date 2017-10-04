@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/add_event_listener_options_or_boolean.h"
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -44,6 +43,7 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html_names.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/KeyboardCodes.h"

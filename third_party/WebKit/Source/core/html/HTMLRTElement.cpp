@@ -4,7 +4,7 @@
 
 #include "core/html/HTMLRTElement.h"
 
-#include "core/HTMLNames.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutRubyText.h"
 
 namespace blink {

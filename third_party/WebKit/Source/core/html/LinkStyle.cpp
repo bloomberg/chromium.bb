@@ -4,7 +4,6 @@
 
 #include "core/html/LinkStyle.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -12,6 +11,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html_names.h"
 #include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"

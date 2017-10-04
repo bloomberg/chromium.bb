@@ -25,10 +25,10 @@
 
 #include "core/layout/LayoutTableCell.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLTableCellElement.h"
+#include "core/html_names.h"
 #include "core/layout/CollapsedBorderValue.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCol.h"

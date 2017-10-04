@@ -22,10 +22,10 @@
 #include "core/svg/SVGImageElement.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/SVGNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

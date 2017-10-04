@@ -24,7 +24,7 @@
 
 #include "core/html/parser/HTMLParserIdioms.h"
 
-#include "core/HTMLNames.h"
+#include "core/html_names.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/ParsingUtilities.h"

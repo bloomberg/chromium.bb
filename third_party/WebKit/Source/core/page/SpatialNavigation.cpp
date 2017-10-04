@@ -28,7 +28,6 @@
 
 #include "core/page/SpatialNavigation.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -36,6 +35,7 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/FrameTree.h"

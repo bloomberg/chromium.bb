@@ -20,10 +20,10 @@
 
 #include "core/svg/SVGComponentTransferFunctionElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/Attribute.h"
 #include "core/svg/SVGFEComponentTransferElement.h"
 #include "core/svg/SVGNumberList.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

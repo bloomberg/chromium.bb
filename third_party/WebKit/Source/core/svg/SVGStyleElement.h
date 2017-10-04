@@ -21,7 +21,6 @@
 #ifndef SVGStyleElement_h
 #define SVGStyleElement_h
 
-#include "core/SVGNames.h"
 #include "core/css/StyleElement.h"
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"

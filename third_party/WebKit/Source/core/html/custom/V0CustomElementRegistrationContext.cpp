@@ -31,8 +31,6 @@
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
@@ -40,7 +38,9 @@
 #include "core/html/custom/V0CustomElement.h"
 #include "core/html/custom/V0CustomElementDefinition.h"
 #include "core/html/custom/V0CustomElementScheduler.h"
+#include "core/html_names.h"
 #include "core/svg/SVGUnknownElement.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

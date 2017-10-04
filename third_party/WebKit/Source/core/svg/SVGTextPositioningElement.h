@@ -21,7 +21,6 @@
 #ifndef SVGTextPositioningElement_h
 #define SVGTextPositioningElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedLengthList.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGTextContentElement.h"

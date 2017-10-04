@@ -25,7 +25,6 @@
 
 #include "core/editing/commands/IndentOutdentCommand.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/EditingUtilities.h"
@@ -36,6 +35,7 @@
 #include "core/editing/commands/InsertListCommand.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {

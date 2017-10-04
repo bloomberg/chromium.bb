@@ -23,7 +23,6 @@
 #include "core/html/forms/FileInputType.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/ShadowRoot.h"
@@ -35,6 +34,7 @@
 #include "core/html/FormData.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DragData.h"

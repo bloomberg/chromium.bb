@@ -22,8 +22,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/MediaList.h"

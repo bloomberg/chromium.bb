@@ -32,12 +32,12 @@
 #define VTTParser_h
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/track/vtt/BufferedLineReader.h"
 #include "core/html/track/vtt/VTTCue.h"
 #include "core/html/track/vtt/VTTTokenizer.h"
+#include "core/html_names.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/StringBuilder.h"
 

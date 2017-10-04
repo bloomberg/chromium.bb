@@ -20,8 +20,8 @@
 
 #include "core/svg/SVGFEColorMatrixElement.h"
 
-#include "core/SVGNames.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

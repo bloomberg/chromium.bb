@@ -21,11 +21,11 @@
 
 #include "core/svg/SVGLength.h"
 
-#include "core/SVGNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/svg/SVGAnimationElement.h"
+#include "core/svg_names.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/WTFString.h"
 

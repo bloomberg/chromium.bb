@@ -4,8 +4,7 @@
 
 #include "core/animation/PropertyHandle.h"
 
-#include "core/SVGNames.h"
-#include "core/XLinkNames.h"
+#include "core/svg_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

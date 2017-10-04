@@ -4,10 +4,10 @@
 
 #include "core/paint/BoxPaintInvalidator.h"
 
-#include "core/HTMLNames.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintControllerPaintTest.h"

@@ -26,10 +26,10 @@
 #define LiveNodeListBase_h
 
 #include "core/CoreExport.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/CollectionType.h"
+#include "core/html_names.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

@@ -21,10 +21,10 @@
 #ifndef SVGScriptElement_h
 #define SVGScriptElement_h
 
-#include "core/SVGNames.h"
 #include "core/dom/ScriptElementBase.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
+#include "core/svg_names.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

@@ -21,12 +21,12 @@
 
 #include "core/svg/SVGGraphicsElement.h"
 
-#include "core/SVGNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGRectTearOff.h"
+#include "core/svg_names.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {

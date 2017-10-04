@@ -28,7 +28,6 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
@@ -39,6 +38,7 @@
 #include "core/dom/NthIndexCache.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/html_names.h"
 #include "platform/wtf/PtrUtil.h"
 
 // Uncomment to run the SelectorQueryTests for stats in a release build.

@@ -28,7 +28,6 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/editing/FrameSelection.h"
@@ -14,6 +13,7 @@
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html_names.h"
 
 #include <memory>
 

@@ -27,12 +27,12 @@
 #include "core/html/forms/SpinButtonElement.h"
 
 #include "build/build_config.h"
-#include "core/HTMLNames.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
 #include "core/page/ChromeClient.h"

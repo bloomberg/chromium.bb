@@ -30,8 +30,8 @@
 
 #include "core/html/shadow/ProgressShadowElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/html/HTMLProgressElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {

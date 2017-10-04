@@ -4,11 +4,11 @@
 
 #include "core/html/forms/FileInputType.h"
 
-#include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html_names.h"
 #include "core/page/DragData.h"
 #include "platform/wtf/DateMath.h"
 #include "testing/gtest/include/gtest/gtest.h"

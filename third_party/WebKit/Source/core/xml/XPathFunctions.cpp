@@ -27,13 +27,13 @@
 
 #include "core/xml/XPathFunctions.h"
 
-#include "core/XMLNames.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/TreeScope.h"
 #include "core/xml/XPathUtil.h"
 #include "core/xml/XPathValue.h"
+#include "core/xml_names.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 

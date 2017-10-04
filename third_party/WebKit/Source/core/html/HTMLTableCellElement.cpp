@@ -26,13 +26,13 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/TableConstants.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTableCell.h"
 
 namespace blink {

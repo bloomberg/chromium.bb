@@ -25,8 +25,8 @@
 
 #include "core/layout/LayoutTableCol.h"
 
-#include "core/HTMLNames.h"
 #include "core/html/HTMLTableColElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 

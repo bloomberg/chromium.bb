@@ -26,7 +26,6 @@
 
 #include "core/editing/VisibleUnits.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/FirstLetterPseudoElement.h"
@@ -53,6 +52,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/TextControlElement.h"
+#include "core/html_names.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"

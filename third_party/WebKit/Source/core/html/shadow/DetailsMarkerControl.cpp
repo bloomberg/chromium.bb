@@ -30,8 +30,8 @@
 
 #include "core/html/shadow/DetailsMarkerControl.h"
 
-#include "core/HTMLNames.h"
 #include "core/html/HTMLSummaryElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutDetailsMarker.h"
 
 namespace blink {

@@ -31,7 +31,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
-#include "core/HTMLNames.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/StylePropertySet.h"
@@ -62,6 +61,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8PerIsolateData.h"

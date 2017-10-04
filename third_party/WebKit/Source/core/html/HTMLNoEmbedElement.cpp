@@ -30,9 +30,9 @@
 
 #include "core/html/HTMLNoEmbedElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html_names.h"
 #include "core/loader/FrameLoader.h"
 
 namespace blink {

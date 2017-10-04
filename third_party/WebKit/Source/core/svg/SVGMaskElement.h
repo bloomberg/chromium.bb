@@ -20,7 +20,6 @@
 #ifndef SVGMaskElement_h
 #define SVGMaskElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGElement.h"

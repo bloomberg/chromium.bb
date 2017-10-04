@@ -24,8 +24,8 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
-#include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/html_names.h"
 
 namespace blink {
 

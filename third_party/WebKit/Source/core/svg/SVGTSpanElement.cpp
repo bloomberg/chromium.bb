@@ -20,8 +20,8 @@
 
 #include "core/svg/SVGTSpanElement.h"
 
-#include "core/SVGNames.h"
 #include "core/layout/svg/LayoutSVGTSpan.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

@@ -78,8 +78,8 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         use_namespace_for_attrs = self.attrs_json5_file.metadata['attrsNullNamespace'] is None
 
         self._outputs = {
-            (self.namespace + "Names.h"): self.generate_header,
-            (self.namespace + "Names.cpp"): self.generate_implementation,
+            (self.namespace.lower() + "_names.h"): self.generate_header,
+            (self.namespace.lower() + "_names.cc"): self.generate_implementation,
         }
         self._template_context = {
             'attrs': self.attrs_json5_file.name_dictionaries,
@@ -98,11 +98,11 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
             assert metadata == self.tags_json5_file.metadata[name].strip('"'), 'Both files must have the same %s.' % name
         return metadata
 
-    @template_expander.use_jinja('templates/MakeQualifiedNames.h.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/make_qualified_names.h.tmpl', filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja('templates/MakeQualifiedNames.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/make_qualified_names.cc.tmpl', filters=filters)
     def generate_implementation(self):
         return self._template_context
 

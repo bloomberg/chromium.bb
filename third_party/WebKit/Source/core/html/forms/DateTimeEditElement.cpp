@@ -26,7 +26,6 @@
 #include "core/html/forms/DateTimeEditElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
@@ -34,6 +33,7 @@
 #include "core/html/forms/DateTimeFieldElements.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/html_names.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/text/DateTimeFormat.h"

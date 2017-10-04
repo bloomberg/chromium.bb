@@ -25,9 +25,9 @@
 #define HTMLAnchorElement_h
 
 #include "core/CoreExport.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
+#include "core/html_names.h"
 #include "core/url/DOMURLUtils.h"
 #include "platform/LinkHash.h"
 

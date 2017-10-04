@@ -20,13 +20,13 @@
 
 #include "core/svg/SVGFEComponentTransferElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/svg/SVGFEFuncAElement.h"
 #include "core/svg/SVGFEFuncBElement.h"
 #include "core/svg/SVGFEFuncGElement.h"
 #include "core/svg/SVGFEFuncRElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "core/svg_names.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
 
 namespace blink {

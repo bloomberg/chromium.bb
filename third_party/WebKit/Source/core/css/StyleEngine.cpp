@@ -29,7 +29,6 @@
 
 #include "core/css/StyleEngine.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
@@ -51,6 +50,7 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "core/html_names.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"

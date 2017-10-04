@@ -22,8 +22,8 @@
 #ifndef SVGZoomAndPan_h
 #define SVGZoomAndPan_h
 
-#include "core/SVGNames.h"
 #include "core/dom/QualifiedName.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

@@ -23,10 +23,10 @@
 
 #include "core/layout/LayoutListItem.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLOListElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/paint/ListItemPainter.h"
 #include "platform/wtf/SaturatedArithmetic.h"

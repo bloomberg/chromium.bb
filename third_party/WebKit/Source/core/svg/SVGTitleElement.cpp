@@ -20,10 +20,10 @@
 
 #include "core/svg/SVGTitleElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
+#include "core/svg_names.h"
 #include "platform/wtf/AutoReset.h"
 
 namespace blink {

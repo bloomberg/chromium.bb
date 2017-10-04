@@ -28,7 +28,6 @@
 
 #include "core/css/ShadowTreeStyleSheetCollection.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
@@ -37,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html_names.h"
 
 namespace blink {
 

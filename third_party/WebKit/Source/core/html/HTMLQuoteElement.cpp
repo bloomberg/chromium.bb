@@ -22,8 +22,8 @@
 
 #include "core/html/HTMLQuoteElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StyleEngine.h"
+#include "core/html_names.h"
 
 namespace blink {
 

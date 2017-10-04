@@ -25,7 +25,6 @@
 #include "core/layout/LayoutBlock.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -36,6 +35,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMarqueeElement.h"
+#include "core/html_names.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"

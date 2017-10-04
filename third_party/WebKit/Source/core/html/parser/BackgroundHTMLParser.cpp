@@ -26,10 +26,10 @@
 #include "core/html/parser/BackgroundHTMLParser.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
+#include "core/html_names.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"

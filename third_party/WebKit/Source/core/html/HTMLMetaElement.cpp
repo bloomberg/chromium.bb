@@ -22,7 +22,6 @@
 
 #include "core/html/HTMLMetaElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/LocalFrame.h"
@@ -30,6 +29,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/HttpEquiv.h"
 #include "platform/wtf/text/StringToNumber.h"

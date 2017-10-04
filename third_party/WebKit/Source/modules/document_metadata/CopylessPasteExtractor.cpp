@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 
-#include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
+#include "core/html_names.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONParser.h"

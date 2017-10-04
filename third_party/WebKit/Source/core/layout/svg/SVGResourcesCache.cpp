@@ -19,12 +19,12 @@
 
 #include "core/layout/svg/SVGResourcesCache.h"
 
-#include "core/HTMLNames.h"
+#include <memory>
+#include "core/html_names.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCycleSolver.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include <memory>
 
 namespace blink {
 

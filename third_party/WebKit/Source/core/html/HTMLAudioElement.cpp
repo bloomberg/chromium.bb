@@ -25,8 +25,8 @@
 
 #include "core/html/HTMLAudioElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html_names.h"
 
 namespace blink {
 

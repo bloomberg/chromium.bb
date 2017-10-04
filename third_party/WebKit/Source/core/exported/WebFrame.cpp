@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include "bindings/core/v8/WindowProxyManager.h"
-#include "core/HTMLNames.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/exported/WebRemoteFrameImpl.h"
@@ -18,6 +17,7 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html_names.h"
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

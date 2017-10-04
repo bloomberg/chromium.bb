@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/CoreInitializer.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -37,6 +36,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/LinkManifest.h"
 #include "core/html/imports/LinkImport.h"
+#include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/origin_trials/origin_trials.h"

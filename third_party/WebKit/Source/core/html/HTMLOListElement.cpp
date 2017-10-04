@@ -24,10 +24,10 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
-#include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/ListItemOrdinal.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutListItem.h"
 
 namespace blink {

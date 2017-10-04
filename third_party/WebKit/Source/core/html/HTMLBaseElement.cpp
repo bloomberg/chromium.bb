@@ -22,11 +22,11 @@
 
 #include "core/html/HTMLBaseElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/html_names.h"
 
 namespace blink {
 

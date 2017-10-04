@@ -26,9 +26,9 @@
 #include "core/editing/commands/SplitElementCommand.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/html_names.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

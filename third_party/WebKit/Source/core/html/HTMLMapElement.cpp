@@ -21,7 +21,6 @@
 
 #include "core/html/HTMLMapElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeListsNodeData.h"
@@ -29,6 +28,7 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html_names.h"
 #include "core/layout/HitTestResult.h"
 
 namespace blink {

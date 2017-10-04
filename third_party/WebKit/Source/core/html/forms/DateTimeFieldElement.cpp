@@ -25,11 +25,11 @@
 
 #include "core/html/forms/DateTimeFieldElement.h"
 
-#include "core/HTMLNames.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/html_names.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/PlatformLocale.h"

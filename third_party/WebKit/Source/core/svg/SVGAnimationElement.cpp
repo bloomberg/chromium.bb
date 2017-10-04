@@ -25,11 +25,11 @@
 #include "core/svg/SVGAnimationElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "core/svg_names.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {

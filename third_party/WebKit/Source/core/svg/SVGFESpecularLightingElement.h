@@ -22,7 +22,6 @@
 #ifndef SVGFESpecularLightingElement_h
 #define SVGFESpecularLightingElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFELightElement.h"

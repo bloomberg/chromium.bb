@@ -4,8 +4,8 @@
 
 #include "core/layout/LayoutProgress.h"
 
-#include "core/HTMLNames.h"
 #include "core/html/HTMLElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

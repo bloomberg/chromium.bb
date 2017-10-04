@@ -27,8 +27,6 @@
 
 #include "core/dom/LayoutTreeBuilder.h"
 
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Node.h"
@@ -36,11 +34,13 @@
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/fullscreen/Fullscreen.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg_names.h"
 
 namespace blink {
 

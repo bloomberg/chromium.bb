@@ -21,7 +21,6 @@
 #ifndef SVGLinearGradientElement_h
 #define SVGLinearGradientElement_h
 
-#include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGradientElement.h"
 #include "platform/heap/Handle.h"

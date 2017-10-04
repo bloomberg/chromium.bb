@@ -27,9 +27,6 @@
 #include "core/html/parser/XSSAuditor.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
-#include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -40,9 +37,12 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
+#include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/svg_names.h"
+#include "core/xlink_names.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
 #include "platform/wtf/ASCIICType.h"

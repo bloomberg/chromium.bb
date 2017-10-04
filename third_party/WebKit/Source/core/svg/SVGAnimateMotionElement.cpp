@@ -21,13 +21,13 @@
 
 #include "core/svg/SVGAnimateMotionElement.h"
 
-#include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "core/svg_names.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/StdLibExtras.h"

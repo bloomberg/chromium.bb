@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "core/HTMLNames.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -18,6 +17,7 @@
 #include "core/geometry/DOMRect.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"

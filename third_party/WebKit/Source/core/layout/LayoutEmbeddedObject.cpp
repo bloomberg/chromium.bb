@@ -25,11 +25,11 @@
 #include "core/layout/LayoutEmbeddedObject.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/html_names.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"

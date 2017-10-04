@@ -22,9 +22,9 @@
 
 #include "core/html/parser/TextResourceDecoder.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
+#include "core/html_names.h"
 #include "platform/text/TextEncodingDetector.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/TextCodec.h"

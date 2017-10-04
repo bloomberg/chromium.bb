@@ -5,11 +5,11 @@
 #include "core/origin_trials/OriginTrialContext.h"
 
 #include <memory>
-#include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "core/html_names.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
 #include "platform/testing/HistogramTester.h"
