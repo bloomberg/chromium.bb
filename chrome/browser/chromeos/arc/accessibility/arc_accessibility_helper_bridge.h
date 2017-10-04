@@ -113,7 +113,6 @@ class ArcAccessibilityHelperBridge
 
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
-  ArcNotificationSurfaceManager* arc_notification_surface_manager_;
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>> package_name_to_tree_;
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>>
