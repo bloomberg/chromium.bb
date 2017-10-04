@@ -11,6 +11,7 @@ include_rules = [
   "+sandbox/linux/system_headers",
   "+sandbox/sandbox_features.h",
   "+sandbox/win/src",
+  "+services/service_manager/sandbox",
   "+ppapi/c",  # header files only
 
   "+mojo/edk/embedder",

@@ -18,7 +18,7 @@ namespace content {
 
 namespace {
 
-bool InitializeSandbox(int sandbox_type,
+bool InitializeSandbox(service_manager::SandboxType sandbox_type,
                        const base::FilePath& allowed_dir,
                        base::OnceClosure hook) {
   // Warm up APIs before turning on the sandbox.
@@ -64,7 +64,8 @@ bool GetSandboxInfoFromCommandLine(service_manager::SandboxType* sandbox_type,
 
 }  // namespace
 
-bool InitializeSandbox(int sandbox_type, const base::FilePath& allowed_dir) {
+bool InitializeSandbox(service_manager::SandboxType sandbox_type,
+                       const base::FilePath& allowed_dir) {
   return InitializeSandbox(sandbox_type, allowed_dir, base::OnceClosure());
 }
 

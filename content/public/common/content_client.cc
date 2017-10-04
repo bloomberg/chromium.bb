@@ -110,14 +110,6 @@ std::string ContentClient::GetProcessTypeNameInEnglish(int type) {
   return std::string();
 }
 
-#if defined(OS_MACOSX)
-bool ContentClient::GetSandboxProfileForSandboxType(
-    int sandbox_type,
-    const char** sandbox_profile) const {
-  return false;
-}
-#endif
-
 bool ContentClient::IsSupplementarySiteIsolationModeEnabled() {
   return false;
 }

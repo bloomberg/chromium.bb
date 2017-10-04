@@ -28,7 +28,7 @@ class CONTENT_EXPORT Sandbox {
   // Valid |sandbox_type| values are defined by the enum SandboxType, or can be
   // defined by the embedder via
   // ContentClient::GetSandboxProfileForProcessType().
-  static void SandboxWarmup(int sandbox_type);
+  static void SandboxWarmup(service_manager::SandboxType sandbox_type);
 
   // Turns on the OS X sandbox for this process.
   // |sandbox_type| - type of Sandbox to use. See SandboxWarmup() for legal
@@ -37,7 +37,7 @@ class CONTENT_EXPORT Sandbox {
   // profile that supports this is SANDBOX_TYPE_UTILITY .
   //
   // Returns true on success, false if an error occurred enabling the sandbox.
-  static bool EnableSandbox(int sandbox_type,
+  static bool EnableSandbox(service_manager::SandboxType sandbox_type,
                             const base::FilePath& allowed_dir);
 
   // Returns true if the sandbox has been enabled for the current process.
