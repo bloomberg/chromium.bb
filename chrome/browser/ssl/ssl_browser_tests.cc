@@ -2190,18 +2190,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
-// http://crbug.com/84729
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestRunsCachedInsecureContent \
-    DISABLED_TestRunsCachedInsecureContent
-#else
-#define MAYBE_TestRunsCachedInsecureContent TestRunsCachedInsecureContent
-#endif  // defined(OS_CHROMEOS)
-
 // Visits a page with script over http.  Visits another page over https
 // referencing that same script over http (hoping it is coming from the webcore
 // memory cache).
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRunsCachedInsecureContent) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsCachedInsecureContent) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
