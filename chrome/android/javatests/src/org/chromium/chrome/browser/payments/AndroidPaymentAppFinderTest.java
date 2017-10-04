@@ -1023,6 +1023,46 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getAppIdentifier());
     }
 
+    /**
+     * If a payment method supports two apps from different origins, both apps should be found.
+     * Repeated app look ups should succeed.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testTwoAppsFromDifferentOriginsWithTheSamePaymentMethod() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://jonpay.com/webpay");
+        mPackageManager.installPaymentApp(
+                "AlicePay", "com.alicepay", "https://alicepay.com/webpay", "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp(
+                "BobPay", "com.bobpay", "https://bobpay.com/webpay", "01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.alicepay", new String[] {"https://jonpay.com/webpay"});
+        mPackageManager.setStringArrayMetaData(
+                "com.bobpay", new String[] {"https://jonpay.com/webpay"});
+
+        findApps(methods);
+
+        Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
+        Set<String> appIdentifiers = new HashSet<>();
+        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
+        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
+
+        mPaymentApps.clear();
+        mAllPaymentAppsCreated = false;
+
+        findApps(methods);
+
+        Assert.assertEquals("2 apps should still match the query", 2, mPaymentApps.size());
+        appIdentifiers.clear();
+        appIdentifiers.add(mPaymentApps.get(0).getAppIdentifier());
+        appIdentifiers.add(mPaymentApps.get(1).getAppIdentifier());
+        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
+        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
+    }
+
     private void findApps(final Set<String> methodNames) throws Throwable {
         mRule.runOnUiThread(() -> AndroidPaymentAppFinder.find(
                 mRule.getActivity().getCurrentContentViewCore().getWebContents(), methodNames,
