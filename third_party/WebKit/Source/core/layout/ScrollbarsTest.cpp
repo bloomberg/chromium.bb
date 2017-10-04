@@ -1131,26 +1131,16 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);
 
-  // TODO(bokan): Added a bunch of asserting here to fish out a flake. I
-  // suspect we're sometimes either keeping a horizontal scrollbar around a bit
-  // too long or the mock theme hasn't yet taken effect. Not sure how that might
-  // be happening but these should help decide where to look next (or the newly
-  // added BeginFrame after setting the ScrollOffset will help. In any case,
-  // remove once this bug is closed: crbug.com/769350.
+  // TODO(bokan): Added a bunch of sanity checks here fish out a flake.
+  // Remove once this bug is closed: crbug.com/769350.
   {
-    ASSERT_FALSE(scrollable_area->HorizontalScrollbar());
-    WebThemeEngine* engine = Platform::Current()->ThemeEngine();
-    ASSERT_EQ(
-        engine->GetSize(StubWebThemeEngine::kPartScrollbarVerticalThumb).width,
-        15);
-    ASSERT_EQ(
-        engine->GetSize(StubWebThemeEngine::kPartScrollbarVerticalThumb).height,
-        StubWebThemeEngine::kMinimumVerticalLength);
-
-    StubWebThemeEngine::ScrollbarStyle style;
-    engine->GetOverlayScrollbarStyle(&style);
-    ASSERT_EQ(style.thumb_thickness, 3);
-    ASSERT_EQ(style.scrollbar_margin, 0);
+    ScrollbarTheme& theme = scrollbar->GetTheme();
+    EXPECT_TRUE(&theme == &ScrollbarTheme::GetTheme());
+    EXPECT_EQ(10000000, scrollbar->TotalSize());
+    EXPECT_EQ(1000, scrollbar->VisibleSize());
+    EXPECT_EQ(9999000, scrollbar->CurrentPos());
+    EXPECT_EQ(1000, theme.TrackLength(*scrollbar));
+    EXPECT_EQ(52, theme.ThumbLength(*scrollbar));
   }
 
   int maximumThumbPosition =
