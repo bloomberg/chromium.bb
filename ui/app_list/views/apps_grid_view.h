@@ -517,6 +517,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
 
+  // Handle focus movement triggered by arrow up and down in PEEKING state.
+  bool HandleFocusMovementInPeekingState(bool arrow_up);
+
+  // Handle focus movement triggered by arrow up and down in FULLSCREEN_ALL_APPS
+  // state.
+  bool HandleFocusMovementInFullscreenAllAppsState(bool arrow_up);
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 

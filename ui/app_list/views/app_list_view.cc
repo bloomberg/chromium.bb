@@ -235,13 +235,20 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
       is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
       display_observer_(this),
-      animation_observer_(new HideViewAnimationObserver()) {
+      animation_observer_(new HideViewAnimationObserver()),
+      previous_arrow_key_traversal_enabled_(
+          views::FocusManager::arrow_key_traversal_enabled()) {
   CHECK(delegate);
   delegate_->GetSpeechUI()->AddObserver(this);
 
   if (is_fullscreen_app_list_enabled_) {
     display_observer_.Add(display::Screen::GetScreen());
     delegate_->AddObserver(this);
+  }
+  if (is_app_list_focus_enabled_) {
+    // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
+    // the same focus movement as tab/shift+tab.
+    views::FocusManager::set_arrow_key_traversal_enabled(true);
   }
 }
 
@@ -253,6 +260,10 @@ AppListView::~AppListView() {
   animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
+  if (is_app_list_focus_enabled_) {
+    views::FocusManager::set_arrow_key_traversal_enabled(
+        previous_arrow_key_traversal_enabled_);
+  }
 }
 
 // static
@@ -1098,7 +1109,7 @@ void AppListView::OnKeyEvent(ui::KeyEvent* event) {
                                            ->folder_header_view()
                                            ->HasTextFocus();
   if (is_app_list_focus_enabled_ && !is_search_box_focused &&
-      !is_folder_header_view_focused) {
+      !is_folder_header_view_focused && !SearchBoxView::IsArrowKey(*event)) {
     views::Textfield* search_box = search_box_view_->search_box();
     // Redirect key event to |search_box_|.
     search_box->OnKeyEvent(event);

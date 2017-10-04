@@ -24,12 +24,14 @@
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/indicator_chip_view.h"
 #include "ui/app_list/views/page_switcher_horizontal.h"
 #include "ui/app_list/views/page_switcher_vertical.h"
 #include "ui/app_list/views/pulsing_block_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/tile_item_view.h"
@@ -49,6 +51,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -955,8 +958,17 @@ void AppsGridView::UpdateControlVisibility(
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   if (is_app_list_focus_enabled_) {
-    // TODO(weidongg/766810) Add handling of arrow up and down here.
-    return false;
+    if (event.key_code() != ui::VKEY_UP && event.key_code() != ui::VKEY_DOWN)
+      return false;
+
+    AppListView::AppListState state =
+        contents_view_->app_list_view()->app_list_state();
+    bool arrow_up = event.key_code() == ui::VKEY_UP;
+    if (state == AppListView::PEEKING)
+      return HandleFocusMovementInPeekingState(arrow_up);
+
+    DCHECK(state == AppListView::FULLSCREEN_ALL_APPS);
+    return HandleFocusMovementInFullscreenAllAppsState(arrow_up);
   }
   // TODO(weidongg/766807) Remove everything below when the flag is enabled by
   // default.
@@ -1813,6 +1825,83 @@ bool AppsGridView::IsUnderOEMFolder() {
     return false;
 
   return folder_delegate_->IsOEMFolder();
+}
+
+bool AppsGridView::HandleFocusMovementInPeekingState(bool arrow_up) {
+  DCHECK(expand_arrow_view_);
+  if (expand_arrow_view_->HasFocus())
+    return false;
+  // In peeking mode, the focus is now in suggestions container.
+  if (arrow_up)
+    contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
+  else
+    expand_arrow_view_->RequestFocus();
+  return true;
+}
+
+bool AppsGridView::HandleFocusMovementInFullscreenAllAppsState(bool arrow_up) {
+  // The global index is the index of focused app in all pages, assuming
+  // all pages except last one have |cols_*rows_per_page_| apps, including
+  // apps in both |view_model_| and |suggestions_container_|. For example, if
+  // the focused app is the n-th app in p-th page, the global index is
+  // |(p-1)*(cols_*rows_per_page_)+(n-1)|.
+  int global_index;
+
+  // |suggestions_container_| does not exist in folder view.
+  bool has_suggestions_app =
+      suggestions_container_ && suggestions_container_->num_results() > 0;
+  const int suggestions_app_max_num = has_suggestions_app ? cols_ : 0;
+
+  // Calculate current global focus index.
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  if (has_suggestions_app && suggestions_container_->Contains(focused_view)) {
+    const std::vector<SearchResultTileItemView*>& tile_views =
+        suggestions_container_->tile_views();
+    global_index =
+        std::find(tile_views.begin(), tile_views.end(), focused_view) -
+        tile_views.begin();
+    DCHECK(global_index < cols_);
+  } else {
+    global_index = view_model_.GetIndexOfView(
+                       static_cast<const AppListItemView*>(focused_view)) +
+                   suggestions_app_max_num;
+  }
+
+  // Calculate target global focus index.
+  const int tile_total = view_model_.view_size() + suggestions_app_max_num;
+  const int row_total = tile_total / cols_ + ((tile_total % cols_) ? 1 : 0);
+  int target_global_index = global_index + (arrow_up ? -cols_ : cols_);
+  if (target_global_index >= tile_total &&
+      target_global_index < cols_ * row_total) {
+    // Target index is on last row, so set it to last app's global index.
+    target_global_index = tile_total - 1;
+  } else if (has_suggestions_app && target_global_index >= 0 &&
+             target_global_index < cols_) {
+    // Target index is in |suggestions_container|, set it to last suggestion
+    // app's index if it is outside range.
+    target_global_index = std::min(suggestions_container_->num_results() - 1,
+                                   target_global_index);
+  }
+
+  // Move focus based on target global focus index.
+  if (target_global_index < 0 || target_global_index >= cols_ * row_total) {
+    // Target index is outside apps grid view.
+    if (folder_delegate_ && arrow_up) {
+      contents_view_->apps_container_view()
+          ->app_list_folder_view()
+          ->folder_header_view()
+          ->SetTextFocus();
+    } else {
+      contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
+    }
+  } else if (has_suggestions_app &&
+             target_global_index < suggestions_container_->num_results()) {
+    suggestions_container_->tile_views()[target_global_index]->RequestFocus();
+  } else {
+    view_model_.view_at(target_global_index - suggestions_app_max_num)
+        ->RequestFocus();
+  }
+  return true;
 }
 
 void AppsGridView::DispatchDragEventForReparent(Pointer pointer,
