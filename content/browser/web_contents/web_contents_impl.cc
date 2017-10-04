@@ -1183,13 +1183,6 @@ void WebContentsImpl::GetScreenInfo(ScreenInfo* screen_info) {
     GetView()->GetScreenInfo(screen_info);
 }
 
-std::unique_ptr<WebUI> WebContentsImpl::CreateSubframeWebUI(
-    const GURL& url,
-    const std::string& frame_name) {
-  DCHECK(!frame_name.empty());
-  return CreateWebUI(url, frame_name);
-}
-
 WebUI* WebContentsImpl::GetWebUI() const {
   WebUI* commited_web_ui = GetCommittedWebUI();
   return commited_web_ui ? commited_web_ui
@@ -5498,7 +5491,7 @@ NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
 
 std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
     const GURL& url) {
-  return CreateWebUI(url, std::string());
+  return CreateWebUI(url);
 }
 
 NavigationEntry*
@@ -5751,11 +5744,8 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
     delegate_->UpdatePreferredSize(this, new_size);
 }
 
-std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(
-    const GURL& url,
-    const std::string& frame_name) {
-  std::unique_ptr<WebUIImpl> web_ui =
-      base::MakeUnique<WebUIImpl>(this, frame_name);
+std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
+  std::unique_ptr<WebUIImpl> web_ui = base::MakeUnique<WebUIImpl>(this);
   WebUIController* controller =
       WebUIControllerFactoryRegistry::GetInstance()
           ->CreateWebUIControllerForURL(web_ui.get(), url);

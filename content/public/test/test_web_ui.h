@@ -34,7 +34,6 @@ class TestWebUI : public WebUI {
   void OverrideTitle(const base::string16& title) override {}
   int GetBindings() const override;
   void SetBindings(int bindings) override {}
-  bool HasRenderFrame() override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(const std::string& message,
                                const MessageCallback& callback) override {}

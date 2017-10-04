@@ -66,10 +66,6 @@ class CONTENT_EXPORT WebUI {
   virtual int GetBindings() const = 0;
   virtual void SetBindings(int bindings) = 0;
 
-  // Whether this WebUI has a render frame associated with it. This will be true
-  // if the URL that created this WebUI was actually visited.
-  virtual bool HasRenderFrame() = 0;
-
   virtual void AddMessageHandler(
       std::unique_ptr<WebUIMessageHandler> handler) = 0;
 
