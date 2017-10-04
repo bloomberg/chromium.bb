@@ -214,6 +214,14 @@ TEST(OptionalTest, MoveConstructor) {
 
 TEST(OptionalTest, MoveValueConstructor) {
   {
+    constexpr float value = 0.1f;
+    constexpr Optional<float> o(std::move(value));
+
+    EXPECT_TRUE(o);
+    EXPECT_EQ(0.1f, o.value());
+  }
+
+  {
     float value = 0.1f;
     Optional<float> o(std::move(value));
 
@@ -240,6 +248,12 @@ TEST(OptionalTest, MoveValueConstructor) {
 }
 
 TEST(OptionalTest, ConstructorForwardArguments) {
+  {
+    constexpr Optional<float> a(base::in_place, 0.1f);
+    EXPECT_TRUE(a);
+    EXPECT_EQ(0.1f, a.value());
+  }
+
   {
     Optional<float> a(base::in_place, 0.1f);
     EXPECT_TRUE(a);

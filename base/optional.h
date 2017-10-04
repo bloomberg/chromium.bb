@@ -40,13 +40,11 @@ struct OptionalStorage {
   constexpr explicit OptionalStorage(const T& value)
       : is_null_(false), value_(value) {}
 
-  // TODO(alshabalin): Can't use 'constexpr' with std::move until C++14.
-  explicit OptionalStorage(T&& value)
+  constexpr explicit OptionalStorage(T&& value)
       : is_null_(false), value_(std::move(value)) {}
 
-  // TODO(alshabalin): Can't use 'constexpr' with std::forward until C++14.
   template <class... Args>
-  explicit OptionalStorage(base::in_place_t, Args&&... args)
+  constexpr explicit OptionalStorage(base::in_place_t, Args&&... args)
       : is_null_(false), value_(std::forward<Args>(args)...) {}
 
   // When T is not trivially destructible we must call its
@@ -75,13 +73,11 @@ struct OptionalStorage<T, true> {
   constexpr explicit OptionalStorage(const T& value)
       : is_null_(false), value_(value) {}
 
-  // TODO(alshabalin): Can't use 'constexpr' with std::move until C++14.
-  explicit OptionalStorage(T&& value)
+  constexpr explicit OptionalStorage(T&& value)
       : is_null_(false), value_(std::move(value)) {}
 
-  // TODO(alshabalin): Can't use 'constexpr' with std::forward until C++14.
   template <class... Args>
-  explicit OptionalStorage(base::in_place_t, Args&&... args)
+  constexpr explicit OptionalStorage(base::in_place_t, Args&&... args)
       : is_null_(false), value_(std::forward<Args>(args)...) {}
 
   // When T is trivially destructible (i.e. its destructor does nothing) there
@@ -123,6 +119,7 @@ class Optional {
 
   constexpr Optional(base::nullopt_t) {}
 
+  // TODO(dcheng): Make these constexpr iff T is trivially constructible.
   Optional(const Optional& other) {
     if (!other.storage_.is_null_)
       Init(other.value());
@@ -135,12 +132,10 @@ class Optional {
 
   constexpr Optional(const T& value) : storage_(value) {}
 
-  // TODO(alshabalin): Can't use 'constexpr' with std::move until C++14.
-  Optional(T&& value) : storage_(std::move(value)) {}
+  constexpr Optional(T&& value) : storage_(std::move(value)) {}
 
-  // TODO(alshabalin): Can't use 'constexpr' with std::forward until C++14.
   template <class... Args>
-  explicit Optional(base::in_place_t, Args&&... args)
+  constexpr explicit Optional(base::in_place_t, Args&&... args)
       : storage_(base::in_place, std::forward<Args>(args)...) {}
 
   ~Optional() = default;
@@ -178,57 +173,44 @@ class Optional {
     return *this;
   }
 
-  // TODO(mlamouri): can't use 'constexpr' with DCHECK.
-  const T* operator->() const {
+  constexpr const T* operator->() const {
     DCHECK(!storage_.is_null_);
     return &value();
   }
 
-  // TODO(mlamouri): using 'constexpr' here breaks compiler that assume it was
-  // meant to be 'constexpr const'.
-  T* operator->() {
+  constexpr T* operator->() {
     DCHECK(!storage_.is_null_);
     return &value();
   }
 
   constexpr const T& operator*() const& { return value(); }
 
-  // TODO(mlamouri): using 'constexpr' here breaks compiler that assume it was
-  // meant to be 'constexpr const'.
-  T& operator*() & { return value(); }
+  constexpr T& operator*() & { return value(); }
 
   constexpr const T&& operator*() const&& { return std::move(value()); }
 
-  // TODO(mlamouri): using 'constexpr' here breaks compiler that assume it was
-  // meant to be 'constexpr const'.
-  T&& operator*() && { return std::move(value()); }
+  constexpr T&& operator*() && { return std::move(value()); }
 
   constexpr explicit operator bool() const { return !storage_.is_null_; }
 
   constexpr bool has_value() const { return !storage_.is_null_; }
 
-  // TODO(mlamouri): using 'constexpr' here breaks compiler that assume it was
-  // meant to be 'constexpr const'.
-  T& value() & {
+  constexpr T& value() & {
     DCHECK(!storage_.is_null_);
     return storage_.value_;
   }
 
-  // TODO(mlamouri): can't use 'constexpr' with DCHECK.
-  const T& value() const& {
+  constexpr const T& value() const & {
     DCHECK(!storage_.is_null_);
     return storage_.value_;
   }
 
-  // TODO(mlamouri): using 'constexpr' here breaks compiler that assume it was
-  // meant to be 'constexpr const'.
-  T&& value() && {
+  constexpr T&& value() && {
     DCHECK(!storage_.is_null_);
     return std::move(storage_.value_);
   }
 
-  // TODO(mlamouri): can't use 'constexpr' with DCHECK.
-  const T&& value() const&& {
+  constexpr const T&& value() const && {
     DCHECK(!storage_.is_null_);
     return std::move(storage_.value_);
   }
