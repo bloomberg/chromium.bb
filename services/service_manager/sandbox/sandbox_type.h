@@ -47,6 +47,9 @@ enum SandboxType {
   SANDBOX_TYPE_NACL_LOADER,
 #endif  // defined(OS_MACOSX)
 
+  // The pdf compositor service process.
+  SANDBOX_TYPE_PDF_COMPOSITOR,
+
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 

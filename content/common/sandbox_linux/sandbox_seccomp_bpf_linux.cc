@@ -29,6 +29,7 @@
 #include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
+#include "content/common/sandbox_linux/bpf_pdf_compositor_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_ppapi_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_utility_policy_linux.h"
@@ -137,6 +138,7 @@ void RunSandboxSanityChecks(service_manager::SandboxType sandbox_type) {
     case service_manager::SANDBOX_TYPE_RENDERER:
     case service_manager::SANDBOX_TYPE_GPU:
     case service_manager::SANDBOX_TYPE_PPAPI:
+    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
     case service_manager::SANDBOX_TYPE_CDM: {
       int syscall_ret;
       errno = 0;
@@ -200,6 +202,9 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
       break;
     case service_manager::SANDBOX_TYPE_CDM:
       policy = std::make_unique<CdmProcessPolicy>();
+      break;
+    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
+      policy = std::make_unique<PdfCompositorProcessPolicy>();
       break;
     case service_manager::SANDBOX_TYPE_NO_SANDBOX:
     default:
