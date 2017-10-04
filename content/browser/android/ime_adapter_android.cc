@@ -93,7 +93,7 @@ void AppendBackgroundColorSpan(JNIEnv*,
 }
 
 // Callback from Java to convert SuggestionSpan data to a
-// blink::WebImeTextSpan instance, and append it to |ime_text_spans_ptr|.
+// ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
 void AppendSuggestionSpan(JNIEnv* env,
                           const JavaParamRef<jclass>&,
                           jlong ime_text_spans_ptr,
@@ -106,15 +106,15 @@ void AppendSuggestionSpan(JNIEnv* env,
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
 
-  blink::WebImeTextSpan::Type type =
-      is_misspelling ? blink::WebImeTextSpan::Type::kMisspellingSuggestion
-                     : blink::WebImeTextSpan::Type::kSuggestion;
+  ui::ImeTextSpan::Type type =
+      is_misspelling ? ui::ImeTextSpan::Type::kMisspellingSuggestion
+                     : ui::ImeTextSpan::Type::kSuggestion;
 
-  std::vector<blink::WebImeTextSpan>* ime_text_spans =
-      reinterpret_cast<std::vector<blink::WebImeTextSpan>*>(ime_text_spans_ptr);
+  std::vector<ui::ImeTextSpan>* ime_text_spans =
+      reinterpret_cast<std::vector<ui::ImeTextSpan>*>(ime_text_spans_ptr);
   std::vector<std::string> suggestions_vec;
   AppendJavaStringArrayToStringVector(env, suggestions, &suggestions_vec);
-  ime_text_spans->push_back(blink::WebImeTextSpan(
+  ime_text_spans->push_back(ui::ImeTextSpan(
       type, static_cast<unsigned>(start), static_cast<unsigned>(end),
       static_cast<unsigned>(underline_color), true, SK_ColorTRANSPARENT,
       static_cast<unsigned>(suggestion_highlight_color), suggestions_vec));
