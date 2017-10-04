@@ -4,7 +4,10 @@
 
 # TODO(rockot): Maybe we can factor these dependencies out of //mojo. They're
 # used to conditionally enable message ID scrambling in a way which is
-# consistent across toolchains.
+# consistent across toolchains and which is affected by branded vs non-branded
+# Chrome builds. Ideally we could create some generic knobs here that could be
+# flipped elsewhere though.
+import("//build/config/chrome_build.gni")
 import("//build/config/nacl/config.gni")
 import("//components/nacl/features.gni")
 
@@ -57,7 +60,12 @@ if (enable_scrambled_message_ids) {
     # the file at |mojom_message_id_salt_path| to form a complete salt for
     # message ID scrambling. May be the empty string, in which case the contents
     # of the above file alone are used as the complete salt.
-    mojom_message_id_salt_suffix_path = ""
+    if (is_chrome_branded) {
+      mojom_message_id_salt_suffix_path =
+          "//mojo/internal/chrome-message-id-salt-suffix"
+    } else {
+      mojom_message_id_salt_suffix_path = ""
+    }
   }
 
   mojom_generator_sources += [ mojom_message_id_salt_path ]
