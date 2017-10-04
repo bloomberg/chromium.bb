@@ -46,12 +46,12 @@ TEST(WebDisplayItemListImpl, ClipWhenCompositing) {
     auto background_record = sk_make_sp<cc::PaintRecord>();
     background_record->push<cc::DrawColorOp>(background_color,
                                              SkBlendMode::kSrcOver);
-    web_list.AppendDrawingItem(full_bounds, background_record, full_bounds);
+    web_list.AppendDrawingItem(full_bounds, background_record);
     web_list.AppendCompositingItem(1.f, blend_modes[i], &sk_clip_bounds,
                                    nullptr);
     auto clip_record = sk_make_sp<cc::PaintRecord>();
     clip_record->push<cc::DrawColorOp>(clip_color, SkBlendMode::kSrcOver);
-    web_list.AppendDrawingItem(full_bounds, clip_record, full_bounds);
+    web_list.AppendDrawingItem(full_bounds, clip_record);
     web_list.AppendEndCompositingItem();
     cc_list->Finalize();
 

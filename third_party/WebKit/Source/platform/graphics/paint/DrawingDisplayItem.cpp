@@ -25,8 +25,7 @@ void DrawingDisplayItem::AppendToWebDisplayItemList(
     // Convert visual rect into the GraphicsLayer's coordinate space.
     LayoutRect visual_rect = VisualRect();
     visual_rect.Move(-visual_rect_offset);
-    list->AppendDrawingItem(EnclosingIntRect(visual_rect), record_,
-                            EnclosingIntRect(record_bounds_));
+    list->AppendDrawingItem(EnclosingIntRect(visual_rect), record_);
   }
 }
 
