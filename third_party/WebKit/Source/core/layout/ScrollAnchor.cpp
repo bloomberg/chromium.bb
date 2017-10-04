@@ -251,7 +251,6 @@ void ScrollAnchor::NotifyBeforeLayout() {
     // its geometry. But when collapsed, table borders can depend on internal
     // parts, which get sorted during a layout pass. When a table with dirty
     // internal structure is checked as an anchor candidate, a DCHECK was hit.
-    LayoutTable::DisableUpdatingCollapsedBorders scoped_disabler;
     FindAnchor();
     if (!anchor_object_)
       return;
