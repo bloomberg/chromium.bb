@@ -103,6 +103,13 @@ class MockPasswordProtectionService
                void(const GURL&, const std::string&, content::WebContents*));
   MOCK_METHOD0(GetSyncAccountType,
                safe_browsing::PasswordProtectionService::SyncAccountType());
+  MOCK_METHOD2(ShowModalWarning,
+               void(content::WebContents*, const std::string&));
+  MOCK_METHOD3(OnUserAction,
+               void(content::WebContents*, WarningUIType, WarningAction));
+  MOCK_METHOD2(UpdateSecurityState,
+               void(safe_browsing::SBThreatType, content::WebContents*));
+  MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);

@@ -114,6 +114,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Called when sync user's Gaia password changed.
   void OnGaiaPasswordChanged();
 
+  // If user has clicked through any Safe Browsing interstitial on this given
+  // |web_contents|.
+  bool UserClickedThroughSBInterstitial(
+      content::WebContents* web_contents) override;
+
  protected:
   // PasswordProtectionService overrides.
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this

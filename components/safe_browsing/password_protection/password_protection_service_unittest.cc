@@ -94,13 +94,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     latest_response_ = std::move(response);
   }
 
-  // Since referrer chain logic has been thoroughly tested in
-  // SBNavigationObserverBrowserTest class, we intentionally leave this function
-  // as a no-op here.
-  void FillReferrerChain(const GURL& event_url,
-                         int event_tab_id,
-                         LoginReputationClientRequest::Frame* frame) override {}
-
   bool IsExtendedReporting() override { return is_extended_reporting_; }
 
   bool IsIncognito() override { return is_incognito_; }
@@ -110,9 +103,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   }
 
   void set_incognito(bool enabled) { is_incognito_ = enabled; }
-
-  void MaybeLogPasswordReuseDetectedEvent(
-      content::WebContents* web_contents) override {}
 
   bool IsPingingEnabled(const base::Feature& feature,
                         RequestOutcome* reason) override {
@@ -145,6 +135,17 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   }
 
   std::string checked_feature_name() { return checked_feature_name_; }
+
+  MOCK_METHOD3(FillReferrerChain,
+               void(const GURL&, int, LoginReputationClientRequest::Frame*));
+  MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
+  MOCK_METHOD2(ShowModalWarning,
+               void(content::WebContents*, const std::string&));
+  MOCK_METHOD3(OnUserAction,
+               void(content::WebContents*, WarningUIType, WarningAction));
+  MOCK_METHOD2(UpdateSecurityState,
+               void(safe_browsing::SBThreatType, content::WebContents*));
+  MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
 
  private:
   bool is_extended_reporting_;
