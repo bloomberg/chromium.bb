@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_FUCHSIA_AUDIO_MANAGER_FUCHSIA_H_
 #define MEDIA_AUDIO_FUCHSIA_AUDIO_MANAGER_FUCHSIA_H_
 
+#include <media/audio.h>
+
 #include "media/audio/audio_manager_base.h"
 
 namespace media {
@@ -41,12 +43,18 @@ class AudioManagerFuchsia : public AudioManagerBase {
       const std::string& device_id,
       const LogCallback& log_callback) override;
 
+  fuchsia_audio_manager* GetFuchsiaAudioManager() const {
+    return fuchsia_audio_manager_;
+  }
+
  protected:
   AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
 
  private:
+  fuchsia_audio_manager* fuchsia_audio_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioManagerFuchsia);
 };
 
