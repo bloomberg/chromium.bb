@@ -24,7 +24,6 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
@@ -161,8 +160,7 @@ UIColor* IncognitoSecureTextColor() {
 
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                WebOmniboxEditController* controller,
-                               ios::ChromeBrowserState* browser_state,
-                               id<OmniboxPopupPositioner> positioner)
+                               ios::ChromeBrowserState* browser_state)
     : OmniboxView(
           controller,
           base::MakeUnique<ChromeOmniboxClientIOS>(controller, browser_state)),
@@ -170,10 +168,9 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       field_(field),
       controller_(controller),
       ignore_popup_updates_(false),
-      attributing_display_string_(nil) {
+      attributing_display_string_(nil),
+      popup_provider_(nullptr) {
   DCHECK(field_);
-  popup_view_ = base::MakeUnique<OmniboxPopupViewIOS>(
-      this->browser_state(), model(), this, positioner);
   field_delegate_.reset(
       [[AutocompleteTextFieldDelegate alloc] initWithEditView:this]);
 
@@ -196,9 +193,6 @@ OmniboxViewIOS::~OmniboxViewIOS() {
   [field_ removeTarget:field_delegate_
                 action:@selector(textFieldDidChange:)
       forControlEvents:UIControlEventEditingChanged];
-
-  // Destroy the model, in case it tries to call back into us when destroyed.
-  popup_view_.reset();
 }
 
 void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,
@@ -262,7 +256,8 @@ void OmniboxViewIOS::UpdatePopup() {
       NSMaxRange(current_selection_) != [[field_ text] length];
   model()->StartAutocomplete(current_selection_.length != 0,
                              prevent_inline_autocomplete);
-  popup_view_->SetTextAlignment([field_ bestTextAlignment]);
+  DCHECK(popup_provider_);
+  popup_provider_->SetTextAlignment([field_ bestTextAlignment]);
 }
 
 void OmniboxViewIOS::OnTemporaryTextMaybeChanged(
@@ -354,7 +349,8 @@ void OmniboxViewIOS::OnDidBeginEditing() {
   // If Open from Clipboard offers a suggestion, the popup may be opened when
   // |OnSetFocus| is called on the model. The state of the popup is saved early
   // to ignore that case.
-  bool popup_was_open_before_editing_began = popup_view_->IsOpen();
+  DCHECK(popup_provider_);
+  bool popup_was_open_before_editing_began = popup_provider_->IsPopupOpen();
 
   // Text attributes (e.g. text color) should not be shown while editing, so
   // strip them out by calling setText (as opposed to setAttributedText).
@@ -804,7 +800,8 @@ void OmniboxViewIOS::FocusOmnibox() {
 }
 
 BOOL OmniboxViewIOS::IsPopupOpen() {
-  return popup_view_->IsOpen();
+  DCHECK(popup_provider_);
+  return popup_provider_->IsPopupOpen();
 }
 
 int OmniboxViewIOS::GetIcon(bool offlinePage) const {
