@@ -15,6 +15,10 @@ suite('<site-data>', function() {
     siteData = document.createElement('site-data');
   });
 
+  teardown(function() {
+    siteData.remove();
+  });
+
   test('tapping remove button (trash can) calls remove on origin', function() {
     var GOOGLE_ID = '1';
     siteData.sites = [{site: 'Google', id: GOOGLE_ID, localData: 'Cookiez!'}];
@@ -49,5 +53,20 @@ suite('<site-data>', function() {
     Polymer.dom.flush();
     assertEquals(0, siteData.shadowRoot.querySelectorAll('#siteItem').length);
     assertTrue(siteData.$.removeShowingSites.hidden);
+  });
+
+  test('calls reloadCookies() when created', function() {
+    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    document.body.appendChild(siteData);
+    return testBrowserProxy.whenCalled('reloadCookies');
+  });
+
+  test('calls reloadCookies() when visited again', function() {
+    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    document.body.appendChild(siteData);
+    settings.navigateTo(settings.routes.SITE_SETTINGS_COOKIES);
+    testBrowserProxy.reset();
+    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    return testBrowserProxy.whenCalled('reloadCookies');
   });
 });
