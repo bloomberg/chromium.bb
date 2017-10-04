@@ -320,19 +320,20 @@ cr.define('print_preview_test', function() {
     });
 
     setup(function() {
-      initialSettings = new print_preview.NativeInitialSettings(
-        false /*isInKioskAutoPrintMode*/,
-        false /*isInAppKioskMode*/,
-        ',' /*thousandsDelimeter*/,
-        '.' /*decimalDelimeter*/,
-        1 /*unitType*/,
-        true /*isDocumentModifiable*/,
-        'title' /*documentTitle*/,
-        true /*documentHasSelection*/,
-        false /*selectionOnly*/,
-        'FooDevice' /*systemDefaultDestinationId*/,
-        null /*serializedAppStateStr*/,
-        null /*serializedDefaultDestinationSelectionRulesStr*/);
+      initialSettings = {
+        isInKioskAutoPrintMode: false,
+        isInAppKioskMode: false,
+        thousandsDelimeter: ',',
+        decimalDelimeter: '.',
+        unitType: 1,
+        previewModifiable: true,
+        documentTitle: 'title',
+        documentHasSelection: true,
+        shouldPrintSelectionOnly: false,
+        printerName: 'FooDevice',
+        serializedAppStateStr: null,
+        serializedDefaultDestinationSelectionRulesStr: null
+      };
 
       localDestinationInfos = [
         { printerName: 'FooName', deviceName: 'FooDevice' },
@@ -427,7 +428,7 @@ cr.define('print_preview_test', function() {
 
     // Test restore settings with one destination.
     test('RestoreLocalDestination', function() {
-      initialSettings.serializedAppStateStr_ = JSON.stringify({
+      initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
         recentDestinations: [
           {
@@ -449,7 +450,7 @@ cr.define('print_preview_test', function() {
     test('RestoreMultipleDestinations', function() {
       var origin = cr.isChromeOS ? 'chrome_os' : 'local';
 
-      initialSettings.serializedAppStateStr_ = JSON.stringify({
+      initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
         recentDestinations: [
           {
@@ -523,7 +524,7 @@ cr.define('print_preview_test', function() {
 
     test('DefaultDestinationSelectionRules', function() {
       // It also makes sure these rules do override system default destination.
-      initialSettings.serializedDefaultDestinationSelectionRulesStr_ =
+      initialSettings.serializedDefaultDestinationSelectionRulesStr =
           JSON.stringify({namePattern: '.*Bar.*'});
       return setupSettingsAndDestinationsWithCapabilities(
           getCddTemplate('BarDevice', 'BarName')).then(function() {
@@ -534,7 +535,7 @@ cr.define('print_preview_test', function() {
 
     test('SystemDialogLinkIsHiddenInAppKioskMode', function() {
       if (!cr.isChromeOS)
-        initialSettings.isInAppKioskMode_ = true;
+        initialSettings.isInAppKioskMode = true;
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('FooDevice'));
       setInitialSettings();
       return nativeLayer.whenCalled('getInitialSettings').then(
@@ -570,8 +571,8 @@ cr.define('print_preview_test', function() {
     // the fit to page option.
     test('PrintToPDFSelectedCapabilities', function() {
       // Setup initial settings
-      initialSettings.isDocumentModifiable_ = false;
-      initialSettings.systemDefaultDestinationId_ = 'Save as PDF';
+      initialSettings.previewModifiable = false;
+      initialSettings.printerName = 'Save as PDF';
 
       // Set PDF printer
       nativeLayer.setLocalDestinationCapabilities(getPdfPrinter());
@@ -632,7 +633,7 @@ cr.define('print_preview_test', function() {
     // When the source is 'PDF', depending on the selected destination printer,
     // we show/hide the fit to page option and hide media size selection.
     test('SourceIsPDFCapabilities', function() {
-      initialSettings.isDocumentModifiable_ = false;
+      initialSettings.previewModifiable = false;
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         var otherOptions = $('other-options-settings');
         var scalingSettings = $('scaling-settings');
@@ -666,7 +667,7 @@ cr.define('print_preview_test', function() {
     // When the source is 'PDF', depending on the selected destination printer,
     // we show/hide the fit to page option and hide media size selection.
     test('ScalingUnchecksFitToPage', function() {
-      initialSettings.isDocumentModifiable_ = false;
+      initialSettings.previewModifiable = false;
       // Wait for preview to load.
       return Promise.all([setupSettingsAndDestinationsWithCapabilities(),
                           nativeLayer.whenCalled('getPreview')]).then(
@@ -710,7 +711,7 @@ cr.define('print_preview_test', function() {
     // When the number of copies print preset is set for source 'PDF', we update
     // the copies value if capability is supported by printer.
     test('CheckNumCopiesPrintPreset', function() {
-      initialSettings.isDocumentModifiable_ = false;
+      initialSettings.previewModifiable = false;
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         // Indicate that the number of copies print preset is set for source
         // PDF.
@@ -728,7 +729,7 @@ cr.define('print_preview_test', function() {
     // When the duplex print preset is set for source 'PDF', we update the
     // duplex setting if capability is supported by printer.
     test('CheckDuplexPrintPreset', function() {
-      initialSettings.isDocumentModifiable_ = false;
+      initialSettings.previewModifiable = false;
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         // Indicate that the duplex print preset is set to 'long edge' for
         // source PDF.
@@ -1245,7 +1246,7 @@ cr.define('print_preview_test', function() {
     test('InitIssuesOneRequest', function() {
       // Load in a bunch of recent destinations with non null capabilities.
       var origin = cr.isChromeOS ? 'chrome_os' : 'local';
-      initialSettings.serializedAppStateStr_ = JSON.stringify({
+      initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
         recentDestinations: [1, 2, 3].map(function(i) {
           return {
@@ -1398,7 +1399,7 @@ cr.define('print_preview_test', function() {
     // instead of the most recently used destination works.
     test('SystemDefaultPrinterPolicy', function() {
       // Add recent destination.
-      initialSettings.serializedAppStateStr_ = JSON.stringify({
+      initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
         recentDestinations: [
           {
@@ -1435,7 +1436,7 @@ cr.define('print_preview_test', function() {
       // local printer. See crbug.com/741341 and crbug.com/741528
       test('MacOpenPDFInPreview', function() {
         var device = getPdfPrinter();
-        initialSettings.systemDefaultDestinationId_ = device.printer.deviceName;
+        initialSettings.printerName = device.printer.deviceName;
         return setupSettingsAndDestinationsWithCapabilities(device).
             then(function() {
               assertEquals(
@@ -1469,7 +1470,7 @@ cr.define('print_preview_test', function() {
       // print ticket is invalid.
       test('MacOpenPDFInPreviewBadPrintTicket', function() {
         var device = getPdfPrinter();
-        initialSettings.systemDefaultDestinationId_ = device.printer.deviceName;
+        initialSettings.printerName = device.printer.deviceName;
         return Promise.all([
           setupSettingsAndDestinationsWithCapabilities(device),
           nativeLayer.whenCalled('getPreview')

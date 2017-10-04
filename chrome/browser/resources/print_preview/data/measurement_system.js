@@ -32,23 +32,6 @@ cr.define('print_preview', function() {
   }
 
   /**
-   * Parses |numberFormat| and extracts the symbols used for the thousands point
-   * and decimal point.
-   * @param {string} numberFormat The formatted version of the number 12345678.
-   * @return {!Array<string>} The extracted symbols in the order
-   *     [thousandsSymbol, decimalSymbol]. For example,
-   *     parseNumberFormat("123,456.78") returns [",", "."].
-   */
-  MeasurementSystem.parseNumberFormat = function(numberFormat) {
-    if (!numberFormat) {
-      return [',', '.'];
-    }
-    var regex = /^(\d+)(\W?)(\d+)(\W?)(\d+)$/;
-    var matches = numberFormat.match(regex) || ['', '', ',', '', '.'];
-    return [matches[2], matches[4]];
-  };
-
-  /**
    * Maximum resolution of local unit values.
    * @type {!Object<!print_preview.MeasurementSystemUnitType, number>}
    * @private
