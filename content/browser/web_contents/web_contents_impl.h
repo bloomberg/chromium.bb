@@ -1130,10 +1130,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnSetSelectedColorInColorChooser(RenderFrameHostImpl* source,
                                         int color_chooser_id,
                                         SkColor color);
-  void OnWebUISend(RenderViewHostImpl* source,
-                   const GURL& source_url,
-                   const std::string& name,
-                   const base::ListValue& args);
   void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,
                                      const PageImportanceSignals& signals);
 #if BUILDFLAG(ENABLE_PLUGINS)
