@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/source_buffer_platform.h"
@@ -217,6 +218,9 @@ template <typename RangeClass>
 SourceBufferStream<RangeClass>::~SourceBufferStream() {}
 
 template <>
+#if defined(__clang__) && defined(OS_WIN)
+MEDIA_EXPORT  // TODO(crbug.com/771710): Remove once clang-cl is fixed.
+#endif
 void SourceBufferStream<SourceBufferRangeByDts>::OnStartOfCodedFrameGroup(
     DecodeTimestamp coded_frame_group_start_dts,
     base::TimeDelta coded_frame_group_start_pts) {
@@ -228,6 +232,9 @@ void SourceBufferStream<SourceBufferRangeByDts>::OnStartOfCodedFrameGroup(
 }
 
 template <>
+#if defined(__clang__) && defined(OS_WIN)
+MEDIA_EXPORT  // TODO(crbug.com/771710): Remove once clang-cl is fixed.
+#endif
 void SourceBufferStream<SourceBufferRangeByPts>::OnStartOfCodedFrameGroup(
     DecodeTimestamp coded_frame_group_start_dts,
     base::TimeDelta coded_frame_group_start_pts) {
