@@ -3556,6 +3556,7 @@ test("unit_tests") {
     "//components/sync:test_support_driver",
     "//components/sync:test_support_model",
     "//components/sync_sessions:test_support",
+    "//components/ukm/content",
     "//components/version_info:generate_version_info",
     "//components/webdata_services:test_support",
     "//content/app/resources",

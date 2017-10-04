@@ -888,7 +888,6 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest, PrivatePageFailedLoad) {
   navigation_simulator->CommitErrorPage();
 
   // Nothing should have been generated.
-  EXPECT_EQ(0ul, test_ukm_recorder().sources_count());
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
   ExpectNoHistograms();
 }

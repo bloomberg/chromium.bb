@@ -458,6 +458,7 @@ split_static_library("ui") {
     "//components/toolbar:vector_icons",
     "//components/tracing:startup_tracing",
     "//components/ui_devtools",
+    "//components/ukm/content",
     "//components/undo",
     "//components/update_client",
     "//components/upload_list",

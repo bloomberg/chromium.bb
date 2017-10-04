@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -22,6 +23,8 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -332,6 +335,28 @@ class NavigationHandleImplBrowserTest : public ContentBrowserTest {
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+};
+
+class NavigationHandleImplDownloadBrowserTest
+    : public NavigationHandleImplBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    NavigationHandleImplBrowserTest::SetUpOnMainThread();
+
+    // Set up a test download directory, in order to prevent prompting for
+    // handling downloads.
+    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
+    ShellDownloadManagerDelegate* delegate =
+        static_cast<ShellDownloadManagerDelegate*>(
+            shell()
+                ->web_contents()
+                ->GetBrowserContext()
+                ->GetDownloadManagerDelegate());
+    delegate->SetDownloadBehaviorForTesting(downloads_directory_.GetPath());
+  }
+
+ private:
+  base::ScopedTempDir downloads_directory_;
 };
 
 // Ensure that PageTransition is properly set on the NavigationHandle.
@@ -1679,6 +1704,74 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
       }
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, IsDownload) {
+  GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  NavigateToURL(shell(), url);
+  EXPECT_FALSE(observer.has_committed());
+  EXPECT_TRUE(observer.is_download());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       DownloadFalseForHtmlResponse) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(observer.has_committed());
+  EXPECT_FALSE(observer.is_download());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       DownloadFalseFor404) {
+  GURL url(embedded_test_server()->GetURL("/page404.html"));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(observer.has_committed());
+  EXPECT_FALSE(observer.is_download());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       DownloadFalseForFailedNavigation) {
+  GURL url(embedded_test_server()->GetURL("/download-test1.lib"));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::CANCEL,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+
+  EXPECT_FALSE(NavigateToURL(shell(), url));
+  EXPECT_FALSE(observer.has_committed());
+  EXPECT_TRUE(observer.is_error());
+  EXPECT_FALSE(observer.is_download());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       RedirectToDownload) {
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/cross-site/bar.com/download-test1.lib"));
+  NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
+  NavigateToURL(shell(), redirect_url);
+  EXPECT_FALSE(observer.has_committed());
+  EXPECT_TRUE(observer.was_redirected());
+  EXPECT_TRUE(observer.is_download());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
+                       RedirectToDownloadFails) {
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/cross-site/bar.com/download-test1.lib"));
+  NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::CANCEL, NavigationThrottle::PROCEED);
+
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_url));
+
+  EXPECT_FALSE(observer.has_committed());
+  EXPECT_FALSE(observer.is_download());
+  EXPECT_TRUE(observer.is_error());
+  EXPECT_TRUE(observer.was_redirected());
 }
 
 }  // namespace content

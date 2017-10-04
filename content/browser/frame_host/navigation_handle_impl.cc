@@ -517,6 +517,10 @@ const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
   return request_id_;
 }
 
+bool NavigationHandleImpl::IsDownload() {
+  return is_download_;
+}
+
 void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
   DCHECK(IsBrowserSideNavigationEnabled());
