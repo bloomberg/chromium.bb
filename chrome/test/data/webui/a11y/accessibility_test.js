@@ -6,6 +6,10 @@
  * @fileoverview Accessibility Test API
  */
 
+GEN_INCLUDE([
+  'accessibility_audit_rules.js',
+]);
+
 /**
  * Accessibility Test
  * @namespace

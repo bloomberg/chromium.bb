@@ -9,8 +9,7 @@ var ROOT_PATH = '../../../../../../';
 
 // Polymer BrowserTest fixture and aXe-core accessibility audit.
 GEN_INCLUDE([
-  'accessibility_audit_rules.js',
-  'accessibility_test.js',
+  ROOT_PATH + 'chrome/test/data/webui/a11y/accessibility_test.js',
   ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
   ROOT_PATH + 'third_party/axe-core/axe.js',
 ]);
