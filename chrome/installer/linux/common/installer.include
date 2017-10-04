@@ -294,8 +294,16 @@ stage_install_common() {
 
   # documentation
   process_template "${BUILDDIR}/installer/common/manpage.1.in" \
-    "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1"
-  chmod 644 "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1"
+    "${STAGEDIR}/usr/share/man/man1/${USR_BIN_SYMLINK_NAME}.1"
+  gzip -9n "${STAGEDIR}/usr/share/man/man1/${USR_BIN_SYMLINK_NAME}.1"
+  chmod 644 "${STAGEDIR}/usr/share/man/man1/${USR_BIN_SYMLINK_NAME}.1.gz"
+  # The stable channel allows launching the app without the "-stable"
+  # suffix like the other channels.  Create a linked man page for the
+  # app-without-the-channel case.
+  if [ ! -f "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1.gz" ]; then
+    ln -s "${USR_BIN_SYMLINK_NAME}.1.gz" \
+      "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1.gz"
+  fi
 
   # Check to make sure all the ELF binaries are stripped.
   UNSTRIPPED=$(find "${STAGEDIR}/${INSTALLDIR}/" -type f | xargs file |
@@ -323,7 +331,14 @@ stage_install_common() {
     if [[ "${file_type}" = "directory"* ]]; then
       local expected_perms=755
     elif [[ "${file_type}" = *"symbolic link"* ]]; then
-      if [ ! -f "${STAGEDIR}/$(readlink "${file}")" ]; then
+      if [[ "$(readlink ${file})" = "/"* ]]; then
+        # Absolute symlink.
+        local expect_exists="${STAGEDIR}/$(readlink "${file}")"
+      else
+        # Relative symlink.
+        local expect_exists="$(dirname "${file}")/$(readlink "${file}")"
+      fi
+      if [ ! -f "${expect_exists}" ]; then
         echo "Broken symlink: ${file}" 1>&2
         exit 1
       fi

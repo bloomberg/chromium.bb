@@ -1,5 +1,5 @@
-." This file is processed to generate manpages in the
-." build diretory.
+.\" This file is processed to generate manpages in the
+.\" build diretory.
 .TH @@PACKAGE@@ 1 "" "" "USER COMMANDS"
 
 .SH NAME
