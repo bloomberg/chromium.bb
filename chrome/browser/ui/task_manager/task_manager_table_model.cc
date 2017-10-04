@@ -48,7 +48,6 @@ const int64_t kRefreshTimeMS = 1000;
 // only once per group.
 bool IsSharedByGroup(int column_id) {
   switch (column_id) {
-    case IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN:
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
@@ -365,10 +364,6 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
       return stringifier_->GetStartTimeText(
           observed_task_manager()->GetStartTime(tasks_[row]));
 
-    case IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN:
-      return stringifier_->GetMemoryUsageText(
-          observed_task_manager()->GetMemoryFootprintUsage(tasks_[row]), false);
-
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
       return stringifier_->GetMemoryUsageText(
           observed_task_manager()->GetPrivateMemoryUsage(tasks_[row]), false);
@@ -521,11 +516,6 @@ int TaskManagerTableModel::CompareValues(int row1,
     case IDS_TASK_MANAGER_START_TIME_COLUMN:
       return ValueCompare(observed_task_manager()->GetStartTime(tasks_[row1]),
                           observed_task_manager()->GetStartTime(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetMemoryFootprintUsage(tasks_[row1]),
-          observed_task_manager()->GetMemoryFootprintUsage(tasks_[row2]));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
       return ValueCompare(
@@ -737,20 +727,15 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       type = REFRESH_TYPE_CPU_TIME;
       break;
 
-    case IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN:
-      type = REFRESH_TYPE_MEMORY_FOOTPRINT;
-      break;
-
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
       type = REFRESH_TYPE_PHYSICAL_MEMORY;
       break;
+
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
     case IDS_TASK_MANAGER_SWAPPED_MEM_COLUMN:
       type = REFRESH_TYPE_MEMORY_DETAILS;
       if (table_view_delegate_->IsColumnVisible(
-              IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) ||
-          table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) ||
           table_view_delegate_->IsColumnVisible(
               IDS_TASK_MANAGER_SHARED_MEM_COLUMN) ||

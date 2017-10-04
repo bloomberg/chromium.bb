@@ -24,8 +24,7 @@ namespace {
 
 // A mask for the refresh types that are done in the background thread.
 const int kBackgroundRefreshTypesMask =
-    REFRESH_TYPE_CPU | REFRESH_TYPE_PHYSICAL_MEMORY |
-    REFRESH_TYPE_MEMORY_DETAILS | REFRESH_TYPE_IDLE_WAKEUPS |
+    REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY | REFRESH_TYPE_IDLE_WAKEUPS |
 #if defined(OS_WIN)
     REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
 #endif  // defined(OS_WIN)
@@ -90,7 +89,6 @@ TaskGroup::TaskGroup(
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
       platform_independent_cpu_usage_(0.0),
-      memory_footprint_(-1),
       gpu_memory_(-1),
       memory_state_(base::MemoryState::UNKNOWN),
       per_process_network_usage_rate_(-1),
@@ -329,8 +327,7 @@ void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY_DETAILS);
 #else
   memory_usage_ = memory_usage;
-  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PHYSICAL_MEMORY |
-                                  REFRESH_TYPE_MEMORY_DETAILS);
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY);
 #endif // OS_WIN
 }
 

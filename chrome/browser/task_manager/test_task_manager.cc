@@ -38,10 +38,6 @@ base::TimeDelta TestTaskManager::GetCpuTime(TaskId task_id) const {
   return base::TimeDelta();
 }
 
-int64_t TestTaskManager::GetMemoryFootprintUsage(TaskId task_id) const {
-  return -1;
-}
-
 int64_t TestTaskManager::GetPhysicalMemoryUsage(TaskId task_id) const {
   return -1;
 }
