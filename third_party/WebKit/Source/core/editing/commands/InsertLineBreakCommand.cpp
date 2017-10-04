@@ -177,8 +177,6 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
 
     // Handle whitespace that occurs after the split
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-    // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
-    // use |VisiblePosition::characterAfter()|.
     if (!IsRenderedCharacter(ending_position)) {
       Position position_before_text_node(
           Position::InParentBeforeNode(*text_node));

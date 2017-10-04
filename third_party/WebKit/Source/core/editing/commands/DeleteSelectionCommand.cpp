@@ -765,9 +765,6 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
 
 void DeleteSelectionCommand::FixupWhitespace() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  // TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
-  // |VisiblePosition::characterAfter()| and
-  // |VisiblePosition::characterBefore()|
   if (leading_whitespace_.IsNotNull() &&
       !IsRenderedCharacter(leading_whitespace_) &&
       leading_whitespace_.AnchorNode()->IsTextNode()) {

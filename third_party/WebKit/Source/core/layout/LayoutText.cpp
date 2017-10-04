@@ -1395,22 +1395,6 @@ bool LayoutText::IsAllCollapsibleWhitespace() const {
   return true;
 }
 
-bool LayoutText::IsRenderedCharacter(int offset_in_node) const {
-  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
-    if (offset_in_node < static_cast<int>(box->Start()) &&
-        !ContainsReversedText()) {
-      // The offset we're looking for is before this node this means the offset
-      // must be in content that is not laid out. Return false.
-      return false;
-    }
-    if (offset_in_node >= static_cast<int>(box->Start()) &&
-        offset_in_node < static_cast<int>(box->Start() + box->Len()))
-      return true;
-  }
-
-  return false;
-}
-
 bool LayoutText::ContainsOnlyWhitespace(unsigned from, unsigned len) const {
   DCHECK(text_);
   StringImpl& text = *text_.Impl();

@@ -31,6 +31,7 @@
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/line/InlineTextBox.h"
 
 namespace blink {
 
@@ -58,11 +59,28 @@ bool EditCommand::IsRenderedCharacter(const Position& position) {
     return false;
 
   LayoutObject* layout_object = position.AnchorNode()->GetLayoutObject();
-  if (!layout_object)
+  if (!layout_object || !layout_object->IsText())
     return false;
 
-  return ToLayoutText(layout_object)
-      ->IsRenderedCharacter(position.OffsetInContainerNode());
+  // TODO(xiaochengh): When LayoutNG is enabled, we should check offset mapping
+  // instead of legacy InlineTextBoxes.
+
+  // TODO(editing-dev): This doesn't handle first-letter correctly. Fix it.
+  const LayoutText* layout_text = ToLayoutText(layout_object);
+  const int offset_in_node = position.OffsetInContainerNode();
+  for (InlineTextBox* box : InlineTextBoxesOf(*layout_text)) {
+    if (offset_in_node < static_cast<int>(box->Start()) &&
+        !layout_text->ContainsReversedText()) {
+      // The offset we're looking for is before this node this means the offset
+      // must be in content that is not laid out. Return false.
+      return false;
+    }
+    if (offset_in_node >= static_cast<int>(box->Start()) &&
+        offset_in_node < static_cast<int>(box->Start() + box->Len()))
+      return true;
+  }
+
+  return false;
 }
 
 void EditCommand::SetParent(CompositeEditCommand* parent) {
