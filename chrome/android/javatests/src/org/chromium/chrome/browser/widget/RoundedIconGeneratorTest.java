@@ -7,31 +7,24 @@ package org.chromium.chrome.browser.widget;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.CommandLine;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Unit tests for RoundedIconGenerator.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class RoundedIconGeneratorTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private String getIconTextForUrl(String url, boolean includePrivateRegistries) {
         return RoundedIconGenerator.getIconTextForUrl(url, includePrivateRegistries);
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        CommandLine.init(null);
     }
 
     /**
