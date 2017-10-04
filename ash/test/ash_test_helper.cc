@@ -8,11 +8,11 @@
 #include <set>
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
-#include "ash/ash_switches.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"

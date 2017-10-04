@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "ash/ash_constants.h"
-#include "ash/ash_switches.h"
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"

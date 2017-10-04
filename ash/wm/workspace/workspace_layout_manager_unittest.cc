@@ -9,9 +9,9 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
-#include "ash/ash_switches.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"

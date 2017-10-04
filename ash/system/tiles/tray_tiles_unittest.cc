@@ -4,7 +4,7 @@
 
 #include "ash/system/tiles/tray_tiles.h"
 
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/night_light/night_light_toggle_button.h"

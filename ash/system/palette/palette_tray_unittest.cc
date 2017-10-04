@@ -4,10 +4,10 @@
 
 #include "ash/system/palette/palette_tray.h"
 
-#include "ash/ash_switches.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/session/test_session_controller_client.h"

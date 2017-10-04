@@ -4,8 +4,8 @@
 
 #include "ash/shelf/shelf_controller.h"
 
-#include "ash/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"

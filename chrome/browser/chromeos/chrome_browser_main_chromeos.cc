@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"

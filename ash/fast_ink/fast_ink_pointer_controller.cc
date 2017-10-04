@@ -4,7 +4,7 @@
 
 #include "ash/fast_ink/fast_ink_pointer_controller.h"
 
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/palette/palette_utils.h"
 #include "base/command_line.h"

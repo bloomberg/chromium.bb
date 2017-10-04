@@ -4,7 +4,7 @@
 
 #include "ash/system/display_scale/tray_scale.h"
 
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/system/display_scale/scale_detailed_view.h"

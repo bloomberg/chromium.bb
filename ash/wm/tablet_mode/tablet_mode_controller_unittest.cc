@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
