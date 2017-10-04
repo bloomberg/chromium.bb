@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_switches.h"
-
-#include "base/command_line.h"
-#include "base/sys_info.h"
+#include "ash/public/cpp/ash_switches.h"
 
 namespace ash {
 namespace switches {
+
+// Force the pointer (cursor) position to be kept inside root windows.
+const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
 
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
@@ -143,15 +143,6 @@ const char kSpuriousPowerButtonLidAngleChange[] =
 // By default we use classic IME (i.e. InputMethodChromeOS) in kMus. This flag
 // enables the IME service (i.e. InputMethodMus) instead.
 const char kUseIMEService[] = "use-ime-service";
-
-// Constrains the pointer movement within a root window on desktop.
-bool ConstrainPointerToRoot() {
-  const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
-
-  return base::SysInfo::IsRunningOnChromeOS() ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kAshConstrainPointerToRoot);
-}
 
 }  // namespace switches
 }  // namespace ash

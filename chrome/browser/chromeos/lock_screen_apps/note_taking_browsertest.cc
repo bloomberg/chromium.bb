@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "apps/launcher.h"
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"

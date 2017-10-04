@@ -123,7 +123,7 @@
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #include "components/ui_devtools/switches.h"

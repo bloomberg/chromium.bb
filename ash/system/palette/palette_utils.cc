@@ -4,8 +4,8 @@
 
 #include "ash/system/palette/palette_utils.h"
 
-#include "ash/ash_switches.h"
 #include "ash/palette_delegate.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

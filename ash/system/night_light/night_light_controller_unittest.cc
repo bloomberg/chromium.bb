@@ -7,8 +7,8 @@
 #include <cmath>
 #include <limits>
 
-#include "ash/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/session/session_controller.h"

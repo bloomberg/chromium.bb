@@ -66,7 +66,6 @@ include_rules = [
   # //ash/README.md.
   "-ash",
   "+ash/public",
-  "+ash/ash_switches.h",
 
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this

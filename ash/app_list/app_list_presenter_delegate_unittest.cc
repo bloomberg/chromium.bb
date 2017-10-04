@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "ash/app_list/test_app_list_presenter_impl.h"
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"

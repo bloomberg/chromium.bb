@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/animation/animation_change_type.h"
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"

@@ -4,7 +4,7 @@
 
 #include "ash/system/night_light/tray_night_light.h"
 
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/night_light/night_light_controller.h"

@@ -5,7 +5,7 @@
 #include "ash/wm/power_button_controller.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"

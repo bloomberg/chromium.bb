@@ -9,6 +9,8 @@ component("ash_public_cpp") {
     "ash_pref_names.cc",
     "ash_pref_names.h",
     "ash_public_export.h",
+    "ash_switches.cc",
+    "ash_switches.h",
     "ash_typography.cc",
     "ash_typography.h",
     "config.h",

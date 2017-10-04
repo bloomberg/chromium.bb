@@ -4,8 +4,8 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"

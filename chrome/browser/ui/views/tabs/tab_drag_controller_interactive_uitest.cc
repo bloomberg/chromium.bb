@@ -62,7 +62,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/ash_switches.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/wm/cursor_manager_test_api.h"
