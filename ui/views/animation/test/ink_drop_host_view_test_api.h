@@ -48,6 +48,8 @@ class InkDropHostViewTestApi {
   // Wrapper for InkDropHostView::AnimateInkDrop().
   void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
 
+  InkDropMode ink_drop_mode() const { return host_view_->ink_drop_mode_; }
+
  private:
   // The InkDropHostView to provide internal access to.
   InkDropHostView* host_view_;
