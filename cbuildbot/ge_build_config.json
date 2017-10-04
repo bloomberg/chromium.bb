@@ -1599,6 +1599,16 @@
       "models": [
         {
           "board_name": "reef-uni",
+          "name": "basking",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "reef-uni",
+          "name": "electro",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "reef-uni",
           "name": "pyro",
           "cq_test_enabled": false
         },
