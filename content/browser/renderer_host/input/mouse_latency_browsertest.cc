@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -145,8 +146,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 // MouseDown events in the case where no swap is generated.
 // Disabled on Android because we don't support synthetic mouse input on
 // Android (crbug.com/723618).
-// Test is flaky on Linux (crbug.com/736836).
-#if defined (OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID)
 #define MAYBE_MouseDownAndUpRecordedWithoutSwap \
   DISABLED_MouseDownAndUpRecordedWithoutSwap
 #else
@@ -183,10 +183,10 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
   }
 
   // We see two events per async slice, a begin and an end.
-  EXPECT_THAT(
-      trace_event_names,
-      testing::ElementsAre("InputLatency::MouseDown", "InputLatency::MouseDown",
-                           "InputLatency::MouseUp", "InputLatency::MouseUp"));
+  EXPECT_THAT(trace_event_names,
+              testing::UnorderedElementsAre(
+                  "InputLatency::MouseDown", "InputLatency::MouseDown",
+                  "InputLatency::MouseUp", "InputLatency::MouseUp"));
 }
 
 }  // namespace content
