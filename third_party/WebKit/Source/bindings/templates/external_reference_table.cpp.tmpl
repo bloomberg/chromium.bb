@@ -21,7 +21,6 @@ const intptr_t* {{class}}::GetTable() {
     {% for interface in interfaces %}
     {% if not interface.is_array_buffer_or_view %}
     {%   set v8_class = interface.v8_name %}
-
     {# Attributes #}
     {%-  for attribute in interface.attributes %}
     {%-    for world_suffix in attribute.world_suffixes %}
@@ -35,7 +34,6 @@ const intptr_t* {{class}}::GetTable() {
     {%      endif %}
     {%-    endfor %}{# world_suffix #}
     {%-  endfor %}{# attributes #}
-
     {# Methods / Operations #}
     {%  for method in interface.methods %}
     {%-   for world_suffix in method.world_suffixes %}
@@ -73,7 +71,6 @@ const intptr_t* {{class}}::GetTable() {
     reinterpret_cast<intptr_t>({{v8_class}}::securityCheck),
     reinterpret_cast<intptr_t>(&{{v8_class}}::wrapperTypeInfo),
     {%  endif %}
-
     {# Other properties #}
     {%  if interface.has_constructor_callback %}
     reinterpret_cast<intptr_t>({{v8_class}}::constructorCallback),
@@ -107,7 +104,6 @@ const intptr_t* {{class}}::GetTable() {
     {%-  endif %}
     {% endif %}{# not is_array_buffer_or_view #}
     {% endfor %}{# interfaces #}
-
     reinterpret_cast<intptr_t>(V8ObjectConstructor::IsValidConstructorMode),
 #endif  // USE_V8_CONTEXT_SNAPSHOT
     0  // terminate with a null
