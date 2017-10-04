@@ -200,6 +200,7 @@ class GClientSmoke(GClientSmokeBase):
           '    "managed"     : True,\n'
           '    "custom_deps" : {\n'
           '    },\n'
+          '    "custom_vars": {},\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.git_base)
@@ -212,6 +213,7 @@ class GClientSmoke(GClientSmokeBase):
           '    "managed"     : True,\n'
           '    "custom_deps" : {\n'
           '    },\n'
+          '    "custom_vars": {},\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.git_base)
@@ -224,6 +226,7 @@ class GClientSmoke(GClientSmokeBase):
           '    "managed"     : True,\n'
          '    "custom_deps" : {\n'
          '    },\n'
+         '    "custom_vars": {},\n'
          '  },\n'
          ']\n'
          'cache_dir = None\n')
@@ -236,9 +239,25 @@ class GClientSmoke(GClientSmokeBase):
          '    "managed"     : True,\n'
          '    "custom_deps" : {\n'
          '    },\n'
+         '    "custom_vars": {},\n'
          '  },\n'
          ']\n'
          'cache_dir = None\n')
+
+    test(['config', self.git_base + 'src/',
+          '--custom-var', 'bool_var=True',
+          '--custom-var', 'str_var="abc"'],
+         ('solutions = [\n'
+          '  { "name"        : "src",\n'
+          '    "url"         : "%ssrc",\n'
+          '    "deps_file"   : "DEPS",\n'
+          '    "managed"     : True,\n'
+          '    "custom_deps" : {\n'
+          '    },\n'
+          '    "custom_vars": {\'bool_var\': True, \'str_var\': \'abc\'},\n'
+          '  },\n'
+          ']\n'
+          'cache_dir = None\n') % self.git_base)
 
     test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
 

@@ -1214,6 +1214,7 @@ solutions = [
     "managed"     : %(managed)s,
     "custom_deps" : {
     },
+    "custom_vars": %(custom_vars)r,
   },
 ]
 cache_dir = %(cache_dir)r
@@ -1375,13 +1376,14 @@ it or fix the checkout.
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,
-                       managed=True, cache_dir=None):
+                       managed=True, cache_dir=None, custom_vars=None):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
       'deps_file': deps_file,
       'managed': managed,
       'cache_dir': cache_dir,
+      'custom_vars': custom_vars or {},
     })
 
   def _SaveEntries(self):
@@ -2174,6 +2176,9 @@ def CMDconfig(parser, args):
                          'to have the main solution untouched by gclient '
                          '(gclient will check out unmanaged dependencies but '
                          'will never sync them)')
+  parser.add_option('--custom-var', action='append', dest='custom_vars',
+                    default=[],
+                    help='overrides variables; key=value syntax')
   parser.set_defaults(config_filename=None)
   (options, args) = parser.parse_args(args)
   if options.output_config_file:
@@ -2181,6 +2186,13 @@ def CMDconfig(parser, args):
   if ((options.spec and args) or len(args) > 2 or
       (not options.spec and not args)):
     parser.error('Inconsistent arguments. Use either --spec or one or 2 args')
+
+  custom_vars = {}
+  for arg in options.custom_vars:
+    kv = arg.split('=', 1)
+    if len(kv) != 2:
+      parser.error('Invalid --custom-var argument: %r' % arg)
+    custom_vars[kv[0]] = gclient_eval.EvaluateCondition(kv[1], {})
 
   client = GClient('.', options)
   if options.spec:
@@ -2203,7 +2215,8 @@ def CMDconfig(parser, args):
     deps_file = options.deps_file
     client.SetDefaultConfig(name, deps_file, base_url,
                             managed=not options.unmanaged,
-                            cache_dir=options.cache_dir)
+                            cache_dir=options.cache_dir,
+                            custom_vars=custom_vars)
   client.SaveConfig()
   return 0
 
