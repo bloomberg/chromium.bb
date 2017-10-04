@@ -13,12 +13,14 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
@@ -29,6 +31,7 @@
 #include "headless/lib/browser/headless_devtools.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/util/deterministic_http_protocol_handler.h"
+#include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -43,7 +46,9 @@
 #endif
 
 namespace headless {
+
 namespace {
+
 // Address where to listen to incoming DevTools connections.
 const char kDevToolsHttpServerAddress[] = "127.0.0.1";
 // Default file name for screenshot. Can be overriden by "--screenshot" switch.
@@ -61,6 +66,27 @@ bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
   }
   return false;
 }
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
+  GURL url(arg);
+  if (url.is_valid() && url.has_scheme())
+    return url;
+
+  return net::FilePathToFileURL(
+      base::MakeAbsoluteFilePath(base::FilePath(arg)));
+}
+
+std::vector<GURL> ConvertArgumentsToURLs(
+    const base::CommandLine::StringVector& args) {
+  std::vector<GURL> urls;
+  urls.reserve(args.size());
+  for (auto it = args.rbegin(); it != args.rend(); ++it)
+    urls.push_back(ConvertArgumentToURL(*it));
+  return urls;
+}
+#endif
+
 }  // namespace
 
 HeadlessShell::HeadlessShell()
@@ -120,8 +146,6 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   }
   browser_->SetDefaultBrowserContext(browser_context_);
 
-  HeadlessWebContents::Builder builder(
-      browser_context_->CreateWebContentsBuilder());
   base::CommandLine::StringVector args =
       base::CommandLine::ForCurrentProcess()->GetArgs();
 
@@ -133,8 +157,17 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
 #else
     args.push_back("about:blank");
 #endif
-  for (auto it = args.rbegin(); it != args.rend(); ++it) {
-    GURL url(*it);
+
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ConvertArgumentsToURLs, args),
+      base::BindOnce(&HeadlessShell::OnGotURLs, weak_factory_.GetWeakPtr()));
+}
+
+void HeadlessShell::OnGotURLs(const std::vector<GURL>& urls) {
+  HeadlessWebContents::Builder builder(
+      browser_context_->CreateWebContentsBuilder());
+  for (const auto& url : urls) {
     HeadlessWebContents* web_contents = builder.SetInitialURL(url).Build();
     if (!web_contents) {
       LOG(ERROR) << "Navigation to " << url << " failed";
