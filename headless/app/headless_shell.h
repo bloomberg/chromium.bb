@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +22,8 @@
 #include "headless/public/headless_web_contents.h"
 #include "headless/public/util/deterministic_dispatcher.h"
 #include "net/base/file_stream.h"
+
+class GURL;
 
 namespace headless {
 
@@ -59,6 +62,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   virtual void Shutdown();
 
   void FetchTimeout();
+
+  void OnGotURLs(const std::vector<GURL>& urls);
 
   void PollReadyState();
 
