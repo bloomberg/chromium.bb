@@ -158,7 +158,7 @@ class ResourcePrefetcherTest : public testing::Test {
 
 ResourcePrefetcherTest::ResourcePrefetcherTest()
     : prefetcher_delegate_(),
-      context_getter_(new net::TestURLRequestContextGetter(
+      context_getter_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
           base::ThreadTaskRunnerHandle::Get())) {}
 
 ResourcePrefetcherTest::~ResourcePrefetcherTest() {
