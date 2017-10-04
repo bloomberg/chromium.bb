@@ -375,8 +375,6 @@ if (is_win) {
       "app/chrome_main.cc",
       "app/chrome_main_delegate.cc",
       "app/chrome_main_delegate.h",
-      "app/chrome_main_mac.h",
-      "app/chrome_main_mac.mm",
     ]
 
     output_name = "chrome"
