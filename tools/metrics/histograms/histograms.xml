@@ -49000,6 +49000,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.OneGoogleBar.ShownTime" units="ms">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Histogram of the time, in milliseconds since navigation start, it took until
+    the OneGoogleBar showed up on the NTP. Recorded only on the local NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.OtherSessionsMenu" enum="OtherSessionsActions">
   <obsolete>
     Deprecated 05/2015. Feature was removed.
