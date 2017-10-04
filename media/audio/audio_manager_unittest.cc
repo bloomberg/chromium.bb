@@ -4,9 +4,7 @@
 
 #include "media/audio/audio_manager.h"
 
-#include <map>
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -667,7 +665,7 @@ TEST_F(AudioManagerTest, AudioDebugRecording) {
 
   // Initialize is normally done in AudioManager::Create(), but since we don't
   // use that in this test, we need to initialize here.
-  audio_manager_->InitializeDebugRecording();
+  audio_manager_->InitializeOutputDebugRecording();
 
   MockAudioDebugRecordingManager* mock_debug_recording_manager =
       static_cast<MockAudioDebugRecordingManager*>(
@@ -675,14 +673,14 @@ TEST_F(AudioManagerTest, AudioDebugRecording) {
   ASSERT_TRUE(mock_debug_recording_manager);
 
   EXPECT_CALL(*mock_debug_recording_manager, DisableDebugRecording());
-  audio_manager_->DisableDebugRecording();
+  audio_manager_->DisableOutputDebugRecording();
 
   base::FilePath file_path(FILE_PATH_LITERAL("path"));
   EXPECT_CALL(*mock_debug_recording_manager, EnableDebugRecording(file_path));
-  audio_manager_->EnableDebugRecording(file_path);
+  audio_manager_->EnableOutputDebugRecording(file_path);
 
   EXPECT_CALL(*mock_debug_recording_manager, DisableDebugRecording());
-  audio_manager_->DisableDebugRecording();
+  audio_manager_->DisableOutputDebugRecording();
 }
 
 #if defined(OS_MACOSX) || defined(USE_CRAS)
@@ -691,9 +689,8 @@ class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
   TestAudioSourceCallback(int expected_frames_per_buffer,
                           base::WaitableEvent* event)
       : expected_frames_per_buffer_(expected_frames_per_buffer),
-        event_(event) {}
-
-  ~TestAudioSourceCallback() override {}
+        event_(event){};
+  ~TestAudioSourceCallback() override{};
 
   int OnMoreData(base::TimeDelta,
                  base::TimeTicks,
@@ -707,10 +704,10 @@ class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
   void OnError() override { FAIL(); }
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(TestAudioSourceCallback);
+
   const int expected_frames_per_buffer_;
   base::WaitableEvent* event_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAudioSourceCallback);
 };
 
 // Test that we can create an AudioOutputStream with kMinAudioBufferSize and

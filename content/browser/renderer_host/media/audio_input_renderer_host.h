@@ -36,6 +36,10 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "media/audio/audio_input_controller.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace media {
 class AudioManager;
 class AudioLog;
@@ -95,6 +99,12 @@ class CONTENT_EXPORT AudioInputRendererHost
                          AudioMirroringManager* audio_mirroring_manager,
                          media::UserInputMonitor* user_input_monitor);
 
+#if BUILDFLAG(ENABLE_WEBRTC)
+  // Enable and disable debug recording of input on all audio entries.
+  void EnableDebugRecording(const base::FilePath& file);
+  void DisableDebugRecording();
+#endif
+
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
   void OnDestruct() const override;
@@ -108,6 +118,10 @@ class CONTENT_EXPORT AudioInputRendererHost
   void OnLog(media::AudioInputController* controller,
              const std::string& message) override;
   void OnMuted(media::AudioInputController* controller, bool is_muted) override;
+
+  // Sets the PID renderer. This is used for constructing the debug recording
+  // filename.
+  void set_renderer_pid(int32_t renderer_pid);
 
  protected:
   ~AudioInputRendererHost() override;
@@ -202,8 +216,34 @@ class CONTENT_EXPORT AudioInputRendererHost
   // event is received.
   AudioEntry* LookupByController(media::AudioInputController* controller);
 
+#if BUILDFLAG(ENABLE_WEBRTC)
+  // TODO(grunell): Move debug recording handling to AudioManager.
+  void MaybeEnableDebugRecordingForId(int stream_id);
+
+  base::FilePath GetDebugRecordingFilePathWithExtensions(
+      const base::FilePath& file);
+
+  void EnableDebugRecordingForId(const base::FilePath& file, int stream_id);
+
+  // Calls GetDebugRecordingFilePathWithExtensions() and
+  // EnableDebugRecordingForId().
+  void AddExtensionsToPathAndEnableDebugRecordingForId(
+      const base::FilePath& file,
+      int stream_id);
+
+  void DoEnableDebugRecording(int stream_id, base::File file);
+  void DoDisableDebugRecording(int stream_id);
+
+  // Delete the debug writer used for debug recordings for |stream_id|.
+  void DeleteDebugWriter(int stream_id);
+#endif
+
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;
+
+  // PID of the render process connected to the RenderProcessHost that owns this
+  // instance.
+  int32_t renderer_pid_;
 
   // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;

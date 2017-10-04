@@ -13,7 +13,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/user_input_monitor.h"

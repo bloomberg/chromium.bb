@@ -47,10 +47,10 @@ var DumpCreator = (function() {
         ' suffixes will be added:</p>' +
         '<p><div>&lt;base filename&gt;.&lt;render process ID&gt;' +
         '.aec_dump.&lt;AEC dump recording ID&gt;</div>' +
-        '<div>&lt;base filename&gt;.input.&lt;stream recording ID&gt;.wav' +
-        '</div><div>' +
-        '&lt;base filename&gt;.output.&lt;stream recording ID&gt;.wav' +
-        '</div></p>' +
+        '<div>&lt;base filename&gt;.&lt;render process ID&gt;' +
+        '.source_input.&lt;stream ID&gt;.wav</div>' +
+        '<div>&lt;base filename&gt;.output' +
+        '.&lt;output stream recording ID&gt;.wav</div></p>' +
         '<p class=audio-diagnostic-dumps-info>It is recommended to choose a' +
         ' new base filename each time the feature is enabled to avoid ending' +
         ' up with partially overwritten or unusable audio files.</p>' +
