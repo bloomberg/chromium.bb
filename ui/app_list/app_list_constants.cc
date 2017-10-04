@@ -72,7 +72,7 @@ const SkColor kCardBackgroundColor = SK_ColorWHITE;
 const SkColor kCardBackgroundColorFullscreen = SkColorSetRGB(0xFA, 0xFA, 0xFC);
 
 // Duration in milliseconds for page transition.
-const int kPageTransitionDurationInMs = 180;
+const int kPageTransitionDurationInMs = 250;
 
 // Duration in milliseconds for over scroll page transition.
 const int kOverscrollPageTransitionDurationMs = 50;
