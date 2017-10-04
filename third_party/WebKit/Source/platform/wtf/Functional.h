@@ -242,6 +242,7 @@ class Function<R(Args...), threadAffinity> {
   }
 
   bool IsCancelled() const { return callback_.IsCancelled(); }
+  void Reset() { callback_.Reset(); }
   explicit operator bool() const { return static_cast<bool>(callback_); }
 
   friend base::Callback<R(Args...)> ConvertToBaseCallback(Function function) {
