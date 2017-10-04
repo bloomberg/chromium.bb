@@ -569,8 +569,6 @@
     },
 
     'tryserver.chromium.linux': {
-      'Chromium Linux Codesearch Builder': 'codesearch',
-      'ChromiumOS Codesearch Builder': 'codesearch',
       'cast_shell_linux': 'cast_release_trybot',
       'cast_shell_audio_linux': 'cast_audio_release_trybot',
       'chromeos_amd64-generic_chromium_compile_only_ng': 'cros_chrome_sdk',
@@ -1231,11 +1229,6 @@
 
     'closure_compilation': [
       # The closure bots run their own recipe and shouldn't go through MB.
-      'error',
-    ],
-
-    'codesearch': [
-      # The Codesearch bots run their own recipe and invoke GN directly.
       'error',
     ],
 
@@ -2077,6 +2070,6 @@
   },
 
   'luci_tryservers': {
-    'chromium.try': [ 'LUCI linux_chromium_rel_ng' ],
+    'chromium.try': [ 'linux_chromium_rel_ng' ],
   },
 }
