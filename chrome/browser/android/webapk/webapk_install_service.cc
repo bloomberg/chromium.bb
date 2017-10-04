@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
@@ -59,12 +60,10 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
 }
 
 void WebApkInstallService::UpdateAsync(
-    const std::string& webapk_package,
-    const base::string16& short_name,
-    std::unique_ptr<std::vector<uint8_t>> serialized_proto,
+    const base::FilePath& update_request_path,
     const FinishCallback& finish_callback) {
-  WebApkInstaller::UpdateAsync(browser_context_, webapk_package, short_name,
-                               std::move(serialized_proto), finish_callback);
+  WebApkInstaller::UpdateAsync(browser_context_, update_request_path,
+                               finish_callback);
 }
 
 void WebApkInstallService::OnFinishedInstall(
