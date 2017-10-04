@@ -1174,17 +1174,6 @@ WebString WebLocalFrameImpl::SelectionAsMarkup() const {
   return GetFrame()->Selection().SelectedHTMLForClipboard();
 }
 
-void WebLocalFrameImpl::SelectWordAroundPosition(LocalFrame* frame,
-                                                 VisiblePosition position) {
-  TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundPosition");
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  see http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  frame->Selection().SelectWordAroundPosition(position);
-}
-
 bool WebLocalFrameImpl::SelectWordAroundCaret() {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundCaret");
 
