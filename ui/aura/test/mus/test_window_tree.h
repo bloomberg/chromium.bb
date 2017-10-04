@@ -182,6 +182,12 @@ class TestWindowTree : public ui::mojom::WindowTree {
              ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,
              const EmbedCallback& callback) override;
+  void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
+                     const ScheduleEmbedCallback& callback) override;
+  void EmbedUsingToken(uint32_t window_id,
+                       const base::UnguessableToken& token,
+                       uint32_t embed_flags,
+                       const EmbedUsingTokenCallback& callback) override;
   void SetFocus(uint32_t change_id, uint32_t window_id) override;
   void SetCanFocus(uint32_t window_id, bool can_focus) override;
   void SetEventTargetingPolicy(uint32_t window_id,

@@ -1495,6 +1495,33 @@ ClientWindowId WindowTree::MakeClientWindowId(const WindowId& id) const {
   return MakeClientWindowId((id.client_id << 16) | id.window_id);
 }
 
+mojom::WindowTreeClientPtr
+WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
+    const base::UnguessableToken& token) {
+  auto iter = scheduled_embeds_.find(token);
+  if (iter != scheduled_embeds_.end()) {
+    mojom::WindowTreeClientPtr client = std::move(iter->second);
+    scheduled_embeds_.erase(iter);
+    return client;
+  }
+
+  // There are no clients above the window manager.
+  if (window_manager_internal_)
+    return nullptr;
+
+  // Use the root to find the client that embedded this. For non-window manager
+  // connections there should be only one root (a WindowTreeClient can only be
+  // embedded once). During shutdown there may be no roots.
+  if (roots_.size() != 1)
+    return nullptr;
+  const ServerWindow* root = *roots_.begin();
+  WindowTree* owning_tree = window_server_->GetTreeWithId(root->id().client_id);
+  if (!owning_tree)
+    return nullptr;
+  DCHECK_NE(this, owning_tree);
+  return owning_tree->GetAndRemoveScheduledEmbedWindowTreeClient(token);
+}
+
 void WindowTree::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
@@ -1945,6 +1972,28 @@ void WindowTree::Embed(Id transport_window_id,
                        const EmbedCallback& callback) {
   callback.Run(
       Embed(MakeClientWindowId(transport_window_id), std::move(client), flags));
+}
+
+void WindowTree::ScheduleEmbed(mojom::WindowTreeClientPtr client,
+                               const ScheduleEmbedCallback& callback) {
+  const base::UnguessableToken token = base::UnguessableToken::Create();
+  scheduled_embeds_[token] = std::move(client);
+  callback.Run(token);
+}
+
+void WindowTree::EmbedUsingToken(Id transport_window_id,
+                                 const base::UnguessableToken& token,
+                                 uint32_t flags,
+                                 const EmbedUsingTokenCallback& callback) {
+  mojom::WindowTreeClientPtr client =
+      GetAndRemoveScheduledEmbedWindowTreeClient(token);
+  if (!client) {
+    DVLOG(1) << "EmbedUsingToken failed, no ScheduleEmbed(), token="
+             << token.ToString();
+    callback.Run(false);
+    return;
+  }
+  Embed(transport_window_id, std::move(client), flags, callback);
 }
 
 void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {

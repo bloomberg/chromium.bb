@@ -35,6 +35,7 @@ mojom("interfaces") {
     "//gpu/ipc/common:interfaces",
     "//media/gpu/mojo:jpeg_decoder",
     "//media/mojo/interfaces",
+    "//mojo/common:common_custom_types",
     "//services/ui/public/interfaces/cursor",
     "//services/ui/public/interfaces/display",
     "//services/ui/public/interfaces/ime",

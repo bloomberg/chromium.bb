@@ -59,6 +59,13 @@ void EmbedCallbackImpl(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
+void ScheduleEmbedCallbackImpl(base::RunLoop* run_loop,
+                               base::UnguessableToken* resulting_token,
+                               const base::UnguessableToken& token) {
+  *resulting_token = token;
+  run_loop->Quit();
+}
+
 // -----------------------------------------------------------------------------
 
 bool EmbedUrl(service_manager::Connector* connector,
@@ -88,6 +95,27 @@ bool Embed(WindowTree* tree, Id root_id, mojom::WindowTreeClientPtr client) {
   }
   run_loop.Run();
   return result;
+}
+
+bool EmbedUsingToken(WindowTree* tree,
+                     Id root_id,
+                     const base::UnguessableToken& token) {
+  bool result = false;
+  base::RunLoop run_loop;
+  const uint32_t embed_flags = 0;
+  tree->EmbedUsingToken(root_id, token, embed_flags,
+                        base::Bind(&EmbedCallbackImpl, &run_loop, &result));
+  run_loop.Run();
+  return result;
+}
+
+void ScheduleEmbed(WindowTree* tree,
+                   mojom::WindowTreeClientPtr client,
+                   base::UnguessableToken* token) {
+  base::RunLoop run_loop;
+  tree->ScheduleEmbed(std::move(client),
+                      base::Bind(&ScheduleEmbedCallbackImpl, &run_loop, token));
+  run_loop.Run();
 }
 
 void GetWindowTree(WindowTree* tree,
@@ -2038,6 +2066,72 @@ TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
   client2.WaitForOnEmbed();
   EXPECT_EQ("OnEmbed",
             SingleChangeToDescription(*client2.tracker()->changes()));
+}
+
+TEST_F(WindowTreeClientTest, EmbedUsingToken) {
+  // Embed client2.
+  ASSERT_TRUE(wt_client1()->NewWindow(1));
+  TestWindowTreeClient client2;
+  mojom::WindowTreeClientPtr client2_ptr;
+  mojo::Binding<WindowTreeClient> client2_binding(
+      &client2, mojo::MakeRequest(&client2_ptr));
+  ASSERT_TRUE(
+      Embed(wt1(), BuildWindowId(client_id_1(), 1), std::move(client2_ptr)));
+  client2.WaitForOnEmbed();
+  EXPECT_EQ("OnEmbed",
+            SingleChangeToDescription(*client2.tracker()->changes()));
+
+  // Schedule an embed of |client3| from wt1().
+  TestWindowTreeClient client3;
+  mojom::WindowTreeClientPtr client3_ptr;
+  mojo::Binding<WindowTreeClient> client3_binding(
+      &client3, mojo::MakeRequest(&client3_ptr));
+  base::UnguessableToken token;
+  ScheduleEmbed(wt1(), std::move(client3_ptr), &token);
+
+  // Have |client2| embed using the token scheduled above.
+  const Id window_id = client2.NewWindow(121);
+  ASSERT_TRUE(window_id);
+  ASSERT_TRUE(EmbedUsingToken(client2.tree(), BuildWindowId(client_id_2(), 121),
+                              token));
+  client3.WaitForOnEmbed();
+  EXPECT_EQ("OnEmbed",
+            SingleChangeToDescription(*client3.tracker()->changes()));
+
+  // EmbedUsingToken() should fail when passed a token that was already used.
+  EXPECT_FALSE(EmbedUsingToken(client2.tree(),
+                               BuildWindowId(client_id_2(), 121), token));
+
+  // EmbedUsingToken() should fail when passed a locally generated token.
+  EXPECT_FALSE(EmbedUsingToken(client2.tree(),
+                               BuildWindowId(client_id_2(), 121),
+                               base::UnguessableToken::Create()));
+}
+
+TEST_F(WindowTreeClientTest, EmbedUsingTokenFailsWithInvalidWindow) {
+  // Embed client2.
+  ASSERT_TRUE(wt_client1()->NewWindow(1));
+  TestWindowTreeClient client2;
+  mojom::WindowTreeClientPtr client2_ptr;
+  mojo::Binding<WindowTreeClient> client2_binding(
+      &client2, mojo::MakeRequest(&client2_ptr));
+  ASSERT_TRUE(
+      Embed(wt1(), BuildWindowId(client_id_1(), 1), std::move(client2_ptr)));
+  client2.WaitForOnEmbed();
+  EXPECT_EQ("OnEmbed",
+            SingleChangeToDescription(*client2.tracker()->changes()));
+
+  // Schedule an embed of |client3| from wt1().
+  TestWindowTreeClient client3;
+  mojom::WindowTreeClientPtr client3_ptr;
+  mojo::Binding<WindowTreeClient> client3_binding(
+      &client3, mojo::MakeRequest(&client3_ptr));
+  base::UnguessableToken token;
+  ScheduleEmbed(wt1(), std::move(client3_ptr), &token);
+
+  // This should fail as the window id does not identify a valid window.
+  EXPECT_FALSE(EmbedUsingToken(client2.tree(),
+                               BuildWindowId(client_id_2(), 121), token));
 }
 
 TEST_F(WindowTreeClientTest, EmbedFailsFromOtherClient) {

@@ -12,6 +12,8 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -343,6 +345,13 @@ void WindowTreeClient::Embed(
 
   tree_->Embed(WindowMus::Get(window)->server_id(), std::move(client), flags,
                callback);
+}
+
+void WindowTreeClient::ScheduleEmbed(
+    ui::mojom::WindowTreeClientPtr client,
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  tree_->ScheduleEmbed(std::move(client),
+                       base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 void WindowTreeClient::AttachCompositorFrameSink(
