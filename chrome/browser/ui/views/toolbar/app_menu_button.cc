@@ -131,7 +131,7 @@ void AppMenuButton::Layout() {
   if (new_icon_) {
     new_icon_->SetBoundsRect(GetContentsBounds());
     ink_drop_container()->SetBoundsRect(GetLocalBounds());
-    image()->SetBoundsRect(GetLocalBounds());
+    image()->SetBoundsRect(GetContentsBounds());
     return;
   }
 
