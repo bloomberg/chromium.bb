@@ -95,36 +95,19 @@ crbug.com/24182 svg/hixie/perf/006.xml [ Slow ]
 crbug.com/451577 [ Debug ] fast/dom/gc-treescope.html  [ Slow ]
 crbug.com/451577 [ Debug ] fast/frames/calculate-round.html [ Slow ]
 crbug.com/451577 external/wpt/IndexedDB/idbindex-multientry-big.htm [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-reload.html [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.html [ Slow ]
-crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
-crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.html [ Slow ]
-crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/network/network-domain-filter.html [ Slow ]
 
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
-
-#############################################################
-# Marking migrated DevTools tests slow based on existing bugs
-# See crbug.com/667560 for details
 
 # Most DevTools tests are slow in Debug.
 webkit.org/b/90488 [ Debug ] http/tests/devtools/ [ Slow ]
 webkit.org/b/90488 [ Debug ] virtual/mojo-loading/http/tests/devtools/ [ Slow ]
+webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
+
+# DevTools console, debugger and profiler tests are slow in Release as well.
 crbug.com/451577 http/tests/devtools/console [ Slow ]
 crbug.com/451577 virtual/mojo-loading/http/tests/devtools/console [ Slow ]
 crbug.com/450493 http/tests/devtools/sources/ [ Slow ]
 crbug.com/450493 virtual/mojo-loading/http/tests/devtools/sources/ [ Slow ]
-
-#############################################################
-
-# Most inspector tests are slow in Debug.
-webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
-crbug.com/679833 http/tests/devtools/network/network-datareceived.html [ Slow ]
-crbug.com/679833 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.html [ Slow ]
-
-# Debugger and profiler tests are slow in Release as well.
 crbug.com/450493 http/tests/devtools/startup/sources/ [ Slow ]
 crbug.com/450493 http/tests/devtools/stacktraces/ [ Slow ]
 crbug.com/450493 virtual/mojo-loading/http/tests/devtools/stacktraces/ [ Slow ]
@@ -133,13 +116,15 @@ crbug.com/450493 virtual/mojo-loading/http/tests/devtools/profiler/ [ Slow ]
 crbug.com/420008 http/tests/devtools/tracing/ [ Slow ]
 crbug.com/420008 virtual/mojo-loading/http/tests/devtools/tracing/ [ Slow ]
 crbug.com/420008 virtual/threaded/http/tests/devtools/tracing/ [ Slow ]
+
+# Misc DevTools tests that are slow
 crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/ [ Slow ]
 crbug.com/246190 [ Release ] virtual/mojo-loading/http/tests/devtools/indexeddb/ [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-events.html [ Slow ]
 crbug.com/667560 http/tests/devtools/startup/console/console-format-startup.html [ Slow ]
-
-# Random slow tests
+crbug.com/679833 http/tests/devtools/network/network-datareceived.html [ Slow ]
+crbug.com/679833 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.html [ Slow ]
 webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.html [ Slow ]
 webkit.org/b/90488 [ Release ] virtual/mojo-loading/http/tests/devtools/compiler-source-mapping-debug.html [ Slow ]
 crbug.com/243492 http/tests/devtools/startup/injected-script-discard.html [ Slow ]
@@ -160,13 +145,22 @@ crbug.com/451577 http/tests/devtools/resource-tree/resource-tree-crafted-frame-a
 crbug.com/451577 virtual/mojo-loading/http/tests/devtools/resource-tree/resource-tree-crafted-frame-add.html [ Slow ]
 crbug.com/451577 http/tests/devtools/resource-tree/resource-tree-frame-in-crafted-frame.html [ Slow ]
 crbug.com/451577 virtual/mojo-loading/http/tests/devtools/resource-tree/resource-tree-frame-in-crafted-frame.html [ Slow ]
+crbug.com/510337 http/tests/devtools/elements/styles-1/edit-value-url-with-color.html [ Slow ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-1/edit-value-url-with-color.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-reload.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.html [ Slow ]
+crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
+crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.html [ Slow ]
+crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/network/network-domain-filter.html [ Slow ]
+
+# Random slow tests
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-border-radius.html [ Slow ]
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-image-canvas-svg.html [ Slow ]
 crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-image-svg-resource-url.html [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
-crbug.com/510337 http/tests/devtools/elements/styles-1/edit-value-url-with-color.html [ Slow ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-1/edit-value-url-with-color.html [ Slow ]
 
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
