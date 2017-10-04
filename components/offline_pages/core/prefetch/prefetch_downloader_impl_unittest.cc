@@ -6,6 +6,9 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "components/download/public/test/test_download_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
@@ -32,10 +35,13 @@ class PrefetchDownloaderImplTest : public TaskTestBase {
   PrefetchDownloaderImplTest() = default;
 
   void SetUp() override {
+    clock_ = new base::SimpleTestClock();
+
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
 
     auto downloader = base::MakeUnique<PrefetchDownloaderImpl>(
         &download_service_, kTestChannel);
+    downloader->SetClockForTest(base::WrapUnique(clock_));
     download_service_.SetFailedDownload(kFailedDownloadId, false);
     download_service_.SetIsReady(true);
     download_client_ = base::MakeUnique<TestDownloadClient>(downloader.get());
@@ -67,6 +73,8 @@ class PrefetchDownloaderImplTest : public TaskTestBase {
     return prefetch_dispatcher()->download_results;
   }
 
+  base::SimpleTestClock* clock() { return clock_; }
+
  private:
   PrefetchDownloader* prefetch_downloader() const {
     return prefetch_service_taco_->prefetch_service()->GetPrefetchDownloader();
@@ -80,9 +88,13 @@ class PrefetchDownloaderImplTest : public TaskTestBase {
   download::test::TestDownloadService download_service_;
   std::unique_ptr<TestDownloadClient> download_client_;
   std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_taco_;
+  base::SimpleTestClock* clock_;
 };
 
 TEST_F(PrefetchDownloaderImplTest, DownloadParams) {
+  base::Time epoch = base::Time();
+  clock()->SetNow(epoch);
+
   StartDownload(kDownloadId, kDownloadLocation);
   base::Optional<download::DownloadParams> params = GetDownload(kDownloadId);
   ASSERT_TRUE(params.has_value());
@@ -97,6 +109,9 @@ TEST_F(PrefetchDownloaderImplTest, DownloadParams) {
   std::string alt_value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(download_url, "alt", &alt_value));
   EXPECT_EQ("media", alt_value);
+
+  EXPECT_EQ(base::TimeDelta::FromDays(2),
+            params->scheduling_params.cancel_time - epoch);
   RunUntilIdle();
 }
 

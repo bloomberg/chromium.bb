@@ -12,9 +12,12 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 namespace offline_pages {
 class PrefetchService;
+static constexpr base::TimeDelta kPrefetchDownloadLifetime =
+    base::TimeDelta::FromDays(2);
 
 // Asynchronously downloads the archive.
 class PrefetchDownloader {
