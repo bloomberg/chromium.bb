@@ -94,7 +94,7 @@ make_names("event_modules_names") {
 
 make_names("event_target_modules_names") {
   visibility = [ ":*" ]
-  in_files = [ "../../modules/EventTargetModulesFactory.json5" ]
+  in_files = [ "../../modules/EventTargetModulesNames.json5" ]
   outputs = [
     "$blink_modules_output_dir/EventTargetModulesNames.cpp",
     "$blink_modules_output_dir/EventTargetModulesNames.h",
