@@ -105,42 +105,32 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
 }
 
 std::unique_ptr<SkBitmap> UiPixelTest::SaveCurrentFrameBufferToSkBitmap() {
+  // Create buffer.
+  std::unique_ptr<SkBitmap> bitmap = base::MakeUnique<SkBitmap>();
+  if (!bitmap->tryAllocN32Pixels(frame_buffer_size_.width(),
+                                 frame_buffer_size_.height(), false)) {
+    return nullptr;
+  }
+  SkPixmap pixmap;
+  if (!bitmap->peekPixels(&pixmap)) {
+    return nullptr;
+  }
+
   // Read pixels from frame buffer.
-  uint32_t* pixels =
-      new uint32_t[frame_buffer_size_.width() * frame_buffer_size_.height()];
   glReadPixels(0, 0, frame_buffer_size_.width(), frame_buffer_size_.height(),
-               GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+               GL_RGBA, GL_UNSIGNED_BYTE, pixmap.writable_addr());
   if (glGetError() != GL_NO_ERROR) {
     return nullptr;
   }
 
   // Flip image vertically since SkBitmap expects the pixels in a different
   // order.
-  for (int stride = 0; stride < frame_buffer_size_.height() / 2; stride++) {
-    for (int strideOffset = 0; strideOffset < frame_buffer_size_.width();
-         strideOffset++) {
-      size_t topPixelIndex = frame_buffer_size_.width() * stride + strideOffset;
-      size_t bottomPixelIndex = (frame_buffer_size_.height() - stride - 1) *
-                                    frame_buffer_size_.width() +
-                                strideOffset;
-      pixels[topPixelIndex] ^= pixels[bottomPixelIndex];
-      pixels[bottomPixelIndex] ^= pixels[topPixelIndex];
-      pixels[topPixelIndex] ^= pixels[bottomPixelIndex];
+  for (int col = 0; col < frame_buffer_size_.width(); col++) {
+    for (int row = 0; row < frame_buffer_size_.height() / 2; row++) {
+      std::swap(
+          *pixmap.writable_addr32(col, row),
+          *pixmap.writable_addr32(col, frame_buffer_size_.height() - row - 1));
     }
-  }
-
-  // Create bitmap with pixels.
-  std::unique_ptr<SkBitmap> bitmap = base::MakeUnique<SkBitmap>();
-  if (!bitmap->installPixels(SkImageInfo::MakeN32(frame_buffer_size_.width(),
-                                                  frame_buffer_size_.height(),
-                                                  kOpaque_SkAlphaType),
-                             pixels,
-                             sizeof(uint32_t) * frame_buffer_size_.width(),
-                             [](void* pixels, void* context) {
-                               delete[] static_cast<uint32_t*>(pixels);
-                             },
-                             nullptr)) {
-    return nullptr;
   }
 
   return bitmap;
