@@ -14,8 +14,8 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "aom_dsp/inv_txfm.h"
-#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16 || \
-    CONFIG_DAALA_DCT32 || CONFIG_DAALA_DCT64
+#if CONFIG_DAALA_TX4 || CONFIG_DAALA_TX8 || CONFIG_DAALA_TX16 || \
+    CONFIG_DAALA_TX32 || CONFIG_DAALA_TX64
 #include "av1/common/daala_tx.h"
 #endif
 

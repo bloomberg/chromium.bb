@@ -24,7 +24,7 @@ static void fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
     return;
   }
 
-#if CONFIG_LGT || CONFIG_DAALA_DCT4
+#if CONFIG_LGT || CONFIG_DAALA_TX4
   // only C version has LGTs
   av1_fht4x4_c(src_diff, coeff, diff_stride, txfm_param);
 #else
@@ -80,7 +80,7 @@ static void fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
 
 static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_LGT || CONFIG_DAALA_DCT8
+#if CONFIG_LGT || CONFIG_DAALA_TX8
   av1_fht8x8_c(src_diff, coeff, diff_stride, txfm_param);
 #else
   av1_fht8x8(src_diff, coeff, diff_stride, txfm_param);
@@ -89,11 +89,11 @@ static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
 
 static void fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_DAALA_DCT16
+#if CONFIG_DAALA_TX16
   av1_fht16x16_c(src_diff, coeff, diff_stride, txfm_param);
 #else
   av1_fht16x16(src_diff, coeff, diff_stride, txfm_param);
-#endif  // CONFIG_DAALA_DCT16
+#endif  // CONFIG_DAALA_TX16
 }
 
 static void fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,

@@ -677,7 +677,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, FwdTrans8x8DCT,
                         ::testing::Values(make_tuple(&aom_fdct8x8_sse2,
                                                      &aom_idct8x8_64_add_sse2,
                                                      DCT_DCT, AOM_BITS_8)));
-#if !CONFIG_DAALA_DCT8
+#if !CONFIG_DAALA_TX8
 INSTANTIATE_TEST_CASE_P(
     SSE2, FwdTrans8x8HT,
     ::testing::Values(make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2,
@@ -688,7 +688,7 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_ADST, AOM_BITS_8),
                       make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2,
                                  ADST_ADST, AOM_BITS_8)));
-#endif  // !CONFIG_DAALA_DCT8
+#endif  // !CONFIG_DAALA_TX8
 #endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
@@ -696,7 +696,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, FwdTrans8x8DCT,
                         ::testing::Values(make_tuple(&aom_fdct8x8_sse2,
                                                      &aom_idct8x8_64_add_c,
                                                      DCT_DCT, AOM_BITS_8)));
-#if !CONFIG_DAALA_DCT8
+#if !CONFIG_DAALA_TX8
 INSTANTIATE_TEST_CASE_P(
     SSE2, FwdTrans8x8HT,
     ::testing::Values(make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c,
@@ -707,7 +707,7 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_ADST, AOM_BITS_8),
                       make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_c,
                                  ADST_ADST, AOM_BITS_8)));
-#endif  // !CONFIG_DAALA_DCT8
+#endif  // !CONFIG_DAALA_TX8
 #endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSSE3 && ARCH_X86_64
@@ -722,7 +722,7 @@ INSTANTIATE_TEST_CASE_P(MSA, FwdTrans8x8DCT,
                         ::testing::Values(make_tuple(&aom_fdct8x8_msa,
                                                      &aom_idct8x8_64_add_msa,
                                                      DCT_DCT, AOM_BITS_8)));
-#if !CONFIG_EXT_TX && !CONFIG_DAALA_DCT8
+#if !CONFIG_EXT_TX && !CONFIG_DAALA_TX8
 INSTANTIATE_TEST_CASE_P(
     MSA, FwdTrans8x8HT,
     ::testing::Values(make_tuple(&av1_fht8x8_msa, &av1_iht8x8_64_add_msa,
@@ -733,6 +733,6 @@ INSTANTIATE_TEST_CASE_P(
                                  DCT_ADST, AOM_BITS_8),
                       make_tuple(&av1_fht8x8_msa, &av1_iht8x8_64_add_msa,
                                  ADST_ADST, AOM_BITS_8)));
-#endif  // !CONFIG_EXT_TX && !CONFIG_DAALA_DCT8
+#endif  // !CONFIG_EXT_TX && !CONFIG_DAALA_TX8
 #endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace

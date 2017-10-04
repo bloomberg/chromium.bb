@@ -136,25 +136,25 @@ TEST_P(AV1HighbdInvHTNxN, InvTransResultCheck) { RunBitexactCheck(); }
 using std::tr1::make_tuple;
 
 #if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && \
-    !(CONFIG_DAALA_DCT4 && CONFIG_DAALA_DCT8 && CONFIG_DAALA_DCT16)
-#if !CONFIG_DAALA_DCT4
+    !(CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16)
+#if !CONFIG_DAALA_TX4
 #define PARAM_LIST_4X4                                   \
   &av1_fwd_txfm2d_4x4_c, &av1_inv_txfm2d_add_4x4_sse4_1, \
       &av1_inv_txfm2d_add_4x4_c, 16
 #endif
-#if !CONFIG_DAALA_DCT8
+#if !CONFIG_DAALA_TX8
 #define PARAM_LIST_8X8                                   \
   &av1_fwd_txfm2d_8x8_c, &av1_inv_txfm2d_add_8x8_sse4_1, \
       &av1_inv_txfm2d_add_8x8_c, 64
 #endif
-#if !CONFIG_DAALA_DCT16
+#if !CONFIG_DAALA_TX16
 #define PARAM_LIST_16X16                                     \
   &av1_fwd_txfm2d_16x16_c, &av1_inv_txfm2d_add_16x16_sse4_1, \
       &av1_inv_txfm2d_add_16x16_c, 256
 #endif
 const IHbdHtParam kArrayIhtParam[] = {
 // 16x16
-#if !CONFIG_DAALA_DCT16
+#if !CONFIG_DAALA_TX16
   make_tuple(PARAM_LIST_16X16, DCT_DCT, 10),
   make_tuple(PARAM_LIST_16X16, DCT_DCT, 12),
   make_tuple(PARAM_LIST_16X16, ADST_DCT, 10),
@@ -177,7 +177,7 @@ const IHbdHtParam kArrayIhtParam[] = {
 #endif
 #endif
 // 8x8
-#if !CONFIG_DAALA_DCT8
+#if !CONFIG_DAALA_TX8
   make_tuple(PARAM_LIST_8X8, DCT_DCT, 10),
   make_tuple(PARAM_LIST_8X8, DCT_DCT, 12),
   make_tuple(PARAM_LIST_8X8, ADST_DCT, 10),
@@ -200,7 +200,7 @@ const IHbdHtParam kArrayIhtParam[] = {
 #endif
 #endif
 // 4x4
-#if !CONFIG_DAALA_DCT4
+#if !CONFIG_DAALA_TX4
   make_tuple(PARAM_LIST_4X4, DCT_DCT, 10),
   make_tuple(PARAM_LIST_4X4, DCT_DCT, 12),
   make_tuple(PARAM_LIST_4X4, ADST_DCT, 10),
@@ -227,9 +227,9 @@ const IHbdHtParam kArrayIhtParam[] = {
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdInvHTNxN,
                         ::testing::ValuesIn(kArrayIhtParam));
 #endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH &&
-        //  !(CONFIG_DAALA_DCT4 && CONFIG_DAALA_DCT8 && CONFIG_DAALA_DCT16)
+        //  !(CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16)
 
-#if HAVE_AVX2 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_DCT32
+#if HAVE_AVX2 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_TX32
 #define PARAM_LIST_32X32                                   \
   &av1_fwd_txfm2d_32x32_c, &av1_inv_txfm2d_add_32x32_avx2, \
       &av1_inv_txfm2d_add_32x32_c, 1024
