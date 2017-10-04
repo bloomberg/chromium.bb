@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DOWNLOADER_IMPL_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DOWNLOADER_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "components/download/public/download_params.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -49,6 +51,8 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
                            int64_t file_size) override;
   void OnDownloadFailed(const std::string& download_id) override;
 
+  void SetClockForTest(std::unique_ptr<base::Clock> clock);
+
  private:
   friend class PrefetchServiceTestTaco;
 
@@ -73,6 +77,8 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
       const std::set<std::string>& outstanding_download_ids,
       const std::map<std::string, std::pair<base::FilePath, int64_t>>&
           success_downloads);
+
+  std::unique_ptr<base::Clock> clock_;
 
   // Unowned. It is valid until |this| instance is disposed.
   download::DownloadService* download_service_;
