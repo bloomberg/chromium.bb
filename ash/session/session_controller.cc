@@ -208,6 +208,11 @@ void SessionController::LockScreen() {
     client_->RequestLockScreen();
 }
 
+void SessionController::RequestSignOut() {
+  if (client_)
+    client_->RequestSignOut();
+}
+
 void SessionController::SwitchActiveUser(const AccountId& account_id) {
   if (client_)
     client_->SwitchActiveUser(account_id);

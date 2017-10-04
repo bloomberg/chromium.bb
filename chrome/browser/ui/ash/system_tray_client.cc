@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -449,10 +448,6 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
   }
   base::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForActiveUser(page);
-}
-
-void SystemTrayClient::SignOut() {
-  chrome::AttemptUserExit();
 }
 
 void SystemTrayClient::RequestRestartForUpdate() {

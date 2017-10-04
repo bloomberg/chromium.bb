@@ -71,6 +71,7 @@ class SessionControllerClient
 
   // ash::mojom::SessionControllerClient:
   void RequestLockScreen() override;
+  void RequestSignOut() override;
   void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(ash::CycleUserDirection direction) override;
   void ShowMultiProfileLogin() override;

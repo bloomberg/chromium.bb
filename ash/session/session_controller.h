@@ -124,6 +124,11 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();
 
+  // Requests signing out all users, ending the current session.
+  // NOTE: This should only be called from LockStateController, other callers
+  // should use LockStateController::RequestSignOut() instead.
+  void RequestSignOut();
+
   // Switches to another active user with |account_id| (if that user has
   // already signed in).
   void SwitchActiveUser(const AccountId& account_id);
