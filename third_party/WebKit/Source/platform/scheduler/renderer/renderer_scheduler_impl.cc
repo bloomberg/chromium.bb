@@ -61,11 +61,19 @@ const char* BackgroundStateToString(bool is_backgrounded) {
   }
 }
 
-const char* AudioPlayingToString(bool is_audio_playing) {
+const char* AudioPlayingStateToString(bool is_audio_playing) {
   if (is_audio_playing) {
     return "playing";
   } else {
     return "muted";
+  }
+}
+
+const char* YesNoStateToString(bool is_yes) {
+  if (is_yes) {
+    return "yes";
+  } else {
+    return "no";
   }
 }
 
@@ -220,7 +228,16 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       backgrounding_tracer("RendererScheduler.Backgrounded",
                            renderer_scheduler_impl),
       audio_playing_tracer("RendererScheduler.AudioPlaying",
-                           renderer_scheduler_impl) {}
+                           renderer_scheduler_impl),
+      touchstart_expected_soon_tracer(
+          "RendererScheduler.TouchstartExpectedSoon",
+          renderer_scheduler_impl),
+      loading_tasks_seem_expensive_tracer(
+          "RendererScheduler.LoadingTasksSeemsExpensive",
+          renderer_scheduler_impl),
+      timer_tasks_seem_expensive_tracer(
+          "RendererScheduler.TimerTasksSeemsExpensive",
+          renderer_scheduler_impl) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -595,7 +612,7 @@ void RendererSchedulerImpl::OnAudioStateChanged() {
       helper_.scheduler_tqm_delegate()->NowTicks();
   main_thread_only().is_audio_playing = is_audio_playing;
   main_thread_only().audio_playing_tracer.SetState(
-      AudioPlayingToString(is_audio_playing));
+      AudioPlayingStateToString(is_audio_playing));
 
   UpdatePolicy();
 }
@@ -967,6 +984,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     touchstart_expected_soon = any_thread().user_model.IsGestureExpectedSoon(
         now, &touchstart_expected_flag_valid_for_duration);
   }
+  if (main_thread_only().touchstart_expected_soon != touchstart_expected_soon) {
+    main_thread_only().touchstart_expected_soon_tracer.SetState(
+        YesNoStateToString(touchstart_expected_soon));
+  }
   main_thread_only().touchstart_expected_soon = touchstart_expected_soon;
 
   base::TimeDelta longest_jank_free_task_duration =
@@ -982,6 +1003,17 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   timer_tasks_seem_expensive =
       main_thread_only().timer_task_cost_estimator.expected_task_duration() >
       longest_jank_free_task_duration;
+
+  if (main_thread_only().loading_tasks_seem_expensive !=
+      loading_tasks_seem_expensive) {
+    main_thread_only().loading_tasks_seem_expensive_tracer.SetState(
+        YesNoStateToString(loading_tasks_seem_expensive));
+  }
+  if (main_thread_only().timer_tasks_seem_expensive !=
+      timer_tasks_seem_expensive) {
+    main_thread_only().timer_tasks_seem_expensive_tracer.SetState(
+        YesNoStateToString(timer_tasks_seem_expensive));
+  }
   main_thread_only().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
   main_thread_only().loading_tasks_seem_expensive =
       loading_tasks_seem_expensive;
@@ -1195,16 +1227,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "rail_mode",
                  new_policy.rail_mode());
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "touchstart_expected_soon",
-                 main_thread_only().touchstart_expected_soon);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "expensive_task_policy", expensive_task_policy);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.loading_tasks_seem_expensive",
-                 main_thread_only().loading_tasks_seem_expensive);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.timer_tasks_seem_expensive",
-                 main_thread_only().timer_tasks_seem_expensive);
 
   // TODO(alexclarke): Can we get rid of force update now?
   if (update_type == UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED &&
@@ -2101,7 +2124,13 @@ void RendererSchedulerImpl::OnTraceLogEnabled() {
   main_thread_only().backgrounding_tracer.SetState(
       BackgroundStateToString(main_thread_only().renderer_backgrounded));
   main_thread_only().audio_playing_tracer.SetState(
-      AudioPlayingToString(main_thread_only().is_audio_playing));
+      AudioPlayingStateToString(main_thread_only().is_audio_playing));
+  main_thread_only().touchstart_expected_soon_tracer.SetState(
+      YesNoStateToString(main_thread_only().touchstart_expected_soon));
+  main_thread_only().loading_tasks_seem_expensive_tracer.SetState(
+      YesNoStateToString(main_thread_only().loading_tasks_seem_expensive));
+  main_thread_only().timer_tasks_seem_expensive_tracer.SetState(
+      YesNoStateToString(main_thread_only().timer_tasks_seem_expensive));
 }
 
 void RendererSchedulerImpl::OnTraceLogDisabled() {}
