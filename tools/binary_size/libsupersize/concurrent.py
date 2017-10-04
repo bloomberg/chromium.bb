@@ -4,6 +4,7 @@
 
 """Helpers related to multiprocessing."""
 
+import __builtin__  # __builtins__ does not have exception types.
 import atexit
 import logging
 import multiprocessing
@@ -21,6 +22,9 @@ if DISABLE_ASYNC:
 _all_pools = None
 _is_child_process = False
 _silence_exceptions = False
+
+# Used to pass parameters to forked processes without pickling.
+_fork_params = None
 
 
 class _ImmediateResult(object):
@@ -42,8 +46,14 @@ class _ImmediateResult(object):
 
 class _ExceptionWrapper(object):
   """Used to marshal exception messages back to main process."""
-  def __init__(self, msg):
+  def __init__(self, msg, exception_type=None):
     self.msg = msg
+    self.exception_type = exception_type
+
+  def MaybeThrow(self):
+    if self.exception_type:
+      raise getattr(__builtin__, self.exception_type)(
+          'Originally caused by: ' + self.msg)
 
 
 class _FuncWrapper(object):
@@ -53,13 +63,19 @@ class _FuncWrapper(object):
     _is_child_process = True
     self._func = func
 
-  def __call__(self, args, _=None):
+  def __call__(self, index, _=None):
     try:
-      return self._func(*args)
-    except:  # pylint: disable=bare-except
+      return self._func(*_fork_params[index])
+    except Exception, e:
+      # Only keep the exception type for builtin exception types or else risk
+      # further marshalling exceptions.
+      exception_type = None
+      if type(e).__name__ in dir(__builtin__):
+        exception_type = type(e).__name__
       # multiprocessing is supposed to catch and return exceptions automatically
       # but it doesn't seem to work properly :(.
-      logging.warning('CAUGHT EXCEPTION')
+      return _ExceptionWrapper(traceback.format_exc(), exception_type)
+    except:  # pylint: disable=bare-except
       return _ExceptionWrapper(traceback.format_exc())
 
 
@@ -127,14 +143,20 @@ def _CheckForException(value):
   if isinstance(value, _ExceptionWrapper):
     global _silence_exceptions
     if not _silence_exceptions:
+      value.MaybeThrow()
       _silence_exceptions = True
       logging.error('Subprocess raised an exception:\n%s', value.msg)
     sys.exit(1)
 
 
-def _MakeProcessPool(*args):
+def _MakeProcessPool(job_params):
   global _all_pools
-  ret = multiprocessing.Pool(*args)
+  global _fork_params
+  assert _fork_params is None
+  pool_size = min(len(job_params), multiprocessing.cpu_count())
+  _fork_params = job_params
+  ret = multiprocessing.Pool(pool_size)
+  _fork_params = None
   if _all_pools is None:
     _all_pools = []
     atexit.register(_TerminatePools)
@@ -152,8 +174,8 @@ def ForkAndCall(func, args, decode_func=None):
     pool = None
     result = _ImmediateResult(func(*args))
   else:
-    pool = _MakeProcessPool(1)
-    result = pool.apply_async(_FuncWrapper(func), (args,))
+    pool = _MakeProcessPool([args])
+    result = pool.apply_async(_FuncWrapper(func), (0,))
     pool.close()
   return _WrappedResult(result, pool=pool, decode_func=decode_func)
 
@@ -163,14 +185,18 @@ def BulkForkAndCall(func, arg_tuples):
 
   Yields the return values as they come in.
   """
-  pool_size = min(len(arg_tuples), multiprocessing.cpu_count())
+  arg_tuples = list(arg_tuples)
+  if not len(arg_tuples):
+    return
+
   if DISABLE_ASYNC:
     for args in arg_tuples:
       yield func(*args)
     return
-  pool = _MakeProcessPool(pool_size)
+
+  pool = _MakeProcessPool(arg_tuples)
   wrapped_func = _FuncWrapper(func)
-  for result in pool.imap_unordered(wrapped_func, arg_tuples):
+  for result in pool.imap_unordered(wrapped_func, xrange(len(arg_tuples))):
     _CheckForException(result)
     yield result
   pool.close()
@@ -198,8 +224,16 @@ def EncodeDictOfLists(d, key_transform=None):
   return keys, values
 
 
-def DecodeDictOfLists(encoded_keys, encoded_values, key_transform=None):
+def JoinEncodedDictOfLists(encoded_values):
+  return ('\x01'.join(x[0] for x in encoded_values if x[0]),
+          '\x01'.join(x[1] for x in encoded_values if x[1]))
+
+
+def DecodeDictOfLists(encoded_keys_and_values, key_transform=None):
   """Deserializes a dict where values are lists of strings."""
+  encoded_keys, encoded_values = encoded_keys_and_values
+  if not encoded_keys:
+    return {}
   keys = encoded_keys.split('\x01')
   if key_transform:
     keys = (key_transform(k) for k in keys)

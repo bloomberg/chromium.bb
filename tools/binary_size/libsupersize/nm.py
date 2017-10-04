@@ -109,8 +109,7 @@ def _CollectAliasesByAddressAsyncHelper(elf_path, tool_prefix):
 def CollectAliasesByAddressAsync(elf_path, tool_prefix):
   """Calls CollectAliasesByAddress in a helper process. Returns a Result."""
   def decode(encoded):
-    return concurrent.DecodeDictOfLists(
-        encoded[0], encoded[1], key_transform=int)
+    return concurrent.DecodeDictOfLists(encoded, key_transform=int)
   return concurrent.ForkAndCall(
       _CollectAliasesByAddressAsyncHelper, (elf_path, tool_prefix),
       decode_func=decode)
@@ -193,7 +192,7 @@ class _BulkObjectFileAnalyzerWorker(object):
     paths_by_name = collections.defaultdict(list)
     params = list(iter_job_params())
     for encoded_ret in concurrent.BulkForkAndCall(_BatchCollectNames, params):
-      names_by_path = concurrent.DecodeDictOfLists(*encoded_ret)
+      names_by_path = concurrent.DecodeDictOfLists(encoded_ret)
       for path, names in names_by_path.iteritems():
         for name in names:
           paths_by_name[name].append(path)
@@ -263,7 +262,7 @@ class _BulkObjectFileAnalyzerMaster(object):
     encoded_keys_len = int(self._process.stdout.read(8), 16)
     encoded_keys = self._process.stdout.read(encoded_keys_len)
     encoded_values = self._process.stdout.read()
-    return concurrent.DecodeDictOfLists(encoded_keys, encoded_values)
+    return concurrent.DecodeDictOfLists((encoded_keys, encoded_values))
 
 
 BulkObjectFileAnalyzer = _BulkObjectFileAnalyzerMaster
