@@ -579,8 +579,6 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   // Handle whitespace that occurs after the split
   if (position_after_split.IsNotNull()) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-    // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
-    // use |VisiblePosition::characterAfter()|.
     if (!IsRenderedCharacter(position_after_split)) {
       // Clear out all whitespace and insert one non-breaking space
       DCHECK(!position_after_split.ComputeContainerNode()->GetLayoutObject() ||

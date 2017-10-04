@@ -214,7 +214,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
       unsigned last_typed_character_offset);
 
   bool IsAllCollapsibleWhitespace() const;
-  bool IsRenderedCharacter(int offset_in_node) const;
 
   void RemoveAndDestroyTextBoxes();
 
