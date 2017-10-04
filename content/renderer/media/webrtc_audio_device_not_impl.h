@@ -26,19 +26,10 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
  public:
   WebRtcAudioDeviceNotImpl();
 
-  // webrtc::Module implementation.
-  // TODO(henrika): it is possible to add functionality in these methods.
-  // Only adding very basic support for now without triggering any callback
-  // in the webrtc::AudioDeviceObserver interface.
-  int64_t TimeUntilNextProcess() override;
-  void Process() override;
-
   // Methods in webrtc::AudioDeviceModule which are not yet implemented.
   // The idea is that we can move methods from this class to the real
   // implementation in WebRtcAudioDeviceImpl when needed.
 
-  int32_t RegisterEventObserver(
-      webrtc::AudioDeviceObserver* event_callback) override;
   int32_t ActiveAudioLayer(AudioLayer* audio_layer) const override;
   webrtc::AudioDeviceModule::ErrorCode LastError() const override;
   int16_t PlayoutDevices() override;
@@ -98,7 +89,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   ~WebRtcAudioDeviceNotImpl() override {}
 
  private:
-  base::TimeTicks last_process_time_;
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceNotImpl);
 };
 
