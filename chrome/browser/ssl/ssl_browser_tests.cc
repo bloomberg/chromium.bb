@@ -1130,20 +1130,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
 }
 
 // Visits a page with https error and proceed:
-#if defined(OS_LINUX)
-// flaky http://crbug.com/396462
-#define MAYBE_TestHTTPSExpiredCertAndProceed \
-    DISABLED_TestHTTPSExpiredCertAndProceed
-#else
-#define MAYBE_TestHTTPSExpiredCertAndProceed TestHTTPSExpiredCertAndProceed
-#endif
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndProceed) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   ui_test_utils::NavigateToURL(
       browser(), https_server_expired_.GetURL("/ssl/google.html"));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitialAttach(tab);
   CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
