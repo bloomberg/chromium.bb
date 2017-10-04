@@ -100,7 +100,7 @@ private int mSuperNiftyDrawingProperty;
 
 ### Android Studio
 *   Build and install the desired target
-
+*   Open Android Studio ([instructions](android_studio.md))
 *   Click the "Attach debugger to Android process" (see
 [here](https://developer.android.com/studio/debug/index.html) for more)
 
