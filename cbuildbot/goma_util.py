@@ -260,8 +260,7 @@ class GomaLogUploader(object):
     compiler_proxy_path, uploaded_compiler_proxy_filename = (
         compiler_proxy_paths[0] if compiler_proxy_paths else (None, None))
 
-    # TODO(crbug.com/719843): Enable uploading gomacc logs after
-    # crbug.com/719843 is resolved.
+    self._UploadGomaccInfoFiles()
 
     uploaded_ninja_log_filename = self._UploadNinjaLog(compiler_proxy_path)
 
@@ -304,6 +303,40 @@ class GomaLogUploader(object):
           auto_compress=True, headers=self._headers)
       result.append((path, uploaded_filename))
     return result
+
+  def _UploadGomaccInfoFiles(self):
+    """Uploads gomacc INFO files, with gzip'ing.
+
+    Returns:
+      Uploaded file path. If failed, None.
+    """
+
+    # Since the number of gomacc logs can be large, we'd like to compress them.
+    # Otherwise, upload will take long (> 10 mins).
+    # Each gomacc logs file size must be small (around 4KB).
+
+    # Find files matched with the pattern in |goma_log_dir|. Sort for
+    # stabilization.
+    gomacc_paths = sorted(glob.glob(
+        os.path.join(self._goma_log_dir, 'gomacc.*.INFO.*')))
+    if not gomacc_paths:
+      # gomacc logs won't be made every time.
+      # Only when goma compiler_proxy has
+      # crashed. So it's usual gomacc logs are not found.
+      logging.info('No gomacc logs found')
+      return None
+
+    # Taking the first name as uploaded_filename.
+    tgz_name = os.path.basename(gomacc_paths[0]) + '.tar.gz'
+    tgz_path = os.path.join(self._goma_log_dir, tgz_name)
+    cros_build_lib.CreateTarball(target=tgz_path,
+                                 cwd=self._goma_log_dir,
+                                 compression=cros_build_lib.COMP_GZIP,
+                                 inputs=gomacc_paths)
+    self._gs_context.CopyInto(tgz_path, self._remote_dir,
+                              filename=tgz_name,
+                              headers=self._headers)
+    return tgz_name
 
   def _UploadNinjaLog(self, compiler_proxy_path):
     """Uploads .ninja_log file and its related metadata.

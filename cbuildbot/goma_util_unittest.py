@@ -76,6 +76,9 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
          ('gs://chrome-goma-log/2017/04/26/dummy-host-name',
           'compiler_proxy.host.log.INFO.20170426-120000.000000.gz',
           ['x-goog-meta-builderinfo:' + expect_builderinfo]),
+         ('gs://chrome-goma-log/2017/04/26/dummy-host-name',
+          'gomacc.host.log.INFO.20170426-120100.000000.tar.gz',
+          ['x-goog-meta-builderinfo:' + expect_builderinfo]),
         ])
 
   def testNinjaLogUpload(self):
