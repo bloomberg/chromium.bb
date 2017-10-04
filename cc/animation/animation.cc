@@ -41,6 +41,10 @@ static_assert(static_cast<int>(cc::AnimationCurve::LAST_CURVE_TYPE) + 1 ==
 
 namespace cc {
 
+std::string Animation::ToString(RunState state) {
+  return s_runStateNames[state];
+}
+
 std::unique_ptr<Animation> Animation::Create(
     std::unique_ptr<AnimationCurve> curve,
     int animation_id,
@@ -272,7 +276,7 @@ std::string Animation::ToString() const {
       "Animation{id=%d, group=%d, target_property_id=%d, "
       "run_state=%s}",
       id_, group_, target_property_id_,
-      s_runStateNames[static_cast<int>(run_state_)]);
+      Animation::ToString(run_state_).c_str());
 }
 
 }  // namespace cc

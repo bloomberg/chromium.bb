@@ -285,7 +285,7 @@ TEST(LayerAnimationSequenceTest, ToString) {
       base::StringPrintf(
           "LayerAnimationSequence{size=1, properties=BRIGHTNESS, "
           "elements=[LayerAnimationElement{name=BrightnessTransition, id=%d, "
-          "group=0, last_progressed_fraction=0.00, start_frame_number=0}], "
+          "group=0, last_progressed_fraction=0.00}], "
           "is_cyclic=0, group_id=0}",
           brightness_id),
       sequence.ToString());
@@ -300,10 +300,10 @@ TEST(LayerAnimationSequenceTest, ToString) {
       base::StringPrintf(
           "LayerAnimationSequence{size=2, properties=OPACITY|BRIGHTNESS, "
           "elements=[LayerAnimationElement{name=BrightnessTransition, id=%d, "
-          "group=0, last_progressed_fraction=0.00, start_frame_number=0}, "
+          "group=0, last_progressed_fraction=0.00}, "
           "LayerAnimationElement{name=ThreadedOpacityTransition, id=%d, "
           "group=0, "
-          "last_progressed_fraction=0.00, start_frame_number=0}], is_cyclic=1, "
+          "last_progressed_fraction=0.00}], is_cyclic=1, "
           "group_id=1973}",
           brightness_id, opacity_id),
       sequence.ToString());

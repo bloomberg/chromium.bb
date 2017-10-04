@@ -43,6 +43,7 @@ class CC_ANIMATION_EXPORT Animation {
     // This sentinel must be last.
     LAST_RUN_STATE = ABORTED_BUT_NEEDS_COMPLETION
   };
+  static std::string ToString(RunState);
 
   enum class Direction { NORMAL, REVERSE, ALTERNATE_NORMAL, ALTERNATE_REVERSE };
 
