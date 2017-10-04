@@ -36,6 +36,7 @@ suite('Internet', function() {
       networkListItemConnecting: 'networkListItemConnecting',
       networkListItemConnectingTo: 'networkListItemConnectingTo',
       networkListItemNotConnected: 'networkListItemNotConnected',
+      networkListItemNoNetwork: 'networkListItemNoNetwork',
       vpnNameTemplate: 'vpnNameTemplate',
     };
 
