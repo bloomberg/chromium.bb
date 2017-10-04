@@ -37,7 +37,7 @@
 
 namespace blink {
 
-#define BITS_OF_ABSOLUTE_COLUMN_INDEX 26
+#define BITS_OF_ABSOLUTE_COLUMN_INDEX 25
 static const unsigned kUnsetColumnIndex =
     (1u << BITS_OF_ABSOLUTE_COLUMN_INDEX) - 1;
 static const unsigned kMaxColumnIndex = kUnsetColumnIndex - 1;
@@ -496,8 +496,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   unsigned is_spanning_collapsed_row_ : 1;
   unsigned is_spanning_collapsed_column_ : 1;
 
-  // This is set when collapsed_border_values_ needs recalculation.
+  // This is set to false when |collapsed_border_values_| needs update.
   mutable unsigned collapsed_border_values_valid_ : 1;
+  mutable unsigned collapsed_borders_need_paint_invalidation_ : 1;
   mutable std::unique_ptr<CollapsedBorderValues> collapsed_border_values_;
 
   // The intrinsic padding.

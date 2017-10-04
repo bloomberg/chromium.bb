@@ -63,6 +63,7 @@ LayoutTableCell::LayoutTableCell(Element* element)
       is_spanning_collapsed_row_(false),
       is_spanning_collapsed_column_(false),
       collapsed_border_values_valid_(false),
+      collapsed_borders_need_paint_invalidation_(false),
       intrinsic_padding_before_(0),
       intrinsic_padding_after_(0) {
   // We only update the flags when notified of DOM changes in
@@ -129,8 +130,11 @@ void LayoutTableCell::ColSpanOrRowSpanChanged() {
 
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
       LayoutInvalidationReason::kAttributeChanged);
-  if (Parent() && Section())
+  if (Parent() && Section()) {
     Section()->SetNeedsCellRecalc();
+    if (Table() && Table()->ShouldCollapseBorders())
+      collapsed_borders_need_paint_invalidation_ = true;
+  }
 }
 
 Length LayoutTableCell::LogicalWidthFromColumns(
@@ -1097,9 +1101,16 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
     }
   }
 
-  // Invalidate the row which will paint the collapsed borders.
-  if (changed)
-    Row()->SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
+  if (!changed && !collapsed_borders_need_paint_invalidation_)
+    return;
+
+  // Invalidate the rows which will paint the collapsed borders.
+  auto row_span = RowSpan();
+  for (auto r = RowIndex(); r < RowIndex() + row_span; ++r) {
+    if (auto* row = Section()->RowLayoutObjectAt(r))
+      row->SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
+  }
+  collapsed_borders_need_paint_invalidation_ = false;
 }
 
 void LayoutTableCell::PaintBoxDecorationBackground(
