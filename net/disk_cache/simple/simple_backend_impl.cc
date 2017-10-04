@@ -28,7 +28,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -49,6 +49,7 @@
 using base::Callback;
 using base::Closure;
 using base::FilePath;
+using base::SequencedWorkerPool;
 using base::Time;
 using base::DirectoryExists;
 using base::CreateDirectory;
@@ -57,8 +58,38 @@ namespace disk_cache {
 
 namespace {
 
+// Maximum number of concurrent worker pool threads, which also is the limit
+// on concurrent IO (as we use one thread per IO request).
+const size_t kMaxWorkerThreads = 5U;
+
+const char kThreadNamePrefix[] = "SimpleCache";
+
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
+
+class LeakySequencedWorkerPool {
+ public:
+  LeakySequencedWorkerPool()
+      : sequenced_worker_pool_(
+            new SequencedWorkerPool(kMaxWorkerThreads,
+                                    kThreadNamePrefix,
+                                    base::TaskPriority::USER_BLOCKING)) {}
+
+  void FlushForTesting() { sequenced_worker_pool_->FlushForTesting(); }
+
+  scoped_refptr<base::TaskRunner> GetTaskRunner() {
+    return sequenced_worker_pool_->GetTaskRunnerWithShutdownBehavior(
+        SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  }
+
+ private:
+  scoped_refptr<SequencedWorkerPool> sequenced_worker_pool_;
+
+  DISALLOW_COPY_AND_ASSIGN(LeakySequencedWorkerPool);
+};
+
+base::LazyInstance<LeakySequencedWorkerPool>::Leaky g_sequenced_worker_pool =
+    LAZY_INSTANCE_INITIALIZER;
 
 scoped_refptr<base::SequencedTaskRunner> FallbackToInternalIfNull(
     const scoped_refptr<base::SequencedTaskRunner>& cache_runner) {
@@ -247,10 +278,7 @@ SimpleBackendImpl::~SimpleBackendImpl() {
 }
 
 int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
-  worker_pool_ = base::TaskScheduler::GetInstance()->CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
-       base::TaskPriority::USER_BLOCKING,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  worker_pool_ = g_sequenced_worker_pool.Get().GetTaskRunner();
 
   index_ = std::make_unique<SimpleIndex>(
       base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
@@ -790,8 +818,9 @@ void SimpleBackendImpl::DoomEntriesComplete(
 
 // static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
-  // TODO(morlovich): Remove this, move everything over to disk_cache:: use.
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  // We only need to do this if we there is an active task runner.
+  if (base::ThreadTaskRunnerHandle::IsSet())
+    g_sequenced_worker_pool.Get().FlushForTesting();
 }
 
 }  // namespace disk_cache
