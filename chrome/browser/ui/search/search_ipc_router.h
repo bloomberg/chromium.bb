@@ -75,18 +75,12 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual void PasteIntoOmnibox(const base::string16& text) = 0;
 
     // Called when the EmbeddedSearch wants to verify the signed-in Chrome
-    // identity against the provided |identity|. Will make a round-trip to the
-    // browser and eventually return the result through
-    // SendChromeIdentityCheckResult. Calls SendChromeIdentityCheckResult with
-    // true if the identity matches.
-    virtual void OnChromeIdentityCheck(const base::string16& identity) = 0;
+    // identity against the provided |identity|.
+    virtual bool ChromeIdentityCheck(const base::string16& identity) = 0;
 
-    // Called when the EmbeddedSearch wants to verify the signed-in Chrome
-    // identity against the provided |identity|. Will make a round-trip to the
-    // browser and eventually return the result through
-    // SendHistorySyncCheckResult. Calls SendHistorySyncCheckResult with true if
-    // the user syncs their history.
-    virtual void OnHistorySyncCheck() = 0;
+    // Called when the EmbeddedSearch wants to verify that history sync is
+    // enabled.
+    virtual bool HistorySyncCheck() = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -133,13 +127,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Tells the SearchIPCRouter that a new page in an Instant process committed.
   void OnNavigationEntryCommitted();
 
-  // Tells the renderer about the result of the Chrome identity check.
-  void SendChromeIdentityCheckResult(const base::string16& identity,
-                                     bool identity_match);
-
-  // Tells the renderer whether the user syncs history.
-  void SendHistorySyncCheckResult(bool sync_history);
-
   // Tells the page that user input started or stopped.
   void SetInputInProgress(bool input_in_progress);
 
@@ -180,8 +167,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void PasteAndOpenDropdown(int page_seq_no,
                             const base::string16& text) override;
   void ChromeIdentityCheck(int page_seq_no,
-                           const base::string16& identity) override;
-  void HistorySyncCheck(int page_seq_no) override;
+                           const base::string16& identity,
+                           ChromeIdentityCheckCallback callback) override;
+  void HistorySyncCheck(int page_seq_no,
+                        HistorySyncCheckCallback callback) override;
 
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {

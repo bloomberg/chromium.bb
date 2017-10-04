@@ -69,8 +69,8 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                     ntp_tiles::TileSource tile_source,
                     ntp_tiles::TileVisualType tile_type));
   MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
-  MOCK_METHOD1(OnChromeIdentityCheck, void(const base::string16& identity));
-  MOCK_METHOD0(OnHistorySyncCheck, void());
+  MOCK_METHOD1(ChromeIdentityCheck, bool(const base::string16& identity));
+  MOCK_METHOD0(HistorySyncCheck, bool());
 };
 
 class MockEmbeddedSearchClientFactory
@@ -143,98 +143,86 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
   MockEmbeddedSearchClient mock_embedded_search_client_;
 };
 
-TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
+TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   CreateSigninManager(std::string("foo@bar.com"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("foo@bar.com");
-  EXPECT_CALL(*mock_embedded_search_client(),
-              ChromeIdentityCheckResult(Eq(test_identity), true));
-  search_tab_helper->OnChromeIdentityCheck(test_identity);
+  EXPECT_TRUE(search_tab_helper->ChromeIdentityCheck(test_identity));
 }
 
-TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
+TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatchSlightlyDifferentGmail) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   CreateSigninManager(std::string("foobar123@gmail.com"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
   // For gmail, canonicalization is done so that email addresses have a
   // standard form.
   const base::string16 test_identity =
       base::ASCIIToUTF16("Foo.Bar.123@gmail.com");
-  EXPECT_CALL(*mock_embedded_search_client(),
-              ChromeIdentityCheckResult(Eq(test_identity), true));
-  search_tab_helper->OnChromeIdentityCheck(test_identity);
+  EXPECT_TRUE(search_tab_helper->ChromeIdentityCheck(test_identity));
 }
 
-TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
+TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatchSlightlyDifferentGmail2) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   //
   CreateSigninManager(std::string("chrome.user.7FOREVER"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
   // For gmail/googlemail, canonicalization is done so that email addresses have
   // a standard form.
   const base::string16 test_identity =
       base::ASCIIToUTF16("chromeuser7forever@googlemail.com");
-  EXPECT_CALL(*mock_embedded_search_client(),
-              ChromeIdentityCheckResult(Eq(test_identity), true));
-  search_tab_helper->OnChromeIdentityCheck(test_identity);
+  EXPECT_TRUE(search_tab_helper->ChromeIdentityCheck(test_identity));
 }
 
-TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
+TEST_F(SearchTabHelperTest, ChromeIdentityCheckMismatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   CreateSigninManager(std::string("foo@bar.com"));
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
-  EXPECT_CALL(*mock_embedded_search_client(),
-              ChromeIdentityCheckResult(Eq(test_identity), false));
-  search_tab_helper->OnChromeIdentityCheck(test_identity);
+  EXPECT_FALSE(search_tab_helper->ChromeIdentityCheck(test_identity));
 }
 
-TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
+TEST_F(SearchTabHelperTest, ChromeIdentityCheckSignedOutMismatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   // This test does not sign in.
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
-  EXPECT_CALL(*mock_embedded_search_client(),
-              ChromeIdentityCheckResult(Eq(test_identity), false));
-  search_tab_helper->OnChromeIdentityCheck(test_identity);
+  EXPECT_FALSE(search_tab_helper->ChromeIdentityCheck(test_identity));
 }
 
-TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
+TEST_F(SearchTabHelperTest, HistorySyncCheckSyncing) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetHistorySync(true);
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
-  EXPECT_CALL(*mock_embedded_search_client(), HistorySyncCheckResult(true));
-  search_tab_helper->OnHistorySyncCheck();
+  EXPECT_TRUE(search_tab_helper->HistorySyncCheck());
 }
 
-TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
+TEST_F(SearchTabHelperTest, HistorySyncCheckNotSyncing) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetHistorySync(false);
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+  ASSERT_NE(nullptr, search_tab_helper);
 
-  EXPECT_CALL(*mock_embedded_search_client(), HistorySyncCheckResult(false));
-  search_tab_helper->OnHistorySyncCheck();
+  EXPECT_FALSE(search_tab_helper->HistorySyncCheck());
 }
 
 class TabTitleObserver : public content::WebContentsObserver {

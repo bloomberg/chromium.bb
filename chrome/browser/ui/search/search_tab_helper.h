@@ -68,20 +68,16 @@ class SearchTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class SearchIPCRouterTest;
 
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, ChromeIdentityCheckMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckMatch);
+                           ChromeIdentityCheckMatchSlightlyDifferentGmail);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckMatchSlightlyDifferentGmail);
+                           ChromeIdentityCheckMatchSlightlyDifferentGmail2);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, ChromeIdentityCheckMismatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckMatchSlightlyDifferentGmail2);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, OnChromeIdentityCheckMismatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnChromeIdentityCheckSignedOutMismatch);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnHistorySyncCheckSyncing);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           OnHistorySyncCheckNotSyncing);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
+                           ChromeIdentityCheckSignedOutMismatch);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, HistorySyncCheckSyncing);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest, HistorySyncCheckNotSyncing);
 
   explicit SearchTabHelper(content::WebContents* web_contents);
 
@@ -113,8 +109,8 @@ class SearchTabHelper : public content::WebContentsObserver,
                                   ntp_tiles::TileSource tile_source,
                                   ntp_tiles::TileVisualType tile_type) override;
   void PasteIntoOmnibox(const base::string16& text) override;
-  void OnChromeIdentityCheck(const base::string16& identity) override;
-  void OnHistorySyncCheck() override;
+  bool ChromeIdentityCheck(const base::string16& identity) override;
+  bool HistorySyncCheck() override;
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;

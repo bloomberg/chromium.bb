@@ -77,10 +77,11 @@ interface EmbeddedSearch {
                        mojo.common.mojom.String16 text_to_be_pasted);
 
   // The Instant page asks whether the user syncs its history.
-  HistorySyncCheck(int32 page_seq_no);
+  HistorySyncCheck(int32 page_seq_no) => (bool sync_history);
 
   // The Instant page asks for Chrome identity check against |identity|.
-  ChromeIdentityCheck(int32 page_seq_no, mojo.common.mojom.String16 identity);
+  ChromeIdentityCheck(int32 page_seq_no, mojo.common.mojom.String16 identity)
+      => (bool identity_match);
 };
 
 [Native]
@@ -105,13 +106,6 @@ interface EmbeddedSearchClient {
   SetInputInProgress(bool input_in_progress);
 
   ThemeChanged(ThemeBackgroundInfo value);
-
-  // TODO(treib): Remove the *Result methods and instead add return values to
-  // the correspnding methods in the Instant interface above.
-  HistorySyncCheckResult(bool sync_history);
-
-  ChromeIdentityCheckResult(mojo.common.mojom.String16 identity,
-                            bool identity_match);
 };
 
 // SearchBouncer tracks the NTP URL specified by the default search provider,
