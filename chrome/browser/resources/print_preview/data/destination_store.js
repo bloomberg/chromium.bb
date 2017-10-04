@@ -82,9 +82,9 @@ cr.define('print_preview', function() {
 
     /**
      * ID of the system default destination.
-     * @private {?string}
+     * @private {string}
      */
-    this.systemDefaultDestinationId_ = null;
+    this.systemDefaultDestinationId_ = '';
 
     /**
      * Used to fetch cloud-based print destinations.
@@ -552,7 +552,7 @@ cr.define('print_preview', function() {
      * print_preview.AppState has been initialized.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
-     * @param {?string} systemDefaultDestinationId ID of the system default
+     * @param {string} systemDefaultDestinationId ID of the system default
      *     destination.
      * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
      *     default destination selection rules.
@@ -573,7 +573,7 @@ cr.define('print_preview', function() {
         }
       }
 
-      if (!this.systemDefaultDestinationId_ &&
+      if (this.systemDefaultDestinationId_.length == 0 &&
           !this.appState_.isSelectedDestinationValid()) {
         this.selectPdfDestination_();
         return;
@@ -621,7 +621,7 @@ cr.define('print_preview', function() {
         return;
 
       // Try the system default
-      id = this.systemDefaultDestinationId_ || '';
+      id = this.systemDefaultDestinationId_;
       origin = id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
           print_preview.DestinationOrigin.LOCAL :
           this.platformOrigin_;
@@ -805,7 +805,7 @@ cr.define('print_preview', function() {
             this.appState_.selectedDestination.origin,
             this.appState_.selectedDestination.id);
       }
-      if (this.systemDefaultDestinationId_) {
+      if (this.systemDefaultDestinationId_.length > 0) {
         return this.createExactDestinationMatch_(
             this.platformOrigin_, this.systemDefaultDestinationId_);
       }
@@ -992,7 +992,7 @@ cr.define('print_preview', function() {
      * @private
      */
     selectDefaultDestination_: function() {
-      if (this.systemDefaultDestinationId_) {
+      if (this.systemDefaultDestinationId_.length > 0) {
         if (this.autoSelectMatchingDestination_ &&
             !this.autoSelectMatchingDestination_.matchIdAndOrigin(
                 this.systemDefaultDestinationId_, this.platformOrigin_)) {

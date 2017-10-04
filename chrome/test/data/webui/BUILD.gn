@@ -143,7 +143,6 @@ js2gtest("unit_tests_js") {
   test_type = "unit"
   sources = [
     "../../../browser/resources/md_downloads/search_service_unittest.gtestjs",
-    "../../../browser/resources/print_preview/data/measurement_system_unittest.gtestjs",
     "../../../browser/resources/print_preview/print_preview_utils_unittest.gtestjs",
     "../../../renderer/resources/extensions/notifications_custom_bindings.gtestjs",
     "../unit/framework_unittest.gtestjs",

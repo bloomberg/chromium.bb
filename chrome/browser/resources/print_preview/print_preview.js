@@ -658,13 +658,13 @@ cr.define('print_preview', function() {
       // The following components must be initialized in this order.
       this.appState_.init(settings.serializedAppStateStr);
       this.documentInfo_.init(
-          settings.isDocumentModifiable, settings.documentTitle,
+          settings.previewModifiable, settings.documentTitle,
           settings.documentHasSelection);
       this.printTicketStore_.init(
           settings.thousandsDelimeter, settings.decimalDelimeter,
-          settings.unitType, settings.selectionOnly);
+          settings.unitType, settings.shouldPrintSelectionOnly);
       this.destinationStore_.init(
-          settings.isInAppKioskMode, settings.systemDefaultDestinationId,
+          settings.isInAppKioskMode, settings.printerName,
           settings.serializedDefaultDestinationSelectionRulesStr);
       this.appState_.setInitialized();
 
