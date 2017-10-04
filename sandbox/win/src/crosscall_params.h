@@ -6,6 +6,7 @@
 #define SANDBOX_SRC_CROSSCALL_PARAMS_H__
 
 #include <windows.h>
+
 #include <lmaccess.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -82,7 +83,7 @@ struct CrossCallReturn {
   // of this value depends on the specific service.
   union {
     NTSTATUS nt_status;
-    DWORD    win32_result;
+    DWORD win32_result;
   };
   // Number of extended return values.
   uint32_t extended_count;
@@ -110,17 +111,13 @@ class CrossCallParams {
 
   // Returns the beggining of the buffer where the IPC params can be stored.
   // prior to an IPC call
-  const void* GetBuffer() const {
-    return this;
-  }
+  const void* GetBuffer() const { return this; }
 
   // Returns how many parameter this IPC call should have.
   uint32_t GetParamsCount() const { return params_count_; }
 
   // Returns a pointer to the CrossCallReturn structure.
-  CrossCallReturn* GetCallReturn() {
-    return &call_return;
-  }
+  CrossCallReturn* GetCallReturn() { return &call_return; }
 
   // Returns TRUE if this call contains InOut parameters.
   bool IsInOut() const { return (1 == is_in_out_); }
@@ -236,14 +233,13 @@ class ActualCallParams : public CrossCallParams {
       return false;
     }
 
-    char* dest = reinterpret_cast<char*>(this) +  param_info_[index].offset_;
+    char* dest = reinterpret_cast<char*>(this) + param_info_[index].offset_;
 
     // We might be touching user memory, this has to be done from inside a try
     // except.
     __try {
       memcpy(dest, parameter_address, size);
-    }
-    __except(EXCEPTION_EXECUTE_HANDLER) {
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
       return false;
     }
 
@@ -252,8 +248,7 @@ class ActualCallParams : public CrossCallParams {
     if (is_in_out)
       SetIsInOut(true);
 
-    param_info_[index + 1].offset_ = Align(param_info_[index].offset_ +
-                                                size);
+    param_info_[index + 1].offset_ = Align(param_info_[index].offset_ + size);
     param_info_[index].size_ = size;
     param_info_[index].type_ = type;
     return true;
@@ -269,12 +264,12 @@ class ActualCallParams : public CrossCallParams {
   uint32_t GetSize() const { return param_info_[NUMBER_PARAMS].offset_; }
 
  protected:
-  ActualCallParams() : CrossCallParams(0, NUMBER_PARAMS) { }
+  ActualCallParams() : CrossCallParams(0, NUMBER_PARAMS) {}
 
  private:
   ParamInfo param_info_[NUMBER_PARAMS + 1];
-  char parameters_[BLOCK_SIZE - sizeof(CrossCallParams)
-                   - sizeof(ParamInfo) * (NUMBER_PARAMS + 1)];
+  char parameters_[BLOCK_SIZE - sizeof(CrossCallParams) -
+                   sizeof(ParamInfo) * (NUMBER_PARAMS + 1)];
   DISALLOW_COPY_AND_ASSIGN(ActualCallParams);
 };
 

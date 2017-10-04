@@ -164,7 +164,8 @@ ResultCode TargetProcess::Create(
   return SBOX_ALL_OK;
 }
 
-ResultCode TargetProcess::TransferVariable(const char* name, void* address,
+ResultCode TargetProcess::TransferVariable(const char* name,
+                                           void* address,
                                            size_t size) {
   if (!sandbox_process_info_.IsValid())
     return SBOX_ERROR_UNEXPECTED_CALL;
@@ -182,14 +183,14 @@ ResultCode TargetProcess::TransferVariable(const char* name, void* address,
   if (NULL == child_var)
     return SBOX_ERROR_GENERIC;
 
-  size_t offset = reinterpret_cast<char*>(child_var) -
-                  reinterpret_cast<char*>(module);
+  size_t offset =
+      reinterpret_cast<char*>(child_var) - reinterpret_cast<char*>(module);
   child_var = reinterpret_cast<char*>(MainModule()) + offset;
 #endif
 
   SIZE_T written;
-  if (!::WriteProcessMemory(sandbox_process_info_.process_handle(),
-                            child_var, address, size, &written))
+  if (!::WriteProcessMemory(sandbox_process_info_.process_handle(), child_var,
+                            address, size, &written))
     return SBOX_ERROR_GENERIC;
 
   if (written != size)
@@ -212,11 +213,11 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
   // the rest, which boils down to calling MapViewofFile()
 
   // We use this single memory pool for IPC and for policy.
-  DWORD shared_mem_size = static_cast<DWORD>(shared_IPC_size +
-                                             shared_policy_size);
+  DWORD shared_mem_size =
+      static_cast<DWORD>(shared_IPC_size + shared_policy_size);
   shared_section_.Set(::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
-                                           PAGE_READWRITE | SEC_COMMIT,
-                                           0, shared_mem_size, NULL));
+                                           PAGE_READWRITE | SEC_COMMIT, 0,
+                                           shared_mem_size, NULL));
   if (!shared_section_.IsValid()) {
     *win_error = ::GetLastError();
     return SBOX_ERROR_CREATE_FILE_MAPPING;
@@ -231,9 +232,8 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
     return SBOX_ERROR_DUPLICATE_SHARED_SECTION;
   }
 
-  void* shared_memory = ::MapViewOfFile(shared_section_.Get(),
-                                        FILE_MAP_WRITE|FILE_MAP_READ,
-                                        0, 0, 0);
+  void* shared_memory = ::MapViewOfFile(
+      shared_section_.Get(), FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
   if (NULL == shared_memory) {
     *win_error = ::GetLastError();
     return SBOX_ERROR_MAP_VIEW_OF_SHARED_SECTION;
@@ -269,10 +269,9 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
     return ret;
   }
 
-  ipc_server_.reset(
-      new SharedMemIPCServer(sandbox_process_info_.process_handle(),
-                             sandbox_process_info_.process_id(),
-                             thread_pool_, ipc_dispatcher));
+  ipc_server_.reset(new SharedMemIPCServer(
+      sandbox_process_info_.process_handle(),
+      sandbox_process_info_.process_id(), thread_pool_, ipc_dispatcher));
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return SBOX_ERROR_NO_SPACE;

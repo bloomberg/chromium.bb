@@ -12,7 +12,7 @@ namespace sandbox {
 
 extern "C" {
 
-typedef BOOL (WINAPI *CreateProcessWFunction)(
+typedef BOOL(WINAPI* CreateProcessWFunction)(
     LPCWSTR lpApplicationName,
     LPWSTR lpCommandLine,
     LPSECURITY_ATTRIBUTES lpProcessAttributes,
@@ -24,7 +24,7 @@ typedef BOOL (WINAPI *CreateProcessWFunction)(
     LPSTARTUPINFOW lpStartupInfo,
     LPPROCESS_INFORMATION lpProcessInformation);
 
-typedef BOOL (WINAPI *CreateProcessAFunction)(
+typedef BOOL(WINAPI* CreateProcessAFunction)(
     LPCSTR lpApplicationName,
     LPSTR lpCommandLine,
     LPSECURITY_ATTRIBUTES lpProcessAttributes,
@@ -44,44 +44,65 @@ typedef HANDLE(WINAPI* CreateThreadFunction)(
     DWORD dwCreationFlags,
     LPDWORD lpThreadId);
 
-typedef LCID (WINAPI *GetUserDefaultLCIDFunction)();
+typedef LCID(WINAPI* GetUserDefaultLCIDFunction)();
 
 // Interception of NtOpenThread on the child process.
-SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThread(
-    NtOpenThreadFunction orig_OpenThread, PHANDLE thread,
-    ACCESS_MASK desired_access, POBJECT_ATTRIBUTES object_attributes,
-    PCLIENT_ID client_id);
+SANDBOX_INTERCEPT NTSTATUS WINAPI
+TargetNtOpenThread(NtOpenThreadFunction orig_OpenThread,
+                   PHANDLE thread,
+                   ACCESS_MASK desired_access,
+                   POBJECT_ATTRIBUTES object_attributes,
+                   PCLIENT_ID client_id);
 
 // Interception of NtOpenProcess on the child process.
-SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenProcess(
-    NtOpenProcessFunction orig_OpenProcess, PHANDLE process,
-    ACCESS_MASK desired_access, POBJECT_ATTRIBUTES object_attributes,
-    PCLIENT_ID client_id);
+SANDBOX_INTERCEPT NTSTATUS WINAPI
+TargetNtOpenProcess(NtOpenProcessFunction orig_OpenProcess,
+                    PHANDLE process,
+                    ACCESS_MASK desired_access,
+                    POBJECT_ATTRIBUTES object_attributes,
+                    PCLIENT_ID client_id);
 
 // Interception of NtOpenProcessToken on the child process.
-SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenProcessToken(
-    NtOpenProcessTokenFunction orig_OpenProcessToken, HANDLE process,
-    ACCESS_MASK desired_access, PHANDLE token);
+SANDBOX_INTERCEPT NTSTATUS WINAPI
+TargetNtOpenProcessToken(NtOpenProcessTokenFunction orig_OpenProcessToken,
+                         HANDLE process,
+                         ACCESS_MASK desired_access,
+                         PHANDLE token);
 
 // Interception of NtOpenProcessTokenEx on the child process.
-SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenProcessTokenEx(
-    NtOpenProcessTokenExFunction orig_OpenProcessTokenEx, HANDLE process,
-    ACCESS_MASK desired_access, ULONG handle_attributes, PHANDLE token);
+SANDBOX_INTERCEPT NTSTATUS WINAPI
+TargetNtOpenProcessTokenEx(NtOpenProcessTokenExFunction orig_OpenProcessTokenEx,
+                           HANDLE process,
+                           ACCESS_MASK desired_access,
+                           ULONG handle_attributes,
+                           PHANDLE token);
 
 // Interception of CreateProcessW and A in kernel32.dll.
-SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessW(
-    CreateProcessWFunction orig_CreateProcessW, LPCWSTR application_name,
-    LPWSTR command_line, LPSECURITY_ATTRIBUTES process_attributes,
-    LPSECURITY_ATTRIBUTES thread_attributes, BOOL inherit_handles, DWORD flags,
-    LPVOID environment, LPCWSTR current_directory, LPSTARTUPINFOW startup_info,
-    LPPROCESS_INFORMATION process_information);
+SANDBOX_INTERCEPT BOOL WINAPI
+TargetCreateProcessW(CreateProcessWFunction orig_CreateProcessW,
+                     LPCWSTR application_name,
+                     LPWSTR command_line,
+                     LPSECURITY_ATTRIBUTES process_attributes,
+                     LPSECURITY_ATTRIBUTES thread_attributes,
+                     BOOL inherit_handles,
+                     DWORD flags,
+                     LPVOID environment,
+                     LPCWSTR current_directory,
+                     LPSTARTUPINFOW startup_info,
+                     LPPROCESS_INFORMATION process_information);
 
-SANDBOX_INTERCEPT BOOL WINAPI TargetCreateProcessA(
-    CreateProcessAFunction orig_CreateProcessA, LPCSTR application_name,
-    LPSTR command_line, LPSECURITY_ATTRIBUTES process_attributes,
-    LPSECURITY_ATTRIBUTES thread_attributes, BOOL inherit_handles, DWORD flags,
-    LPVOID environment, LPCSTR current_directory, LPSTARTUPINFOA startup_info,
-    LPPROCESS_INFORMATION process_information);
+SANDBOX_INTERCEPT BOOL WINAPI
+TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
+                     LPCSTR application_name,
+                     LPSTR command_line,
+                     LPSECURITY_ATTRIBUTES process_attributes,
+                     LPSECURITY_ATTRIBUTES thread_attributes,
+                     BOOL inherit_handles,
+                     DWORD flags,
+                     LPVOID environment,
+                     LPCSTR current_directory,
+                     LPSTARTUPINFOA startup_info,
+                     LPPROCESS_INFORMATION process_information);
 
 // Interception of CreateThread in kernel32.dll.
 SANDBOX_INTERCEPT HANDLE WINAPI

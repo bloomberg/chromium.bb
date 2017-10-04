@@ -22,14 +22,13 @@ struct EnumMonitorsResult {
 
 extern "C" {
 
-typedef BOOL (WINAPI* GdiDllInitializeFunction) (
-    HANDLE dll,
-    DWORD reason,
-    LPVOID reserved);
+typedef BOOL(WINAPI* GdiDllInitializeFunction)(HANDLE dll,
+                                               DWORD reason,
+                                               LPVOID reserved);
 
-typedef HGDIOBJ (WINAPI *GetStockObjectFunction) (int object);
+typedef HGDIOBJ(WINAPI* GetStockObjectFunction)(int object);
 
-typedef ATOM (WINAPI *RegisterClassWFunction) (const WNDCLASS* wnd_class);
+typedef ATOM(WINAPI* RegisterClassWFunction)(const WNDCLASS* wnd_class);
 
 typedef BOOL(WINAPI* EnumDisplayMonitorsFunction)(HDC hdc,
                                                   LPCRECT clip_rect,
@@ -48,20 +47,19 @@ typedef BOOL(WINAPI* GetMonitorInfoAFunction)(HMONITOR monitor,
                                               MONITORINFO* monitor_info);
 
 // Interceptor for the  GdiDllInitialize function.
-SANDBOX_INTERCEPT BOOL WINAPI TargetGdiDllInitialize(
-    GdiDllInitializeFunction orig_gdi_dll_initialize,
-    HANDLE dll,
-    DWORD reason);
+SANDBOX_INTERCEPT BOOL WINAPI
+TargetGdiDllInitialize(GdiDllInitializeFunction orig_gdi_dll_initialize,
+                       HANDLE dll,
+                       DWORD reason);
 
 // Interceptor for the GetStockObject function.
-SANDBOX_INTERCEPT HGDIOBJ WINAPI TargetGetStockObject(
-    GetStockObjectFunction orig_get_stock_object,
-    int object);
+SANDBOX_INTERCEPT HGDIOBJ WINAPI
+TargetGetStockObject(GetStockObjectFunction orig_get_stock_object, int object);
 
 // Interceptor for the RegisterClassW function.
-SANDBOX_INTERCEPT ATOM WINAPI TargetRegisterClassW(
-    RegisterClassWFunction orig_register_class_function,
-    const WNDCLASS* wnd_class);
+SANDBOX_INTERCEPT ATOM WINAPI
+TargetRegisterClassW(RegisterClassWFunction orig_register_class_function,
+                     const WNDCLASS* wnd_class);
 
 SANDBOX_INTERCEPT BOOL WINAPI TargetEnumDisplayMonitors(
     EnumDisplayMonitorsFunction orig_enum_display_monitors_function,
@@ -160,4 +158,3 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetSetOPMSigningKeyAndSequenceNumbers(
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_PROCESS_MITIGATIONS_WIN32K_INTERCEPTION_H_
-

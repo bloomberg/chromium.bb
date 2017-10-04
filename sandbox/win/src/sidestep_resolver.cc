@@ -22,7 +22,7 @@ struct SidestepThunk {
 struct SmartThunk {
   const void* module_base;  // Target module's base.
   const void* interceptor;  // Real interceptor.
-  SidestepThunk sidestep;  // Standard sidestep thunk.
+  SidestepThunk sidestep;   // Standard sidestep thunk.
 };
 
 }  // namespace
@@ -37,9 +37,9 @@ NTSTATUS SidestepResolverThunk::Setup(const void* target_module,
                                       void* thunk_storage,
                                       size_t storage_bytes,
                                       size_t* storage_used) {
-  NTSTATUS ret = Init(target_module, interceptor_module, target_name,
-                      interceptor_name, interceptor_entry_point,
-                      thunk_storage, storage_bytes);
+  NTSTATUS ret =
+      Init(target_module, interceptor_module, target_name, interceptor_name,
+           interceptor_entry_point, thunk_storage, storage_bytes);
   if (!NT_SUCCESS(ret))
     return ret;
 

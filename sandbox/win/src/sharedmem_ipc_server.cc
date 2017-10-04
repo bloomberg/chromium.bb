@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/sharedmem_ipc_server.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,20 +15,17 @@
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sharedmem_ipc_client.h"
-#include "sandbox/win/src/sharedmem_ipc_server.h"
 
 namespace {
 // This handle must not be closed.
 volatile HANDLE g_alive_mutex = NULL;
-}
+}  // namespace
 
 namespace sandbox {
 
-SharedMemIPCServer::ServerControl::ServerControl() {
-}
+SharedMemIPCServer::ServerControl::ServerControl() {}
 
-SharedMemIPCServer::ServerControl::~ServerControl() {
-}
+SharedMemIPCServer::ServerControl::~ServerControl() {}
 
 SharedMemIPCServer::SharedMemIPCServer(HANDLE target_process,
                                        DWORD target_process_id,
@@ -85,8 +84,8 @@ bool SharedMemIPCServer::Init(void* shared_mem,
     return false;
   }
   // Calculate the start of the first channel.
-  size_t base_start = (sizeof(ChannelControl)* channel_count) +
-                       offsetof(IPCControl, channels);
+  size_t base_start =
+      (sizeof(ChannelControl) * channel_count) + offsetof(IPCControl, channels);
 
   client_control_ = reinterpret_cast<IPCControl*>(shared_mem);
   client_control_->channels_count = 0;
@@ -102,10 +101,8 @@ bool SharedMemIPCServer::Init(void* shared_mem,
     ServerControl* service_context = new ServerControl;
     server_contexts_.push_back(base::WrapUnique(service_context));
 
-    if (!MakeEvents(&service_context->ping_event,
-                    &service_context->pong_event,
-                    &client_context->ping_event,
-                    &client_context->pong_event)) {
+    if (!MakeEvents(&service_context->ping_event, &service_context->pong_event,
+                    &client_context->ping_event, &client_context->pong_event)) {
       return false;
     }
 
@@ -120,8 +117,8 @@ bool SharedMemIPCServer::Init(void* shared_mem,
     service_context->shared_base = reinterpret_cast<char*>(shared_mem);
     service_context->channel_size = channel_size;
     service_context->channel = client_context;
-    service_context->channel_buffer = service_context->shared_base +
-                                      client_context->channel_base;
+    service_context->channel_buffer =
+        service_context->shared_base + client_context->channel_base;
     service_context->dispatcher = call_dispatcher_;
     service_context->target_info.process = target_process_;
     service_context->target_info.process_id = target_process_id_;
@@ -131,8 +128,8 @@ bool SharedMemIPCServer::Init(void* shared_mem,
     thread_provider_->RegisterWait(this, service_context->ping_event.Get(),
                                    ThreadPingEventReady, service_context);
   }
-  if (!::DuplicateHandle(::GetCurrentProcess(), g_alive_mutex,
-                         target_process_, &client_control_->server_alive,
+  if (!::DuplicateHandle(::GetCurrentProcess(), g_alive_mutex, target_process_,
+                         &client_control_->server_alive,
                          SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, 0)) {
     return false;
   }
@@ -155,13 +152,15 @@ void ReleaseArgs(const IPCParams* ipc_params, void* args[kMaxIpcParams]) {
         args[i] = NULL;
         break;
       }
-      default: break;
+      default:
+        break;
     }
   }
 }
 
 // Fills up the list of arguments (args and ipc_params) for an IPC call.
-bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
+bool GetArgs(CrossCallParamsEx* params,
+             IPCParams* ipc_params,
              void* args[kMaxIpcParams]) {
   if (kMaxIpcParams < params->GetParamsCount())
     return false;
@@ -193,7 +192,7 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
           args[i] = ipc_int.AsVoidPtr();
           break;
         }
-        case VOIDPTR_TYPE : {
+        case VOIDPTR_TYPE: {
           void* data;
           if (!params->GetParameterVoidPtr(i, &data)) {
             ReleaseArgs(ipc_params, args);
@@ -207,11 +206,12 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
             ReleaseArgs(ipc_params, args);
             return false;
           }
-          CountedBuffer* buffer = new CountedBuffer(args[i] , size);
+          CountedBuffer* buffer = new CountedBuffer(args[i], size);
           args[i] = buffer;
           break;
         }
-        default: break;
+        default:
+          break;
       }
     }
   }
@@ -340,7 +340,7 @@ bool SharedMemIPCServer::InvokeCallback(const ServerControl* service_context,
         error = false;
         break;
       }
-      default:  {
+      default: {
         NOTREACHED();
         break;
       }
@@ -377,9 +377,8 @@ void __stdcall SharedMemIPCServer::ThreadPingEventReady(void* context,
   ServerControl* service_context = reinterpret_cast<ServerControl*>(context);
   // Since the event fired, the channel *must* be busy. Change to kAckChannel
   // while we service it.
-  LONG last_state =
-    ::InterlockedCompareExchange(&service_context->channel->state,
-                                 kAckChannel, kBusyChannel);
+  LONG last_state = ::InterlockedCompareExchange(
+      &service_context->channel->state, kAckChannel, kBusyChannel);
   if (kBusyChannel != last_state) {
     DCHECK(false);
     return;
@@ -402,7 +401,8 @@ void __stdcall SharedMemIPCServer::ThreadPingEventReady(void* context,
 
 bool SharedMemIPCServer::MakeEvents(base::win::ScopedHandle* server_ping,
                                     base::win::ScopedHandle* server_pong,
-                                    HANDLE* client_ping, HANDLE* client_pong) {
+                                    HANDLE* client_ping,
+                                    HANDLE* client_pong) {
   // Note that the IPC client has no right to delete the events. That would
   // cause problems. The server *owns* the events.
   const DWORD kDesiredAccess = SYNCHRONIZE | EVENT_MODIFY_STATE;

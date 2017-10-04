@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/policy_engine_processor.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
-#include "sandbox/win/src/policy_engine_processor.h"
 
 namespace sandbox {
 
@@ -23,7 +23,8 @@ EvalResult PolicyProcessor::GetAction() const {
 // true if the opcode should be skipped or not and also can set keep_skipping
 // to false to signal that the current instruction should be skipped but not
 // the next after the current one.
-bool SkipOpcode(const PolicyOpcode& opcode, MatchContext* context,
+bool SkipOpcode(const PolicyOpcode& opcode,
+                MatchContext* context,
                 bool* keep_skipping) {
   if (opcode.IsAction()) {
     uint32_t options = context->options;
@@ -105,6 +106,5 @@ PolicyResult PolicyProcessor::Evaluate(uint32_t options,
   }
   return NO_POLICY_MATCH;
 }
-
 
 }  // namespace sandbox

@@ -22,27 +22,27 @@ namespace {
 // These are the only safe rights that can be given to a sandboxed
 // process for the process created by the broker. All others are potential
 // vectors of privilege elevation.
-const DWORD kProcessRights = SYNCHRONIZE |
-                             PROCESS_QUERY_INFORMATION |
+const DWORD kProcessRights = SYNCHRONIZE | PROCESS_QUERY_INFORMATION |
                              PROCESS_QUERY_LIMITED_INFORMATION |
-                             PROCESS_TERMINATE |
-                             PROCESS_SUSPEND_RESUME;
+                             PROCESS_TERMINATE | PROCESS_SUSPEND_RESUME;
 
-const DWORD kThreadRights = SYNCHRONIZE |
-                            THREAD_TERMINATE |
-                            THREAD_SUSPEND_RESUME |
-                            THREAD_QUERY_INFORMATION |
+const DWORD kThreadRights = SYNCHRONIZE | THREAD_TERMINATE |
+                            THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION |
                             THREAD_QUERY_LIMITED_INFORMATION |
                             THREAD_SET_LIMITED_INFORMATION;
 
 // Creates a child process and duplicates the handles to 'target_process'. The
 // remaining parameters are the same as CreateProcess().
-BOOL CreateProcessExWHelper(HANDLE target_process, BOOL give_full_access,
-                            LPCWSTR lpApplicationName, LPWSTR lpCommandLine,
+BOOL CreateProcessExWHelper(HANDLE target_process,
+                            BOOL give_full_access,
+                            LPCWSTR lpApplicationName,
+                            LPWSTR lpCommandLine,
                             LPSECURITY_ATTRIBUTES lpProcessAttributes,
                             LPSECURITY_ATTRIBUTES lpThreadAttributes,
-                            BOOL bInheritHandles, DWORD dwCreationFlags,
-                            LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory,
+                            BOOL bInheritHandles,
+                            DWORD dwCreationFlags,
+                            LPVOID lpEnvironment,
+                            LPCWSTR lpCurrentDirectory,
                             LPSTARTUPINFOW lpStartupInfo,
                             LPPROCESS_INFORMATION lpProcessInformation) {
   if (!::CreateProcessW(lpApplicationName, lpCommandLine, lpProcessAttributes,
@@ -72,7 +72,7 @@ BOOL CreateProcessExWHelper(HANDLE target_process, BOOL give_full_access,
   return TRUE;
 }
 
-}
+}  // namespace
 
 namespace sandbox {
 
@@ -89,9 +89,7 @@ bool ProcessPolicy::GenerateRules(const wchar_t* name,
       process.reset(new PolicyRule(GIVE_ALLACCESS));
       break;
     };
-    default: {
-      return false;
-    };
+    default: { return false; };
   }
 
   if (!process->AddStringMatch(IF, NameBased::NAME, name, CASE_INSENSITIVE)) {
@@ -115,14 +113,14 @@ NTSTATUS ProcessPolicy::OpenThreadAction(const ClientInfo& client_info,
   OBJECT_ATTRIBUTES attributes = {0};
   attributes.Length = sizeof(attributes);
   CLIENT_ID client_id = {0};
-  client_id.UniqueProcess = reinterpret_cast<PVOID>(
-                                static_cast<ULONG_PTR>(client_info.process_id));
+  client_id.UniqueProcess =
+      reinterpret_cast<PVOID>(static_cast<ULONG_PTR>(client_info.process_id));
   client_id.UniqueThread =
       reinterpret_cast<PVOID>(static_cast<ULONG_PTR>(thread_id));
 
   HANDLE local_handle = NULL;
-  NTSTATUS status = NtOpenThread(&local_handle, desired_access, &attributes,
-                                 &client_id);
+  NTSTATUS status =
+      NtOpenThread(&local_handle, desired_access, &attributes, &client_id);
   if (NT_SUCCESS(status)) {
     if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                            client_info.process, handle, 0, FALSE,
@@ -149,11 +147,11 @@ NTSTATUS ProcessPolicy::OpenProcessAction(const ClientInfo& client_info,
   OBJECT_ATTRIBUTES attributes = {0};
   attributes.Length = sizeof(attributes);
   CLIENT_ID client_id = {0};
-  client_id.UniqueProcess = reinterpret_cast<PVOID>(
-                                static_cast<ULONG_PTR>(client_info.process_id));
+  client_id.UniqueProcess =
+      reinterpret_cast<PVOID>(static_cast<ULONG_PTR>(client_info.process_id));
   HANDLE local_handle = NULL;
-  NTSTATUS status = NtOpenProcess(&local_handle, desired_access, &attributes,
-                                  &client_id);
+  NTSTATUS status =
+      NtOpenProcess(&local_handle, desired_access, &attributes, &client_id);
   if (NT_SUCCESS(status)) {
     if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                            client_info.process, handle, 0, FALSE,
@@ -177,8 +175,8 @@ NTSTATUS ProcessPolicy::OpenProcessTokenAction(const ClientInfo& client_info,
     return STATUS_ACCESS_DENIED;
 
   HANDLE local_handle = NULL;
-  NTSTATUS status = NtOpenProcessToken(client_info.process, desired_access,
-                                       &local_handle);
+  NTSTATUS status =
+      NtOpenProcessToken(client_info.process, desired_access, &local_handle);
   if (NT_SUCCESS(status)) {
     if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
                            client_info.process, handle, 0, FALSE,
@@ -216,9 +214,9 @@ NTSTATUS ProcessPolicy::OpenProcessTokenExAction(const ClientInfo& client_info,
 
 DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
                                           const ClientInfo& client_info,
-                                          const base::string16 &app_name,
-                                          const base::string16 &command_line,
-                                          const base::string16 &current_dir,
+                                          const base::string16& app_name,
+                                          const base::string16& command_line,
+                                          const base::string16& current_dir,
                                           PROCESS_INFORMATION* process_info) {
   // The only action supported is ASK_BROKER which means create the process.
   if (GIVE_ALLACCESS != eval_result && GIVE_READONLY != eval_result) {
@@ -238,8 +236,8 @@ DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
 
   if (!CreateProcessExWHelper(client_info.process, should_give_full_access,
                               app_name.c_str(), cmd_line.get(), NULL, NULL,
-                              FALSE, 0, NULL, cwd,
-                              &startup_info, process_info)) {
+                              FALSE, 0, NULL, cwd, &startup_info,
+                              process_info)) {
     return ERROR_ACCESS_DENIED;
   }
   return ERROR_SUCCESS;

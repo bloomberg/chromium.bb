@@ -4,6 +4,8 @@
 
 // This file contains unit tests for ServiceResolverThunk.
 
+#include "sandbox/win/src/service_resolver.h"
+
 #include <stddef.h>
 
 #include <memory>
@@ -13,14 +15,13 @@
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/resolver.h"
 #include "sandbox/win/src/sandbox_utils.h"
-#include "sandbox/win/src/service_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 // This is the concrete resolver used to perform service-call type functions
 // inside ntdll.dll.
-template<typename T>
+template <typename T>
 class ResolverThunkTest : public T {
  public:
   // The service resolver needs a child process to write to.
@@ -28,9 +29,7 @@ class ResolverThunkTest : public T {
       : T(::GetCurrentProcess(), relaxed) {}
 
   // Sets the interception target to the desired address.
-  void set_target(void* target) {
-    fake_target_ = target;
-  }
+  void set_target(void* target) { fake_target_ = target; }
 
  protected:
   // Overrides Resolver::Init
@@ -91,7 +90,8 @@ void CheckJump(void* source, void* target) {
 #endif
 }
 
-NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
+NTSTATUS PatchNtdllWithResolver(const char* function,
+                                bool relaxed,
                                 sandbox::ServiceResolverThunk* resolver) {
   HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
   EXPECT_TRUE(NULL != ntdll_base);
@@ -114,9 +114,9 @@ NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
 
   resolver->AllowLocalPatches();
 
-  NTSTATUS ret = resolver->Setup(ntdll_base, NULL, function, NULL,
-                                 function_entry, thunk.get(), thunk_size,
-                                 &used);
+  NTSTATUS ret =
+      resolver->Setup(ntdll_base, NULL, function, NULL, function_entry,
+                      thunk.get(), thunk_size, &used);
   if (NT_SUCCESS(ret)) {
     EXPECT_EQ(thunk_size, used);
     EXPECT_NE(0, memcmp(service, target, sizeof(service)));
@@ -167,16 +167,16 @@ TEST(ServiceResolverTest, PatchesServices) {
   EXPECT_EQ(STATUS_SUCCESS, ret) << "NtClose, last error: " << ::GetLastError();
 
   ret = PatchNtdll("NtCreateFile", false);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateFile, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtCreateFile, last error: " << ::GetLastError();
 
   ret = PatchNtdll("NtCreateMutant", false);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateMutant, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtCreateMutant, last error: " << ::GetLastError();
 
   ret = PatchNtdll("NtMapViewOfSection", false);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtMapViewOfSection, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtMapViewOfSection, last error: " << ::GetLastError();
 }
 
 TEST(ServiceResolverTest, FailsIfNotService) {
@@ -194,16 +194,16 @@ TEST(ServiceResolverTest, PatchesPatchedServices) {
   EXPECT_EQ(STATUS_SUCCESS, ret) << "NtClose, last error: " << ::GetLastError();
 
   ret = PatchNtdll("NtCreateFile", true);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateFile, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtCreateFile, last error: " << ::GetLastError();
 
   ret = PatchNtdll("NtCreateMutant", true);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateMutant, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtCreateMutant, last error: " << ::GetLastError();
 
   ret = PatchNtdll("NtMapViewOfSection", true);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtMapViewOfSection, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtMapViewOfSection, last error: " << ::GetLastError();
 #endif
 }
 
@@ -215,16 +215,16 @@ TEST(ServiceResolverTest, MultiplePatchedServices) {
   EXPECT_EQ(STATUS_SUCCESS, ret) << "NtClose, last error: " << ::GetLastError();
 
   ret = PatchNtdllWithResolver("NtCreateFile", true, resolver);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateFile, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtCreateFile, last error: " << ::GetLastError();
 
   ret = PatchNtdllWithResolver("NtCreateMutant", true, resolver);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateMutant, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtCreateMutant, last error: " << ::GetLastError();
 
   ret = PatchNtdllWithResolver("NtMapViewOfSection", true, resolver);
-  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtMapViewOfSection, last error: " <<
-    ::GetLastError();
+  EXPECT_EQ(STATUS_SUCCESS, ret)
+      << "NtMapViewOfSection, last error: " << ::GetLastError();
   delete resolver;
 #endif
 }
@@ -253,16 +253,14 @@ TEST(ServiceResolverTest, LocalPatchesAllowed) {
   NTSTATUS ret = STATUS_UNSUCCESSFUL;
 
   // First try patching without having allowed local patches.
-  ret = resolver->Setup(ntdll_base, NULL, kFunctionName, NULL,
-                        function_entry, thunk.get(), thunk_size,
-                        &used);
+  ret = resolver->Setup(ntdll_base, NULL, kFunctionName, NULL, function_entry,
+                        thunk.get(), thunk_size, &used);
   EXPECT_FALSE(NT_SUCCESS(ret));
 
   // Now allow local patches and check that things work.
   resolver->AllowLocalPatches();
-  ret = resolver->Setup(ntdll_base, NULL, kFunctionName, NULL,
-                        function_entry, thunk.get(), thunk_size,
-                        &used);
+  ret = resolver->Setup(ntdll_base, NULL, kFunctionName, NULL, function_entry,
+                        thunk.get(), thunk_size, &used);
   EXPECT_EQ(STATUS_SUCCESS, ret);
 }
 

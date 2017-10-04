@@ -31,7 +31,7 @@ namespace {
 // "c:\program files\test param" will first try to launch c:\program.exe then
 // c:\program files\test.exe. We don't do that, we stop after at the first
 // space when there is no quotes.
-base::string16 GetPathFromCmdLine(const base::string16 &cmd_line) {
+base::string16 GetPathFromCmdLine(const base::string16& cmd_line) {
   base::string16 exe_name;
   // Check if it starts with '"'.
   if (cmd_line[0] == L'\"') {
@@ -57,7 +57,7 @@ base::string16 GetPathFromCmdLine(const base::string16 &cmd_line) {
 
 // Returns true is the path in parameter is relative. False if it's
 // absolute.
-bool IsPathRelative(const base::string16 &path) {
+bool IsPathRelative(const base::string16& path) {
   // A path is Relative if it's not a UNC path beginnning with \\ or a
   // path beginning with a drive. (i.e. X:\)
   if (path.find(L"\\\\") == 0 || path.find(L":\\") == 1)
@@ -67,9 +67,10 @@ bool IsPathRelative(const base::string16 &path) {
 
 // Converts a relative path to an absolute path.
 bool ConvertToAbsolutePath(const base::string16& child_current_directory,
-                           bool use_env_path, base::string16 *path) {
+                           bool use_env_path,
+                           base::string16* path) {
   wchar_t file_buffer[MAX_PATH];
-  wchar_t *file_part = NULL;
+  wchar_t* file_part = NULL;
 
   // Here we should start by looking at the path where the child application was
   // started. We don't have this information yet.
@@ -169,9 +170,8 @@ bool ThreadProcessDispatcher::NtOpenThread(IPCInfo* ipc,
                                            uint32_t desired_access,
                                            uint32_t thread_id) {
   HANDLE handle;
-  NTSTATUS ret = ProcessPolicy::OpenThreadAction(*ipc->client_info,
-                                                 desired_access, thread_id,
-                                                 &handle);
+  NTSTATUS ret = ProcessPolicy::OpenThreadAction(
+      *ipc->client_info, desired_access, thread_id, &handle);
   ipc->return_info.nt_status = ret;
   ipc->return_info.handle = handle;
   return true;
@@ -181,9 +181,8 @@ bool ThreadProcessDispatcher::NtOpenProcess(IPCInfo* ipc,
                                             uint32_t desired_access,
                                             uint32_t process_id) {
   HANDLE handle;
-  NTSTATUS ret = ProcessPolicy::OpenProcessAction(*ipc->client_info,
-                                                  desired_access, process_id,
-                                                  &handle);
+  NTSTATUS ret = ProcessPolicy::OpenProcessAction(
+      *ipc->client_info, desired_access, process_id, &handle);
   ipc->return_info.nt_status = ret;
   ipc->return_info.handle = handle;
   return true;
@@ -193,9 +192,8 @@ bool ThreadProcessDispatcher::NtOpenProcessToken(IPCInfo* ipc,
                                                  HANDLE process,
                                                  uint32_t desired_access) {
   HANDLE handle;
-  NTSTATUS ret = ProcessPolicy::OpenProcessTokenAction(*ipc->client_info,
-                                                       process, desired_access,
-                                                       &handle);
+  NTSTATUS ret = ProcessPolicy::OpenProcessTokenAction(
+      *ipc->client_info, process, desired_access, &handle);
   ipc->return_info.nt_status = ret;
   ipc->return_info.handle = handle;
   return true;
@@ -206,16 +204,15 @@ bool ThreadProcessDispatcher::NtOpenProcessTokenEx(IPCInfo* ipc,
                                                    uint32_t desired_access,
                                                    uint32_t attributes) {
   HANDLE handle;
-  NTSTATUS ret = ProcessPolicy::OpenProcessTokenExAction(*ipc->client_info,
-                                                         process,
-                                                         desired_access,
-                                                         attributes, &handle);
+  NTSTATUS ret = ProcessPolicy::OpenProcessTokenExAction(
+      *ipc->client_info, process, desired_access, attributes, &handle);
   ipc->return_info.nt_status = ret;
   ipc->return_info.handle = handle;
   return true;
 }
 
-bool ThreadProcessDispatcher::CreateProcessW(IPCInfo* ipc, base::string16* name,
+bool ThreadProcessDispatcher::CreateProcessW(IPCInfo* ipc,
+                                             base::string16* name,
                                              base::string16* cmd_line,
                                              base::string16* cur_dir,
                                              base::string16* target_cur_dir,
@@ -242,16 +239,15 @@ bool ThreadProcessDispatcher::CreateProcessW(IPCInfo* ipc, base::string16* name,
   CountedParameterSet<NameBased> params;
   params[NameBased::NAME] = ParamPickerMake(const_exe_name);
 
-  EvalResult eval = policy_base_->EvalPolicy(IPC_CREATEPROCESSW_TAG,
-                                             params.GetBase());
+  EvalResult eval =
+      policy_base_->EvalPolicy(IPC_CREATEPROCESSW_TAG, params.GetBase());
 
   PROCESS_INFORMATION* proc_info =
       reinterpret_cast<PROCESS_INFORMATION*>(info->Buffer());
   // Here we force the app_name to be the one we used for the policy lookup.
   // If our logic was wrong, at least we wont allow create a random process.
-  DWORD ret = ProcessPolicy::CreateProcessWAction(eval, *ipc->client_info,
-                                                  exe_name, *cmd_line,
-                                                  *target_cur_dir, proc_info);
+  DWORD ret = ProcessPolicy::CreateProcessWAction(
+      eval, *ipc->client_info, exe_name, *cmd_line, *target_cur_dir, proc_info);
 
   ipc->return_info.win32_result = ret;
   return true;

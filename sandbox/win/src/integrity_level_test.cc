@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+
 #include <atlsecurity.h>
 
 #include "base/win/windows_version.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "sandbox/win/src/sandbox.h"
-#include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_factory.h"
+#include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/tests/common/controller.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
 
-
-SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t** argv) {
   ATL::CAccessToken token;
   if (!token.GetEffectiveToken(TOKEN_READ))
     return SBOX_TEST_FAILED;
@@ -45,7 +45,6 @@ SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t **argv) {
 }
 
 TEST(IntegrityLevelTest, TestLowILReal) {
-
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
 
   runner.SetTimeout(INFINITE);
@@ -60,7 +59,6 @@ TEST(IntegrityLevelTest, TestLowILReal) {
 }
 
 TEST(DelayedIntegrityLevelTest, TestLowILDelayed) {
-
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
 
   runner.SetTimeout(INFINITE);
@@ -74,7 +72,6 @@ TEST(DelayedIntegrityLevelTest, TestLowILDelayed) {
 }
 
 TEST(IntegrityLevelTest, TestNoILChange) {
-
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
 
   runner.SetTimeout(INFINITE);

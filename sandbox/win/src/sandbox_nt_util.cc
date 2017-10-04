@@ -85,7 +85,7 @@ void* AllocateNearTo(void* source, size_t size) {
   }
   return nullptr;
 }
-#else  // defined(_WIN64).
+#else   // defined(_WIN64).
 void* AllocateNearTo(void* source, size_t size) {
   using sandbox::g_nt;
 
@@ -134,23 +134,23 @@ bool MapGlobalMemory() {
     void* memory = NULL;
     SIZE_T size = 0;
     // Map the entire shared section from the start.
-    NTSTATUS ret = g_nt.MapViewOfSection(g_shared_section, NtCurrentProcess,
-                                         &memory, 0, 0, NULL, &size, ViewUnmap,
-                                         0, PAGE_READWRITE);
+    NTSTATUS ret =
+        g_nt.MapViewOfSection(g_shared_section, NtCurrentProcess, &memory, 0, 0,
+                              NULL, &size, ViewUnmap, 0, PAGE_READWRITE);
 
     if (!NT_SUCCESS(ret) || NULL == memory) {
       NOTREACHED_NT();
       return false;
     }
 
-    if (NULL != _InterlockedCompareExchangePointer(&g_shared_IPC_memory,
-                                                   memory, NULL)) {
-        // Somebody beat us to the memory setup.
-        VERIFY_SUCCESS(g_nt.UnmapViewOfSection(NtCurrentProcess, memory));
+    if (NULL != _InterlockedCompareExchangePointer(&g_shared_IPC_memory, memory,
+                                                   NULL)) {
+      // Somebody beat us to the memory setup.
+      VERIFY_SUCCESS(g_nt.UnmapViewOfSection(NtCurrentProcess, memory));
     }
     DCHECK_NT(g_shared_IPC_size > 0);
-    g_shared_policy_memory = reinterpret_cast<char*>(g_shared_IPC_memory)
-                             + g_shared_IPC_size;
+    g_shared_policy_memory =
+        reinterpret_cast<char*>(g_shared_IPC_memory) + g_shared_IPC_size;
   }
   DCHECK_NT(g_shared_policy_memory);
   DCHECK_NT(g_shared_policy_size > 0);
@@ -211,7 +211,7 @@ bool ValidParameter(void* buffer, size_t size, RequiredAccess intent) {
   DCHECK_NT(size);
   __try {
     TouchMemory(buffer, size, intent);
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
     return false;
   }
   return true;
@@ -221,15 +221,13 @@ NTSTATUS CopyData(void* destination, const void* source, size_t bytes) {
   NTSTATUS ret = STATUS_SUCCESS;
   __try {
     g_nt.memcpy(destination, source, bytes);
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
     ret = GetExceptionCode();
   }
   return ret;
 }
 
-NTSTATUS AllocAndGetFullPath(HANDLE root,
-                             wchar_t* path,
-                             wchar_t** full_path) {
+NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
   if (!InitHeap())
     return STATUS_NO_MEMORY;
 
@@ -250,7 +248,7 @@ NTSTATUS AllocAndGetFullPath(HANDLE root,
 
       if (size) {
         handle_name = reinterpret_cast<OBJECT_NAME_INFORMATION*>(
-            new(NT_ALLOC) BYTE[size]);
+            new (NT_ALLOC) BYTE[size]);
 
         // Query the name information a second time to get the name of the
         // object referenced by the handle.
@@ -262,9 +260,9 @@ NTSTATUS AllocAndGetFullPath(HANDLE root,
         break;
 
       // Space for path + '\' + name + '\0'.
-      size_t name_length = handle_name->ObjectName.Length +
-                           (wcslen(path) + 2) * sizeof(wchar_t);
-      *full_path = new(NT_ALLOC) wchar_t[name_length/sizeof(wchar_t)];
+      size_t name_length =
+          handle_name->ObjectName.Length + (wcslen(path) + 2) * sizeof(wchar_t);
+      *full_path = new (NT_ALLOC) wchar_t[name_length / sizeof(wchar_t)];
       if (NULL == *full_path)
         break;
       wchar_t* off = *full_path;
@@ -281,7 +279,7 @@ NTSTATUS AllocAndGetFullPath(HANDLE root,
       off += wcslen(path);
       *off = L'\0';
     } while (false);
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
     ret = GetExceptionCode();
   }
 
@@ -320,7 +318,7 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
         break;
 
       size_t size = in_object->ObjectName->Length + sizeof(wchar_t);
-      *out_name = new(NT_ALLOC) wchar_t[size/sizeof(wchar_t)];
+      *out_name = new (NT_ALLOC) wchar_t[size / sizeof(wchar_t)];
       if (NULL == *out_name)
         break;
 
@@ -338,7 +336,7 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
         *root = in_object->RootDirectory;
       ret = STATUS_SUCCESS;
     } while (false);
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
     ret = GetExceptionCode();
   }
 
@@ -350,13 +348,13 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
   return ret;
 }
 
-NTSTATUS GetProcessId(HANDLE process, DWORD *process_id) {
+NTSTATUS GetProcessId(HANDLE process, DWORD* process_id) {
   PROCESS_BASIC_INFORMATION proc_info;
   ULONG bytes_returned;
 
-  NTSTATUS ret = g_nt.QueryInformationProcess(process, ProcessBasicInformation,
-                                              &proc_info, sizeof(proc_info),
-                                              &bytes_returned);
+  NTSTATUS ret =
+      g_nt.QueryInformationProcess(process, ProcessBasicInformation, &proc_info,
+                                   sizeof(proc_info), &bytes_returned);
   if (!NT_SUCCESS(ret) || sizeof(proc_info) != bytes_returned)
     return ret;
 
@@ -384,16 +382,18 @@ bool IsSameProcess(HANDLE process) {
   return (process_id == s_process_id);
 }
 
-bool IsValidImageSection(HANDLE section, PVOID *base, PLARGE_INTEGER offset,
+bool IsValidImageSection(HANDLE section,
+                         PVOID* base,
+                         PLARGE_INTEGER offset,
                          PSIZE_T view_size) {
   if (!section || !base || !view_size || offset)
     return false;
 
   HANDLE query_section;
 
-  NTSTATUS ret = g_nt.DuplicateObject(NtCurrentProcess, section,
-                                      NtCurrentProcess, &query_section,
-                                      SECTION_QUERY, 0, 0);
+  NTSTATUS ret =
+      g_nt.DuplicateObject(NtCurrentProcess, section, NtCurrentProcess,
+                           &query_section, SECTION_QUERY, 0, 0);
   if (!NT_SUCCESS(ret))
     return false;
 
@@ -422,15 +422,15 @@ UNICODE_STRING* AnsiToUnicode(const char* string) {
   if (ansi_string.Length > ansi_string.MaximumLength)
     return NULL;
 
-  size_t name_bytes = ansi_string.MaximumLength * sizeof(wchar_t) +
-                      sizeof(UNICODE_STRING);
+  size_t name_bytes =
+      ansi_string.MaximumLength * sizeof(wchar_t) + sizeof(UNICODE_STRING);
 
-  UNICODE_STRING* out_string = reinterpret_cast<UNICODE_STRING*>(
-                                   new(NT_ALLOC) char[name_bytes]);
+  UNICODE_STRING* out_string =
+      reinterpret_cast<UNICODE_STRING*>(new (NT_ALLOC) char[name_bytes]);
   if (!out_string)
     return NULL;
 
-  out_string->MaximumLength = ansi_string.MaximumLength *  sizeof(wchar_t);
+  out_string->MaximumLength = ansi_string.MaximumLength * sizeof(wchar_t);
   out_string->Buffer = reinterpret_cast<wchar_t*>(&out_string[1]);
 
   BOOLEAN alloc_destination = FALSE;
@@ -446,9 +446,9 @@ UNICODE_STRING* AnsiToUnicode(const char* string) {
 }
 
 UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags) {
-  // PEImage's dtor won't be run during SEH unwinding, but that's OK.
+// PEImage's dtor won't be run during SEH unwinding, but that's OK.
 #pragma warning(push)
-#pragma warning(disable: 4509)
+#pragma warning(disable : 4509)
   UNICODE_STRING* out_name = NULL;
   __try {
     do {
@@ -473,7 +473,7 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags) {
           *flags |= MODULE_HAS_CODE;
       }
     } while (false);
-  } __except(EXCEPTION_EXECUTE_HANDLER) {
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
   }
 
   return out_name;
@@ -486,15 +486,15 @@ UNICODE_STRING* GetBackingFilePath(PVOID address) {
 
   for (;;) {
     MEMORY_SECTION_NAME* section_name = reinterpret_cast<MEMORY_SECTION_NAME*>(
-        new(NT_ALLOC) char[buffer_bytes]);
+        new (NT_ALLOC) char[buffer_bytes]);
 
     if (!section_name)
       return NULL;
 
     SIZE_T returned_bytes;
-    NTSTATUS ret = g_nt.QueryVirtualMemory(NtCurrentProcess, address,
-                                           MemorySectionName, section_name,
-                                           buffer_bytes, &returned_bytes);
+    NTSTATUS ret =
+        g_nt.QueryVirtualMemory(NtCurrentProcess, address, MemorySectionName,
+                                section_name, buffer_bytes, &returned_bytes);
 
     if (STATUS_BUFFER_OVERFLOW == ret) {
       // Retry the call with the given buffer size.
@@ -542,7 +542,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
   // Based on the code above, size_bytes should always be small enough
   // to make the static_cast below safe.
   DCHECK_NT(UINT16_MAX > size_bytes);
-  char* str_buffer = new(NT_ALLOC) char[size_bytes + sizeof(UNICODE_STRING)];
+  char* str_buffer = new (NT_ALLOC) char[size_bytes + sizeof(UNICODE_STRING)];
   if (!str_buffer)
     return NULL;
 
@@ -561,7 +561,8 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
   return out_string;
 }
 
-NTSTATUS AutoProtectMemory::ChangeProtection(void* address, size_t bytes,
+NTSTATUS AutoProtectMemory::ChangeProtection(void* address,
+                                             size_t bytes,
                                              ULONG protect) {
   DCHECK_NT(!changed_);
   SIZE_T new_bytes = bytes;
@@ -584,9 +585,8 @@ NTSTATUS AutoProtectMemory::RevertProtection() {
   DCHECK_NT(bytes_);
 
   SIZE_T new_bytes = bytes_;
-  NTSTATUS ret = g_nt.ProtectVirtualMemory(NtCurrentProcess, &address_,
-                                           &new_bytes, old_protect_,
-                                           &old_protect_);
+  NTSTATUS ret = g_nt.ProtectVirtualMemory(
+      NtCurrentProcess, &address_, &new_bytes, old_protect_, &old_protect_);
   DCHECK_NT(NT_SUCCESS(ret));
 
   changed_ = false;
@@ -615,7 +615,7 @@ bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info,
   if (file_info->RootDirectory)
     return false;
 
-  static const wchar_t kPathPrefix[] = { L'\\', L'?', L'?', L'\\'};
+  static const wchar_t kPathPrefix[] = {L'\\', L'?', L'?', L'\\'};
 
   // Check if it starts with \\??\\. We don't support relative paths.
   if (file_info->FileNameLength < sizeof(kPathPrefix) ||
@@ -633,8 +633,7 @@ bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info,
 
 }  // namespace sandbox
 
-void* operator new(size_t size, sandbox::AllocationType type,
-                   void* near_to) {
+void* operator new(size_t size, sandbox::AllocationType type, void* near_to) {
   void* result = NULL;
   if (type == sandbox::NT_ALLOC) {
     if (sandbox::InitHeap()) {

@@ -71,5 +71,4 @@ class SmartSidestepResolverThunk : public SidestepResolverThunk {
 
 }  // namespace sandbox
 
-
 #endif  // SANDBOX_SRC_SIDESTEP_RESOLVER_H__

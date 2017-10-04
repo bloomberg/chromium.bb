@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/win_utils.h"
+
 #include <windows.h>
+
 #include <psapi.h>
 
 #include <vector>
@@ -14,7 +17,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "sandbox/win/src/nt_internals.h"
-#include "sandbox/win/src/win_utils.h"
 #include "sandbox/win/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -111,9 +113,9 @@ TEST(WinUtils, SameObject) {
   base::string16 folder(my_folder);
   base::string16 file_name = folder + L"\\foo.txt";
   const ULONG kSharing = FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE;
-  base::win::ScopedHandle file(CreateFile(
-      file_name.c_str(), GENERIC_WRITE, kSharing, NULL, CREATE_ALWAYS,
-      FILE_FLAG_DELETE_ON_CLOSE, NULL));
+  base::win::ScopedHandle file(CreateFile(file_name.c_str(), GENERIC_WRITE,
+                                          kSharing, NULL, CREATE_ALWAYS,
+                                          FILE_FLAG_DELETE_ON_CLOSE, NULL));
 
   EXPECT_TRUE(file.IsValid());
   base::string16 file_name_nt1 = base::string16(L"\\??\\") + file_name;
@@ -144,9 +146,10 @@ TEST(WinUtils, IsPipe) {
   pipe_name = L"\\??\\ABCD\\mypipe";
   EXPECT_FALSE(IsPipe(pipe_name));
 
-
   // Written as two strings to prevent trigraph '?' '?' '/'.
-  pipe_name = L"/?" L"?/pipe/mypipe";
+  pipe_name =
+      L"/?"
+      L"?/pipe/mypipe";
   EXPECT_FALSE(IsPipe(pipe_name));
 
   pipe_name = L"\\XX\\pipe\\mypipe";

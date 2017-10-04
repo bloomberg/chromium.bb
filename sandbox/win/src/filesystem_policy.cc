@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/filesystem_policy.h"
+
 #include <stdint.h>
 
 #include <string>
-
-#include "sandbox/win/src/filesystem_policy.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -36,10 +36,10 @@ NTSTATUS NtCreateFileInTarget(HANDLE* target_file_handle,
   ResolveNTFunctionPtr("NtCreateFile", &NtCreateFile);
 
   HANDLE local_handle = INVALID_HANDLE_VALUE;
-  NTSTATUS status = NtCreateFile(&local_handle, desired_access, obj_attributes,
-                                 io_status_block, NULL, file_attributes,
-                                 share_access, create_disposition,
-                                 create_options, ea_buffer, ea_lenght);
+  NTSTATUS status =
+      NtCreateFile(&local_handle, desired_access, obj_attributes,
+                   io_status_block, NULL, file_attributes, share_access,
+                   create_disposition, create_options, ea_buffer, ea_lenght);
   if (!NT_SUCCESS(status)) {
     return status;
   }
@@ -50,8 +50,8 @@ NTSTATUS NtCreateFileInTarget(HANDLE* target_file_handle,
     return STATUS_ACCESS_DENIED;
   }
 
-  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
-                         target_process, target_file_handle, 0, FALSE,
+  if (!::DuplicateHandle(::GetCurrentProcess(), local_handle, target_process,
+                         target_file_handle, 0, FALSE,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }
@@ -105,9 +105,9 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
   const unsigned kCallNtQueryFullAttributesFile = 0x8;
   const unsigned kCallNtSetInfoRename = 0x10;
 
-  DWORD  rule_to_add = kCallNtOpenFile | kCallNtCreateFile |
-                       kCallNtQueryAttributesFile |
-                       kCallNtQueryFullAttributesFile | kCallNtSetInfoRename;
+  DWORD rule_to_add = kCallNtOpenFile | kCallNtCreateFile |
+                      kCallNtQueryAttributesFile |
+                      kCallNtQueryFullAttributesFile | kCallNtSetInfoRename;
 
   PolicyRule create(result);
   PolicyRule open(result);
@@ -139,8 +139,8 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
     }
     case TargetPolicy::FILES_ALLOW_QUERY: {
       // Here we don't want to add policy for the open or the create.
-      rule_to_add &= ~(kCallNtOpenFile | kCallNtCreateFile |
-                       kCallNtSetInfoRename);
+      rule_to_add &=
+          ~(kCallNtOpenFile | kCallNtCreateFile | kCallNtSetInfoRename);
       break;
     }
     case TargetPolicy::FILES_ALLOW_ANY: {
@@ -171,9 +171,8 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
   }
 
   if ((rule_to_add & kCallNtQueryFullAttributesFile) &&
-      (!query_full.AddStringMatch(IF, FileName::NAME, name, CASE_INSENSITIVE)
-       || !policy->AddRule(IPC_NTQUERYFULLATTRIBUTESFILE_TAG,
-                           &query_full))) {
+      (!query_full.AddStringMatch(IF, FileName::NAME, name, CASE_INSENSITIVE) ||
+       !policy->AddRule(IPC_NTQUERYFULLATTRIBUTESFILE_TAG, &query_full))) {
     return false;
   }
 
@@ -264,12 +263,12 @@ bool FileSystemPolicy::CreateFileAction(EvalResult eval_result,
   OBJECT_ATTRIBUTES obj_attributes = {};
   SECURITY_QUALITY_OF_SERVICE security_qos = GetAnonymousQOS();
 
-  InitObjectAttribs(file, attributes, NULL, &obj_attributes,
-                    &uni_name, IsPipe(file) ? &security_qos : NULL);
-  *nt_status = NtCreateFileInTarget(handle, desired_access, &obj_attributes,
-                                    &io_block, file_attributes, share_access,
-                                    create_disposition, create_options, NULL,
-                                    0, client_info.process);
+  InitObjectAttribs(file, attributes, NULL, &obj_attributes, &uni_name,
+                    IsPipe(file) ? &security_qos : NULL);
+  *nt_status =
+      NtCreateFileInTarget(handle, desired_access, &obj_attributes, &io_block,
+                           file_attributes, share_access, create_disposition,
+                           create_options, NULL, 0, client_info.process);
 
   *io_information = io_block.Information;
   return true;
@@ -299,12 +298,11 @@ bool FileSystemPolicy::OpenFileAction(EvalResult eval_result,
   OBJECT_ATTRIBUTES obj_attributes = {};
   SECURITY_QUALITY_OF_SERVICE security_qos = GetAnonymousQOS();
 
-  InitObjectAttribs(file, attributes, NULL, &obj_attributes,
-                    &uni_name, IsPipe(file) ? &security_qos : NULL);
+  InitObjectAttribs(file, attributes, NULL, &obj_attributes, &uni_name,
+                    IsPipe(file) ? &security_qos : NULL);
   *nt_status = NtCreateFileInTarget(handle, desired_access, &obj_attributes,
                                     &io_block, 0, share_access, FILE_OPEN,
-                                    open_options, NULL, 0,
-                                    client_info.process);
+                                    open_options, NULL, 0, client_info.process);
 
   *io_information = io_block.Information;
   return true;
@@ -331,8 +329,8 @@ bool FileSystemPolicy::QueryAttributesFileAction(
   OBJECT_ATTRIBUTES obj_attributes = {0};
   SECURITY_QUALITY_OF_SERVICE security_qos = GetAnonymousQOS();
 
-  InitObjectAttribs(file, attributes, NULL, &obj_attributes,
-                    &uni_name, IsPipe(file) ? &security_qos : NULL);
+  InitObjectAttribs(file, attributes, NULL, &obj_attributes, &uni_name,
+                    IsPipe(file) ? &security_qos : NULL);
   *nt_status = NtQueryAttributesFile(&obj_attributes, file_info);
 
   return true;
@@ -359,8 +357,8 @@ bool FileSystemPolicy::QueryFullAttributesFileAction(
   OBJECT_ATTRIBUTES obj_attributes = {0};
   SECURITY_QUALITY_OF_SERVICE security_qos = GetAnonymousQOS();
 
-  InitObjectAttribs(file, attributes, NULL, &obj_attributes,
-                    &uni_name, IsPipe(file) ? &security_qos : NULL);
+  InitObjectAttribs(file, attributes, NULL, &obj_attributes, &uni_name,
+                    IsPipe(file) ? &security_qos : NULL);
   *nt_status = NtQueryFullAttributesFile(&obj_attributes, file_info);
 
   return true;

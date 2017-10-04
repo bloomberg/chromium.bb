@@ -42,6 +42,7 @@ class SandboxFactory {
   // Returns the Target API interface, returns NULL if this process is the
   // broker.
   static TargetServices* GetTargetServices();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxFactory);
 };

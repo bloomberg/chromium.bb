@@ -6,6 +6,7 @@
 #define SANDBOX_SRC_WIN_UTILS_H_
 
 #include <windows.h>
+
 #include <stddef.h>
 #include <string>
 
@@ -27,17 +28,15 @@ const size_t kNTDevicePrefixLen = arraysize(kNTDevicePrefix) - 1;
 class AutoLock {
  public:
   // Acquires the lock.
-  explicit AutoLock(CRITICAL_SECTION *lock) : lock_(lock) {
+  explicit AutoLock(CRITICAL_SECTION* lock) : lock_(lock) {
     ::EnterCriticalSection(lock);
   }
 
   // Releases the lock;
-  ~AutoLock() {
-    ::LeaveCriticalSection(lock_);
-  }
+  ~AutoLock() { ::LeaveCriticalSection(lock_); }
 
  private:
-  CRITICAL_SECTION *lock_;
+  CRITICAL_SECTION* lock_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutoLock);
 };
 
@@ -106,8 +105,10 @@ bool ResolveRegistryName(base::string16 name, base::string16* resolved_name);
 // Writes |length| bytes from the provided |buffer| into the address space of
 // |child_process|, at the specified |address|, preserving the original write
 // protection attributes. Returns true on success.
-bool WriteProtectedChildMemory(HANDLE child_process, void* address,
-                               const void* buffer, size_t length);
+bool WriteProtectedChildMemory(HANDLE child_process,
+                               void* address,
+                               const void* buffer,
+                               size_t length);
 
 // Returns true if the provided path points to a pipe.
 bool IsPipe(const base::string16& path);

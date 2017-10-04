@@ -13,7 +13,7 @@ namespace sandbox {
 
 // Loads and or unloads a DLL passed in the second parameter of argv.
 // The first parameter of argv is 'L' = load, 'U' = unload or 'B' for both.
-SBOX_TESTS_COMMAND int UseOneDLL(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int UseOneDLL(int argc, wchar_t** argv) {
   if (argc != 2)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
   int rv = SBOX_TEST_FAILED_TO_RUN_TEST;
@@ -32,7 +32,7 @@ SBOX_TESTS_COMMAND int UseOneDLL(int argc, wchar_t **argv) {
 }
 
 // Opens an event passed as the first parameter of argv.
-SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t** argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
@@ -72,8 +72,8 @@ TEST(UnloadDllTest, UnloadAviCapDllWithPatching) {
   sandbox::TargetPolicy* policy = runner.GetPolicy();
   policy->AddDllToUnload(L"avicap32.dll");
 
-  base::win::ScopedHandle handle1(::CreateEvent(
-      NULL, FALSE, FALSE, L"tst0001"));
+  base::win::ScopedHandle handle1(
+      ::CreateEvent(NULL, FALSE, FALSE, L"tst0001"));
 
   // Add a couple of rules that ensures that the interception agent add EAT
   // patching on the client which makes sure that the unload dll record does

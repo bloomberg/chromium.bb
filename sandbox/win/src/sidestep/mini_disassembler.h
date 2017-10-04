@@ -41,15 +41,13 @@ namespace sidestep {
 // etc.
 class MiniDisassembler {
  public:
-
   // Creates a new instance and sets defaults.
   //
   // operand_default_32_bits: If true, the default operand size is
   // set to 32 bits, which is the default under Win32. Otherwise it is 16 bits.
   // address_default_32_bits: If true, the default address size is
   // set to 32 bits, which is the default under Win32. Otherwise it is 16 bits.
-  MiniDisassembler(bool operand_default_32_bits,
-                   bool address_default_32_bits);
+  MiniDisassembler(bool operand_default_32_bits, bool address_default_32_bits);
 
   // Equivalent to MiniDisassembler(true, true);
   MiniDisassembler();
@@ -71,7 +69,6 @@ class MiniDisassembler {
                               unsigned int* instruction_bytes);
 
  private:
-
   // Makes the disassembler ready for reuse.
   void Initialize();
 

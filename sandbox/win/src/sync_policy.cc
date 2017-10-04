@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/sync_policy.h"
+
 #include <stdint.h>
 
 #include <string>
-
-#include "sandbox/win/src/sync_policy.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -30,8 +30,7 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   ResolveNTFunctionPtr("NtOpenDirectoryObject", &NtOpenDirectoryObject);
 
   NtQuerySymbolicLinkObjectFunction NtQuerySymbolicLinkObject = NULL;
-  ResolveNTFunctionPtr("NtQuerySymbolicLinkObject",
-                       &NtQuerySymbolicLinkObject);
+  ResolveNTFunctionPtr("NtQuerySymbolicLinkObject", &NtQuerySymbolicLinkObject);
 
   NtOpenSymbolicLinkObjectFunction NtOpenSymbolicLinkObject = NULL;
   ResolveNTFunctionPtr("NtOpenSymbolicLinkObject", &NtOpenSymbolicLinkObject);
@@ -46,9 +45,9 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
                     &symbolic_link_directory_string, NULL);
 
   HANDLE symbolic_link_directory = NULL;
-  NTSTATUS status = NtOpenDirectoryObject(&symbolic_link_directory,
-                                          DIRECTORY_QUERY,
-                                          &symbolic_link_directory_attributes);
+  NTSTATUS status =
+      NtOpenDirectoryObject(&symbolic_link_directory, DIRECTORY_QUERY,
+                            &symbolic_link_directory_attributes);
   if (!NT_SUCCESS(status))
     return status;
 
@@ -66,8 +65,8 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
 
   UNICODE_STRING target_path = {};
   unsigned long target_length = 0;
-  status = NtQuerySymbolicLinkObject(symbolic_link, &target_path,
-                                     &target_length);
+  status =
+      NtQuerySymbolicLinkObject(symbolic_link, &target_path, &target_length);
   if (status != STATUS_BUFFER_TOO_SMALL) {
     CHECK(NT_SUCCESS(NtClose(symbolic_link)));
     return status;
@@ -76,8 +75,8 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   target_path.Length = 0;
   target_path.MaximumLength = static_cast<USHORT>(target_length);
   target_path.Buffer = new wchar_t[target_path.MaximumLength + 1];
-  status = NtQuerySymbolicLinkObject(symbolic_link, &target_path,
-                                     &target_length);
+  status =
+      NtQuerySymbolicLinkObject(symbolic_link, &target_path, &target_length);
   if (NT_SUCCESS(status))
     target->assign(target_path.Buffer, target_length);
 
@@ -105,8 +104,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
                                         base::StringPrintf(L"%d", session_id),
                                         &base_named_objects_path);
   if (!NT_SUCCESS(status)) {
-    DLOG(ERROR) << "Failed to resolve BaseNamedObjects path. Error: "
-                << status;
+    DLOG(ERROR) << "Failed to resolve BaseNamedObjects path. Error: " << status;
     return status;
   }
 
@@ -115,8 +113,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
   InitObjectAttribs(base_named_objects_path, OBJ_CASE_INSENSITIVE, NULL,
                     &object_attributes, &directory_name, NULL);
   status = NtOpenDirectoryObject(&base_named_objects_handle,
-                                 DIRECTORY_ALL_ACCESS,
-                                 &object_attributes);
+                                 DIRECTORY_ALL_ACCESS, &object_attributes);
   if (NT_SUCCESS(status))
     *directory = base_named_objects_handle;
   return status;

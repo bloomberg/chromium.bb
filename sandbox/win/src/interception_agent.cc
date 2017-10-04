@@ -44,7 +44,7 @@ InterceptionAgent* InterceptionAgent::GetInterceptionAgent() {
 
     size_t array_bytes = g_interceptions->num_intercepted_dlls * sizeof(void*);
     s_singleton = reinterpret_cast<InterceptionAgent*>(
-        new(NT_ALLOC) char[array_bytes + sizeof(InterceptionAgent)]);
+        new (NT_ALLOC) char[array_bytes + sizeof(InterceptionAgent)]);
 
     bool success = s_singleton->Init(g_interceptions);
     if (!success) {
@@ -57,7 +57,7 @@ InterceptionAgent* InterceptionAgent::GetInterceptionAgent() {
 
 bool InterceptionAgent::Init(SharedMemory* shared_memory) {
   interceptions_ = shared_memory;
-  for (int i = 0 ; i < shared_memory->num_intercepted_dlls; i++)
+  for (int i = 0; i < shared_memory->num_intercepted_dlls; i++)
     dlls_[i] = NULL;
   return true;
 }
@@ -66,8 +66,8 @@ bool InterceptionAgent::DllMatch(const UNICODE_STRING* full_path,
                                  const UNICODE_STRING* name,
                                  const DllPatchInfo* dll_info) {
   UNICODE_STRING current_name;
-  current_name.Length = static_cast<USHORT>(g_nt.wcslen(dll_info->dll_name) *
-                                            sizeof(wchar_t));
+  current_name.Length =
+      static_cast<USHORT>(g_nt.wcslen(dll_info->dll_name) * sizeof(wchar_t));
   current_name.MaximumLength = current_name.Length;
   current_name.Buffer = const_cast<wchar_t*>(dll_info->dll_name);
 
@@ -93,7 +93,7 @@ bool InterceptionAgent::OnDllLoad(const UNICODE_STRING* full_path,
       break;
 
     dll_info = reinterpret_cast<DllPatchInfo*>(
-                   reinterpret_cast<char*>(dll_info) + dll_info->record_bytes);
+        reinterpret_cast<char*>(dll_info) + dll_info->record_bytes);
   }
 
   // Return now if the dll is not in our list of interest.
@@ -111,7 +111,7 @@ bool InterceptionAgent::OnDllLoad(const UNICODE_STRING* full_path,
   size_t buffer_bytes = offsetof(DllInterceptionData, thunks) +
                         dll_info->num_functions * sizeof(ThunkData);
   dlls_[i] = reinterpret_cast<DllInterceptionData*>(
-                 new(NT_PAGE, base_address) char[buffer_bytes]);
+      new (NT_PAGE, base_address) char[buffer_bytes]);
 
   DCHECK_NT(dlls_[i]);
   if (!dlls_[i])
@@ -165,8 +165,8 @@ bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
     if (!resolver)
       return false;
 
-    const char* interceptor = function->function +
-                              g_nt.strlen(function->function) + 1;
+    const char* interceptor =
+        function->function + g_nt.strlen(function->function) + 1;
 
     if (!IsWithinRange(function, function->record_bytes, interceptor) ||
         !IsWithinRange(dll_info, dll_info->record_bytes, interceptor)) {
@@ -174,14 +174,10 @@ bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
       return false;
     }
 
-    NTSTATUS ret = resolver->Setup(thunks->base,
-                                   interceptions_->interceptor_base,
-                                   function->function,
-                                   interceptor,
-                                   function->interceptor_address,
-                                   &thunks->thunks[i],
-                                   sizeof(ThunkData),
-                                   NULL);
+    NTSTATUS ret = resolver->Setup(
+        thunks->base, interceptions_->interceptor_base, function->function,
+        interceptor, function->interceptor_address, &thunks->thunks[i],
+        sizeof(ThunkData), NULL);
     if (!NT_SUCCESS(ret)) {
       NOTREACHED_NT();
       return false;
@@ -207,15 +203,15 @@ ResolverThunk* InterceptionAgent::GetResolver(InterceptionType type) {
   static SmartSidestepResolverThunk* smart_sidestep_resolver = NULL;
 
   if (!eat_resolver)
-    eat_resolver = new(NT_ALLOC) EatResolverThunk;
+    eat_resolver = new (NT_ALLOC) EatResolverThunk;
 
 #if !defined(_WIN64)
   // Sidestep is not supported for x64.
   if (!sidestep_resolver)
-    sidestep_resolver = new(NT_ALLOC) SidestepResolverThunk;
+    sidestep_resolver = new (NT_ALLOC) SidestepResolverThunk;
 
   if (!smart_sidestep_resolver)
-    smart_sidestep_resolver = new(NT_ALLOC) SmartSidestepResolverThunk;
+    smart_sidestep_resolver = new (NT_ALLOC) SmartSidestepResolverThunk;
 #endif
 
   switch (type) {

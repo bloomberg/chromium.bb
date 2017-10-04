@@ -20,17 +20,18 @@
 
 namespace sandbox {
 
-#define BINDNTDLL(name) \
-    name ## Function name = reinterpret_cast<name ## Function>( \
+#define BINDNTDLL(name)                                   \
+  name##Function name = reinterpret_cast<name##Function>( \
       ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), #name))
 
 // Reverts to self and verify that SetInformationToken was faked. Returns
 // SBOX_TEST_SUCCEEDED if faked and SBOX_TEST_FAILED if not faked.
-SBOX_TESTS_COMMAND int PolicyTargetTest_token(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_token(int argc, wchar_t** argv) {
   HANDLE thread_token;
   // Get the thread token, using impersonation.
-  if (!::OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE |
-                             TOKEN_DUPLICATE, FALSE, &thread_token))
+  if (!::OpenThreadToken(GetCurrentThread(),
+                         TOKEN_IMPERSONATE | TOKEN_DUPLICATE, FALSE,
+                         &thread_token))
     return ::GetLastError();
 
   ::RevertToSelf();
@@ -48,11 +49,12 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_token(int argc, wchar_t **argv) {
 // Stores the high privilege token on a static variable, change impersonation
 // again to that one and verify that we are not interfering anymore with
 // RevertToSelf.
-SBOX_TESTS_COMMAND int PolicyTargetTest_steal(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_steal(int argc, wchar_t** argv) {
   static HANDLE thread_token;
   if (!SandboxFactory::GetTargetServices()->GetState()->RevertedToSelf()) {
-    if (!::OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE |
-                               TOKEN_DUPLICATE, FALSE, &thread_token))
+    if (!::OpenThreadToken(GetCurrentThread(),
+                           TOKEN_IMPERSONATE | TOKEN_DUPLICATE, FALSE,
+                           &thread_token))
       return ::GetLastError();
   } else {
     if (!::SetThreadToken(NULL, thread_token))
@@ -67,11 +69,12 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_steal(int argc, wchar_t **argv) {
 }
 
 // Opens the thread token with and without impersonation.
-SBOX_TESTS_COMMAND int PolicyTargetTest_token2(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_token2(int argc, wchar_t** argv) {
   HANDLE thread_token;
   // Get the thread token, using impersonation.
-  if (!::OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE |
-                             TOKEN_DUPLICATE, FALSE, &thread_token))
+  if (!::OpenThreadToken(GetCurrentThread(),
+                         TOKEN_IMPERSONATE | TOKEN_DUPLICATE, FALSE,
+                         &thread_token))
     return ::GetLastError();
   ::CloseHandle(thread_token);
 
@@ -85,7 +88,7 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_token2(int argc, wchar_t **argv) {
 
 // Opens the thread token with and without impersonation, using
 // NtOpenThreadTokenEX.
-SBOX_TESTS_COMMAND int PolicyTargetTest_token3(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_token3(int argc, wchar_t** argv) {
   BINDNTDLL(NtOpenThreadTokenEx);
   if (!NtOpenThreadTokenEx)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
@@ -114,7 +117,7 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_token3(int argc, wchar_t **argv) {
 }
 
 // Tests that we can open the current thread.
-SBOX_TESTS_COMMAND int PolicyTargetTest_thread(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_thread(int argc, wchar_t** argv) {
   DWORD thread_id = ::GetCurrentThreadId();
   HANDLE thread = ::OpenThread(SYNCHRONIZE, FALSE, thread_id);
   if (!thread)
@@ -132,11 +135,11 @@ DWORD WINAPI PolicyTargetTest_thread_main(void* param) {
 }
 
 // Tests that we can create a new thread, and open it.
-SBOX_TESTS_COMMAND int PolicyTargetTest_thread2(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_thread2(int argc, wchar_t** argv) {
   // Use default values to create a new thread.
   DWORD thread_id;
-  HANDLE thread = ::CreateThread(NULL, 0, &PolicyTargetTest_thread_main, 0, 0,
-                                 &thread_id);
+  HANDLE thread =
+      ::CreateThread(NULL, 0, &PolicyTargetTest_thread_main, 0, 0, &thread_id);
   if (!thread)
     return ::GetLastError();
   if (!::CloseHandle(thread))
@@ -153,7 +156,7 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_thread2(int argc, wchar_t **argv) {
 }
 
 // Tests that we can call CreateProcess.
-SBOX_TESTS_COMMAND int PolicyTargetTest_process(int argc, wchar_t **argv) {
+SBOX_TESTS_COMMAND int PolicyTargetTest_process(int argc, wchar_t** argv) {
   // Use default values to create a new process.
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
@@ -201,17 +204,17 @@ TEST(PolicyTargetTest, OpenThreadTokenEx) {
 
 TEST(PolicyTargetTest, OpenThread) {
   TestRunner runner;
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread")) <<
-      "Opens the current thread";
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread"))
+      << "Opens the current thread";
 
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread2")) <<
-      "Creates a new thread and opens it";
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread2"))
+      << "Creates a new thread and opens it";
 }
 
 TEST(PolicyTargetTest, OpenProcess) {
   TestRunner runner;
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_process")) <<
-      "Opens a process";
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_process"))
+      << "Opens a process";
 }
 
 TEST(PolicyTargetTest, PolicyBaseNoJobLifetime) {

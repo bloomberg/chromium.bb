@@ -4,8 +4,9 @@
 
 // This file contains unit tests for the job object.
 
-#include "base/win/scoped_process_information.h"
 #include "sandbox/win/src/job.h"
+
+#include "base/win/scoped_process_information.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
@@ -20,8 +21,8 @@ TEST(JobTest, TestCreation) {
               job.Init(JOB_LOCKDOWN, L"my_test_job_name", 0, 0));
 
     // check if the job exists.
-    HANDLE job_handle = ::OpenJobObjectW(GENERIC_ALL, FALSE,
-                                         L"my_test_job_name");
+    HANDLE job_handle =
+        ::OpenJobObjectW(GENERIC_ALL, FALSE, L"my_test_job_name");
     ASSERT_TRUE(job_handle != NULL);
 
     if (job_handle)
@@ -50,8 +51,8 @@ TEST(JobTest, Take) {
 
   // Check to be sure that the job is still alive even after the object is gone
   // out of scope.
-  HANDLE job_handle_dup = ::OpenJobObjectW(GENERIC_ALL, FALSE,
-                                           L"my_test_job_name");
+  HANDLE job_handle_dup =
+      ::OpenJobObjectW(GENERIC_ALL, FALSE, L"my_test_job_name");
   ASSERT_TRUE(job_handle_dup != NULL);
 
   // Remove all references.
@@ -82,9 +83,8 @@ TEST(JobTest, TestExceptions) {
 
     JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
     DWORD size = sizeof(jbur);
-    BOOL result = ::QueryInformationJobObject(job_handle.Get(),
-                                              JobObjectBasicUIRestrictions,
-                                              &jbur, size, &size);
+    BOOL result = ::QueryInformationJobObject(
+        job_handle.Get(), JobObjectBasicUIRestrictions, &jbur, size, &size);
     ASSERT_TRUE(result);
 
     ASSERT_EQ(0u, jbur.UIRestrictionsClass & JOB_OBJECT_UILIMIT_READCLIPBOARD);
@@ -103,9 +103,8 @@ TEST(JobTest, TestExceptions) {
 
     JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
     DWORD size = sizeof(jbur);
-    BOOL result = ::QueryInformationJobObject(job_handle.Get(),
-                                              JobObjectBasicUIRestrictions,
-                                              &jbur, size, &size);
+    BOOL result = ::QueryInformationJobObject(
+        job_handle.Get(), JobObjectBasicUIRestrictions, &jbur, size, &size);
     ASSERT_TRUE(result);
 
     ASSERT_EQ(static_cast<DWORD>(JOB_OBJECT_UILIMIT_READCLIPBOARD),
@@ -174,7 +173,7 @@ TEST(JobTest, ProcessInJob) {
   BOOL result = FALSE;
 
   wchar_t notepad[] = L"notepad";
-  STARTUPINFO si = { sizeof(si) };
+  STARTUPINFO si = {sizeof(si)};
   PROCESS_INFORMATION temp_process_info = {};
   result = ::CreateProcess(NULL, notepad, NULL, NULL, FALSE, 0, NULL, NULL, &si,
                            &temp_process_info);
@@ -189,9 +188,8 @@ TEST(JobTest, ProcessInJob) {
   // Check if the process is in the job.
   JOBOBJECT_BASIC_PROCESS_ID_LIST jbpidl = {0};
   DWORD size = sizeof(jbpidl);
-  result = ::QueryInformationJobObject(job_handle.Get(),
-                                       JobObjectBasicProcessIdList,
-                                       &jbpidl, size, &size);
+  result = ::QueryInformationJobObject(
+      job_handle.Get(), JobObjectBasicProcessIdList, &jbpidl, size, &size);
   EXPECT_TRUE(result);
 
   EXPECT_EQ(1u, jbpidl.NumberOfAssignedProcesses);

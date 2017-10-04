@@ -104,8 +104,7 @@ struct ServiceFullThunk {
 #pragma pack(pop)
 
 bool IsService(const void* source) {
-  const ServiceEntry* service =
-      reinterpret_cast<const ServiceEntry*>(source);
+  const ServiceEntry* service = reinterpret_cast<const ServiceEntry*>(source);
 
   return (kMmovR10EcxMovEax == service->mov_r10_rcx_mov_eax &&
           kSyscall == service->syscall && kRetNp == service->ret);
@@ -150,8 +149,8 @@ NTSTATUS ServiceResolverThunk::Setup(const void* target_module,
 
   size_t thunk_bytes = GetThunkSize();
   std::unique_ptr<char[]> thunk_buffer(new char[thunk_bytes]);
-  ServiceFullThunk* thunk = reinterpret_cast<ServiceFullThunk*>(
-                                thunk_buffer.get());
+  ServiceFullThunk* thunk =
+      reinterpret_cast<ServiceFullThunk*>(thunk_buffer.get());
 
   if (!IsFunctionAService(&thunk->original))
     return STATUS_OBJECT_NAME_COLLISION;

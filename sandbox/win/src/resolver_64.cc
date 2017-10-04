@@ -30,13 +30,13 @@ struct InternalThunk {
     jmp_rax = kJmpRax;
     interceptor_function = 0;
   };
-  USHORT mov_rax;       // = 48 B8
+  USHORT mov_rax;  // = 48 B8
   ULONG_PTR interceptor_function;
   USHORT jmp_rax;  // = ff e0
 };
 #pragma pack(pop)
 
-} // namespace.
+}  // namespace.
 
 namespace sandbox {
 
@@ -44,13 +44,14 @@ size_t ResolverThunk::GetInternalThunkSize() const {
   return sizeof(InternalThunk);
 }
 
-bool ResolverThunk::SetInternalThunk(void* storage, size_t storage_bytes,
+bool ResolverThunk::SetInternalThunk(void* storage,
+                                     size_t storage_bytes,
                                      const void* original_function,
                                      const void* interceptor) {
   if (storage_bytes < sizeof(InternalThunk))
     return false;
 
-  InternalThunk* thunk = new(storage) InternalThunk;
+  InternalThunk* thunk = new (storage) InternalThunk;
   thunk->interceptor_function = reinterpret_cast<ULONG_PTR>(interceptor);
 
   return true;

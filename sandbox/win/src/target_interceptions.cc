@@ -15,11 +15,18 @@ SANDBOX_INTERCEPT NtExports g_nt;
 
 // Hooks NtMapViewOfSection to detect the load of DLLs. If hot patching is
 // required for this dll, this functions patches it.
-NTSTATUS WINAPI TargetNtMapViewOfSection(
-    NtMapViewOfSectionFunction orig_MapViewOfSection, HANDLE section,
-    HANDLE process, PVOID *base, ULONG_PTR zero_bits, SIZE_T commit_size,
-    PLARGE_INTEGER offset, PSIZE_T view_size, SECTION_INHERIT inherit,
-    ULONG allocation_type, ULONG protect) {
+NTSTATUS WINAPI
+TargetNtMapViewOfSection(NtMapViewOfSectionFunction orig_MapViewOfSection,
+                         HANDLE section,
+                         HANDLE process,
+                         PVOID* base,
+                         ULONG_PTR zero_bits,
+                         SIZE_T commit_size,
+                         PLARGE_INTEGER offset,
+                         PSIZE_T view_size,
+                         SECTION_INHERIT inherit,
+                         ULONG allocation_type,
+                         ULONG protect) {
   NTSTATUS ret = orig_MapViewOfSection(section, process, base, zero_bits,
                                        commit_size, offset, view_size, inherit,
                                        allocation_type, protect);
@@ -78,9 +85,10 @@ NTSTATUS WINAPI TargetNtMapViewOfSection(
   return ret;
 }
 
-NTSTATUS WINAPI TargetNtUnmapViewOfSection(
-    NtUnmapViewOfSectionFunction orig_UnmapViewOfSection, HANDLE process,
-    PVOID base) {
+NTSTATUS WINAPI
+TargetNtUnmapViewOfSection(NtUnmapViewOfSectionFunction orig_UnmapViewOfSection,
+                           HANDLE process,
+                           PVOID base) {
   NTSTATUS ret = orig_UnmapViewOfSection(process, base);
 
   if (!NT_SUCCESS(ret))

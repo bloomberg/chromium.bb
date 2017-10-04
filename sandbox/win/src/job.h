@@ -63,5 +63,4 @@ class Job {
 
 }  // namespace sandbox
 
-
 #endif  // SANDBOX_SRC_JOB_H_
