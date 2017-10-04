@@ -86,8 +86,8 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
       mojo::MakeRequest(&client);
   viz::ClientLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
-  params.compositor_frame_sink_info = std::move(sink_info);
-  params.client_request = std::move(client_request);
+  params.pipes.compositor_frame_sink_info = std::move(sink_info);
+  params.pipes.client_request = std::move(client_request);
   params.local_surface_id_provider =
       base::MakeUnique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;

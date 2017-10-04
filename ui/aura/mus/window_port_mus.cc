@@ -113,8 +113,8 @@ WindowPortMus::RequestLayerTreeFrameSink(
 
   viz::ClientLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
-  params.compositor_frame_sink_info = std::move(sink_info);
-  params.client_request = std::move(client_request);
+  params.pipes.compositor_frame_sink_info = std::move(sink_info);
+  params.pipes.client_request = std::move(client_request);
   params.hit_test_data_provider =
       base::MakeUnique<HitTestDataProviderAura>(window_);
   params.local_surface_id_provider =

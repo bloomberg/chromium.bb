@@ -4,6 +4,8 @@
 
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -15,9 +17,23 @@
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace viz {
-ClientLayerTreeFrameSink::InitParams::InitParams() {}
 
-ClientLayerTreeFrameSink::InitParams::~InitParams() {}
+ClientLayerTreeFrameSink::InitParams::InitParams() = default;
+
+ClientLayerTreeFrameSink::InitParams::~InitParams() = default;
+
+ClientLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes() = default;
+
+ClientLayerTreeFrameSink::UnboundMessagePipes::~UnboundMessagePipes() = default;
+
+bool ClientLayerTreeFrameSink::UnboundMessagePipes::HasUnbound() const {
+  return client_request.is_pending() &&
+         (compositor_frame_sink_info.is_valid() ^
+          compositor_frame_sink_associated_info.is_valid());
+}
+
+ClientLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes(
+    UnboundMessagePipes&& other) = default;
 
 ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
@@ -31,9 +47,7 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
       local_surface_id_provider_(std::move(params->local_surface_id_provider)),
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
-      compositor_frame_sink_info_(
-          std::move(params->compositor_frame_sink_info)),
-      client_request_(std::move(params->client_request)),
+      pipes_(std::move(params->pipes)),
       client_binding_(this),
       enable_surface_synchronization_(params->enable_surface_synchronization),
       weak_factory_(this) {
@@ -48,9 +62,7 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
       local_surface_id_provider_(std::move(params->local_surface_id_provider)),
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
-      compositor_frame_sink_info_(
-          std::move(params->compositor_frame_sink_info)),
-      client_request_(std::move(params->client_request)),
+      pipes_(std::move(params->pipes)),
       client_binding_(this),
       enable_surface_synchronization_(params->enable_surface_synchronization),
       weak_factory_(this) {
@@ -71,10 +83,20 @@ bool ClientLayerTreeFrameSink::BindToClient(
   if (!cc::LayerTreeFrameSink::BindToClient(client))
     return false;
 
-  compositor_frame_sink_.Bind(std::move(compositor_frame_sink_info_));
-  compositor_frame_sink_.set_connection_error_with_reason_handler(
-      base::Bind(ClientLayerTreeFrameSink::OnMojoConnectionError));
-  client_binding_.Bind(std::move(client_request_));
+  DCHECK(pipes_.HasUnbound());
+  if (pipes_.compositor_frame_sink_info.is_valid()) {
+    compositor_frame_sink_.Bind(std::move(pipes_.compositor_frame_sink_info));
+    compositor_frame_sink_.set_connection_error_with_reason_handler(
+        base::Bind(ClientLayerTreeFrameSink::OnMojoConnectionError));
+    compositor_frame_sink_ptr_ = compositor_frame_sink_.get();
+  } else if (pipes_.compositor_frame_sink_associated_info.is_valid()) {
+    compositor_frame_sink_associated_.Bind(
+        std::move(pipes_.compositor_frame_sink_associated_info));
+    compositor_frame_sink_associated_.set_connection_error_with_reason_handler(
+        base::Bind(ClientLayerTreeFrameSink::OnMojoConnectionError));
+    compositor_frame_sink_ptr_ = compositor_frame_sink_associated_.get();
+  }
+  client_binding_.Bind(std::move(pipes_.client_request));
 
   if (synthetic_begin_frame_source_) {
     client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
@@ -94,6 +116,8 @@ void ClientLayerTreeFrameSink::DetachFromClient() {
   synthetic_begin_frame_source_.reset();
   client_binding_.Close();
   compositor_frame_sink_.reset();
+  compositor_frame_sink_associated_.reset();
+  compositor_frame_sink_ptr_ = nullptr;
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
@@ -107,6 +131,7 @@ void ClientLayerTreeFrameSink::SetLocalSurfaceId(
 
 void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(compositor_frame_sink_ptr_);
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
@@ -127,16 +152,17 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   if (hit_test_data_provider_)
     hit_test_region_list = hit_test_data_provider_->GetHitTestData();
 
-  compositor_frame_sink_->SubmitCompositorFrame(
+  compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),
       tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()
                       : 0);
 }
 
 void ClientLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
+  DCHECK(compositor_frame_sink_ptr_);
   DCHECK(!ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
-  compositor_frame_sink_->DidNotProduceFrame(ack);
+  compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
 }
 
 void ClientLayerTreeFrameSink::DidReceiveCompositorFrameAck(
@@ -170,8 +196,9 @@ void ClientLayerTreeFrameSink::ReclaimResources(
 }
 
 void ClientLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  DCHECK(compositor_frame_sink_ptr_);
   needs_begin_frames_ = needs_begin_frames;
-  compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
+  compositor_frame_sink_ptr_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 // static
