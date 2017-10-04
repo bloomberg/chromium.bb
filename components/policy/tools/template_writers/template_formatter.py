@@ -90,6 +90,21 @@ def _GetWriterConfiguration(grit_defines):
     grit_defines_dict[parts[0]] = parts[1] if len(parts) > 1 else 1
   return writer_configuration.GetConfigurationForBuild(grit_defines_dict)
 
+def _ParseVersionFile(version_path):
+  '''Parse version file, return major version if it exists.
+
+  Args:
+    version_path: The path of Chrome VERSION file containing the major version
+                  number.
+  '''
+
+  with open(version_path) as fp:
+    for line in fp:
+      key,_,major_version = line.partition('=')
+      if key.strip() == 'MAJOR':
+        return int(major_version.strip())
+  return None
+
 
 def main(argv):
   '''Main policy template conversion script.
@@ -120,6 +135,7 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--translations', dest='translations')
   parser.add_option('--languages', dest='languages')
+  parser.add_option('--version_path', dest='version_path')
   parser.add_option('--adm', action='append', dest='adm')
   parser.add_option('--adml', action='append', dest='adml')
   parser.add_option('--admx', action='append', dest='admx')
@@ -138,13 +154,14 @@ def main(argv):
   parser.add_option('-t', action='append', dest='grit_target')
   options, args = parser.parse_args(argv[1:])
 
-  _LANG_PLACEHOLDER = "${lang}";
+  _LANG_PLACEHOLDER = "${lang}"
   assert _LANG_PLACEHOLDER in options.translations
 
   languages = filter(bool, options.languages.split(','))
   assert _DEFAULT_LANGUAGE in languages
 
-  config = _GetWriterConfiguration(options.grit_defines);
+  config = _GetWriterConfiguration(options.grit_defines)
+  config['major_version'] = _ParseVersionFile(options.version_path)
 
   # For each language, load policy data once and run all writers on it.
   for lang in languages:

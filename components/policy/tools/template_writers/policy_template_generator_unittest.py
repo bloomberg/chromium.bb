@@ -340,7 +340,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     # be used later for assertions.
     class LocalMockWriter(mock_writer.MockWriter):
       def __init__(self, platforms):
-        self.platforms = platforms
+        super(LocalMockWriter, self).__init__(platforms)
         self.policy_name = None
         self.result_list = []
       def BeginPolicyGroup(self, group):
