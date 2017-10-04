@@ -181,9 +181,10 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
     : profile_(base::MakeUnique<TestingProfile>()),
-      db_task_runner_(new base::TestSimpleTaskRunner()),
-      mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>(
-          db_task_runner_)) {}
+      db_task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
+      mock_tables_(
+          base::MakeRefCounted<StrictMock<MockResourcePrefetchPredictorTables>>(
+              db_task_runner_)) {}
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() = default;
 

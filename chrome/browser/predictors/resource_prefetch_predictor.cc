@@ -62,6 +62,7 @@ void InitializeOriginStatFromOriginRequestSummary(
 // Used to fetch the visit count for a URL from the History database.
 class GetUrlVisitCountTask : public history::HistoryDBTask {
  public:
+  ~GetUrlVisitCountTask() override;
   typedef base::OnceCallback<void(size_t,  // URL visit count.
                                   const PageRequestSummary&)>
       VisitInfoCallback;
@@ -75,8 +76,6 @@ class GetUrlVisitCountTask : public history::HistoryDBTask {
   void DoneRunOnMainThread() override;
 
  private:
-  ~GetUrlVisitCountTask() override;
-
   int visit_count_;
   std::unique_ptr<PageRequestSummary> summary_;
   VisitInfoCallback callback_;
@@ -287,10 +286,10 @@ void ResourcePrefetchPredictor::RecordPageRequestSummary(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(history_service);
     history_service->ScheduleDBTask(
-        std::unique_ptr<history::HistoryDBTask>(new GetUrlVisitCountTask(
+        std::make_unique<GetUrlVisitCountTask>(
             std::move(summary),
             base::BindOnce(&ResourcePrefetchPredictor::OnVisitCountLookup,
-                           weak_factory_.GetWeakPtr()))),
+                           weak_factory_.GetWeakPtr())),
         &history_lookup_consumer_);
   } else {
     // We won't record the URL data anyway so avoid the hop to the history
