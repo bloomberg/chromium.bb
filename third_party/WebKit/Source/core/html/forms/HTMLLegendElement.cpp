@@ -22,13 +22,13 @@
  *
  */
 
-#include "core/html/HTMLLegendElement.h"
+#include "core/html/forms/HTMLLegendElement.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFieldSetElement.h"
 
 namespace blink {
 
@@ -59,9 +59,10 @@ void HTMLLegendElement::focus(const FocusParams& params) {
   }
 
   // To match other browsers' behavior, never restore previous selection.
-  if (HTMLFormControlElement* control = AssociatedControl())
+  if (HTMLFormControlElement* control = AssociatedControl()) {
     control->focus(FocusParams(SelectionBehaviorOnFocus::kReset, params.type,
                                params.source_capabilities));
+  }
 }
 
 void HTMLLegendElement::AccessKeyAction(bool send_mouse_events) {

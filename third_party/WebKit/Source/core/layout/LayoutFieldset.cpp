@@ -25,7 +25,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
-#include "core/html/HTMLLegendElement.h"
+#include "core/html/forms/HTMLLegendElement.h"
 #include "core/paint/FieldsetPainter.h"
 
 namespace blink {
