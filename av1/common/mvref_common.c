@@ -424,8 +424,10 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         int_mv this_refmv = prev_frame_mvs->mfmv[ref_frame - LAST_FRAME][i];
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
 
-        if (abs(this_refmv.as_mv.row) >= 16 || abs(this_refmv.as_mv.col) >= 16)
-          mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+        if (blk_row == 0 && blk_col == 0)
+          if (abs(this_refmv.as_mv.row) >= 16 ||
+              abs(this_refmv.as_mv.col) >= 16)
+            mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
 
         for (idx = 0; idx < *refmv_count; ++idx)
           if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
@@ -458,10 +460,12 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
         lower_mv_precision(&comp_refmv.as_mv, cm->allow_high_precision_mv);
 
-        if (abs(this_refmv.as_mv.row) >= 16 ||
-            abs(this_refmv.as_mv.col) >= 16 ||
-            abs(comp_refmv.as_mv.row) >= 16 || abs(comp_refmv.as_mv.col) >= 16)
-          mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+        if (blk_row == 0 && blk_col == 0)
+          if (abs(this_refmv.as_mv.row) >= 16 ||
+              abs(this_refmv.as_mv.col) >= 16 ||
+              abs(comp_refmv.as_mv.row) >= 16 ||
+              abs(comp_refmv.as_mv.col) >= 16)
+            mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
 
         for (idx = 0; idx < *refmv_count; ++idx)
           if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
@@ -527,8 +531,14 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
 #else
       lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
 #endif
-      if (abs(this_refmv.as_mv.row) >= 16 || abs(this_refmv.as_mv.col) >= 16)
-        mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+
+#if CONFIG_OPT_REF_MV
+      if (blk_row == 0 && blk_col == 0)
+#endif
+      {
+        if (abs(this_refmv.as_mv.row) >= 16 || abs(this_refmv.as_mv.col) >= 16)
+          mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+      }
 
       for (idx = 0; idx < *refmv_count; ++idx)
         if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int) break;
@@ -645,9 +655,10 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_size_high[BLOCK_8X8]) {
     for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_size_wide[BLOCK_8X8]) {
-      coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
-                                       mi_col, ref_frame, blk_row, blk_col,
-                                       refmv_count, ref_mv_stack, mode_context);
+      int is_available = add_tpl_ref_mv(
+          cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
+          blk_col, refmv_count, ref_mv_stack, mode_context);
+      if (blk_row == 0 && blk_col == 0) coll_blk_count = is_available;
     }
   }
 
@@ -663,7 +674,6 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                      mi_col, ref_frame, blk_row, blk_col,
                                      refmv_count, ref_mv_stack, mode_context);
   }
-
 #else
 #if CONFIG_TEMPMV_SIGNALING
   if (cm->use_prev_frame_mvs && rf[1] == NONE_FRAME)
@@ -693,9 +703,14 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_step) {
       for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_step) {
-        coll_blk_count += add_col_ref_mv(
+        int is_available = add_col_ref_mv(
             cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
             blk_col, refmv_count, ref_mv_stack, mode_context);
+#if CONFIG_OPT_REF_MV
+        if (blk_row == 0 && blk_col == 0) coll_blk_count = is_available;
+#else
+        coll_blk_count += is_available;
+#endif
       }
     }
 
