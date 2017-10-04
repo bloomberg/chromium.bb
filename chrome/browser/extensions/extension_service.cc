@@ -923,6 +923,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 void ExtensionService::DisableExtension(const std::string& extension_id,
                                         int disable_reasons) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(extensions::disable_reason::DISABLE_NONE, disable_reasons);
 
   if (extension_prefs_->IsExtensionBlacklisted(extension_id))
     return;
@@ -949,18 +950,20 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
                          extension, nullptr) &&
                      extension->location() != Manifest::EXTERNAL_COMPONENT));
 
-  // Certain disable reasons are always allowed, since they are more internal to
-  // chrome (rather than the user choosing to disable the extension).
-  int internal_disable_reason_mask =
-      extensions::disable_reason::DISABLE_RELOAD |
-      extensions::disable_reason::DISABLE_CORRUPTED |
-      extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY |
-      extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY;
-  bool is_internal_disable =
-      (disable_reasons & internal_disable_reason_mask) > 0;
+  if (is_controlled_extension) {
+    // Remove disallowed disable reasons.
+    // Certain disable reasons are always allowed, since they are more internal
+    // to chrome (rather than the user choosing to disable the extension).
+    int internal_disable_reason_mask =
+        extensions::disable_reason::DISABLE_RELOAD |
+        extensions::disable_reason::DISABLE_CORRUPTED |
+        extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY |
+        extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY;
+    disable_reasons &= internal_disable_reason_mask;
 
-  if (!is_internal_disable && is_controlled_extension)
-    return;
+    if (disable_reasons == extensions::disable_reason::DISABLE_NONE)
+      return;
+  }
 
   extension_prefs_->SetExtensionDisabled(extension_id, disable_reasons);
 

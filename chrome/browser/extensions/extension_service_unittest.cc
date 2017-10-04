@@ -4000,6 +4000,20 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsDisable) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(service()->GetExtensionById(good_crx, false));
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
+  EXPECT_EQ(extensions::disable_reason::DISABLE_NONE,
+            ExtensionPrefs::Get(profile())->GetDisableReasons(good_crx));
+
+  // Internal disable reasons are allowed.
+  service()->DisableExtension(
+      good_crx, extensions::disable_reason::DISABLE_CORRUPTED |
+                    extensions::disable_reason::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(0u, registry()->enabled_extensions().size());
+  EXPECT_EQ(1u, registry()->disabled_extensions().size());
+  EXPECT_TRUE(service()->GetExtensionById(good_crx, true));
+  EXPECT_FALSE(service()->GetExtensionById(good_crx, false));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_CORRUPTED,
+            ExtensionPrefs::Get(profile())->GetDisableReasons(good_crx));
 }
 
 // Tests uninstalling an extension when prohibited by the ManagementPolicy.

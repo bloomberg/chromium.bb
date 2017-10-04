@@ -1286,7 +1286,7 @@ TEST_F(ExtensionMessageBubbleTest,
   controller->HighlightExtensionsIfNecessary();
   EXPECT_TRUE(model->is_highlighting());
   set_browser(nullptr);
-  service_->DisableExtension(kId1, disable_reason::DISABLE_NONE);
+  service_->DisableExtension(kId1, disable_reason::DISABLE_USER_ACTION);
   EXPECT_FALSE(model->is_highlighting());
   controller.reset();
 }

@@ -171,7 +171,7 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
 
 TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
   service_->DisableExtension(kHostedAppId,
-                             extensions::disable_reason::DISABLE_NONE);
+                             extensions::disable_reason::DISABLE_USER_ACTION);
   EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
   service_->EnableExtension(kHostedAppId);
