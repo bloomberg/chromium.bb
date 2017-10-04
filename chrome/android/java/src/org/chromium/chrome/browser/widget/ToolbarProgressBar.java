@@ -4,14 +4,18 @@
 
 package org.chromium.chrome.browser.widget;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
+import android.animation.TimeInterpolator;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.view.ViewCompat;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ProgressBar;
 
@@ -61,7 +65,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private static final float THEMED_BACKGROUND_WHITE_FRACTION = 0.2f;
     private static final float ANIMATION_WHITE_FRACTION = 0.4f;
 
-    private static final long PROGRESS_THROTTLE_UPDATE_INTERVAL = 50;
+    private static final long PROGRESS_THROTTLE_UPDATE_INTERVAL = 30;
+    private static final float PROGRESS_THROTTLE_MAX_UPDATE_AMOUNT = 0.03f;
 
     private static final long PROGRESS_FRAME_TIME_CAP_MS = 50;
     private long mAlphaAnimationDurationMs = 140;
@@ -166,18 +171,51 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     }
 
     /** A {@link TimeListener} responsible for updating progress once throttling has started. */
-    private final class ThrottleTimeListener implements TimeListener {
-        /** The time the throttled progress animator was last updated. */
-        private float mLastUpdateTime;
+    private final class ThrottleTimeListener
+            extends AnimatorListenerAdapter implements TimeListener {
+        /** Time interpolator for progress updates. */
+        private final TimeInterpolator mAccelerateInterpolator = new AccelerateInterpolator();
 
         /** The target progress for the throttle animator. */
         private float mThrottledProgressTarget;
 
+        /** The number of increments expected to reach the target progress since the last update. */
+        private int mExpectedIncrements;
+
+        /** Keeps track of the increment count since the last progress update. */
+        private int mCurrentIncrementCount;
+
+        /** The duration the progress update should take to complete. */
+        private long mExpectedDuration;
+
+        /** The amount of time until the next update. */
+        private long mNextUpdateTime;
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+            float progressDiff = mThrottledProgressTarget - getProgress();
+            mExpectedIncrements =
+                    (int) Math.ceil(progressDiff / PROGRESS_THROTTLE_MAX_UPDATE_AMOUNT);
+            mExpectedIncrements = Math.max(mExpectedIncrements, 1);
+            mCurrentIncrementCount = 0;
+            mNextUpdateTime = 0;
+            mExpectedDuration = PROGRESS_THROTTLE_UPDATE_INTERVAL * mExpectedIncrements;
+        }
+
         @Override
         public void onTimeUpdate(TimeAnimator animation, long totalTime, long deltaTime) {
-            if (totalTime - mLastUpdateTime < PROGRESS_THROTTLE_UPDATE_INTERVAL) return;
-            mLastUpdateTime = totalTime;
-            float updatedProgress = getProgress() + 0.05f;
+            if (totalTime < mNextUpdateTime || mExpectedIncrements <= 0) return;
+
+            mCurrentIncrementCount++;
+
+            float completionFraction = mCurrentIncrementCount / (float) mExpectedIncrements;
+
+            // This uses an accelerate interpolator to produce progressively longer times so the
+            // progress bar appears to slow down.
+            mNextUpdateTime = (long) (mAccelerateInterpolator.getInterpolation(completionFraction)
+                    * mExpectedDuration);
+
+            float updatedProgress = getProgress() + PROGRESS_THROTTLE_MAX_UPDATE_AMOUNT;
             setProgressInternal(MathUtils.clamp(updatedProgress, 0f, mThrottledProgressTarget));
 
             if (updatedProgress >= mThrottledProgressTarget) animation.end();
@@ -405,19 +443,18 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.PROGRESS_BAR_THROTTLE)) {
             mProgressThrottle = new TimeAnimator();
             mProgressThrottleListener = new ThrottleTimeListener();
+            mProgressThrottle.addListener(mProgressThrottleListener);
             mProgressThrottle.setTimeListener(mProgressThrottleListener);
         }
 
         // Throttle progress if the increment was greater than 5%.
         if (mProgressThrottle != null
-                && (progress - getProgress() > 0.05f || mProgressThrottle.isRunning())) {
+                && (progress - getProgress() > PROGRESS_THROTTLE_MAX_UPDATE_AMOUNT
+                           || mProgressThrottle.isRunning())) {
             mProgressThrottleListener.mThrottledProgressTarget = progress;
 
-            if (!mProgressThrottle.isRunning()) {
-                mProgressThrottleListener.mLastUpdateTime = 0;
-                mProgressThrottle.start();
-                setProgressInternal(getProgress() + 0.05f);
-            }
+            mProgressThrottle.cancel();
+            mProgressThrottle.start();
         } else {
             setProgressInternal(progress);
         }
