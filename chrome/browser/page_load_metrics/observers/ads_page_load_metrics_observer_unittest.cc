@@ -32,14 +32,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/cancelling_navigation_throttle.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/host_port_pair.h"
 #include "url/gurl.h"
 
-using content::CancellingNavigationThrottle;
+using content::TestNavigationThrottle;
 using content::RenderFrameHost;
 using content::RenderFrameHostTester;
 using content::NavigationSimulator;
@@ -67,7 +67,7 @@ const char kNonAdName[] = "foo";
 // Asynchronously cancels the navigation at WillProcessResponse. Before
 // cancelling, simulates loading a main frame resource.
 class ResourceLoadingCancellingThrottle
-    : public content::CancellingNavigationThrottle {
+    : public content::TestNavigationThrottle {
  public:
   static std::unique_ptr<content::NavigationThrottle> Create(
       content::NavigationHandle* handle) {
@@ -76,14 +76,18 @@ class ResourceLoadingCancellingThrottle
 
   explicit ResourceLoadingCancellingThrottle(
       content::NavigationHandle* navigation_handle)
-      : content::CancellingNavigationThrottle(
-            navigation_handle,
-            CancellingNavigationThrottle::WILL_PROCESS_RESPONSE,
-            CancellingNavigationThrottle::ASYNCHRONOUS) {}
+      : content::TestNavigationThrottle(navigation_handle) {
+    SetResponse(TestNavigationThrottle::WILL_PROCESS_RESPONSE,
+                TestNavigationThrottle::ASYNCHRONOUS, CANCEL);
+  }
 
  private:
-  // content::CancellingNavigationThrottle:
-  void OnWillCancel() override {
+  // content::TestNavigationThrottle:
+  void OnWillRespond(NavigationThrottle::ThrottleCheckResult result) {
+    if (result.action() != CANCEL) {
+      return;
+    }
+
     auto* observer =
         page_load_metrics::MetricsWebContentsObserver::FromWebContents(
             navigation_handle()->GetWebContents());
