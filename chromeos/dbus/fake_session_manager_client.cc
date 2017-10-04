@@ -225,9 +225,13 @@ void FakeSessionManagerClient::StorePolicyForUser(
     const cryptohome::Identification& cryptohome_id,
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
-  user_policies_[cryptohome_id] = policy_blob;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+  bool result = false;
+  if (store_user_policy_success_) {
+    user_policies_[cryptohome_id] = policy_blob;
+    result = true;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, result));
 }
 
 void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
