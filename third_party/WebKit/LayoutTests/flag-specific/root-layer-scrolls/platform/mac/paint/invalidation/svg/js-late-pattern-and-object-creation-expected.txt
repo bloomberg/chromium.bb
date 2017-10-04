@@ -1,0 +1,112 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [0, 14, 678, 366],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 246, 678, 134],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 246, 678, 134],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 129, 520, 135],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 129, 520, 135],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 14, 367, 131],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 14, 367, 131],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "appeared"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on fill'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "appeared"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on stroke'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "appeared"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on fill/stroke'",
+      "reason": "appeared"
+    }
+  ]
+}
+

@@ -1,0 +1,77 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) SPAN",
+          "rect": [305, 35, 296, 18],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [305, 35, 296, 18],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) SPAN",
+          "rect": [153, 35, 296, 18],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [153, 35, 296, 18],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (floating) SPAN",
+      "reason": "appeared"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) SPAN",
+      "reason": "appeared"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+      "reason": "appeared"
+    }
+  ]
+}
+

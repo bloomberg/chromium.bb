@@ -1,0 +1,58 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [548, 191, 23, 36],
+          "reason": "selection"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='lrblock'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='basic d1 vert'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\u7B2C\u4E00\u6BB5\u843D paragraph 1'",
+      "reason": "selection"
+    }
+  ]
+}
+

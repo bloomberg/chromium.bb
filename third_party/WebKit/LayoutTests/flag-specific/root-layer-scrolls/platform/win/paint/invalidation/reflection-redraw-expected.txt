@@ -1,0 +1,109 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [381, 267, 284, 59],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [71, 267, 284, 59],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [306, 34, 124, 182],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [306, 377, 124, 156],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this text'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'in the reflection'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'should be green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this text'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'in the reflection'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'should be green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this text'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'in the reflection'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'should be green'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'The color of this text'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'in the reflection'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'should be green'",
+      "reason": "style change"
+    }
+  ]
+}
+
