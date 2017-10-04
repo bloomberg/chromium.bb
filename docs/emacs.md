@@ -4,7 +4,7 @@
 
 ## Debugging
 
-[Linux Debugging](linux_debugging.md) has some emacs-specific debugging tips.
+[Linux Debugging](linux_debugging.md) has some Emacs-specific debugging tips.
 
 
 ## Blink Style (WebKit)
