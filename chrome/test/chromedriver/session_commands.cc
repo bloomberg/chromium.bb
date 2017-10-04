@@ -750,6 +750,46 @@ Status ExecuteSetNetworkConnection(Session* session,
   return Status(kOk);
 }
 
+Status ExecuteGetWindowRect(Session* session,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value) {
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
+
+  int x, y;
+  int width, height;
+
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo) {
+    status = desktop->GetWindowPosition(session->window, &x, &y);
+    if (status.IsError())
+      return status;
+    status = desktop->GetWindowSize(session->window, &width, &height);
+  } else {
+    AutomationExtension* extension = NULL;
+    status =
+        desktop->GetAutomationExtension(&extension, session->w3c_compliant);
+    if (status.IsError())
+      return status;
+
+    status = extension->GetWindowPosition(&x, &y);
+    if (status.IsError())
+      return status;
+    status = extension->GetWindowSize(&width, &height);
+  }
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue rect;
+  rect.SetInteger("x", x);
+  rect.SetInteger("y", y);
+  rect.SetInteger("width", width);
+  rect.SetInteger("height", height);
+  value->reset(rect.DeepCopy());
+  return Status(kOk);
+}
+
 Status ExecuteGetWindowPosition(Session* session,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
