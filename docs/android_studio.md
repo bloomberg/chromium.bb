@@ -8,7 +8,7 @@ Make sure you have followed
 [android build instructions](android_build_instructions.md) already.
 
 ```shell
-build/android/gradle/generate_gradle.py
+build/android/gradle/generate_gradle.py [--canary]  # Use --canary for Android Studio 3.0 beta
 ```
 
 This creates a project at `out/Debug/gradle`. To create elsewhere:
@@ -36,6 +36,14 @@ To import the project:
 * Use "Import Project", and select the directory containing the generated
   project, by default `out/Debug/gradle`.
 
+If you're asked to use Studio's Android SDK:
+
+* No.
+
+If you're asked to use Studio's Gradle wrapper:
+
+* Yes.
+
 You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
 
 * After regenerating, Android Studio should prompt you to "Sync". If it
@@ -43,10 +51,6 @@ You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
     * Button with two arrows on the right side of the top strip.
     * Help -&gt; Find Action -&gt; "Sync Project with Gradle Files"
     * After `gn clean` you may need to restart Android Studio.
-
-* You can try out Android Studio canary by adding `--canary` to your
-  `generate_gradle.py` call, but as it is canary, expect to have to make manual
-  adjustments when building/syncing.
 
 ## How It Works
 
@@ -83,6 +87,7 @@ includes `R.java`).
 
 ## Android Studio Tips
 
+* Using the Java debugger is documented at [android_debugging_instructions.md#android-studio](android_debugging_instructions.md#android-studio).
 * Configuration instructions can be found
   [here](http://tools.android.com/tech-docs/configuration). One suggestions:
     * Launch it with more RAM:
@@ -140,11 +145,11 @@ resources, native libraries, etc.
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`,
       creating it if necessary.
 
-## Status (as of April 27th, 2017)
+## Status (as of Oct, 2017)
 
 ### What works
 
-* Android Studio v2.3.
+* Android Studio v2.3, and v3.0 beta with `--canary` flag.
 * Java editing and gradle compile.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
@@ -158,5 +163,5 @@ resources, native libraries, etc.
 
 * Gradle being aware of assets.
 * Layout editor.
-* Add support for native code editing.
-* Make the "Make Project" button work correctly.
+* Native code editing.
+* Having the "Make Project" button work correctly.
