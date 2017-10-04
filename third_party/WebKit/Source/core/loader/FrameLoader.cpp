@@ -962,8 +962,7 @@ void FrameLoader::StopAllLoaders() {
   // It's possible that the above actions won't have stopped loading if load
   // completion had been blocked on parsing or if we were in the middle of
   // committing an empty document. In that case, emulate a failed navigation.
-  if (!provisional_document_loader_ && document_loader_ &&
-      frame_->IsLoading()) {
+  if (document_loader_ && !document_loader_->SentDidFinishLoad()) {
     document_loader_->LoadFailed(
         ResourceError::CancelledError(document_loader_->Url()));
   }

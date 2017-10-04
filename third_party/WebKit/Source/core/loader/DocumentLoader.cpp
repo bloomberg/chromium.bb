@@ -399,11 +399,8 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
 }
 
 void DocumentLoader::LoadFailed(const ResourceError& error) {
-  if (!error.IsCancellation() && frame_->Owner()) {
-    // FIXME: For now, fallback content doesn't work cross process.
-    if (frame_->Owner()->IsLocal())
-      frame_->DeprecatedLocalOwner()->RenderFallbackContent();
-  }
+  if (!error.IsCancellation() && frame_->Owner())
+    frame_->Owner()->RenderFallbackContent();
   fetcher_->ClearResourcesFromPreviousFetcher();
 
   HistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
@@ -424,12 +421,10 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
         frame_->GetDocument()->Parser()->StopParsing();
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
-      if (frame_)
-        frame_->GetDocument()->CheckCompleted();
+      GetFrameLoader().DidFinishNavigation();
       break;
     case kSentDidFinishLoad:
-      // TODO(japhet): Why do we need to call DidFinishNavigation() again?
-      GetFrameLoader().DidFinishNavigation();
+      NOTREACHED();
       break;
   }
   DCHECK_EQ(kSentDidFinishLoad, state_);
