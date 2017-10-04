@@ -299,32 +299,53 @@ const char kPhoneExtensionRe[] =
     "|ramal";  // pt-BR, pt-PT
 const char kUPIVirtualPaymentAddressRe[] =
     "^\\w+@("
-    "upi|"         // BHIM Bharat Interface for Money
-    "allbank|"     // Allahabad Bank UPI
-    "andb|"        // Andhra Bank ONE
-    "axisbank|"    // Axis Pay
-    "barodampay|"  // Baroda MPay
-    "mahb|"        // MAHAUPI
-    "cnrb|"        // Canara Bank UPI - Empower
-    "csbpay|"      // CSB UPI
-    "dcb|"         // DCB Bank
-    "federal|"     // Lotza
-    "hdfcbank|"    // HDFC Bank MobileBanking
-    "pockets|"     // Pockets- ICICI Bank
-    "icici|"       // Pockets- ICICI Bank
-    "idfcbank|"    // IDFC Bank UPI App
-    "indus|"       // Indus Pay
-    "kbl|"         // KBL Smartz
-    "kaypay|"      // KayPay
-    "pnb|"         // PNB UPI
-    "sib|"         // SIB M-Pay (UPI Pay)
-    "sbi|"         // SBI Pay
-    "tjsp|"        // TranZapp
-    "uco|"         // UCO UPI
-    "unionbank|"   // Union Bank UPI
-    "united|"      // United UPI
-    "vijb|"        // Vijaya UPI App
-    "ybl"          // Yes Pay
+    "allbank|"      // Allahabad Bank UPI
+    "andb|"         // Andhra Bank ONE
+    "axisbank|"     // Axis Pay
+    "barodampay|"   // Baroda MPay
+    "centralbank|"  // Cent UPI
+    "cnrb|"         // Canara Bank UPI - Empower
+    "csbpay|"       // CSB UPI
+    "dbs|"          // digibank by DBS
+    "dcb|"          // DCB Bank
+    "denabank|"     // Dena Bank E-UPI
+    "fbl|"          // Cointab
+    "federal|"      // Lotza
+    "hdfcbank|"     // HDFC Bank MobileBanking
+    "hsbc|"         // HSBC Simply Pay
+    "icici|"        // Pockets- ICICI Bank
+    "idbi|"         // PayWiz
+    "idfcbank|"     // IDFC Bank UPI App
+    "indianbank|"   // Indian Bank UPI
+    "indus|"        // Indus Pay
+    "iob|"          // IOB UPI
+    "kaypay|"       // KayPay
+    "kbl|"          // KBL Smartz
+    "kotak|"        // kotak Mahindra Bank
+    "kvb|"          // KVB Upay
+    "lvb|"          // LVB UPay
+    "mahb|"         // MAHAUPI
+    "obc|"          // Oriental BHIM UPI
+    "pingpay|"      // Samsung Pay
+    "pnb|"          // PNB UPI
+    "pockets|"      // Pockets- ICICI Bank
+    "psb|"          // PSB UPI App
+    "rbl|"          // RBL Pay
+    "sbi|"          // SBI Pay
+    "scb|"          // Standard Chartered
+    "sib|"          // SIB M-Pay (UPI Pay)
+    "syndicate|"    // Synd UPI
+    "tjsp|"         // TranZapp
+    "ubi|"          // United UPI
+    "uboi|"         // Union Bank UPI
+    "uco|"          // UCO UPI
+    "unionbank|"    // Union Bank UPI
+    "united|"       // United UPI
+    "upi|"          // BHIM Bharat Interface for Money
+    "utbi|"         // United UPI
+    "vijb|"         // Vijaya UPI App
+    "ybl|"          // Yes Pay
+    "yesbank"       // NuPay
     ")$";
 
 }  // namespace autofill
