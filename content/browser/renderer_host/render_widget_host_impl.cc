@@ -363,15 +363,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   latency_tracker_.SetDelegate(delegate_);
   DCHECK(base::TaskScheduler::GetInstance())
       << "Ref. Prerequisite section of post_task.h";
-#if defined(OS_WIN)
-  // Update the display color profile cache so that it is likely to be up to
-  // date when the renderer process requests the color profile.
-  if (gfx::ICCProfile::CachedProfilesNeedUpdate()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&gfx::ICCProfile::UpdateCachedProfilesOnBackgroundThread));
-  }
-#endif
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(

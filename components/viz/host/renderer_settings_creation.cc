@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/color_space_switches.h"
 
 namespace viz {
 
@@ -59,8 +58,6 @@ RendererSettings CreateRendererSettings(
           switches::kGlCompositedOverlayCandidateQuadBorder);
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
-  renderer_settings.enable_color_correct_rendering =
-      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   renderer_settings.resource_settings = CreateResourceSettings(image_targets);
   renderer_settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);

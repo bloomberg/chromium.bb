@@ -1399,9 +1399,6 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
 
 gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
   gfx::ColorSpace result;
-  if (!settings_.enable_color_correct_rasterization)
-    return result;
-
   // The pending tree will have the most recently updated color space, so
   // prefer that.
   if (pending_tree_)
@@ -2634,7 +2631,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
       layer_tree_frame_sink_->shared_bitmap_manager(),
       layer_tree_frame_sink_->gpu_memory_buffer_manager(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
-      settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
   // Since the new context may be capable of MSAA, update status here. We don't

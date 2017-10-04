@@ -12978,13 +12978,6 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   EXPECT_EQ(expected_invalidation, *(root->GetPendingInvalidation()));
 }
 
-TEST_F(LayerTreeHostImplTest, RasterColorSpaceNoColorCorrection) {
-  LayerTreeSettings settings = DefaultSettings();
-  settings.enable_color_correct_rasterization = false;
-  CreateHostImpl(settings, CreateLayerTreeFrameSink());
-  EXPECT_FALSE(host_impl_->GetRasterColorSpace().IsValid());
-}
-
 TEST_F(LayerTreeHostImplTest, RasterColorSpace) {
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
@@ -12999,7 +12992,6 @@ TEST_F(LayerTreeHostImplTest, RasterColorSpace) {
 
 TEST_F(LayerTreeHostImplTest, RasterColorSpaceSoftware) {
   LayerTreeSettings settings = DefaultSettings();
-  settings.enable_color_correct_rasterization = true;
   CreateHostImpl(settings, FakeLayerTreeFrameSink::CreateSoftware());
   // Software composited resources should always use sRGB as their color space.
   EXPECT_EQ(host_impl_->GetRasterColorSpace(), gfx::ColorSpace::CreateSRGB());

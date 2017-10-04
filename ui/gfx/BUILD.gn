@@ -410,13 +410,10 @@ component("color_space") {
     "icc_profile.cc",
     "icc_profile.h",
     "icc_profile_mac.mm",
-    "icc_profile_win.cc",
-    "icc_profile_x11.cc",
     "skia_color_space_util.cc",
     "skia_color_space_util.h",
   ]
   public_deps = [
-    ":gfx_switches",
     "//base",
     "//skia",
   ]
@@ -431,8 +428,6 @@ component("color_space") {
       "//ui/gfx/x",
     ]
     configs += [ "//build/config/linux:x11" ]
-  } else {
-    sources -= [ "icc_profile_x11.cc" ]
   }
   defines = [ "COLOR_SPACE_IMPLEMENTATION" ]
 }
@@ -555,7 +550,6 @@ source_set("memory_buffer_sources") {
   ]
 
   deps = [
-    ":gfx_switches",
     ":native_widget_types",
     "//base",
     "//ui/gfx/geometry",
@@ -573,15 +567,9 @@ source_set("memory_buffer_sources") {
   }
 }
 
-# TODO(ccameron): This should not be a separate component. Once the flag for
-# color correct rendering is removed, color_space_switches.h may be moved
-# into color_space (since it will be included in fewer places), and once the
-# "best monitor color profile" function is removed, switches.h may be moved
-# back into its own source_set.
+# TODO(ccameron): This can be moved into a separate source_set.
 component("gfx_switches") {
   sources = [
-    "color_space_switches.cc",
-    "color_space_switches.h",
     "switches.cc",
     "switches.h",
     "switches_export.h",

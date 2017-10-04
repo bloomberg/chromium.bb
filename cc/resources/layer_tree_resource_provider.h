@@ -22,7 +22,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
       viz::SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       bool delegated_sync_points_required,
-      bool enable_color_correct_rasterization,
       const viz::ResourceSettings& resource_settings);
   ~LayerTreeResourceProvider() override;
 
@@ -54,8 +53,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
                                    viz::ResourceId resource_id);
     ~ScopedWriteLockGpuMemoryBuffer();
     gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
-    // Will return the invalid color space unless
-    // |enable_color_correct_rasterization| is true.
     const gfx::ColorSpace& color_space_for_raster() const {
       return color_space_;
     }

@@ -75,7 +75,6 @@
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
 
@@ -193,17 +192,14 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
   attributes.samples = 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
-
-  if (base::FeatureList::IsEnabled(features::kColorCorrectRendering)) {
-    if (display_color_space == gfx::ColorSpace::CreateSRGB()) {
-      attributes.color_space = gpu::gles2::COLOR_SPACE_SRGB;
-    } else if (display_color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
-      attributes.color_space = gpu::gles2::COLOR_SPACE_DISPLAY_P3;
-    } else {
-      attributes.color_space = gpu::gles2::COLOR_SPACE_UNSPECIFIED;
-      DLOG(ERROR) << "Android color space is neither sRGB nor P3, output color "
-                     "will be incorrect.";
-    }
+  if (display_color_space == gfx::ColorSpace::CreateSRGB()) {
+    attributes.color_space = gpu::gles2::COLOR_SPACE_SRGB;
+  } else if (display_color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
+    attributes.color_space = gpu::gles2::COLOR_SPACE_DISPLAY_P3;
+  } else {
+    attributes.color_space = gpu::gles2::COLOR_SPACE_UNSPECIFIED;
+    DLOG(ERROR) << "Android color space is neither sRGB nor P3, output color "
+                   "will be incorrect.";
   }
 
   if (requires_alpha_channel) {
@@ -823,8 +819,6 @@ void CompositorImpl::InitializeDisplay(
   viz::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
-  renderer_settings.enable_color_correct_rendering =
-      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                         ->gpu_channel_establish_factory()
                                         ->GetGpuMemoryBufferManager();

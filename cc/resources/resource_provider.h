@@ -97,7 +97,6 @@ class CC_EXPORT ResourceProvider
                    viz::SharedBitmapManager* shared_bitmap_manager,
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    bool delegated_sync_points_required,
-                   bool enable_color_correct_rasterization,
                    const viz::ResourceSettings& resource_settings);
   ~ResourceProvider() override;
 
@@ -203,9 +202,6 @@ class CC_EXPORT ResourceProvider
     GLenum target() const { return target_; }
     viz::ResourceFormat format() const { return format_; }
     const gfx::Size& size() const { return size_; }
-
-    // Will return an invalid color space unless
-    // |enable_color_correct_rasterization| is true.
     const gfx::ColorSpace& color_space_for_raster() const {
       return color_space_;
     }
@@ -294,8 +290,6 @@ class CC_EXPORT ResourceProvider
 
     SkBitmap& sk_bitmap() { return sk_bitmap_; }
     bool valid() const { return !!sk_bitmap_.getPixels(); }
-    // Will return the invalid color space unless
-    // |enable_color_correct_rasterization| is true.
     const gfx::ColorSpace& color_space_for_raster() const {
       return color_space_;
     }
@@ -548,8 +542,6 @@ class CC_EXPORT ResourceProvider
                          GLenum unit,
                          GLenum filter);
 
-  // Will return the invalid color space unless
-  // |enable_color_correct_rasterization| is true.
   gfx::ColorSpace GetResourceColorSpaceForRaster(
       const Resource* resource) const;
 
@@ -573,7 +565,6 @@ class CC_EXPORT ResourceProvider
   struct Settings {
     Settings(viz::ContextProvider* compositor_context_provider,
              bool delegated_sync_points_needed,
-             bool enable_color_correct_rasterization,
              const viz::ResourceSettings& resource_settings);
 
     int max_texture_size = 0;
@@ -587,7 +578,6 @@ class CC_EXPORT ResourceProvider
     viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat best_texture_format = viz::RGBA_8888;
     viz::ResourceFormat best_render_buffer_format = viz::RGBA_8888;
-    bool enable_color_correct_rasterization = false;
     bool delegated_sync_points_required = false;
   } const settings_;
 

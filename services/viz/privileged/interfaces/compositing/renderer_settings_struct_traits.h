@@ -56,11 +56,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.show_overdraw_feedback;
   }
 
-  static bool enable_color_correct_rendering(
-      const viz::RendererSettings& input) {
-    return input.enable_color_correct_rendering;
-  }
-
   static int highp_threshold_min(const viz::RendererSettings& input) {
     return input.highp_threshold_min;
   }

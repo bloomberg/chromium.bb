@@ -53,7 +53,6 @@
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/blink/blink_event_util.h"
-#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/test/icc_profiles.h"
@@ -347,8 +346,6 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     viz::RendererSettings renderer_settings;
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-    renderer_settings.enable_color_correct_rendering =
-        base::FeatureList::IsEnabled(features::kColorCorrectRendering);
     renderer_settings.allow_antialiasing &=
         !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
     renderer_settings.highp_threshold_min = 2048;
