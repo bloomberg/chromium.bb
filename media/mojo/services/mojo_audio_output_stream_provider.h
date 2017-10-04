@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "media/audio/audio_output_delegate.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -46,14 +46,12 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   // Called when |audio_output_| had an error.
   void OnError();
 
-  // The callback for the Acquire() must be stored until the response is ready.
-  AcquireCallback acquire_callback_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::Optional<MojoAudioOutputStream> audio_output_;
   mojo::Binding<AudioOutputStreamProvider> binding_;
   CreateDelegateCallback create_delegate_callback_;
   DeleterCallback deleter_callback_;
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioOutputStreamProvider);
 };
