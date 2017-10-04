@@ -572,6 +572,7 @@ post_process_cmdline() {
     enabled new_multisymbol && enable_feature restrict_compressed_hdr
     enabled mfmv && enable_feature frame_marker
     enabled jnt_comp && enable_feature frame_marker
+    enabled txmg && enable_feature highbitdepth
 
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"
