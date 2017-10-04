@@ -18,6 +18,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -65,6 +66,8 @@ static const size_t kMaxFaviconsPerPage = 8;
 // The maximum number of bitmaps for a single icon URL which can be stored in
 // the thumbnail database.
 static const size_t kMaxFaviconBitmapsPerIconURL = 8;
+
+extern const base::Feature kAvoidStrippingRefFromFaviconPageUrls;
 
 // Keeps track of a queued HistoryDBTask. This class lives solely on the
 // DB thread.
