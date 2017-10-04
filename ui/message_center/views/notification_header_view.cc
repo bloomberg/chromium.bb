@@ -269,7 +269,8 @@ void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
 }
 
 void NotificationHeaderView::ClearAppIcon() {
-  app_icon_view_->SetImage(gfx::CreateVectorIcon(kProductIcon, accent_color_));
+  app_icon_view_->SetImage(
+      gfx::CreateVectorIcon(kProductIcon, kSmallImageSizeMD, accent_color_));
 }
 
 void NotificationHeaderView::SetAppName(const base::string16& name) {
