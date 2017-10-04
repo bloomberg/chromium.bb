@@ -100,6 +100,9 @@ class FakeSessionManagerClient : public SessionManagerClient {
       const cryptohome::Identification& cryptohome_id) const;
   void set_user_policy(const cryptohome::Identification& cryptohome_id,
                        const std::string& policy_blob);
+  void set_user_policy_without_session(
+      const cryptohome::Identification& cryptohome_id,
+      const std::string& policy_blob);
 
   const std::string& device_local_account_policy(
       const std::string& account_id) const;
@@ -138,6 +141,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
  private:
   std::string device_policy_;
   std::map<cryptohome::Identification, std::string> user_policies_;
+  std::map<cryptohome::Identification, std::string>
+      user_policies_without_session_;
   std::map<std::string, std::string> device_local_account_policy_;
   base::ObserverList<Observer> observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;

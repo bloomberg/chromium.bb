@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_session_manager_client.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -168,10 +170,13 @@ FakeSessionManagerClient::BlockingRetrievePolicyForUser(
 void FakeSessionManagerClient::RetrievePolicyForUserWithoutSession(
     const cryptohome::Identification& cryptohome_id,
     const RetrievePolicyCallback& callback) {
-  // This is currently not supported in FakeSessionManagerClient.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, nullptr, RetrievePolicyResponseType::OTHER_ERROR));
+  auto iter = user_policies_without_session_.find(cryptohome_id);
+  auto task = iter == user_policies_.end()
+                  ? base::BindOnce(callback, std::string(),
+                                   RetrievePolicyResponseType::OTHER_ERROR)
+                  : base::BindOnce(callback, iter->second,
+                                   RetrievePolicyResponseType::SUCCESS);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
 }
 
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
@@ -328,6 +333,12 @@ void FakeSessionManagerClient::set_user_policy(
     const cryptohome::Identification& cryptohome_id,
     const std::string& policy_blob) {
   user_policies_[cryptohome_id] = policy_blob;
+}
+
+void FakeSessionManagerClient::set_user_policy_without_session(
+    const cryptohome::Identification& cryptohome_id,
+    const std::string& policy_blob) {
+  user_policies_without_session_[cryptohome_id] = policy_blob;
 }
 
 const std::string& FakeSessionManagerClient::device_local_account_policy(
