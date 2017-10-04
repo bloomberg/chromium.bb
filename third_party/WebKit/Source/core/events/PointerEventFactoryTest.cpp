@@ -60,10 +60,11 @@ class PointerEventFactoryTest : public ::testing::Test {
       bool is_primary,
       WebInputEvent::Modifiers = WebInputEvent::kNoModifiers);
   void CreateAndCheckPointerTransitionEvent(PointerEvent*, const AtomicString&);
+  void CheckScrollCapablePointers(const std::set<int>& expected);
 
   PointerEventFactory pointer_event_factory_;
-  unsigned expected_mouse_id_;
-  unsigned mapped_id_start_;
+  int expected_mouse_id_;
+  int mapped_id_start_;
 
   class WebTouchPointBuilder : public WebTouchPoint {
    public:
@@ -136,6 +137,15 @@ void PointerEventFactoryTest::CreateAndCheckPointerTransitionEvent(
   EXPECT_EQ(clone_pointer_event->type(), type);
 }
 
+void PointerEventFactoryTest::CheckScrollCapablePointers(
+    const std::set<int>& expected_pointers) {
+  Vector<int> pointers =
+      pointer_event_factory_.GetPointerIdsOfScrollCapablePointers();
+  EXPECT_EQ(pointers.size(), expected_pointers.size());
+  for (int p : pointers) {
+    EXPECT_TRUE(expected_pointers.find(p) != expected_pointers.end());
+  }
+}
 PointerEvent* PointerEventFactoryTest::CreateAndCheckTouchEvent(
     WebPointerProperties::PointerType pointer_type,
     int raw_id,
@@ -430,6 +440,49 @@ TEST_F(PointerEventFactoryTest, MouseAndTouchAndPen) {
                            mapped_id_start_, true);
   CreateAndCheckTouchEvent(WebPointerProperties::PointerType::kPen, 0,
                            mapped_id_start_ + 1, true);
+}
+
+TEST_F(PointerEventFactoryTest, ScrollCapablePointers) {
+  CheckScrollCapablePointers({});
+
+  CreateAndCheckMouseEvent(WebPointerProperties::PointerType::kMouse, 0,
+                           expected_mouse_id_, true);
+  PointerEvent* pointer_event1 = CreateAndCheckMouseEvent(
+      WebPointerProperties::PointerType::kPen, 0, mapped_id_start_, true);
+  CheckScrollCapablePointers({});
+
+  CreateAndCheckTouchEvent(WebPointerProperties::PointerType::kPen, 0,
+                           mapped_id_start_, true);
+  CheckScrollCapablePointers({mapped_id_start_});
+
+  CreateAndCheckTouchEvent(WebPointerProperties::PointerType::kTouch, 0,
+                           mapped_id_start_ + 1, true);
+  CheckScrollCapablePointers({mapped_id_start_, mapped_id_start_ + 1});
+
+  pointer_event_factory_.Remove(pointer_event1->pointerId());
+  CheckScrollCapablePointers({mapped_id_start_ + 1});
+
+  CreateAndCheckTouchEvent(WebPointerProperties::PointerType::kTouch, 1,
+                           mapped_id_start_ + 2, false);
+
+  CheckScrollCapablePointers({mapped_id_start_ + 1, mapped_id_start_ + 2});
+
+  CreateAndCheckMouseEvent(WebPointerProperties::PointerType::kTouch, 1,
+                           mapped_id_start_ + 2, false);
+
+  CheckScrollCapablePointers({mapped_id_start_ + 1});
+
+  CreateAndCheckTouchEvent(WebPointerProperties::PointerType::kPen, 0,
+                           mapped_id_start_ + 3, true);
+
+  CreateAndCheckTouchEvent(WebPointerProperties::PointerType::kPen, 1,
+                           mapped_id_start_ + 4, false);
+
+  CheckScrollCapablePointers(
+      {mapped_id_start_ + 1, mapped_id_start_ + 3, mapped_id_start_ + 4});
+
+  pointer_event_factory_.Clear();
+  CheckScrollCapablePointers({});
 }
 
 TEST_F(PointerEventFactoryTest, PenAsTouchAndMouseEvent) {
