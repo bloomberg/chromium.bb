@@ -17130,6 +17130,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Suggestions.AllDismissed.Shown">
+  <owner>peconn@chromium.org</owner>
+  <description>
+    User dismissed all cards and was not able to get any more suggestions
+    resulting in the All Dismissed State. Only records for users with Chrome
+    Home enabled.
+  </description>
+</action>
+
 <action name="Suggestions.Card.ActionTapped">
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
