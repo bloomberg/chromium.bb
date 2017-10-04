@@ -37,7 +37,6 @@ class Transform;
 
 namespace ui {
 class Compositor;
-class ImplicitAnimationObserver;
 class Layer;
 class LayerAnimationSequence;
 class LayerAnimationDelegate;
@@ -196,11 +195,6 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // list. The observers are notified when animations end.
   void AddObserver(LayerAnimationObserver* observer);
   void RemoveObserver(LayerAnimationObserver* observer);
-
-  void AddOwnedObserver(
-      std::unique_ptr<ImplicitAnimationObserver> animation_observer);
-  void RemoveAndDestroyOwnedObserver(
-      ImplicitAnimationObserver* animation_observer);
 
   // Called when a threaded animation is actually started.
   void OnThreadedAnimationStarted(base::TimeTicks monotonic_time,
@@ -421,8 +415,6 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
   base::ObserverList<LayerAnimationObserver> observers_;
-
-  std::vector<std::unique_ptr<ImplicitAnimationObserver>> owned_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };
