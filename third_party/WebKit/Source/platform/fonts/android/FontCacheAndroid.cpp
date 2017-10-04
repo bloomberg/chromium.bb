@@ -44,7 +44,7 @@ static AtomicString DefaultFontFamily(SkFontMgr* font_manager) {
   // Pass nullptr to get the default typeface. The default typeface in Android
   // is "sans-serif" if exists, or the first entry in fonts.xml.
   sk_sp<SkTypeface> typeface(
-      font_manager->legacyCreateTypeface(nullptr, SkFontStyle()));
+      font_manager->legacyMakeTypeface(nullptr, SkFontStyle()));
   if (typeface) {
     SkString family_name;
     typeface->getFamilyName(&family_name);

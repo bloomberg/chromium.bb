@@ -273,8 +273,7 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
   // FIXME: Use m_fontManager, matchFamilyStyle instead of
   // legacyCreateTypeface on all platforms.
   sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-  return sk_sp<SkTypeface>(
-      fm->legacyCreateTypeface(name.data(), font_description.SkiaFontStyle()));
+  return fm->legacyMakeTypeface(name.data(), font_description.SkiaFontStyle());
 }
 
 #if !defined(OS_WIN)

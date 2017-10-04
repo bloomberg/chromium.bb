@@ -182,7 +182,7 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
   }
 
   if (variation_settings && variation_settings->size() < UINT16_MAX) {
-    SkFontMgr::FontParameters::Axis axes[variation_settings->size()];
+    SkFontArguments::Axis axes[variation_settings->size()];
     for (size_t i = 0; i < variation_settings->size(); ++i) {
       AtomicString feature_tag = variation_settings->at(i).Tag();
       axes[i] = {AtomicStringToFourByteTag(feature_tag),
@@ -191,9 +191,9 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
     // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
     // axis parameters on system fonts directly.
-    typeface_ = sk_sp<SkTypeface>(fm->createFromStream(
-        typeface_->openStream(nullptr)->duplicate().release(),
-        SkFontMgr::FontParameters().setAxes(axes, variation_settings->size())));
+    typeface_ = fm->makeFromStream(
+        typeface_->openStream(nullptr)->duplicate(),
+        SkFontArguments().setAxes(axes, variation_settings->size()));
   }
 }
 

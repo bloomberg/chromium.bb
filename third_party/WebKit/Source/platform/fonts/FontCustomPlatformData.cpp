@@ -91,17 +91,17 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
 #else
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
 #endif
-    Vector<SkFontMgr::FontParameters::Axis, 0> axes;
+    Vector<SkFontArguments::Axis, 0> axes;
 
-    SkFontMgr::FontParameters::Axis weight_axis = {
+    SkFontArguments::Axis weight_axis = {
         SkSetFourByteTag('w', 'g', 'h', 't'),
         SkFloatToScalar(selection_capabilities.weight.clampToRange(
             selection_request.weight))};
-    SkFontMgr::FontParameters::Axis width_axis = {
+    SkFontArguments::Axis width_axis = {
         SkSetFourByteTag('w', 'd', 't', 'h'),
         SkFloatToScalar(selection_capabilities.width.clampToRange(
             selection_request.width))};
-    SkFontMgr::FontParameters::Axis slant_axis = {
+    SkFontArguments::Axis slant_axis = {
         SkSetFourByteTag('s', 'l', 'n', 't'),
         SkFloatToScalar(selection_capabilities.slope.clampToRange(
             selection_request.slope))};
@@ -113,16 +113,16 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
       axes.ReserveCapacity(variation_settings->size() + axes.size());
       for (size_t i = 0; i < variation_settings->size(); ++i) {
-        SkFontMgr::FontParameters::Axis axis = {
+        SkFontArguments::Axis axis = {
             AtomicStringToFourByteTag(variation_settings->at(i).Tag()),
             SkFloatToScalar(variation_settings->at(i).Value())};
         axes.push_back(axis);
       }
     }
 
-    sk_sp<SkTypeface> sk_variation_font(fm->createFromStream(
-        base_typeface_->openStream(nullptr)->duplicate().release(),
-        SkFontMgr::FontParameters().setAxes(axes.data(), axes.size())));
+    sk_sp<SkTypeface> sk_variation_font(fm->makeFromStream(
+        base_typeface_->openStream(nullptr)->duplicate(),
+        SkFontArguments().setAxes(axes.data(), axes.size())));
 
     if (sk_variation_font) {
       ReportWebFontInstantiationResult(kSuccessVariableWebFont);
