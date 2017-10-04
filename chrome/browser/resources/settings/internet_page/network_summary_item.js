@@ -85,8 +85,11 @@ Polymer({
           return this.i18n('tetherEnableBluetooth');
       }
       // Enabled or enabling states.
-      if (deviceState.State == CrOnc.DeviceState.ENABLED)
-        return CrOncStrings.networkListItemNotConnected;
+      if (deviceState.State == CrOnc.DeviceState.ENABLED) {
+        if (this.networkStateList.length > 0)
+          return CrOncStrings.networkListItemNotConnected;
+        return CrOncStrings.networkListItemNoNetwork;
+      }
       if (deviceState.State == CrOnc.DeviceState.ENABLING)
         return this.i18n('internetDeviceEnabling');
     }

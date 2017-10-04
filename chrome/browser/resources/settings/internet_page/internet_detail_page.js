@@ -485,14 +485,14 @@ Polymer({
     if (this.connectNotAllowed_(networkProperties, globalPolicy))
       return false;
     var type = networkProperties.Type;
-    if (type == CrOnc.Type.CELLULAR)
+    if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER)
       return false;
     if ((type == CrOnc.Type.WI_FI || type == CrOnc.Type.WI_MAX) &&
         networkProperties.ConnectionState !=
             CrOnc.ConnectionState.NOT_CONNECTED) {
       return false;
     }
-    return type != CrOnc.Type.CELLULAR;
+    return true;
   },
 
   /**

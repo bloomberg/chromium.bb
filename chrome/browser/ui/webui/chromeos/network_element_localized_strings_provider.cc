@@ -29,6 +29,7 @@ struct {
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
     {"networkListItemInitializing", IDS_NETWORK_LIST_INITIALIZING},
     {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
+    {"networkListItemNoNetwork", IDS_NETWORK_LIST_NO_NETWORK},
     {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
 };
 }  //  namespace
@@ -43,6 +44,8 @@ void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {
     builder->Add(entry.name, entry.id);
 }
 
+// TODO(stevenjb): Remove this function; it is mostly a duplicate of the strings
+// above.
 void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
   struct {
     const char* name;
@@ -58,6 +61,7 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
       {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
       {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
+      {"networkListItemNoNetwork", IDS_NETWORK_LIST_NO_NETWORK},
       {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
   };
   for (const auto& entry : localized_strings)

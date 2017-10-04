@@ -67,6 +67,9 @@
     <include name="IDR_CR_ELEMENTS_CELLULAR_4_SVG"
              file="cr_elements/chromeos/network/cellular_4.svg"
              type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CELLULAR_OFF_SVG"
+             file="cr_elements/chromeos/network/cellular_off.svg"
+             type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_ETHERNET_SVG"
              file="cr_elements/chromeos/network/ethernet.svg" type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_VPN_SVG"
