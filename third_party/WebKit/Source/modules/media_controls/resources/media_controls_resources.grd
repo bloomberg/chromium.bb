@@ -9,27 +9,6 @@
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_PAUSE_BUTTON" file="legacy/mediaplayer_pause.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_PLAY_BUTTON" file="legacy/mediaplayer_play.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_SOUND_NOT_MUTED_BUTTON" file="legacy/mediaplayer_sound_not_muted.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_SOUND_MUTED_BUTTON" file="legacy/mediaplayer_sound_muted.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_SLIDER_THUMB" file="legacy/mediaplayer_slider_thumb.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_VOLUME_SLIDER_THUMB" file="legacy/mediaplayer_volume_slider_thumb.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_CLOSEDCAPTION_BUTTON" file="legacy/mediaplayer_closedcaption.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_DISABLED" file="legacy/mediaplayer_closedcaption_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_ENTER_FULLSCREEN_BUTTON" file="legacy/mediaplayer_enter_fullscreen.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_EXIT_FULLSCREEN_BUTTON" file="legacy/mediaplayer_exit_fullscreen.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_CAST_BUTTON_OFF" file="legacy/mediaplayer_cast_off.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_CAST_BUTTON_ON" file="legacy/mediaplayer_cast_on.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_OVERLAY_CAST_BUTTON_OFF" file="legacy/mediaplayer_overlay_cast_off.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_OVERLAY_CAST_BUTTON_ON" file="legacy/mediaplayer_overlay_cast_on.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_OVERLAY_PLAY_BUTTON" file="legacy/mediaplayer_overlay_play.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIA_REMOTING_CAST_ICON" file="legacy/mediaremoting_cast.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_TRACKSELECTION_CHECKMARK" file="legacy/mediaplayer_trackselection_checkmark.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_CLOSEDCAPTIONS_ICON" file="legacy/mediaplayer_closedcaptions_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_OVERFLOW_MENU_ICON" file="legacy/mediaplayer_overflow_menu.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_DOWNLOAD_ICON" file="legacy/mediaplayer_download.png" />
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_MEDIAPLAYER_SUBTITLES_ICON" file="legacy/mediaplayer_subtitles_icon.png" />
       <structure type="chrome_html" name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS" file="legacyMediaControls.css" flattenhtml="true" compress="gzip" />
       <structure type="chrome_html" name="IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS" file="modernMediaControls.css" flattenhtml="true" compress="gzip" />
     </structures>
