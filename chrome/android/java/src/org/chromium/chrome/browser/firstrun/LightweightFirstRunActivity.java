@@ -25,25 +25,15 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 */
 public class LightweightFirstRunActivity extends FirstRunActivityBase {
     private FirstRunFlowSequencer mFirstRunFlowSequencer;
-    private Bundle mFreProperties;
     private Button mOkButton;
     private boolean mNativeInitialized;
     private boolean mTriggerAcceptAfterNativeInit;
 
     @Override
     public void setContentView() {
-        Bundle savedInstanceState = getSavedInstanceState();
-        if (savedInstanceState != null) {
-            mFreProperties = savedInstanceState;
-        } else if (getIntent() != null) {
-            mFreProperties = getIntent().getExtras();
-        } else {
-            mFreProperties = new Bundle();
-        }
-
         setFinishOnTouchOutside(true);
 
-        mFirstRunFlowSequencer = new FirstRunFlowSequencer(this, mFreProperties) {
+        mFirstRunFlowSequencer = new FirstRunFlowSequencer(this) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
                 if (freProperties == null) {
@@ -51,9 +41,8 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
                     return;
                 }
 
-                mFreProperties = freProperties;
                 onChildAccountKnown(
-                        mFreProperties.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
+                        freProperties.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
             }
         };
         mFirstRunFlowSequencer.start();
@@ -124,12 +113,6 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
 
         mNativeInitialized = true;
         if (mTriggerAcceptAfterNativeInit) acceptTermsOfService();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putAll(mFreProperties);
     }
 
     @Override

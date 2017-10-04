@@ -48,7 +48,6 @@ public abstract class FirstRunFlowSequencer  {
     private static final String TAG = "firstrun";
 
     private final Activity mActivity;
-    private final Bundle mLaunchProperties;
 
     // The following are initialized via initializeSharedState().
     private boolean mIsAndroidEduDevice;
@@ -65,9 +64,8 @@ public abstract class FirstRunFlowSequencer  {
      */
     public abstract void onFlowIsKnown(Bundle freProperties);
 
-    public FirstRunFlowSequencer(Activity activity, Bundle launcherProvidedProperties) {
+    public FirstRunFlowSequencer(Activity activity) {
         mActivity = activity;
-        mLaunchProperties = launcherProvidedProperties;
     }
 
     /**
@@ -168,25 +166,12 @@ public abstract class FirstRunFlowSequencer  {
             return;
         }
 
-        if (!mLaunchProperties.getBoolean(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER)) {
-            // If EXTRA_USE_FRE_FLOW_SEQUENCER is not set, it means we should use the properties as
-            // provided instead of setting them up. However, the properties as provided may not yet
-            // have post-native properties computed, so the Runnable still needs to be passed.
-            onFlowIsKnown(mLaunchProperties);
-            return;
-        }
-
         Bundle freProperties = new Bundle();
-        freProperties.putAll(mLaunchProperties);
-        freProperties.remove(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER);
 
         // In the full FRE we always show the Welcome page, except on EDU devices.
         boolean showWelcomePage = !mForceEduSignIn;
         freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
         freProperties.putBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT, mHasChildAccount);
-
-        // Set a boolean to indicate we need to do post native setup via the runnable below.
-        freProperties.putBoolean(FirstRunActivity.POST_NATIVE_SETUP_NEEDED, true);
 
         // Initialize usage and crash reporting according to the default value.
         // The user can explicitly enable or disable the reporting on the Welcome page.
@@ -202,12 +187,9 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * Called onNativeInitialized() a given flow as completed.
-     * @param activity An activity.
      * @param data Resulting FRE properties bundle.
      */
     public void onNativeInitialized(Bundle freProperties) {
-        if (!freProperties.getBoolean(FirstRunActivity.POST_NATIVE_SETUP_NEEDED)) return;
-
         // We show the sign-in page if sync is allowed, and not signed in, and this is not
         // an EDU device, and
         // - no "skip the first use hints" is set, or
@@ -232,7 +214,6 @@ public abstract class FirstRunFlowSequencer  {
                 FirstRunActivity.SHOW_DATA_REDUCTION_PAGE, shouldShowDataReductionPage());
         freProperties.putBoolean(
                 FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE, shouldShowSearchEnginePage());
-        freProperties.remove(FirstRunActivity.POST_NATIVE_SETUP_NEEDED);
     }
 
     /**
@@ -281,8 +262,7 @@ public abstract class FirstRunFlowSequencer  {
             if (preferLightweightFre) {
                 if (!FirstRunStatus.shouldSkipWelcomePage()
                         && !FirstRunStatus.getLightweightFirstRunFlowComplete()) {
-                    return createFirstRunIntent(
-                            context, LightweightFirstRunActivity.class.getName(), fromChromeIcon);
+                    return createLightweightFirstRunIntent(context);
                 }
             } else {
                 return createGenericFirstRunIntent(context, fromChromeIcon);
@@ -299,21 +279,16 @@ public abstract class FirstRunFlowSequencer  {
      * @param fromChromeIcon Whether Chrome is opened via the Chrome icon.
      */
     public static Intent createGenericFirstRunIntent(Context context, boolean fromChromeIcon) {
-        return createFirstRunIntent(context, FirstRunActivity.class.getName(), fromChromeIcon);
+        Intent intent = new Intent();
+        intent.setClassName(context, FirstRunActivity.class.getName());
+        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
+        return intent;
     }
 
-    /**
-     * @return An intent to show the First Run Activity.
-     * @param context                   The context.
-     * @param firstRunActivityClassName The class name of the first run activity to start.
-     * @param fromChromeIcon            Whether Chrome is opened via the Chrome icon.
-     */
-    public static Intent createFirstRunIntent(
-            Context context, String firstRunActivityClassName, boolean fromChromeIcon) {
+    /** Returns an intent to show lightweight first run activity. */
+    public static Intent createLightweightFirstRunIntent(Context context) {
         Intent intent = new Intent();
-        intent.setClassName(context, firstRunActivityClassName);
-        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
-        intent.putExtra(FirstRunActivity.EXTRA_USE_FRE_FLOW_SEQUENCER, true);
+        intent.setClassName(context, LightweightFirstRunActivity.class.getName());
         return intent;
     }
 
