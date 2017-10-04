@@ -254,7 +254,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
                                              withURL:[[startupInformation
                                                          startupParameters]
                                                          externalURL]
-                                      dismissOmnibox:YES
+                                      dismissOmnibox:[[startupInformation
+                                                         startupParameters]
+                                                         postOpeningAction] !=
+                                                     FOCUS_OMNIBOX
                                           transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation
