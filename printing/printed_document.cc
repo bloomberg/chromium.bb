@@ -30,7 +30,6 @@
 #include "printing/page_number.h"
 #include "printing/print_settings_conversion.h"
 #include "printing/printed_page.h"
-#include "printing/printed_pages_source.h"
 #include "printing/units.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_elider.h"
@@ -95,9 +94,9 @@ void DebugDumpSettings(const base::string16& doc_name,
 }  // namespace
 
 PrintedDocument::PrintedDocument(const PrintSettings& settings,
-                                 PrintedPagesSource* source,
+                                 const base::string16& name,
                                  int cookie)
-    : mutable_(source), immutable_(settings, source, cookie) {
+    : immutable_(settings, name, cookie) {
   // Records the expected page count if a range is setup.
   if (!settings.ranges().empty()) {
     // If there is a range, set the number of page
@@ -108,7 +107,7 @@ PrintedDocument::PrintedDocument(const PrintSettings& settings,
   }
 
   if (!g_debug_dump_info.Get().empty())
-    DebugDumpSettings(name(), settings);
+    DebugDumpSettings(name, settings);
 }
 
 PrintedDocument::~PrintedDocument() {
@@ -179,11 +178,6 @@ bool PrintedDocument::IsComplete() const {
   return true;
 }
 
-void PrintedDocument::DisconnectSource() {
-  base::AutoLock lock(lock_);
-  mutable_.source_ = NULL;
-}
-
 void PrintedDocument::set_page_count(int max_page) {
   base::AutoLock lock(lock_);
   DCHECK_EQ(0, mutable_.page_count_);
@@ -245,10 +239,7 @@ void PrintedDocument::DebugDumpData(
                                           base::RetainedRef(data)));
 }
 
-PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
-    : source_(source),
-      expected_page_count_(0),
-      page_count_(0) {
+PrintedDocument::Mutable::Mutable() : expected_page_count_(0), page_count_(0) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   first_page = INT_MAX;
 #endif
@@ -258,9 +249,9 @@ PrintedDocument::Mutable::~Mutable() {
 }
 
 PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
-                                      PrintedPagesSource* source,
+                                      const base::string16& name,
                                       int cookie)
-    : settings_(settings), name_(source->RenderSourceName()), cookie_(cookie) {}
+    : settings_(settings), name_(name), cookie_(cookie) {}
 
 PrintedDocument::Immutable::~Immutable() {}
 

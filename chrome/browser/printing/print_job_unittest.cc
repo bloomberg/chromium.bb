@@ -17,17 +17,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "printing/printed_pages_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace printing {
 
 namespace {
-
-class TestSource : public PrintedPagesSource {
- public:
-  base::string16 RenderSourceName() override { return base::string16(); }
-};
 
 class TestPrintJobWorker : public PrintJobWorker {
  public:
@@ -105,8 +99,7 @@ TEST(PrintJobTest, SimplePrint) {
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   EXPECT_TRUE(job->RunsTasksInCurrentSequence());
   scoped_refptr<TestOwner> owner(new TestOwner);
-  TestSource source;
-  job->Initialize(owner.get(), &source, 1);
+  job->Initialize(owner.get(), base::string16(), 1);
   job->Stop();
   while (job->document()) {
     base::RunLoop().RunUntilIdle();
@@ -139,7 +132,6 @@ TEST(PrintJobTest, SimplePrintLateInit) {
   job->Cancel();
   job->RequestMissingPages();
   job->FlushJob(timeout);
-  job->DisconnectSource();
   job->is_job_pending();
   job->document();
   // Private

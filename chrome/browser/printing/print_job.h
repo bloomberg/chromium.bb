@@ -26,7 +26,6 @@ class MetafilePlayer;
 class PrintJobWorker;
 class PrintedDocument;
 class PrintedPage;
-class PrintedPagesSource;
 class PrinterQuery;
 
 // Manages the print work for a specific document. Talks to the printer through
@@ -44,7 +43,8 @@ class PrintJob : public PrintJobWorkerOwner,
 
   // Grabs the ownership of the PrintJobWorker from another job, which is
   // usually a PrinterQuery. Set the expected page count of the print job.
-  void Initialize(PrintJobWorkerOwner* job, PrintedPagesSource* source,
+  void Initialize(PrintJobWorkerOwner* job,
+                  const base::string16& name,
                   int page_count);
 
   // content::NotificationObserver implementation.
@@ -78,10 +78,6 @@ class PrintJob : public PrintJobWorkerOwner,
   // process is about to be shut down and we're waiting for the spooler to eat
   // our data.
   bool FlushJob(base::TimeDelta timeout);
-
-  // Disconnects the PrintedPage source (PrintedPagesSource). It is done when
-  // the source is being destroyed.
-  void DisconnectSource();
 
   // Returns true if the print job is pending, i.e. between a StartPrinting()
   // and the end of the spooling.
@@ -142,10 +138,6 @@ class PrintJob : public PrintJobWorkerOwner,
 #endif  // defined(OS_WIN)
 
   content::NotificationRegistrar registrar_;
-
-  // Source that generates the PrintedPage's (i.e. a WebContents). It will be
-  // set back to NULL if the source is deleted before this object.
-  PrintedPagesSource* source_;
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one

@@ -73,7 +73,6 @@ component("printing") {
     "printed_document_win.cc",
     "printed_page.cc",
     "printed_page.h",
-    "printed_pages_source.h",
     "printing_context.cc",
     "printing_context.h",
     "printing_export.h",
