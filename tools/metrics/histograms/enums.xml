@@ -35956,6 +35956,12 @@ from previous Chrome versions.
   <int value="4" label="Failed to save to file"/>
 </enum>
 
+<enum name="SoftwareReporterCleanerSettingsPageActiveOnRebootRequired">
+  <int value="0" label="No browser available"/>
+  <int value="1" label="Settings page not the active tab"/>
+  <int value="2" label="Settings page current active tab"/>
+</enum>
+
 <enum name="SoftwareReporterCleanupResult">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Reboot required"/>
