@@ -56,7 +56,6 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextFinder.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellChecker.h"
@@ -5766,9 +5765,8 @@ TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentScollsInputField) {
 }
 
 static int ComputeOffset(LayoutObject* layout_object, int x, int y) {
-  return CreateVisiblePosition(
-             layout_object->PositionForPoint(LayoutPoint(x, y)))
-      .DeepEquivalent()
+  return layout_object->PositionForPoint(LayoutPoint(x, y))
+      .GetPosition()
       .ComputeOffsetInContainerNode();
 }
 
