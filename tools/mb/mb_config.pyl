@@ -381,6 +381,7 @@
     },
 
     'chromium.perf.fyi': {
+      'Linux Compile FYI': 'official_goma_minimal_symbols_android',
       'Android Builder FYI': 'official_goma_minimal_symbols_android',
       'Android arm64 Builder FYI': 'official_goma_minimal_symbols_android_arm64',
       'Win Builder FYI': 'official_goma',
