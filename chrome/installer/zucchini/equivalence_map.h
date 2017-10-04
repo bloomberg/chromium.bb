@@ -17,7 +17,7 @@ namespace zucchini {
 
 constexpr double kMismatchFatal = -std::numeric_limits<double>::infinity();
 
-// Returns a similarity metric between content in |old_view| and |new_view| at
+// Returns a similarity score between content in |old_view| and |new_view| at
 // offsets |src| and |dst|, respectively. Both |src| and |dst| must refer to
 // tokens in |old_image| and |new_image|.
 double GetTokenSimilarity(const ImageIndex& old_image,
@@ -25,7 +25,7 @@ double GetTokenSimilarity(const ImageIndex& old_image,
                           offset_t src,
                           offset_t dst);
 
-// Returns a similarity metric between content in |old_view| and |new_view| at
+// Returns a similarity score between content in |old_view| and |new_view| at
 // regions described by |equivalence|.
 double GetEquivalenceSimilarity(const ImageIndex& old_image,
                                 const ImageIndex& new_image,
