@@ -109,12 +109,12 @@ std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
   return nullptr;
 }
 
-void MockAudioManager::InitializeDebugRecording() {}
+void MockAudioManager::InitializeOutputDebugRecording() {}
 
-void MockAudioManager::EnableDebugRecording(
+void MockAudioManager::EnableOutputDebugRecording(
     const base::FilePath& base_file_name) {}
 
-void MockAudioManager::DisableDebugRecording() {}
+void MockAudioManager::DisableOutputDebugRecording() {}
 
 const char* MockAudioManager::GetName() {
   return nullptr;
