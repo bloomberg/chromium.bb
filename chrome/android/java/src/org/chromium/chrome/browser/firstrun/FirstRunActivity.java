@@ -165,8 +165,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         }
 
         // An optional page to select a default search engine.
-        if (mFreProperties.getBoolean(SHOW_SEARCH_ENGINE_PAGE)
-                && mFirstRunFlowSequencer.shouldShowSearchEnginePage()) {
+        if (mFreProperties.getBoolean(SHOW_SEARCH_ENGINE_PAGE)) {
             mPages.add(pageOf(DefaultSearchEngineFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_DEFAULT_SEARCH_ENGINE_SHOWN);
             notifyAdapter = true;
