@@ -8,6 +8,3 @@ declare_args() {
   # Enable Clang's Source-based Code Coverage.
   use_clang_coverage = false
 }
-
-assert(!use_clang_coverage || is_clang,
-       "Clang Source-based Code Coverage requires clang.")
