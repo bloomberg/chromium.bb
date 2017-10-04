@@ -499,6 +499,8 @@
     <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
     <dimen name="chrome_home_progress_bar_height">4dp</dimen>
     <dimen name="chrome_home_incognito_ntp_bottom_margin">32dp</dimen>
+    <dimen name="chrome_home_promo_illustration_width">108dp</dimen>
+    <dimen name="chrome_home_promo_illustration_height">206dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>

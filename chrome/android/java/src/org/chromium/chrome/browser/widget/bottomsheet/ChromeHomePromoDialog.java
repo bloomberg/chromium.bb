@@ -12,6 +12,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -41,7 +42,11 @@ public class ChromeHomePromoDialog extends PromoDialog {
         params.headerStringResource = R.string.chrome_home_promo_dialog_title;
         params.subheaderStringResource = R.string.chrome_home_promo_dialog_message;
         params.primaryButtonStringResource = R.string.ok;
-        params.drawableResource = R.drawable.chrome_home_promo_static;
+        if (SysUtils.isLowEndDevice()) {
+            params.drawableResource = R.drawable.chrome_home_promo_static;
+        } else {
+            params.drawableInstance = new ChromeHomePromoIllustration(getContext());
+        }
 
         return params;
     }
