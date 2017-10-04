@@ -23,15 +23,30 @@ The output is a directory with HTML files that can be inspected via local web
 server (e.g. "python -m SimpleHTTPServer").
 
 In order to generate code coverage report, you need to build the target program
-with "use_clang_coverage=true" GN flag. This flag is not compatible with other
+with "use_clang_coverage=true" GN flag. This flag is not compatible with
 sanitizer flags: "is_asan", "is_msan", etc and also with "optimize_for_fuzzing".
 
-If you are building a fuzz target, make sure to add the "use_libfuzzer=true"
-GN flag.
+If you are building a fuzz target, you need to add "use_libfuzzer=true" GN flag
+as well.
+
+Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
+
+cd <chromium_checkout_dir>/src
+gn gen //out/coverage --args='use_clang_coverage=true use_libfuzzer=true'
+ninja -C out/coverage -j100 pdfium_fuzzer
+./testing/libfuzzer/coverage.py \\
+  --output="coverage_out" \\
+  --command="out/coverage/pdfium_fuzzer -runs=<runs> <corpus_dir>"
+
+where:
+  <corpus_dir> - directory containing samples files for this format.
+  <runs> - number of times to fuzz target function. Should be 0 when you just
+           want to see the coverage on corpus and don't want to fuzz at all.
+Then, open http://localhost:9000/report.html to see coverage report.
 
 For Googlers, there are examples available at go/chrome-code-coverage-examples.
 
-If you have any questions, please ask it on fuzzing@chromium.org.
+If you have any questions, please send an email to fuzzing@chromium.org.
 """
 
 HTML_FILE_EXTENSION = '.html'
@@ -81,7 +96,7 @@ def CheckBuildInstrumentation(executable_path):
   with open(executable_path) as file_handle:
     data = file_handle.read()
 
-  # For the threshold reference, tiny "Hello World" program has count of 34.
+  # For minimum threshold reference, tiny "Hello World" program has count of 34.
   if data.count('__llvm_profile') > 20:
     return
 
@@ -117,11 +132,12 @@ def DownloadCoverageToolsIfNeeded():
   import update as clang_update
   import urllib2
 
-  def _GetRevisionFromStampFile(filepath):
+  def _GetRevisionFromStampFile(file_path):
     """Read the build stamp file created by tools/clang/scripts/update.py."""
-    if not os.path.exists(filepath):
+    if not os.path.exists(file_path):
       return 0, 0
-    with open(filepath) as file_handle:
+
+    with open(file_path) as file_handle:
       revision_stamp_data = file_handle.readline().strip()
     revision_stamp_data = revision_stamp_data.split('-')
     return int(revision_stamp_data[0]), int(revision_stamp_data[1])
@@ -215,8 +231,8 @@ def GenerateReport(report_data):
 
     if line.startswith(ZERO_FUNCTION_FILE_TEXT):
       table_data += '  <tr class="source-name-title">\n'
-      table_data += ('    <td class="column-entry-left"><pre>%s</pre></td>\n' %
-                     line)
+      table_data += (
+          '    <th class="column-entry-left"><pre>%s</pre></th>\n' % line)
       table_data += '  </tr>\n'
       continue
 
@@ -227,10 +243,10 @@ def GenerateReport(report_data):
     # First column is a file name, build a link.
     table_data += ('    <td class="column-entry-left">\n'
                    '      <a href="/%s"><pre>%s</pre></a>\n'
-                   '    </td>\n') % (
-        columns[0] + HTML_FILE_EXTENSION, columns[0])
+                   '    </td>\n') % (columns[0] + HTML_FILE_EXTENSION,
+                                     columns[0])
 
-    for column in line.split()[1:]:
+    for column in columns[1:]:
       table_data += '    <td class="column-entry"><pre>%s</pre></td>\n' % column
     table_data += '  </tr>\n'
 
@@ -263,16 +279,14 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
   style_data = data[style_start + len(STYLE_START_MARKER):style_end]
 
   # Add hover for table <tr>.
-  style_data += ('\ntr:hover {'
-                 '\n  background-color: #eee;'
-                 '\n}')
+  style_data += '\ntr:hover { background-color: #eee; }'
 
   with open(os.path.join(output_dir, STYLE_FILENAME), 'w') as file_handle:
     file_handle.write(style_data)
   style_length = (
       len(style_data) + len(STYLE_START_MARKER) + len(STYLE_END_MARKER))
 
-  # Extract every source code file. Use "ofset" to avoid creating new strings.
+  # Extract every source code file. Use "offset" to avoid creating new strings.
   offset = 0
   while True:
     file_start = data.find(SINGLE_FILE_START_MARKER, offset)
@@ -291,15 +305,15 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
                                     STYLE_FILENAME)
 
     filename, file_data = ExtractAndFixFilename(file_data, source_dir)
-    filepath = os.path.join(output_dir, filename)
-    dirname = os.path.dirname(filepath)
+    file_path = os.path.join(output_dir, filename)
+    dirname = os.path.dirname(file_path)
 
     try:
       os.makedirs(dirname)
     except OSError:
       pass
 
-    with open(filepath + HTML_FILE_EXTENSION, 'w') as file_handle:
+    with open(file_path + HTML_FILE_EXTENSION, 'w') as file_handle:
       file_handle.write(file_data)
 
 
@@ -388,17 +402,23 @@ def main():
   parser.add_argument(
       '--command',
       required=True,
-      help='The command to generate code coverage of')
+      help='The command to run target binary for which code coverage is '
+      'required.')
   parser.add_argument(
       '--source',
       required=False,
       default=CHROME_SRC_PATH,
-      help='Directory with the source code, if it differs from '
-      'local Chromium checkout: %s.' % CHROME_SRC_PATH)
+      help='Location of chromium source checkout, if it differs from '
+      'current checkout: %s.' % CHROME_SRC_PATH)
   parser.add_argument(
       '--output',
       required=True,
-      help='Directory where result will be written to.')
+      help='Directory where code coverage files will be written to.')
+
+  if not len(sys.argv[1:]):
+    # Print help when no arguments are provided on command line.
+    parser.print_help()
+    parser.exit()
 
   args = parser.parse_args()
 
