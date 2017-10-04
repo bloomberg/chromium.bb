@@ -2420,7 +2420,7 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
                                       &col_masks);
 
     // Disable filtering on the leftmost column or tile boundary
-    unsigned int border_mask = ~(mi_col == 0);
+    unsigned int border_mask = ~(mi_col == 0 ? 1 : 0);
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
     MODE_INFO *const mi = cm->mi + (mi_row + idx_r) * cm->mi_stride + mi_col;
     if (av1_disable_loopfilter_on_tile_boundary(cm) &&
