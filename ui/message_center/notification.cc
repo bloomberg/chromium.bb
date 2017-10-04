@@ -184,16 +184,24 @@ bool Notification::UseOriginAsContextMessage() const {
          origin_url_.SchemeIsHTTPOrHTTPS();
 }
 
-gfx::Image Notification::GenerateMaskedSmallIcon(SkColor color) const {
+gfx::Image Notification::GenerateMaskedSmallIcon(int dip_size,
+                                                 SkColor color) const {
   if (!vector_small_image().is_empty())
-    return gfx::Image(gfx::CreateVectorIcon(vector_small_image(), color));
+    return gfx::Image(
+        gfx::CreateVectorIcon(vector_small_image(), dip_size, color));
 
   if (small_image().IsEmpty())
-    return small_image();
+    return gfx::Image();
 
+  // If |vector_small_image| is not available, fallback to raster based
+  // masking and resizing.
   gfx::ImageSkia image = small_image().AsImageSkia();
-  return gfx::Image(gfx::ImageSkiaOperations::CreateMaskedImage(
-      CreateSolidColorImage(image.width(), image.height(), color), image));
+  gfx::ImageSkia masked = gfx::ImageSkiaOperations::CreateMaskedImage(
+      CreateSolidColorImage(image.width(), image.height(), color), image);
+  gfx::ImageSkia resized = gfx::ImageSkiaOperations::CreateResizedImage(
+      masked, skia::ImageOperations::ResizeMethod::RESIZE_BEST,
+      gfx::Size(dip_size, dip_size));
+  return gfx::Image(resized);
 }
 
 // static

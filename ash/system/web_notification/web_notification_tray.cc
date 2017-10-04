@@ -48,7 +48,8 @@ constexpr int kEnableQuietModeDay = 2;
 
 constexpr int kMaximumSmallIconCount = 3;
 
-constexpr gfx::Size kTrayItemInnerIconSize(16, 16);
+constexpr int kTrayItemInnerIconSize = 16;
+;
 constexpr gfx::Size kTrayItemOuterSize(26, 26);
 constexpr int kTrayMainAxisInset = 3;
 constexpr int kTrayCrossAxisInset = 0;
@@ -218,9 +219,10 @@ class WebNotificationImage : public WebNotificationItem {
                        gfx::AnimationContainer* container,
                        WebNotificationTray* tray)
       : WebNotificationItem(container, tray) {
+    DCHECK(image.size() ==
+           gfx::Size(kTrayItemInnerIconSize, kTrayItemInnerIconSize));
     view_ = new views::ImageView();
     view_->SetImage(image);
-    view_->SetImageSize(kTrayItemInnerIconSize);
     AddChildView(view_);
   }
 
@@ -520,7 +522,8 @@ void WebNotificationTray::UpdateTrayContent() {
       message_center_tray_->message_center();
   size_t visible_small_icon_count = 0;
   for (const auto* notification : message_center->GetVisibleNotifications()) {
-    gfx::Image image = notification->GenerateMaskedSmallIcon(kTrayIconColor);
+    gfx::Image image = notification->GenerateMaskedSmallIcon(
+        kTrayItemInnerIconSize, kTrayIconColor);
     if (image.IsEmpty())
       continue;
 
