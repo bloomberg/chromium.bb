@@ -54,6 +54,7 @@
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
+#include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
@@ -732,6 +733,13 @@ void LayoutBox::ScrollRectToVisibleRecursive(
         make_visible_in_visual_viewport, scroll_behavior,
         is_for_scroll_sequence);
   }
+}
+
+void LayoutBox::SetMargin(const NGPhysicalBoxStrut& box) {
+  margin_box_outsets_.SetTop(box.top);
+  margin_box_outsets_.SetRight(box.right);
+  margin_box_outsets_.SetBottom(box.bottom);
+  margin_box_outsets_.SetLeft(box.left);
 }
 
 void LayoutBox::AbsoluteRects(Vector<IntRect>& rects,

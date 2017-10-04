@@ -12,6 +12,7 @@ namespace blink {
 
 NGConstraintSpace::NGConstraintSpace(
     NGWritingMode writing_mode,
+    bool is_orthogonal_writing_mode_root,
     TextDirection direction,
     NGLogicalSize available_size,
     NGLogicalSize percentage_resolution_size,
@@ -54,6 +55,7 @@ NGConstraintSpace::NGConstraintSpace(
       is_anonymous_(is_anonymous),
       use_first_line_style_(use_first_line_style),
       writing_mode_(writing_mode),
+      is_orthogonal_writing_mode_root_(is_orthogonal_writing_mode_root),
       direction_(static_cast<unsigned>(direction)),
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
@@ -141,6 +143,17 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
       .SetIsNewFormattingContext(is_new_fc)
       .SetTextDirection(box.StyleRef().Direction())
       .ToConstraintSpace(writing_mode);
+}
+
+LayoutUnit
+NGConstraintSpace::PercentageResolutionInlineSizeForParentWritingMode() const {
+  if (!IsOrthogonalWritingModeRoot())
+    return PercentageResolutionSize().inline_size;
+  if (PercentageResolutionSize().block_size != NGSizeIndefinite)
+    return PercentageResolutionSize().block_size;
+  if (IsHorizontalWritingMode(WritingMode()))
+    return InitialContainingBlockSize().height;
+  return InitialContainingBlockSize().width;
 }
 
 Optional<LayoutUnit> NGConstraintSpace::ParentPercentageResolutionInlineSize()

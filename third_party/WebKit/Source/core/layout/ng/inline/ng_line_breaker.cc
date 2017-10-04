@@ -506,8 +506,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
           .InlineSize();
 
   item_result->margins =
-      ComputeMargins(constraint_space_, style, constraint_space_.WritingMode(),
-                     style.Direction());
+      ComputeMarginsForVisualContainer(constraint_space_, style);
   item_result->inline_size += item_result->margins.InlineSum();
 
   line_.position += item_result->inline_size;
@@ -550,9 +549,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
   NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
 
   const ComputedStyle& float_style = node.Style();
-  NGBoxStrut margins = ComputeMargins(constraint_space_, float_style,
-                                      constraint_space_.WritingMode(),
-                                      constraint_space_.Direction());
+  NGBoxStrut margins =
+      ComputeMarginsForContainer(constraint_space_, float_style);
 
   // TODO(ikilpatrick): Add support for float break tokens inside an inline
   // layout context.
@@ -619,9 +617,8 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
     item_result->borders_paddings_block_end =
         borders.block_end + paddings.block_end;
     if (item.HasStartEdge()) {
-      item_result->margins = ComputeMargins(constraint_space_, style,
-                                            constraint_space_.WritingMode(),
-                                            constraint_space_.Direction());
+      item_result->margins =
+          ComputeMarginsForContainer(constraint_space_, style);
       item_result->inline_size = item_result->margins.inline_start +
                                  borders.inline_start + paddings.inline_start;
       line_.position += item_result->inline_size;
@@ -650,9 +647,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleCloseTag(
   if (item.HasEndEdge()) {
     DCHECK(item.Style());
     const ComputedStyle& style = *item.Style();
-    item_result->margins = ComputeMargins(constraint_space_, style,
-                                          constraint_space_.WritingMode(),
-                                          constraint_space_.Direction());
+    item_result->margins = ComputeMarginsForContainer(constraint_space_, style);
     NGBoxStrut borders = ComputeBorders(constraint_space_, style);
     NGBoxStrut paddings = ComputePadding(constraint_space_, style);
     item_result->inline_size = item_result->margins.inline_end +

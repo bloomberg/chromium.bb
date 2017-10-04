@@ -346,8 +346,7 @@ TEST_F(NGLengthUtilsTest, testMargins) {
   RefPtr<NGConstraintSpace> constraint_space(
       ConstructConstraintSpace(200, 300));
 
-  NGBoxStrut margins = ComputeMargins(
-      *constraint_space, *style_, kHorizontalTopBottom, TextDirection::kLtr);
+  NGBoxStrut margins = ComputeMarginsForContainer(*constraint_space, *style_);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);

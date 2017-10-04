@@ -312,7 +312,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       ConstraintSpace().WritingMode(),
       ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
-      {NGBaselineAlgorithmType::kAtomicInline, baseline_type_});
+      {NGBaselineAlgorithmType::kAtomicInline, baseline_type_},
+      ConstraintSpace());
   box->metrics.Unite(metrics);
 
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
