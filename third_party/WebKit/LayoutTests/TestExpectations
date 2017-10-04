@@ -1736,6 +1736,7 @@ crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editabl
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Android Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/requestidlecallback/basic.html [ Timeout ]
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-call-immediate-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-method-abort-update-manual.https.html [ Skip ]
