@@ -4,5 +4,5 @@
 # found in the LICENSE file.
 find \
 	'(' -name '*.[ch]' -or -name '*.cc' ')' \
-	-not -name 'gbm.h' \
+	-not -name 'gbm.h' -not -name 'virgl_hw.h' \
 	-exec clang-format -style=file -i {} +

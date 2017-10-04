@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#ifndef DRV_VIRGL
+
 #include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
@@ -65,3 +67,5 @@ const struct backend backend_virtio_gpu = {
 	.bo_unmap = drv_bo_munmap,
 	.resolve_format = virtio_gpu_resolve_format,
 };
+
+#endif
