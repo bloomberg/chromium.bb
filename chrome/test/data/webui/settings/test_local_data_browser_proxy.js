@@ -36,6 +36,7 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   reloadCookies() {
+    this.methodCalled('reloadCookies');
     return Promise.resolve({id: null, children: []});
   }
 

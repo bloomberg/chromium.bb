@@ -23,6 +23,7 @@ Polymer({
   behaviors: [
     CookieTreeBehavior,
     I18nBehavior,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -43,9 +44,17 @@ Polymer({
     },
   },
 
-  /** @override */
-  ready: function() {
-    this.loadCookies();
+  /**
+   * Reload cookies when the site data page is visited.
+   *
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} currentRoute
+   * @protected
+   */
+  currentRouteChanged: function(currentRoute) {
+    if (currentRoute == settings.routes.SITE_SETTINGS_SITE_DATA) {
+      this.loadCookies();
+    }
   },
 
   /**
