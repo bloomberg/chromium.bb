@@ -5852,68 +5852,11 @@ the Bookmarks menu.">
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear browsing data
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_INFO_BAR_TEXT" desc="The text of the infobar that is displayed in the clear browsing data dialog. This infobar remindes users that they can use the incognito mode instead of clearing their browsing data.">
-        Psst! Incognito mode (<ph name="INCOGNITO_MODE_SHORTCUT">$1<ex>Shift+Ctrl+N</ex></ph>) may come in handy next time.
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_LABEL" desc="Label at the top of the client area of the dialog, preceding the period combo box">
-        Obliterate the following items from:
-      </message>
-      <message name="IDS_DEL_BROWSING_HISTORY_CHKBOX" desc="Checkbox for deleting Browsing History">
-        Browsing history
-      </message>
-      <message name="IDS_DEL_DOWNLOAD_HISTORY_CHKBOX" desc="Checkbox for deleting Download History">
-        Download history
-      </message>
-      <message name="IDS_DEL_CACHE_CHKBOX" desc="Checkbox for deleting Cache">
-        Cached images and files
-      </message>
-      <message name="IDS_DEL_COOKIES_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
-        Cookies and other site data
-      </message>
-      <message name="IDS_DEL_COOKIES_FLASH_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
-        Cookies and other site and plugin data
-      </message>
-      <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
-        Passwords
-      </message>
-      <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
-        Autofill form data
-      </message>
-      <message name="IDS_DEL_HOSTED_APPS_DATA_CHKBOX" desc="Checkbox for deleting data of hosted apps">
-        Hosted app data
-      </message>
-      <message name="IDS_DEL_MEDIA_LICENSES_CHKBOX" desc="Checkbox for deleting media licenses (premium content, etc.)">
-        Media licenses
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Title for OK button on dialog">
-        Clear browsing data
-      </message>
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
         Adobe Flash Player storage settings...
       </message>
       <message name="IDS_FLASH_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to use Flash Plugins on the page. Preceded by the prompt 'This site would like to:'">
         Run Flash
-      </message>
-      <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour. In English this finishes the sentence that starts with 'Delete the following items from'.">
-        the past hour
-      </message>
-      <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day. In English this finishes the sentence that starts with 'Delete the following items from'.">
-        the past day
-      </message>
-      <message name="IDS_CLEAR_DATA_WEEK" desc="deletion period combo box: week. In English this finishes the sentence that starts with 'Delete the following items from'.">
-        the past week
-      </message>
-      <message name="IDS_CLEAR_DATA_4WEEKS" desc="deletion period combo box: 4 weeks. In English this finishes the sentence that starts with 'Delete the following items from'.">
-        the last 4 weeks
-      </message>
-      <message name="IDS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything. In English this finishes the sentence that starts with 'Delete the following items from'.">
-        the beginning of time
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS" desc="Information that some data may remain even though the user clears their browsing history. The text in '|'s and '#'s will be turned into buttons. The translated text should contain exactly one phrase in '|'s and one in '#'s.">
-        Saved |content settings| and #search engines# will not be cleared and may reflect your browsing habits.
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that some data types will not be cleared.">
-        Some settings that may reflect browsing habits will not be cleared.
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_FOOTER" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
         Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>history.google.com<ph name="END_LINK">&lt;/a&gt;</ph>
@@ -5926,9 +5869,6 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK" desc="Button in a dialog that informs the user that the deletion of Chrome's browsing data has been completed.">
         Ok, got it
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
-        This clears synced data from all devices.
       </message>
 
       <!-- Supervised User (Legacy and Accounts for Kids) Avatar Menu -->
