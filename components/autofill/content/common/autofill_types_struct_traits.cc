@@ -10,72 +10,39 @@
 #include "url/mojo/origin_struct_traits.h"
 #include "url/mojo/url_gurl_struct_traits.h"
 
-using namespace autofill;
-
 namespace mojo {
 
 // static
-mojom::CheckStatus
-EnumTraits<mojom::CheckStatus, FormFieldData::CheckStatus>::ToMojom(
-    FormFieldData::CheckStatus input) {
+autofill::mojom::CheckStatus
+EnumTraits<autofill::mojom::CheckStatus, autofill::FormFieldData::CheckStatus>::
+    ToMojom(autofill::FormFieldData::CheckStatus input) {
   switch (input) {
-    case FormFieldData::CheckStatus::NOT_CHECKABLE:
-      return mojom::CheckStatus::NOT_CHECKABLE;
-    case FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED:
-      return mojom::CheckStatus::CHECKABLE_BUT_UNCHECKED;
-    case FormFieldData::CheckStatus::CHECKED:
-      return mojom::CheckStatus::CHECKED;
+    case autofill::FormFieldData::CheckStatus::NOT_CHECKABLE:
+      return autofill::mojom::CheckStatus::NOT_CHECKABLE;
+    case autofill::FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED:
+      return autofill::mojom::CheckStatus::CHECKABLE_BUT_UNCHECKED;
+    case autofill::FormFieldData::CheckStatus::CHECKED:
+      return autofill::mojom::CheckStatus::CHECKED;
   }
 
   NOTREACHED();
-  return mojom::CheckStatus::NOT_CHECKABLE;
+  return autofill::mojom::CheckStatus::NOT_CHECKABLE;
 }
 
 // static
-bool EnumTraits<mojom::CheckStatus, FormFieldData::CheckStatus>::FromMojom(
-    mojom::CheckStatus input,
-    FormFieldData::CheckStatus* output) {
+bool EnumTraits<autofill::mojom::CheckStatus,
+                autofill::FormFieldData::CheckStatus>::
+    FromMojom(autofill::mojom::CheckStatus input,
+              autofill::FormFieldData::CheckStatus* output) {
   switch (input) {
-    case mojom::CheckStatus::NOT_CHECKABLE:
-      *output = FormFieldData::CheckStatus::NOT_CHECKABLE;
+    case autofill::mojom::CheckStatus::NOT_CHECKABLE:
+      *output = autofill::FormFieldData::CheckStatus::NOT_CHECKABLE;
       return true;
-    case mojom::CheckStatus::CHECKABLE_BUT_UNCHECKED:
-      *output = FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED;
+    case autofill::mojom::CheckStatus::CHECKABLE_BUT_UNCHECKED:
+      *output = autofill::FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED;
       return true;
-    case mojom::CheckStatus::CHECKED:
-      *output = FormFieldData::CheckStatus::CHECKED;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-mojom::RoleAttribute
-EnumTraits<mojom::RoleAttribute, FormFieldData::RoleAttribute>::ToMojom(
-    FormFieldData::RoleAttribute input) {
-  switch (input) {
-    case FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION:
-      return mojom::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION;
-    case FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_OTHER:
-      return mojom::RoleAttribute::ROLE_ATTRIBUTE_OTHER;
-  }
-
-  NOTREACHED();
-  return mojom::RoleAttribute::ROLE_ATTRIBUTE_OTHER;
-}
-
-// static
-bool EnumTraits<mojom::RoleAttribute, FormFieldData::RoleAttribute>::FromMojom(
-    mojom::RoleAttribute input,
-    FormFieldData::RoleAttribute* output) {
-  switch (input) {
-    case mojom::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION:
-      *output = FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION;
-      return true;
-    case mojom::RoleAttribute::ROLE_ATTRIBUTE_OTHER:
-      *output = FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_OTHER;
+    case autofill::mojom::CheckStatus::CHECKED:
+      *output = autofill::FormFieldData::CheckStatus::CHECKED;
       return true;
   }
 
@@ -84,254 +51,308 @@ bool EnumTraits<mojom::RoleAttribute, FormFieldData::RoleAttribute>::FromMojom(
 }
 
 // static
-mojom::GenerationUploadStatus EnumTraits<mojom::GenerationUploadStatus,
-                                         PasswordForm::GenerationUploadStatus>::
-    ToMojom(PasswordForm::GenerationUploadStatus input) {
+autofill::mojom::RoleAttribute
+EnumTraits<autofill::mojom::RoleAttribute,
+           autofill::FormFieldData::RoleAttribute>::
+    ToMojom(autofill::FormFieldData::RoleAttribute input) {
   switch (input) {
-    case PasswordForm::GenerationUploadStatus::NO_SIGNAL_SENT:
-      return mojom::GenerationUploadStatus::NO_SIGNAL_SENT;
-    case PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT:
-      return mojom::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
-    case PasswordForm::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT:
-      return mojom::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT;
-    case PasswordForm::GenerationUploadStatus::UNKNOWN_STATUS:
-      return mojom::GenerationUploadStatus::UNKNOWN_STATUS;
+    case autofill::FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION:
+      return autofill::mojom::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION;
+    case autofill::FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_OTHER:
+      return autofill::mojom::RoleAttribute::ROLE_ATTRIBUTE_OTHER;
   }
 
   NOTREACHED();
-  return mojom::GenerationUploadStatus::UNKNOWN_STATUS;
+  return autofill::mojom::RoleAttribute::ROLE_ATTRIBUTE_OTHER;
 }
 
 // static
-bool EnumTraits<mojom::GenerationUploadStatus,
-                PasswordForm::GenerationUploadStatus>::
-    FromMojom(mojom::GenerationUploadStatus input,
-              PasswordForm::GenerationUploadStatus* output) {
+bool EnumTraits<autofill::mojom::RoleAttribute,
+                autofill::FormFieldData::RoleAttribute>::
+    FromMojom(autofill::mojom::RoleAttribute input,
+              autofill::FormFieldData::RoleAttribute* output) {
   switch (input) {
-    case mojom::GenerationUploadStatus::NO_SIGNAL_SENT:
-      *output = PasswordForm::GenerationUploadStatus::NO_SIGNAL_SENT;
-      return true;
-    case mojom::GenerationUploadStatus::POSITIVE_SIGNAL_SENT:
-      *output = PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
-      return true;
-    case mojom::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT:
-      *output = PasswordForm::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT;
-      return true;
-    case mojom::GenerationUploadStatus::UNKNOWN_STATUS:
-      *output = PasswordForm::GenerationUploadStatus::UNKNOWN_STATUS;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-mojom::PasswordFormLayout
-EnumTraits<mojom::PasswordFormLayout, PasswordForm::Layout>::ToMojom(
-    PasswordForm::Layout input) {
-  switch (input) {
-    case PasswordForm::Layout::LAYOUT_OTHER:
-      return mojom::PasswordFormLayout::LAYOUT_OTHER;
-    case PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP:
-      return mojom::PasswordFormLayout::LAYOUT_LOGIN_AND_SIGNUP;
-  }
-
-  NOTREACHED();
-  return mojom::PasswordFormLayout::LAYOUT_OTHER;
-}
-
-// static
-bool EnumTraits<mojom::PasswordFormLayout, PasswordForm::Layout>::FromMojom(
-    mojom::PasswordFormLayout input,
-    PasswordForm::Layout* output) {
-  switch (input) {
-    case mojom::PasswordFormLayout::LAYOUT_OTHER:
-      *output = PasswordForm::Layout::LAYOUT_OTHER;
-      return true;
-    case mojom::PasswordFormLayout::LAYOUT_LOGIN_AND_SIGNUP:
-      *output = PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-mojom::PasswordFormType
-EnumTraits<mojom::PasswordFormType, PasswordForm::Type>::ToMojom(
-    PasswordForm::Type input) {
-  switch (input) {
-    case PasswordForm::Type::TYPE_MANUAL:
-      return mojom::PasswordFormType::TYPE_MANUAL;
-    case PasswordForm::Type::TYPE_GENERATED:
-      return mojom::PasswordFormType::TYPE_GENERATED;
-    case PasswordForm::Type::TYPE_API:
-      return mojom::PasswordFormType::TYPE_API;
-  }
-
-  NOTREACHED();
-  return mojom::PasswordFormType::TYPE_MANUAL;
-}
-
-// static
-bool EnumTraits<mojom::PasswordFormType, PasswordForm::Type>::FromMojom(
-    mojom::PasswordFormType input,
-    PasswordForm::Type* output) {
-  switch (input) {
-    case mojom::PasswordFormType::TYPE_MANUAL:
-      *output = PasswordForm::Type::TYPE_MANUAL;
-      return true;
-    case mojom::PasswordFormType::TYPE_GENERATED:
-      *output = PasswordForm::Type::TYPE_GENERATED;
-      return true;
-    case mojom::PasswordFormType::TYPE_API:
-      *output = PasswordForm::Type::TYPE_API;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-mojom::PasswordFormScheme
-EnumTraits<mojom::PasswordFormScheme, PasswordForm::Scheme>::ToMojom(
-    PasswordForm::Scheme input) {
-  switch (input) {
-    case PasswordForm::Scheme::SCHEME_HTML:
-      return mojom::PasswordFormScheme::SCHEME_HTML;
-    case PasswordForm::Scheme::SCHEME_BASIC:
-      return mojom::PasswordFormScheme::SCHEME_BASIC;
-    case PasswordForm::Scheme::SCHEME_DIGEST:
-      return mojom::PasswordFormScheme::SCHEME_DIGEST;
-    case PasswordForm::Scheme::SCHEME_OTHER:
-      return mojom::PasswordFormScheme::SCHEME_OTHER;
-    case PasswordForm::Scheme::SCHEME_USERNAME_ONLY:
-      return mojom::PasswordFormScheme::SCHEME_USERNAME_ONLY;
-  }
-
-  NOTREACHED();
-  return mojom::PasswordFormScheme::SCHEME_OTHER;
-}
-
-// static
-bool EnumTraits<mojom::PasswordFormScheme, PasswordForm::Scheme>::FromMojom(
-    mojom::PasswordFormScheme input,
-    PasswordForm::Scheme* output) {
-  switch (input) {
-    case mojom::PasswordFormScheme::SCHEME_HTML:
-      *output = PasswordForm::Scheme::SCHEME_HTML;
-      return true;
-    case mojom::PasswordFormScheme::SCHEME_BASIC:
-      *output = PasswordForm::Scheme::SCHEME_BASIC;
-      return true;
-    case mojom::PasswordFormScheme::SCHEME_DIGEST:
-      *output = PasswordForm::Scheme::SCHEME_DIGEST;
-      return true;
-    case mojom::PasswordFormScheme::SCHEME_OTHER:
-      *output = PasswordForm::Scheme::SCHEME_OTHER;
-      return true;
-    case mojom::PasswordFormScheme::SCHEME_USERNAME_ONLY:
-      *output = PasswordForm::Scheme::SCHEME_USERNAME_ONLY;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-mojom::PasswordFormSubmissionIndicatorEvent
-EnumTraits<mojom::PasswordFormSubmissionIndicatorEvent,
-           PasswordForm::SubmissionIndicatorEvent>::
-    ToMojom(PasswordForm::SubmissionIndicatorEvent input) {
-  switch (input) {
-    case PasswordForm::SubmissionIndicatorEvent::NONE:
-      return mojom::PasswordFormSubmissionIndicatorEvent::NONE;
-    case PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
-      return mojom::PasswordFormSubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-    case PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION:
-      return mojom::PasswordFormSubmissionIndicatorEvent::
-          SAME_DOCUMENT_NAVIGATION;
-    case PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED:
-      return mojom::PasswordFormSubmissionIndicatorEvent::XHR_SUCCEEDED;
-    case PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED:
-      return mojom::PasswordFormSubmissionIndicatorEvent::FRAME_DETACHED;
-    case PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE:
-      return mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE;
-    case PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
-      return mojom::PasswordFormSubmissionIndicatorEvent::
-          DOM_MUTATION_AFTER_XHR;
-    case PasswordForm::SubmissionIndicatorEvent::
-        PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
-      return mojom::PasswordFormSubmissionIndicatorEvent::
-          PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
-    case PasswordForm::SubmissionIndicatorEvent::
-        FILLED_FORM_ON_START_PROVISIONAL_LOAD:
-      return mojom::PasswordFormSubmissionIndicatorEvent::
-          FILLED_FORM_ON_START_PROVISIONAL_LOAD;
-    case PasswordForm::SubmissionIndicatorEvent::
-        FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
-      return mojom::PasswordFormSubmissionIndicatorEvent::
-          FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
-    case PasswordForm::SubmissionIndicatorEvent::
-        SUBMISSION_INDICATOR_EVENT_COUNT:
-      return mojom::PasswordFormSubmissionIndicatorEvent::
-          SUBMISSION_INDICATOR_EVENT_COUNT;
-  }
-
-  NOTREACHED();
-  return mojom::PasswordFormSubmissionIndicatorEvent::NONE;
-}
-
-// static
-bool EnumTraits<mojom::PasswordFormSubmissionIndicatorEvent,
-                PasswordForm::SubmissionIndicatorEvent>::
-    FromMojom(mojom::PasswordFormSubmissionIndicatorEvent input,
-              PasswordForm::SubmissionIndicatorEvent* output) {
-  switch (input) {
-    case mojom::PasswordFormSubmissionIndicatorEvent::NONE:
-      *output = PasswordForm::SubmissionIndicatorEvent::NONE;
-      return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
-      *output = PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-      return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION:
+    case autofill::mojom::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION:
       *output =
-          PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+          autofill::FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_PRESENTATION;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::XHR_SUCCEEDED:
-      *output = PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
+    case autofill::mojom::RoleAttribute::ROLE_ATTRIBUTE_OTHER:
+      *output = autofill::FormFieldData::RoleAttribute::ROLE_ATTRIBUTE_OTHER;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::FRAME_DETACHED:
-      *output = PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+autofill::mojom::GenerationUploadStatus
+EnumTraits<autofill::mojom::GenerationUploadStatus,
+           autofill::PasswordForm::GenerationUploadStatus>::
+    ToMojom(autofill::PasswordForm::GenerationUploadStatus input) {
+  switch (input) {
+    case autofill::PasswordForm::GenerationUploadStatus::NO_SIGNAL_SENT:
+      return autofill::mojom::GenerationUploadStatus::NO_SIGNAL_SENT;
+    case autofill::PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT:
+      return autofill::mojom::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
+    case autofill::PasswordForm::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT:
+      return autofill::mojom::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT;
+    case autofill::PasswordForm::GenerationUploadStatus::UNKNOWN_STATUS:
+      return autofill::mojom::GenerationUploadStatus::UNKNOWN_STATUS;
+  }
+
+  NOTREACHED();
+  return autofill::mojom::GenerationUploadStatus::UNKNOWN_STATUS;
+}
+
+// static
+bool EnumTraits<autofill::mojom::GenerationUploadStatus,
+                autofill::PasswordForm::GenerationUploadStatus>::
+    FromMojom(autofill::mojom::GenerationUploadStatus input,
+              autofill::PasswordForm::GenerationUploadStatus* output) {
+  switch (input) {
+    case autofill::mojom::GenerationUploadStatus::NO_SIGNAL_SENT:
+      *output = autofill::PasswordForm::GenerationUploadStatus::NO_SIGNAL_SENT;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE:
-      *output = PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
+    case autofill::mojom::GenerationUploadStatus::POSITIVE_SIGNAL_SENT:
+      *output =
+          autofill::PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR:
-      *output = PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
+    case autofill::mojom::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT:
+      *output =
+          autofill::PasswordForm::GenerationUploadStatus::NEGATIVE_SIGNAL_SENT;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::mojom::GenerationUploadStatus::UNKNOWN_STATUS:
+      *output = autofill::PasswordForm::GenerationUploadStatus::UNKNOWN_STATUS;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+autofill::mojom::PasswordFormLayout EnumTraits<
+    autofill::mojom::PasswordFormLayout,
+    autofill::PasswordForm::Layout>::ToMojom(autofill::PasswordForm::Layout
+                                                 input) {
+  switch (input) {
+    case autofill::PasswordForm::Layout::LAYOUT_OTHER:
+      return autofill::mojom::PasswordFormLayout::LAYOUT_OTHER;
+    case autofill::PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP:
+      return autofill::mojom::PasswordFormLayout::LAYOUT_LOGIN_AND_SIGNUP;
+  }
+
+  NOTREACHED();
+  return autofill::mojom::PasswordFormLayout::LAYOUT_OTHER;
+}
+
+// static
+bool EnumTraits<autofill::mojom::PasswordFormLayout,
+                autofill::PasswordForm::Layout>::
+    FromMojom(autofill::mojom::PasswordFormLayout input,
+              autofill::PasswordForm::Layout* output) {
+  switch (input) {
+    case autofill::mojom::PasswordFormLayout::LAYOUT_OTHER:
+      *output = autofill::PasswordForm::Layout::LAYOUT_OTHER;
+      return true;
+    case autofill::mojom::PasswordFormLayout::LAYOUT_LOGIN_AND_SIGNUP:
+      *output = autofill::PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+autofill::mojom::PasswordFormType EnumTraits<
+    autofill::mojom::PasswordFormType,
+    autofill::PasswordForm::Type>::ToMojom(autofill::PasswordForm::Type input) {
+  switch (input) {
+    case autofill::PasswordForm::Type::TYPE_MANUAL:
+      return autofill::mojom::PasswordFormType::TYPE_MANUAL;
+    case autofill::PasswordForm::Type::TYPE_GENERATED:
+      return autofill::mojom::PasswordFormType::TYPE_GENERATED;
+    case autofill::PasswordForm::Type::TYPE_API:
+      return autofill::mojom::PasswordFormType::TYPE_API;
+  }
+
+  NOTREACHED();
+  return autofill::mojom::PasswordFormType::TYPE_MANUAL;
+}
+
+// static
+bool EnumTraits<autofill::mojom::PasswordFormType,
+                autofill::PasswordForm::Type>::
+    FromMojom(autofill::mojom::PasswordFormType input,
+              autofill::PasswordForm::Type* output) {
+  switch (input) {
+    case autofill::mojom::PasswordFormType::TYPE_MANUAL:
+      *output = autofill::PasswordForm::Type::TYPE_MANUAL;
+      return true;
+    case autofill::mojom::PasswordFormType::TYPE_GENERATED:
+      *output = autofill::PasswordForm::Type::TYPE_GENERATED;
+      return true;
+    case autofill::mojom::PasswordFormType::TYPE_API:
+      *output = autofill::PasswordForm::Type::TYPE_API;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+autofill::mojom::PasswordFormScheme EnumTraits<
+    autofill::mojom::PasswordFormScheme,
+    autofill::PasswordForm::Scheme>::ToMojom(autofill::PasswordForm::Scheme
+                                                 input) {
+  switch (input) {
+    case autofill::PasswordForm::Scheme::SCHEME_HTML:
+      return autofill::mojom::PasswordFormScheme::SCHEME_HTML;
+    case autofill::PasswordForm::Scheme::SCHEME_BASIC:
+      return autofill::mojom::PasswordFormScheme::SCHEME_BASIC;
+    case autofill::PasswordForm::Scheme::SCHEME_DIGEST:
+      return autofill::mojom::PasswordFormScheme::SCHEME_DIGEST;
+    case autofill::PasswordForm::Scheme::SCHEME_OTHER:
+      return autofill::mojom::PasswordFormScheme::SCHEME_OTHER;
+    case autofill::PasswordForm::Scheme::SCHEME_USERNAME_ONLY:
+      return autofill::mojom::PasswordFormScheme::SCHEME_USERNAME_ONLY;
+  }
+
+  NOTREACHED();
+  return autofill::mojom::PasswordFormScheme::SCHEME_OTHER;
+}
+
+// static
+bool EnumTraits<autofill::mojom::PasswordFormScheme,
+                autofill::PasswordForm::Scheme>::
+    FromMojom(autofill::mojom::PasswordFormScheme input,
+              autofill::PasswordForm::Scheme* output) {
+  switch (input) {
+    case autofill::mojom::PasswordFormScheme::SCHEME_HTML:
+      *output = autofill::PasswordForm::Scheme::SCHEME_HTML;
+      return true;
+    case autofill::mojom::PasswordFormScheme::SCHEME_BASIC:
+      *output = autofill::PasswordForm::Scheme::SCHEME_BASIC;
+      return true;
+    case autofill::mojom::PasswordFormScheme::SCHEME_DIGEST:
+      *output = autofill::PasswordForm::Scheme::SCHEME_DIGEST;
+      return true;
+    case autofill::mojom::PasswordFormScheme::SCHEME_OTHER:
+      *output = autofill::PasswordForm::Scheme::SCHEME_OTHER;
+      return true;
+    case autofill::mojom::PasswordFormScheme::SCHEME_USERNAME_ONLY:
+      *output = autofill::PasswordForm::Scheme::SCHEME_USERNAME_ONLY;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+autofill::mojom::PasswordFormSubmissionIndicatorEvent
+EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
+           autofill::PasswordForm::SubmissionIndicatorEvent>::
+    ToMojom(autofill::PasswordForm::SubmissionIndicatorEvent input) {
+  switch (input) {
+    case autofill::PasswordForm::SubmissionIndicatorEvent::NONE:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::NONE;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          HTML_FORM_SUBMISSION;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
+        SAME_DOCUMENT_NAVIGATION:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          SAME_DOCUMENT_NAVIGATION;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          XHR_SUCCEEDED;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          FRAME_DETACHED;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
+        DOM_MUTATION_AFTER_XHR:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          DOM_MUTATION_AFTER_XHR;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
         PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
-      *output = PasswordForm::SubmissionIndicatorEvent::
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
+        FILLED_FORM_ON_START_PROVISIONAL_LOAD:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          FILLED_FORM_ON_START_PROVISIONAL_LOAD;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
+        FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
+    case autofill::PasswordForm::SubmissionIndicatorEvent::
+        SUBMISSION_INDICATOR_EVENT_COUNT:
+      return autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+          SUBMISSION_INDICATOR_EVENT_COUNT;
+  }
+
+  NOTREACHED();
+  return autofill::mojom::PasswordFormSubmissionIndicatorEvent::NONE;
+}
+
+// static
+bool EnumTraits<autofill::mojom::PasswordFormSubmissionIndicatorEvent,
+                autofill::PasswordForm::SubmissionIndicatorEvent>::
+    FromMojom(autofill::mojom::PasswordFormSubmissionIndicatorEvent input,
+              autofill::PasswordForm::SubmissionIndicatorEvent* output) {
+  switch (input) {
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::NONE:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::NONE;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+        HTML_FORM_SUBMISSION:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
+          HTML_FORM_SUBMISSION;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+        SAME_DOCUMENT_NAVIGATION:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
+          SAME_DOCUMENT_NAVIGATION;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::XHR_SUCCEEDED:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::FRAME_DETACHED:
+      *output =
+          autofill::PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::MANUAL_SAVE:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::MANUAL_SAVE;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+        DOM_MUTATION_AFTER_XHR:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
+          DOM_MUTATION_AFTER_XHR;
+      return true;
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
+        PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD:
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
           PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
         FILLED_FORM_ON_START_PROVISIONAL_LOAD:
-      *output = PasswordForm::SubmissionIndicatorEvent::
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
           FILLED_FORM_ON_START_PROVISIONAL_LOAD;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
         FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD:
-      *output = PasswordForm::SubmissionIndicatorEvent::
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
           FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
       return true;
-    case mojom::PasswordFormSubmissionIndicatorEvent::
+    case autofill::mojom::PasswordFormSubmissionIndicatorEvent::
         SUBMISSION_INDICATOR_EVENT_COUNT:
-      *output = PasswordForm::SubmissionIndicatorEvent::
+      *output = autofill::PasswordForm::SubmissionIndicatorEvent::
           SUBMISSION_INDICATOR_EVENT_COUNT;
       return true;
   }
@@ -341,43 +362,53 @@ bool EnumTraits<mojom::PasswordFormSubmissionIndicatorEvent,
 }
 
 // static
-mojom::PasswordFormFieldPredictionType EnumTraits<
-    mojom::PasswordFormFieldPredictionType,
-    PasswordFormFieldPredictionType>::ToMojom(PasswordFormFieldPredictionType
-                                                  input) {
+autofill::mojom::PasswordFormFieldPredictionType
+EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
+           autofill::PasswordFormFieldPredictionType>::
+    ToMojom(autofill::PasswordFormFieldPredictionType input) {
   switch (input) {
-    case PasswordFormFieldPredictionType::PREDICTION_USERNAME:
-      return mojom::PasswordFormFieldPredictionType::PREDICTION_USERNAME;
-    case PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD:
-      return mojom::PasswordFormFieldPredictionType::
+    case autofill::PasswordFormFieldPredictionType::PREDICTION_USERNAME:
+      return autofill::mojom::PasswordFormFieldPredictionType::
+          PREDICTION_USERNAME;
+    case autofill::PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD:
+      return autofill::mojom::PasswordFormFieldPredictionType::
           PREDICTION_CURRENT_PASSWORD;
-    case PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD:
-      return mojom::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
-    case PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD:
-      return mojom::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+    case autofill::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD:
+      return autofill::mojom::PasswordFormFieldPredictionType::
+          PREDICTION_NEW_PASSWORD;
+    case autofill::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD:
+      return autofill::mojom::PasswordFormFieldPredictionType::
+          PREDICTION_NOT_PASSWORD;
   }
 
   NOTREACHED();
-  return mojom::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+  return autofill::mojom::PasswordFormFieldPredictionType::
+      PREDICTION_NOT_PASSWORD;
 }
 
 // static
-bool EnumTraits<mojom::PasswordFormFieldPredictionType,
-                PasswordFormFieldPredictionType>::
-    FromMojom(mojom::PasswordFormFieldPredictionType input,
-              PasswordFormFieldPredictionType* output) {
+bool EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
+                autofill::PasswordFormFieldPredictionType>::
+    FromMojom(autofill::mojom::PasswordFormFieldPredictionType input,
+              autofill::PasswordFormFieldPredictionType* output) {
   switch (input) {
-    case mojom::PasswordFormFieldPredictionType::PREDICTION_USERNAME:
-      *output = PasswordFormFieldPredictionType::PREDICTION_USERNAME;
+    case autofill::mojom::PasswordFormFieldPredictionType::PREDICTION_USERNAME:
+      *output = autofill::PasswordFormFieldPredictionType::PREDICTION_USERNAME;
       return true;
-    case mojom::PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD:
-      *output = PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD;
+    case autofill::mojom::PasswordFormFieldPredictionType::
+        PREDICTION_CURRENT_PASSWORD:
+      *output = autofill::PasswordFormFieldPredictionType::
+          PREDICTION_CURRENT_PASSWORD;
       return true;
-    case mojom::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD:
-      *output = PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+    case autofill::mojom::PasswordFormFieldPredictionType::
+        PREDICTION_NEW_PASSWORD:
+      *output =
+          autofill::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
       return true;
-    case mojom::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD:
-      *output = PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+    case autofill::mojom::PasswordFormFieldPredictionType::
+        PREDICTION_NOT_PASSWORD:
+      *output =
+          autofill::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
       return true;
   }
 
@@ -386,9 +417,10 @@ bool EnumTraits<mojom::PasswordFormFieldPredictionType,
 }
 
 // static
-bool StructTraits<mojom::FormFieldDataDataView, FormFieldData>::Read(
-    mojom::FormFieldDataDataView data,
-    FormFieldData* out) {
+bool StructTraits<
+    autofill::mojom::FormFieldDataDataView,
+    autofill::FormFieldData>::Read(autofill::mojom::FormFieldDataDataView data,
+                                   autofill::FormFieldData* out) {
   if (!data.ReadLabel(&out->label))
     return false;
   if (!data.ReadName(&out->name))
@@ -435,9 +467,9 @@ bool StructTraits<mojom::FormFieldDataDataView, FormFieldData>::Read(
 }
 
 // static
-bool StructTraits<mojom::FormDataDataView, FormData>::Read(
-    mojom::FormDataDataView data,
-    FormData* out) {
+bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
+    autofill::mojom::FormDataDataView data,
+    autofill::FormData* out) {
   if (!data.ReadName(&out->name))
     return false;
   if (!data.ReadOrigin(&out->origin))
@@ -455,10 +487,10 @@ bool StructTraits<mojom::FormDataDataView, FormData>::Read(
 }
 
 // static
-bool StructTraits<mojom::FormFieldDataPredictionsDataView,
-                  FormFieldDataPredictions>::
-    Read(mojom::FormFieldDataPredictionsDataView data,
-         FormFieldDataPredictions* out) {
+bool StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
+                  autofill::FormFieldDataPredictions>::
+    Read(autofill::mojom::FormFieldDataPredictionsDataView data,
+         autofill::FormFieldDataPredictions* out) {
   if (!data.ReadField(&out->field))
     return false;
   if (!data.ReadSignature(&out->signature))
@@ -476,8 +508,10 @@ bool StructTraits<mojom::FormFieldDataPredictionsDataView,
 }
 
 // static
-bool StructTraits<mojom::FormDataPredictionsDataView, FormDataPredictions>::
-    Read(mojom::FormDataPredictionsDataView data, FormDataPredictions* out) {
+bool StructTraits<autofill::mojom::FormDataPredictionsDataView,
+                  autofill::FormDataPredictions>::
+    Read(autofill::mojom::FormDataPredictionsDataView data,
+         autofill::FormDataPredictions* out) {
   if (!data.ReadData(&out->data))
     return false;
   if (!data.ReadSignature(&out->signature))
@@ -489,9 +523,10 @@ bool StructTraits<mojom::FormDataPredictionsDataView, FormDataPredictions>::
 }
 
 // static
-bool StructTraits<mojom::PasswordAndRealmDataView, PasswordAndRealm>::Read(
-    mojom::PasswordAndRealmDataView data,
-    PasswordAndRealm* out) {
+bool StructTraits<autofill::mojom::PasswordAndRealmDataView,
+                  autofill::PasswordAndRealm>::
+    Read(autofill::mojom::PasswordAndRealmDataView data,
+         autofill::PasswordAndRealm* out) {
   if (!data.ReadPassword(&out->password))
     return false;
   if (!data.ReadRealm(&out->realm))
@@ -501,8 +536,10 @@ bool StructTraits<mojom::PasswordAndRealmDataView, PasswordAndRealm>::Read(
 }
 
 // static
-bool StructTraits<mojom::PasswordFormFillDataDataView, PasswordFormFillData>::
-    Read(mojom::PasswordFormFillDataDataView data, PasswordFormFillData* out) {
+bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
+                  autofill::PasswordFormFillData>::
+    Read(autofill::mojom::PasswordFormFillDataDataView data,
+         autofill::PasswordFormFillData* out) {
   if (!data.ReadName(&out->name) || !data.ReadOrigin(&out->origin) ||
       !data.ReadAction(&out->action) ||
       !data.ReadUsernameField(&out->username_field) ||
@@ -519,10 +556,10 @@ bool StructTraits<mojom::PasswordFormFillDataDataView, PasswordFormFillData>::
 }
 
 // static
-bool StructTraits<mojom::PasswordFormGenerationDataDataView,
-                  PasswordFormGenerationData>::
-    Read(mojom::PasswordFormGenerationDataDataView data,
-         PasswordFormGenerationData* out) {
+bool StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
+                  autofill::PasswordFormGenerationData>::
+    Read(autofill::mojom::PasswordFormGenerationDataDataView data,
+         autofill::PasswordFormGenerationData* out) {
   out->form_signature = data.form_signature();
   out->field_signature = data.field_signature();
   if (data.has_confirmation_field()) {
@@ -535,9 +572,10 @@ bool StructTraits<mojom::PasswordFormGenerationDataDataView,
 }
 
 // static
-bool StructTraits<mojom::PasswordFormDataView, PasswordForm>::Read(
-    mojom::PasswordFormDataView data,
-    PasswordForm* out) {
+bool StructTraits<
+    autofill::mojom::PasswordFormDataView,
+    autofill::PasswordForm>::Read(autofill::mojom::PasswordFormDataView data,
+                                  autofill::PasswordForm* out) {
   if (!data.ReadScheme(&out->scheme) ||
       !data.ReadSignonRealm(&out->signon_realm) ||
       !data.ReadOriginWithPath(&out->origin) ||
@@ -605,10 +643,10 @@ bool StructTraits<mojom::PasswordFormDataView, PasswordForm>::Read(
 }
 
 // static
-std::vector<autofill::FormFieldData> StructTraits<
-    mojom::PasswordFormFieldPredictionMapDataView,
-    PasswordFormFieldPredictionMap>::keys(const PasswordFormFieldPredictionMap&
-                                              r) {
+std::vector<autofill::FormFieldData>
+StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
+             autofill::PasswordFormFieldPredictionMap>::
+    keys(const autofill::PasswordFormFieldPredictionMap& r) {
   std::vector<autofill::FormFieldData> data;
   for (const auto& i : r)
     data.push_back(i.first);
@@ -617,9 +655,9 @@ std::vector<autofill::FormFieldData> StructTraits<
 
 // static
 std::vector<autofill::PasswordFormFieldPredictionType>
-StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
-             PasswordFormFieldPredictionMap>::
-    values(const PasswordFormFieldPredictionMap& r) {
+StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
+             autofill::PasswordFormFieldPredictionMap>::
+    values(const autofill::PasswordFormFieldPredictionMap& r) {
   std::vector<autofill::PasswordFormFieldPredictionType> types;
   for (const auto& i : r)
     types.push_back(i.second);
@@ -627,15 +665,15 @@ StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
 }
 
 // static
-bool StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
-                  PasswordFormFieldPredictionMap>::
-    Read(mojom::PasswordFormFieldPredictionMapDataView data,
-         PasswordFormFieldPredictionMap* out) {
+bool StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
+                  autofill::PasswordFormFieldPredictionMap>::
+    Read(autofill::mojom::PasswordFormFieldPredictionMapDataView data,
+         autofill::PasswordFormFieldPredictionMap* out) {
   // Combines keys vector and values vector to the map.
-  std::vector<FormFieldData> keys;
+  std::vector<autofill::FormFieldData> keys;
   if (!data.ReadKeys(&keys))
     return false;
-  std::vector<PasswordFormFieldPredictionType> values;
+  std::vector<autofill::PasswordFormFieldPredictionType> values;
   if (!data.ReadValues(&values))
     return false;
   if (keys.size() != values.size())
@@ -648,9 +686,10 @@ bool StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
 }
 
 // static
-std::vector<autofill::FormData>
-StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::keys(
-    const FormsPredictionsMap& r) {
+std::vector<autofill::FormData> StructTraits<
+    autofill::mojom::FormsPredictionsMapDataView,
+    autofill::FormsPredictionsMap>::keys(const autofill::FormsPredictionsMap&
+                                             r) {
   std::vector<autofill::FormData> data;
   for (const auto& i : r)
     data.push_back(i.first);
@@ -658,9 +697,10 @@ StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::keys(
 }
 
 // static
-std::vector<autofill::PasswordFormFieldPredictionMap>
-StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::values(
-    const FormsPredictionsMap& r) {
+std::vector<autofill::PasswordFormFieldPredictionMap> StructTraits<
+    autofill::mojom::FormsPredictionsMapDataView,
+    autofill::FormsPredictionsMap>::values(const autofill::FormsPredictionsMap&
+                                               r) {
   std::vector<autofill::PasswordFormFieldPredictionMap> maps;
   for (const auto& i : r)
     maps.push_back(i.second);
@@ -668,13 +708,15 @@ StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::values(
 }
 
 // static
-bool StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
-    Read(mojom::FormsPredictionsMapDataView data, FormsPredictionsMap* out) {
+bool StructTraits<autofill::mojom::FormsPredictionsMapDataView,
+                  autofill::FormsPredictionsMap>::
+    Read(autofill::mojom::FormsPredictionsMapDataView data,
+         autofill::FormsPredictionsMap* out) {
   // Combines keys vector and values vector to the map.
-  std::vector<FormData> keys;
+  std::vector<autofill::FormData> keys;
   if (!data.ReadKeys(&keys))
     return false;
-  std::vector<PasswordFormFieldPredictionMap> values;
+  std::vector<autofill::PasswordFormFieldPredictionMap> values;
   if (!data.ReadValues(&values))
     return false;
   if (keys.size() != values.size())
@@ -687,8 +729,10 @@ bool StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
 }
 
 // static
-bool StructTraits<mojom::PossibleUsernamePairDataView, PossibleUsernamePair>::
-    Read(mojom::PossibleUsernamePairDataView data, PossibleUsernamePair* out) {
+bool StructTraits<autofill::mojom::PossibleUsernamePairDataView,
+                  autofill::PossibleUsernamePair>::
+    Read(autofill::mojom::PossibleUsernamePairDataView data,
+         autofill::PossibleUsernamePair* out) {
   if (!data.ReadValue(&out->first) || !data.ReadFieldName(&out->second))
     return false;
 
