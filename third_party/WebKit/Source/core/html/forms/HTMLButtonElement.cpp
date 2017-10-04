@@ -23,7 +23,7 @@
  *
  */
 
-#include "core/html/HTMLButtonElement.h"
+#include "core/html/forms/HTMLButtonElement.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"

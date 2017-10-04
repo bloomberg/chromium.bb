@@ -28,7 +28,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/DocumentNameCollection.h"
-#include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLObjectElement.h"
@@ -36,6 +35,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTagCollection.h"
 #include "core/html/WindowNameCollection.h"
+#include "core/html/forms/HTMLDataListOptionsCollection.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {

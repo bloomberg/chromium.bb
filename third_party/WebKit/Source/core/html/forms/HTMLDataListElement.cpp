@@ -29,13 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLDataListElement.h"
+#include "core/html/forms/HTMLDataListElement.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLDataListOptionsCollection.h"
+#include "core/html/forms/HTMLDataListOptionsCollection.h"
 
 namespace blink {
 
@@ -54,9 +54,10 @@ HTMLDataListOptionsCollection* HTMLDataListElement::options() {
 
 void HTMLDataListElement::ChildrenChanged(const ChildrenChange& change) {
   HTMLElement::ChildrenChanged(change);
-  if (!change.by_parser)
+  if (!change.by_parser) {
     GetTreeScope().GetIdTargetObserverRegistry().NotifyObservers(
         GetIdAttribute());
+  }
 }
 
 void HTMLDataListElement::FinishParsingChildren() {
