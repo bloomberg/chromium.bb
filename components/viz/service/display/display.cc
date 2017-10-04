@@ -185,7 +185,7 @@ void Display::InitializeRenderer() {
   resource_provider_ = base::MakeUnique<cc::DisplayResourceProvider>(
       output_surface_->context_provider(), bitmap_manager_,
       gpu_memory_buffer_manager_, delegated_sync_points_required,
-      settings_.enable_color_correct_rendering, settings_.resource_settings);
+      settings_.resource_settings);
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);

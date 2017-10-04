@@ -427,11 +427,6 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
             [story.expectations.ANDROID_NEXUS6], 'crbug.com/765799')
     return StoryExpectations()
 
-  def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs([
-        '--enable-color-correct-rendering',
-    ])
-
 @benchmark.Owner(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])

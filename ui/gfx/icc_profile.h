@@ -43,10 +43,6 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // Returns true if this profile was successfully parsed by SkICC.
   bool IsValid() const;
 
-  // Returns the color profile of the monitor that can best represent color.
-  // This profile should be used for creating content that does not know on
-  // which monitor it will be displayed.
-  static ICCProfile FromBestMonitor();
 #if defined(OS_MACOSX)
   static ICCProfile FromCGColorSpace(CGColorSpaceRef cg_color_space);
 #endif
@@ -68,13 +64,6 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // Histogram how we this was approximated by a gfx::ColorSpace. Only
   // histogram a given profile once per display.
   void HistogramDisplay(int64_t display_id) const;
-
-#if defined(OS_WIN)
-  // This will read monitor ICC profiles from disk and cache the results for the
-  // other functions to read. This should not be called on the UI or IO thread.
-  static void UpdateCachedProfilesOnBackgroundThread();
-  static bool CachedProfilesNeedUpdate();
-#endif
 
  private:
   // This must match ICCProfileAnalyzeResult enum in histograms.xml.

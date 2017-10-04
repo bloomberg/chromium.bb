@@ -40,7 +40,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.release_overlay_resources_after_gpu_query = true;
   input.gl_composited_overlay_candidate_quad_border = true;
   input.show_overdraw_feedback = true;
-  input.enable_color_correct_rendering = true;
   input.highp_threshold_min = -1;
   input.disallow_non_exact_resource_reuse = true;
   input.use_skia_renderer = true;
@@ -68,8 +67,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   EXPECT_EQ(input.gl_composited_overlay_candidate_quad_border,
             output.gl_composited_overlay_candidate_quad_border);
   EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
-  EXPECT_EQ(input.enable_color_correct_rendering,
-            output.enable_color_correct_rendering);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
   EXPECT_EQ(input.disallow_non_exact_resource_reuse,
             output.disallow_non_exact_resource_reuse);

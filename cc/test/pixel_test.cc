@@ -173,7 +173,6 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), delegated_sync_points_required,
-      settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
   child_context_provider_ = new TestInProcessContextProvider(nullptr);
@@ -181,7 +180,6 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
       child_context_provider_.get(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), true,
-      settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
   texture_mailbox_deleter_ = std::make_unique<viz::TextureMailboxDeleter>(
@@ -209,7 +207,6 @@ void PixelTest::SetUpSoftwareRenderer() {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
       delegated_sync_points_required,
-      settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());
