@@ -25,6 +25,8 @@ namespace {
 
 const char* kTypeAttributes[] = {"text", "email", "tel", "password"};
 const char* kTypeTextAttributes[] = {"text", "email", "tel"};
+char kTextFieldSignature = 'T';
+char kPasswordFieldSignature = 'P';
 
 // ConsoleLogger provides a convenient interface for logging messages to the
 // DevTools console, both in terms of wrapping and formatting console messages
@@ -91,6 +93,7 @@ struct FormInputCollection {
   std::vector<blink::WebFormControlElement> inputs;
   std::vector<size_t> text_inputs;
   std::vector<size_t> password_inputs;
+  std::vector<size_t> explicit_password_inputs;
   std::string signature;
 
   // The signature of a form is a string of 'T's and 'P's, representing
@@ -100,11 +103,22 @@ struct FormInputCollection {
   void AddInput(const blink::WebFormControlElement& input) {
     std::string type(
         input.HasAttribute("type") ? input.GetAttribute("type").Utf8() : "");
-    signature += type != "password" ? 'T' : 'P';
-    if (type != "password")
+    signature +=
+        type != "password" ? kTextFieldSignature : kPasswordFieldSignature;
+    if (type != "password") {
       text_inputs.push_back(inputs.size());
-    else
+    } else {
       password_inputs.push_back(inputs.size());
+      if (input.HasAttribute("autocomplete")) {
+        // There are some warnings we only throw if we are certain that a
+        // password field is actually a password (rather than a credit card
+        // security code, etc.).
+        std::string autocomplete(input.GetAttribute("autocomplete").Utf8());
+        if (autocomplete == "current-password" ||
+            autocomplete == "new-password")
+          explicit_password_inputs.push_back(inputs.size());
+      }
+    }
     inputs.push_back(input);
   }
 };
@@ -156,9 +170,10 @@ bool FormIsTooComplex(const std::string& signature) {
   unsigned kind_changes = 0;
   unsigned password_count = 0;
   for (const char kind : signature) {
-    if (kind == (kind_changes & 1 ? 'T' : 'P'))
+    if (kind ==
+        (kind_changes & 1 ? kTextFieldSignature : kPasswordFieldSignature))
       ++kind_changes;
-    password_count += kind == 'P';
+    password_count += kind == kPasswordFieldSignature;
   }
   return kind_changes >= 3 || password_count > 3;
 }
@@ -360,6 +375,8 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
   const std::vector<blink::WebFormControlElement>& inputs =
       form_input_collection.inputs;
   const std::vector<size_t>& text_inputs = form_input_collection.text_inputs;
+  const std::vector<size_t>& explicit_password_inputs =
+      form_input_collection.explicit_password_inputs;
   const std::vector<size_t>& password_inputs =
       form_input_collection.password_inputs;
   const std::string& signature = form_input_collection.signature;
@@ -368,27 +385,30 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
   if (password_inputs.empty())
     return;
 
-  // If a username field is not first, or if there is no username field,
-  // flag it as an issue.
   bool has_text_field = !text_inputs.empty();
   size_t username_field_guess =
       0;  // Give it a default value to keep the compiler happy.
-  if (!has_text_field || text_inputs[0] > password_inputs[0]) {
-    // There is no formal requirement to have associated username fields for
-    // every password field, but providing one ensures that the Password
-    // Manager associates the correct account name with the password (for
-    // example in password reset forms).
-    logger->Send(
-        "Password forms should have (optionally hidden) "
-        "username fields for accessibility:",
-        PagePasswordsAnalyserLogger::kVerbose, form);
-  } else {
-    // By default (if the other heuristics fail), the first text field
-    // preceding a password field will be considered the username field.
-    for (username_field_guess = password_inputs[0] - 1;;
-         --username_field_guess) {
-      if (signature[username_field_guess] == 'T')
-        break;
+
+  // In order to decrease number of messages and chance of false positives show
+  // username suggestions only when password fields are annotated.
+  if (!explicit_password_inputs.empty()) {
+    if (!has_text_field || text_inputs[0] > explicit_password_inputs[0]) {
+      // There is no formal requirement to have associated username fields for
+      // every password field, but providing one ensures that the Password
+      // Manager associates the correct account name with the password (for
+      // example in password reset forms).
+      logger->Send(
+          "Password forms should have (optionally hidden) "
+          "username fields for accessibility:",
+          PagePasswordsAnalyserLogger::kVerbose, form);
+    } else {
+      // By default (if the other heuristics fail), the first text field
+      // preceding a password field will be considered the username field.
+      for (username_field_guess = password_inputs[0] - 1;;
+           --username_field_guess) {
+        if (signature[username_field_guess] == kTextFieldSignature)
+          break;
+      }
     }
   }
 
@@ -407,9 +427,14 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
   // intended value of the autocomplete attribute in order to save time for
   // the developer.
   std::map<size_t, std::string> autocomplete_suggestions;
-  if (has_text_field && text_inputs[0] < password_inputs[0])
+  // If there are no password fields that have been explicitly declared
+  // passwords, we don't suggest an autocomplete="username" attribute, to stop
+  // false positives associated with credit card details.
+  if (!explicit_password_inputs.empty() && has_text_field &&
+      text_inputs[0] < explicit_password_inputs[0]) {
     InferUsernameField(form, inputs, username_field_guess,
                        &autocomplete_suggestions);
+  }
 
   GuessAutocompleteAttributesForPasswordFields(password_inputs, has_text_field,
                                                &autocomplete_suggestions);
