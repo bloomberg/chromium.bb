@@ -51,17 +51,10 @@ namespace {
 
 const int kStreamId = 100;
 const int kRenderProcessId = 42;
-const int kRendererPid = 21718;
 const int kRenderFrameId = 31415;
 const int kSharedMemoryCount = 11;
+const double kNewVolume = 0.618;
 const char kSecurityOrigin[] = "http://localhost";
-#if BUILDFLAG(ENABLE_WEBRTC)
-#if defined(OS_WIN)
-const wchar_t kBaseFileName[] = L"some_file_name";
-#else
-const char kBaseFileName[] = "some_file_name";
-#endif  // defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 url::Origin SecurityOrigin() {
   return url::Origin(GURL(kSecurityOrigin));
@@ -93,7 +86,6 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
  public:
   AudioInputRendererHostWithInterception(
       int render_process_id,
-      int32_t renderer_pid,
       media::AudioManager* audio_manager,
       MediaStreamManager* media_stream_manager,
       AudioMirroringManager* audio_mirroring_manager,
@@ -106,7 +98,6 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
                                user_input_monitor),
         renderer_(renderer) {
     set_peer_process_for_testing(base::Process::Current());
-    set_renderer_pid(renderer_pid);
   }
 
  protected:
@@ -177,14 +168,9 @@ class MockAudioInputController : public AudioInputController {
         base::BindOnce(&AudioInputController::EventHandler::OnCreated,
                        base::Unretained(event_handler), base::Unretained(this),
                        false));
-    ON_CALL(*this, EnableDebugRecording(_))
-        .WillByDefault(SaveArg<0>(&file_name));
   }
 
   EventHandler* handler() { return GetHandlerForTesting(); }
-
-  // File name that we pretend to do a debug recording to, if any.
-  base::FilePath debug_file_name() { return file_name; }
 
   void Close(base::OnceClosure cl) override {
     DidClose();
@@ -196,8 +182,6 @@ class MockAudioInputController : public AudioInputController {
 
   MOCK_METHOD0(Record, void());
   MOCK_METHOD1(SetVolume, void(double));
-  MOCK_METHOD1(EnableDebugRecording, void(const base::FilePath&));
-  MOCK_METHOD0(DisableDebugRecording, void());
 
   MOCK_METHOD0(DidClose, void());
 
@@ -209,9 +193,6 @@ class MockAudioInputController : public AudioInputController {
 
  protected:
   ~MockAudioInputController() override = default;
-
- private:
-  base::FilePath file_name;
 };
 
 class MockControllerFactory : public AudioInputController::Factory {
@@ -270,7 +251,7 @@ class AudioInputRendererHostTest : public testing::Test {
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
     airh_ = new AudioInputRendererHostWithInterception(
-        kRenderProcessId, kRendererPid, media::AudioManager::Get(),
+        kRenderProcessId, media::AudioManager::Get(),
         media_stream_manager_.get(), AudioMirroringManager::GetInstance(),
         nullptr, &renderer_);
   }
@@ -401,11 +382,11 @@ TEST_F(AudioInputRendererHostTest, CreateSetVolumeRecordClose) {
       kStreamId, kRenderFrameId, session_id, DefaultConfig()));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*controller_factory_.controller(0), SetVolume(0.5));
+  EXPECT_CALL(*controller_factory_.controller(0), SetVolume(kNewVolume));
   EXPECT_CALL(*controller_factory_.controller(0), Record());
   EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 
-  airh_->OnMessageReceived(AudioInputHostMsg_SetVolume(kStreamId, 0.5));
+  airh_->OnMessageReceived(AudioInputHostMsg_SetVolume(kStreamId, kNewVolume));
   airh_->OnMessageReceived(AudioInputHostMsg_RecordStream(kStreamId));
   airh_->OnMessageReceived(AudioInputHostMsg_CloseStream(kStreamId));
 
@@ -472,8 +453,7 @@ TEST_F(AudioInputRendererHostTest, CreateTwice_Error) {
 }
 
 // Checks that when two streams are created, messages are routed to the correct
-// stream. Also checks that when enabling debug recording, the streams get
-// different file names.
+// stream.
 TEST_F(AudioInputRendererHostTest, TwoStreams) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
@@ -488,20 +468,13 @@ TEST_F(AudioInputRendererHostTest, TwoStreams) {
       kStreamId + 1, kRenderFrameId, session_id, DefaultConfig()));
   base::RunLoop().RunUntilIdle();
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-  EXPECT_CALL(*controller_factory_.controller(0), EnableDebugRecording(_));
-  EXPECT_CALL(*controller_factory_.controller(1), EnableDebugRecording(_));
-
-  airh_->EnableDebugRecording(base::FilePath(kBaseFileName));
+  EXPECT_CALL(*controller_factory_.controller(0), Record());
+  airh_->OnMessageReceived(AudioInputHostMsg_RecordStream(kStreamId));
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_NE(controller_factory_.controller(0)->debug_file_name(),
-            controller_factory_.controller(1)->debug_file_name());
-  EXPECT_CALL(*controller_factory_.controller(0), DisableDebugRecording());
-  EXPECT_CALL(*controller_factory_.controller(1), DisableDebugRecording());
-
-  airh_->DisableDebugRecording();
-#endif  // ENABLE_WEBRTC
+  EXPECT_CALL(*controller_factory_.controller(1), SetVolume(kNewVolume));
+  airh_->OnMessageReceived(
+      AudioInputHostMsg_SetVolume(kStreamId + 1, kNewVolume));
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*controller_factory_.controller(0), DidClose());
   EXPECT_CALL(*controller_factory_.controller(1), DidClose());
