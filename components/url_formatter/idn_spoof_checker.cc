@@ -64,13 +64,14 @@ IDNSpoofChecker::IDNSpoofChecker() {
   // MIXED_SCRIPT_CONFUSABLE, WHOLE_SCRIPT_CONFUSABLE, MIXED_NUMBERS, ANY_CASE})
   // This default configuration is adjusted below as necessary.
 
-  // Set the restriction level to moderate. It allows mixing Latin with another
-  // script (+ COMMON and INHERITED). Except for Chinese(Han + Bopomofo),
-  // Japanese(Hiragana + Katakana + Han), and Korean(Hangul + Han), only one
-  // script other than Common and Inherited can be mixed with Latin. Cyrillic
-  // and Greek are not allowed to mix with Latin.
+  // Set the restriction level to high. It allows mixing Latin with one logical
+  // CJK script (+ COMMON and INHERITED), but does not allow any other script
+  // mixing (e.g. Latin + Cyrillic, Latin + Armenian, Cyrillic + Greek). Note
+  // that each of {Han + Bopomofo} for Chinese, {Hiragana, Katakana, Han} for
+  // Japanese, and {Hangul, Han} for Korean is treated as a single logical
+  // script.
   // See http://www.unicode.org/reports/tr39/#Restriction_Level_Detection
-  uspoof_setRestrictionLevel(checker_, USPOOF_MODERATELY_RESTRICTIVE);
+  uspoof_setRestrictionLevel(checker_, USPOOF_HIGHLY_RESTRICTIVE);
 
   // Sets allowed characters in IDN labels and turns on USPOOF_CHAR_LIMIT.
   SetAllowedUnicodeSet(&status);
@@ -234,14 +235,9 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     //   label otherwise entirely in Katakna or Hiragana.
     // - Disallow U+0585 (Armenian Small Letter Oh) and U+0581 (Armenian Small
     //   Letter Co) to be next to Latin.
-    // - Disallow Latin 'o' and 'g' next to Armenian.
-    // - Disalow mixing of Latin and Canadian Syllabary.
-    // - Disalow mixing of Latin and Tifinagh.
     // - Disallow combining diacritical mark (U+0300-U+0339) after a non-LGC
     //   character. Other combining diacritical marks are not in the allowed
     //   character set.
-    // - Disallow Arabic non-spacing marks after non-Arabic characters.
-    // - Disallow Hebrew non-spacing marks after non-Hebrew characters.
     // - Disallow U+0307 (dot above) after 'i', 'j', 'l' or dotless i (U+0131).
     //   Dotless j (U+0237) is not in the allowed set to begin with.
     dangerous_pattern = new icu::RegexMatcher(
@@ -254,15 +250,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             R"(^[\p{scx=kana}]+[\u3078-\u307a][\p{scx=kana}]+$|)"
             R"(^[\p{scx=hira}]+[\u30d8-\u30da][\p{scx=hira}]+$|)"
             R"([a-z]\u30fb|\u30fb[a-z]|)"
-            R"(^[\u0585\u0581]+[a-z]|[a-z][\u0585\u0581]+$|)"
-            R"([a-z][\u0585\u0581]+[a-z]|)"
-            R"(^[og]+[\p{scx=armn}]|[\p{scx=armn}][og]+$|)"
-            R"([\p{scx=armn}][og]+[\p{scx=armn}]|)"
-            R"([\p{sc=cans}].*[a-z]|[a-z].*[\p{sc=cans}]|)"
-            R"([\p{sc=tfng}].*[a-z]|[a-z].*[\p{sc=tfng}]|)"
             R"([^\p{scx=latn}\p{scx=grek}\p{scx=cyrl}][\u0300-\u0339]|)"
-            R"([^\p{scx=arab}][\u064b-\u0655\u0670]|)"
-            R"([^\p{scx=hebr}]\u05b4|)"
             R"([ijl\u0131]\u0307)",
             -1, US_INV),
         0, status);
