@@ -263,10 +263,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // Number of ongoing calls to Connect().
   int num_connecting_calls_;
 
-  // True if the connection monitor has been started, tracking the connection
-  // RSSI and TX power.
-  bool connection_monitor_started_;
-
   // Keeps track of all services for which we've called
   // NotifyGattDiscoveryComplete().
   std::unordered_set<device::BluetoothRemoteGattService*>
