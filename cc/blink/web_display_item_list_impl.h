@@ -41,8 +41,7 @@ class CC_BLINK_EXPORT WebDisplayItemListImpl
 
   // blink::WebDisplayItemList implementation.
   void AppendDrawingItem(const blink::WebRect& visual_rect,
-                         sk_sp<const cc::PaintOpBuffer> record,
-                         const blink::WebRect& record_bounds) override;
+                         sk_sp<const cc::PaintOpBuffer> record) override;
   void AppendClipItem(
       const blink::WebRect& clip_rect,
       const blink::WebVector<SkRRect>& rounded_clip_rects) override;
