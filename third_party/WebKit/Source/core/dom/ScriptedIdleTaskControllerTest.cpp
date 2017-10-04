@@ -26,6 +26,7 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   WebTaskRunner* LoadingTaskRunner() override { return nullptr; }
   WebTaskRunner* TimerTaskRunner() override { return nullptr; }
   WebTaskRunner* CompositorTaskRunner() override { return nullptr; }
+  WebTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }
