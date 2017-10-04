@@ -34460,6 +34460,7 @@ from previous Chrome versions.
   <int value="0" label="No valid STH"/>
   <int value="1" label="Requires newer STH"/>
   <int value="2" label="Can be checked for inclusion"/>
+  <int value="3" label="Queue is full"/>
 </enum>
 
 <enum name="SCTOrigin">
