@@ -657,10 +657,9 @@ std::string LayerAnimationElement::ToString() const {
   // beyond just their name.
   return base::StringPrintf(
       "LayerAnimationElement{name=%s, id=%d, group=%d, "
-      "last_progressed_fraction=%0.2f, "
-      "start_frame_number=%d}",
+      "last_progressed_fraction=%0.2f}",
       DebugName().c_str(), animation_id_, animation_group_id_,
-      last_progressed_fraction_, start_frame_number_);
+      last_progressed_fraction_);
 }
 
 std::string LayerAnimationElement::DebugName() const {

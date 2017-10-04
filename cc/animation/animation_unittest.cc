@@ -5,6 +5,7 @@
 #include "cc/animation/animation.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/trees/target_property.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1003,12 +1004,14 @@ TEST(AnimationTest, InEffectFillModePlayback) {
 }
 
 TEST(AnimationTest, ToString) {
-  EXPECT_EQ(
-      "Animation{id=42, group=73, target_property_id=1, "
-      "run_state=WAITING_FOR_TARGET_AVAILABILITY}",
+  std::unique_ptr<Animation> animation =
       Animation::Create(std::make_unique<FakeFloatAnimationCurve>(15), 42, 73,
-                        TargetProperty::OPACITY)
-          ->ToString());
+                        TargetProperty::OPACITY);
+  EXPECT_EQ(
+      base::StringPrintf("Animation{id=%d, group=73, target_property_id=1, "
+                         "run_state=WAITING_FOR_TARGET_AVAILABILITY}",
+                         animation->id()),
+      animation->ToString());
 }
 
 }  // namespace
