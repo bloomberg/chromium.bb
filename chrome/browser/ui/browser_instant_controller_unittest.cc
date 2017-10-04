@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -17,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/reload_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -110,9 +113,9 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
 
     // Validate initial instant state.
     EXPECT_EQ(test.start_in_instant_process,
-        instant_service_->IsInstantProcess(
-          contents->GetRenderProcessHost()->GetID()))
-      << test.description;
+              instant_service_->IsInstantProcess(
+                  contents->GetMainFrame()->GetProcess()->GetID()))
+        << test.description;
 
     // Setup an observer to verify reload or absence thereof.
     observers.push_back(base::MakeUnique<FakeWebContentsObserver>(contents));
@@ -157,9 +160,9 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
 
     // Validate initial instant state.
     EXPECT_EQ(test.start_in_instant_process,
-        instant_service_->IsInstantProcess(
-          contents->GetRenderProcessHost()->GetID()))
-      << test.description;
+              instant_service_->IsInstantProcess(
+                  contents->GetMainFrame()->GetProcess()->GetID()))
+        << test.description;
 
     // Setup an observer to verify reload or absence thereof.
     observers.push_back(base::MakeUnique<FakeWebContentsObserver>(contents));
