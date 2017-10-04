@@ -4,21 +4,16 @@
 
 #include "content/public/common/sandbox_init.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "content/common/sandbox_win.h"
-#include "content/public/common/content_switches.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace content {
 
-bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(command_line);
+bool InitializeSandbox(service_manager::SandboxType sandbox_type,
+                       sandbox::SandboxInterfaceInfo* sandbox_info) {
   sandbox::BrokerServices* broker_services = sandbox_info->broker_services;
   if (broker_services) {
     if (!InitBrokerServices(broker_services))

@@ -652,7 +652,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       delegate_->PreSandboxStartup();
 
 #if defined(OS_WIN)
-    CHECK(InitializeSandbox(params.sandbox_info));
+    CHECK(InitializeSandbox(
+        service_manager::SandboxTypeFromCommandLine(command_line),
+        params.sandbox_info));
 #elif defined(OS_MACOSX)
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kPpapiPluginProcess ||
