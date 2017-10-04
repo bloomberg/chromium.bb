@@ -30,6 +30,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1868,6 +1869,23 @@ TEST_F(HistoryBackendTest, SetFaviconMappingsForPageAndRedirectsWithFragment) {
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url1, favicon_base::FAVICON));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url2, favicon_base::FAVICON));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(url3, favicon_base::FAVICON));
+}
+
+TEST_F(HistoryBackendTest,
+       SetFaviconMappingsForPageAndRedirectsWithFragmentWithoutStripping) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(kAvoidStrippingRefFromFaviconPageUrls);
+
+  const GURL url("http://www.google.com#abc");
+  const GURL url_without_ref("http://www.google.com");
+  const GURL icon_url("http://www.google.com/icon");
+  backend_->SetFavicons(
+      {url}, favicon_base::FAVICON, icon_url,
+      std::vector<SkBitmap>{CreateBitmap(SK_ColorBLUE, kSmallEdgeSize)});
+
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(url, favicon_base::FAVICON));
+  EXPECT_EQ(0u,
+            NumIconMappingsForPageURL(url_without_ref, favicon_base::FAVICON));
 }
 
 // Test that |recent_redirects_| stores the full redirect chain in case of
