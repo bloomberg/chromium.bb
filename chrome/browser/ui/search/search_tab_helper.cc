@@ -403,20 +403,15 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
 #endif
 }
 
-void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
+bool SearchTabHelper::ChromeIdentityCheck(const base::string16& identity) {
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
-  if (manager) {
-    ipc_router_.SendChromeIdentityCheckResult(
-        identity,
-        gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
-                            manager->GetAuthenticatedAccountInfo().email));
-  } else {
-    ipc_router_.SendChromeIdentityCheckResult(identity, false);
-  }
+  return manager &&
+         gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
+                             manager->GetAuthenticatedAccountInfo().email);
 }
 
-void SearchTabHelper::OnHistorySyncCheck() {
-  ipc_router_.SendHistorySyncCheckResult(IsHistorySyncEnabled(profile()));
+bool SearchTabHelper::HistorySyncCheck() {
+  return IsHistorySyncEnabled(profile());
 }
 
 const OmniboxView* SearchTabHelper::GetOmniboxView() const {
