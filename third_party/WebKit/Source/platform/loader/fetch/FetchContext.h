@@ -43,6 +43,7 @@
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
@@ -214,8 +215,8 @@ class PLATFORM_EXPORT FetchContext
     return platform_probe_sink_;
   }
 
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest&) {
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
+                                                        WebTaskRunner*) {
     NOTREACHED();
     return nullptr;
   }
@@ -225,6 +226,15 @@ class PLATFORM_EXPORT FetchContext
   // Obtains WebFrameScheduler instance that is used in the attached frame.
   // May return nullptr if a frame is not attached or detached.
   virtual WebFrameScheduler* GetFrameScheduler() { return nullptr; }
+
+  // Returns a task runner intended for loading tasks. Should work even in a
+  // worker context, where WebFrameScheduler doesn't exist, but the returned
+  // WebTaskRunner will not work after the context detaches (after Detach() is
+  // called, this will return a generic timer suitable for post-detach actions
+  // like keepalive requests.
+  virtual RefPtr<WebTaskRunner> GetLoadingTaskRunner() {
+    return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+  }
 
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations

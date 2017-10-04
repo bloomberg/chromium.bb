@@ -30,6 +30,7 @@
 #include "platform/loader/fetch/ResourceLoader.h"
 
 #include "platform/SharedBuffer.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/FetchContext.h"
@@ -37,6 +38,7 @@
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkInstrumentation.h"
+#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
@@ -53,6 +55,15 @@
 
 namespace blink {
 
+static WebTaskRunner* GetTaskRunnerFor(const ResourceRequest& request,
+                                       FetchContext& context) {
+  if (!request.GetKeepalive())
+    return context.GetLoadingTaskRunner().get();
+  // The loader should be able to work after the frame destruction, so we
+  // cannot use the task runner associated with the frame.
+  return Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner();
+}
+
 ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
                                        ResourceLoadScheduler* scheduler,
                                        Resource* resource) {
@@ -66,7 +77,11 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       fetcher_(fetcher),
       scheduler_(scheduler),
       resource_(resource),
-      is_cache_aware_loading_activated_(false) {
+      is_cache_aware_loading_activated_(false),
+      cancel_timer_(
+          GetTaskRunnerFor(resource_->GetResourceRequest(), Context()),
+          this,
+          &ResourceLoader::CancelTimerFired) {
   DCHECK(resource_);
   DCHECK(fetcher_);
 
@@ -85,7 +100,8 @@ DEFINE_TRACE(ResourceLoader) {
 void ResourceLoader::Start() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   ActivateCacheAwareLoadingIfNeeded(request);
-  loader_ = Context().CreateURLLoader(request);
+  loader_ =
+      Context().CreateURLLoader(request, GetTaskRunnerFor(request, Context()));
 
   // Synchronous requests should not work with a throttling. Also, tentatively
   // disables throttling for fetch requests that could keep on holding an active
@@ -141,7 +157,8 @@ void ResourceLoader::Release(ResourceLoadScheduler::ReleaseOption option) {
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
 
-  loader_ = Context().CreateURLLoader(request);
+  loader_ =
+      Context().CreateURLLoader(request, GetTaskRunnerFor(request, Context()));
   StartWith(request);
 }
 
@@ -157,6 +174,16 @@ void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
         static_cast<WebURLRequest::Priority>(load_priority),
         intra_priority_value);
   }
+}
+
+void ResourceLoader::ScheduleCancel() {
+  if (!cancel_timer_.IsActive())
+    cancel_timer_.StartOneShot(0, BLINK_FROM_HERE);
+}
+
+void ResourceLoader::CancelTimerFired(TimerBase*) {
+  if (loader_ && !resource_->HasClientsOrObservers())
+    Cancel();
 }
 
 void ResourceLoader::Cancel() {

@@ -261,8 +261,9 @@ void RawResource::ReportResourceTimingToClients(
     c->DidReceiveResourceTiming(this, info);
 }
 
-bool RawResource::MatchPreload(const FetchParameters& params) {
-  if (!Resource::MatchPreload(params))
+bool RawResource::MatchPreload(const FetchParameters& params,
+                               WebTaskRunner* task_runner) {
+  if (!Resource::MatchPreload(params, task_runner))
     return false;
 
   // This is needed to call Platform::Current() below. Remove this branch
@@ -298,12 +299,6 @@ bool RawResource::MatchPreload(const FetchParameters& params) {
 
   data_consumer_handle_ =
       Platform::Current()->CreateDataConsumerHandle(std::move(consumer));
-  // We use the global loading task runner here because it's difficult to get
-  // the frame-local loading task runner. It is not so harmful because the
-  // task runner is used for just copying chunks.
-  // TODO(yhirano): Use the correct task runner.
-  WebTaskRunner* task_runner =
-      Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner();
   data_pipe_writer_ = WTF::MakeUnique<BufferingDataPipeWriter>(
       std::move(producer), task_runner);
 

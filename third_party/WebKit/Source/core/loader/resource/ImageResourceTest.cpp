@@ -475,6 +475,10 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
   ResourceFetcher* fetcher = CreateFetcher();
+  scheduler::FakeWebTaskRunner* task_runner =
+      static_cast<scheduler::FakeWebTaskRunner*>(
+          fetcher->Context().GetLoadingTaskRunner().get());
+  task_runner->SetTime(1);
 
   // Emulate starting a real load.
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
@@ -495,7 +499,7 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
 
   // Trigger the cancel timer, ensure the load was cancelled and the resource
   // was evicted from the cache.
-  blink::testing::RunPendingTasks();
+  task_runner->RunUntilIdle();
   EXPECT_EQ(ResourceStatus::kLoadError, image_resource->GetStatus());
   EXPECT_FALSE(GetMemoryCache()->ResourceForURL(test_url));
 }

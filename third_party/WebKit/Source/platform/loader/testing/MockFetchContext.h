@@ -80,14 +80,19 @@ class MockFetchContext : public FetchContext {
   }
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest& request) override {
+      const ResourceRequest& request,
+      WebTaskRunner* task_runner) override {
     WrappedResourceRequest wrapped(request);
     return Platform::Current()->CreateURLLoader(
-        wrapped, runner_->ToSingleThreadTaskRunner());
+        wrapped, task_runner->ToSingleThreadTaskRunner());
   }
 
   WebFrameScheduler* GetFrameScheduler() override {
     return frame_scheduler_.get();
+  }
+
+  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override {
+    return frame_scheduler_->LoadingTaskRunner();
   }
 
  private:
