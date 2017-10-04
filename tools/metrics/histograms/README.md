@@ -43,6 +43,9 @@ something meaningful--as it is in this example--that is generally a good sign.
 However, the total count does not have to be meaningful for an enum histogram
 to still be the right choice.
 
+If few buckets will be emitted to, consider using a [sparse
+histogram](#When-To-Use-Sparse-Histograms).
+
 You may append to your enum if the possible states/actions grows.  However, you
 should not reorder, renumber, or otherwise reuse existing values.  As such,
 please put this warning by the enum definition:
@@ -239,7 +242,8 @@ suffixes can be applied recursively.
 ## When To Use Sparse Histograms
 
 Sparse histograms are well suited for recording counts of exact sample values
-that are sparsely distributed over a large range.
+that are sparsely distributed over a large range.  They can be used with enums
+as well as regular integer values.
 
 The implementation uses a lock and a map, whereas other histogram types use a
 vector and no lock. It is thus more costly to add values to, and each value
