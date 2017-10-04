@@ -650,7 +650,11 @@ if (aom_config("CONFIG_CONVOLVE_ROUND") eq "yes") {
     specialize qw/av1_highbd_convolve_2d ssse3/;
     add_proto qw/void av1_highbd_convolve_rounding/, "const int32_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, int bits, int bd";
     specialize qw/av1_highbd_convolve_rounding avx2/;
+
     add_proto qw/void av1_highbd_convolve_2d_scale/, "const uint16_t *src, int src_stride, CONV_BUF_TYPE *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int x_step_qn, const int subpel_y_q4, const int y_step_qn, ConvolveParams *conv_params, int bd";
+    if (aom_config("CONFIG_COMPOUND_ROUND") ne "yes") {
+        specialize qw/av1_highbd_convolve_2d_scale sse4_1/;
+    }
   }
 }
 
