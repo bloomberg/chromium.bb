@@ -141,7 +141,7 @@ void AnimationHost::RegisterPlayerForElement(ElementId element_id,
     element_animations->InitAffectedElementTypes();
   }
 
-  element_animations->AddPlayer(player);
+  element_animations->AddTicker(player->animation_ticker());
 }
 
 void AnimationHost::UnregisterPlayerForElement(ElementId element_id,
@@ -152,7 +152,7 @@ void AnimationHost::UnregisterPlayerForElement(ElementId element_id,
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
   DCHECK(element_animations);
-  element_animations->RemovePlayer(player);
+  element_animations->RemoveTicker(player->animation_ticker());
 
   if (element_animations->IsEmpty()) {
     element_animations->ClearAffectedElementTypes();

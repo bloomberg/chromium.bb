@@ -24,7 +24,6 @@ class AnimationHost;
 class AnimationTimeline;
 class AnimationTicker;
 struct AnimationEvent;
-struct PropertyAnimationState;
 
 // An AnimationPlayer manages grouped sets of animations (each set of which are
 // stored in an AnimationTicker), and handles the interaction with the
@@ -63,6 +62,11 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   }
   void SetAnimationTimeline(AnimationTimeline* timeline);
 
+  AnimationTicker* animation_ticker() const { return animation_ticker_.get(); }
+
+  // TODO(smcgruer): Only used by a ui/ unittest: remove.
+  bool has_any_animation() const;
+
   scoped_refptr<ElementAnimations> element_animations() const;
 
   void set_animation_delegate(AnimationDelegate* delegate) {
@@ -84,31 +88,17 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void Tick(base::TimeTicks monotonic_time);
   void UpdateState(bool start_ready_animations, AnimationEvents* events);
 
-  void UpdateTickingState(UpdateTickingType type);
   void AddToTicking();
-  void RemoveFromTicking();
+  void AnimationRemovedFromTicking();
 
   // AnimationDelegate routing.
-  bool NotifyAnimationStarted(const AnimationEvent& event);
-  bool NotifyAnimationFinished(const AnimationEvent& event);
-  bool NotifyAnimationAborted(const AnimationEvent& event);
+  void NotifyAnimationStarted(const AnimationEvent& event);
+  void NotifyAnimationFinished(const AnimationEvent& event);
+  void NotifyAnimationAborted(const AnimationEvent& event);
   void NotifyAnimationTakeover(const AnimationEvent& event);
   bool NotifyAnimationFinishedForTesting(TargetProperty::Type target_property,
                                          int group_id);
-  // TODO(smcgruer): Once ElementAnimations points at AnimationTicker directly,
-  // merge these methods with the above.
-  void NotifyImplOnlyAnimationStarted(AnimationEvent&);
-  void NotifyImplOnlyAnimationFinished(AnimationEvent&);
-  void NotifyAnimationTakeoverByMain(AnimationEvent&);
 
-  // Returns true if there are any animations that have neither finished nor
-  // aborted.
-  bool HasTickingAnimation() const;
-
-  // Returns true if there are any animations at all to process.
-  bool has_any_animation() const;
-
-  bool needs_push_properties() const { return needs_push_properties_; }
   void SetNeedsPushProperties();
 
   // Make animations affect active elements if and only if they affect
@@ -116,43 +106,9 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   // are deleted.
   void ActivateAnimations();
 
-  bool HasOnlyTranslationTransforms(ElementListType list_type) const;
-  bool AnimationsPreserveAxisAlignment() const;
-
-  // Sets |start_scale| to the maximum of starting animation scale along any
-  // dimension at any destination in active animations. Returns false if the
-  // starting scale cannot be computed.
-  bool AnimationStartScale(ElementListType list_type, float* start_scale) const;
-
-  // Sets |max_scale| to the maximum scale along any dimension at any
-  // destination in active animations. Returns false if the maximum scale cannot
-  // be computed.
-  bool MaximumTargetScale(ElementListType list_type, float* max_scale) const;
-
-  // Returns true if there is an animation that is either currently animating
-  // the given property or scheduled to animate this property in the future, and
-  // that affects the given tree type.
-  bool IsPotentiallyAnimatingProperty(TargetProperty::Type target_property,
-                                      ElementListType list_type) const;
-
-  // Returns true if there is an animation that is currently animating the given
-  // property and that affects the given tree type.
-  bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
-                                    ElementListType list_type) const;
-
   // Returns the animation animating the given property that is either
   // running, or is next to run, if such an animation exists.
   Animation* GetAnimation(TargetProperty::Type target_property) const;
-
-  // Returns animation for the given unique animation id.
-  // TODO(smcgruer): Remove, only tests call this and they should call on the
-  // AnimationTicker instead.
-  Animation* GetAnimationById(int animation_id) const;
-
-  void GetPropertyAnimationState(PropertyAnimationState* pending_state,
-                                 PropertyAnimationState* active_state) const;
-
-  bool scroll_offset_animation_was_interrupted() const;
 
   std::string ToString() const;
 
@@ -167,17 +123,11 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void RegisterPlayer();
   void UnregisterPlayer();
 
-  void BindElementAnimations();
-  void UnbindElementAnimations();
-
-  void PushPropertiesToImplThread(AnimationPlayer* animation_player_impl);
-
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;
   AnimationDelegate* animation_delegate_;
 
   int id_;
-  bool needs_push_properties_;
 
   std::unique_ptr<AnimationTicker> animation_ticker_;
 

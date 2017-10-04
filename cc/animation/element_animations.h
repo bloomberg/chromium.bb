@@ -26,7 +26,7 @@ class BoxF;
 namespace cc {
 
 class AnimationHost;
-class AnimationPlayer;
+class AnimationTicker;
 class FilterOperations;
 class TransformOperations;
 enum class ElementListType;
@@ -34,8 +34,9 @@ struct AnimationEvent;
 
 enum class UpdateTickingType { NORMAL, FORCE };
 
-// An ElementAnimations owns a list of all AnimationPlayers, attached to
-// the element.
+// An ElementAnimations owns a list of all AnimationTickers attached to a single
+// target (represented by an ElementId).
+//
 // This is a CC counterpart for blink::ElementAnimations (in 1:1 relationship).
 // No pointer to/from respective blink::ElementAnimations object for now.
 class CC_ANIMATION_EXPORT ElementAnimations
@@ -58,12 +59,12 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void ElementRegistered(ElementId element_id, ElementListType list_type);
   void ElementUnregistered(ElementId element_id, ElementListType list_type);
 
-  void AddPlayer(AnimationPlayer* player);
-  void RemovePlayer(AnimationPlayer* player);
+  void AddTicker(AnimationTicker* ticker);
+  void RemoveTicker(AnimationTicker* ticker);
   bool IsEmpty() const;
 
-  typedef base::ObserverList<AnimationPlayer> PlayersList;
-  const PlayersList& players_list() const { return players_list_; }
+  typedef base::ObserverList<AnimationTicker> TickersList;
+  const TickersList& tickers_list() const { return tickers_list_; }
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
@@ -170,13 +171,13 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   static TargetProperties GetPropertiesMaskForAnimationState();
 
-  void UpdatePlayersTickingState(UpdateTickingType update_ticking_type) const;
-  void RemovePlayersFromTicking() const;
+  void UpdateTickersTickingState(UpdateTickingType update_ticking_type) const;
+  void RemoveTickersFromTicking() const;
 
   bool AnimationAffectsActiveElements(Animation* animation) const;
   bool AnimationAffectsPendingElements(Animation* animation) const;
 
-  PlayersList players_list_;
+  TickersList tickers_list_;
   AnimationHost* animation_host_;
   ElementId element_id_;
 

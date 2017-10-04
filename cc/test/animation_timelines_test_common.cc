@@ -8,6 +8,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
+#include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/base/filter_operation.h"
@@ -440,19 +441,19 @@ void AnimationTimelinesTest::TickAnimationsTransferEvents(
   host_->SetAnimationEvents(std::move(events));
 }
 
-AnimationPlayer* AnimationTimelinesTest::GetPlayerForElementId(
+AnimationTicker* AnimationTimelinesTest::GetTickerForElementId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);
-  return element_animations ? &*element_animations->players_list().begin()
+  return element_animations ? &*element_animations->tickers_list().begin()
                             : nullptr;
 }
 
-AnimationPlayer* AnimationTimelinesTest::GetImplPlayerForLayerId(
+AnimationTicker* AnimationTimelinesTest::GetImplTickerForLayerId(
     ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForElementId(element_id);
-  return element_animations ? &*element_animations->players_list().begin()
+  return element_animations ? &*element_animations->tickers_list().begin()
                             : nullptr;
 }
 
@@ -461,15 +462,16 @@ int AnimationTimelinesTest::NextTestLayerId() {
   return next_test_layer_id_;
 }
 
-bool AnimationTimelinesTest::CheckPlayerTimelineNeedsPushProperties(
+bool AnimationTimelinesTest::CheckTickerTimelineNeedsPushProperties(
     bool needs_push_properties) const {
   DCHECK(player_);
   DCHECK(timeline_);
 
   bool result = true;
 
-  if (player_->needs_push_properties() != needs_push_properties) {
-    ADD_FAILURE() << "player_->needs_push_properties() expected to be "
+  AnimationTicker* ticker = player_->animation_ticker();
+  if (ticker->needs_push_properties() != needs_push_properties) {
+    ADD_FAILURE() << "ticker->needs_push_properties() expected to be "
                   << needs_push_properties;
     result = false;
   }

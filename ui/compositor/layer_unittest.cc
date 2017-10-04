@@ -26,6 +26,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
+#include "cc/animation/animation_ticker.h"
 #include "cc/layers/layer.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -2321,11 +2322,14 @@ TEST(LayerDelegateTest, OnLayerOpacityChangedAnimation) {
   layer->SetOpacity(0.5f);
   const base::TimeTicks start_time = animator->last_step_time();
   const base::TimeDelta duration = animator->GetTransitionDuration();
-  animator->GetAnimationPlayerForTesting()->NotifyAnimationStarted(
-      {cc::AnimationEvent::STARTED, cc::ElementId(),
-       test_controller.GetRunningSequence(ui::LayerAnimationElement::OPACITY)
-           ->animation_group_id(),
-       cc::TargetProperty::OPACITY, start_time});
+  animator->GetAnimationPlayerForTesting()
+      ->animation_ticker()
+      ->NotifyAnimationStarted(
+          {cc::AnimationEvent::STARTED, cc::ElementId(),
+           test_controller
+               .GetRunningSequence(ui::LayerAnimationElement::OPACITY)
+               ->animation_group_id(),
+           cc::TargetProperty::OPACITY, start_time});
 
   // Play the animation.
   EXPECT_CALL(delegate, OnLayerOpacityChanged(1.0f, 0.75f));
