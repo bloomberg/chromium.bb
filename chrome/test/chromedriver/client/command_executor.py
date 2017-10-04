@@ -74,6 +74,7 @@ class Command(object):
   SWITCH_TO_FRAME = (_Method.POST, '/session/:sessionId/frame')
   SWITCH_TO_PARENT_FRAME = (_Method.POST, '/session/:sessionId/frame/parent')
   SWITCH_TO_WINDOW = (_Method.POST, '/session/:sessionId/window')
+  GET_WINDOW_RECT = (_Method.GET, 'session/:sessionId/window/rect')
   GET_WINDOW_SIZE = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/size')
   GET_WINDOW_POSITION = (

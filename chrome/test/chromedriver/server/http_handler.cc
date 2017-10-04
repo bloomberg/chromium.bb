@@ -305,6 +305,9 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/window",
           WrapToCommand("SwitchToWindow", base::Bind(&ExecuteSwitchToWindow))),
       CommandMapping(
+          kGet, "session/:sessionId/window/rect",
+          WrapToCommand("GetWindowRect", base::Bind(&ExecuteGetWindowRect))),
+      CommandMapping(
           kGet, "session/:sessionId/window/:windowHandle/size",
           WrapToCommand("GetWindowSize", base::Bind(&ExecuteGetWindowSize))),
       CommandMapping(kGet, "session/:sessionId/window/:windowHandle/position",
