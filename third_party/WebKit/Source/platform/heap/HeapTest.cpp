@@ -329,11 +329,12 @@ class TestGCScope {
   explicit TestGCScope(BlinkGC::StackState state)
       : state_(ThreadState::Current()), safe_point_scope_(state) {
     DCHECK(state_->CheckThread());
-    state_->PreGC();
+    state_->MarkPhasePrologue(state, BlinkGC::kGCWithSweep,
+                              BlinkGC::kPreciseGC);
   }
 
   ~TestGCScope() {
-    state_->PostGC(BlinkGC::kGCWithSweep);
+    state_->MarkPhaseEpilogue();
     state_->PreSweep(BlinkGC::kGCWithSweep);
   }
 

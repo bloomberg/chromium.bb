@@ -365,7 +365,6 @@ class PLATFORM_EXPORT ThreadHeap {
                                     MovingObjectCallback,
                                     void* callback_data);
 
-  BlinkGC::GCReason LastGCReason() { return last_gc_reason_; }
   RegionTree* GetRegionTree() { return region_tree_.get(); }
 
   static inline size_t AllocationSizeFromSize(size_t size) {
@@ -390,6 +389,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void ProcessMarkingStack(Visitor*);
   void PostMarkingProcessing(Visitor*);
   void WeakProcessing(Visitor*);
+  bool AdvanceMarkingStackProcessing(Visitor*, double deadline_seconds);
 
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
@@ -444,7 +444,6 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<CallbackStack> post_marking_callback_stack_;
   std::unique_ptr<CallbackStack> weak_callback_stack_;
   std::unique_ptr<CallbackStack> ephemeron_stack_;
-  BlinkGC::GCReason last_gc_reason_;
   StackFrameDepth stack_frame_depth_;
 
   std::unique_ptr<HeapCompact> compaction_;
