@@ -300,6 +300,9 @@ void AppBannerManager::Stop() {
     case State::FETCHING_MANIFEST:
       code = WAITING_FOR_MANIFEST;
       break;
+    case State::FETCHING_NATIVE_DATA:
+      code = WAITING_FOR_NATIVE_DATA;
+      break;
     case State::PENDING_INSTALLABLE_CHECK:
       code = WAITING_FOR_INSTALLABLE_CHECK;
       break;
@@ -321,8 +324,6 @@ void AppBannerManager::StopWithCode(InstallableStatusCode code) {
   // ReportStatus() and set need_to_log_status_ to false. The only case where
   // we don't is if we're still running and aren't blocked on the network. When
   // running and blocked on the network the state should be logged.
-  // TODO(dominickn): log when the pipeline is fetching native app banner
-  // details.
   DCHECK(!need_to_log_status_ || (IsRunning() && !IsWaitingForData()));
 
   ResetBindings();
@@ -448,6 +449,7 @@ bool AppBannerManager::IsRunning() const {
       return false;
     case State::ACTIVE:
     case State::FETCHING_MANIFEST:
+    case State::FETCHING_NATIVE_DATA:
     case State::PENDING_INSTALLABLE_CHECK:
     case State::SENDING_EVENT:
     case State::SENDING_EVENT_GOT_EARLY_PROMPT:
@@ -457,8 +459,21 @@ bool AppBannerManager::IsRunning() const {
 }
 
 bool AppBannerManager::IsWaitingForData() const {
-  return (state_ == State::FETCHING_MANIFEST ||
-          state_ == State::PENDING_INSTALLABLE_CHECK);
+  switch (state_) {
+    case State::INACTIVE:
+    case State::ACTIVE:
+    case State::PENDING_ENGAGEMENT:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
+    case State::PENDING_PROMPT:
+    case State::COMPLETE:
+      return false;
+    case State::FETCHING_MANIFEST:
+    case State::FETCHING_NATIVE_DATA:
+    case State::PENDING_INSTALLABLE_CHECK:
+      return true;
+  }
+  return false;
 }
 
 // static

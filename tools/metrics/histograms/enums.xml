@@ -1000,6 +1000,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="30" label="Waiting for manifest to be fetched"/>
   <int value="31" label="Waiting for installability check"/>
   <int value="32" label="No gesture associated with call to prompt"/>
+  <int value="33" label="Waiting for native data"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">
