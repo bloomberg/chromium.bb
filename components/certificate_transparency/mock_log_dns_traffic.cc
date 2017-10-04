@@ -15,6 +15,7 @@
 #include "base/test/test_timeouts.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_protocol.h"
+#include "net/dns/dns_query.h"
 #include "net/dns/dns_util.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,33 +53,10 @@ bool CreateDnsTxtRequest(base::StringPiece qname, std::vector<char>* request) {
     return false;
   }
 
-  // DNS query section:
-  // N bytes - qname
-  // 2 bytes - record type
-  // 2 bytes - record class
-  // Total = N + 4 bytes
-  const size_t query_section_size = encoded_qname.size() + 4;
-
-  request->resize(sizeof(net::dns_protocol::Header) + query_section_size);
-  base::BigEndianWriter writer(request->data(), request->size());
-
-  // Header
-  net::dns_protocol::Header header = {};
-  header.flags = base::HostToNet16(net::dns_protocol::kFlagRD);
-  header.qdcount = base::HostToNet16(1);
-
-  if (!writer.WriteBytes(&header, sizeof(header)) ||
-      !writer.WriteBytes(encoded_qname.data(), encoded_qname.size()) ||
-      !writer.WriteU16(net::dns_protocol::kTypeTXT) ||
-      !writer.WriteU16(net::dns_protocol::kClassIN)) {
-    return false;
-  }
-
-  if (writer.remaining() != 0) {
-    // Less than the expected amount of data was written.
-    return false;
-  }
-
+  const uint16_t kQueryId = 0;
+  net::DnsQuery query(kQueryId, encoded_qname, net::dns_protocol::kTypeTXT);
+  request->assign(query.io_buffer()->data(),
+                  query.io_buffer()->data() + query.io_buffer()->size());
   return true;
 }
 
