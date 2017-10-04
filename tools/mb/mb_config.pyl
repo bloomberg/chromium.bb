@@ -104,7 +104,7 @@
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
-      'ToTLinuxMSan': 'clang_tot_msan_release_bot',
+      'ToTLinuxMSan': 'clang_tot_msan_release',
       'ToTLinuxLLD': 'clang_tot_lld_release_shared',
       'ToTLinuxThinLTO': 'clang_tot_release_full_symbols_thin_lto_static_use_lld',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
