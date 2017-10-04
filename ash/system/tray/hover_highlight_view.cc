@@ -38,13 +38,17 @@ void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
   AddRightView(right_icon);
 }
 
-void HoverHighlightView::AddRightView(views::View* view) {
+void HoverHighlightView::AddRightView(views::View* view,
+                                      std::unique_ptr<views::Border> border) {
   DCHECK(is_populated_);
   DCHECK(!right_view_);
 
   // When a right view is added, extra padding on the CENTER container should be
   // removed.
   tri_view_->SetContainerBorder(TriView::Container::CENTER, nullptr);
+
+  if (border)
+    tri_view_->SetContainerBorder(TriView::Container::END, std::move(border));
 
   right_view_ = view;
   right_view_->SetEnabled(enabled());
