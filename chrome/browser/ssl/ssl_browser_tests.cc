@@ -3434,15 +3434,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIHTTPS,
 
 // Verifies that the interstitial can proceed, even if JavaScript is disabled.
 // http://crbug.com/322948
-#if defined(OS_LINUX)
-// flaky http://crbug.com/396458
-#define MAYBE_TestInterstitialJavaScriptProceeds \
-    DISABLED_TestInterstitialJavaScriptProceeds
-#else
-#define MAYBE_TestInterstitialJavaScriptProceeds \
-    TestInterstitialJavaScriptProceeds
-#endif
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestInterstitialJavaScriptProceeds) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
@@ -3454,20 +3446,20 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestInterstitialJavaScriptProceeds) {
   CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(&tab->GetController()));
   InterstitialPage* interstitial_page = tab->GetInterstitialPage();
   ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
             interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
-  content::RenderViewHost* interstitial_rvh =
-      interstitial_page->GetMainFrame()->GetRenderViewHost();
+  EXPECT_TRUE(WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(&tab->GetController()));
   int result = -1;
   const std::string javascript =
       base::StringPrintf("window.domAutomationController.send(%d);",
                          security_interstitials::CMD_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-              interstitial_rvh, javascript, &result));
+      interstitial_page->GetMainFrame(), javascript, &result));
   // The above will hang without the fix.
   EXPECT_EQ(1, result);
   observer.Wait();
