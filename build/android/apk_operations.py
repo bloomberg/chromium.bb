@@ -1019,13 +1019,15 @@ class _RunCommand(_InstallCommand, _LaunchCommand, _LogcatCommand):
     _InstallCommand._RegisterExtraArgs(self, group)
     _LaunchCommand._RegisterExtraArgs(self, group)
     _LogcatCommand._RegisterExtraArgs(self, group)
+    group.add_argument('--no-logcat', action='store_true',
+                       help='Install and launch, but do not enter logcat.')
 
   def Run(self):
     logging.warning('Installing...')
     _InstallCommand.Run(self)
     logging.warning('Sending launch intent...')
     _LaunchCommand.Run(self)
-    if len(self.devices) == 1:
+    if len(self.devices) == 1 and not self.args.no_logcat:
       logging.warning('Entering logcat...')
       _LogcatCommand.Run(self)
 
