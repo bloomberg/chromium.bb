@@ -45,14 +45,6 @@ void WebrtcAudioModule::SetAudioTaskRunner(
   audio_task_runner_ = audio_task_runner;
 }
 
-int64_t WebrtcAudioModule::TimeUntilNextProcess() {
-  // We don't need to do anything in Process(), so return an arbitrary value
-  // that's not too low, so that Process() doesn't get called too frequently.
-  return 1000000;
-}
-
-void WebrtcAudioModule::Process() {}
-
 int32_t WebrtcAudioModule::ActiveAudioLayer(AudioLayer* audio_layer) const {
   NOTREACHED();
   return -1;
@@ -60,11 +52,6 @@ int32_t WebrtcAudioModule::ActiveAudioLayer(AudioLayer* audio_layer) const {
 
 WebrtcAudioModule::ErrorCode WebrtcAudioModule::LastError() const {
   return kAdmErrNone;
-}
-
-int32_t WebrtcAudioModule::RegisterEventObserver(
-    webrtc::AudioDeviceObserver* event_callback) {
-  return 0;
 }
 
 int32_t WebrtcAudioModule::RegisterAudioCallback(
