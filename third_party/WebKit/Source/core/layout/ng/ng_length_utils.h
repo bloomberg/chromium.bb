@@ -104,10 +104,23 @@ CORE_EXPORT LayoutUnit ResolveUsedColumnInlineSize(LayoutUnit available_size,
 
 CORE_EXPORT LayoutUnit ResolveUsedColumnGap(const ComputedStyle&);
 
-CORE_EXPORT NGBoxStrut ComputeMargins(const NGConstraintSpace&,
-                                      const ComputedStyle&,
-                                      const NGWritingMode writing_mode,
-                                      const TextDirection direction);
+// Compute physical margins.
+CORE_EXPORT NGPhysicalBoxStrut ComputePhysicalMargins(const NGConstraintSpace&,
+                                                      const ComputedStyle&);
+// Compute margins for the specified NGConstraintSpace.
+CORE_EXPORT NGBoxStrut ComputeMarginsFor(const NGConstraintSpace&,
+                                         const ComputedStyle&,
+                                         const NGConstraintSpace& compute_for);
+// Compute margins for the NGConstraintSpace.
+CORE_EXPORT NGBoxStrut ComputeMarginsForContainer(const NGConstraintSpace&,
+                                                  const ComputedStyle&);
+// Compute margins for the NGConstraintSpace in the visual order.
+CORE_EXPORT NGBoxStrut
+ComputeMarginsForVisualContainer(const NGConstraintSpace&,
+                                 const ComputedStyle&);
+// Compute margins for the style owner.
+CORE_EXPORT NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace&,
+                                             const ComputedStyle&);
 
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
                                       const ComputedStyle&);
