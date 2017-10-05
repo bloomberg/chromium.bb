@@ -1650,7 +1650,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestShippingAddressChangeTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestShowTwiceTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestTabTest.java",
-  "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestTestBase.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestTestCommon.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestTestRule.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestUseStatsTest.java",

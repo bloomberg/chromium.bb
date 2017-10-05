@@ -4,9 +4,24 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NO_INSTRUMENTS;
+
 import android.support.test.filters.MediumTest;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -14,85 +29,114 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for checking whether user can make a payment using a payment app.
  */
-public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequestTestBase {
-    public PaymentRequestPaymentAppCanMakePaymentQueryTest() {
-        super("payment_request_can_make_payment_query_bobpay_test.html");
-        PaymentRequestImpl.setIsLocalCanMakePaymentQueryQuotaEnforcedForTest();
-    }
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+})
+public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActivityStartCallback {
+    @Rule
+    public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(
+            "payment_request_can_make_payment_query_bobpay_test.html", this);
 
     @Override
     public void onMainActivityStarted() throws InterruptedException, ExecutionException,
             TimeoutException {}
 
-    @MediumTest
-    @Feature({"Payments"})
-    public void testNoBobPayInstalled() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, false"});
-
-        clickNodeAndWait("otherBuy", getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, NotAllowedError"});
+    @Before
+    public void setUp() {
+        PaymentRequestImpl.setIsLocalCanMakePaymentQueryQuotaEnforcedForTest();
     }
 
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testNoBobPayInstalled()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
+
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, NotAllowedError"});
+    }
+
+    @Test
     @MediumTest
     @Feature({"Payments"})
     public void testBobPayInstalledLater()
             throws InterruptedException, ExecutionException, TimeoutException {
-        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, false"});
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
 
-        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
-        clickNodeAndWait("otherBuy", getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"true, NotAllowedError"});
+        Thread.sleep(10000);
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        Thread.sleep(10000);
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, NotAllowedError"});
     }
 
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, false"});
+    public void testNoInstrumentsInFastBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
 
-        clickNodeAndWait("otherBuy", getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, NotAllowedError"});
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, NotAllowedError"});
     }
 
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, false"});
+    public void testNoInstrumentsInSlowBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, false"});
 
-        clickNodeAndWait("otherBuy", getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"false, NotAllowedError"});
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false, NotAllowedError"});
     }
 
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaFastBobPay() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"true, true"});
+    public void testPayViaFastBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, true"});
 
-        clickNodeAndWait("otherBuy", getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"true, NotAllowedError"});
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, NotAllowedError"});
     }
 
+    @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaSlowBobPay() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"true, true"});
+    public void testPayViaSlowBobPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, true"});
 
-        clickNodeAndWait("otherBuy", getCanMakePaymentQueryResponded());
-        expectResultContains(new String[] {"true, NotAllowedError"});
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "otherBuy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true, NotAllowedError"});
     }
 }
