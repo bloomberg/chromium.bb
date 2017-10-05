@@ -16,6 +16,7 @@ sk_sp<PaintShader> PaintShader::MakeColor(SkColor color) {
   // Just one color. Store it in the fallback color. Easy.
   shader->fallback_color_ = color;
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -36,6 +37,7 @@ sk_sp<PaintShader> PaintShader::MakeLinearGradient(const SkPoint points[],
   shader->SetMatrixAndTiling(local_matrix, mode, mode);
   shader->SetFlagsAndFallback(flags, fallback_color);
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -56,6 +58,7 @@ sk_sp<PaintShader> PaintShader::MakeRadialGradient(const SkPoint& center,
   shader->SetMatrixAndTiling(local_matrix, mode, mode);
   shader->SetFlagsAndFallback(flags, fallback_color);
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -81,6 +84,7 @@ sk_sp<PaintShader> PaintShader::MakeTwoPointConicalGradient(
   shader->SetMatrixAndTiling(local_matrix, mode, mode);
   shader->SetFlagsAndFallback(flags, fallback_color);
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -104,6 +108,7 @@ sk_sp<PaintShader> PaintShader::MakeSweepGradient(SkScalar cx,
   shader->SetMatrixAndTiling(local_matrix, mode, mode);
   shader->SetFlagsAndFallback(flags, fallback_color);
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -116,6 +121,7 @@ sk_sp<PaintShader> PaintShader::MakeImage(const PaintImage& image,
   shader->image_ = image;
   shader->SetMatrixAndTiling(local_matrix, tx, ty);
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -133,6 +139,7 @@ sk_sp<PaintShader> PaintShader::MakePaintRecord(
   shader->scaling_behavior_ = scaling_behavior;
   shader->SetMatrixAndTiling(local_matrix, tx, ty);
 
+  shader->CreateSkShader();
   return shader;
 }
 
@@ -140,8 +147,11 @@ PaintShader::PaintShader(Type type) : shader_type_(type) {}
 PaintShader::~PaintShader() = default;
 
 sk_sp<SkShader> PaintShader::GetSkShader() const {
-  if (cached_shader_)
-    return cached_shader_;
+  return cached_shader_;
+}
+
+void PaintShader::CreateSkShader() {
+  DCHECK(!cached_shader_);
 
   switch (shader_type_) {
     case Type::kColor:
@@ -214,7 +224,6 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
   // one.
   if (!cached_shader_)
     cached_shader_ = SkShader::MakeColorShader(fallback_color_);
-  return cached_shader_;
 }
 
 void PaintShader::SetColorsAndPositions(const SkColor* colors,

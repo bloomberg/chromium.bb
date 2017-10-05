@@ -171,6 +171,8 @@ class CC_PAINT_EXPORT PaintImage {
                          sk_sp<SkColorSpace> color_space,
                          size_t frame_index) const;
 
+  void CreateSkImage();
+
   sk_sp<SkImage> sk_image_;
 
   sk_sp<PaintRecord> paint_record_;
@@ -200,7 +202,7 @@ class CC_PAINT_EXPORT PaintImage {
   // recording with a PaintImage storing the updated sequence id.
   AnimationSequenceId reset_animation_sequence_id_ = 0u;
 
-  mutable sk_sp<SkImage> cached_sk_image_;
+  sk_sp<SkImage> cached_sk_image_;
 };
 
 }  // namespace cc

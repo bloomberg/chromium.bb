@@ -131,6 +131,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   explicit PaintShader(Type type);
 
   sk_sp<SkShader> GetSkShader() const;
+  void CreateSkShader();
 
   void SetColorsAndPositions(const SkColor* colors,
                              const SkScalar* positions,
@@ -166,7 +167,7 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   std::vector<SkColor> colors_;
   std::vector<SkScalar> positions_;
 
-  mutable sk_sp<SkShader> cached_shader_;
+  sk_sp<SkShader> cached_shader_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintShader);
 };

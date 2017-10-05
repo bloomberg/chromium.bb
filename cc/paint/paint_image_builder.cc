@@ -20,7 +20,7 @@ PaintImageBuilder::PaintImageBuilder(PaintImage image)
 }
 PaintImageBuilder::~PaintImageBuilder() = default;
 
-PaintImage PaintImageBuilder::TakePaintImage() const {
+PaintImage PaintImageBuilder::TakePaintImage() {
 #if DCHECK_IS_ON()
   DCHECK(id_set_);
   if (paint_image_.sk_image_) {
@@ -52,6 +52,7 @@ PaintImage PaintImageBuilder::TakePaintImage() const {
   }
 #endif
 
+  paint_image_.CreateSkImage();
   return std::move(paint_image_);
 }
 

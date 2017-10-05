@@ -50,26 +50,6 @@ PaintImage::ContentId PaintImage::GetNextContentId() {
 }
 
 const sk_sp<SkImage>& PaintImage::GetSkImage() const {
-  if (cached_sk_image_)
-    return cached_sk_image_;
-
-  if (sk_image_) {
-    cached_sk_image_ = sk_image_;
-  } else if (paint_record_) {
-    cached_sk_image_ = SkImage::MakeFromPicture(
-        ToSkPicture(paint_record_, gfx::RectToSkRect(paint_record_rect_)),
-        SkISize::Make(paint_record_rect_.width(), paint_record_rect_.height()),
-        nullptr, nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
-  } else if (paint_image_generator_) {
-    cached_sk_image_ =
-        SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
-            paint_image_generator_, frame_index_));
-  }
-
-  if (!subset_rect_.IsEmpty() && cached_sk_image_) {
-    cached_sk_image_ =
-        cached_sk_image_->makeSubset(gfx::RectToSkIRect(subset_rect_));
-  }
   return cached_sk_image_;
 }
 
@@ -89,14 +69,34 @@ PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
   // Store the subset from the original image.
   result.subset_rect_.Offset(subset_rect_.x(), subset_rect_.y());
 
-  // Creating the |cached_sk_image_| is an optimization to allow re-use of the
-  // original decode for image subsets in skia, for cases that rely on skia's
-  // image decode cache.
-  // TODO(khushalsagar): Remove this when we no longer have such cases. See
-  // crbug.com/753639.
+  // Creating the |cached_sk_image_| using the SkImage from the original
+  // PaintImage is an optimization to allow re-use of the original decode for
+  // image subsets in skia, for cases that rely on skia's image decode cache.
   result.cached_sk_image_ =
       GetSkImage()->makeSubset(gfx::RectToSkIRect(subset));
   return result;
+}
+
+void PaintImage::CreateSkImage() {
+  DCHECK(!cached_sk_image_);
+
+  if (sk_image_) {
+    cached_sk_image_ = sk_image_;
+  } else if (paint_record_) {
+    cached_sk_image_ = SkImage::MakeFromPicture(
+        ToSkPicture(paint_record_, gfx::RectToSkRect(paint_record_rect_)),
+        SkISize::Make(paint_record_rect_.width(), paint_record_rect_.height()),
+        nullptr, nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
+  } else if (paint_image_generator_) {
+    cached_sk_image_ =
+        SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
+            paint_image_generator_, frame_index_));
+  }
+
+  if (!subset_rect_.IsEmpty() && cached_sk_image_) {
+    cached_sk_image_ =
+        cached_sk_image_->makeSubset(gfx::RectToSkIRect(subset_rect_));
+  }
 }
 
 PaintImage PaintImage::MakeStatic() const {
