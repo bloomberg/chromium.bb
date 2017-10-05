@@ -6,14 +6,13 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_VIEW_SCHEDULER_H_
 
 #include "platform/PlatformExport.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/BlameContext.h"
 
 #include <memory>
 
 namespace blink {
-
-class WebFrameScheduler;
 
 class PLATFORM_EXPORT WebViewScheduler {
  public:
@@ -31,9 +30,10 @@ class PLATFORM_EXPORT WebViewScheduler {
 
   // Creates a new WebFrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to
-  // |BlameContext|.
+  // |blame_context|.
   virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext*) = 0;
+      BlameContext* blame_context,
+      WebFrameScheduler::FrameType) = 0;
 
   // Instructs this WebViewScheduler to use virtual time. When virtual time is
   // enabled the system doesn't actually sleep for the delays between tasks

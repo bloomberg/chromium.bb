@@ -36,6 +36,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/PlatformChromeClient.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -77,7 +78,6 @@ class PagePopup;
 class PagePopupClient;
 class PopupOpeningObserver;
 class WebDragData;
-class WebFrameScheduler;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
@@ -345,7 +345,8 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void DidObserveNonGetFetchFromScript() const {}
 
   virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
-      BlameContext*) = 0;
+      BlameContext*,
+      WebFrameScheduler::FrameType) = 0;
 
   // Returns the time of the beginning of the last beginFrame, in seconds, if
   // any, and 0.0 otherwise.

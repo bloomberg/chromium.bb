@@ -746,7 +746,9 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               InterfaceRegistry* interface_registry)
     : Frame(client, page, owner, LocalWindowProxyManager::Create(*this)),
       frame_scheduler_(page.GetChromeClient().CreateFrameScheduler(
-          client->GetFrameBlameContext())),
+          client->GetFrameBlameContext(),
+          IsMainFrame() ? WebFrameScheduler::FrameType::kMainFrame
+                        : WebFrameScheduler::FrameType::kSubframe)),
       loader_(this),
       navigation_scheduler_(NavigationScheduler::Create(this)),
       script_controller_(ScriptController::Create(

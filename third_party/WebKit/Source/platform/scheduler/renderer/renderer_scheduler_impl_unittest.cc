@@ -3929,7 +3929,8 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   scheduler_->AddWebViewScheduler(web_view_scheduler1.get());
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      web_view_scheduler1->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler1->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2 = base::WrapUnique(
       new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
