@@ -114,6 +114,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
+  void OnItemDelegateDiscarded(ash::ShelfItemDelegate* delegate) override;
 
   // arc::ArcSessionManager::Observer:
   void OnArcOptInManagementCheckStarted() override;

@@ -325,6 +325,7 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemDelegateChanged(const ShelfID& id,
+                                ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
 
   // Handles the result when querying ShelfItemDelegates for context menu items.

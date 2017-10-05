@@ -1399,6 +1399,7 @@ void ChromeLauncherController::ShelfItemChanged(
 
 void ChromeLauncherController::ShelfItemDelegateChanged(
     const ash::ShelfID& id,
+    ash::ShelfItemDelegate* old_delegate,
     ash::ShelfItemDelegate* delegate) {
   if (shelf_controller_ && !applying_remote_shelf_model_changes_) {
     shelf_controller_->SetShelfItemDelegate(

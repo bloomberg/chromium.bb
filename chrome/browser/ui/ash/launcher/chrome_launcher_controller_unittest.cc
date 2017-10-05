@@ -159,9 +159,6 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
     last_index_ = target_index;
   }
 
-  void ShelfItemDelegateChanged(const ash::ShelfID&,
-                                ash::ShelfItemDelegate*) override {}
-
   void clear_counts() {
     added_ = 0;
     removed_ = 0;
@@ -2140,6 +2137,111 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
     ASSERT_TRUE(arc_window);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id)));
+  }
+}
+
+// Verifies edge cases when Extension app launcher may be overwritten by ARC app
+// launcher controller and vice versa. This should not happen in normal cases
+// but in case of ARC boot failure this may lead to such situation. This test
+// verifies that dynamic change of app launcher controllers is safe.
+// See more crbug.com/770005.
+TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
+  extension_service_->AddExtension(arc_support_host_.get());
+
+  InitLauncherController();
+
+  SendListOfArcApps();
+  arc::mojom::AppInfo app_info =
+      CreateAppInfo("Play Store", arc::kPlayStoreActivity,
+                    arc::kPlayStorePackage, OrientationLock::NONE);
+  EXPECT_EQ(arc::kPlayStoreAppId, AddArcAppAndShortcut(app_info));
+
+  std::string window_app_id("org.chromium.arc.1");
+  const ash::ShelfID play_store_shelf_id(arc::kPlayStoreAppId);
+
+  launcher_controller_->UnpinAppWithID(arc::kPlayStoreAppId);
+  EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
+
+  // Try 4 different scenarios with different creation and destroying orders.
+
+  // Scenario 1: Create OptIn, Play Store. Destroy OptIn, Play Store.
+  {
+    std::unique_ptr<V2App> play_store_optin =
+        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+                                extensions::AppWindow::WINDOW_TYPE_DEFAULT);
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    views::Widget* arc_window = CreateArcWindow(window_app_id);
+    ASSERT_TRUE(arc_window);
+    arc_test_.app_instance()->SendTaskCreated(1, app_info, std::string());
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    play_store_optin.reset();
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    arc_window->CloseNow();
+    arc_test_.app_instance()->SendTaskDestroyed(1);
+    EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
+  }
+
+  // Scenario 2: Create OptIn, Play Store. Destroy Play Store, OptIn.
+  {
+    std::unique_ptr<V2App> play_store_optin =
+        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+                                extensions::AppWindow::WINDOW_TYPE_DEFAULT);
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    views::Widget* arc_window = CreateArcWindow(window_app_id);
+    ASSERT_TRUE(arc_window);
+    arc_test_.app_instance()->SendTaskCreated(1, app_info, std::string());
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    arc_window->CloseNow();
+    arc_test_.app_instance()->SendTaskDestroyed(1);
+    EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    play_store_optin.reset();
+    EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
+  }
+
+  // Scenario 3: Create Play Store, OptIn. Destroy OptIn, Play Store.
+  {
+    views::Widget* arc_window = CreateArcWindow(window_app_id);
+    ASSERT_TRUE(arc_window);
+    arc_test_.app_instance()->SendTaskCreated(1, app_info, std::string());
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    std::unique_ptr<V2App> play_store_optin =
+        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+                                extensions::AppWindow::WINDOW_TYPE_DEFAULT);
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    play_store_optin.reset();
+    EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    arc_window->CloseNow();
+    arc_test_.app_instance()->SendTaskDestroyed(1);
+    EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
+  }
+
+  // Scenario 4: Create Play Store, OptIn. Destroy Play Store, OptIn.
+  {
+    views::Widget* arc_window = CreateArcWindow(window_app_id);
+    ASSERT_TRUE(arc_window);
+    arc_test_.app_instance()->SendTaskCreated(1, app_info, std::string());
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    std::unique_ptr<V2App> play_store_optin =
+        base::MakeUnique<V2App>(profile(), arc_support_host_.get(),
+                                extensions::AppWindow::WINDOW_TYPE_DEFAULT);
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    arc_window->CloseNow();
+    arc_test_.app_instance()->SendTaskDestroyed(1);
+    EXPECT_TRUE(launcher_controller_->GetItem(play_store_shelf_id));
+
+    play_store_optin.reset();
+    EXPECT_FALSE(launcher_controller_->GetItem(play_store_shelf_id));
   }
 }
 

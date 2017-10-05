@@ -362,6 +362,7 @@ class ChromeLauncherController
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
   void ShelfItemDelegateChanged(const ash::ShelfID& id,
+                                ash::ShelfItemDelegate* old_delegate,
                                 ash::ShelfItemDelegate* delegate) override;
 
   // AppSyncUIStateObserver:
