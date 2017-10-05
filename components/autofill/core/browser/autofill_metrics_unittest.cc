@@ -1409,8 +1409,8 @@ TEST_F(AutofillMetricsTest, UpiVirtualPaymentAddress) {
   test::CreateTestFormField("Payment Address", "payment_address", "user@upi",
                             "text", &field);
   form.fields.push_back(field);
-  heuristic_types.push_back(UNKNOWN_TYPE);
-  server_types.push_back(NO_SERVER_DATA);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
 
   // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
@@ -1421,6 +1421,13 @@ TEST_F(AutofillMetricsTest, UpiVirtualPaymentAddress) {
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UserHappiness", AutofillMetrics::USER_DID_ENTER_UPI_VPA, 1);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                     AutofillMetrics::USER_DID_ENTER_UPI_VPA,
+                                     1);
+  histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
+  histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Password", 0);
+  histogram_tester.ExpectTotalCount("Autofill.UserHappiness.UnknownFormType",
+                                    0);
 }
 
 // Verify that when a field is annotated with the autocomplete attribute, its
@@ -4982,9 +4989,246 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
   }
 }
 
+TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            PASSWORD_FIELD);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Password",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.UnknownFormType",
+                                      0);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            USERNAME_FIELD);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Password",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.UnknownFormType",
+                                      0);
+  }
+}
+
+TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            NO_GROUP);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.UnknownFormType",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Password", 0);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL,
+                                            TRANSACTION);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.UnknownFormType",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Password", 0);
+  }
+}
+
+// Verify that nothing is logging in happiness metrics if no fields in form.
+TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_EmptyForm) {
+  // Load a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<FormData> forms(1, form);
+
+  // Expect a notification when the form is first seen.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
+  }
+}
+
 // Verify that we correctly log user happiness metrics dealing with form
 // interaction.
-TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
+TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
+  // Load a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  // Construct a valid credit card form with minimal fields.
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Card Number", "card_number", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NAME_FULL);
+  test::CreateTestFormField("Expiration", "cc_exp", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Verification", "verification", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_VERIFICATION_CODE);
+
+  std::vector<FormData> forms(1, form);
+
+  // Expect a notification when the form is first seen.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                        AutofillMetrics::FORMS_LOADED, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.CreditCard",
+                                        AutofillMetrics::FORMS_LOADED, 1);
+  }
+
+  // Simulate typing.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                            gfx::RectF(), TimeTicks());
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                        AutofillMetrics::USER_DID_TYPE, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.CreditCard",
+                                        AutofillMetrics::USER_DID_TYPE, 1);
+  }
+
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate suggestions shown twice with separate popups.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidShowSuggestions(true, form, field);
+    autofill_manager_->DidShowSuggestions(true, form, field);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness", AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                       1);
+  }
+
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate suggestions shown twice for a single edit (i.e. multiple
+  // keystrokes in a single field).
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidShowSuggestions(true, form, field);
+    autofill_manager_->DidShowSuggestions(false, form, field);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness", AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                       1);
+  }
+
+  // Simulate suggestions shown for a different field.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidShowSuggestions(true, form, form.fields[1]);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                        AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.CreditCard",
+                                        AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+  }
+
+  // Simulate invoking autofill.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnDidFillAutofillFormData(form, TimeTicks());
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness", AutofillMetrics::USER_DID_AUTOFILL_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                       AutofillMetrics::USER_DID_AUTOFILL_ONCE,
+                                       1);
+  }
+
+  // Simulate editing an autofilled field.
+  {
+    base::HistogramTester histogram_tester;
+    std::string guid("00000000-0000-0000-0000-000000000001");
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), guid));
+    autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                            gfx::RectF(), TimeTicks());
+    // Simulate a second keystroke; make sure we don't log the metric twice.
+    autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
+                                            gfx::RectF(), TimeTicks());
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness.CreditCard",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness.CreditCard",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE, 1);
+  }
+
+  // Simulate invoking autofill again.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnDidFillAutofillFormData(form, TimeTicks());
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.CreditCard",
+                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
+  }
+
+  // Simulate editing another autofilled field.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnTextFieldDidChange(form, form.fields[1], gfx::RectF(),
+                                            TimeTicks());
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.UserHappiness",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.UserHappiness.CreditCard",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
+  }
+}
+
+// Verify that we correctly log user happiness metrics dealing with form
+// interaction.
+TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5007,6 +5251,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                         AutofillMetrics::FORMS_LOADED, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.Address",
+                                        AutofillMetrics::FORMS_LOADED, 1);
   }
 
   // Simulate typing.
@@ -5016,8 +5262,28 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
                                             gfx::RectF(), TimeTicks());
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
                                         AutofillMetrics::USER_DID_TYPE, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.Address",
+                                        AutofillMetrics::USER_DID_TYPE, 1);
   }
 
+  // Simulate suggestions shown twice with separate popups.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidShowSuggestions(true, form, field);
+    autofill_manager_->DidShowSuggestions(true, form, field);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness", AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                       1);
+  }
+
+  autofill_manager_->Reset();
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
   // Simulate suggestions shown twice for a single edit (i.e. multiple
   // keystrokes in a single field).
   {
@@ -5028,6 +5294,11 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
                                        AutofillMetrics::SUGGESTIONS_SHOWN, 1);
     histogram_tester.ExpectBucketCount(
         "Autofill.UserHappiness", AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                       1);
   }
 
   // Simulate suggestions shown for a different field.
@@ -5035,6 +5306,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     base::HistogramTester histogram_tester;
     autofill_manager_->DidShowSuggestions(true, form, form.fields[1]);
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                        AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.Address",
                                         AutofillMetrics::SUGGESTIONS_SHOWN, 1);
   }
 
@@ -5046,6 +5319,11 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectBucketCount(
         "Autofill.UserHappiness", AutofillMetrics::USER_DID_AUTOFILL_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                       AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                       AutofillMetrics::USER_DID_AUTOFILL_ONCE,
+                                       1);
   }
 
   // Simulate editing an autofilled field.
@@ -5066,6 +5344,12 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     histogram_tester.ExpectBucketCount(
         "Autofill.UserHappiness",
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness.Address",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.UserHappiness.Address",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE, 1);
   }
 
   // Simulate invoking autofill again.
@@ -5073,6 +5357,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnDidFillAutofillFormData(form, TimeTicks());
     histogram_tester.ExpectUniqueSample("Autofill.UserHappiness",
+                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
+    histogram_tester.ExpectUniqueSample("Autofill.UserHappiness.Address",
                                         AutofillMetrics::USER_DID_AUTOFILL, 1);
   }
 
@@ -5083,6 +5369,9 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
                                             TimeTicks());
     histogram_tester.ExpectUniqueSample(
         "Autofill.UserHappiness",
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.UserHappiness.Address",
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD, 1);
   }
 
@@ -5096,6 +5385,16 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   VerifyFormInteractionUkm(
       test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
       {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName,
+         PHONE_HOME_WHOLE_NUMBER},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}},
+       {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName,
+         PHONE_HOME_WHOLE_NUMBER},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}},
+       {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmTextFieldDidChangeType::kHeuristicTypeName,
          PHONE_HOME_WHOLE_NUMBER},
         {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},

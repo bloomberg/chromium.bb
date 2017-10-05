@@ -2396,6 +2396,11 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AutofillUserHappiness">
+  <summary>
+    These metrics track the user happiness about Autofill on address and credit
+    card forms. Starting from M63, these metrics are also split between
+    Autofill.UserHappiness.Address and Autofill.UserHappiness.CreditCard.
+  </summary>
   <int value="0" label="Forms loaded"/>
   <int value="1" label="Deprecated 1"/>
   <int value="2" label="Deprecated 2"/>

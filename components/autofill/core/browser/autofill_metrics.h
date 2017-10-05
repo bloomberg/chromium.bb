@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -694,7 +695,11 @@ class AutofillMetrics {
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
 
-  static void LogUserHappinessMetric(UserHappinessMetric metric);
+  static void LogUserHappinessMetric(UserHappinessMetric metric,
+                                     FieldTypeGroup field_type_group);
+
+  static void LogUserHappinessMetric(UserHappinessMetric metric,
+                                     const std::set<FormType>& form_types);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
