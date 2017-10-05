@@ -132,8 +132,8 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
               double volume) override {
     EXPECT_EQ(bits_per_sample_, 16);
     const int num_samples = src->frames() * src->channels();
-    std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
-    const int bytes_per_sample = sizeof(*interleaved);
+    auto interleaved = std::make_unique<int16_t[]>(num_samples);
+    const int bytes_per_sample = sizeof(interleaved[0]);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
 
     // Store data data in a temporary buffer to avoid making blocking
@@ -237,7 +237,7 @@ class ScopedAudioInputStream {
   void Close() {
     if (stream_)
       stream_->Close();
-    stream_ = NULL;
+    stream_ = nullptr;
   }
 
   AudioInputStream* operator->() { return stream_; }
@@ -334,26 +334,24 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager_.get()));
-  WASAPIAudioInputStream* wais =
-      static_cast<WASAPIAudioInputStream*>(ais.get());
 
   // Open(), Open() should fail the second time.
   EXPECT_TRUE(ais->Open());
   EXPECT_FALSE(ais->Open());
 
-  MockAudioInputCallback sink;
+  FakeAudioInputCallback sink;
 
   // Start(), Start() is a valid calling sequence (second call does nothing).
   ais->Start(&sink);
-  EXPECT_TRUE(wais->started());
+  sink.WaitForData();
   ais->Start(&sink);
-  EXPECT_TRUE(wais->started());
+  // Ensure the stream is still started.
+  sink.WaitForData();
+  sink.WaitForData();
 
   // Stop(), Stop() is a valid calling sequence (second call does nothing).
   ais->Stop();
-  EXPECT_FALSE(wais->started());
   ais->Stop();
-  EXPECT_FALSE(wais->started());
   ais.Close();
 }
 
