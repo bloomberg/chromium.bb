@@ -172,6 +172,21 @@ TEST_P(NavigationManagerTest, EmptyManager) {
   EXPECT_EQ(-1, navigation_manager()->GetPreviousItemIndex());
 }
 
+// Tests that the simpler setter SetPreviousItemIndex() updates the previous
+// item index without sanity check.
+TEST_P(NavigationManagerTest, SetPreviousItemIndex) {
+  EXPECT_EQ(-1, navigation_manager()->GetPreviousItemIndex());
+
+  navigation_manager()->SetPreviousItemIndex(0);
+  EXPECT_EQ(0, navigation_manager()->GetPreviousItemIndex());
+
+  navigation_manager()->SetPreviousItemIndex(1);
+  EXPECT_EQ(1, navigation_manager()->GetPreviousItemIndex());
+
+  navigation_manager()->SetPreviousItemIndex(-1);
+  EXPECT_EQ(-1, navigation_manager()->GetPreviousItemIndex());
+}
+
 // Tests that GetPendingItemIndex() returns -1 if there is no pending entry.
 TEST_P(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
   navigation_manager()->AddPendingItem(

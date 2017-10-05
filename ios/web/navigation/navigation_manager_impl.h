@@ -111,6 +111,9 @@ class NavigationManagerImpl : public NavigationManager {
   // Returns the index of the previous item. Only used by SessionStorageBuilder.
   virtual int GetPreviousItemIndex() const = 0;
 
+  // Sets the index of the previous item. Only used by SessionStorageBuilder.
+  virtual void SetPreviousItemIndex(int previous_item_index) = 0;
+
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
 

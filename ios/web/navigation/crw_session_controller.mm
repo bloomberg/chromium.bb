@@ -60,11 +60,6 @@
 // Redefine as readwrite.
 @property(nonatomic, readwrite, assign) NSInteger lastCommittedItemIndex;
 
-// Expose setters for serialization properties.  These are exposed in a category
-// in SessionStorageBuilder, and will be removed as ownership of
-// their backing ivars moves to NavigationManagerImpl.
-@property(nonatomic, readwrite, assign) NSInteger previousItemIndex;
-
 // Removes all items after lastCommittedItemIndex.
 - (void)clearForwardItems;
 // Discards the transient item, if any.

@@ -50,6 +50,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   void CommitPendingItem() override;
   int GetIndexForOffset(int offset) const override;
   int GetPreviousItemIndex() const override;
+  void SetPreviousItemIndex(int previous_item_index) override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;

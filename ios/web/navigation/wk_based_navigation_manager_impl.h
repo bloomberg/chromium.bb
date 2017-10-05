@@ -75,6 +75,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   int GetIndexForOffset(int offset) const override;
   // Returns the previous navigation item in the main frame.
   int GetPreviousItemIndex() const override;
+  void SetPreviousItemIndex(int previous_item_index) override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
