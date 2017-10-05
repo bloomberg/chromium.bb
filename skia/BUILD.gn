@@ -129,7 +129,7 @@ config("skia_library_config") {
 
   defines = []
 
-  if (!use_system_freetype) {
+  if (!is_ios && !use_system_freetype) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
   }
 
@@ -282,18 +282,14 @@ component("skia") {
     "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
     "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
     "//third_party/skia/src/images/SkImageEncoder.cpp",
-    "//third_party/skia/src/images/SkJPEGWriteUtility.cpp",
-    "//third_party/skia/src/images/SkJpegEncoder.cpp",
     "//third_party/skia/src/images/SkPngEncoder.cpp",
     "//third_party/skia/src/images/SkWebpEncoder.cpp",
     "//third_party/skia/src/ports/SkGlobalInitialization_default.cpp",
-    "//third_party/skia/src/ports/SkImageGenerator_none.cpp",
     "//third_party/skia/src/ports/SkOSFile_stdio.cpp",
     "//third_party/skia/src/sfnt/SkOTTable_name.cpp",
     "//third_party/skia/src/sfnt/SkOTUtils.cpp",
   ]
   if (!is_ios) {
-    sources -= [ "//third_party/skia/src/ports/SkImageGenerator_none.cpp" ]
     sources += [
       "//third_party/skia/src/codec/SkBmpBaseCodec.cpp",
       "//third_party/skia/src/codec/SkBmpCodec.cpp",
@@ -315,9 +311,13 @@ component("skia") {
       "//third_party/skia/src/codec/SkSwizzler.cpp",
       "//third_party/skia/src/codec/SkWbmpCodec.cpp",
       "//third_party/skia/src/codec/SkWebpCodec.cpp",
+      "//third_party/skia/src/images/SkJPEGWriteUtility.cpp",
+      "//third_party/skia/src/images/SkJpegEncoder.cpp",
       "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
       "//third_party/skia/third_party/gif/SkGifImageReader.cpp",
     ]
+  } else {
+    sources += [ "//third_party/skia/src/ports/SkImageGenerator_none.cpp" ]
   }
 
   # This and skia_opts are really the same conceptual target so share headers.
@@ -368,11 +368,14 @@ component("skia") {
 
   # Select Skia ports.
 
-  # FreeType is needed everywhere, on Linux and Android as main font backend, on Windows and Mac as fallback backend for Variations.
-  sources += [
-    "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
-    "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
-  ]
+  # FreeType is needed everywhere (except on iOS), on Linux and Android as main
+  # font backend, on Windows and Mac as fallback backend for Variations.
+  if (!is_ios) {
+    sources += [
+      "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
+      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+    ]
+  }
 
   if (is_win) {
     sources += [
@@ -461,18 +464,15 @@ component("skia") {
     ":skia_opts",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//build/config/freetype",
-    "//third_party:jpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
   ]
 
-  if (is_ios) {
-    sources -= [
-      "//third_party/skia/src/images/SkJPEGWriteUtility.cpp",
-      "//third_party/skia/src/images/SkJpegEncoder.cpp",
+  if (!is_ios) {
+    deps += [
+      "//build/config/freetype",
+      "//third_party:jpeg",
     ]
-    deps -= [ "//third_party:jpeg" ]
   }
 
   if (is_linux) {
