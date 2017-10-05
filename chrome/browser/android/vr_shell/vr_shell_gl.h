@@ -236,7 +236,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   std::unique_ptr<vr::Ui> ui_;
 
-  bool web_vr_mode_ = false;
+  bool web_vr_mode_;
   bool ready_to_draw_ = false;
   bool paused_ = true;
   bool surfaceless_rendering_;
@@ -277,8 +277,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   AndroidVSyncHelper vsync_helper_;
 
   base::CancelableCallback<void()> webvr_frame_timeout_;
-
-  std::vector<gvr::BufferSpec> specs_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
