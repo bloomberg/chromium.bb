@@ -94,6 +94,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   size_t path_start = spec.rfind("LayoutTests/");
   if (path_start != std::string::npos)
     spec = spec.substr(path_start);
+  bool is_devtools_test = spec.find("/devtools/") != std::string::npos;
   test_runner_->setShouldGeneratePixelResults(generate_pixels);
   if (spec.find("loading/") != std::string::npos)
     test_runner_->setShouldDumpFrameLoadCallbacks(true);
@@ -101,13 +102,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     test_runner_->setShouldDumpAsText(true);
     test_runner_->setShouldGeneratePixelResults(false);
   }
-  if (spec.find("/devtools/") != std::string::npos ||
-      spec.find("/inspector/") != std::string::npos ||
-      spec.find("/inspector-enabled/") != std::string::npos) {
-    test_runner_->SetV8CacheDisabled(true);
-  } else {
-    test_runner_->SetV8CacheDisabled(false);
-  }
+  test_runner_->SetV8CacheDisabled(is_devtools_test);
 
   if (spec.find("/viewsource/") != std::string::npos) {
     test_runner_->setShouldEnableViewSource(true);
@@ -124,20 +119,15 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   if (!initial_configuration)
     return;
 
-  if (spec.find("/devtools/") != std::string::npos ||
-      spec.find("/inspector/") != std::string::npos ||
-      spec.find("/inspector-enabled/") != std::string::npos) {
+  if (is_devtools_test)
     test_runner_->ClearDevToolsLocalStorage();
-  }
 
-  if ((spec.find("/devtools/") != std::string::npos ||
-       spec.find("/inspector/") != std::string::npos) &&
-      spec.find("integration_test_runner.html") == std::string::npos &&
-      spec.find("unit_test_runner.html") == std::string::npos) {
+  bool is_legacy_devtools_test =
+      is_devtools_test &&
+      spec.find("integration_test_runner.html") == std::string::npos;
+  if (is_legacy_devtools_test) {
     // Subfolder name determines default panel to open.
-    std::string folder = spec.find("/inspector/") == std::string::npos
-                             ? "/devtools/"
-                             : "/inspector/";
+    std::string folder = "/devtools/";
     std::string test_path = spec.substr(spec.find(folder) + folder.length());
     base::DictionaryValue settings;
     settings.SetString("testPath", base::GetQuotedJSONString(spec));
