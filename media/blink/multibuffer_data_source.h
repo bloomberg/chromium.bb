@@ -128,9 +128,14 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Task posted to perform actual reading on the render thread.
   void ReadTask();
 
-  // When reading happens in read(), this does the parts which has to happen
-  // on the renderer thread.
-  void SeekTask(int64_t pos, int bytes_read);
+  // After a read, this function updates the read position.
+  // It's in a separate function because the read itself can either happen
+  // in ReadTask() or in Read(), both of which call this function afterwards.
+  void SeekTask_Locked();
+
+  // Lock |lock_| lock and call SeekTask_Locked().
+  // Called with PostTask when read() complets on the demuxer thread.
+  void SeekTask();
 
   // Cancels oustanding callbacks and sets |stop_signal_received_|. Safe to call
   // from any thread.
@@ -167,6 +172,15 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // known, otherwise it will remain kPositionNotSpecified until the size is
   // determined by reaching EOF.
   int64_t total_bytes_;
+
+  // Bytes we've read but not reported to the url_data yet.
+  // SeekTask handles the reporting.
+  int64_t bytes_read_ = 0;
+
+  // Places we might want to seek to. After each read we add another
+  // location here, and when SeekTask() is called, it picks the best
+  // position and then clears it out.
+  std::vector<int64_t> seek_positions_;
 
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.

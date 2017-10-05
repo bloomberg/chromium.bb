@@ -53,6 +53,9 @@ const int kSlowPreloadPercentage = 10;
 // Update buffer sizes every 32 progress updates.
 const int kUpdateBufferSizeFrequency = 32;
 
+// How long to we delay a seek after a read?
+constexpr base::TimeDelta kSeekDelay = base::TimeDelta::FromMilliseconds(20);
+
 }  // namespace
 
 namespace media {
@@ -358,10 +361,16 @@ void MultibufferDataSource::Read(int64_t position,
     if (reader_) {
       int bytes_read = reader_->TryReadAt(position, data, size);
       if (bytes_read > 0) {
-        render_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&MultibufferDataSource::SeekTask,
-                       weak_factory_.GetWeakPtr(), position, bytes_read));
+        bytes_read_ += bytes_read;
+        seek_positions_.push_back(position + bytes_read);
+        if (seek_positions_.size() == 1) {
+          render_task_runner_->PostDelayedTask(
+              FROM_HERE,
+              base::Bind(&MultibufferDataSource::SeekTask,
+                         weak_factory_.GetWeakPtr()),
+              kSeekDelay);
+        }
+
         read_cb.Run(bytes_read);
         return;
       }
@@ -413,50 +422,81 @@ void MultibufferDataSource::ReadTask() {
         static_cast<int>(std::min<int64_t>(available, read_op_->size()));
     bytes_read =
         reader_->TryReadAt(read_op_->position(), read_op_->data(), bytes_read);
-    url_data_->AddBytesRead(bytes_read);
 
-    int64_t new_pos = read_op_->position() + bytes_read;
-    // If we're seeking to a new location, (not just slightly further
-    // in the file) and we have more data buffered in that new location
-    // than in our current location, then we don't actually seek anywhere.
-    // Instead we keep preloading at the old location a while longer.
-    if (reader_->AvailableAt(new_pos) <= reader_->Available())
-      reader_->Seek(new_pos);
+    bytes_read_ += bytes_read;
+    seek_positions_.push_back(read_op_->position() + bytes_read);
+
     if (bytes_read == 0 && total_bytes_ == kPositionNotSpecified) {
       // We've reached the end of the file and we didn't know the total size
       // before. Update the total size so Read()s past the end of the file will
       // fail like they would if we had known the file size at the beginning.
-      total_bytes_ = reader_->Tell();
+      total_bytes_ = read_op_->position() + bytes_read;
       if (total_bytes_ != kPositionNotSpecified)
         host_->SetTotalBytes(total_bytes_);
     }
 
     ReadOperation::Run(std::move(read_op_), bytes_read);
+
+    SeekTask_Locked();
   } else {
     reader_->Seek(read_op_->position());
     reader_->Wait(1, base::Bind(&MultibufferDataSource::ReadTask,
                                 weak_factory_.GetWeakPtr()));
+    UpdateLoadingState_Locked(false);
   }
-  UpdateLoadingState_Locked(false);
 }
 
-void MultibufferDataSource::SeekTask(int64_t pos, int bytes_read) {
+void MultibufferDataSource::SeekTask() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  DCHECK_GT(bytes_read, 0);
-
   base::AutoLock auto_lock(lock_);
+  SeekTask_Locked();
+}
+
+void MultibufferDataSource::SeekTask_Locked() {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
+
   if (stop_signal_received_)
     return;
 
-  url_data_->AddBytesRead(bytes_read);
+  // A read operation is pending, which will call SeekTask_Locked when
+  // it's done. We'll defer any seeking until the read op is done.
+  if (read_op_)
+    return;
 
-  int64_t new_pos = pos + bytes_read;
-  // If we're seeking to a new location, (not just slightly further
-  // in the file) and we have more data buffered in that new location
-  // than in our current location, then we don't actually seek anywhere.
-  // Instead we keep preloading at the old location a while longer.
-  if (reader_ && reader_->AvailableAt(new_pos) <= reader_->Available())
-    reader_->Seek(new_pos);
+  url_data_->AddBytesRead(bytes_read_);
+  bytes_read_ = 0;
+
+  if (reader_) {
+    // If we're seeking to a new location, (not just slightly further
+    // in the file) and we have more data buffered in that new location
+    // than in our current location, then we don't actually seek anywhere.
+    // Instead we keep preloading at the old location a while longer.
+
+    int64_t pos = reader_->Tell();
+    int64_t available = reader_->Available();
+
+    // Iterate backwards, because if two positions have the same
+    // amount of buffered data, we probably want to prefer the latest
+    // one in the array.
+    for (auto i = seek_positions_.rbegin(); i != seek_positions_.rend(); ++i) {
+      int64_t new_pos = *i;
+      int64_t available_at_new_pos = reader_->AvailableAt(new_pos);
+
+      if (total_bytes_ != kPositionNotSpecified) {
+        if (new_pos + available_at_new_pos >= total_bytes_) {
+          // Buffer reaches end of file, no need to seek here.
+          continue;
+        }
+      }
+      if (available_at_new_pos < available) {
+        pos = new_pos;
+        available = available_at_new_pos;
+      }
+    }
+    reader_->Seek(pos);
+  }
+  seek_positions_.clear();
 
   UpdateLoadingState_Locked(false);
 }
