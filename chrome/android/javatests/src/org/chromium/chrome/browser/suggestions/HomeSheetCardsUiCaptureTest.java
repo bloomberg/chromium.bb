@@ -18,11 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -43,7 +41,6 @@ import java.util.Collections;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
-@CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD})
 public class HomeSheetCardsUiCaptureTest {
     @Rule
     public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
@@ -87,6 +84,17 @@ public class HomeSheetCardsUiCaptureTest {
     public void testScrolling() throws Exception {
         mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
         waitForWindowUpdates();
+
+        // When scrolling to a View, we wait until the View is no longer updating - when it is no
+        // longer dirty. If scroll to load is triggered, the animated progress spinner will keep
+        // the RecyclerView dirty as it is constantly updating. In addition for the UiCaptureTest
+        // we would like to get to the bottom of the CardsUI.
+
+        // We do not want to disable the Scroll to Load feature entirely because its presence
+        // effects other elements of the UI - it moves the Learn More link into the Context Menu.
+        // Removing the ScrollToLoad listener from the RecyclerView allows us to prevent scroll to
+        // load triggering while maintaining the UI otherwise.
+        mActivityRule.getRecyclerView().clearScrollToLoadListener();
 
         mActivityRule.scrollToFirstItemOfType(ItemViewType.ACTION);
         waitForWindowUpdates();
