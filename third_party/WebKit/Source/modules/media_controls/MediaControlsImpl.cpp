@@ -1035,6 +1035,9 @@ void MediaControlsImpl::OnTimeUpdate() {
 
   if (IsVisible() && ShouldHideMediaControls())
     MakeTransparent();
+
+  if (download_iph_manager_)
+    download_iph_manager_->UpdateInProductHelp();
 }
 
 void MediaControlsImpl::OnDurationChange() {
@@ -1055,15 +1058,13 @@ void MediaControlsImpl::OnPlay() {
   UpdatePlayState();
   timeline_->SetPosition(MediaElement().currentTime());
   UpdateCurrentTimeDisplay();
-
-  if (download_iph_manager_)
-    download_iph_manager_->SetIsPlaying(true);
-
   UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::OnPlaying() {
   timeline_->OnPlaying();
+  if (download_iph_manager_)
+    download_iph_manager_->SetIsPlaying(true);
 
   StartHideMediaControlsTimer();
   UpdateCSSClassFromState();
@@ -1278,6 +1279,9 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
       element->MaybeRecordDisplayed();
     overflow_menu_->MaybeRecordDisplayed();
   }
+
+  if (download_iph_manager_)
+    download_iph_manager_->UpdateInProductHelp();
 }
 
 void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {

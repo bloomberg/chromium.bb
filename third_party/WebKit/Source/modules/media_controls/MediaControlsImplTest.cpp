@@ -561,7 +561,8 @@ class MediaControlsImplInProductHelpTest : public MediaControlsImplTest {
     return *MediaControls().DownloadInProductHelp();
   }
 
-  void Play() { MediaControls().OnPlay(); }
+  void Play() { MediaControls().OnPlaying(); }
+  void OnTimeUpdate() { MediaControls().OnTimeUpdate(); }
 
   bool EnableDownloadInProductHelp() override { return true; }
 };
@@ -638,6 +639,9 @@ TEST_F(MediaControlsImplInProductHelpTest,
 
   // Showing the controls initiates showing in-product-help.
   MediaControls().MaybeShow();
+  EXPECT_TRUE(Manager().IsShowingInProductHelp());
+
+  OnTimeUpdate();
   EXPECT_TRUE(Manager().IsShowingInProductHelp());
 
   // Hiding the controls dismissed in-product-help.
