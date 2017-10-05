@@ -14,7 +14,6 @@
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLDocumentParser.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
 #include "platform/wtf/CurrentTime.h"
@@ -25,8 +24,6 @@ namespace blink {
 
 namespace {
 static const double kLongTaskSubTaskThresholdInSeconds = 0.012;
-static const double kNetworkQuietWindowSeconds = 0.5;
-static const double kNetworkQuietWatchdogSeconds = 2;
 }  // namespace
 
 // static
@@ -71,11 +68,7 @@ PerformanceMonitor* PerformanceMonitor::InstrumentingMonitor(
 }
 
 PerformanceMonitor::PerformanceMonitor(LocalFrame* local_root)
-    : local_root_(local_root),
-      network_quiet_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, local_root),
-          this,
-          &PerformanceMonitor::NetworkQuietTimerFired) {
+    : local_root_(local_root) {
   std::fill(std::begin(thresholds_), std::end(thresholds_), 0);
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
   local_root_->GetProbeSink()->addPerformanceMonitor(this);
@@ -112,7 +105,6 @@ void PerformanceMonitor::Shutdown() {
   Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
   local_root_->GetProbeSink()->removePerformanceMonitor(this);
   local_root_ = nullptr;
-  network_quiet_timer_.Stop();
 }
 
 void PerformanceMonitor::UpdateInstrumentation() {
@@ -270,78 +262,6 @@ void PerformanceMonitor::Did(const probe::UserCallback& probe) {
   DCHECK(user_callback_ != &probe);
 }
 
-void PerformanceMonitor::WillSendRequest(ExecutionContext*,
-                                         unsigned long,
-                                         DocumentLoader* loader,
-                                         ResourceRequest&,
-                                         const ResourceResponse&,
-                                         const FetchInitiatorInfo&) {
-  if (loader->GetFrame() != local_root_)
-    return;
-  int request_count = loader->Fetcher()->ActiveRequestCount();
-  // If we are above the allowed number of active requests, reset timers.
-  if (network_2_quiet_ >= 0 && request_count > 2)
-    network_2_quiet_ = 0;
-  if (network_0_quiet_ >= 0 && request_count > 0)
-    network_0_quiet_ = 0;
-}
-
-void PerformanceMonitor::DidFailLoading(unsigned long identifier,
-                                        DocumentLoader* loader,
-                                        const ResourceError&) {
-  if (loader->GetFrame() != local_root_)
-    return;
-  DidLoadResource();
-}
-
-void PerformanceMonitor::DidFinishLoading(unsigned long,
-                                          DocumentLoader* loader,
-                                          double,
-                                          int64_t,
-                                          int64_t) {
-  if (loader->GetFrame() != local_root_)
-    return;
-  DidLoadResource();
-}
-
-void PerformanceMonitor::DidLoadResource() {
-  // If we already reported quiet time, bail out.
-  if (network_0_quiet_ < 0 && network_2_quiet_ < 0)
-    return;
-
-  int request_count =
-      local_root_->GetDocument()->Fetcher()->ActiveRequestCount();
-  // If we did not achieve either 0 or 2 active connections, bail out.
-  if (request_count > 2)
-    return;
-
-  double timestamp = MonotonicallyIncreasingTime();
-  // Arriving at =2 updates the quiet_2 base timestamp.
-  // Arriving at <2 sets the quiet_2 base timestamp only if
-  // it was not already set.
-  if (request_count == 2 && network_2_quiet_ >= 0)
-    network_2_quiet_ = timestamp;
-  else if (request_count < 2 && network_2_quiet_ == 0)
-    network_2_quiet_ = timestamp;
-  if (request_count == 0 && network_0_quiet_ >= 0)
-    network_0_quiet_ = timestamp;
-
-  if (!network_quiet_timer_.IsActive()) {
-    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
-                                      BLINK_FROM_HERE);
-  }
-}
-
-void PerformanceMonitor::DomContentLoadedEventFired(LocalFrame* frame) {
-  if (frame != local_root_)
-    return;
-  // Reset idle timers upon DOMContentLoaded, look at current active
-  // connections.
-  network_2_quiet_ = 0;
-  network_0_quiet_ = 0;
-  DidLoadResource();
-}
-
 void PerformanceMonitor::DocumentWriteFetchScript(Document* document) {
   if (!enabled_)
     return;
@@ -350,22 +270,6 @@ void PerformanceMonitor::DocumentWriteFetchScript(Document* document) {
 }
 
 void PerformanceMonitor::WillProcessTask(double start_time) {
-  // If we have idle time and we are kNetworkQuietWindowSeconds seconds past it,
-  // emit idle signals.
-  if (network_2_quiet_ > 0 &&
-      start_time - network_2_quiet_ > kNetworkQuietWindowSeconds) {
-    probe::lifecycleEvent(local_root_->GetDocument(), "networkAlmostIdle",
-                          network_2_quiet_);
-    network_2_quiet_ = -1;
-  }
-
-  if (network_0_quiet_ > 0 &&
-      start_time - network_0_quiet_ > kNetworkQuietWindowSeconds) {
-    probe::lifecycleEvent(local_root_->GetDocument(), "networkIdle",
-                          network_0_quiet_);
-    network_0_quiet_ = -1;
-  }
-
   // Reset m_taskExecutionContext. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   task_execution_context_ = nullptr;
@@ -384,12 +288,6 @@ void PerformanceMonitor::WillProcessTask(double start_time) {
 }
 
 void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
-  // Shift idle timestamps with the duration of the task, we were not idle.
-  if (network_2_quiet_ > 0)
-    network_2_quiet_ += end_time - start_time;
-  if (network_0_quiet_ > 0)
-    network_0_quiet_ += end_time - start_time;
-
   if (!enabled_)
     return;
   double layout_threshold = thresholds_[kLongLayout];
@@ -430,13 +328,6 @@ void PerformanceMonitor::InnerReportGenericViolation(
   for (const auto& it : *client_thresholds) {
     if (it.value < time)
       it.key->ReportGenericViolation(violation, text, time, location.get());
-  }
-}
-
-void PerformanceMonitor::NetworkQuietTimerFired(TimerBase*) {
-  if (network_0_quiet_ > 0 || network_2_quiet_ > 0) {
-    network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
-                                      BLINK_FROM_HERE);
   }
 }
 

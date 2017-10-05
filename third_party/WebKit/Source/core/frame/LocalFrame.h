@@ -61,6 +61,7 @@ class FrameResourceCoordinator;
 class FrameSelection;
 class InputMethodController;
 class CoreProbeSink;
+class IdlenessDetector;
 class InterfaceRegistry;
 class IntPoint;
 class IntSize;
@@ -240,6 +241,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   PluginData* GetPluginData() const;
 
   PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
+  IdlenessDetector* GetIdlenessDetector() { return idleness_detector_; }
 
   // Convenience function to allow loading image placeholders for the request if
   // either the flag in Settings() for using image placeholders is set, or if
@@ -329,6 +331,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   Member<CoreProbeSink> probe_sink_;
   Member<PerformanceMonitor> performance_monitor_;
+  Member<IdlenessDetector> idleness_detector_;
 
   InterfaceRegistry* const interface_registry_;
 

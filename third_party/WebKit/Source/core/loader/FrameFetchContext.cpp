@@ -51,9 +51,9 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/IdlenessDetector.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NetworkHintsInterface.h"
-#include "core/loader/NetworkQuietDetector.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/SubresourceFilter.h"
@@ -461,6 +461,8 @@ void FrameFetchContext::DispatchWillSendRequest(
   probe::willSendRequest(GetFrame()->GetDocument(), identifier,
                          MasterDocumentLoader(), request, redirect_response,
                          initiator_info);
+  if (IdlenessDetector* idleness_detector = GetFrame()->GetIdlenessDetector())
+    idleness_detector->OnWillSendRequest();
   if (GetFrame()->FrameScheduler())
     GetFrame()->FrameScheduler()->DidStartLoading(identifier);
 }
@@ -653,7 +655,12 @@ void FrameFetchContext::DidLoadResource(Resource* resource) {
   if (!document_)
     return;
   FirstMeaningfulPaintDetector::From(*document_).CheckNetworkStable();
-  NetworkQuietDetector::From(*document_).CheckNetworkStable();
+  if (LocalFrame* local_frame = document_->GetFrame()) {
+    if (IdlenessDetector* idleness_detector =
+            local_frame->GetIdlenessDetector()) {
+      idleness_detector->OnDidLoadResource();
+    }
+  }
 
   if (resource->IsLoadEventBlockingResourceType())
     document_->CheckCompleted();
