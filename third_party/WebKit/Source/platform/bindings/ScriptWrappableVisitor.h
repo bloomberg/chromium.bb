@@ -109,6 +109,8 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
  public:
   static ScriptWrappableVisitor* CurrentVisitor(v8::Isolate*);
 
+  bool WrapperTracingInProgress() const { return tracing_in_progress_; }
+
   // Replace all dead objects in the marking deque with nullptr after Oilpan
   // garbage collection.
   static void InvalidateDeadObjectsInMarkingDeque(v8::Isolate*);
@@ -154,7 +156,15 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
 
   // TODO(mlippautz): Remove once ScriptWrappable is converted to
   // TraceWrapperV8Reference.
-  static void WriteBarrier(v8::Isolate*, const v8::Persistent<v8::Object>*);
+  static void WriteBarrier(v8::Isolate* isolate,
+                           const v8::Persistent<v8::Object>* dst_object) {
+    ScriptWrappableVisitor* visitor = CurrentVisitor(isolate);
+    if (!dst_object || dst_object->IsEmpty() ||
+        !visitor->WrapperTracingInProgress()) {
+      return;
+    }
+    visitor->MarkWrapper(&(dst_object->As<v8::Value>()));
+  }
 
   ScriptWrappableVisitor(v8::Isolate* isolate) : isolate_(isolate){};
   virtual ~ScriptWrappableVisitor();
