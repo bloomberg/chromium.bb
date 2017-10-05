@@ -1230,6 +1230,11 @@ void TileManager::OnRasterTaskCompleted(
 
   // Unref all the images.
   auto images_it = scheduled_draw_images_.find(tile_id);
+  // Every raster task unconditionally creates sync_decoded_images_ entry in
+  // CreateRasterTask. This is the only place it's cleared. So we should have
+  // the images_it here that doesn't point to end. This check is here to debug
+  // crbug.com/757049.
+  CHECK(images_it != scheduled_draw_images_.end());
   image_controller_.UnrefImages(images_it->second);
   scheduled_draw_images_.erase(images_it);
 
