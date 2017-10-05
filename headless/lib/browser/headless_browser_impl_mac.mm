@@ -4,13 +4,52 @@
 
 #include "headless/lib/browser/headless_browser_impl.h"
 
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/cocoa/base_view.h"
-#include "ui/gfx/mac/coordinate_conversion.h"
+#import "ui/base/cocoa/base_view.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
+
+// Overrides events and actions for NSPopUpButtonCell.
+@interface FakeNSPopUpButtonCell : NSObject
+@end
+
+@implementation FakeNSPopUpButtonCell
+
+- (void)performClickWithFrame:(NSRect)frame inView:(NSView*)view {
+}
+
+- (void)attachPopUpWithFrame:(NSRect)frame inView:(NSView*)view {
+}
+
+@end
 
 namespace headless {
 
 namespace {
+
+// Swizzles all event and acctions for NSPopUpButtonCell to avoid showing in
+// headless mode.
+class HeadlessPopUpMethods {
+ public:
+  static void Init() {
+    CR_DEFINE_STATIC_LOCAL(HeadlessPopUpMethods, swizzler, ());
+    ALLOW_UNUSED_LOCAL(swizzler);
+  }
+
+ private:
+  HeadlessPopUpMethods()
+      : popup_perform_click_swizzler_([NSPopUpButtonCell class],
+                                      [FakeNSPopUpButtonCell class],
+                                      @selector(performClickWithFrame:inView:)),
+        popup_attach_swizzler_([NSPopUpButtonCell class],
+                               [FakeNSPopUpButtonCell class],
+                               @selector(attachPopUpWithFrame:inView:)) {}
+
+  base::mac::ScopedObjCClassSwizzler popup_perform_click_swizzler_;
+  base::mac::ScopedObjCClassSwizzler popup_attach_swizzler_;
+
+  DISALLOW_COPY_AND_ASSIGN(HeadlessPopUpMethods);
+};
 
 NSString* const kActivityReason = @"Batch headless process";
 const NSActivityOptions kActivityOptions =
@@ -21,7 +60,9 @@ const NSActivityOptions kActivityOptions =
 
 }  // namespace
 
-void HeadlessBrowserImpl::PlatformInitialize() {}
+void HeadlessBrowserImpl::PlatformInitialize() {
+  HeadlessPopUpMethods::Init();
+}
 
 void HeadlessBrowserImpl::PlatformStart() {
   // Disallow headless to be throttled as a background process.
