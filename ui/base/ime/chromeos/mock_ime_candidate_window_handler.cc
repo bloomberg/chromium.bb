@@ -4,11 +4,14 @@
 
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 
+#include "ui/base/ime/ime_bridge.h"
+
 namespace chromeos {
 
 MockIMECandidateWindowHandler::MockIMECandidateWindowHandler()
     : set_cursor_bounds_call_count_(0),
       update_lookup_table_call_count_(0) {
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(this);
 }
 
 MockIMECandidateWindowHandler::~MockIMECandidateWindowHandler() {
@@ -32,6 +35,11 @@ void MockIMECandidateWindowHandler::SetCursorBounds(
     const gfx::Rect& cursor_bounds,
     const gfx::Rect& composition_head) {
   ++set_cursor_bounds_call_count_;
+}
+
+void MockIMECandidateWindowHandler::OnCandidateWindowVisibilityChanged(
+    bool visible) {
+  is_candidate_window_visible_ = visible;
 }
 
 void MockIMECandidateWindowHandler::Reset() {

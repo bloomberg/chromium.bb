@@ -24,6 +24,10 @@ class TextInputClientImpl : public ui::mojom::TextInputClient {
                       ui::internal::InputMethodDelegate* delegate);
   ~TextInputClientImpl() override;
 
+  bool is_candidate_window_visible() const {
+    return is_candidate_window_visible_;
+  }
+
   ui::mojom::TextInputClientPtr CreateInterfacePtrAndBind();
 
  private:
@@ -36,10 +40,12 @@ class TextInputClientImpl : public ui::mojom::TextInputClient {
   void DispatchKeyEventPostIME(
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventPostIMECallback callback) override;
+  void SetCandidateWindowVisible(bool visible) override;
 
   ui::TextInputClient* text_input_client_;
   mojo::Binding<ui::mojom::TextInputClient> binding_;
   ui::internal::InputMethodDelegate* delegate_;
+  bool is_candidate_window_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientImpl);
 };
