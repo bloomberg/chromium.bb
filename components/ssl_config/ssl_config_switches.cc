@@ -27,8 +27,6 @@ const char kSSLVersionTLSv13[] = "tls1.3";
 const char kTLS13VariantDisabled[] = "disabled";
 const char kTLS13VariantDraft[] = "draft";
 const char kTLS13VariantExperiment[] = "experiment";
-const char kTLS13VariantRecordTypeExperiment[] = "record-type";
-const char kTLS13VariantNoSessionIDExperiment[] = "no-session-id";
 const char kTLS13VariantExperiment2[] = "experiment2";
 const char kTLS13VariantExperiment3[] = "experiment3";
 

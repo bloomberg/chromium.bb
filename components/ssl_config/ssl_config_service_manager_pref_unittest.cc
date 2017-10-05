@@ -292,50 +292,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureExperiment) {
   EXPECT_EQ(net::kTLS13VariantExperiment, ssl_config.tls13_variant);
 }
 
-// Tests that Record Type Experiment TLS 1.3 can be enabled via field trials.
-TEST_F(SSLConfigServiceManagerPrefTest,
-       TLS13VariantFeatureRecordTypeExperiment) {
-  // Toggle the field trial.
-  variations::testing::VariationParamsManager variation_params(
-      "TLS13Variant", {{"variant", "record-type"}});
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          &local_state, base::ThreadTaskRunnerHandle::Get()));
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
-
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
-  EXPECT_EQ(net::kTLS13VariantRecordTypeExperiment, ssl_config.tls13_variant);
-}
-
-// Tests that No SessionID Experiment TLS 1.3 can be enabled via field trials.
-TEST_F(SSLConfigServiceManagerPrefTest,
-       TLS13VariantFeatureNoSessionIDExperiment) {
-  // Toggle the field trial.
-  variations::testing::VariationParamsManager variation_params(
-      "TLS13Variant", {{"variant", "no-session-id"}});
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager(
-      SSLConfigServiceManager::CreateDefaultManager(
-          &local_state, base::ThreadTaskRunnerHandle::Get()));
-  scoped_refptr<SSLConfigService> config_service(config_manager->Get());
-  ASSERT_TRUE(config_service.get());
-
-  SSLConfig ssl_config;
-  config_service->GetSSLConfig(&ssl_config);
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
-  EXPECT_EQ(net::kTLS13VariantNoSessionIDExperiment, ssl_config.tls13_variant);
-}
-
 // Tests that Experiment2 TLS 1.3 can be enabled via field trials.
 TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantFeatureExperiment2) {
   // Toggle the field trial.

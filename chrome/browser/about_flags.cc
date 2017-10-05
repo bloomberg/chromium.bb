@@ -777,10 +777,12 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
      switches::kTLS13VariantDraft},
     {flag_descriptions::kTLS13VariantExperiment, switches::kTLS13Variant,
      switches::kTLS13VariantExperiment},
-    {flag_descriptions::kTLS13VariantRecordTypeExperiment,
-     switches::kTLS13Variant, switches::kTLS13VariantRecordTypeExperiment},
-    {flag_descriptions::kTLS13VariantNoSessionIDExperiment,
-     switches::kTLS13Variant, switches::kTLS13VariantNoSessionIDExperiment},
+    // The RecordType variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
+    // The NoSessionID variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
     {flag_descriptions::kTLS13VariantExperiment2, switches::kTLS13Variant,
      switches::kTLS13VariantExperiment2},
     {flag_descriptions::kTLS13VariantExperiment3, switches::kTLS13Variant,
