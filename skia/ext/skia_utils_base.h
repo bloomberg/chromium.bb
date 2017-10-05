@@ -12,6 +12,9 @@ class Pickle;
 class PickleIterator;
 }
 
+class SkData;
+class SkFlattenable;
+
 namespace skia {
 
 // Return true if the pickle/iterator contains a string. If so, and if str
@@ -37,6 +40,10 @@ SK_API void WriteSkFontIdentity(
 
 // Writes style into the request pickle.
 SK_API void WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style);
+
+// Serializes the SkFlattenable. This method should never be used with an
+// SkFlattenable containing encoded images.
+SK_API sk_sp<SkData> ValidatingSerializeFlattenable(SkFlattenable* flattenable);
 
 }  // namespace skia
 

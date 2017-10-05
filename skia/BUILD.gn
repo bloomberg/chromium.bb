@@ -366,13 +366,6 @@ component("skia") {
     ]
   }
 
-  if (is_android && (!enable_basic_printing && !enable_print_preview)) {
-    sources -= [
-      "ext/skia_utils_base.cc",
-      "ext/skia_utils_base.h",
-    ]
-  }
-
   # Select Skia ports.
 
   # FreeType is needed everywhere, on Linux and Android as main font backend, on Windows and Mac as fallback backend for Variations.
@@ -729,6 +722,7 @@ test("skia_unittests") {
     "ext/platform_canvas_unittest.cc",
     "ext/recursive_gaussian_convolution_unittest.cc",
     "ext/skia_memory_dump_provider_unittest.cc",
+    "ext/skia_utils_base_unittest.cc",
     "ext/skia_utils_ios_unittest.mm",
     "ext/skia_utils_mac_unittest.mm",
   ]
@@ -740,6 +734,7 @@ test("skia_unittests") {
   deps = [
     ":skia",
     "//base",
+    "//base/test:test_support",
     "//mojo/edk/test:run_all_unittests",
     "//testing/gtest",
     "//ui/gfx",

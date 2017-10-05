@@ -7,8 +7,27 @@
 #include <stdint.h>
 
 #include "base/pickle.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkWriteBuffer.h"
 
 namespace skia {
+namespace {
+
+class CodecDisallowingPixelSerializer : public SkPixelSerializer {
+ public:
+  CodecDisallowingPixelSerializer() = default;
+  ~CodecDisallowingPixelSerializer() override = default;
+
+ protected:
+  bool onUseEncodedData(const void* data, size_t len) override {
+    CHECK(false) << "We should not have codec backed image filters";
+    return false;
+  }
+
+  SkData* onEncode(const SkPixmap&) override { return nullptr; }
+};
+
+}  // namespace
 
 bool ReadSkString(base::PickleIterator* iter, SkString* str) {
   int reply_length;
@@ -75,6 +94,16 @@ void WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style) {
   pickle->WriteUInt16(style.weight());
   pickle->WriteUInt16(style.width());
   pickle->WriteUInt16(style.slant());
+}
+
+sk_sp<SkData> ValidatingSerializeFlattenable(SkFlattenable* flattenable) {
+  SkBinaryWriteBuffer writer;
+  writer.setPixelSerializer(sk_make_sp<CodecDisallowingPixelSerializer>());
+  writer.writeFlattenable(flattenable);
+  size_t size = writer.bytesWritten();
+  auto data = SkData::MakeUninitialized(size);
+  writer.writeToMemory(data->writable_data());
+  return data;
 }
 
 }  // namespace skia
