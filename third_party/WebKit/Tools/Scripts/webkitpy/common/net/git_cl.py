@@ -144,7 +144,9 @@ class GitCL(object):
             A dict mapping Build objects to TryJobStatus objects, with
             only the latest jobs included.
         """
-        return self.filter_latest(self.try_job_results(builder_names))
+        # TODO(crbug.com/771438): Update filter_latest to handle Swarming tasks.
+        return self.filter_latest(
+            self.try_job_results(builder_names, include_swarming_tasks=False))
 
     @staticmethod
     def filter_latest(try_results):
@@ -154,12 +156,15 @@ class GitCL(object):
         latest_builds = filter_latest_builds(try_results.keys())
         return {b: s for b, s in try_results.items() if b in latest_builds}
 
-    def try_job_results(self, builder_names=None):
+    def try_job_results(self, builder_names=None, include_swarming_tasks=True):
         """Returns a dict mapping Build objects to TryJobStatus objects."""
         raw_results = self.fetch_raw_try_job_results()
         build_to_status = {}
         for result in raw_results:
             if builder_names and result['builder_name'] not in builder_names:
+                continue
+            is_swarming_task = result['url'] and '/task/' in result['url']
+            if is_swarming_task and not include_swarming_tasks:
                 continue
             build_to_status[self._build(result)] = self._try_job_status(result)
         return build_to_status
