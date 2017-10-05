@@ -1088,10 +1088,10 @@ bool HasVisibleFirstLetter(const LayoutText& text_layout_object) {
          EVisibility::kVisible;
 }
 
-// TODO(editing-dev): This function is just moved out from
-// |MostBackwardCaretPosition()|. We should study this function more and
-// name it appropriately. See https://trac.webkit.org/changeset/32438/
-// which introduce this.
+// Returns true when both of the following hold:
+// (i)  |offset_in_node| is not the first offset in |text_layout_object|
+// (ii) |offset_in_node| and |offset_in_node - 1| are different caret positions
+// TODO(editing-dev): Document the behavior when there is ::first-letter.
 static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
                                        int offset_in_node) {
   const unsigned text_start_offset = text_layout_object->TextStartOffset();
@@ -1117,6 +1117,12 @@ static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
     if (box == last_text_box || text_offset != box->Start() + box->Len() + 1)
       continue;
 
+    // Now that |text_offset == box->Start() + box->Len() + 1|, check if this is
+    // the end offset of a whitespace collapsed due to line wrapping, e.g.
+    // <div style="width: 100px">foooooooooooooooo baaaaaaaaaaaaaaaaaaaar</div>
+    // The whitespace is collapsed away due to line wrapping, while the two
+    // positions next to it are still different caret positions. Hence, when the
+    // offset is at "...oo |baa...", we should return true.
     if (DoesContinueOnNextLine(*text_layout_object, box, text_offset + 1))
       return true;
   }
@@ -1234,10 +1240,9 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
   return last_visible.DeprecatedComputePosition();
 }
 
-// TODO(editing-dev): This function is just moved out from
-// |MostForwardCaretPosition()|. We should study this function more and
-// name it appropriately. See https://trac.webkit.org/changeset/32438/
-// which introduce this.
+// Returns true when both of the following hold:
+// (i)  |offset_in_node| is not the last offset in |text_layout_object|
+// (ii) |offset_in_node| and |offset_in_node + 1| are different caret positions
 static bool CanBeForwardCaretPosition(const LayoutText* text_layout_object,
                                       int offset_in_node) {
   const unsigned text_start_offset = text_layout_object->TextStartOffset();
@@ -1254,6 +1259,12 @@ static bool CanBeForwardCaretPosition(const LayoutText* text_layout_object,
     if (box == last_text_box || text_offset != box->Start() + box->Len())
       continue;
 
+    // Now that |text_offset == box->Start() + box->Len()|, check if this is the
+    // start offset of a whitespace collapsed due to line wrapping, e.g.
+    // <div style="width: 100px">foooooooooooooooo baaaaaaaaaaaaaaaaaaaar</div>
+    // The whitespace is collapsed away due to line wrapping, while the two
+    // positions next to it are still different caret positions. Hence, when the
+    // offset is at "...oo| baa...", we should return true.
     if (DoesContinueOnNextLine(*text_layout_object, box, text_offset))
       return true;
   }
@@ -1357,6 +1368,8 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
       layout_object->IsLayoutGrid()) {
     if (ToLayoutBlock(layout_object)->LogicalHeight() ||
         IsHTMLBodyElement(*anchor_node)) {
+      // TODO(editing-dev): It seems wrong to check physical appearance, e.g.,
+      // height, during position canonicalization. Find an alternative.
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
         return position.AtFirstEditingPositionForNode();
       return HasEditableStyle(*anchor_node) && AtEditingBoundary(position);
