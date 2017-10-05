@@ -239,6 +239,28 @@ class GitCLTest(unittest.TestCase):
                 Build('builder-b', 200): TryJobStatus('COMPLETED', 'FAILURE'),
             })
 
+    def test_latest_try_builds_ignores_swarming(self):
+        git_cl = GitCL(MockHost())
+        git_cl.fetch_raw_try_job_results = lambda: [
+            {
+                'builder_name': 'builder-b',
+                'status': 'COMPLETED',
+                'result': 'SUCCESS',
+                'url': 'http://build.chromium.org/p/master/builders/builder-b/builds/100',
+            },
+            {
+                'builder_name': 'builder-b',
+                'status': 'COMPLETED',
+                'result': 'SUCCESS',
+                'url': 'https://ci.chromium.org/swarming/task/1234abcd1234abcd?server=chromium-swarm.appspot.com',
+            }
+        ]
+        self.assertEqual(
+            git_cl.latest_try_jobs(['builder-b']),
+            {
+                Build('builder-b', 100): TryJobStatus('COMPLETED', 'SUCCESS'),
+            })
+
     def test_filter_latest(self):
         try_job_results = {
             Build('builder-a', 100): TryJobStatus('COMPLETED', 'FAILURE'),
