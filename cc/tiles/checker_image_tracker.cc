@@ -36,10 +36,9 @@ enum class CheckerImagingDecision {
   // Vetoed because checkering of images has been disabled.
   kVetoedForceDisable = 9,
 
-  // Vetoed because we only checker images on tiles required for activation.
-  kVetoedNotRequiredForActivation = 10,
+  // 10 used to be kVetoedNotRequiredForActivation.
 
-  kCheckerImagingDecisionCount,
+  kCheckerImagingDecisionCount = 11,
 };
 
 std::string ToString(PaintImage::Id paint_image_id,
@@ -261,8 +260,7 @@ void CheckerImageTracker::DidFinishImageDecode(
 }
 
 bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
-                                             WhichTree tree,
-                                             bool required_for_activation) {
+                                             WhichTree tree) {
   const PaintImage& image = draw_image.paint_image();
   PaintImage::Id image_id = image.stable_id();
   TRACE_EVENT1("cc", "CheckerImageTracker::ShouldCheckerImage", "image_id",
@@ -306,15 +304,11 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
     CheckerImagingDecision decision = GetCheckerImagingDecision(
         image, draw_image.src_rect(), min_image_bytes_to_checker_,
         image_controller_->image_cache_max_limit_bytes());
-    if (decision == CheckerImagingDecision::kCanChecker) {
-      if (force_disabled_) {
-        // Get the decision for all the veto reasons first, so we can UMA the
-        // images that were not checkered only because checker-imaging was force
-        // disabled.
-        decision = CheckerImagingDecision::kVetoedForceDisable;
-      } else if (!required_for_activation) {
-        decision = CheckerImagingDecision::kVetoedNotRequiredForActivation;
-      }
+    if (decision == CheckerImagingDecision::kCanChecker && force_disabled_) {
+      // Get the decision for all the veto reasons first, so we can UMA the
+      // images that were not checkered only because checker-imaging was force
+      // disabled.
+      decision = CheckerImagingDecision::kVetoedForceDisable;
     }
 
     it->second.policy = decision == CheckerImagingDecision::kCanChecker

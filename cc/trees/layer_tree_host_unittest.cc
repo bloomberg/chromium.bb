@@ -7861,24 +7861,20 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
   }
 
   void ReadyToCommitOnThread(LayerTreeHostImpl* impl) override {
-    const bool required_for_activation = true;
-
     if (one_commit_done_)
       return;
     EXPECT_TRUE(
         impl->tile_manager()->checker_image_tracker().ShouldCheckerImage(
-            image_, WhichTree::PENDING_TREE, required_for_activation));
+            image_, WhichTree::PENDING_TREE));
     // Reset the tracker as if it has never seen this image.
     impl->tile_manager()->checker_image_tracker().ClearTracker(true);
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    const bool required_for_activation = true;
-
     one_commit_done_ = true;
     EXPECT_FALSE(
         impl->tile_manager()->checker_image_tracker().ShouldCheckerImage(
-            image_, WhichTree::PENDING_TREE, required_for_activation));
+            image_, WhichTree::PENDING_TREE));
   }
 
   void ImageDecodeFinished(bool decode_succeeded) {
