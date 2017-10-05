@@ -74,11 +74,11 @@ public class InfoBarTest {
     private EmbeddedTestServer mTestServer;
     private InfoBarTestAnimationListener mListener;
 
-    private static class TestInfoBar extends ConfirmInfoBar {
+    private static class TestInfoBar extends InfoBar {
         private boolean mCompact;
 
         private TestInfoBar(String message) {
-            super(0, null, message, null, null, null);
+            super(0, null, message);
         }
 
         @Override
@@ -88,6 +88,23 @@ public class InfoBarTest {
 
         public void setUsesCompactLayout(boolean compact) {
             mCompact = compact;
+        }
+    }
+
+    private static class TestInfoBarWithAccessibilityMessage extends TestInfoBar {
+        private CharSequence mAccessibilityMessage;
+
+        private TestInfoBarWithAccessibilityMessage(String message) {
+            super(message);
+        }
+
+        public void setAccessibilityMessage(CharSequence accessibilityMessage) {
+            mAccessibilityMessage = accessibilityMessage;
+        }
+
+        @Override
+        protected CharSequence getAccessibilityMessage(CharSequence defaultMessage) {
+            return mAccessibilityMessage;
         }
     }
 
@@ -158,9 +175,9 @@ public class InfoBarTest {
 
         TestInfoBar infoBarCompact = new TestInfoBar(null);
         infoBarCompact.setContext(ContextUtils.getApplicationContext());
+        infoBarCompact.setUsesCompactLayout(true);
         Assert.assertEquals("Infobar shouldn't have accessibility message before createView()", "",
                 infoBarCompact.getAccessibilityText());
-        infoBarCompact.setUsesCompactLayout(true);
         infoBarCompact.createView();
         Assert.assertEquals("Infobar should have accessibility message after createView()",
                 ContextUtils.getApplicationContext().getString(R.string.bottom_bar_screen_position),
@@ -177,6 +194,47 @@ public class InfoBarTest {
                         + ContextUtils.getApplicationContext().getString(
                                   R.string.bottom_bar_screen_position),
                 infoBarWithMessage.getAccessibilityText());
+    }
+
+    /**
+     * Verify getAccessibilityMessage() for infobar with customized accessibility message.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testInfobarGetCustomizedAccessibilityMessage() {
+        String messsage = "Hello world";
+        String customizedAccessibilityMessage = "Customized";
+
+        TestInfoBarWithAccessibilityMessage infoBarWithAccessibilityMessage =
+                new TestInfoBarWithAccessibilityMessage(messsage);
+        infoBarWithAccessibilityMessage.setContext(ContextUtils.getApplicationContext());
+        infoBarWithAccessibilityMessage.setAccessibilityMessage(customizedAccessibilityMessage);
+        Assert.assertEquals("Infobar shouldn't have accessibility message before createView()", "",
+                infoBarWithAccessibilityMessage.getAccessibilityText());
+        infoBarWithAccessibilityMessage.createView();
+        Assert.assertEquals(
+                "Infobar should have customized accessibility message after createView()",
+                customizedAccessibilityMessage
+                        + ContextUtils.getApplicationContext().getString(
+                                  R.string.bottom_bar_screen_position),
+                infoBarWithAccessibilityMessage.getAccessibilityText());
+
+        TestInfoBarWithAccessibilityMessage infoBarCompcatWithAccessibilityMessage =
+                new TestInfoBarWithAccessibilityMessage(messsage);
+        infoBarCompcatWithAccessibilityMessage.setContext(ContextUtils.getApplicationContext());
+        infoBarCompcatWithAccessibilityMessage.setUsesCompactLayout(true);
+        infoBarCompcatWithAccessibilityMessage.setAccessibilityMessage(
+                customizedAccessibilityMessage);
+        Assert.assertEquals("Infobar shouldn't have accessibility message before createView()", "",
+                infoBarCompcatWithAccessibilityMessage.getAccessibilityText());
+        infoBarCompcatWithAccessibilityMessage.createView();
+        Assert.assertEquals(
+                "Infobar should have customized accessibility message after createView()",
+                customizedAccessibilityMessage
+                        + ContextUtils.getApplicationContext().getString(
+                                  R.string.bottom_bar_screen_position),
+                infoBarCompcatWithAccessibilityMessage.getAccessibilityText());
     }
 
     /**
