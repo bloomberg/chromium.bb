@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
@@ -58,8 +59,15 @@ group("webkit_unit_tests_data") {
 }
 
 test("webkit_unit_tests") {
+  deps = [
+    ":webkit_unit_tests_sources",
+  ]
+}
+
+jumbo_source_set("webkit_unit_tests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
+  testonly = true
 
   sources = [
     "tests/RunAllTests.cpp",
