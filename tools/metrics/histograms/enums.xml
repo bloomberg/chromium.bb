@@ -8694,6 +8694,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="OUT_OF_RESUMPTIONS"/>
 </enum>
 
+<enum name="Download.Service.EntryEvent">
+  <int value="0" label="START"/>
+  <int value="1" label="RESUME"/>
+  <int value="2" label="RETRY"/>
+  <int value="3" label="SUSPEND"/>
+</enum>
+
 <enum name="Download.Service.EntryStates">
   <int value="0" label="NEW"/>
   <int value="1" label="AVAILABLE"/>
