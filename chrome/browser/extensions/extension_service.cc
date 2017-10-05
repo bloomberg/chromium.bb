@@ -76,7 +76,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
@@ -330,8 +329,7 @@ ExtensionService::ExtensionService(Profile* profile,
       ready_(ready),
       shared_module_service_(new extensions::SharedModuleService(profile_)),
       app_data_migrator_(new extensions::AppDataMigrator(profile_, registry_)),
-      extension_registrar_(
-          std::make_unique<extensions::ExtensionRegistrar>(profile_)) {
+      extension_registrar_(profile_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
 
@@ -914,7 +912,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
     return;
 
   // Move it over to the enabled list.
-  extension_registrar_->EnableExtension(extension);
+  extension_registrar_.EnableExtension(extension);
   NotifyExtensionLoaded(extension.get());
 
   MaybeSpinUpLazyBackgroundPage(extension.get());
@@ -980,7 +978,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
   // Move it over to the disabled list. Don't send a second unload notification
   // for terminated extensions being disabled.
   if (registry_->enabled_extensions().Contains(extension->id())) {
-    extension_registrar_->DisableExtension(extension);
+    extension_registrar_.DisableExtension(extension);
     PostDeactivateExtension(extension);
   } else {
     registry_->AddDisabled(base::WrapRefCounted(extension));
@@ -1357,7 +1355,7 @@ void ExtensionService::UnloadExtension(const std::string& extension_id,
 
   bool already_disabled =
       registry_->disabled_extensions().Contains(extension_id);
-  extension_registrar_->RemoveExtension(extension_id, reason);
+  extension_registrar_.RemoveExtension(extension_id, reason);
 
   // If the extension was only in the terminated set, the removal notification
   // will be sent when UntrackTerminatedExtension is called.
@@ -1529,7 +1527,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
                                        syncer::StringOrdinal());
     }
 
-    extension_registrar_->EnableExtension(extension);
+    extension_registrar_.EnableExtension(extension);
     NotifyExtensionLoaded(extension);
   }
   system_->runtime_data()->SetBeingUpgraded(extension->id(), false);
