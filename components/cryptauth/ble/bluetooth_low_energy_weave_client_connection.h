@@ -142,11 +142,39 @@ class BluetoothLowEnergyWeaveClientConnection
   }
 
  private:
+  friend class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest;
+
   enum WriteRequestType {
     REGULAR,
     MESSAGE_COMPLETE,
     CONNECTION_REQUEST,
     CONNECTION_CLOSE
+  };
+
+  enum GattConnectionResult {
+    GATT_CONNECTION_RESULT_SUCCESS = 0,
+    GATT_CONNECTION_RESULT_ERROR_AUTH_CANCELED = 1,
+    GATT_CONNECTION_RESULT_ERROR_AUTH_FAILED = 2,
+    GATT_CONNECTION_RESULT_ERROR_AUTH_REJECTED = 3,
+    GATT_CONNECTION_RESULT_ERROR_AUTH_TIMEOUT = 4,
+    GATT_CONNECTION_RESULT_ERROR_FAILED = 5,
+    GATT_CONNECTION_RESULT_ERROR_INPROGRESS = 6,
+    GATT_CONNECTION_RESULT_ERROR_UNKNOWN = 7,
+    GATT_CONNECTION_RESULT_ERROR_UNSUPPORTED_DEVICE = 8,
+    GATT_CONNECTION_RESULT_MAX
+  };
+
+  enum GattServiceOperationResult {
+    GATT_SERVICE_OPERATION_RESULT_SUCCESS = 0,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_UNKNOWN = 1,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_FAILED = 2,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_IN_PROGRESS = 3,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_INVALID_LENGTH = 4,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PERMITTED = 5,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_AUTHORIZED = 6,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PAIRED = 7,
+    GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_SUPPORTED = 8,
+    GATT_SERVICE_OPERATION_RESULT_MAX
   };
 
   // Represents a request to write |value| to a some characteristic.
@@ -213,6 +241,16 @@ class BluetoothLowEnergyWeaveClientConnection
   void OnWriteRemoteCharacteristicError(
       device::BluetoothRemoteGattService::GattErrorCode error);
   void ClearQueueAndSendConnectionClose();
+
+  void RecordGattConnectionResult(GattConnectionResult result);
+  GattConnectionResult BluetoothDeviceConnectErrorCodeToGattConnectionResult(
+      device::BluetoothDevice::ConnectErrorCode error_code);
+  void RecordGattNotifySessionResult(GattServiceOperationResult result);
+  void RecordGattWriteCharacteristicResult(GattServiceOperationResult result);
+  GattServiceOperationResult
+  BluetoothRemoteDeviceGattServiceGattErrorCodeToGattServiceOperationResult(
+      device::BluetoothRemoteGattService::GattErrorCode error_code);
+  void RecordSetSubStatus(bool success);
 
   // Private getters for the Bluetooth classes corresponding to this connection.
   device::BluetoothRemoteGattService* GetRemoteService();

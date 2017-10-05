@@ -39,6 +39,18 @@ class BleSynchronizer : public BleSynchronizerBase {
  private:
   friend class BleSynchronizerTest;
 
+  enum BluetoothAdvertisementResult {
+    SUCCESS = 0,
+    ERROR_UNSUPPORTED_PLATFORM = 1,
+    ERROR_ADVERTISEMENT_ALREADY_EXISTS = 2,
+    ERROR_ADVERTISEMENT_DOES_NOT_EXIST = 3,
+    ERROR_ADVERTISEMENT_INVALID_LENGTH = 4,
+    ERROR_INVALID_ADVERTISEMENT_INTERVAL = 5,
+    ERROR_RESET_ADVERTISING = 6,
+    INVALID_ADVERTISEMENT_ERROR_CODE = 7,
+    BLUETOOTH_ADVERTISEMENT_RESULT_MAX
+  };
+
   void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
                       std::unique_ptr<base::Clock> test_clock,
                       scoped_refptr<base::TaskRunner> test_task_runner);
@@ -58,6 +70,14 @@ class BleSynchronizer : public BleSynchronizerBase {
 
   void ScheduleCommandCompletion();
   void CompleteCurrentCommand();
+
+  void RecordBluetoothAdvertisementRegistrationResult(
+      BluetoothAdvertisementResult result);
+  void RecordBluetoothAdvertisementUnregistrationResult(
+      BluetoothAdvertisementResult result);
+  BluetoothAdvertisementResult BluetoothAdvertisementErrorCodeToResult(
+      device::BluetoothAdvertisement::ErrorCode error_code);
+  void RecordDiscoverySessionStarted(bool success);
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
