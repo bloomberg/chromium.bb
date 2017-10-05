@@ -57,12 +57,10 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     def __init__(self, json5_file_paths):
         super(MakeElementFactoryWriter, self).__init__(json5_file_paths)
 
-        # FIXME: When we start using these element factories, we'll want to
-        # remove the "new" prefix and also have our base class generate
-        # *Names.h and *Names.cpp.
+        basename = self.namespace.lower() + '_element_factory'
         self._outputs.update({
-            (self.namespace + 'ElementFactory.h'): self.generate_factory_header,
-            (self.namespace + 'ElementFactory.cpp'): self.generate_factory_implementation,
+            (basename + '.h'): self.generate_factory_header,
+            (basename + '.cc'): self.generate_factory_implementation,
         })
 
         fallback_interface = self.tags_json5_file.metadata['fallbackInterfaceName'].strip('"')
@@ -90,11 +88,11 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
             'input_files': self._input_files,
         })
 
-    @template_expander.use_jinja('templates/ElementFactory.h.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/element_factory.h.tmpl', filters=filters)
     def generate_factory_header(self):
         return self._template_context
 
-    @template_expander.use_jinja('templates/ElementFactory.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/element_factory.cc.tmpl', filters=filters)
     def generate_factory_implementation(self):
         return self._template_context
 

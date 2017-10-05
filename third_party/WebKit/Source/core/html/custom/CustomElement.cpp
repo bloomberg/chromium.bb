@@ -4,7 +4,6 @@
 
 #include "core/html/custom/CustomElement.h"
 
-#include "core/HTMLElementFactory.h"
 #include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
@@ -17,6 +16,7 @@
 #include "core/html/custom/CustomElementRegistry.h"
 #include "core/html/custom/V0CustomElement.h"
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
+#include "core/html_element_factory.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
