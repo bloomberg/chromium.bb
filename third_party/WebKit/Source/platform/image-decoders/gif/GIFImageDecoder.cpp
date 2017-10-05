@@ -38,7 +38,8 @@ GIFImageDecoder::GIFImageDecoder(AlphaOption alpha_option,
                                  size_t max_decoded_bytes)
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
       codec_(),
-      segment_stream_(nullptr) {}
+      segment_stream_(nullptr),
+      prior_frame_(SkCodec::kNone) {}
 
 GIFImageDecoder::~GIFImageDecoder() = default;
 
@@ -216,14 +217,6 @@ void GIFImageDecoder::Decode(size_t index) {
   DCHECK_LT(index, frame_buffer_cache_.size());
 
   UpdateAggressivePurging(index);
-  SkImageInfo image_info = codec_->getInfo()
-                               .makeColorType(kN32_SkColorType)
-                               .makeColorSpace(ColorSpaceForSkImages());
-
-  SkCodec::Options options;
-  options.fFrameIndex = index;
-  options.fPriorFrame = SkCodec::kNone;
-  options.fZeroInitialized = SkCodec::kNo_ZeroInitialized;
 
   ImageFrame& frame = frame_buffer_cache_[index];
   if (frame.GetStatus() == ImageFrame::kFrameEmpty) {
@@ -232,6 +225,7 @@ void GIFImageDecoder::Decode(size_t index) {
       frame.AllocatePixelData(Size().Width(), Size().Height(),
                               ColorSpaceForSkImages());
       frame.ZeroFillPixelData();
+      prior_frame_ = SkCodec::kNone;
     } else {
       size_t previous_frame_index = GetViableReferenceFrameIndex(index);
       if (previous_frame_index == kNotFound) {
@@ -253,11 +247,20 @@ void GIFImageDecoder::Decode(size_t index) {
         SetFailed();
         return;
       }
-      options.fPriorFrame = previous_frame_index;
+      prior_frame_ = previous_frame_index;
     }
   }
 
   if (frame.GetStatus() == ImageFrame::kFrameAllocated) {
+    SkImageInfo image_info = codec_->getInfo()
+                                 .makeColorType(kN32_SkColorType)
+                                 .makeColorSpace(ColorSpaceForSkImages());
+
+    SkCodec::Options options;
+    options.fFrameIndex = index;
+    options.fPriorFrame = prior_frame_;
+    options.fZeroInitialized = SkCodec::kNo_ZeroInitialized;
+
     SkCodec::Result start_incremental_decode_result =
         codec_->startIncrementalDecode(image_info, frame.Bitmap().getPixels(),
                                        frame.Bitmap().rowBytes(), &options);

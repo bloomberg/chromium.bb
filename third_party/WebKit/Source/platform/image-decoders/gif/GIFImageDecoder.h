@@ -81,6 +81,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   // data as it arrives.
   SegmentStream* segment_stream_;
   mutable int repetition_count_ = kAnimationLoopOnce;
+  int prior_frame_;
 };
 
 }  // namespace blink
