@@ -424,7 +424,10 @@ void WebNotificationTray::AnchorUpdated() {
 }
 
 base::string16 WebNotificationTray::GetAccessibleNameForTray() {
-  return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_ACCESSIBLE_NAME);
+  return l10n_util::GetStringFUTF16Int(
+      IDS_MESSAGE_CENTER_ACCESSIBLE_NAME,
+      static_cast<int>(
+          message_center_tray_->message_center()->NotificationCount()));
 }
 
 void WebNotificationTray::HideBubbleWithView(
