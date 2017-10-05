@@ -2230,10 +2230,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebvrExperimentalRenderingName,
      flag_descriptions::kWebvrExperimentalRenderingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kWebVRExperimentalRendering)},
-    {"enable-experimental-vr-features",
-     flag_descriptions::kExperimentalVRFeaturesName,
-     flag_descriptions::kExperimentalVRFeaturesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kExperimentalVRFeatures)},
 #if defined(OS_ANDROID)
     {"enable-vr-shell", flag_descriptions::kEnableVrShellName,
      flag_descriptions::kEnableVrShellDescription, kOsAndroid,
