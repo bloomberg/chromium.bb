@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_PACKAGE_SYNC_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_controller.h"
 
@@ -21,7 +21,8 @@ class SyncClient;
 // disables these types based on whether ArcAppInstance is ready.
 class ArcPackageSyncDataTypeController
     : public syncer::AsyncDirectoryTypeController,
-      public ArcAppListPrefs::Observer {
+      public ArcAppListPrefs::Observer,
+      public arc::ArcSessionManager::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
@@ -39,17 +40,18 @@ class ArcPackageSyncDataTypeController
   // ArcAppListPrefs::Observer:
   void OnPackageListInitialRefreshed() override;
 
-  void OnArcEnabledPrefChanged();
+  // ArcSessionManager::Observer:
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
+  void OnArcInitialStart() override;
 
   void EnableDataType();
 
+  // Returns true if user enables app sync.
   bool ShouldSyncArc() const;
 
   bool model_normal_start_ = true;
 
   Profile* const profile_;
-
-  PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPackageSyncDataTypeController);
 };
