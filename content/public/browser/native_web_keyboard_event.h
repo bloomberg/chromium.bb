@@ -33,9 +33,10 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
                          int modifiers,
                          double timestampSeconds);
 
-  // Creates a native web keyboard event from a WebKeyboardEvent
-  // it will not have any |os_event| available.
-  NativeWebKeyboardEvent(const blink::WebKeyboardEvent& web_event);
+  // Creates a native web keyboard event from a WebKeyboardEvent. The |os_event|
+  // member may be a synthetic event, and possibly incomplete.
+  NativeWebKeyboardEvent(const blink::WebKeyboardEvent& web_event,
+                         gfx::NativeView native_view);
 
   explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
 #if defined(OS_ANDROID)
