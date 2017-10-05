@@ -564,22 +564,22 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
     case WebFeature::
         kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
       return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-          "requestMediaKeySystemAccess", "encrypted-media", M63);
+          "requestMediaKeySystemAccess", "encrypted-media", M64);
     case WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe:
       return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-          "getCurrentPosition and watchPosition", "geolocation", M63);
+          "getCurrentPosition and watchPosition", "geolocation", M64);
     case WebFeature::
         kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe:
       return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-          "getUserMedia (microphone)", "microphone", M63);
+          "getUserMedia (microphone)", "microphone", M64);
     case WebFeature::
         kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe:
       return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-          "getUserMedia (camera)", "camera", M63);
+          "getUserMedia (camera)", "camera", M64);
     case WebFeature::
         kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe:
       return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
-          "requestMIDIAccess", "midi", M63);
+          "requestMIDIAccess", "midi", M64);
 
     case WebFeature::kPresentationRequestStartInsecureOrigin:
     case WebFeature::kPresentationReceiverInsecureOrigin:
