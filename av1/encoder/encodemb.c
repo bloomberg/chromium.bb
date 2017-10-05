@@ -110,6 +110,17 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
                  pd->dst.buf, pd->dst.stride);
 }
 
+// Shifting negative values is undefined behaviour in C99,
+// and could mislead the optimizer, who might assume the shifted is positive.
+// This also avoids ubsan warnings.
+// In practise, this gets inlined by the optimizer to a single instruction.
+static INLINE int signed_shift_right(int x, int shift) {
+  if (x >= 0)
+    return x >> shift;
+  else
+    return -((-x) >> shift);
+}
+
 #if !CONFIG_LV_MAP
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
@@ -222,7 +233,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #endif
 
       int dx = (dqcoeff[rc] - coeff[rc]) * (1 << shift);
-      dx >>= xd->bd - 8;
+      dx = signed_shift_right(dx, xd->bd - 8);
       const int64_t d2 = (int64_t)dx * dx;
 
       /* compute the distortion for the second candidate
