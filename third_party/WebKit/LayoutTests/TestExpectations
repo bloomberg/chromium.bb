@@ -1733,6 +1733,15 @@ crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editabl
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_003-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_004-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_006-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_007-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_008-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_010-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_020-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_021-manual.htm [ Skip ]
+crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_022-manual.htm [ Skip ]
 crbug.com/626703 [ Android Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/entries-api/errors-manual.html [ Skip ]
 crbug.com/626703 [ Android Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/entries-api/file-webkitRelativePath-manual.html [ Skip ]
 crbug.com/626703 [ Android Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/entries-api/filesystem-manual.html [ Skip ]
