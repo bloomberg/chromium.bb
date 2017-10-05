@@ -12,10 +12,10 @@
 #include "core/loader/SubresourceFilter.h"
 #include "core/loader/private/FrameClientHintsPreferencesContext.h"
 #include "platform/exported/WrappedResourceRequest.h"
-#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
+#include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 

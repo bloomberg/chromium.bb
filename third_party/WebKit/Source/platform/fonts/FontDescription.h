@@ -27,8 +27,8 @@
 #define FontDescription_h
 
 #include "SkFontStyle.h"
-#include "platform/FontFamilyNames.h"
 #include "platform/LayoutLocale.h"
+#include "platform/font_family_names.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/FontOrientation.h"
@@ -42,7 +42,6 @@
 #include "platform/fonts/opentype/FontSettings.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/MathExtras.h"
-
 #include "platform/wtf/RefPtr.h"
 
 #include <unicode/uscript.h>

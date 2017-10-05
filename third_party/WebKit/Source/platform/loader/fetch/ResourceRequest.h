@@ -29,7 +29,7 @@
 #define ResourceRequest_h
 
 #include <memory>
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"

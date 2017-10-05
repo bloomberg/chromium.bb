@@ -6,7 +6,7 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 
 namespace blink {
 

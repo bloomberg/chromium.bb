@@ -25,7 +25,7 @@
 
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPHeaderMap.h"
 

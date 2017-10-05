@@ -30,7 +30,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/FontFamilyNames.h"
+#include "platform/font_family_names.h"
 #include "platform/fonts/FontDescription.h"
 
 namespace blink {

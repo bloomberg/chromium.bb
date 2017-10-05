@@ -7,7 +7,7 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 make_names("make_platform_loader_generated_fetch_initiator_type_names") {
-  in_files = [ "fetch/FetchInitiatorTypeNames.json5" ]
+  in_files = [ "fetch/fetch_initiator_type_names.json5" ]
   output_dir = "$blink_platform_output_dir/loader/fetch"
 }
 

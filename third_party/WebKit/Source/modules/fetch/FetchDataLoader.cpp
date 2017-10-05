@@ -11,7 +11,7 @@
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/MultipartParser.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/network/ParsedContentDisposition.h"
 #include "platform/wtf/Functional.h"

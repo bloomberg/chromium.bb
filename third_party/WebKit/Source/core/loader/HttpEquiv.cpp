@@ -15,7 +15,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/private/FrameClientHintsPreferencesContext.h"
 #include "core/origin_trials/OriginTrialContext.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"

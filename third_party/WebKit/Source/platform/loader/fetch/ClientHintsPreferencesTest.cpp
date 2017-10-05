@@ -4,7 +4,7 @@
 
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Time.h"

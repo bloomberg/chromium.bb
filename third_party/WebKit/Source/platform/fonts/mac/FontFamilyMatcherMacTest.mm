@@ -4,12 +4,11 @@
 
 #import "platform/fonts/mac/FontFamilyMatcherMac.h"
 
-#include "platform/FontFamilyNames.h"
-
 #include <AppKit/AppKit.h>
-#include <gtest/gtest.h>
 
-#import "platform/mac/VersionUtilMac.h"
+#include "platform/font_family_names.h"
+#include "platform/mac/VersionUtilMac.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 @interface NSString (YosemiteAdditions)
 - (BOOL)containsString:(NSString*)string;

@@ -34,12 +34,12 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCountersMemoryDumpProvider.h"
 #include "platform/Language.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
+#include "platform/font_family_names.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"

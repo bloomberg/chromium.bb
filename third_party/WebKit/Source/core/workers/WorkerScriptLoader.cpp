@@ -35,7 +35,7 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"

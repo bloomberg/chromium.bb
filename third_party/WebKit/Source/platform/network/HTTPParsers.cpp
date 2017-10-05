@@ -36,7 +36,7 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/json/JSONParser.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HeaderFieldTokenizer.h"

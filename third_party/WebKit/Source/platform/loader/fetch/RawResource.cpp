@@ -27,7 +27,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
