@@ -386,53 +386,53 @@ static SelectionMarkingRange MarkStartAndEndInOneNode(
     LayoutObject* layout_object,
     int start_offset,
     int end_offset) {
+  if (!layout_object->IsText()) {
+    MarkSelected(&invalidation_set, layout_object,
+                 SelectionState::kStartAndEnd);
+    return {{layout_object, 0, layout_object, 0}, std::move(invalidation_set)};
+  }
+
   DCHECK_GE(start_offset, 0);
-  DCHECK_GE(end_offset, 0);
+  DCHECK_GE(end_offset, start_offset);
+  if (start_offset == end_offset)
+    return {};
   LayoutTextFragment* const first_letter_part =
       FirstLetterPartFor(layout_object);
   if (!first_letter_part) {
-    // Case 0: selection doesn't start/end in ::first-letter node
-    if (layout_object->IsText()) {
-      DCHECK_LE(start_offset, end_offset);
-      if (start_offset == end_offset)
-        return {};
-    }
     MarkSelected(&invalidation_set, layout_object,
                  SelectionState::kStartAndEnd);
     return {{layout_object, start_offset, layout_object, end_offset},
             std::move(invalidation_set)};
   }
-  DCHECK_LE(start_offset, end_offset);
-  if (start_offset == end_offset)
-    return {};
+  const unsigned unsigned_start = static_cast<unsigned>(start_offset);
+  const unsigned unsigned_end = static_cast<unsigned>(end_offset);
   LayoutTextFragment* const remaining_part =
       ToLayoutTextFragment(layout_object);
-  if (static_cast<unsigned>(start_offset) >= remaining_part->Start()) {
+  if (unsigned_start >= remaining_part->Start()) {
     // Case 1: The selection starts and ends in remaining part.
-    DCHECK_GT(static_cast<unsigned>(end_offset), remaining_part->Start());
+    DCHECK_GT(unsigned_end, remaining_part->Start());
     MarkSelected(&invalidation_set, remaining_part,
                  SelectionState::kStartAndEnd);
     return {{remaining_part,
-             static_cast<int>(start_offset - remaining_part->Start()),
+             static_cast<int>(unsigned_start - remaining_part->Start()),
              remaining_part,
-             static_cast<int>(end_offset - remaining_part->Start())},
+             static_cast<int>(unsigned_end - remaining_part->Start())},
             std::move(invalidation_set)};
   }
-  if (static_cast<unsigned>(end_offset) <= remaining_part->Start()) {
+  if (unsigned_end <= remaining_part->Start()) {
     // Case 2: The selection starts and ends in first letter part.
     MarkSelected(&invalidation_set, first_letter_part,
                  SelectionState::kStartAndEnd);
     return {{first_letter_part, start_offset, first_letter_part, end_offset},
             std::move(invalidation_set)};
   }
-
   // Case 3: The selection starts in first-letter part and ends in remaining
   // part.
-  DCHECK_GT(static_cast<unsigned>(end_offset), remaining_part->Start());
+  DCHECK_GT(unsigned_end, remaining_part->Start());
   MarkSelected(&invalidation_set, first_letter_part, SelectionState::kStart);
   MarkSelected(&invalidation_set, remaining_part, SelectionState::kEnd);
   return {{first_letter_part, start_offset, remaining_part,
-           static_cast<int>(end_offset - remaining_part->Start())},
+           static_cast<int>(unsigned_end - remaining_part->Start())},
           std::move(invalidation_set)};
 }
 
