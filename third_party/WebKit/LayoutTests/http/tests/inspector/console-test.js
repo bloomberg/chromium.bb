@@ -235,9 +235,11 @@ InspectorTest.dumpConsoleClassesBrief = function()
     }
 }
 
-InspectorTest.dumpConsoleCounters = function()
+InspectorTest.dumpConsoleCounters = async function()
 {
     var counter = ConsoleCounters.WarningErrorCounter._instanceForTest;
+    if (counter._updatingForTest)
+        await InspectorTest.addSnifferPromise(counter, '_updatedForTest');
     for (var index = 0; index < counter._titles.length; ++index)
         InspectorTest.addResult(counter._titles[index]);
     InspectorTest.dumpConsoleClassesBrief();
