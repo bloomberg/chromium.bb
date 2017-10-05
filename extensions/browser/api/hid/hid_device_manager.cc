@@ -30,7 +30,6 @@
 namespace hid = extensions::api::hid;
 
 using device::HidDeviceFilter;
-using device::HidService;
 
 namespace extensions {
 

@@ -10,7 +10,6 @@
 
 namespace device {
 
-class HidService;
 class UsbService;
 
 // Interface used by consumers of //device APIs to get pointers to the service
@@ -29,9 +28,6 @@ class DEVICE_BASE_EXPORT DeviceClient {
 
   // Returns the UsbService instance for this embedder.
   virtual UsbService* GetUsbService();
-
-  // Returns the HidService instance for this embedder.
-  virtual HidService* GetHidService();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceClient);

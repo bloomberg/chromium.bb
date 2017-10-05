@@ -19,7 +19,6 @@
 #include "base/test/test_io_thread.h"
 #include "device/hid/hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
-#include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "net/base/io_buffer.h"
@@ -159,14 +158,14 @@ class HidConnectionTest : public testing::Test {
   void SetUp() override {
     if (!UsbTestGadget::IsTestEnabled()) return;
 
-    service_ = DeviceClient::Get()->GetHidService();
+    service_ = HidService::Create();
     ASSERT_TRUE(service_);
 
     test_gadget_ = UsbTestGadget::Claim(io_thread_.task_runner());
     ASSERT_TRUE(test_gadget_);
     ASSERT_TRUE(test_gadget_->SetType(UsbTestGadget::HID_ECHO));
 
-    DeviceCatcher device_catcher(service_,
+    DeviceCatcher device_catcher(service_.get(),
                                  test_gadget_->GetDevice()->serial_number());
     device_guid_ = device_catcher.WaitForDevice();
     ASSERT_FALSE(device_guid_.empty());
@@ -174,8 +173,7 @@ class HidConnectionTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::TestIOThread io_thread_;
-  TestDeviceClient device_client_;
-  HidService* service_;
+  std::unique_ptr<HidService> service_;
   std::unique_ptr<UsbTestGadget> test_gadget_;
   std::string device_guid_;
 };

@@ -12,7 +12,6 @@
 
 namespace device {
 
-class MockHidService;
 class MockUsbService;
 
 class MockDeviceClient : device::DeviceClient {
@@ -22,20 +21,11 @@ class MockDeviceClient : device::DeviceClient {
 
   // device::DeviceClient implementation:
   UsbService* GetUsbService() override;
-#if !defined(OS_ANDROID)
-  HidService* GetHidService() override;
-#endif
 
   // Accessors for the mock instances.
   MockUsbService* usb_service();
-#if !defined(OS_ANDROID)
-  MockHidService* hid_service();
-#endif
 
  private:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<MockHidService> hid_service_;
-#endif
   std::unique_ptr<MockUsbService> usb_service_;
 };
 
