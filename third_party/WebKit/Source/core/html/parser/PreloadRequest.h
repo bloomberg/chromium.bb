@@ -69,7 +69,6 @@ class CORE_EXPORT PreloadRequest {
 
   Resource* Start(Document*);
 
-  double DiscoveryTime() const { return discovery_time_; }
   void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
   void SetCharset(const String& charset) { charset_ = charset.IsolatedCopy(); }
   void SetCrossOrigin(CrossOriginAttributeValue cross_origin) {

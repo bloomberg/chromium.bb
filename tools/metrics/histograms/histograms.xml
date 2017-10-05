@@ -90558,6 +90558,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.PreloadDelayMs" units="ms">
+  <obsolete>
+    Deprecated, preloads are issued on the main thread now, so this is less
+    useful.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The delay between when the preload scanner discovers a resource on the
