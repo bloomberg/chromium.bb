@@ -578,8 +578,10 @@ void SigninScreenHandler::SetFocusPODCallbackForTesting(
   test_focus_pod_callback_ = callback;
 }
 
-void SigninScreenHandler::ZeroOfflineTimeoutForTesting() {
-  zero_offline_timeout_for_test_ = true;
+void SigninScreenHandler::SetOfflineTimeoutForTesting(
+    base::TimeDelta offline_timeout) {
+  is_offline_timeout_for_test_set_ = true;
+  offline_timeout_for_test_ = offline_timeout;
 }
 
 bool SigninScreenHandler::GetKeyboardRemappedPrefValue(
@@ -687,8 +689,9 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                    true));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, update_state_closure_.callback(),
-        base::TimeDelta::FromSeconds(
-            zero_offline_timeout_for_test_ ? 0 : kOfflineTimeoutSec));
+        is_offline_timeout_for_test_set_
+            ? offline_timeout_for_test_
+            : base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
     return;
   }
 

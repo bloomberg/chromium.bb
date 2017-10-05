@@ -287,9 +287,11 @@ class SigninScreenHandler
 
   // To avoid spurious error messages on flaky networks, the offline message is
   // only shown if the network is offline for a threshold number of seconds.
-  // This method reduces the threshold to zero, allowing the offline message to
-  // show instantaneously in tests.
-  void ZeroOfflineTimeoutForTesting();
+  // This method provides an ability to reduce the threshold to zero, allowing
+  // the offline message to show instantaneously in tests. The threshold can
+  // also be set to a high value to disable the offline message on slow
+  // configurations like MSAN, where it otherwise triggers on every run.
+  void SetOfflineTimeoutForTesting(base::TimeDelta offline_timeout);
 
   // Gets the keyboard remapped pref value for |pref_name| key. Returns true if
   // successful, otherwise returns false.
@@ -549,7 +551,8 @@ class SigninScreenHandler
   // True if SigninScreenHandler has already been added to OobeUI observers.
   bool oobe_ui_observer_added_ = false;
 
-  bool zero_offline_timeout_for_test_ = false;
+  bool is_offline_timeout_for_test_set_ = false;
+  base::TimeDelta offline_timeout_for_test_;
 
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
