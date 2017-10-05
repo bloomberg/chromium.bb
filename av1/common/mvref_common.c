@@ -14,6 +14,39 @@
 #include "av1/common/warped_motion.h"
 #endif  // CONFIG_WARPED_MOTION
 
+void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
+                        int mi_col, int x_mis, int y_mis) {
+#if CONFIG_TMV
+  const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
+  MV_REF *frame_mvs = cm->cur_frame->mvs +
+                      ((mi_row & 0xfffe) >> 1) * frame_mvs_stride +
+                      ((mi_col & 0xfffe) >> 1);
+  x_mis = ROUND_POWER_OF_TWO(x_mis, 1);
+  y_mis = ROUND_POWER_OF_TWO(y_mis, 1);
+#else
+  const int frame_mvs_stride = cm->mi_cols;
+  MV_REF *frame_mvs = cm->cur_frame->mvs +
+                      (mi_row & 0xfffe) * frame_mvs_stride + (mi_col & 0xfffe);
+  x_mis = AOMMAX(x_mis, 2);
+  y_mis = AOMMAX(y_mis, 2);
+#endif  // CONFIG_TMV
+  int w, h;
+
+  for (h = 0; h < y_mis; h++) {
+    MV_REF *const frame_mv = frame_mvs + h * frame_mvs_stride;
+    for (w = 0; w < x_mis; w++) {
+      MV_REF *const mv = frame_mv + w;
+      mv->ref_frame[0] = mi->mbmi.ref_frame[0];
+      mv->ref_frame[1] = mi->mbmi.ref_frame[1];
+      mv->mv[0].as_int = mi->mbmi.mv[0].as_int;
+      mv->mv[1].as_int = mi->mbmi.mv[1].as_int;
+      // (TODO:yunqing) The following 2 lines won't be used and can be removed.
+      mv->pred_mv[0].as_int = mi->mbmi.pred_mv[0].as_int;
+      mv->pred_mv[1].as_int = mi->mbmi.pred_mv[1].as_int;
+    }
+  }
+}
+
 static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
                                     const MB_MODE_INFO *const candidate,
                                     const MV_REFERENCE_FRAME rf[2],
@@ -501,17 +534,27 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
 #else
 static int add_col_ref_mv(const AV1_COMMON *cm,
                           const MV_REF *prev_frame_mvs_base,
-                          const MACROBLOCKD *xd, int mi_row, int mi_col,
-                          MV_REFERENCE_FRAME ref_frame, int blk_row,
-                          int blk_col, uint8_t *refmv_count,
+                          int prev_frame_mvs_stride, const MACROBLOCKD *xd,
+                          int mi_row, int mi_col, MV_REFERENCE_FRAME ref_frame,
+                          int blk_row, int blk_col, uint8_t *refmv_count,
                           CANDIDATE_MV *ref_mv_stack, int16_t *mode_context) {
+#if CONFIG_TMV
+  const MV_REF *prev_frame_mvs = prev_frame_mvs_base +
+                                 ((blk_row + 1) >> 1) * prev_frame_mvs_stride +
+                                 ((blk_col + 1) >> 1);
+#else
   const MV_REF *prev_frame_mvs =
-      prev_frame_mvs_base + blk_row * cm->mi_cols + blk_col;
+      prev_frame_mvs_base + blk_row * prev_frame_mvs_stride + blk_col;
+#endif
   POSITION mi_pos;
   int ref, idx;
   int coll_blk_count = 0;
   const int weight_unit = mi_size_wide[BLOCK_8X8];
 
+#if CONFIG_TMV
+  mi_pos.row = blk_row;
+  mi_pos.col = blk_col;
+#else
 #if CONFIG_MV_COMPRESS
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
@@ -519,6 +562,7 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
   mi_pos.row = blk_row;
   mi_pos.col = blk_col;
 #endif
+#endif  // CONFIG_TMV
 
   if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos))
     return coll_blk_count;
@@ -571,18 +615,31 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   CANDIDATE_MV tmp_mv;
   int len, nr_len;
 
+#if CONFIG_TMV
+  const int prev_frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
+  const int tmi_row = mi_row & 0xfffe;
+  const int tmi_col = mi_col & 0xfffe;
+  const MV_REF *const prev_frame_mvs_base =
+      cm->use_prev_frame_mvs
+          ? cm->prev_frame->mvs + (tmi_row >> 1) * prev_frame_mvs_stride +
+                (tmi_col >> 1)
+          : NULL;
+#else
+  const int prev_frame_mvs_stride = cm->mi_cols;
 #if CONFIG_MV_COMPRESS
   const MV_REF *const prev_frame_mvs_base =
       cm->use_prev_frame_mvs
-          ? cm->prev_frame->mvs + (((mi_row >> 1) << 1) + 1) * cm->mi_cols +
+          ? cm->prev_frame->mvs +
+                (((mi_row >> 1) << 1) + 1) * prev_frame_mvs_stride +
                 ((mi_col >> 1) << 1) + 1
           : NULL;
 #else
   const MV_REF *const prev_frame_mvs_base =
       cm->use_prev_frame_mvs
-          ? cm->prev_frame->mvs + mi_row * cm->mi_cols + mi_col
+          ? cm->prev_frame->mvs + mi_row * prev_frame_mvs_stride + mi_col
           : NULL;
 #endif
+#endif  // CONFIG_TMV
 
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
   const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
@@ -655,6 +712,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_size_high[BLOCK_8X8]) {
     for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_size_wide[BLOCK_8X8]) {
+      // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
+      // Can be modified the same way.
       int is_available = add_tpl_ref_mv(
           cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
           blk_col, refmv_count, ref_mv_stack, mode_context);
@@ -669,7 +728,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     blk_col = tpl_sample_pos[i][1];
 
     if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
-
+    // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
+    // Can be modified the same way.
     coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
                                      mi_col, ref_frame, blk_row, blk_col,
                                      refmv_count, ref_mv_stack, mode_context);
@@ -693,6 +753,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif
 
 #if CONFIG_TPL_MV
+    // Modified sample positions to be consistent with frame_mvs
+    // spatial resolution.
     int tpl_sample_pos[5][2] = { { -1, xd->n8_w },
                                  { 0, xd->n8_w },
                                  { xd->n8_h, xd->n8_w },
@@ -703,9 +765,17 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_step) {
       for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_step) {
-        int is_available = add_col_ref_mv(
-            cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
-            blk_col, refmv_count, ref_mv_stack, mode_context);
+#if CONFIG_TMV
+        int is_available =
+            add_col_ref_mv(cm, prev_frame_mvs_base, prev_frame_mvs_stride, xd,
+                           tmi_row, tmi_col, ref_frame, blk_row, blk_col,
+                           refmv_count, ref_mv_stack, mode_context);
+#else
+        int is_available =
+            add_col_ref_mv(cm, prev_frame_mvs_base, prev_frame_mvs_stride, xd,
+                           mi_row, mi_col, ref_frame, blk_row, blk_col,
+                           refmv_count, ref_mv_stack, mode_context);
+#endif  // CONFIG_TMV
 #if CONFIG_OPT_REF_MV
         if (blk_row == 0 && blk_col == 0) coll_blk_count = is_available;
 #else
@@ -718,9 +788,15 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     for (i = 0; i < 5; ++i) {
       blk_row = tpl_sample_pos[i][0];
       blk_col = tpl_sample_pos[i][1];
-      coll_blk_count += add_col_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
-                                       mi_col, ref_frame, blk_row, blk_col,
-                                       refmv_count, ref_mv_stack, mode_context);
+#if CONFIG_TMV
+      coll_blk_count += add_col_ref_mv(
+          cm, prev_frame_mvs_base, prev_frame_mvs_stride, xd, tmi_row, tmi_col,
+          ref_frame, blk_row, blk_col, refmv_count, ref_mv_stack, mode_context);
+#else
+      coll_blk_count += add_col_ref_mv(
+          cm, prev_frame_mvs_base, prev_frame_mvs_stride, xd, mi_row, mi_col,
+          ref_frame, blk_row, blk_col, refmv_count, ref_mv_stack, mode_context);
+#endif  // CONFIG_TMV
     }
 #endif
 
@@ -853,6 +929,18 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int i, refmv_count = 0;
   int different_ref_found = 0;
   int context_counter = 0;
+
+#if CONFIG_TMV
+  int tmi_row = mi_row & 0xfffe;
+  int tmi_col = mi_col & 0xfffe;
+  POSITION mi_pos = { 0, 0 };
+  int inside = is_inside(&xd->tile, tmi_col, tmi_row, cm->mi_rows, cm, &mi_pos);
+  const MV_REF *const prev_frame_mvs =
+      cm->use_prev_frame_mvs && inside
+          ? cm->prev_frame->mvs + (tmi_row >> 1) * ((cm->mi_cols + 1) >> 1) +
+                (tmi_col >> 1)
+          : NULL;
+#else
 #if CONFIG_MV_COMPRESS
   const TileInfo *const tile_ = &xd->tile;
   int mi_row_end = tile_->mi_row_end;
@@ -872,6 +960,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           ? cm->prev_frame->mvs + mi_row * cm->mi_cols + mi_col
           : NULL;
 #endif
+#endif  // CONFIG_TMV
+
 #if CONFIG_INTRABC
   assert(IMPLIES(ref_frame == INTRA_FRAME, cm->use_prev_frame_mvs == 0));
 #endif

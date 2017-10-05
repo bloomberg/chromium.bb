@@ -586,8 +586,6 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   const struct segmentation *const seg = &cm->seg;
   const int bw = mi_size_wide[mi->mbmi.sb_type];
   const int bh = mi_size_high[mi->mbmi.sb_type];
-  int w, h;
-
   const int mis = cm->mi_stride;
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
@@ -751,22 +749,9 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
     rdc->comp_pred_diff[REFERENCE_MODE_SELECT] += ctx->hybrid_pred_diff;
   }
 
-  MV_REF *const frame_mvs =
-      cm->cur_frame->mvs + (mi_row & 0xfffe) * cm->mi_cols + (mi_col & 0xfffe);
-  int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
-  int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
-  x_mis = AOMMAX(2, x_mis);
-  y_mis = AOMMAX(2, y_mis);
-  for (h = 0; h < y_mis; ++h) {
-    MV_REF *const frame_mv = frame_mvs + h * cm->mi_cols;
-    for (w = 0; w < x_mis; ++w) {
-      MV_REF *const mv = frame_mv + w;
-      mv->ref_frame[0] = mi->mbmi.ref_frame[0];
-      mv->ref_frame[1] = mi->mbmi.ref_frame[1];
-      mv->mv[0].as_int = mi->mbmi.mv[0].as_int;
-      mv->mv[1].as_int = mi->mbmi.mv[1].as_int;
-    }
-  }
+  const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
+  const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
+  av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 }
 
 #if CONFIG_SUPERTX
@@ -788,12 +773,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
   const int mis = cm->mi_stride;
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
-  const int x_mis = AOMMIN(mi_width, cm->mi_cols - mi_col);
-  const int y_mis = AOMMIN(mi_height, cm->mi_rows - mi_row);
   const int unify_bsize = CONFIG_CB4X4;
-  MV_REF *const frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
-  int w, h;
-
   int8_t rf_type;
 
   *mi_addr = *mi;
@@ -915,16 +895,9 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
     rdc->comp_pred_diff[REFERENCE_MODE_SELECT] += ctx->hybrid_pred_diff;
   }
 
-  for (h = 0; h < y_mis; ++h) {
-    MV_REF *const frame_mv = frame_mvs + h * cm->mi_cols;
-    for (w = 0; w < x_mis; ++w) {
-      MV_REF *const mv = frame_mv + w;
-      mv->ref_frame[0] = mi->mbmi.ref_frame[0];
-      mv->ref_frame[1] = mi->mbmi.ref_frame[1];
-      mv->mv[0].as_int = mi->mbmi.mv[0].as_int;
-      mv->mv[1].as_int = mi->mbmi.mv[1].as_int;
-    }
-  }
+  const int x_mis = AOMMIN(mi_width, cm->mi_cols - mi_col);
+  const int y_mis = AOMMIN(mi_height, cm->mi_rows - mi_row);
+  av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 }
 
 static void update_state_sb_supertx(const AV1_COMP *const cpi, ThreadData *td,

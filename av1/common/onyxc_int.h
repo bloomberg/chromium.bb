@@ -626,9 +626,16 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
     aom_free(buf->mvs);
     buf->mi_rows = cm->mi_rows;
     buf->mi_cols = cm->mi_cols;
+#if CONFIG_TMV
+    CHECK_MEM_ERROR(cm, buf->mvs,
+                    (MV_REF *)aom_calloc(
+                        ((cm->mi_rows + 1) >> 1) * ((cm->mi_cols + 1) >> 1),
+                        sizeof(*buf->mvs)));
+#else
     CHECK_MEM_ERROR(
         cm, buf->mvs,
         (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols, sizeof(*buf->mvs)));
+#endif  // CONFIG_TMV
 
 #if CONFIG_MFMV
     aom_free(buf->tpl_mvs);

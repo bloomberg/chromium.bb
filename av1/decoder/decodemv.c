@@ -3003,6 +3003,34 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 #endif  // !CONFIG_TXK_SEL
 }
 
+static void av1_intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row,
+                                     int mi_col, int x_mis, int y_mis) {
+#if CONFIG_TMV
+  const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
+  MV_REF *frame_mvs = cm->cur_frame->mvs +
+                      ((mi_row & 0xfffe) >> 1) * frame_mvs_stride +
+                      ((mi_col & 0xfffe) >> 1);
+  x_mis = ROUND_POWER_OF_TWO(x_mis, 1);
+  y_mis = ROUND_POWER_OF_TWO(y_mis, 1);
+#else
+  const int frame_mvs_stride = cm->mi_cols;
+  MV_REF *frame_mvs = cm->cur_frame->mvs +
+                      (mi_row & 0xfffe) * frame_mvs_stride + (mi_col & 0xfffe);
+  x_mis = AOMMAX(x_mis, 2);
+  y_mis = AOMMAX(y_mis, 2);
+#endif  // CONFIG_TMV
+  int w, h;
+
+  for (h = 0; h < y_mis; h++) {
+    MV_REF *const frame_mv = frame_mvs + h * frame_mvs_stride;
+    for (w = 0; w < x_mis; w++) {
+      MV_REF *const mv = frame_mv + w;
+      mv->ref_frame[0] = NONE_FRAME;
+      mv->ref_frame[1] = NONE_FRAME;
+    }
+  }
+}
+
 void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
 #if CONFIG_SUPERTX
                         int supertx_enabled,
@@ -3011,43 +3039,19 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
                         int y_mis) {
   AV1_COMMON *const cm = &pbi->common;
   MODE_INFO *const mi = xd->mi[0];
-  MV_REF *frame_mvs =
-      cm->cur_frame->mvs + (mi_row & 0xfffe) * cm->mi_cols + (mi_col & 0xfffe);
-  x_mis = AOMMAX(x_mis, 2);
-  y_mis = AOMMAX(y_mis, 2);
-  int w, h;
-
 #if CONFIG_INTRABC
   mi->mbmi.use_intrabc = 0;
 #endif  // CONFIG_INTRABC
 
   if (frame_is_intra_only(cm)) {
     read_intra_frame_mode_info(cm, xd, mi_row, mi_col, r);
-    for (h = 0; h < y_mis; ++h) {
-      MV_REF *const frame_mv = frame_mvs + h * cm->mi_cols;
-      for (w = 0; w < x_mis; ++w) {
-        MV_REF *const mv = frame_mv + w;
-        mv->ref_frame[0] = NONE_FRAME;
-        mv->ref_frame[1] = NONE_FRAME;
-      }
-    }
+    av1_intra_copy_frame_mvs(cm, mi_row, mi_col, x_mis, y_mis);
   } else {
     read_inter_frame_mode_info(pbi, xd,
 #if CONFIG_SUPERTX
                                supertx_enabled,
 #endif  // CONFIG_SUPERTX
                                mi_row, mi_col, r);
-    for (h = 0; h < y_mis; ++h) {
-      MV_REF *const frame_mv = frame_mvs + h * cm->mi_cols;
-      for (w = 0; w < x_mis; ++w) {
-        MV_REF *const mv = frame_mv + w;
-        mv->ref_frame[0] = mi->mbmi.ref_frame[0];
-        mv->ref_frame[1] = mi->mbmi.ref_frame[1];
-        mv->mv[0].as_int = mi->mbmi.mv[0].as_int;
-        mv->mv[1].as_int = mi->mbmi.mv[1].as_int;
-        mv->pred_mv[0].as_int = mi->mbmi.pred_mv[0].as_int;
-        mv->pred_mv[1].as_int = mi->mbmi.pred_mv[1].as_int;
-      }
-    }
+    av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
   }
 }
