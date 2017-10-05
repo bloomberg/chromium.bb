@@ -728,15 +728,48 @@ TEST_P(SurfaceTest, SetAlpha) {
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
-  surface->Attach(buffer.get());
-  surface->SetAlpha(0.5f);
-  surface->Commit();
-  RunAllPendingInMessageLoop();
+  {
+    surface->Attach(buffer.get());
+    surface->SetAlpha(0.5f);
+    surface->Commit();
+    RunAllPendingInMessageLoop();
 
-  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
-  ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
-            frame.render_pass_list.back()->damage_rect);
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+    ASSERT_EQ(1u, frame.resource_list.size());
+    ASSERT_EQ(1u, frame.resource_list.back().id);
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
+              frame.render_pass_list.back()->damage_rect);
+  }
+
+  {
+    surface->SetAlpha(0.f);
+    surface->Commit();
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    // No quad if alpha is 0.
+    ASSERT_EQ(0u, frame.render_pass_list.back()->quad_list.size());
+    ASSERT_EQ(0u, frame.resource_list.size());
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
+              frame.render_pass_list.back()->damage_rect);
+  }
+
+  {
+    surface->SetAlpha(1.f);
+    surface->Commit();
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+    ASSERT_EQ(1u, frame.resource_list.size());
+    // The resource should be updated again, the id should be changed.
+    ASSERT_EQ(2u, frame.resource_list.back().id);
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
+              frame.render_pass_list.back()->damage_rect);
+  }
 }
 
 TEST_P(SurfaceTest, Commit) {

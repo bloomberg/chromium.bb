@@ -454,6 +454,12 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
         pending_state_.buffer_scale != state_.buffer_scale ||
         pending_state_.buffer_transform != state_.buffer_transform;
 
+    // If the current state is fully transparent, the last submitted frame will
+    // not include the TextureDrawQuad for the resource, so the resource might
+    // have been released and needs to be updated again.
+    if (!state_.alpha && pending_state_.alpha)
+      needs_update_resource_ = true;
+
     state_ = pending_state_;
     pending_state_.only_visible_on_secure_output = false;
 
@@ -466,7 +472,8 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
     if (has_pending_contents_) {
       has_pending_contents_ = false;
       current_buffer_ = std::move(pending_buffer_);
-      needs_update_resource_ = true;
+      if (state_.alpha)
+        needs_update_resource_ = true;
     }
 
     if (needs_update_buffer_transform)
