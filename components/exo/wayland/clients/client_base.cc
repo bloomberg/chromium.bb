@@ -424,10 +424,14 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     int32_t drm_format,
     int32_t bo_usage) {
   std::unique_ptr<Buffer> buffer;
+#if defined(USE_GBM)
   if (device_) {
     buffer = CreateDrmBuffer(size, drm_format, bo_usage);
     CHECK(buffer) << "Can't create drm buffer";
-  } else {
+  }
+#endif
+
+  if (!buffer) {
     buffer = std::make_unique<Buffer>();
 
     size_t stride = size.width() * kBytesPerPixel;
