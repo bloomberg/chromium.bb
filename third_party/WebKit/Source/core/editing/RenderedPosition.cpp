@@ -30,6 +30,7 @@
 
 #include "core/editing/RenderedPosition.h"
 
+#include "core/editing/InlineBoxPosition.h"
 #include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"

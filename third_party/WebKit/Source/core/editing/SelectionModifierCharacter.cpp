@@ -31,6 +31,7 @@
 #include "core/editing/SelectionModifier.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/InlineBoxPosition.h"
 #include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"

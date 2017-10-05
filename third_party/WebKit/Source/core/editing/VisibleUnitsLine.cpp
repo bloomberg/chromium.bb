@@ -32,6 +32,7 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/InlineBoxPosition.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"

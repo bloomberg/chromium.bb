@@ -39,33 +39,10 @@ class LayoutUnit;
 class LayoutObject;
 class Node;
 class IntPoint;
-class InlineBox;
 class IntRect;
 class LocalFrame;
 
 enum EWordSide { kRightWordIfOnBoundary = false, kLeftWordIfOnBoundary = true };
-
-struct InlineBoxPosition {
-  InlineBox* inline_box;
-  int offset_in_box;
-
-  InlineBoxPosition() : inline_box(nullptr), offset_in_box(0) {}
-
-  InlineBoxPosition(InlineBox* inline_box, int offset_in_box)
-      : inline_box(inline_box), offset_in_box(offset_in_box) {
-    DCHECK(inline_box);
-    DCHECK_GE(offset_in_box, 0);
-  }
-
-  bool operator==(const InlineBoxPosition& other) const {
-    return inline_box == other.inline_box &&
-           offset_in_box == other.offset_in_box;
-  }
-
-  bool operator!=(const InlineBoxPosition& other) const {
-    return !operator==(other);
-  }
-};
 
 // This struct represents local caret rectangle in |layout_object|.
 struct LocalCaretRect {
@@ -78,11 +55,6 @@ struct LocalCaretRect {
 
   bool IsEmpty() const { return !layout_object || rect.IsEmpty(); }
 };
-
-// The print for |InlineBoxPosition| is available only for testing
-// in "webkit_unit_tests", and implemented in
-// "core/editing/VisibleUnitsTest.cpp".
-std::ostream& operator<<(std::ostream&, const InlineBoxPosition&);
 
 // offset functions on Node
 CORE_EXPORT int CaretMinOffset(const Node*);
@@ -302,20 +274,6 @@ VisiblePosition EndOfEditableContent(const VisiblePosition&);
 CORE_EXPORT bool IsEndOfEditableOrNonEditableContent(const VisiblePosition&);
 CORE_EXPORT bool IsEndOfEditableOrNonEditableContent(
     const VisiblePositionInFlatTree&);
-
-CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const Position&,
-                                                       TextAffinity);
-CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const Position&,
-                         TextAffinity,
-                         TextDirection primary_direction);
-CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const PositionInFlatTree&, TextAffinity);
-CORE_EXPORT InlineBoxPosition
-ComputeInlineBoxPosition(const PositionInFlatTree&,
-                         TextAffinity,
-                         TextDirection primary_direction);
-CORE_EXPORT InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition&);
 
 // Rect is local to the returned layoutObject
 CORE_EXPORT LocalCaretRect
