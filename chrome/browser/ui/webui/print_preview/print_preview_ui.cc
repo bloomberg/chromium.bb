@@ -413,6 +413,22 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
 
 }  // namespace
 
+PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
+                               std::unique_ptr<PrintPreviewHandler> handler)
+    : ConstrainedWebDialogUI(web_ui),
+      initial_preview_start_time_(base::TimeTicks::Now()),
+      id_(g_print_preview_ui_id_map.Get().Add(this)),
+      handler_(nullptr),
+      source_is_modifiable_(true),
+      source_has_selection_(false),
+      print_selection_only_(false),
+      dialog_closed_(false) {
+  handler_ = handler.get();
+  web_ui->AddMessageHandler(std::move(handler));
+
+  g_print_preview_request_id_map.Get().Set(id_, -1);
+}
+
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),

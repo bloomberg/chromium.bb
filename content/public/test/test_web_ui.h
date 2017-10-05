@@ -28,7 +28,7 @@ class TestWebUI : public WebUI {
   // WebUI overrides.
   WebContents* GetWebContents() const override;
   WebUIController* GetController() const override;
-  void SetController(WebUIController* controller) override {}
+  void SetController(WebUIController* controller) override;
   float GetDeviceScaleFactor() const override;
   const base::string16& GetOverriddenTitle() const override;
   void OverrideTitle(const base::string16& title) override {}
@@ -95,6 +95,9 @@ class TestWebUI : public WebUI {
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
   base::string16 temp_string_;
   WebContents* web_contents_;
+  std::unique_ptr<WebUIController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWebUI);
 };
 
 }  // namespace content
