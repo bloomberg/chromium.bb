@@ -723,6 +723,7 @@ static void compute_stats(int wiener_win, const uint8_t *dgd,
           idx++;
         }
       }
+      assert(idx == wiener_win2);
       for (k = 0; k < wiener_win2; ++k) {
         M[k] += Y[k] * X;
         H[k * wiener_win2 + k] += Y[k] * Y[k];
@@ -780,6 +781,7 @@ static void compute_stats_highbd(int wiener_win, const uint8_t *dgd8,
           idx++;
         }
       }
+      assert(idx == wiener_win2);
       for (k = 0; k < wiener_win2; ++k) {
         M[k] += Y[k] * X;
         H[k * wiener_win2 + k] += Y[k] * Y[k];
@@ -960,6 +962,7 @@ static double compute_score(int wiener_win, double *M, double *H,
     a[WIENER_HALFWIN] -= 2 * a[i];
     b[WIENER_HALFWIN] -= 2 * b[i];
   }
+  memset(ab, 0, sizeof(ab));
   for (k = 0; k < wiener_win; ++k) {
     for (l = 0; l < wiener_win; ++l)
       ab[k * wiener_win + l] = a[l + plane_off] * b[k + plane_off];
