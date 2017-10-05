@@ -25,35 +25,14 @@ const bool kMayReturnZeroOnFirst = false;
 const bool kCompressed = true;
 const bool kUncompressed = false;
 
-enum StartMethod {
-  kStart,
-  kStartOnly,
-  kStartAndDecodeLength,
-  kStartSpecialCaseShort,
-};
-
-class HpackStringDecoderTest
-    : public RandomDecoderTest,
-      public ::testing::WithParamInterface<StartMethod> {
+class HpackStringDecoderTest : public RandomDecoderTest {
  protected:
-  HpackStringDecoderTest()
-      : start_method_(GetParam()), listener_(&collector_) {}
+  HpackStringDecoderTest() : listener_(&collector_) {}
 
   DecodeStatus StartDecoding(DecodeBuffer* b) override {
     ++start_decoding_calls_;
     collector_.Clear();
-    switch (start_method_) {
-      case kStart:
-        return decoder_.Start(b, &listener_);
-      case kStartOnly:
-        return decoder_.StartOnly(b, &listener_);
-      case kStartAndDecodeLength:
-        return decoder_.StartAndDecodeLength(b, &listener_);
-      case kStartSpecialCaseShort:
-        return decoder_.StartSpecialCaseShort(b, &listener_);
-      default:
-        return DecodeStatus::kDecodeError;
-    }
+    return decoder_.Start(b, &listener_);
   }
 
   DecodeStatus ResumeDecoding(DecodeBuffer* b) override {
@@ -93,14 +72,13 @@ class HpackStringDecoderTest
         };
   }
 
-  const StartMethod start_method_;
   HpackStringDecoder decoder_;
   HpackStringCollector collector_;
   HpackStringDecoderVLoggingListener listener_;
   size_t start_decoding_calls_ = 0;
 };
 
-TEST_P(HpackStringDecoderTest, DecodeEmptyString) {
+TEST_F(HpackStringDecoderTest, DecodeEmptyString) {
   {
     Validator validator = ValidateDoneAndEmpty(MakeValidator("", kCompressed));
     const char kData[] = {0x80u};
@@ -121,7 +99,7 @@ TEST_P(HpackStringDecoderTest, DecodeEmptyString) {
   }
 }
 
-TEST_P(HpackStringDecoderTest, DecodeShortString) {
+TEST_F(HpackStringDecoderTest, DecodeShortString) {
   {
     // Make sure it stops after decoding the non-empty string.
     Validator validator =
@@ -141,7 +119,7 @@ TEST_P(HpackStringDecoderTest, DecodeShortString) {
   }
 }
 
-TEST_P(HpackStringDecoderTest, DecodeLongStrings) {
+TEST_F(HpackStringDecoderTest, DecodeLongStrings) {
   Http2String name = Random().RandString(1024);
   Http2String value = Random().RandString(65536);
   HpackBlockBuilder hbb;
@@ -172,13 +150,6 @@ TEST_P(HpackStringDecoderTest, DecodeLongStrings) {
   EXPECT_EQ(offset_after_value, b.Offset());
   EXPECT_EQ(0u, b.Remaining());
 }
-
-INSTANTIATE_TEST_CASE_P(AllStartMethods,
-                        HpackStringDecoderTest,
-                        ::testing::Values(kStart,
-                                          kStartOnly,
-                                          kStartAndDecodeLength,
-                                          kStartSpecialCaseShort));
 
 }  // namespace
 }  // namespace test
