@@ -39,10 +39,6 @@ void TestShellDelegate::PreInit() {}
 
 void TestShellDelegate::PreShutdown() {}
 
-void TestShellDelegate::Exit() {
-  num_exit_requests_++;
-}
-
 std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }

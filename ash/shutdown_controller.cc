@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shutdown_reason.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/user_metrics.h"
@@ -33,7 +33,7 @@ void ShutdownController::RemoveObserver(Observer* observer) {
 void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
   // For developers on Linux desktop just exit the app.
   if (!base::SysInfo::IsRunningOnChromeOS()) {
-    Shell::Get()->shell_delegate()->Exit();
+    Shell::Get()->session_controller()->RequestSignOut();
     return;
   }
 

@@ -18,7 +18,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_screenshot_delegate.h"
-#include "ash/test_shell_delegate.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
@@ -92,9 +91,6 @@ class LockStateControllerTest : public AshTestBase {
     test_api_->set_shutdown_controller(&test_shutdown_controller_);
 
     power_button_controller_ = Shell::Get()->power_button_controller();
-
-    shell_delegate_ =
-        static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
   }
 
   void TearDown() override {
@@ -121,8 +117,7 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   int NumShutdownRequests() {
-    return test_shutdown_controller_.num_shutdown_requests() +
-           shell_delegate_->num_exit_requests();
+    return test_shutdown_controller_.num_shutdown_requests();
   }
 
   void Advance(SessionStateAnimator::AnimationSpeed speed) {
@@ -361,7 +356,6 @@ class LockStateControllerTest : public AshTestBase {
 
   TestSessionStateAnimator* test_animator_ = nullptr;  // not owned
   std::unique_ptr<LockStateControllerTestApi> test_api_;
-  TestShellDelegate* shell_delegate_ = nullptr;  // not owned
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LockStateControllerTest);

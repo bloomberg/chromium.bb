@@ -214,7 +214,7 @@ void LockStateController::SetLockScreenDisplayedCallback(
 }
 
 void LockStateController::OnHostCloseRequested(aura::WindowTreeHost* host) {
-  Shell::Get()->shell_delegate()->Exit();
+  Shell::Get()->session_controller()->RequestSignOut();
 }
 
 void LockStateController::OnChromeTerminating() {

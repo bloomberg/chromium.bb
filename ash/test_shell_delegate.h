@@ -24,7 +24,6 @@ class TestShellDelegate : public ShellDelegate {
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;
-  void Exit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
   NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
@@ -36,14 +35,11 @@ class TestShellDelegate : public ShellDelegate {
   gfx::Image GetDeprecatedAcceleratorImage() const override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
-  int num_exit_requests() const { return num_exit_requests_; }
-
   void SetForceMaximizeOnFirstRun(bool maximize) {
     force_maximize_on_first_run_ = maximize;
   }
 
  private:
-  int num_exit_requests_ = 0;
   bool force_maximize_on_first_run_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);

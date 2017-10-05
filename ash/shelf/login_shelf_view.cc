@@ -14,7 +14,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
@@ -161,7 +160,7 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       break;
     case kSignOut:
       base::RecordAction(base::UserMetricsAction("ScreenLocker_Signout"));
-      Shell::Get()->shell_delegate()->Exit();
+      Shell::Get()->session_controller()->RequestSignOut();
       break;
     case kCloseNote:
       Shell::Get()->tray_action()->CloseLockScreenNote(
