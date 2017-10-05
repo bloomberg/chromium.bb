@@ -59,16 +59,9 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
     has_content =
         AppendFragmentOffsetAndSize(fragment, builder, flags, has_content);
 
-    const auto* box = ToNGPhysicalBoxFragment(fragment);
-    if (flags & NGPhysicalFragment::DumpOverflow) {
-      if (has_content)
-        builder->Append(" ");
-      builder->Append("overflow:");
-      builder->Append(box->OverflowSize().ToString());
-      has_content = true;
-    }
     builder->Append("\n");
 
+    const auto* box = ToNGPhysicalBoxFragment(fragment);
     if (flags & NGPhysicalFragment::DumpSubtree) {
       const auto& children = box->Children();
       for (unsigned i = 0; i < children.size(); i++)

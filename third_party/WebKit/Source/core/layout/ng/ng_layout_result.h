@@ -72,6 +72,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
+  const LayoutUnit IntrinsicBlockSize() const { return intrinsic_block_size_; }
+
   RefPtr<NGLayoutResult> CloneWithoutOffset() const;
 
  private:
@@ -84,6 +86,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  std::unique_ptr<const NGExclusionSpace> exclusion_space,
                  const WTF::Optional<NGBfcOffset> bfc_offset,
                  const NGMarginStrut end_margin_strut,
+                 const LayoutUnit intrinsic_block_size,
                  NGLayoutResultStatus status);
 
   RefPtr<NGPhysicalFragment> physical_fragment_;
@@ -93,6 +96,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   const WTF::Optional<NGBfcOffset> bfc_offset_;
   const NGMarginStrut end_margin_strut_;
+  const LayoutUnit intrinsic_block_size_;
 
   unsigned status_ : 1;
 };

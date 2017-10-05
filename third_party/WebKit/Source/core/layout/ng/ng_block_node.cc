@@ -172,7 +172,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
   NGBoxFragment min_fragment(
       FromPlatformWritingMode(Style().GetWritingMode()),
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
-  sizes.min_size = min_fragment.OverflowSize().inline_size;
+  sizes.min_size = min_fragment.Size().inline_size;
 
   // Now, redo with infinite space for max_content
   constraint_space =
@@ -188,7 +188,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
   NGBoxFragment max_fragment(
       FromPlatformWritingMode(Style().GetWritingMode()),
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
-  sizes.max_size = max_fragment.OverflowSize().inline_size;
+  sizes.max_size = max_fragment.Size().inline_size;
   return sizes;
 }
 
@@ -265,7 +265,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
   }
   logical_height += fragment.BlockSize();
-  intrinsic_content_logical_height += fragment.OverflowSize().block_size;
+  intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
   NGBoxStrut border_scrollbar_padding =
       ComputeBorders(constraint_space, Style()) +
       ComputePadding(constraint_space, Style()) + GetScrollbarSizes();
@@ -290,15 +290,16 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     LayoutBlock* block = ToLayoutBlock(box_);
     NGWritingMode writing_mode = constraint_space.WritingMode();
     NGBoxFragment fragment(writing_mode, physical_fragment);
-    LayoutUnit overflow_size = fragment.OverflowSize().block_size;
+    LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
     if (constraint_space.HasBlockFragmentation()) {
-      overflow_size +=
+      intrinsic_block_size +=
           PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
     }
     block->LayoutPositionedObjects(true);
     // |ComputeOverflow()| below calls |AddOverflowFromChildren()|, which
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|.
-    block->ComputeOverflow(overflow_size - border_scrollbar_padding.block_end);
+    block->ComputeOverflow(intrinsic_block_size -
+                           border_scrollbar_padding.block_end);
   }
 
   box_->UpdateAfterLayout();
@@ -477,15 +478,10 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
     box_->ForceLayout();
   }
   NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
-  NGPhysicalSize overflow_physical_size(box_->LayoutOverflowRect().Width(),
-                                        box_->LayoutOverflowRect().Height());
-  NGLogicalSize overflow_size =
-      overflow_physical_size.ConvertToLogical(writing_mode);
   // TODO(kojii): Implement use_first_line_style.
   NGFragmentBuilder builder(*this, box_->Style(), writing_mode,
                             box_->StyleRef().Direction());
-  builder.SetSize(box_size)
-      .SetOverflowSize(overflow_size);
+  builder.SetSize(box_size);
 
   // For now we copy the exclusion space straight through, this is incorrect
   // but needed as not all elements which participate in a BFC are switched

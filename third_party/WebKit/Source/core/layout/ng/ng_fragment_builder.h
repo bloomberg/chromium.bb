@@ -45,8 +45,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   NGFragmentBuilder& SetBlockSize(LayoutUnit);
   NGLogicalSize Size() const { return size_; }
 
-  NGFragmentBuilder& SetOverflowSize(const NGLogicalSize&);
-  NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
+  NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
 
   NGFragmentBuilder& AddChild(RefPtr<NGLayoutResult>, const NGLogicalOffset&);
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
@@ -186,7 +185,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   LayoutObject* layout_object_;
 
   NGLogicalSize size_;
-  NGLogicalSize overflow_;
+  LayoutUnit intrinsic_block_size_;
 
   Vector<RefPtr<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;

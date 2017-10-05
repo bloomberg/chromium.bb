@@ -237,7 +237,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   // If we are resuming from a break token our start border and padding is
   // within a previous fragment.
-  content_size_ =
+  intrinsic_block_size_ =
       BreakToken() ? LayoutUnit() : border_scrollbar_padding_.block_start;
 
   NGMarginStrut input_margin_strut = ConstraintSpace().MarginStrut();
@@ -289,10 +289,10 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
   }
 
-  input_bfc_block_offset += content_size_;
+  input_bfc_block_offset += intrinsic_block_size_;
 
   NGPreviousInflowPosition previous_inflow_position = {
-      input_bfc_block_offset, content_size_, input_margin_strut,
+      input_bfc_block_offset, intrinsic_block_size_, input_margin_strut,
       /* empty_block_affected_by_clearance */ false};
 
   NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
@@ -342,11 +342,11 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // *last* quirky margin.
     // TODO: revisit previous implementation to avoid changing behavior and
     // https://html.spec.whatwg.org/multipage/rendering.html#margin-collapsing-quirks
-    content_size_ =
-        std::max(content_size_, previous_inflow_position.logical_block_offset +
-                                    (node_.IsQuirkyContainer()
-                                         ? end_margin_strut.QuirkyContainerSum()
-                                         : end_margin_strut.Sum()));
+    intrinsic_block_size_ = std::max(
+        intrinsic_block_size_,
+        previous_inflow_position.logical_block_offset +
+            (node_.IsQuirkyContainer() ? end_margin_strut.QuirkyContainerSum()
+                                       : end_margin_strut.Sum()));
     end_margin_strut = NGMarginStrut();
   }
 
@@ -359,14 +359,15 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     WTF::Optional<LayoutUnit> float_end_offset =
         exclusion_space_->ClearanceOffset(EClear::kBoth);
     if (float_end_offset)
-      content_size_ = std::max(content_size_, float_end_offset.value());
+      intrinsic_block_size_ =
+          std::max(intrinsic_block_size_, float_end_offset.value());
   }
 
-  content_size_ += border_scrollbar_padding_.block_end;
+  intrinsic_block_size_ += border_scrollbar_padding_.block_end;
 
   // Recompute the block-axis size now that we know our content size.
-  size.block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
+  size.block_size = ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
+                                                intrinsic_block_size_);
   container_builder_.SetBlockSize(size.block_size);
 
   // Non-empty blocks always know their position in space.
@@ -395,8 +396,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     end_margin_strut = NGMarginStrut();
   }
   container_builder_.SetEndMarginStrut(end_margin_strut);
-  container_builder_.SetOverflowSize(
-      NGLogicalSize(max_inline_size_, content_size_));
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
 
   // We only finalize for fragmentation if the fragment has a BFC offset. This
   // may occur with a zero block size fragment. We need to know the BFC offset
@@ -608,7 +608,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
     // The remaining part of the fragmentainer (the unusable space for child
     // content, due to the break) should still be occupied by this container.
-    content_size_ = FragmentainerSpaceAvailable();
+    intrinsic_block_size_ = FragmentainerSpaceAvailable();
     // Drop the fragment on the floor and retry at the start of the next
     // fragmentainer.
     container_builder_.AddBreakBeforeChild(child);
@@ -616,8 +616,9 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     return true;
   }
 
-  UpdateContentSize(child_data.margins, logical_offset,
-                    /* is_empty_block */ false, fragment);
+  intrinsic_block_size_ =
+      std::max(intrinsic_block_size_,
+               logical_offset.block_offset + fragment.BlockSize());
 
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
@@ -829,7 +830,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
 
     // The remaining part of the fragmentainer (the unusable space for child
     // content, due to the break) should still be occupied by this container.
-    content_size_ = FragmentainerSpaceAvailable();
+    intrinsic_block_size_ = FragmentainerSpaceAvailable();
     // Drop the fragment on the floor and retry at the start of the next
     // fragmentainer.
     container_builder_.AddBreakBeforeChild(child);
@@ -837,8 +838,20 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     return true;
   }
 
-  UpdateContentSize(child_data.margins, logical_offset, is_empty_block,
-                    fragment);
+  // Only modify intrinsic_block_size_ if the fragment is non-empty block.
+  //
+  // Empty blocks don't immediately contribute to our size, instead we wait to
+  // see what the final margin produced, e.g.
+  // <div style="display: flow-root">
+  //   <div style="margin-top: -8px"></div>
+  //   <div style="margin-top: 10px"></div>
+  // </div>
+  if (!is_empty_block) {
+    DCHECK(container_builder_.BfcOffset());
+    intrinsic_block_size_ =
+        std::max(intrinsic_block_size_,
+                 logical_offset.block_offset + fragment.BlockSize());
+  }
 
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
@@ -1001,14 +1014,14 @@ bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace() const {
     return false;
   if (!container_builder_.BfcOffset().has_value())
     return false;
-  return content_size_ >= FragmentainerSpaceAvailable();
+  return intrinsic_block_size_ >= FragmentainerSpaceAvailable();
 }
 
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), used_block_size + content_size_);
+      ConstraintSpace(), Style(), used_block_size + intrinsic_block_size_);
 
   block_size -= used_block_size;
   DCHECK_GE(block_size, LayoutUnit())
@@ -1025,7 +1038,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
                                         used_block_size);
     container_builder_.SetDidBreak();
     container_builder_.SetBlockSize(std::min(space_left, block_size));
-    container_builder_.SetBlockOverflow(space_left);
+    container_builder_.SetIntrinsicBlockSize(space_left);
     return;
   }
 
@@ -1034,14 +1047,14 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     container_builder_.SetUsedBlockSize(space_left + used_block_size);
     container_builder_.SetDidBreak();
     container_builder_.SetBlockSize(space_left);
-    container_builder_.SetBlockOverflow(space_left);
+    container_builder_.SetIntrinsicBlockSize(space_left);
     return;
   }
 
   // The end of the block fits in the current fragmentainer.
   container_builder_.SetUsedBlockSize(used_block_size + block_size);
   container_builder_.SetBlockSize(block_size);
-  container_builder_.SetBlockOverflow(content_size_);
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
 }
 
 bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(
@@ -1223,31 +1236,6 @@ void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
         break;
     }
   }
-}
-
-// TODO(ikilpatrick): Remove/simplify this to just calculate/update
-// content_size_ as max_inline_size_ is not currently used.
-void NGBlockLayoutAlgorithm::UpdateContentSize(
-    const NGBoxStrut& margins,
-    const NGLogicalOffset& logical_offset,
-    bool is_empty_block,
-    const NGFragment& fragment) {
-  // Only modify content_size_ if the fragment is non-empty block.
-  //
-  // Empty blocks don't immediately contribute to our size, instead we wait to
-  // see what the final margin produced, e.g.
-  // <div style="display: flow-root">
-  //   <div style="margin-top: -8px"></div>
-  //   <div style="margin-top: 10px"></div>
-  // </div>
-  if (!is_empty_block) {
-    DCHECK(container_builder_.BfcOffset());
-    content_size_ = std::max(
-        content_size_, logical_offset.block_offset + fragment.BlockSize());
-  }
-  max_inline_size_ =
-      std::max(max_inline_size_, fragment.InlineSize() + margins.InlineSum() +
-                                     border_scrollbar_padding_.InlineSum());
 }
 
 }  // namespace blink
