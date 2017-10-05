@@ -5,9 +5,11 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/platform_window/stub/stub_window.h"
 
 namespace {
 
@@ -92,6 +94,38 @@ TEST_F(WindowTreeHostTest, ColorSpace) {
   test_screen()->SetColorSpace(gfx::ColorSpace::CreateSCRGBLinear());
   EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
             host()->compositor()->output_color_space());
+}
+
+class TestWindow : public ui::StubWindow {
+ public:
+  explicit TestWindow(ui::PlatformWindowDelegate* delegate)
+      : StubWindow(delegate, false, gfx::Rect(400, 600)) {}
+  ~TestWindow() override {}
+
+ private:
+  // ui::StubWindow
+  void Close() override {
+    // It is possible for the window to receive capture-change messages during
+    // destruction, for example on Windows (see crbug.com/770670).
+    delegate()->OnLostCapture();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindow);
+};
+
+class TestWindowTreeHost : public WindowTreeHostPlatform {
+ public:
+  TestWindowTreeHost() {
+    SetPlatformWindow(std::make_unique<TestWindow>(this));
+    CreateCompositor();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeHost);
+};
+
+TEST_F(WindowTreeHostTest, LostCaptureDuringTearDown) {
+  TestWindowTreeHost host;
 }
 
 }  // namespace aura
