@@ -393,7 +393,7 @@
     <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
-    <dimen name="custom_tabs_bottom_bar_max_height">60dp</dimen>
+    <dimen name="custom_tabs_bottom_bar_max_height">120dp</dimen>
     <dimen name="custom_tabs_screenshot_height">300dp</dimen>
     <dimen name="custom_tabs_screenshot_width">190dp</dimen>
 
