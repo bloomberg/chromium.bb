@@ -190,8 +190,7 @@ void MediaStreamVideoSource::OnRestartDone(bool did_restart) {
     StartFrameMonitoring();
     FinalizeAddPendingTracks();
   } else {
-    StopSource();
-    return;
+    state_ = STOPPED_FOR_RESTART;
   }
 
   RestartResult result =
