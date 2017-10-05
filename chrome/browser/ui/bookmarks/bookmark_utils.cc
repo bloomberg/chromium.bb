@@ -20,6 +20,7 @@
 #include "components/search/search.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -298,7 +299,7 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER);
 #else
-  return GetFolderIcon(kFolderIcon, text_color);
+  return GetFolderIcon(vector_icons::kFolderIcon, text_color);
 #endif
 }
 

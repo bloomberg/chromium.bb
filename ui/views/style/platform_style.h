@@ -54,10 +54,6 @@ class VIEWS_EXPORT PlatformStyle {
   // label for that row.
   static const bool kTreeViewSelectionPaintsEntireRow;
 
-  // Whether TreeViews use a separate icon for the currently selected node's
-  // ancestors.
-  static const bool kTreeViewUsesOpenIcon;
-
   // Whether ripples should be used for visual feedback on control activation.
   static const bool kUseRipples;
 

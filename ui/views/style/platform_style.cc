@@ -47,7 +47,6 @@ const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
     Button::CLICK_ON_KEY_RELEASE;
 const bool PlatformStyle::kReturnClicksFocusedControl = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
-const bool PlatformStyle::kTreeViewUsesOpenIcon = true;
 const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;

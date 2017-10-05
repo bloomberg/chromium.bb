@@ -9,6 +9,8 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -16,6 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -77,12 +80,27 @@ TreeView::TreeView()
       drawing_provider_(base::MakeUnique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      (base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
-                           : IDR_FOLDER_CLOSED)).ToImageSkia();
-  open_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      (base::i18n::IsRTL() ? IDR_FOLDER_OPEN_RTL
-                           : IDR_FOLDER_OPEN)).ToImageSkia();
+#if defined(OS_MACOSX)
+  constexpr bool kUseMdIcons = true;
+#else
+  constexpr bool kUseMdIcons = false;
+#endif
+  if (kUseMdIcons) {
+    closed_icon_ = open_icon_ =
+        gfx::CreateVectorIcon(vector_icons::kFolderIcon, gfx::kChromeIconGrey);
+  } else {
+    // TODO(ellyjones): if the pre-Harmony codepath goes away, merge
+    // closed_icon_ and open_icon_.
+    closed_icon_ =
+        *ui::ResourceBundle::GetSharedInstance()
+             .GetImageNamed((base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
+                                                 : IDR_FOLDER_CLOSED))
+             .ToImageSkia();
+    open_icon_ = *ui::ResourceBundle::GetSharedInstance()
+                      .GetImageNamed((base::i18n::IsRTL() ? IDR_FOLDER_OPEN_RTL
+                                                          : IDR_FOLDER_OPEN))
+                      .ToImageSkia();
+  }
   text_offset_ = closed_icon_.width() + kImagePadding + kImagePadding +
       kArrowRegionSize;
 }
@@ -767,7 +785,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
   int icon_index = model_->GetIconIndex(node->model_node());
   if (icon_index != -1)
     icon = icons_[icon_index];
-  else if (node == selected_node_ && PlatformStyle::kTreeViewUsesOpenIcon)
+  else if (node == selected_node_)
     icon = open_icon_;
   else
     icon = closed_icon_;
