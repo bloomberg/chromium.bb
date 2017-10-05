@@ -659,7 +659,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
 
   if (blink::WebInputEvent::IsKeyboardEventType(event->GetType())) {
     NativeWebKeyboardEvent keyboard_event(
-        *static_cast<const blink::WebKeyboardEvent*>(event));
+        *static_cast<const blink::WebKeyboardEvent*>(event), GetNativeView());
     host_->ForwardKeyboardEvent(keyboard_event);
     return;
   }
