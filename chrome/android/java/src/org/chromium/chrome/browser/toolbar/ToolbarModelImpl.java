@@ -69,6 +69,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
         assert tab == null || tab.isIncognito() == isIncognito;
         mTab = tab;
         mIsIncognito = isIncognito;
+        updateUsingBrandColor();
     }
 
     @Override
@@ -158,6 +159,10 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
      */
     public void setPrimaryColor(int color) {
         mPrimaryColor = color;
+        updateUsingBrandColor();
+    }
+
+    private void updateUsingBrandColor() {
         Context context = ContextUtils.getApplicationContext();
         mIsUsingBrandColor = !isIncognito()
                 && mPrimaryColor
