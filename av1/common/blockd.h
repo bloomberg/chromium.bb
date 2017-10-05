@@ -1648,6 +1648,12 @@ static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
 #endif  // CONFIG_MOTION_VAR
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
+static INLINE int av1_allow_palette(int allow_screen_content_tools,
+                                    BLOCK_SIZE sb_type) {
+  return allow_screen_content_tools && sb_type >= BLOCK_8X8 &&
+         sb_type <= BLOCK_LARGEST;
+}
+
 // Returns sub-sampled dimensions of the given block.
 // The output values for 'rows_within_bounds' and 'cols_within_bounds' will
 // differ from 'height' and 'width' when part of the block is outside the

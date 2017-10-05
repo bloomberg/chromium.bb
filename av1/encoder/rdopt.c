@@ -4249,13 +4249,6 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_EXT_INTRA
 
-// Returns true if palette can be used for this block.
-static int can_use_palette(const AV1_COMP *const cpi,
-                           const MB_MODE_INFO *const mbmi) {
-  return cpi->common.allow_screen_content_tools && mbmi->sb_type >= BLOCK_8X8 &&
-         mbmi->sb_type <= BLOCK_LARGEST;
-}
-
 // This function is used only for intra_only frames
 static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                       int *rate, int *rate_tokenonly,
@@ -4284,12 +4277,11 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
   const int *bmode_costs;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  uint8_t *best_palette_color_map =
-      cpi->common.allow_screen_content_tools
-          ? x->palette_buffer->best_palette_color_map
-          : NULL;
   int palette_y_mode_ctx = 0;
-  const int try_palette = can_use_palette(cpi, mbmi);
+  const int try_palette =
+      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
+  uint8_t *best_palette_color_map =
+      try_palette ? x->palette_buffer->best_palette_color_map : NULL;
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
   const PREDICTION_MODE A = av1_above_block_mode(mic, above_mi, 0);
@@ -4325,11 +4317,16 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
 #endif  // CONFIG_FILTER_INTRA
   pmi->palette_size[0] = 0;
-  if (above_mi)
-    palette_y_mode_ctx +=
-        (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-  if (left_mi)
-    palette_y_mode_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+  if (try_palette) {
+    if (above_mi) {
+      palette_y_mode_ctx +=
+          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    }
+    if (left_mi) {
+      palette_y_mode_ctx +=
+          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    }
+  }
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
     x->use_default_intra_tx_type = 1;
@@ -6287,7 +6284,8 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   od_encode_checkpoint(&x->daala_enc, &buf);
 #endif  // CONFIG_PVQ
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  const int try_palette = can_use_palette(cpi, mbmi);
+  const int try_palette =
+      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
 
   for (int mode_idx = 0; mode_idx < UV_INTRA_MODES; ++mode_idx) {
     int this_rate;
@@ -10221,7 +10219,8 @@ static void pick_filter_intra_interframe(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  const int try_palette = can_use_palette(cpi, mbmi);
+  const int try_palette =
+      av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type);
   int rate2 = 0, rate_y = INT_MAX, skippable = 0, rate_uv, rate_dummy, i;
   int dc_mode_index;
   const int *const intra_mode_cost = x->mbmode_cost[size_group_lookup[bsize]];
@@ -10383,7 +10382,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int try_palette = can_use_palette(cpi, mbmi);
+  const int try_palette =
+      av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type);
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const struct segmentation *const seg = &cm->seg;
