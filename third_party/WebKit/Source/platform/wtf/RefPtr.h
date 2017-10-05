@@ -31,7 +31,118 @@
 namespace WTF {
 
 template <typename T>
-using RefPtr = scoped_refptr<T>;
+class RefPtr;
+
+template <typename T>
+RefPtr<T> AdoptRef(T*);
+
+template <typename T>
+class RefPtr {
+  USING_FAST_MALLOC(RefPtr);
+
+ public:
+  ALWAYS_INLINE RefPtr() {}
+  ALWAYS_INLINE RefPtr(std::nullptr_t) {}
+  ALWAYS_INLINE RefPtr(T* ptr) : ptr_(ptr) {}
+  ALWAYS_INLINE RefPtr(const RefPtr&) = default;
+  ALWAYS_INLINE RefPtr(RefPtr&&) = default;
+
+  template <typename U>
+  RefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T))
+      : ptr_(o.ptr_) {}
+  template <typename U>
+  RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
+      : ptr_(std::move(o.ptr_)) {}
+
+  ALWAYS_INLINE ~RefPtr() {}
+
+  ALWAYS_INLINE T* get() const { return ptr_.get(); }
+
+  T& operator*() const { return *ptr_; }
+  ALWAYS_INLINE T* operator->() const { return ptr_.get(); }
+
+  bool operator!() const { return !ptr_; }
+  explicit operator bool() const { return ptr_ != nullptr; }
+
+  RefPtr& operator=(const RefPtr&) = default;
+  RefPtr& operator=(RefPtr&&) = default;
+
+  RefPtr& operator=(std::nullptr_t) {
+    ptr_ = nullptr;
+    return *this;
+  }
+
+  void swap(RefPtr&);
+
+ private:
+  template <typename U>
+  friend class RefPtr;
+  friend RefPtr AdoptRef<T>(T*);
+
+  ALWAYS_INLINE explicit RefPtr(scoped_refptr<T> ptr) : ptr_(std::move(ptr)) {}
+
+  scoped_refptr<T> ptr_;
+};
+
+template <class T>
+inline void RefPtr<T>::swap(RefPtr& o) {
+  std::swap(ptr_, o.ptr_);
+}
+
+template <class T>
+inline void swap(RefPtr<T>& a, RefPtr<T>& b) {
+  a.swap(b);
+}
+
+template <typename T, typename U>
+inline bool operator==(const RefPtr<T>& a, const RefPtr<U>& b) {
+  return a.get() == b.get();
+}
+
+template <typename T, typename U>
+inline bool operator==(const RefPtr<T>& a, U* b) {
+  return a.get() == b;
+}
+
+template <typename T, typename U>
+inline bool operator==(T* a, const RefPtr<U>& b) {
+  return a == b.get();
+}
+
+template <typename T>
+inline bool operator==(const RefPtr<T>& a, std::nullptr_t) {
+  return !a.get();
+}
+
+template <typename T>
+inline bool operator==(std::nullptr_t, const RefPtr<T>& b) {
+  return !b.get();
+}
+
+template <typename T, typename U>
+inline bool operator!=(const RefPtr<T>& a, const RefPtr<U>& b) {
+  return a.get() != b.get();
+}
+
+template <typename T, typename U>
+inline bool operator!=(const RefPtr<T>& a, U* b) {
+  return a.get() != b;
+}
+
+template <typename T, typename U>
+inline bool operator!=(T* a, const RefPtr<U>& b) {
+  return a != b.get();
+}
+
+template <typename T>
+inline bool operator!=(const RefPtr<T>& a, std::nullptr_t) {
+  return a.get();
+}
+
+template <typename T>
+inline bool operator!=(std::nullptr_t, const RefPtr<T>& b) {
+  return b.get();
+}
 
 template <typename T>
 inline T* GetPtr(const RefPtr<T>& p) {
