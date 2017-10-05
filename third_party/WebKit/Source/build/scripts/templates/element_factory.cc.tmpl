@@ -3,7 +3,7 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "{{namespace}}ElementFactory.h"
+#include "core/{{namespace|lower}}_element_factory.h"
 
 #include "core/{{namespace|lower}}_names.h"
 {% for header in tags|groupby('interface_header') %}

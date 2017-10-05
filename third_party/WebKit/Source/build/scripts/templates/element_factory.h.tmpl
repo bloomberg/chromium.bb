@@ -3,17 +3,14 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef {{namespace}}ElementFactory_h
-#define {{namespace}}ElementFactory_h
+#ifndef BLINK_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
+#define BLINK_CORE_{{namespace|upper}}_ELEMENT_FACTORY_H_
 
 #include "core/dom/Document.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
-class Document;
 class {{namespace}}Element;
 {% if namespace == 'HTML' %}
 class HTMLFormElement;

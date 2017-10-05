@@ -25,7 +25,6 @@
 
 #include "core/editing/EditingUtilities.h"
 
-#include "core/HTMLElementFactory.h"
 #include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
@@ -61,6 +60,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
+#include "core/html_element_factory.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTableCell.h"
