@@ -552,8 +552,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 
 // Test that basic form fill is working.
 // Flakily times out on ChromeOS http://crbug.com/585885
-// Flakily fails on Windows http://crbug.com/639940
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_BasicFormFill DISABLED_BasicFormFill
 #else
 #define MAYBE_BasicFormFill BasicFormFill
@@ -633,8 +632,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
 }
 
 // crbug.com/516052
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillViaClick DISABLED_AutofillViaClick
 #else
 #define MAYBE_AutofillViaClick AutofillViaClick
@@ -665,14 +663,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
 }
 
 // Makes sure that the first click does *not* activate the popup.
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_WIN)
-#define MAYBE_DontAutofillForFirstClick DISABLED_DontAutofillForFirstClick
-#else
-#define MAYBE_DontAutofillForFirstClick DontAutofillForFirstClick
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_DontAutofillForFirstClick) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForFirstClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -694,14 +685,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Makes sure that clicking outside the focused field doesn't activate
 // the popup.
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_WIN)
-#define MAYBE_DontAutofillForOutsideClick DISABLED_DontAutofillForOutsideClick
-#else
-#define MAYBE_DontAutofillForOutsideClick DontAutofillForOutsideClick
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_DontAutofillForOutsideClick) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -726,8 +710,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // Test that a field is still autofillable after the previously autofilled
 // value is deleted.
 // TODO(crbug.com/603488) Test is timing out flakily on CrOS.
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_OnDeleteValueAfterAutofill DISABLED_OnDeleteValueAfterAutofill
 #else
 #define MAYBE_OnDeleteValueAfterAutofill OnDeleteValueAfterAutofill
@@ -803,8 +786,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test that a JavaScript oninput event is fired after auto-filling a form.
 // Flakily times out on ChromeOS http://crbug.com/585885
-// Flaky on Windows. http://crbug.com/726659
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_OnInputAfterAutofill DISABLED_OnInputAfterAutofill
 #else
 #define MAYBE_OnInputAfterAutofill OnInputAfterAutofill
@@ -883,8 +865,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
 
 // Test that a JavaScript onchange event is fired after auto-filling a form.
 // Flaky on CrOS.  http://crbug.com/578095
-// Flaky on Windows. http://crbug.com/726659
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
 #else
 #define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
@@ -962,8 +943,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
 }
 
 // Flakily times out on ChromeOS http://crbug.com/585885
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_InputFiresBeforeChange DISABLED_InputFiresBeforeChange
 #else
 #define MAYBE_InputFiresBeforeChange InputFiresBeforeChange
@@ -1049,8 +1029,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
 
 // Test that we can autofill forms distinguished only by their |id| attribute.
 // Flaky on CrOS.  http://crbug.com/578095
-// Flaky on Windows. http://crbug.com/726659
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillFormsDistinguishedById \
   DISABLED_AutofillFormsDistinguishedById
 #else
@@ -1083,8 +1062,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // (duplicated for "confirmation"); or variants that are hot-swapped via
 // JavaScript, with only one actually visible at any given time.
 // Flakily times out on ChromeOS http://crbug.com/585885
-// Flaky on Windows. http://crbug.com/726659
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillFormWithRepeatedField \
   DISABLED_AutofillFormWithRepeatedField
 #else
@@ -1136,8 +1114,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // TODO(crbug.com/603488) Test is timing out flakily on CrOS.
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillFormWithNonAutofillableField \
   DISABLED_AutofillFormWithNonAutofillableField
 #else
@@ -1189,8 +1166,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // Flakily fails on ChromeOS (crbug.com/646576).
-// Flaky on Windows (crbug.com/726659).
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_DynamicFormFill DISABLED_DynamicFormFill
 #else
 #define MAYBE_DynamicFormFill DynamicFormFill
@@ -1309,8 +1285,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
 // Test that filling a form sends all the expected events to the different
 // fields being filled.
 // Flakily fails on ChromeOS (crbug.com/646576).
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_AutofillEvents DISABLED_AutofillEvents
 #else
 #define MAYBE_AutofillEvents AutofillEvents
@@ -1506,13 +1481,12 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 // The high level key presses execute the following: Select the first text
 // field, invoke the autofill popup list, select the first profile within the
 // list, and commit to the profile to populate the form.
-// Flakily times out on windows (https://crbug.com/390564), and on CrOS
-// (https://crbug.com/516052).
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Flakily times out on CrOS (https://crbug.com/516052).
+#if defined(OS_CHROMEOS)
 #define MAYBE_ComparePhoneNumbers DISABLED_ComparePhoneNumbers
 #else
 #define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
   AutofillProfile profile;
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
@@ -1550,8 +1524,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
 // Test that Autofill does not fill in read-only fields.
 // Flaky on the official cros-trunk. crbug.com/516052
 // Also flaky on ChromiumOS generally. crbug.com/585885
-// Also flaky on Windows. crbug.com/726659
-#if defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS)
 #define MAYBE_NoAutofillForReadOnlyFields DISABLED_NoAutofillForReadOnlyFields
 #else
 #define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
@@ -1716,8 +1689,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // is interacting with the form.  This is a regression test for
 // http://crbug.com/160476
 // Flakily times out on ChromeOS http://crbug.com/585885
-// Flaky on Windows http://crbug.com/728488
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_DisableAutocompleteWhileFilling \
   DISABLED_DisableAutocompleteWhileFilling
 #else
@@ -1766,15 +1738,7 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
   }
 };
 
-#if defined(OS_WIN)
-// Flaky on Windows 7 in debug build. http://crbug.com/710436
-#define MAYBE_SimpleCrossSiteFill DISABLED_SimpleCrossSiteFill
-#else
-#define MAYBE_SimpleCrossSiteFill SimpleCrossSiteFill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
-                       MAYBE_SimpleCrossSiteFill) {
-
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
@@ -1820,7 +1784,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
 // form is inside an OOPIF.
 // Flaky on Windows http://crbug.com/728488
 #if defined(OS_WIN)
-#define MAYBE_CrossSitePaymentForms DISABLED_MAYBE_CrossSitePaymentForms
+#define MAYBE_CrossSitePaymentForms DISABLED_CrossSitePaymentForms
 #else
 #define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
 #endif

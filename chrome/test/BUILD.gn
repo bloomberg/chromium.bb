@@ -483,6 +483,7 @@ if (!is_android) {
       "../browser/ui/search/instant_uitest_base.cc",
       "../browser/ui/search/instant_uitest_base.h",
       "../browser/ui/search/local_ntp_uitest.cc",
+      "../browser/ui/send_mouse_move_uitest_win.cc",
       "../browser/ui/startup/startup_browser_creator_interactive_uitest.cc",
       "../browser/ui/translate/translate_bubble_test_utils.h",
       "../browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc",

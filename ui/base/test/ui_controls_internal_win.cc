@@ -4,6 +4,8 @@
 
 #include "ui/base/test/ui_controls_internal_win.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -300,30 +302,40 @@ bool SendMouseMoveImpl(long screen_x,
   POINT current_pos;
   ::GetCursorPos(&current_pos);
   if (screen_x == current_pos.x && screen_y == current_pos.y) {
-    if (!task.is_null())
+    if (task)
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
     return true;
   }
 
-  INPUT input = { 0 };
+  // Get the max screen coordinate for use in computing the normalized absolute
+  // coordinates required by SendInput.
+  int max_x = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+  int max_y = ::GetSystemMetrics(SM_CYSCREEN) - 1;
 
-  int screen_width = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-  int screen_height  = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-  LONG pixel_x  = static_cast<LONG>(screen_x * (65535.0f / screen_width));
-  LONG pixel_y = static_cast<LONG>(screen_y * (65535.0f / screen_height));
+  // Clamp the inputs.
+  if (screen_x < 0)
+    screen_x = 0;
+  else if (screen_x > max_x)
+    screen_x = max_x;
+  if (screen_y < 0)
+    screen_y = 0;
+  else if (screen_y > max_y)
+    screen_y = max_y;
 
-  input.type = INPUT_MOUSE;
+  // Form the input data containing the normalized absolute coordinates.
+  INPUT input = {INPUT_MOUSE};
+  input.mi.dx = static_cast<LONG>(std::ceil(screen_x * (65535.0 / max_x)));
+  input.mi.dy = static_cast<LONG>(std::ceil(screen_y * (65535.0 / max_y)));
   input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
-  input.mi.dx = pixel_x;
-  input.mi.dy = pixel_y;
 
-  scoped_refptr<InputDispatcher> dispatcher(
-      !task.is_null() ? new InputDispatcher(task, WM_MOUSEMOVE) : NULL);
+  scoped_refptr<InputDispatcher> dispatcher;
+  if (task)
+    dispatcher = base::MakeRefCounted<InputDispatcher>(task, WM_MOUSEMOVE);
 
-  if (!::SendInput(1, &input, sizeof(INPUT)))
+  if (!::SendInput(1, &input, sizeof(input)))
     return false;
 
-  if (dispatcher.get())
+  if (dispatcher)
     dispatcher->AddRef();
 
   return true;
