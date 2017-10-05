@@ -28,6 +28,12 @@
 
 
 vars = {
+  # By default, we should check out everything needed to run on the main
+  # chromium waterfalls. This var can be also be set to "small", in order
+  # to skip things are not strictly needed to build chromium for development
+  # purposes.
+  'checkout_configuration': 'default',
+
   # By default, do not check out src-internal. This can be overridden e.g. with
   # custom_vars.
   'checkout_src_internal': 'False',
