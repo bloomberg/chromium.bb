@@ -133,6 +133,12 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   float y_min_tuxels_;
   float y_num_tuxels_;
 
+  // The resolution of ABS_MT_TOUCH_MAJOR/MINOR might be different from the
+  // resolution of ABS_MT_POSITION_X/Y. As we use the (position range, display
+  // pixels) to resize touch event radius, we have to scale major/minor.
+  float touch_major_scale_ = 1.0f;
+  float touch_minor_scale_ = 1.0f;
+
   // Number of touch points reported by driver
   int touch_points_ = 0;
 

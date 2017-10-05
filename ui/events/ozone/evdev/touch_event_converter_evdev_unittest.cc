@@ -1347,4 +1347,45 @@ TEST_F(TouchEventConverterEvdevTest, ActiveStylusBarrelButton) {
             up_event.pointer_details.pointer_type);
 }
 
+// crbug.com/771374
+TEST_F(TouchEventConverterEvdevTest, FingerSizeWithResolution) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kEveTouchScreen, &devinfo));
+  dev->Initialize(devinfo);
+
+  // Captured from Pixelbook (Eve).
+  timeval time;
+  time = {1507226211, 483601};
+  struct input_event mock_kernel_queue[] = {
+      {time, EV_ABS, ABS_MT_TRACKING_ID, 461},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1795},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 5559},
+      {time, EV_ABS, ABS_MT_PRESSURE, 217},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 14},
+      {time, EV_ABS, ABS_MT_TOUCH_MINOR, 14},
+      {time, EV_KEY, BTN_TOUCH, 1},
+      {time, EV_ABS, ABS_X, 1795},
+      {time, EV_ABS, ABS_Y, 5559},
+      {time, EV_ABS, ABS_PRESSURE, 217},
+      {time, EV_MSC, MSC_TIMESTAMP, 0},
+      {time, EV_SYN, SYN_REPORT, 0},
+  };
+
+  // Finger pressed with major/minor reported.
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+  EXPECT_EQ(1u, size());
+  ui::TouchEventParams event = dispatched_touch_event(0);
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event.type);
+  EXPECT_EQ(ToTestTimeTicks(1507226211483601), event.timestamp);
+  EXPECT_EQ(1795, event.location.x());
+  EXPECT_EQ(5559, event.location.y());
+  EXPECT_EQ(0, event.slot);
+  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
+            event.pointer_details.pointer_type);
+  EXPECT_FLOAT_EQ(280.f, event.pointer_details.radius_x);
+  EXPECT_FLOAT_EQ(0.8509804f, event.pointer_details.force);
+}
 }  // namespace ui
