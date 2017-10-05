@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
+#include "core/layout/ng/ng_column_layout_algorithm.h"
 
 namespace blink {
 namespace {
@@ -729,6 +730,63 @@ TEST_F(NGColumnLayoutAlgorithmTest, BorderAndPadding) {
         offset:0,0 size:30x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
+  // The multicol container here contains two inline-blocks with a line break
+  // opportunity between them. We'll test what min/max values we get for the
+  // multicol container when specifying both column-count and column-width, only
+  // column-count, and only column-width.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #multicol {
+        column-gap: 10px;
+        width: fit-content;
+      }
+      #multicol span { display:inline-block; width:50px; height:50px; }
+    </style>
+    <div id="container">
+      <div id="multicol">
+        <div>
+          <span></span><wbr><span></span>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  LayoutObject* layout_object = GetLayoutObjectByElementId("multicol");
+  ASSERT_TRUE(layout_object);
+  ASSERT_TRUE(layout_object->IsBox());
+  NGBlockNode node = NGBlockNode(ToLayoutBox(layout_object));
+  ComputedStyle* style = layout_object->MutableStyle();
+  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  NGColumnLayoutAlgorithm algorithm(node, *space.get());
+  Optional<MinMaxSize> size;
+
+  // Both column-count and column-width set.
+  style->SetColumnCount(3);
+  style->SetColumnWidth(80);
+  size = algorithm.ComputeMinMaxSize();
+  ASSERT_TRUE(size.has_value());
+  EXPECT_EQ(LayoutUnit(260), size->min_size);
+  EXPECT_EQ(LayoutUnit(320), size->max_size);
+
+  // Only column-count set.
+  style->SetHasAutoColumnWidth();
+  size = algorithm.ComputeMinMaxSize();
+  ASSERT_TRUE(size.has_value());
+  EXPECT_EQ(LayoutUnit(170), size->min_size);
+  EXPECT_EQ(LayoutUnit(320), size->max_size);
+
+  // Only column-width set.
+  style->SetColumnWidth(80);
+  style->SetHasAutoColumnCount();
+  size = algorithm.ComputeMinMaxSize();
+  ASSERT_TRUE(size.has_value());
+  EXPECT_EQ(LayoutUnit(80), size->min_size);
+  EXPECT_EQ(LayoutUnit(100), size->max_size);
 }
 
 }  // anonymous namespace

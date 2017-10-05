@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_column_layout_algorithm.h"
 
+#include <algorithm>
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_box_fragment.h"
@@ -81,8 +82,32 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 }
 
 Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize() const {
-  DCHECK(0) << "Min/max calculation not yet implemented for multicol";
-  return WTF::nullopt;
+  // First calculate the min/max sizes of columns.
+  Optional<MinMaxSize> min_max_sizes =
+      NGBlockLayoutAlgorithm(Node(), ConstraintSpace()).ComputeMinMaxSize();
+  DCHECK(min_max_sizes.has_value());
+  MinMaxSize sizes = min_max_sizes.value();
+
+  // If column-width is non-auto, pick the larger of that and intrinsic column
+  // width.
+  if (!Style().HasAutoColumnWidth()) {
+    sizes.min_size =
+        std::max(sizes.min_size, LayoutUnit(Style().ColumnWidth()));
+    sizes.max_size = std::max(sizes.max_size, sizes.min_size);
+  }
+
+  // Now convert those column min/max values to multicol container min/max
+  // values. We typically have multiple columns and also gaps between them.
+  int column_count = Style().ColumnCount();
+  DCHECK_GE(column_count, 1);
+  sizes.min_size *= column_count;
+  sizes.max_size *= column_count;
+  LayoutUnit column_gap = ResolveUsedColumnGap(Style());
+  LayoutUnit gap_extra = column_gap * (column_count - 1);
+  sizes.min_size += gap_extra;
+  sizes.max_size += gap_extra;
+
+  return sizes;
 }
 
 RefPtr<NGConstraintSpace>
