@@ -184,6 +184,8 @@ struct drm_backend {
 	int32_t cursor_height;
 
 	uint32_t pageflip_timeout;
+
+	bool shutting_down;
 };
 
 struct drm_mode {
@@ -3604,6 +3606,8 @@ drm_destroy(struct weston_compositor *ec)
 
 	wl_event_source_remove(b->udev_drm_source);
 	wl_event_source_remove(b->drm_source);
+
+	b->shutting_down = true;
 
 	destroy_sprites(b);
 
