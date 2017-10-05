@@ -79,7 +79,7 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     return *this;
   }
 
-  PaintImage TakePaintImage() const;
+  PaintImage TakePaintImage();
 
  private:
   PaintImage paint_image_;
