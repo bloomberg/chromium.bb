@@ -102,7 +102,10 @@ bool AuraInit::Init(service_manager::Connector* connector,
     mus_client_ =
         base::WrapUnique(new MusClient(connector, identity, io_task_runner));
   }
-  ui::MaterialDesignController::Initialize();
+  // MaterialDesignController may have initialized already (such as happens
+  // in the utility process).
+  if (!ui::MaterialDesignController::is_mode_initialized())
+    ui::MaterialDesignController::Initialize();
   if (!InitializeResources(connector, resource_file, resource_file_200,
                            register_path_provider)) {
     return false;

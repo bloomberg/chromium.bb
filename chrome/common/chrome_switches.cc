@@ -257,10 +257,6 @@ const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
 const char kDisableSearchGeolocationDisclosure[] =
     "disable-search-geolocation-disclosure";
 
-// If set processes created to host a service will not load resources.
-const char kDisableServiceProcessResourceLoading[] =
-    "disable-service-process-resource-loading";
-
 // Disables Web Notification custom layouts.
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
