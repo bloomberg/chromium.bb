@@ -185,7 +185,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // This may only be called in situations where blocking the UI thread is
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
-  // TODO: Get rid of blocking calls (crbug.com/160522).
+  // TODO(crbug.com/160522): Get rid of blocking calls.
   virtual RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
       std::string* policy_out) = 0;
 
@@ -202,7 +202,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // This may only be called in situations where blocking the UI thread is
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
-  // TODO: Get rid of blocking calls (crbug.com/160522).
+  // TODO(crbug.com/160522): Get rid of blocking calls.
   virtual RetrievePolicyResponseType BlockingRetrievePolicyForUser(
       const cryptohome::Identification& cryptohome_id,
       std::string* policy_out) = 0;
@@ -225,7 +225,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // This may only be called in situations where blocking the UI thread is
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
-  // TODO: Get rid of blocking calls (crbug.com/160522).
+  // TODO(crbug.com/165022): Get rid of blocking calls.
   virtual RetrievePolicyResponseType BlockingRetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       std::string* policy_out) = 0;

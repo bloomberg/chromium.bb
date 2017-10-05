@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_VIRTUAL_FILE_PROVIDER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_VIRTUAL_FILE_PROVIDER_CLIENT_H_
 
+#include <string>
+#include <utility>
+
 #include "chromeos/dbus/virtual_file_provider_client.h"
 
 namespace chromeos {

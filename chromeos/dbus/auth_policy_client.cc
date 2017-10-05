@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chromeos/dbus/auth_policy_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"

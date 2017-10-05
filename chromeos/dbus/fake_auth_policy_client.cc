@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_auth_policy_client.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

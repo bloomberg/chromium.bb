@@ -6,7 +6,9 @@
 #define CHROMEOS_DBUS_FAKE_SHILL_SERVICE_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"

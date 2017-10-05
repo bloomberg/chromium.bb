@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_SERVICES_SERVICE_PROVIDER_TEST_HELPER_H_
 #define CHROMEOS_DBUS_SERVICES_SERVICE_PROVIDER_TEST_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/message_loop/message_loop.h"

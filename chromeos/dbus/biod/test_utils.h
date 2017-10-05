@@ -84,6 +84,6 @@ class TestBiodObserver : public BiodClient::Observer {
 };
 
 }  // namespace test_utils
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_BIOD_TEST_UTILS_H_

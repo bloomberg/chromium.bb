@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_FAKE_SHILL_DEVICE_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 

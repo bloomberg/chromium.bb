@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_power_manager_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -219,7 +221,7 @@ void FakePowerManagerClient::NotifyObservers() {
 }
 
 void FakePowerManagerClient::HandleSuspendReadiness() {
-  CHECK(num_pending_suspend_readiness_callbacks_ > 0);
+  CHECK_GT(num_pending_suspend_readiness_callbacks_, 0);
 
   --num_pending_suspend_readiness_callbacks_;
 }

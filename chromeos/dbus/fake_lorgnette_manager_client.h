@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_LORGNETTE_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_LORGNETTE_MANAGER_CLIENT_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 

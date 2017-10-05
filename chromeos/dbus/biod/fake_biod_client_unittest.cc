@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/biod/fake_biod_client.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -13,7 +15,7 @@
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace biod;
+using biod::SCAN_RESULT_SUCCESS;
 
 namespace chromeos {
 

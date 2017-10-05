@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_BIOD_FAKE_BIOD_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"

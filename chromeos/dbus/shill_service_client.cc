@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/shill_service_client.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -54,10 +56,7 @@ void OnGetDictionaryError(
 // The ShillServiceClient implementation.
 class ShillServiceClientImpl : public ShillServiceClient {
  public:
-  explicit ShillServiceClientImpl()
-      : bus_(NULL),
-        weak_ptr_factory_(this) {
-  }
+  ShillServiceClientImpl() : bus_(NULL), weak_ptr_factory_(this) {}
 
   ~ShillServiceClientImpl() override {
     for (HelperMap::iterator iter = helpers_.begin();

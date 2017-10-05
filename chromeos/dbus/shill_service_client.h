@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_SHILL_SERVICE_CLIENT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"

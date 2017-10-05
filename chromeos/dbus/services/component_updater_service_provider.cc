@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/services/component_updater_service_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

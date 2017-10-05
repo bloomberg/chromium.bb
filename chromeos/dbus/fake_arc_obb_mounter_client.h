@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_ARC_OBB_MOUNTER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_ARC_OBB_MOUNTER_CLIENT_H_
 
+#include <string>
+
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 
 namespace chromeos {

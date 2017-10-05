@@ -5,7 +5,9 @@
 #include "chromeos/dbus/biod/biod_client.h"
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"

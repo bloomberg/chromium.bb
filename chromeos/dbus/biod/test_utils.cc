@@ -76,5 +76,5 @@ void TestBiodObserver::BiodSessionFailedReceived() {
   num_failures_received_++;
 }
 
-}  // namepsace test_utils
+}  // namespace test_utils
 }  // namespace chromeos

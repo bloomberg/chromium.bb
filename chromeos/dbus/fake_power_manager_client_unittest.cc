@@ -75,7 +75,7 @@ TEST(FakePowerManagerClientTest, UpdatePowerPropertiesTest) {
   EXPECT_TRUE(client.props().is_calculating_battery_time());
   EXPECT_EQ(kInitialBatteryState, client.props().battery_state());
   EXPECT_EQ(kInitialExternalPower, client.props().external_power());
-};
+}
 
 TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   FakePowerManagerClient client;
@@ -131,6 +131,6 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   // Test removing observer.
   client.RemoveObserver(&test_observer);
   EXPECT_FALSE(client.HasObserver(&test_observer));
-};
+}
 
 }  // namespace chromeos

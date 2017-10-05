@@ -5,6 +5,8 @@
 #include "chromeos/dbus/blocking_method_caller.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
