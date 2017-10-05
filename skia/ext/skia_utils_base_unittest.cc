@@ -35,13 +35,13 @@ TEST(SkiaUtilsBaseTest, ImageSerializationFails) {
   auto image =
       SkImage::MakeFromGenerator(base::MakeUnique<FakeImageGenerator>());
   auto filter = SkImageSource::Make(image);
-  EXPECT_DEATH(ValidatingSerializeFlattenable(filter.get()), "Check failed");
+  EXPECT_DEATH(ValidatingSerializeFlattenable(filter.get()), "");
 
   SkPaint paint;
   paint.setShader(
       image->makeShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
   filter = SkPaintImageFilter::Make(paint);
-  EXPECT_DEATH(ValidatingSerializeFlattenable(filter.get()), "Check failed");
+  EXPECT_DEATH(ValidatingSerializeFlattenable(filter.get()), "");
 }
 #endif
 
