@@ -3969,6 +3969,14 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
           free_ncobmc_pred_buffer(&td->xd);
 #endif
+#if CONFIG_LPF_SB
+          if (USE_LOOP_FILTER_SUPERBLOCK) {
+            // apply deblocking filtering right after each superblock is decoded
+            const int guess_filter_lvl = FAKE_FILTER_LEVEL;
+            av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                                  guess_filter_lvl, 0, 1, mi_row, mi_col);
+          }
+#endif  // CONFIG_LPF_SB
         }
         aom_merge_corrupted_flag(&pbi->mb.corrupted, td->xd.corrupted);
         if (pbi->mb.corrupted)
@@ -4018,6 +4026,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_VAR_TX || CONFIG_CB4X4
+#if CONFIG_INTRABC
+// When intraBC is on, do loop filtering per superblock,
+// instead of do it after the whole frame has been encoded,
+// as is in the else branch
+#else
 // Loopfilter the whole frame.
 #if CONFIG_LPF_SB
   av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
@@ -4040,6 +4053,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                           cm->lf.filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_LPF_SB
+#endif  // CONFIG_INTRABC
 #else
 #if CONFIG_PARALLEL_DEBLOCKING
   // Loopfilter all rows in the frame in the frame.

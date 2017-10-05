@@ -104,6 +104,9 @@ extern "C" {
 // Half of maximum loop filter length (15-tap)
 #define FILT_BOUNDARY_OFFSET 8
 #define FILT_BOUNDARY_MI_OFFSET (FILT_BOUNDARY_OFFSET >> MI_SIZE_LOG2)
+
+#define FAKE_FILTER_LEVEL 10
+#define USE_LOOP_FILTER_SUPERBLOCK 1
 #endif  // CONFIG_LPF_SB
 
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
