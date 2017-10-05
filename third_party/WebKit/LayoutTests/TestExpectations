@@ -1393,9 +1393,6 @@ crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failur
 
 crbug.com/545140 [ Mac10.10 Mac10.11 Retina Mac10.12 ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 
-crbug.com/636248 http/tests/security/img-crossorigin-no-credentials-prompt.html [ Failure Pass ]
-crbug.com/636248 virtual/mojo-loading/http/tests/security/img-crossorigin-no-credentials-prompt.html [ Failure Pass ]
-
 crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
