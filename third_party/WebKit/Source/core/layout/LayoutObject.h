@@ -32,7 +32,6 @@
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
 #include "core/editing/Forward.h"
-#include "core/editing/TextAffinity.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutObjectChildList.h"

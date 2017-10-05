@@ -42,7 +42,6 @@ class IntPoint;
 class InlineBox;
 class IntRect;
 class LocalFrame;
-enum class TextAffinity;
 
 enum EWordSide { kRightWordIfOnBoundary = false, kLeftWordIfOnBoundary = true };
 
