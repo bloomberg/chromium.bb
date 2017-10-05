@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -123,7 +124,7 @@ public class ToolbarPhone extends ToolbarLayout
     protected ViewGroup mToolbarButtonsContainer;
     protected ImageView mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
-    private TintedImageButton mHomeButton;
+    protected @Nullable TintedImageButton mHomeButton;
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
@@ -439,7 +440,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         enableTabSwitchingResources();
 
-        mHomeButton.setOnClickListener(this);
+        if (mHomeButton != null) mHomeButton.setOnClickListener(this);
 
         mMenuButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
@@ -511,7 +512,7 @@ public class ToolbarPhone extends ToolbarLayout
                 RecordUserAction.record("MobileNewTabOpened");
                 // TODO(kkimlabs): Record UMA action for homepage button.
             }
-        } else if (mHomeButton == v) {
+        } else if (mHomeButton != null && mHomeButton == v) {
             openHomepage();
         }
     }
@@ -703,7 +704,9 @@ public class ToolbarPhone extends ToolbarLayout
      */
     private int getBoundsAfterAccountingForLeftButton() {
         int padding = mToolbarSidePadding;
-        if (mHomeButton.getVisibility() != GONE) padding = mHomeButton.getMeasuredWidth();
+        if (mHomeButton != null && mHomeButton.getVisibility() != GONE) {
+            padding = mHomeButton.getMeasuredWidth();
+        }
         return padding;
     }
 
@@ -923,7 +926,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         int toolbarButtonVisibility = getToolbarButtonVisibility();
         mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
-        if (mHomeButton.getVisibility() != GONE) {
+        if (mHomeButton != null && mHomeButton.getVisibility() != GONE) {
             mHomeButton.setVisibility(toolbarButtonVisibility);
         }
 
@@ -1033,7 +1036,7 @@ public class ToolbarPhone extends ToolbarLayout
         mLocationBar.setTranslationY(0);
         if (!mUrlFocusChangeInProgress) {
             mToolbarButtonsContainer.setTranslationY(0);
-            mHomeButton.setTranslationY(0);
+            if (mHomeButton != null) mHomeButton.setTranslationY(0);
         }
         if (!mToolbarShadowPermanentlyHidden) mToolbarShadow.setAlpha(1f);
         mLocationBar.setAlpha(1);
@@ -1106,7 +1109,7 @@ public class ToolbarPhone extends ToolbarLayout
         int transY = mTabSwitcherState == STATIC_TAB ? Math.min(mNtpSearchBoxTranslation.y, 0) : 0;
 
         mToolbarButtonsContainer.setTranslationY(transY);
-        mHomeButton.setTranslationY(transY);
+        if (mHomeButton != null) mHomeButton.setTranslationY(transY);
     }
 
     private void setAncestorsShouldClipChildren(boolean clip) {
@@ -1140,7 +1143,7 @@ public class ToolbarPhone extends ToolbarLayout
         canvas.clipRect(mBackgroundOverlayBounds);
 
         float previousAlpha = 0.f;
-        if (mHomeButton.getVisibility() != View.GONE) {
+        if (mHomeButton != null && mHomeButton.getVisibility() != View.GONE) {
             // Draw the New Tab button used in the URL view.
             previousAlpha = mHomeButton.getAlpha();
             mHomeButton.setAlpha(previousAlpha * floatAlpha);
@@ -1295,7 +1298,8 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     protected boolean isChildLeft(View child) {
-        return (child == mNewTabButton || child == mHomeButton) ^ LocalizationUtils.isLayoutRtl();
+        return (child == mNewTabButton || (mHomeButton != null && child == mHomeButton))
+                ^ LocalizationUtils.isLayoutRtl();
     }
 
     /**
@@ -1501,6 +1505,8 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public void updateButtonVisibility() {
+        if (mHomeButton == null) return;
+
         if (mIsHomeButtonEnabled) {
             mHomeButton.setVisibility(urlHasFocus() || isTabSwitcherAnimationRunning()
                     ? INVISIBLE : VISIBLE);
@@ -2326,7 +2332,7 @@ public class ToolbarPhone extends ToolbarLayout
             setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
         }
         ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
-        if (mIsHomeButtonEnabled) mHomeButton.setTint(tint);
+        if (mIsHomeButtonEnabled && mHomeButton != null) mHomeButton.setTint(tint);
 
         mLocationBar.updateVisualsForState();
         // Remove the side padding for incognito to ensure the badge icon aligns correctly with the

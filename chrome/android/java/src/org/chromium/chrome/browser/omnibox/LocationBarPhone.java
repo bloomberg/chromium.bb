@@ -8,6 +8,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
@@ -24,7 +25,6 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
@@ -47,7 +47,7 @@ public class LocationBarPhone extends LocationBarLayout {
             new FastOutLinearInInterpolator();
 
     private View mFirstVisibleFocusedView;
-    private View mIncognitoBadge;
+    private @Nullable View mIncognitoBadge;
     private View mGoogleGContainer;
     private View mGoogleG;
     private View mUrlActionsContainer;
@@ -287,9 +287,10 @@ public class LocationBarPhone extends LocationBarLayout {
     public void updateVisualsForState() {
         super.updateVisualsForState();
 
-        boolean showIncognitoBadge = getToolbarDataProvider() != null
-                && getToolbarDataProvider().isIncognito()
-                && !FeatureUtilities.isChromeHomeEnabled();
+        if (mIncognitoBadge == null) return;
+
+        boolean showIncognitoBadge =
+                getToolbarDataProvider() != null && getToolbarDataProvider().isIncognito();
         mIncognitoBadge.setVisibility(showIncognitoBadge ? VISIBLE : GONE);
         updateIncognitoBadgePadding();
     }
@@ -309,7 +310,7 @@ public class LocationBarPhone extends LocationBarLayout {
      * @return Whether the incognito badge is currently visible.
      */
     public boolean isIncognitoBadgeVisible() {
-        return mIncognitoBadge.getVisibility() == View.VISIBLE;
+        return mIncognitoBadge != null && mIncognitoBadge.getVisibility() == View.VISIBLE;
     }
 
     /**
@@ -377,9 +378,15 @@ public class LocationBarPhone extends LocationBarLayout {
             }
         });
 
+        // TODO(twellington): Remove after flag to enable search provider logo is removed and
+        // clear out variables associated with Google G. This will help reduce Java heap memory.
         mGoogleGWidth = getResources().getDimensionPixelSize(
                 R.dimen.location_bar_google_g_width_bottom_sheet);
         mGoogleG.getLayoutParams().width = mGoogleGWidth;
+
+        // Chrome Home does not use the incognito badge. Remove the View to save memory.
+        removeView(mIncognitoBadge);
+        mIncognitoBadge = null;
     }
 
     @Override

@@ -114,6 +114,8 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetOpened(@StateChangeReason int reason) {
+            setIcons();
+
             if (reason == StateChangeReason.OMNIBOX_FOCUS) {
                 // If the omnibox is being focused, show the placeholder.
                 mBottomSheet.showContent(mPlaceholderContent);
@@ -133,6 +135,8 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetClosed(@StateChangeReason int reason) {
+            removeIcons();
+
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS)) {
                 // TODO(bauerb): Implement support for destroying the home sheet after a delay.
                 mSelectedItemId = NO_CONTENT_ID;
@@ -441,6 +445,20 @@ public class BottomSheetContentController extends BottomNavigationView
                                             : R.color.bottom_nav_tint);
         setItemIconTintList(tint);
         setItemTextColor(tint);
+    }
+
+    private void setIcons() {
+        getMenu().findItem(R.id.action_home).setIcon(R.drawable.ic_home_grey600_24dp);
+        getMenu().findItem(R.id.action_downloads).setIcon(R.drawable.ic_file_download_white_24dp);
+        getMenu().findItem(R.id.action_bookmarks).setIcon(R.drawable.btn_star_filled);
+        getMenu().findItem(R.id.action_history).setIcon(R.drawable.ic_watch_later_24dp);
+    }
+
+    private void removeIcons() {
+        getMenu().findItem(R.id.action_home).setIcon(null);
+        getMenu().findItem(R.id.action_downloads).setIcon(null);
+        getMenu().findItem(R.id.action_bookmarks).setIcon(null);
+        getMenu().findItem(R.id.action_history).setIcon(null);
     }
 
     @VisibleForTesting

@@ -28,10 +28,10 @@ import java.util.List;
  */
 public class NewTabButton extends Button implements Drawable.Callback {
 
-    private final Drawable mNormalDrawable;
-    private final Drawable mIncognitoDrawable;
     private final ColorStateList mLightModeTint;
     private final ColorStateList mDarkModeTint;
+    private Drawable mNormalDrawable;
+    private Drawable mIncognitoDrawable;
     private VectorDrawableCompat mModernDrawable;
     private boolean mIsIncognito;
     private AnimatorSet mTransitionAnimation;
@@ -129,6 +129,9 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mModernDrawable.setBounds(
                 0, 0, mModernDrawable.getIntrinsicWidth(), mModernDrawable.getIntrinsicHeight());
         mModernDrawable.setCallback(this);
+
+        mNormalDrawable = null;
+        mIncognitoDrawable = null;
     }
 
     /**
