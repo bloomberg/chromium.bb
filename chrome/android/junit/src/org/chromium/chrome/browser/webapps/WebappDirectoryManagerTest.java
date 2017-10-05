@@ -4,41 +4,38 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.FileUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.testing.local.CustomShadowAsyncTask;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * Tests that directories for WebappActivities are managed correctly.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class WebappDirectoryManagerTest {
-    private static final String TAG = "webapps_WebappDirect";
-
     private static final String WEBAPP_ID_1 = "webapp_1";
     private static final String WEBAPP_ID_2 = "webapp_2";
     private static final String WEBAPP_ID_3 = "webapp_3";
@@ -55,60 +52,37 @@ public class WebappDirectoryManagerTest {
         }
     }
 
-    private static class WebappMockContext extends AdvancedMockContext {
-        public WebappMockContext() {
-            super(InstrumentationRegistry.getInstrumentation().getTargetContext());
-        }
-
-        /** Returns a directory for test data inside the cache folder. */
-        public String getBaseDirectory() {
-            File cacheDirectory =
-                    InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir();
-            return new File(cacheDirectory, "WebappDirectoryManagerTest").getAbsolutePath();
-        }
-
-        @Override
-        public ApplicationInfo getApplicationInfo() {
-            ApplicationInfo mockInfo = new ApplicationInfo();
-            mockInfo.dataDir = getBaseDirectory();
-            return mockInfo;
-        }
-
-        @Override
-        public File getDir(String name, int mode) {
-            File appDirectory = new File(getApplicationInfo().dataDir, "app_" + name);
-            Assert.assertTrue(appDirectory.exists() || appDirectory.mkdirs());
-            return appDirectory;
-        }
-    }
-
-    private WebappMockContext mMockContext;
+    private Context mContext;
     private TestWebappDirectoryManager mWebappDirectoryManager;
 
     @Before
     public void setUp() throws Exception {
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
         RecordHistogram.setDisabledForTests(true);
-        mMockContext = new WebappMockContext();
+        mContext = RuntimeEnvironment.application;
         mWebappDirectoryManager = new TestWebappDirectoryManager();
+        mWebappDirectoryManager.resetForTesting();
 
-        // Set up the base directories.
-        File baseDirectory = new File(mMockContext.getBaseDirectory());
+        // Set up directories.
+        File baseDirectory = mContext.getDataDir();
         FileUtils.recursivelyDeleteFile(baseDirectory);
         Assert.assertTrue(baseDirectory.mkdirs());
+        FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
     }
 
     @After
     public void tearDown() throws Exception {
-        FileUtils.recursivelyDeleteFile(new File(mMockContext.getBaseDirectory()));
+        FileUtils.recursivelyDeleteFile(mContext.getDataDir());
+        FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
         RecordHistogram.setDisabledForTests(false);
+        ThreadUtils.setThreadAssertsDisabledForTesting(false);
     }
 
     @Test
-    @SmallTest
     @Feature({"Webapps"})
     public void testDeletesOwnDirectory() throws Exception {
-        File webappDirectory = new File(
-                mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPP_ID_1);
+        File webappDirectory =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPP_ID_1);
         Assert.assertTrue(webappDirectory.mkdirs());
         Assert.assertTrue(webappDirectory.exists());
 
@@ -122,18 +96,17 @@ public class WebappDirectoryManagerTest {
      * apps that no longer correspond to tasks in Recents.
      */
     @Test
-    @SmallTest
     @Feature({"Webapps"})
     public void testDeletesDirectoriesForDeadTasks() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Track the three web app directories.
-        File directory1 = new File(
-                mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPP_ID_1);
-        File directory2 = new File(
-                mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPP_ID_2);
-        File directory3 = new File(
-                mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPP_ID_3);
+        File directory1 =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPP_ID_1);
+        File directory2 =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPP_ID_2);
+        File directory3 =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPP_ID_3);
 
         // Seed the directory with folders for web apps.
         Assert.assertTrue(directory1.mkdirs());
@@ -142,6 +115,7 @@ public class WebappDirectoryManagerTest {
 
         // Indicate that another of the web apps is listed in Recents; in real usage this web app
         // would not be in the foreground and would have persisted its state.
+        mWebappDirectoryManager.mBaseIntents = new HashSet<Intent>();
         mWebappDirectoryManager.mBaseIntents.add(
                 new Intent(Intent.ACTION_VIEW, Uri.parse("webapp://webapp_2")));
 
@@ -157,18 +131,17 @@ public class WebappDirectoryManagerTest {
      * *WebApks* that no longer correspond to tasks in Recents.
      */
     @Test
-    @SmallTest
     @Feature({"Webapps"})
     public void testDeletesDirectoriesForDeadWebApkTasks() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Track the three web app directories.
         File directory1 =
-                new File(mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPK_ID_1);
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPK_ID_1);
         File directory2 =
-                new File(mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPK_ID_2);
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPK_ID_2);
         File directory3 =
-                new File(mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPK_ID_3);
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mContext), WEBAPK_ID_3);
 
         // Seed the directory with folders for web apps.
         Assert.assertTrue(directory1.mkdirs());
@@ -188,13 +161,12 @@ public class WebappDirectoryManagerTest {
     }
 
     @Test
-    @SmallTest
     @Feature({"Webapps"})
     public void testDeletesObsoleteDirectories() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Seed the base directory with folders that correspond to pre-L web apps.
-        File baseDirectory = new File(mMockContext.getBaseDirectory());
+        File baseDirectory = mContext.getDataDir();
         File webappDirectory1 = new File(baseDirectory, "app_WebappActivity1");
         File webappDirectory6 = new File(baseDirectory, "app_WebappActivity6");
         File nonWebappDirectory = new File(baseDirectory, "app_ChromeDocumentActivity");
@@ -210,14 +182,7 @@ public class WebappDirectoryManagerTest {
     }
 
     private void runCleanup() throws Exception {
-        final AsyncTask task =
-                mWebappDirectoryManager.cleanUpDirectories(mMockContext, WEBAPP_ID_1);
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(AsyncTask.Status.FINISHED, new Callable<AsyncTask.Status>() {
-                    @Override
-                    public AsyncTask.Status call() {
-                        return task.getStatus();
-                    }
-                }));
+        mWebappDirectoryManager.cleanUpDirectories(mContext, WEBAPP_ID_1);
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     }
 }
