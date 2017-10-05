@@ -41,6 +41,7 @@
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"
 #include "platform/EventDispatchForbiddenScope.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/wtf/Vector.h"
 
@@ -336,6 +337,12 @@ HTMLFormElement* HTMLFormControlElement::formOwner() const {
 
 bool HTMLFormControlElement::IsDisabledFormControl() const {
   if (FastHasAttribute(disabledAttr))
+    return true;
+
+  // Since the MHTML is loaded in sandboxing mode with form submission and
+  // script execution disabled, we should gray out all form control elements
+  // to indicate that the form cannot be worked on.
+  if (GetDocument().Fetcher()->Archive())
     return true;
 
   if (ancestor_disabled_state_ == kAncestorDisabledStateUnknown)

@@ -230,15 +230,6 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveOtherAttributes) {
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("ping="));
 }
 
-TEST_F(WebFrameSerializerSanitizationTest, DisableFormElements) {
-  String mhtml = GenerateMHTMLFromHtml("http://www.test.com", "form.html");
-
-  const char kDisabledAttr[] = "disabled=3D\"\"";
-  int matches =
-      MatchSubstring(mhtml, kDisabledAttr, arraysize(kDisabledAttr) - 1);
-  EXPECT_EQ(21, matches);
-}
-
 TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   String mhtml =
       GenerateMHTMLFromHtml("http://www.test.com", "hidden_elements.html");
