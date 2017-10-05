@@ -5,8 +5,12 @@
 package org.chromium.shape_detection;
 
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionResult;
@@ -17,11 +21,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test suite for BarcodeDetectionImpl.
  */
-public class BarcodeDetectionImplTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class BarcodeDetectionImplTest {
     private static final org.chromium.skia.mojom.Bitmap QR_CODE_BITMAP =
             TestUtils.mojoBitmapFromFile("qr_code.png");
-
-    public BarcodeDetectionImplTest() {}
 
     private static BarcodeDetectionResult[] detect(org.chromium.skia.mojom.Bitmap mojoBitmap) {
         BarcodeDetection detector = new BarcodeDetectionImpl();
@@ -36,12 +39,13 @@ public class BarcodeDetectionImplTest extends InstrumentationTestCase {
         try {
             toReturn = queue.poll(5L, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            fail("Could not get BarcodeDetectionResult: " + e.toString());
+            Assert.fail("Could not get BarcodeDetectionResult: " + e.toString());
         }
-        assertNotNull(toReturn);
+        Assert.assertNotNull(toReturn);
         return toReturn;
     }
 
+    @Test
     @SmallTest
     @Feature({"ShapeDetection"})
     public void testDetectBase64ValidImageString() {
@@ -49,11 +53,11 @@ public class BarcodeDetectionImplTest extends InstrumentationTestCase {
             return;
         }
         BarcodeDetectionResult[] results = detect(QR_CODE_BITMAP);
-        assertEquals(1, results.length);
-        assertEquals("https://chromium.org", results[0].rawValue);
-        assertEquals(40.0, results[0].boundingBox.x, 0.0);
-        assertEquals(40.0, results[0].boundingBox.y, 0.0);
-        assertEquals(250.0, results[0].boundingBox.width, 0.0);
-        assertEquals(250.0, results[0].boundingBox.height, 0.0);
+        Assert.assertEquals(1, results.length);
+        Assert.assertEquals("https://chromium.org", results[0].rawValue);
+        Assert.assertEquals(40.0, results[0].boundingBox.x, 0.0);
+        Assert.assertEquals(40.0, results[0].boundingBox.y, 0.0);
+        Assert.assertEquals(250.0, results[0].boundingBox.width, 0.0);
+        Assert.assertEquals(250.0, results[0].boundingBox.height, 0.0);
     }
 }
