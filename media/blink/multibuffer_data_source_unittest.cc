@@ -186,6 +186,7 @@ class MockMultibufferDataSource : public MultibufferDataSource {
   bool downloading() { return downloading_; }
   void set_downloading(bool downloading) { downloading_ = downloading; }
   bool range_supported() { return url_data_->range_supported(); }
+  void CallSeekTask() { SeekTask(); }
 
  private:
   // Whether the resource is downloading or deferred.
@@ -1648,8 +1649,49 @@ TEST_F(MultibufferDataSourceTest, Http_Seek_Back) {
   // more data buffered at this location than at kFarReadPosition.
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   ReadAt(0);
-
+  data_source_->CallSeekTask();
   EXPECT_EQ(kFarReadPosition + kDataSize, loader()->Tell());
+
+  // Again, no seek.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kDataSize);
+  data_source_->CallSeekTask();
+  EXPECT_EQ(kFarReadPosition + kDataSize, loader()->Tell());
+
+  // Still no seek
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kFarReadPosition);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kDataSize);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kDataSize * 2);
+  data_source_->CallSeekTask();
+  EXPECT_EQ(kFarReadPosition + kDataSize, loader()->Tell());
+
+  // Read some data from far ahead, but right before where we read before.
+  // This time we'll have one block buffered.
+  ReadAt(kFarReadPosition - kDataSize);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(kFarReadPosition - kDataSize,
+                                          kFarReadPosition + kDataSize));
+  Respond(response_generator_->Generate206(kFarReadPosition - kDataSize));
+  ReceiveData(kDataSize);
+
+  // No Seek
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+  data_source_->CallSeekTask();
+  EXPECT_EQ(kFarReadPosition, loader()->Tell());
+
+  // Seek
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kDataSize * 2);
+  data_source_->CallSeekTask();
+  EXPECT_EQ(kDataSize * 3, loader()->Tell());
 
   Stop();
 }
