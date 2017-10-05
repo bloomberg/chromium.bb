@@ -365,4 +365,10 @@ std::string SelectionSample::GetSelectionText(
   return Serializer<EditingStrategy>(selection).Serialize(root);
 }
 
+std::string SelectionSample::GetSelectionTextInFlatTree(
+    const ContainerNode& root,
+    const SelectionInFlatTree& selection) {
+  return Serializer<EditingInFlatTreeStrategy>(selection).Serialize(root);
+}
+
 }  // namespace blink
