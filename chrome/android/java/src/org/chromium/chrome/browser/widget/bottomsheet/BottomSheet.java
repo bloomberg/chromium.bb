@@ -886,6 +886,12 @@ public class BottomSheet
 
         // A light toolbar theme means the handle should be dark.
         mDefaultToolbarView.updateHandleTint(!isLightToolbarTheme);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            // A layout is requested so that the toolbar contents don't disappear under certain
+            // scenarios on Android J. See crbug.com/769611.
+            mControlContainer.requestLayout();
+        }
     }
 
     @Override
