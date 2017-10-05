@@ -2109,6 +2109,16 @@ static const struct {
 };
 /* clang-format on */
 
+#if CONFIG_KF_CTX
+static const int intra_mode_context[INTRA_MODES] = {
+  0, 1, 2, 3, 4, 4, 4, 4, 3, 0,
+#if CONFIG_SMOOTH_HV
+  1, 2,
+#endif
+  0,
+};
+#endif
+
 #if CONFIG_SUPERTX
 static const TX_SIZE uvsupertx_size_lookup[TX_SIZES][2][2] = {
 //  ss_x == 0 ss_x == 0   ss_x == 1 ss_x == 1

@@ -3625,7 +3625,13 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
         const PREDICTION_MODE L =
             av1_left_block_mode(mic, left_mi, pred_block_idx);
 
+#if CONFIG_KF_CTX
+        const int above_ctx = intra_mode_context[A];
+        const int left_ctx = intra_mode_context[L];
+        bmode_costs = mb->y_mode_costs[above_ctx][left_ctx];
+#else
         bmode_costs = mb->y_mode_costs[A][L];
+#endif
       }
       this_rd = rd_pick_intra_sub_8x8_y_subblock_mode(
           cpi, mb, idy, idx, &best_mode, bmode_costs,
@@ -4126,7 +4132,14 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   od_encode_checkpoint(&x->daala_enc, &pre_buf);
   od_encode_checkpoint(&x->daala_enc, &post_buf);
 #endif  // CONFIG_PVQ
+
+#if CONFIG_KF_CTX
+  const int above_ctx = intra_mode_context[A];
+  const int left_ctx = intra_mode_context[L];
+  bmode_costs = x->y_mode_costs[above_ctx][left_ctx];
+#else
   bmode_costs = x->y_mode_costs[A][L];
+#endif
 
 #if CONFIG_EXT_INTRA
   mbmi->angle_delta[0] = 0;

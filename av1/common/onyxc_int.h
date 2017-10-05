@@ -853,7 +853,14 @@ static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
                                            int block) {
   const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, block);
   const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, block);
+
+#if CONFIG_KF_CTX
+  int above_ctx = intra_mode_context[above];
+  int left_ctx = intra_mode_context[left];
+  return tile_ctx->kf_y_cdf[above_ctx][left_ctx];
+#else
   return tile_ctx->kf_y_cdf[above][left];
+#endif
 }
 
 static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,

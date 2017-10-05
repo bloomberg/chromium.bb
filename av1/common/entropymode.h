@@ -68,6 +68,10 @@ extern "C" {
 
 #define PALETTE_MAX_BLOCK_SIZE (64 * 64)
 
+#if CONFIG_KF_CTX
+#define KF_MODE_CONTEXTS 5
+#endif
+
 struct AV1Common;
 
 typedef struct {
@@ -354,11 +358,16 @@ typedef struct frame_contexts {
 #endif
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [CDF_SIZE(SWITCHABLE_FILTERS)];
-  /* kf_y_cdf is discarded after use, so does not require persistent storage.
-     However, we keep it with the other CDFs in this struct since it needs to
-     be copied to each tile to support parallelism just like the others.
-   */
+/* kf_y_cdf is discarded after use, so does not require persistent storage.
+   However, we keep it with the other CDFs in this struct since it needs to
+   be copied to each tile to support parallelism just like the others.
+*/
+#if CONFIG_KF_CTX
+  aom_cdf_prob kf_y_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS]
+                       [CDF_SIZE(INTRA_MODES)];
+#else
   aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)];
+#endif
   aom_cdf_prob tx_size_cdf[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
@@ -549,8 +558,14 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_FILTER_INTRA
 } FRAME_COUNTS;
 
+#if CONFIG_KF_CTX
+extern const aom_cdf_prob default_kf_y_mode_cdf[KF_MODE_CONTEXTS]
+                                               [KF_MODE_CONTEXTS]
+                                               [CDF_SIZE(INTRA_MODES)];
+#else
 extern const aom_cdf_prob default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
                                                [CDF_SIZE(INTRA_MODES)];
+#endif
 
 extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
                                                      [PALETTE_Y_MODE_CONTEXTS];
