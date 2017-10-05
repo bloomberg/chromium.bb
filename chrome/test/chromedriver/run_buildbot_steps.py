@@ -445,6 +445,8 @@ def main():
     commit_position = None
   else:
     commit_position = archive.GetCommitPositionFromGitHash(options.revision)
+    if commit_position is None:
+      raise Exception('Failed to convert revision to commit position')
 
   if platform == 'android':
     if not options.revision and options.update_log:
