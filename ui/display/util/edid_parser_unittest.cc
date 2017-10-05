@@ -10,7 +10,11 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/geometry/size.h"
+
+using ::testing::AssertionFailure;
+using ::testing::AssertionSuccess;
 
 namespace display {
 
@@ -98,9 +102,78 @@ const unsigned char kLP2565B[] =
     "\x50\x20\x4C\x50\x32\x34\x36\x35\x0A\x20\x20\x20\x00\x00\x00\xFF"
     "\x00\x43\x4E\x4B\x38\x30\x32\x30\x34\x48\x4D\x0A\x20\x20\x00\x45";
 
+// HP z32x monitor.
+const unsigned char kHPz32x[] =
+    "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x75\x32\x01\x01\x01\x01"
+    "\x1B\x1B\x01\x04\xB5\x46\x27\x78\x3A\x8D\x15\xAC\x51\x32\xB8\x26"
+    "\x0B\x50\x54\x21\x08\x00\xD1\xC0\xA9\xC0\x81\xC0\xD1\x00\xB3\x00"
+    "\x95\x00\xA9\x40\x81\x80\x4D\xD0\x00\xA0\xF0\x70\x3E\x80\x30\x20"
+    "\x35\x00\xB9\x88\x21\x00\x00\x1A\x00\x00\x00\xFD\x00\x18\x3C\x1E"
+    "\x87\x3C\x00\x0A\x20\x20\x20\x20\x20\x20\x00\x00\x00\xFC\x00\x48"
+    "\x50\x20\x5A\x33\x32\x78\x0A\x20\x20\x20\x20\x20\x00\x00\x00\xFF"
+    "\x00\x43\x4E\x43\x37\x32\x37\x30\x4D\x57\x30\x0A\x20\x20\x01\x46"
+    "\x02\x03\x18\xF1\x4B\x10\x1F\x04\x13\x03\x12\x02\x11\x01\x05\x14"
+    "\x23\x09\x07\x07\x83\x01\x00\x00\xA3\x66\x00\xA0\xF0\x70\x1F\x80"
+    "\x30\x20\x35\x00\xB9\x88\x21\x00\x00\x1A\x56\x5E\x00\xA0\xA0\xA0"
+    "\x29\x50\x30\x20\x35\x00\xB9\x88\x21\x00\x00\x1A\xEF\x51\x00\xA0"
+    "\xF0\x70\x19\x80\x30\x20\x35\x00\xB9\x88\x21\x00\x00\x1A\xE2\x68"
+    "\x00\xA0\xA0\x40\x2E\x60\x20\x30\x63\x00\xB9\x88\x21\x00\x00\x1C"
+    "\x28\x3C\x80\xA0\x70\xB0\x23\x40\x30\x20\x36\x00\xB9\x88\x21\x00"
+    "\x00\x1A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x3E";
+
+// Chromebook Samus internal display.
+const unsigned char kSamus[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x30\xe4\x2e\x04\x00\x00\x00\x00"
+    "\x00\x18\x01\x04\xa5\x1b\x12\x96\x02\x4f\xd5\xa2\x59\x52\x93\x26"
+    "\x17\x50\x54\x00\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+    "\x01\x01\x01\x01\x01\x01\x6d\x6f\x00\x9e\xa0\xa4\x31\x60\x30\x20"
+    "\x3a\x00\x10\xb5\x10\x00\x00\x19\x00\x00\x00\x00\x00\x00\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfe\x00\x4c"
+    "\x47\x20\x44\x69\x73\x70\x6c\x61\x79\x0a\x20\x20\x00\x00\x00\xfe"
+    "\x00\x4c\x50\x31\x32\x39\x51\x45\x32\x2d\x53\x50\x41\x31\x00\x6c";
+
+// Chromebook Eve internal display.
+const unsigned char kEve[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x4d\x10\x8a\x14\x00\x00\x00\x00"
+    "\x16\x1b\x01\x04\xa5\x1a\x11\x78\x06\xde\x50\xa3\x54\x4c\x99\x26"
+    "\x0f\x50\x54\x00\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+    "\x01\x01\x01\x01\x01\x01\xbb\x62\x60\xa0\x90\x40\x2e\x60\x30\x20"
+    "\x3a\x00\x03\xad\x10\x00\x00\x18\x00\x00\x00\x10\x00\x00\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x10\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfc"
+    "\x00\x4c\x51\x31\x32\x33\x50\x31\x4a\x58\x33\x32\x0a\x20\x00\xb6";
+
 void Reset(gfx::Size* pixel, gfx::Size* size) {
   pixel->SetSize(0, 0);
   size->SetSize(0, 0);
+}
+// Chromaticity primaries in EDID are specified with 10 bits precision.
+const static float kPrimariesPrecision = 0.001f;
+
+::testing::AssertionResult SkColorSpacePrimariesEquals(
+    const char* lhs_expr,
+    const char* rhs_expr,
+    const SkColorSpacePrimaries& lhs,
+    const SkColorSpacePrimaries& rhs) {
+  // TODO(mcasas): consider using MathUtil::ApproximatelyEqual() when and if
+  // this is available in //base, https://crbug.com/771345
+  if (std::fabs(lhs.fRX - rhs.fRX) > kPrimariesPrecision)
+    return AssertionFailure() << "fRX: " << lhs.fRX << " != " << rhs.fRX;
+  if (std::fabs(lhs.fRY - rhs.fRY) > kPrimariesPrecision)
+    return AssertionFailure() << "fRY: " << lhs.fRY << " != " << rhs.fRY;
+  if (std::fabs(lhs.fGX - rhs.fGX) > kPrimariesPrecision)
+    return AssertionFailure() << "fGX: " << lhs.fGX << " != " << rhs.fGX;
+  if (std::fabs(lhs.fGY - rhs.fGY) > kPrimariesPrecision)
+    return AssertionFailure() << "fGY: " << lhs.fGY << " != " << rhs.fGY;
+  if (std::fabs(lhs.fBX - rhs.fBX) > kPrimariesPrecision)
+    return AssertionFailure() << "fBX: " << lhs.fBX << " != " << rhs.fBX;
+  if (std::fabs(lhs.fBY - rhs.fBY) > kPrimariesPrecision)
+    return AssertionFailure() << "fBY: " << lhs.fBY << " != " << rhs.fBY;
+  if (std::fabs(lhs.fWX - rhs.fWX) > kPrimariesPrecision)
+    return AssertionFailure() << "fWX: " << lhs.fWX << " != " << rhs.fWX;
+  if (std::fabs(lhs.fWY - rhs.fWY) > kPrimariesPrecision)
+    return AssertionFailure() << "fWY: " << lhs.fWY << " != " << rhs.fWY;
+  return AssertionSuccess();
 }
 
 }  // namespace
@@ -270,6 +343,60 @@ TEST(EDIDParserTest, GetDisplayIdFailure) {
   EXPECT_FALSE(GetDisplayIdFromEDID(edid, 0, &id, &product_id));
   EXPECT_EQ(-1, id);
   EXPECT_EQ(-1, product_id);
+}
+
+TEST(EDIDParserTest, ParseChromaticityCoordinates) {
+  const std::vector<uint8_t> edid_normal_display(
+      kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
+  SkColorSpacePrimaries primaries_normal_display;
+  EXPECT_TRUE(ParseChromaticityCoordinates(edid_normal_display,
+                                           &primaries_normal_display));
+  // Color primaries associated to |kNormalDisplay|; they don't correspond to
+  // any standard color gamut.
+  const SkColorSpacePrimaries kNormalDisplayPrimaries = {
+      0.6777f, 0.3086f, 0.2080f, 0.6923f, 0.1465f, 0.0546f, 0.3125f, 0.3291f};
+  EXPECT_PRED_FORMAT2(SkColorSpacePrimariesEquals, primaries_normal_display,
+                      kNormalDisplayPrimaries);
+
+  const std::vector<uint8_t> edid_internal_display(
+      kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  SkColorSpacePrimaries primaries_internal_display;
+  EXPECT_TRUE(ParseChromaticityCoordinates(edid_internal_display,
+                                           &primaries_internal_display));
+  // Color primaries associated to |kInternalDisplay|; they don't correspond to
+  // any standard color gamut.
+  const SkColorSpacePrimaries kInternalDisplayPrimaries = {
+      0.5849f, 0.3603f, 0.3769f, 0.5654f, 0.1552f, 0.0996f, 0.3125f, 0.3291f};
+  EXPECT_PRED_FORMAT2(SkColorSpacePrimariesEquals, primaries_internal_display,
+                      kInternalDisplayPrimaries);
+
+  const std::vector<uint8_t> edid_hpz32x(kHPz32x, kHPz32x + charsize(kHPz32x));
+  SkColorSpacePrimaries primaries_hpz32x;
+  EXPECT_TRUE(ParseChromaticityCoordinates(edid_hpz32x, &primaries_hpz32x));
+  // Color primaries associated to |kHPz32x|; they don't correspond to
+  // any standard color gamut.
+  const SkColorSpacePrimaries kHPz32xPrimaries = {
+      0.6738f, 0.3164f, 0.1962f, 0.7197f, 0.1484f, 0.0439f, 0.3144f, 0.3291f};
+  EXPECT_PRED_FORMAT2(SkColorSpacePrimariesEquals, primaries_hpz32x,
+                      kHPz32xPrimaries);
+
+  const std::vector<uint8_t> edid_samus(kSamus, kSamus + charsize(kSamus));
+  SkColorSpacePrimaries primaries_samus;
+  EXPECT_TRUE(ParseChromaticityCoordinates(edid_samus, &primaries_samus));
+  // Color primaries associated to Samus Chromebook, very similar to BT.709.
+  const SkColorSpacePrimaries kSamusPrimaries = {
+      0.6337f, 0.3476f, 0.3212f, 0.5771f, 0.1513f, 0.0908f, 0.3144f, 0.3291f};
+  EXPECT_PRED_FORMAT2(SkColorSpacePrimariesEquals, primaries_samus,
+                      kSamusPrimaries);
+
+  const std::vector<uint8_t> edid_eve(kEve, kEve + charsize(kEve));
+  SkColorSpacePrimaries primaries_eve;
+  EXPECT_TRUE(ParseChromaticityCoordinates(edid_eve, &primaries_eve));
+  // Color primaries associated to Eve Chromebook, very similar to BT.709.
+  const SkColorSpacePrimaries kEvePrimaries = {
+      0.6396f, 0.3291f, 0.2998f, 0.5996f, 0.1494f, 0.0595f, 0.3144f, 0.3281f};
+  EXPECT_PRED_FORMAT2(SkColorSpacePrimariesEquals, primaries_eve,
+                      kEvePrimaries);
 }
 
 }  // namespace display

@@ -19,6 +19,7 @@ component("util") {
 
   deps = [
     "//base",
+    "//skia",
     "//ui/display/types",
     "//ui/gfx/geometry",
   ]
@@ -46,6 +47,7 @@ fuzzer_test("edid_parser_fuzzer") {
   deps = [
     ":util",
     "//base",
+    "//skia",
     "//ui/gfx/geometry",
   ]
   seed_corpus = "fuzz_corpus"
