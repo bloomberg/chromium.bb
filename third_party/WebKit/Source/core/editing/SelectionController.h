@@ -28,7 +28,7 @@
 #define SelectionController_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SynchronousMutationObserver.h"
+#include "core/dom/DocumentShutdownObserver.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextGranularity.h"
@@ -42,7 +42,7 @@ class LocalFrame;
 
 class CORE_EXPORT SelectionController final
     : public GarbageCollectedFinalized<SelectionController>,
-      public SynchronousMutationObserver {
+      public DocumentShutdownObserver {
   WTF_MAKE_NONCOPYABLE(SelectionController);
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
@@ -121,7 +121,7 @@ class CORE_EXPORT SelectionController final
 
   FrameSelection& Selection() const;
 
-  // Implements |SynchronousMutationObserver|.
+  // Implements |DocumentShutdownObserver|.
   // TODO(yosin): We should relocate |m_originalBaseInFlatTree| when DOM tree
   // changed.
   void ContextDestroyed(Document*) final;
