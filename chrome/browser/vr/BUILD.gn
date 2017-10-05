@@ -63,6 +63,8 @@ source_set("vr_common_source") {
     "elements/system_indicator_texture.h",
     "elements/text.cc",
     "elements/text.h",
+    "elements/text_texture.cc",
+    "elements/text_texture.h",
     "elements/textured_element.cc",
     "elements/textured_element.h",
     "elements/transient_element.cc",
