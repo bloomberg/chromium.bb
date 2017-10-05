@@ -35,7 +35,7 @@ function progressListener(e) {
   ranProgressHandler = true;
 }
 
-function completedUpload(e) {
+function completedUploadFunc(e) {
   completedUpload = true;
 }
 
@@ -68,7 +68,7 @@ function WaitForAsyncXHR(url, payloadSize) {
   asyncXHR.addEventListener('error', onError);
 
   asyncXHR.upload.addEventListener('progress', progressListener);
-  asyncXHR.upload.addEventListener('load', completedUpload);
+  asyncXHR.upload.addEventListener('load', completedUploadFunc);
 
   asyncXHR.open('POST', url, true);
 

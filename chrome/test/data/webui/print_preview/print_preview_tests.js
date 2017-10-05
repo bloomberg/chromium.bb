@@ -241,7 +241,7 @@ cr.define('print_preview_test', function() {
       // Add a listener for the animation end event.
       var element = $(elementId);
       element.addEventListener('animationend', function f(e) {
-        element.removeEventListener(f, 'animationend');
+        element.removeEventListener('animationend', f);
         resolve();
       });
     });
