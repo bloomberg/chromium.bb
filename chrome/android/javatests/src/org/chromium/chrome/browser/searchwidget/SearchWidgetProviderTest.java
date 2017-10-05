@@ -10,15 +10,19 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.util.Pair;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
@@ -30,6 +34,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -41,8 +46,9 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for the SearchWidgetProvider.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-public class SearchWidgetProviderTest extends InstrumentationTestCase {
+public class SearchWidgetProviderTest {
     private static class TestSearchDelegate extends SearchActivityDelegate {
         @Override
         public boolean isActivityDisabledForTests() {
@@ -85,9 +91,11 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         }
     }
 
-    private final class TestContext extends AdvancedMockContext {
+    private final static class TestContext extends AdvancedMockContext {
         public TestContext() {
-            super(getInstrumentation().getTargetContext().getApplicationContext());
+            super(InstrumentationRegistry.getInstrumentation()
+                            .getTargetContext()
+                            .getApplicationContext());
         }
     }
 
@@ -98,10 +106,10 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
     private TestContext mContext;
     private TestDelegate mDelegate;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        ApplicationTestUtils.setUp(getInstrumentation().getTargetContext(), true);
+        ApplicationTestUtils.setUp(
+                InstrumentationRegistry.getInstrumentation().getTargetContext(), true);
         SearchActivity.setDelegateForTests(new TestSearchDelegate());
 
         mContext = new TestContext();
@@ -109,12 +117,13 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         SearchWidgetProvider.setActivityDelegateForTest(mDelegate);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        ApplicationTestUtils.tearDown(getInstrumentation().getTargetContext());
-        super.tearDown();
+        ApplicationTestUtils.tearDown(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
+    @Test
     @SmallTest
     public void testUpdateAll() {
         SearchWidgetProvider.handleAction(
@@ -170,10 +179,11 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         checkWidgetStates(TEXT_SEARCH_ENGINE_FULL, View.VISIBLE);
     }
 
+    @Test
     @SmallTest
     @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
     public void testUpdateCachedEngineNameBeforeFirstRun() throws ExecutionException {
-        assertFalse(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+        Assert.assertFalse(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return SearchWidgetProvider.shouldShowFullString();
@@ -202,7 +212,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
                 SearchWidgetProvider.updateCachedEngineName(TEXT_SEARCH_ENGINE);
             }
         });
-        assertEquals(0, mDelegate.mViews.size());
+        Assert.assertEquals(0, mDelegate.mViews.size());
 
         // Manually set the preference, then update the cached engine name again.  The
         // SearchWidgetProvider should now believe that its widgets are displaying branding when it
@@ -251,6 +261,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         });
     }
 
+    @Test
     @SmallTest
     public void testMicrophoneClick() {
         SearchWidgetProvider.handleAction(
@@ -261,6 +272,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     @SmallTest
     public void testTextClick() {
         SearchWidgetProvider.handleAction(
@@ -271,6 +283,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     @SmallTest
     @CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
     public void testOnboardingRequired() {
@@ -288,7 +301,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
                                               : FirstRunActivity.class.getName();
         ActivityMonitor monitor = new ActivityMonitor(className, null, false);
 
-        Instrumentation instrumentation = getInstrumentation();
+        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(monitor);
 
         // Click on the widget.
@@ -304,7 +317,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
 
         Activity activity = instrumentation.waitForMonitorWithTimeout(
                 monitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        assertNotNull(activity);
+        Assert.assertNotNull(activity);
         if (isFirstRunComplete) {
             // Check that the Activity was launched in the right mode.
             Intent intent = activity.getIntent();
@@ -314,6 +327,7 @@ public class SearchWidgetProviderTest extends InstrumentationTestCase {
         }
     }
 
+    @Test
     @SmallTest
     public void testCrashAbsorption() {
         Runnable crashingRunnable = new Runnable() {
