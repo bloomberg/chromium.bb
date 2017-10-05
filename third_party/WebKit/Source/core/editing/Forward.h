@@ -6,6 +6,8 @@
 
 namespace blink {
 
+enum class TextAffinity;
+
 class NodeTraversal;
 class FlatTreeTraversal;
 

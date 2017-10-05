@@ -34,7 +34,6 @@
 namespace blink {
 
 class Node;
-enum class TextAffinity;
 class TreeScope;
 
 enum class PositionAnchorType : unsigned {
