@@ -170,6 +170,10 @@ cr.define('chrome.SnippetsInternals', function() {
         lastRemoteSuggestionsBackgroundFetchTime);
   }
 
+  function receiveWhetherSuggestionPushingPossible(possible) {
+    $('push-dummy-suggestion-10-seconds-button').disabled = !possible;
+  }
+
   function downloadJson(json) {
     // Redirect the browser to download data in |json| as a file "snippets.json"
     // (Setting Content-Disposition: attachment via a data: URL is not possible;
@@ -236,6 +240,8 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveRankerDebugData: receiveRankerDebugData,
     receiveLastRemoteSuggestionsBackgroundFetchTime:
         receiveLastRemoteSuggestionsBackgroundFetchTime,
+    receiveWhetherSuggestionPushingPossible:
+        receiveWhetherSuggestionPushingPossible,
     receiveContextualSuggestions: receiveContextualSuggestions,
   };
 });
