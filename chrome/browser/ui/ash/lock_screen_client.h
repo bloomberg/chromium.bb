@@ -34,6 +34,10 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
     virtual void HandleRecordClickOnLockIcon(const AccountId& account_id) = 0;
     virtual void HandleOnFocusPod(const AccountId& account_id) = 0;
     virtual void HandleOnNoPodFocused() = 0;
+    // Handles request to focus a lock screen app window. Returns whether the
+    // focus has been handed over to a lock screen app. For example, this might
+    // fail if a hander for lock screen apps focus has not been set.
+    virtual bool HandleFocusLockScreenApps(bool reverse) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -55,6 +59,7 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
   void SignOutUser() override;
   void CancelAddUser() override;
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
+  void FocusLockScreenApps(bool reverse) override;
 
   // Wrappers around the mojom::LockScreen interface.
   void ShowLockScreen(ash::mojom::LockScreen::ShowLockScreenCallback on_shown);
@@ -72,6 +77,7 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
   void LoadUsers(std::vector<ash::mojom::LoginUserInfoPtr> users_list,
                  bool show_guest);
   void SetPinEnabledForUser(const AccountId& account_id, bool is_enabled);
+  void HandleFocusLeavingLockScreenApps(bool reverse);
 
   void SetDelegate(Delegate* delegate);
 

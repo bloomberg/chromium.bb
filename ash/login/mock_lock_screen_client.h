@@ -44,6 +44,7 @@ class MockLockScreenClient : public mojom::LockScreenClient {
   MOCK_METHOD0(CancelAddUser, void());
   MOCK_METHOD1(OnMaxIncorrectPasswordAttempted,
                void(const AccountId& account_id));
+  MOCK_METHOD1(FocusLockScreenApps, void(bool reverse));
 
  private:
   bool authenticate_user_callback_result_ = true;

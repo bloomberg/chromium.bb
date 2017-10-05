@@ -170,6 +170,7 @@ LockContentsView::LockContentsView(
       display_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
+  Shell::Get()->lock_screen_controller()->AddLockScreenAppsFocusObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   error_bubble_ = base::MakeUnique<LoginBubble>();
 
@@ -186,10 +187,14 @@ LockContentsView::LockContentsView(
   note_action_ =
       new NoteActionLaunchButton(initial_note_action_state, data_dispatcher_);
   AddChildView(note_action_);
+
+  OnLockScreenNoteStateChanged(initial_note_action_state);
 }
 
 LockContentsView::~LockContentsView() {
   data_dispatcher_->RemoveObserver(this);
+  Shell::Get()->lock_screen_controller()->RemoveLockScreenAppsFocusObserver(
+      this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 }
 
@@ -228,7 +233,12 @@ void LockContentsView::OnFocus() {
 void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // The LockContentsView itself doesn't have anything to focus. If it gets
   // focused we should change the currently focused widget (ie, to the shelf or
-  // status area).
+  // status area, or lock screen apps, if they are active).
+  if (reverse && lock_screen_apps_active_) {
+    Shell::Get()->lock_screen_controller()->FocusLockScreenApps(reverse);
+    return;
+  }
+
   FocusNextWidget(reverse);
 }
 
@@ -305,10 +315,38 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
   }
 }
 
+void LockContentsView::OnLockScreenNoteStateChanged(
+    mojom::TrayActionState state) {
+  bool old_lock_screen_apps_active = lock_screen_apps_active_;
+  lock_screen_apps_active_ = state == mojom::TrayActionState::kActive;
+
+  // If lock screen apps just got deactivated - request focus for primary auth,
+  // which should focus the password field.
+  if (old_lock_screen_apps_active && !lock_screen_apps_active_ && primary_auth_)
+    primary_auth_->RequestFocus();
+}
+
+void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
+  if (!reverse || lock_screen_apps_active_)
+    FocusNextWidget(reverse);
+  else
+    FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
+}
+
 void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
   // This function is called when the system tray is losing focus. We want to
-  // focus the first or last child in this view.
+  // focus the first or last child in this view, or a lock screen app window if
+  // one is active (in which case lock contents should not have focus). In the
+  // later case, still focus lock screen first, to synchronously take focus away
+  // from the system shelf (or tray) - lock shelf view expect the focus to be
+  // taken when it passes it to lock screen view, and can misbehave in case the
+  // focus is kept in it.
   FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
+
+  if (lock_screen_apps_active_) {
+    Shell::Get()->lock_screen_controller()->FocusLockScreenApps(reverse);
+    return;
+  }
 }
 
 void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,

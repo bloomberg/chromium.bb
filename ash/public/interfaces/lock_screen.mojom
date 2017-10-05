@@ -60,6 +60,11 @@ interface LockScreen {
   // |account_id|:   The account id of the user in the user pod.
   // |is_enabled|:   True if pin unlock is enabled.
   SetPinEnabledForUser(signin.mojom.AccountId account_id, bool is_enabled);
+
+  // Called when focus is reported to be leaving a lock screen app window.
+  // Requests focus to be handed off to the next suitable widget.
+  // |reverse|:   Whether the tab order is reversed.
+  HandleFocusLeavingLockScreenApps(bool reverse);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
@@ -108,4 +113,12 @@ interface LockScreenClient {
 
   // User with |account_id| has reached maximum incorrect password attempts.
   OnMaxIncorrectPasswordAttempted(signin.mojom.AccountId account_id);
+
+  // Should pass the focus to the active lock screen app window, if there is
+  // one. This is called when a lock screen app is reported to be active (using
+  // tray_action mojo interface), and is next in the tab order.
+  // |HandleFocusLeavingLockScreenApps| should be called to return focus to the
+  // lock screen.
+  // |reverse|:   Whether the tab order is reversed.
+  FocusLockScreenApps(bool reverse);
 };

@@ -26,6 +26,7 @@ class LoginTestBase::WidgetDelegate : public views::WidgetDelegate {
   ~WidgetDelegate() override = default;
 
   // views::WidgetDelegate:
+  void DeleteDelegate() override { delete this; }
   views::View* GetInitiallyFocusedView() override { return content_; }
   views::Widget* GetWidget() override { return content_->GetWidget(); }
   const views::Widget* GetWidget() const override {
@@ -42,16 +43,19 @@ LoginTestBase::LoginTestBase() = default;
 
 LoginTestBase::~LoginTestBase() = default;
 
-void LoginTestBase::ShowWidgetWithContent(views::View* content) {
-  EXPECT_FALSE(widget_) << "CreateWidget can only be called once.";
+void LoginTestBase::SetWidget(std::unique_ptr<views::Widget> widget) {
+  EXPECT_FALSE(widget_) << "SetWidget can only be called once.";
+  widget_ = std::move(widget);
+}
 
-  delegate_ = base::MakeUnique<WidgetDelegate>(content);
-
+std::unique_ptr<views::Widget> LoginTestBase::CreateWidgetWithContent(
+    views::View* content) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = CurrentContext();
   params.bounds = gfx::Rect(0, 0, 800, 800);
-  params.delegate = delegate_.get();
+  params.delegate = new WidgetDelegate(content);
 
   // Set the widget to the lock screen container, since a test may change the
   // session state to locked, which will hide all widgets not associated with
@@ -59,11 +63,11 @@ void LoginTestBase::ShowWidgetWithContent(views::View* content) {
   params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                                       kShellWindowId_LockScreenContainer);
 
-  widget_ = new views::Widget();
-  widget_->Init(params);
-  widget_->SetContentsView(content);
-  widget_->Show();
-  ASSERT_TRUE(widget()->IsActive());
+  auto new_widget = std::make_unique<views::Widget>();
+  new_widget->Init(params);
+  new_widget->SetContentsView(content);
+  new_widget->Show();
+  return new_widget;
 }
 
 mojom::LoginUserInfoPtr LoginTestBase::CreateUser(
@@ -96,10 +100,7 @@ void LoginTestBase::SetUp() {
 }
 
 void LoginTestBase::TearDown() {
-  if (widget_) {
-    widget_->Close();
-    widget_ = nullptr;
-  }
+  widget_.reset();
 
   AshTestBase::TearDown();
 }

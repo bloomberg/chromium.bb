@@ -45,7 +45,7 @@ class LoginUserViewUnittest : public LoginTestBase {
     auto* root = new views::View();
     root->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
     root->AddChildView(container_);
-    ShowWidgetWithContent(root);
+    SetWidget(CreateWidgetWithContent(root));
   }
 
   int tap_count_ = 0;

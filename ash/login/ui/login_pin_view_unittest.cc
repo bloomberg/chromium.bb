@@ -8,6 +8,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "base/timer/mock_timer.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -26,7 +27,7 @@ class LoginPinViewTest : public LoginTestBase {
         base::Bind(&LoginPinViewTest::OnPinKey, base::Unretained(this)),
         base::Bind(&LoginPinViewTest::OnPinBackspace, base::Unretained(this)));
 
-    ShowWidgetWithContent(view_);
+    SetWidget(CreateWidgetWithContent(view_));
   }
 
   // Called when a password is submitted.

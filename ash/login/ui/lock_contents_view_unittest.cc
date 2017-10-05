@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <unordered_set>
 
 #include "ash/login/ui/lock_contents_view.h"
@@ -28,7 +29,7 @@ TEST_F(LockContentsViewUnitTest, DisplayMode) {
   auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
                                         data_dispatcher());
   SetUserCount(1);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Verify user list and secondary auth are not shown for one user.
   LockContentsView::TestApi test_api(contents);
@@ -72,11 +73,11 @@ TEST_F(LockContentsViewUnitTest, SingleUserCentered) {
   auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
                                         data_dispatcher());
   SetUserCount(1);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LockContentsView::TestApi test_api(contents);
   LoginAuthUserView* auth_view = test_api.primary_auth();
-  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   int expected_margin =
       (widget_bounds.width() - auth_view->GetPreferredSize().width()) / 2;
   gfx::Rect auth_bounds = auth_view->GetBoundsInScreen();
@@ -93,11 +94,11 @@ TEST_F(LockContentsViewUnitTest, SingleUserCenteredNoteActionEnabled) {
   auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
                                         data_dispatcher());
   SetUserCount(1);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LockContentsView::TestApi test_api(contents);
   LoginAuthUserView* auth_view = test_api.primary_auth();
-  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   int expected_margin =
       (widget_bounds.width() - auth_view->GetPreferredSize().width()) / 2;
   gfx::Rect auth_bounds = auth_view->GetBoundsInScreen();
@@ -117,7 +118,7 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
                                         data_dispatcher());
   LockContentsView::TestApi test_api(contents);
   SetUserCount(3);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Returns the distance between the auth user view and the user view.
   auto calculate_distance = [&]() {
@@ -131,7 +132,7 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
 
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
-          widget()->GetNativeWindow());
+          widget->GetNativeWindow());
   for (int i = 2; i < 10; ++i) {
     SetUserCount(i);
 
@@ -166,7 +167,7 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
                                         data_dispatcher());
   LockContentsView::TestApi test_api(contents);
   SetUserCount(2);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Capture user info to validate it did not change during the swap.
   AccountId primary_user =
@@ -212,7 +213,7 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
   LockContentsView::TestApi test_api(contents);
   SetUserCount(5);
   EXPECT_EQ(users().size() - 1, test_api.user_views().size());
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LoginAuthUserView* auth_view = test_api.primary_auth();
 
@@ -249,7 +250,7 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBounds) {
   auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
                                         data_dispatcher());
   SetUserCount(1);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LockContentsView::TestApi test_api(contents);
 
@@ -263,7 +264,7 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBounds) {
   EXPECT_TRUE(test_api.note_action()->visible());
 
   // Verify the bounds of the note action button are as expected.
-  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_EQ(gfx::Rect(widget_bounds.top_right() -
                           gfx::Vector2d(note_action_size.width(), 0),
@@ -283,14 +284,14 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
   auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
                                         data_dispatcher());
   SetUserCount(1);
-  ShowWidgetWithContent(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LockContentsView::TestApi test_api(contents);
 
   // Verify the note action button is visible and positioned in the top rigth
   // corner of the screen.
   EXPECT_TRUE(test_api.note_action()->visible());
-  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_EQ(gfx::Rect(widget_bounds.top_right() -
                           gfx::Vector2d(note_action_size.width(), 0),

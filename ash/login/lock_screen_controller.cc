@@ -4,6 +4,7 @@
 
 #include "ash/login/lock_screen_controller.h"
 
+#include "ash/login/lock_screen_apps_focus_observer.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -122,6 +123,11 @@ void LockScreenController::AuthenticateUser(
       &LockScreenController::OnGetSystemSalt, base::Unretained(this)));
 }
 
+void LockScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
+  for (auto& observer : lock_screen_apps_focus_observers_)
+    observer.OnFocusLeavingLockScreenApps(reverse);
+}
+
 void LockScreenController::AttemptUnlock(const AccountId& account_id) {
   if (!lock_screen_client_)
     return;
@@ -175,6 +181,26 @@ void LockScreenController::OnMaxIncorrectPasswordAttempted(
   if (!lock_screen_client_)
     return;
   lock_screen_client_->OnMaxIncorrectPasswordAttempted(account_id);
+}
+
+void LockScreenController::FocusLockScreenApps(bool reverse) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->FocusLockScreenApps(reverse);
+}
+
+void LockScreenController::AddLockScreenAppsFocusObserver(
+    LockScreenAppsFocusObserver* observer) {
+  lock_screen_apps_focus_observers_.AddObserver(observer);
+}
+
+void LockScreenController::RemoveLockScreenAppsFocusObserver(
+    LockScreenAppsFocusObserver* observer) {
+  lock_screen_apps_focus_observers_.RemoveObserver(observer);
+}
+
+void LockScreenController::FlushForTesting() {
+  lock_screen_client_.FlushForTesting();
 }
 
 void LockScreenController::DoAuthenticateUser(

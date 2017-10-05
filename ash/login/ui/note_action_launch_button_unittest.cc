@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -47,10 +48,6 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
 
   TestTrayActionClient* tray_action_client() { return &tray_action_client_; }
 
-  void ShowNoteActionView(NoteActionLaunchButton* note_action) {
-    ShowWidgetWithContent(
-        login_layout_util::WrapViewForPreferredSize(note_action));
-  }
 
   void PerformClick(const gfx::Point& point) {
     ui::test::EventGenerator& generator = GetEventGenerator();
@@ -95,7 +92,8 @@ TEST_F(NoteActionLaunchButtonTest, VisibilityActionAvailable) {
 TEST_F(NoteActionLaunchButtonTest, StateChanges) {
   auto* note_action_button = new NoteActionLaunchButton(
       mojom::TrayActionState::kAvailable, data_dispatcher());
-  ShowNoteActionView(note_action_button);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
+      login_layout_util::WrapViewForPreferredSize(note_action_button));
   NoteActionLaunchButton::TestApi test_api(note_action_button);
 
   // In kAvailable state, the action button should be visible.
@@ -133,7 +131,8 @@ TEST_F(NoteActionLaunchButtonTest, StateChanges) {
 TEST_F(NoteActionLaunchButtonTest, KeyboardTest) {
   auto* note_action_button = new NoteActionLaunchButton(
       mojom::TrayActionState::kAvailable, data_dispatcher());
-  ShowNoteActionView(note_action_button);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
+      login_layout_util::WrapViewForPreferredSize(note_action_button));
   NoteActionLaunchButton::TestApi test_api(note_action_button);
 
   note_action_button->RequestFocus();
@@ -157,7 +156,8 @@ TEST_F(NoteActionLaunchButtonTest, KeyboardTest) {
 TEST_F(NoteActionLaunchButtonTest, ClickTest) {
   auto* note_action_button = new NoteActionLaunchButton(
       mojom::TrayActionState::kAvailable, data_dispatcher());
-  ShowNoteActionView(note_action_button);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
+      login_layout_util::WrapViewForPreferredSize(note_action_button));
 
   const gfx::Size action_size = note_action_button->GetPreferredSize();
   EXPECT_EQ(gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp), action_size);

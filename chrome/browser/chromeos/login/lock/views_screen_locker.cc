@@ -9,6 +9,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -46,6 +47,8 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
 }
 
 ViewsScreenLocker::~ViewsScreenLocker() {
+  if (lock_screen_apps::StateController::IsEnabled())
+    lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
   LockScreenClient::Get()->SetDelegate(nullptr);
 }
 
@@ -77,6 +80,8 @@ void ViewsScreenLocker::OnLockScreenReady() {
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
+  if (lock_screen_apps::StateController::IsEnabled())
+    lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
   OnAllowedInputMethodsChanged();
 }
 
@@ -201,11 +206,32 @@ void ViewsScreenLocker::HandleOnNoPodFocused() {
   lock_screen_utils::EnforcePolicyInputMethods(std::string());
 }
 
+bool ViewsScreenLocker::HandleFocusLockScreenApps(bool reverse) {
+  if (lock_screen_app_focus_handler_.is_null())
+    return false;
+
+  lock_screen_app_focus_handler_.Run(reverse);
+  return true;
+}
+
 void ViewsScreenLocker::SuspendDone(const base::TimeDelta& sleep_duration) {
   for (user_manager::User* user :
        user_manager::UserManager::Get()->GetUnlockUsers()) {
     UpdatePinKeyboardState(user->GetAccountId());
   }
+}
+
+void ViewsScreenLocker::RegisterLockScreenAppFocusHandler(
+    const LockScreenAppFocusCallback& focus_handler) {
+  lock_screen_app_focus_handler_ = focus_handler;
+}
+
+void ViewsScreenLocker::UnregisterLockScreenAppFocusHandler() {
+  lock_screen_app_focus_handler_.Reset();
+}
+
+void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
+  LockScreenClient::Get()->HandleFocusLeavingLockScreenApps(reverse);
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {

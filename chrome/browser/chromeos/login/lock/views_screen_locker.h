@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_VIEWS_SCREEN_LOCKER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/lock_screen_client.h"
@@ -22,7 +23,8 @@ class UserSelectionScreenProxy;
 // ash (views-based lockscreen).
 class ViewsScreenLocker : public LockScreenClient::Delegate,
                           public ScreenLocker::Delegate,
-                          public PowerManagerClient::Observer {
+                          public PowerManagerClient::Observer,
+                          public lock_screen_apps::FocusCyclerDelegate {
  public:
   explicit ViewsScreenLocker(ScreenLocker* screen_locker);
   ~ViewsScreenLocker() override;
@@ -54,9 +56,16 @@ class ViewsScreenLocker : public LockScreenClient::Delegate,
   void HandleRecordClickOnLockIcon(const AccountId& account_id) override;
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
+  bool HandleFocusLockScreenApps(bool reverse) override;
 
   // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // lock_screen_apps::FocusCyclerDelegate:
+  void RegisterLockScreenAppFocusHandler(
+      const LockScreenAppFocusCallback& focus_handler) override;
+  void UnregisterLockScreenAppFocusHandler() override;
+  void HandleLockScreenAppFocusOut(bool reverse) override;
 
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
@@ -80,6 +89,10 @@ class ViewsScreenLocker : public LockScreenClient::Delegate,
       allowed_input_methods_subscription_;
 
   bool lock_screen_ready_ = false;
+
+  // Callback registered as a lock screen apps focus handler - it should be
+  // called to hand focus over to lock screen apps.
+  LockScreenAppFocusCallback lock_screen_app_focus_handler_;
 
   base::WeakPtrFactory<ViewsScreenLocker> weak_factory_;
 
