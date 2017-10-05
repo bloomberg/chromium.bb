@@ -11,22 +11,37 @@ cr.define('extensions', function() {
   'use strict';
 
   /** @interface */
-  const ErrorPageDelegate = function() {};
-
-  ErrorPageDelegate.prototype = {
+  class ErrorPageDelegate {
     /**
      * @param {string} extensionId
-     * @param {!Array<number>=} opt_errorIds
-     * @param {chrome.developerPrivate.ErrorType=} opt_type
+     * @param {!Array<number>=} errorIds
+     * @param {chrome.developerPrivate.ErrorType=} type
      */
-    deleteErrors: assertNotReached,
+    deleteErrors(extensionId, errorIds, type) {}
 
     /**
      * @param {chrome.developerPrivate.RequestFileSourceProperties} args
      * @return {!Promise<!chrome.developerPrivate.RequestFileSourceResponse>}
      */
-    requestFileSource: assertNotReached,
-  };
+    requestFileSource(args) {}
+
+    /**
+     * @param {!chrome.developerPrivate.OpenDevToolsProperties} args
+     */
+    openDevTools(args) {}
+  }
+
+  /**
+   * Get the URL relative to the main extension url. If the url is
+   * unassociated with the extension, this will be the full url.
+   * @param {string} url
+   * @param {?(ManifestError|RuntimeError)} error
+   * @return {string}
+   */
+  function getRelativeUrl(url, error) {
+    const fullUrl = 'chrome-extension://' + error.extensionId + '/';
+    return url.startsWith(fullUrl) ? url.substring(fullUrl.length) : url;
+  }
 
   const ErrorPage = Polymer({
     is: 'extensions-error-page',
@@ -40,6 +55,34 @@ cr.define('extensions', function() {
 
       /** @private {?(ManifestError|RuntimeError)} */
       selectedError_: Object,
+
+      /** @private {?chrome.developerPrivate.StackFrame}*/
+      selectedStackFrame_: {
+        type: Object,
+        value: function() {
+          return null;
+        },
+      },
+
+      /** @private */
+      isRuntimeError_: {
+        type: Boolean,
+        computed: 'computeIsRuntimeError_(selectedError_)',
+      },
+
+      shownStackTrace_: {
+        type: Array,
+        computed: 'computeShownStackTrace_(selectedError_)',
+        observer: 'onShownStackTraceChanged_'
+      },
+
+      /** @private */
+      stackTraceExpanded_: {
+        type: Boolean,
+        value: function() {
+          return false;
+        },
+      },
     },
 
     observers: [
@@ -54,9 +97,8 @@ cr.define('extensions', function() {
      */
     observeDataChanges_: function() {
       assert(this.data);
-      const e = this.data.manifestErrors[0] || this.data.runtimeErrors[0];
-      if (e)
-        this.selectedError_ = e;
+      this.selectedError_ =
+          this.data.manifestErrors[0] || this.data.runtimeErrors[0] || null;
     },
 
     /**
@@ -117,6 +159,11 @@ cr.define('extensions', function() {
      * @private
      */
     onSelectedErrorChanged_: function() {
+      if (!this.selectedError_) {
+        this.$['code-section'].code = null;
+        return;
+      }
+
       const error = this.selectedError_;
       const args = {
         extensionId: error.extensionId,
@@ -139,6 +186,125 @@ cr.define('extensions', function() {
       this.delegate.requestFileSource(args).then(code => {
         this.$['code-section'].code = code;
       });
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    computeIsRuntimeError_: function() {
+      return !!this.selectedError_ &&
+          this.selectedError_.type == chrome.developerPrivate.ErrorType.RUNTIME;
+    },
+
+    /**
+     * @return {?Array<!chrome.developerPrivate.StackFrame>}
+     * @private
+     */
+    computeShownStackTrace_: function() {
+      // Stack trace not applicable for non-runtime errors.
+      return this.selectedError_ &&
+              this.selectedError_.type ==
+                  chrome.developerPrivate.ErrorType.RUNTIME ?
+          this.selectedError_.stackTrace :
+          null;
+    },
+
+    /** @private */
+    onShownStackTraceChanged_: function() {
+      this.selectedStackFrame_ =
+          this.shownStackTrace_ ? this.shownStackTrace_[0] : null;
+    },
+
+    /**
+     * The description is a human-readable summation of the frame, in the
+     * form "<relative_url>:<line_number> (function)", e.g.
+     * "myfile.js:25 (myFunction)".
+     * @param {!chrome.developerPrivate.StackFrame} frame
+     * @return {string}
+     * @private
+     */
+    getStackTraceLabel_: function(frame) {
+      let description = getRelativeUrl(frame.url, this.selectedError_) + ':' +
+          frame.lineNumber;
+
+      if (frame.functionName) {
+        const functionName = frame.functionName == '(anonymous function)' ?
+            loadTimeData.getString('anonymousFunction') :
+            frame.functionName;
+        description += ' (' + functionName + ')';
+      }
+
+      return description;
+    },
+
+    /** @private */
+    getExpandedClass_: function() {
+      return this.stackTraceExpanded_ ? 'expanded' : '';
+    },
+
+    /**
+     * @param {chrome.developerPrivate.StackFrame} frame
+     * @return {string}
+     * @private
+     */
+    getStackFrameClass_: function(frame) {
+      return frame == this.selectedStackFrame_ ? 'selected' : '';
+    },
+
+    /**
+     * This function is used to determine whether or not we want to show a
+     * stack frame. We don't want to show code from internal scripts.
+     * @param {string} url
+     * @return {boolean}
+     * @private
+     */
+    shouldDisplayFrame_: function(url) {
+      // All our internal scripts are in the 'extensions::' namespace.
+      return !/^extensions::/.test(url);
+    },
+
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onStackFrameTap_: function(e) {
+      const frame = (/** @type {!{model:Object}} */ (e)).model.item;
+
+      this.selectedStackFrame_ = frame;
+
+      this.delegate
+          .requestFileSource({
+            extensionId: this.selectedError_.extensionId,
+            message: this.selectedError_.message,
+            pathSuffix: getRelativeUrl(frame.url, this.selectedError_),
+            lineNumber: frame.lineNumber,
+          })
+          .then(code => {
+            this.$['code-section'].code = code;
+          });
+    },
+
+    /** @private */
+    onDevToolButtonTap_: function() {
+      // This guarantees renderProcessId and renderViewId.
+      assert(
+          this.selectedError_.type ==
+          chrome.developerPrivate.ErrorType.RUNTIME);
+      assert(this.selectedStackFrame_);
+
+      this.delegate.openDevTools({
+        renderProcessId: this.selectedError_.renderProcessId,
+        renderViewId: this.selectedError_.renderViewId,
+        url: this.selectedStackFrame_.url,
+        lineNumber: this.selectedStackFrame_.lineNumber || 0,
+        columnNumber: this.selectedStackFrame_.columnNumber || 0,
+      });
+    },
+
+    /** @private */
+    onStackTraceTap_: function() {
+      this.stackTraceExpanded_ = !this.stackTraceExpanded_;
     },
 
     /**
