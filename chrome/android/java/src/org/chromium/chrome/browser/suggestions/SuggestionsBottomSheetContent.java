@@ -71,12 +71,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
      */
     private boolean mIsAttachedToWindow;
 
-    // The sheet height fractions at which the logo transitions start and end.
-    private static final float LOGO_TRANSITION_BOTTOM_START = 0.3f;
-    private static final float LOGO_TRANSITION_BOTTOM_END = 0.1f;
-    private static final float LOGO_TRANSITION_TOP_START = 0.75f;
-    private static final float LOGO_TRANSITION_TOP_END = 0.95f;
-
     public SuggestionsBottomSheetContent(final ChromeActivity activity, final BottomSheet sheet,
             TabModelSelector tabModelSelector, SnackbarManager snackbarManager) {
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
@@ -99,21 +93,12 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mRecyclerView = mView.findViewById(R.id.recycler_view);
         mRecyclerView.setBackgroundColor(backgroundColor);
 
-        TouchEnabledDelegate touchEnabledDelegate = new TouchEnabledDelegate() {
-            @Override
-            public void setTouchEnabled(boolean enabled) {
-                activity.getBottomSheet().setTouchEnabled(enabled);
-            }
-        };
-
+        TouchEnabledDelegate touchEnabledDelegate = activity.getBottomSheet()::setTouchEnabled;
         mContextMenuManager =
                 new ContextMenuManager(activity, navigationDelegate, touchEnabledDelegate);
         activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
-        mSuggestionsUiDelegate.addDestructionObserver(new DestructionObserver() {
-            @Override
-            public void onDestroy() {
-                activity.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
-            }
+        mSuggestionsUiDelegate.addDestructionObserver(() -> {
+            activity.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         });
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
@@ -153,8 +138,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                     mRecyclerView.scrollToPosition(0);
                     mRecyclerView.getScrollEventReporter().reset();
                 }
-
-
             }
 
             @Override
@@ -345,26 +328,28 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mLogoView.setVisibility(View.VISIBLE);
         ViewUtils.setAncestorsShouldClipChildren(mControlContainerView, false);
 
-        // TODO(mvanouwerkerk): Consider using Material animation curves.
-        final float transitionFraction;
-        if (mLastSheetHeightFraction > LOGO_TRANSITION_TOP_START) {
-            float range = LOGO_TRANSITION_TOP_END - LOGO_TRANSITION_TOP_START;
-            transitionFraction =
-                    Math.min((mLastSheetHeightFraction - LOGO_TRANSITION_TOP_START) / range, 1.0f);
-        } else if (mLastSheetHeightFraction < LOGO_TRANSITION_BOTTOM_START) {
-            float range = LOGO_TRANSITION_BOTTOM_START - LOGO_TRANSITION_BOTTOM_END;
-            transitionFraction = Math.min(
-                    (LOGO_TRANSITION_BOTTOM_START - mLastSheetHeightFraction) / range, 1.0f);
-        } else {
-            transitionFraction = 0.0f;
-        }
-
         ViewGroup.MarginLayoutParams logoParams =
                 (ViewGroup.MarginLayoutParams) mLogoView.getLayoutParams();
+        float maxToolbarOffset = logoParams.height + logoParams.topMargin + logoParams.bottomMargin;
+
+        // Transform the sheet height fraction back to pixel scale.
+        float rangePx =
+                (mSheet.getFullRatio() - mSheet.getPeekRatio()) * mSheet.getSheetContainerHeight();
+        float sheetHeightPx = mLastSheetHeightFraction * rangePx;
+
+        // Calculate the transition fraction for hiding the logo: 0 means the logo is fully visible,
+        // 1 means it is fully invisible.
+        // The transition starts when the sheet is `2 * maxToolbarOffset` from the bottom or the
+        // top. This makes the toolbar stay vertically centered in the sheet during the
+        // bottom transition.
+        float transitionFraction =
+                Math.max(Math.max(1 - sheetHeightPx / (2 * maxToolbarOffset),
+                                 1 + (sheetHeightPx - rangePx) / (2 * maxToolbarOffset)),
+                        0);
+
         mLogoView.setTranslationY(logoParams.topMargin * -transitionFraction);
         mLogoView.setAlpha(Math.max(0.0f, 1.0f - (transitionFraction * 3.0f)));
 
-        float maxToolbarOffset = logoParams.height + logoParams.topMargin + logoParams.bottomMargin;
         float toolbarOffset = maxToolbarOffset * (1.0f - transitionFraction);
         mControlContainerView.setTranslationY(toolbarOffset);
         mToolbarPullHandle.setTranslationY(-toolbarOffset);
