@@ -41,9 +41,17 @@ using ::showcase_utils::Close;
   [super tearDown];
 }
 
+// TODO(crbug.com/772186): Fails on iOS 10 devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVerifyToolbarButtonsLabelAndAction \
+  testVerifyToolbarButtonsLabelAndAction
+#else
+#define MAYBE_testVerifyToolbarButtonsLabelAndAction \
+  DISABLED_testVerifyToolbarButtonsLabelAndAction
+#endif
 // Tests if the Toolbar buttons have the right accessibility labels and
 // commands.
-- (void)testVerifyToolbarButtonsLabelAndAction {
+- (void)MAYBE_testVerifyToolbarButtonsLabelAndAction {
   // Buttons displayed in both Regular and Compact SizeClasses.
   // Back Button.
   [[EarlGrey
