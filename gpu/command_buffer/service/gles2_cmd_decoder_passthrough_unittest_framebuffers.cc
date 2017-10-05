@@ -363,5 +363,58 @@ TEST_F(GLES2DecoderPassthroughTest, ReadPixelsAsyncError) {
   EXPECT_TRUE(GetPendingReadPixels().empty());
 }
 
+TEST_F(GLES2DecoderPassthroughTest,
+       RenderbufferStorageMultisampleEXTNotSupported) {
+  DoBindRenderbuffer(GL_RENDERBUFFER, kClientRenderbufferId);
+  // GL_EXT_framebuffer_multisample uses RenderbufferStorageMultisampleCHROMIUM.
+  RenderbufferStorageMultisampleEXT cmd;
+  cmd.Init(GL_RENDERBUFFER, 1, GL_RGBA4, 1, 1);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderPassthroughTest,
+       GetFramebufferAttachmentParameterivWithRenderbuffer) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, kClientFramebufferId);
+  DoBindRenderbuffer(GL_RENDERBUFFER, kClientRenderbufferId);
+  DoFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_RENDERBUFFER, kClientRenderbufferId);
+
+  GetFramebufferAttachmentParameteriv::Result* result =
+      static_cast<GetFramebufferAttachmentParameteriv::Result*>(
+          shared_memory_address_);
+  result->size = 0;
+  const GLint* result_value = result->GetData();
+
+  GetFramebufferAttachmentParameteriv cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+           GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(kClientRenderbufferId, static_cast<GLuint>(*result_value));
+}
+
+TEST_F(GLES2DecoderPassthroughTest,
+       GetFramebufferAttachmentParameterivWithTexture) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, kClientFramebufferId);
+  DoBindTexture(GL_TEXTURE_2D, kClientTextureId);
+  DoFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         kClientTextureId, 0);
+
+  GetFramebufferAttachmentParameteriv::Result* result =
+      static_cast<GetFramebufferAttachmentParameteriv::Result*>(
+          shared_memory_address_);
+  result->size = 0;
+  const GLint* result_value = result->GetData();
+
+  GetFramebufferAttachmentParameteriv cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+           GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(kClientTextureId, static_cast<GLuint>(*result_value));
+}
+
 }  // namespace gles2
 }  // namespace gpu

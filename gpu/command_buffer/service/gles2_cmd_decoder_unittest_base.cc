@@ -2395,6 +2395,23 @@ void GLES2DecoderPassthroughTestBase::DoFramebufferTexture2D(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderPassthroughTestBase::DoFramebufferRenderbuffer(
+    GLenum target,
+    GLenum attachment,
+    GLenum renderbuffertarget,
+    GLuint renderbuffer) {
+  cmds::FramebufferRenderbuffer cmd;
+  cmd.Init(target, attachment, renderbuffertarget, renderbuffer);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderPassthroughTestBase::DoBindRenderbuffer(GLenum target,
+                                                         GLuint client_id) {
+  cmds::BindRenderbuffer cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const size_t GLES2DecoderPassthroughTestBase::kSharedBufferSize;
@@ -2406,6 +2423,7 @@ const uint32_t GLES2DecoderPassthroughTestBase::kNewClientId;
 const GLuint GLES2DecoderPassthroughTestBase::kClientBufferId;
 const GLuint GLES2DecoderPassthroughTestBase::kClientTextureId;
 const GLuint GLES2DecoderPassthroughTestBase::kClientFramebufferId;
+const GLuint GLES2DecoderPassthroughTestBase::kClientRenderbufferId;
 #endif
 
 }  // namespace gles2
