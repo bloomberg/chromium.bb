@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "components/viz/common/resources/resource_id.h"
-#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
