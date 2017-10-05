@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file was generated at (2017-06-01 20:57:49.161613) by running:
+// This file was generated at (2017-09-29 09:51:48.959567) by running:
 //     ./chrome/test/chromedriver/embed_mobile_devices_in_cpp.py --directory
 //     chrome/test/chromedriver/chrome/
 //     third_party/WebKit/Source/devtools/front_end/emulated_devices/module.json

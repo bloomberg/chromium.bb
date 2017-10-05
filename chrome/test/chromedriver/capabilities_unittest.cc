@@ -517,7 +517,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
   ASSERT_TRUE(capabilities.switches.HasSwitch("user-agent"));
   ASSERT_EQ(
       "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile "
+      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3227.0 Mobile "
       "Safari/537.36",
       capabilities.switches.GetSwitchValue("user-agent"));
 
