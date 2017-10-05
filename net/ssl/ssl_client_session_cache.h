@@ -43,13 +43,14 @@ class NET_EXPORT SSLClientSessionCache : public base::MemoryCoordinatorClient {
   explicit SSLClientSessionCache(const Config& config);
   ~SSLClientSessionCache() override;
 
+  // Returns true if |entry| is expired as of |now|.
+  static bool IsExpired(SSL_SESSION* session, time_t now);
+
   size_t size() const;
 
   // Returns the session associated with |cache_key| and moves it to the front
-  // of the MRU list. Returns nullptr if there is none. If |count| is non-null,
-  // |*count| will contain the number of times this session has been looked up
-  // (including this call).
-  bssl::UniquePtr<SSL_SESSION> Lookup(const std::string& cache_key, int* count);
+  // of the MRU list. Returns nullptr if there is none.
+  bssl::UniquePtr<SSL_SESSION> Lookup(const std::string& cache_key);
 
   // Resets the count returned by Lookup to 0 for the session associated with
   // |cache_key|.
@@ -75,15 +76,23 @@ class NET_EXPORT SSLClientSessionCache : public base::MemoryCoordinatorClient {
     Entry(Entry&&);
     ~Entry();
 
-    int lookups;
-    bssl::UniquePtr<SSL_SESSION> session;
+    // Adds a new session onto this entry, dropping the oldest one if two are
+    // already stored.
+    void Push(bssl::UniquePtr<SSL_SESSION> session);
+
+    // Retrieves the latest session from the entry, removing it if its
+    // single-use.
+    bssl::UniquePtr<SSL_SESSION> Pop();
+
+    // Removes any expired sessions, returning true if this entry can be
+    // deleted.
+    bool ExpireSessions(time_t now);
+
+    bssl::UniquePtr<SSL_SESSION> sessions[2] = {nullptr};
   };
 
   // base::MemoryCoordinatorClient implementation:
   void OnPurgeMemory() override;
-
-  // Returns true if |entry| is expired as of |now|.
-  bool IsExpired(SSL_SESSION* session, time_t now);
 
   // Removes all expired sessions from the cache.
   void FlushExpiredSessions();
