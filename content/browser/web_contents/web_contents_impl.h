@@ -946,6 +946,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogNotifications);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogInterop);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, BeforeUnloadDialog);
+  FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, PageDisableWithOpenedDialog);
+  FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest,
+                           PageDisableWithNoDialogManager);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;
