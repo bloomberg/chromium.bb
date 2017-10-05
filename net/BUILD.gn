@@ -5076,6 +5076,7 @@ test("net_unittests") {
     "spdy/chromium/buffered_spdy_framer_unittest.cc",
     "spdy/chromium/header_coalescer_test.cc",
     "spdy/chromium/http2_priority_dependencies_unittest.cc",
+    "spdy/chromium/http2_push_promise_index_test.cc",
     "spdy/chromium/spdy_buffer_unittest.cc",
     "spdy/chromium/spdy_http_stream_unittest.cc",
     "spdy/chromium/spdy_http_utils_unittest.cc",
