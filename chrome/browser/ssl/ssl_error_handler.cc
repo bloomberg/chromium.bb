@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
+#include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
@@ -57,10 +58,6 @@
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // #if defined(OS_WIN)
-
-#if defined(OS_ANDROID)
-#include "net/android/network_library.h"
-#endif  // #if defined(OS_ANDROID)
 
 namespace {
 
@@ -650,8 +647,8 @@ void SSLErrorHandlerDelegateImpl::CheckForCaptivePortal() {
 }
 
 bool SSLErrorHandlerDelegateImpl::DoesOSReportCaptivePortal() {
-#if defined(OS_ANDROID)
-  return net::android::GetIsCaptivePortal();
+#if defined(OS_ANDROID) || defined(OS_WIN)
+  return chrome::IsBehindCaptivePortal();
 #else
   return false;
 #endif
