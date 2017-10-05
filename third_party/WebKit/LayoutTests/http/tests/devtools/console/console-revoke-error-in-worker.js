@@ -28,20 +28,20 @@
   TestRunner.addResult('Creating worker with promise');
   TestRunner.evaluateInPageWithTimeout('createPromise()');
 
-  function messageAdded(event) {
+  async function messageAdded(event) {
     TestRunner.addResult('');
     TestRunner.addResult('Message added: ' + event.data.level + ' ' + event.data.type);
 
     if (event.data.level === ConsoleModel.ConsoleMessage.MessageLevel.Error) {
-      ConsoleTestRunner.dumpConsoleCounters();
+      await ConsoleTestRunner.dumpConsoleCounters();
       TestRunner.addResult('');
       TestRunner.addResult('Handling promise');
       TestRunner.evaluateInPageWithTimeout('handlePromiseRejection()');
     }
   }
 
-  function messageUpdated() {
-    ConsoleTestRunner.dumpConsoleCounters();
+  async function messageUpdated() {
+    await ConsoleTestRunner.dumpConsoleCounters();
     TestRunner.completeTest();
   }
 })();

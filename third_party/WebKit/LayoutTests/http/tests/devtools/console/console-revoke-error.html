@@ -26,7 +26,7 @@ function test() {
   TestRunner.evaluateInPageWithTimeout('createPromises()');
 
   var messageNumber = 0;
-  function messageAdded(event) {
+  async function messageAdded(event) {
     TestRunner.addResult('Message added: ' + event.data.level + ' ' + event.data.type);
     if (++messageNumber < 3)
       return;
@@ -38,16 +38,16 @@ function test() {
     // Process array as a batch.
     TestRunner.consoleModel.addEventListener(
         ConsoleModel.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
-    ConsoleTestRunner.dumpConsoleCounters();
+    await ConsoleTestRunner.dumpConsoleCounters();
     TestRunner.addResult('');
     TestRunner.addResult('Handling promise');
     TestRunner.evaluateInPageWithTimeout('handleSomeRejections()');
   }
 
-  function messageUpdated() {
+  async function messageUpdated() {
     if (++messageNumber < 2)
       return;
-    ConsoleTestRunner.dumpConsoleCounters();
+    await ConsoleTestRunner.dumpConsoleCounters();
     TestRunner.completeTest();
   }
 }
