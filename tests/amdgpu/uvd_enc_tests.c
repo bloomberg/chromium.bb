@@ -79,6 +79,8 @@ static void amdgpu_cs_uvd_enc_session_init(void);
 static void amdgpu_cs_uvd_enc_encode(void);
 static void amdgpu_cs_uvd_enc_destroy(void);
 
+static bool uvd_enc_support(void);
+
 CU_TestInfo uvd_enc_tests[] = {
 	{ "UVD ENC create",  amdgpu_cs_uvd_enc_create },
 	{ "UVD ENC session init",  amdgpu_cs_uvd_enc_session_init },
@@ -98,7 +100,7 @@ int suite_uvd_enc_tests_init(void)
 
 	family_id = device_handle->info.family_id;
 
-	if (family_id < AMDGPU_FAMILY_AI || family_id >= AMDGPU_FAMILY_RV) {
+	if (!uvd_enc_support()) {
 		printf("\n\nThe ASIC NOT support UVD ENC, all sub-tests will pass\n");
 		return CUE_SUCCESS;
 	}
@@ -121,7 +123,7 @@ int suite_uvd_enc_tests_clean(void)
 {
 	int r;
 
-	if (family_id < AMDGPU_FAMILY_AI || family_id >= AMDGPU_FAMILY_RV) {
+	if (!uvd_enc_support()) {
 
 		r = amdgpu_device_deinitialize(device_handle);
 		if (r)
@@ -238,11 +240,24 @@ static void free_resource(struct amdgpu_uvd_enc_bo *uvd_enc_bo)
 	memset(uvd_enc_bo, 0, sizeof(*uvd_enc_bo));
 }
 
+static bool uvd_enc_support(void)
+{
+	int r;
+	struct drm_amdgpu_info_hw_ip info;
+
+	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_UVD_ENC, 0, &info);
+
+	if (r)
+		return false;
+	else
+		return (info.available_rings?true:false);
+}
+
 static void amdgpu_cs_uvd_enc_create(void)
 {
 	int len, r;
 
-	if (family_id < AMDGPU_FAMILY_AI || family_id >= AMDGPU_FAMILY_RV)
+	if (!uvd_enc_support())
 		return;
 
 	enc.width = 160;
@@ -281,7 +296,7 @@ static void amdgpu_cs_uvd_enc_session_init(void)
 {
 	int len, r;
 
-	if (family_id < AMDGPU_FAMILY_AI || family_id >= AMDGPU_FAMILY_RV)
+	if (!uvd_enc_support())
 		return;
 
 	len = 0;
@@ -339,7 +354,7 @@ static void amdgpu_cs_uvd_enc_encode(void)
 	vbuf_size = ALIGN(enc.width, align) * ALIGN(enc.height, 16) * 1.5;
 	cpb_size = vbuf_size * 10;
 
-	if (family_id < AMDGPU_FAMILY_AI || family_id >= AMDGPU_FAMILY_RV)
+	if (!uvd_enc_support())
 		return;
 
 	num_resources  = 0;
@@ -472,7 +487,7 @@ static void amdgpu_cs_uvd_enc_destroy(void)
 	struct amdgpu_uvd_enc_bo sw_ctx;
 	int len, r;
 
-	if (family_id < AMDGPU_FAMILY_AI || family_id >= AMDGPU_FAMILY_RV)
+	if (!uvd_enc_support())
 		return;
 
 	num_resources  = 0;
