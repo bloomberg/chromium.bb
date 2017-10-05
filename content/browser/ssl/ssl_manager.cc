@@ -405,8 +405,7 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
   }
 
   GetContentClient()->browser()->AllowCertificateError(
-      web_contents, cert_error, ssl_info, request_url, resource_type,
-      false /* TODO(crbug.com/768105): remove */, fatal,
+      web_contents, cert_error, ssl_info, request_url, resource_type, fatal,
       expired_previous_decision,
       base::Bind(&OnAllowCertificateWithRecordDecision, true, callback));
 }
