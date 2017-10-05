@@ -1026,14 +1026,13 @@ void SimpleSynchronousEntry::CloseFile(int index) {
     DCHECK(files_[index].IsValid());
     files_[index].Close();
   }
-
-  if (sparse_file_open())
-    CloseSparseFile();
 }
 
 void SimpleSynchronousEntry::CloseFiles() {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i)
     CloseFile(i);
+  if (sparse_file_open())
+    CloseSparseFile();
 }
 
 bool SimpleSynchronousEntry::CheckHeaderAndKey(int file_index) {
