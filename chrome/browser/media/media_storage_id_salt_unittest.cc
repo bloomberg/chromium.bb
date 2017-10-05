@@ -4,11 +4,10 @@
 
 #include "chrome/browser/media/media_storage_id_salt.h"
 
+#include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-const char kPrefsName[] = "media.storage_id_salt";
 
 TEST(MediaStorageIdSalt, Register) {
   TestingPrefServiceSimple prefs;
@@ -33,7 +32,7 @@ TEST(MediaStorageIdSalt, Recreate) {
 
   // Now that the salt is created, mess it up and then try fetching it again
   // (should generate a new salt and log an error).
-  prefs.SetString(kPrefsName, "123");
+  prefs.SetString(prefs::kMediaStorageIdSalt, "123");
   std::vector<uint8_t> new_salt = MediaStorageIdSalt::GetSalt(&prefs);
   EXPECT_EQ(MediaStorageIdSalt::kSaltLength, new_salt.size());
   EXPECT_NE(original_salt, new_salt);

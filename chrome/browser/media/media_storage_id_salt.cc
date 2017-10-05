@@ -8,25 +8,21 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/random.h"
 
-namespace {
-
-const char kMediaStorageIdSalt[] = "media.storage_id_salt";
-
-}  // namespace
-
 std::vector<uint8_t> MediaStorageIdSalt::GetSalt(PrefService* pref_service) {
   // Salt is stored as hex-encoded string.
-  std::string encoded_salt = pref_service->GetString(kMediaStorageIdSalt);
+  std::string encoded_salt =
+      pref_service->GetString(prefs::kMediaStorageIdSalt);
   std::vector<uint8_t> salt;
   if (encoded_salt.length() != kSaltLength * 2 ||
       !base::HexStringToBytes(encoded_salt, &salt)) {
     // If the salt is not the proper format log an error.
     if (encoded_salt.length() > 0) {
-      DLOG(ERROR) << "Saved value for " << kMediaStorageIdSalt
+      DLOG(ERROR) << "Saved value for " << prefs::kMediaStorageIdSalt
                   << " is not valid: " << encoded_salt;
       // Continue on to generate a new one.
     }
@@ -35,12 +31,12 @@ std::vector<uint8_t> MediaStorageIdSalt::GetSalt(PrefService* pref_service) {
     salt.resize(kSaltLength);
     crypto::RandBytes(salt.data(), salt.size());
     encoded_salt = base::HexEncode(salt.data(), salt.size());
-    pref_service->SetString(kMediaStorageIdSalt, encoded_salt);
+    pref_service->SetString(prefs::kMediaStorageIdSalt, encoded_salt);
   }
 
   return salt;
 }
 
 void MediaStorageIdSalt::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(kMediaStorageIdSalt, std::string());
+  registry->RegisterStringPref(prefs::kMediaStorageIdSalt, std::string());
 }
