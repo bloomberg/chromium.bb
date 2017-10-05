@@ -21,41 +21,17 @@ class ContextualSearchRankerLoggerImpl;
 class DocumentWritePageLoadMetricsObserver;
 class FromGWSPageLoadMetricsLogger;
 class PluginInfoMessageFilter;
-class ProcessMemoryMetricsEmitter;
 class ServiceWorkerPageLoadMetricsObserver;
 class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
-class MediaEngagementContentsObserver;
-
-namespace autofill {
-class AutofillMetrics;
-}
 
 namespace content {
-class RenderFrameImpl;
 class RenderWidgetHostLatencyTracker;
 }  // namespace content
 
-namespace media {
-class WatchTimeRecorder;
-}
-
-namespace resource_coordinator {
-class CoordinationUnitManager;
-}
-
-namespace translate {
-class TranslateRankerImpl;
-}
-
-namespace payments {
-class JourneyLogger;
-}
-
 namespace password_manager {
 class PasswordManagerMetricsRecorder;
-class PasswordFormMetricsRecorder;
 }  // namespace password_manager
 
 namespace previews {
@@ -100,10 +76,7 @@ class METRICS_EXPORT UkmRecorder {
   virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
 
  private:
-  friend autofill::AutofillMetrics;
-  friend payments::JourneyLogger;
   friend ContextualSearchRankerLoggerImpl;
-  friend ProcessMemoryMetricsEmitter;
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;
   friend LocalNetworkRequestsPageLoadMetricsObserver;
@@ -111,17 +84,11 @@ class METRICS_EXPORT UkmRecorder {
   friend FromGWSPageLoadMetricsLogger;
   friend ServiceWorkerPageLoadMetricsObserver;
   friend SubresourceFilterMetricsObserver;
-  friend translate::TranslateRankerImpl;
   friend TestRecordingHelper;
   friend UkmInterface;
-  friend content::RenderFrameImpl;
   friend content::RenderWidgetHostLatencyTracker;
-  friend media::WatchTimeRecorder;
   friend password_manager::PasswordManagerMetricsRecorder;
-  friend password_manager::PasswordFormMetricsRecorder;
   friend previews::PreviewsUKMObserver;
-  friend resource_coordinator::CoordinationUnitManager;
-  friend MediaEngagementContentsObserver;
   friend internal::UkmEntryBuilderBase;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
