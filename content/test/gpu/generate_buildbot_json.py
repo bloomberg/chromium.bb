@@ -17,6 +17,15 @@ import sys
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
+# Current stable Windows 7 NVIDIA GT 610 device/driver identifier.
+WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-21.21.13.7254'
+
+# Current stable Windows 10 NVIDIA GT 610 device/driver identifier.
+WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-21.21.13.7619'
+
+# Use this to match all drivers for the NVIDIA GT 610.
+NVIDIA_GEFORCE_610_ALL_DRIVERS = '10de:104a-*'
+
 # "Types" of waterfalls and bots. A bot's type is the union of its own
 # type and the type of its waterfall. Predicates can apply to these
 # sets in order to run tests only on a certain subset of the bots.
@@ -112,7 +121,7 @@ WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -124,7 +133,7 @@ WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -228,7 +237,7 @@ FYI_WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -240,7 +249,7 @@ FYI_WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -252,7 +261,7 @@ FYI_WATERFALL = {
     'Win7 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -265,7 +274,7 @@ FYI_WATERFALL = {
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -277,7 +286,7 @@ FYI_WATERFALL = {
     'Win10 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -365,7 +374,7 @@ FYI_WATERFALL = {
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -377,7 +386,7 @@ FYI_WATERFALL = {
     'Win7 x64 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -389,7 +398,7 @@ FYI_WATERFALL = {
     'Win7 x64 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -795,7 +804,7 @@ FYI_WATERFALL = {
     'Optional Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -949,7 +958,7 @@ V8_FYI_WATERFALL = {
     'Win Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -1020,7 +1029,7 @@ COMMON_GTESTS = {
         'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           }
         ],
@@ -1048,7 +1057,7 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # NVIDIA Win 7
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
           # AMD Win 7
@@ -1205,7 +1214,7 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # NVIDIA Win 7
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
           # AMD Win 7
@@ -1281,7 +1290,7 @@ COMMON_GTESTS = {
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           }
         ],
@@ -1310,7 +1319,7 @@ COMMON_GTESTS = {
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
           {
@@ -2147,7 +2156,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Only run on the NVIDIA Release Windows bots.
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
@@ -2176,7 +2185,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Only run on the NVIDIA Release Windows bots.
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
@@ -2217,7 +2226,7 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
           {
@@ -2250,7 +2259,9 @@ def substitute_args(tester_config, args):
   }
 
   if 'gpu' in tester_config['swarming_dimensions'][0]:
-    gpu = tester_config['swarming_dimensions'][0]['gpu'].split(':')
+    # First remove the driver version, then split into vendor and device.
+    gpu = tester_config['swarming_dimensions'][0]['gpu']
+    gpu = gpu.split('-')[0].split(':')
     substitutions['gpu_vendor_id'] = gpu[0]
     substitutions['gpu_device_id'] = gpu[1]
 
@@ -2259,7 +2270,16 @@ def substitute_args(tester_config, args):
 def matches_swarming_dimensions(tester_config, dimension_sets):
   for dimensions in dimension_sets:
     for cur_dims in tester_config['swarming_dimensions']:
-      if set(dimensions.items()).issubset(cur_dims.items()):
+      match = True
+      for key, value in dimensions.iteritems():
+        if key not in cur_dims:
+          match = False
+        elif value.endswith('*'):
+          if not cur_dims[key].startswith(value[0:-1]):
+            match = False
+        elif cur_dims[key] != value:
+          match = False
+      if match:
         return True
   return False
 
