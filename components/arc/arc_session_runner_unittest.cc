@@ -156,13 +156,14 @@ TEST_F(ArcSessionRunnerTest, Basic) {
       },
       arc_session_runner(), &observer));
 
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 
   arc_session_runner()->RequestStop(false);
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
   EXPECT_TRUE(observer.stopped_called());
 }
 
@@ -171,14 +172,14 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 TEST_F(ArcSessionRunnerTest, StopMidStartup) {
   ResetArcSessionFactory(
       base::Bind(&ArcSessionRunnerTest::CreateSuspendedArcSession));
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStart();
-  EXPECT_FALSE(arc_session_runner()->IsStopped());
-  EXPECT_FALSE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_FALSE(arc_session()->IsRunning());
 
   arc_session_runner()->RequestStop(false);
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
   EXPECT_FALSE(restarting());
 }
 
@@ -188,11 +189,11 @@ TEST_F(ArcSessionRunnerTest, BootFailure) {
   ResetArcSessionFactory(
       base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
                  ArcStopReason::GENERIC_BOOT_FAILURE));
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStart();
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
   EXPECT_FALSE(restarting());
 }
 
@@ -201,90 +202,96 @@ TEST_F(ArcSessionRunnerTest, BootFailureForLoginScreen) {
   ResetArcSessionFactory(
       base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
                  ArcStopReason::CRASH));
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   chromeos::DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->EmitLoginPromptVisible();
   // If starting the mini instance fails, arc_session_runner()'s state goes back
   // to STOPPED, but its observers won't be notified.
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
   EXPECT_FALSE(stopped_called());
 
   // Also make sure that RequestStart() works just fine after the boot
   // failure.
   ResetArcSessionFactory(base::Bind(FakeArcSession::Create));
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 }
 
 // Tests that RequestStart() works even after EmitLoginPromptVisibleCalled()
 // is called.
 TEST_F(ArcSessionRunnerTest, StartWithLoginScreenInstance) {
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   chromeos::DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->EmitLoginPromptVisible();
-  EXPECT_FALSE(arc_session_runner()->IsStopped());
-  EXPECT_FALSE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_FALSE(arc_session()->IsRunning());
 
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 }
 
 // If the instance is stopped, it should be re-started.
 TEST_F(ArcSessionRunnerTest, Restart) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 
   // Simulate a connection loss.
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(ArcStopReason::CRASH);
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
   EXPECT_TRUE(restarting());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(restarting_called());
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 
   arc_session_runner()->RequestStop(false);
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 }
 
 TEST_F(ArcSessionRunnerTest, GracefulStop) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 
   // Graceful stop.
   arc_session_runner()->RequestStop(false);
   EXPECT_EQ(ArcStopReason::SHUTDOWN, stop_reason());
   EXPECT_FALSE(restarting());
   EXPECT_FALSE(restarting_called());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 }
 
 TEST_F(ArcSessionRunnerTest, Shutdown) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
 
   // Simulate shutdown.
   arc_session_runner()->OnShutdown();
   EXPECT_EQ(ArcStopReason::SHUTDOWN, stop_reason());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 }
 
 // Removing the same observer more than once should be okay.
 TEST_F(ArcSessionRunnerTest, RemoveObserverTwice) {
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   DoNothingObserver do_nothing_observer;
   arc_session_runner()->AddObserver(&do_nothing_observer);
@@ -295,7 +302,7 @@ TEST_F(ArcSessionRunnerTest, RemoveObserverTwice) {
 
 // Removing an unknown observer should be allowed.
 TEST_F(ArcSessionRunnerTest, RemoveUnknownObserver) {
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(arc_session());
 
   DoNothingObserver do_nothing_observer;
   arc_session_runner()->RemoveObserver(&do_nothing_observer);

@@ -157,30 +157,6 @@ void ArcSessionRunner::OnShutdown() {
   DCHECK(!arc_session_);
 }
 
-// TODO(hidehiko,lhchavez,yusukes): Revisit following state accessors.
-bool ArcSessionRunner::IsRunning() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // For historical reason, exclude "stopping" instance phase.
-  return arc_session_ && arc_session_->IsRunning() &&
-         !arc_session_->IsStopRequested();
-}
-
-bool ArcSessionRunner::IsStopped() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return !arc_session_;
-}
-
-bool ArcSessionRunner::IsStopping() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return arc_session_ && arc_session_->IsStopRequested();
-}
-
-bool ArcSessionRunner::IsLoginScreenInstanceStarting() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return arc_session_ && arc_session_->IsForLoginScreen() &&
-         !arc_session_->IsStopRequested();
-}
-
 void ArcSessionRunner::SetRestartDelayForTesting(
     const base::TimeDelta& restart_delay) {
   DCHECK(!arc_session_);

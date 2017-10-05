@@ -517,7 +517,6 @@ void ArcSessionManager::NotifyArcPlayStoreEnabledChanged(bool enabled) {
 // TODO(hidehiko): Remove this.
 void ArcSessionManager::StopAndEnableArc() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!arc_session_runner_->IsStopped());
   reenable_arc_ = true;
   StopArc();
 }
@@ -693,16 +692,13 @@ void ArcSessionManager::RequestArcDataRemoval() {
 
   data_remover_->Schedule();
   // To support 1) case above, maybe start data removal.
-  if (state_ == State::STOPPED) {
-    DCHECK(arc_session_runner_->IsStopped());
+  if (state_ == State::STOPPED)
     MaybeStartArcDataRemoval();
-  }
 }
 
 void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-  DCHECK(arc_session_runner_->IsStopped() || arc_session_runner_->IsStopping());
   DCHECK(!terms_of_service_negotiator_);
   // In Kiosk-mode, Terms of Service negotiation should be skipped.
   // See also RequestEnableImpl().
@@ -801,7 +797,6 @@ bool ArcSessionManager::IsArcTermsOfServiceNegotiationNeeded() const {
 
 void ArcSessionManager::StartAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(arc_session_runner_->IsStopped());
   DCHECK(state_ == State::NEGOTIATING_TERMS_OF_SERVICE ||
          state_ == State::CHECKING_ANDROID_MANAGEMENT)
       << state_;
@@ -940,8 +935,6 @@ void ArcSessionManager::MaybeStartArcDataRemoval() {
 
   // Data removal cannot run in parallel with ARC session.
   // LoginScreen instance does not use data directory, so removing should work.
-  DCHECK(arc_session_runner_->IsStopped() ||
-         arc_session_runner_->IsLoginScreenInstanceStarting());
   DCHECK_EQ(state_, State::STOPPED);
 
   state_ = State::REMOVING_DATA_DIR;
@@ -1007,11 +1000,10 @@ void ArcSessionManager::OnRetryClicked() {
     // service negotiation instead of recreating the instance.
     // TODO(hidehiko): consider removing this case after fixing the bug.
     MaybeStartTermsOfServiceNegotiation();
-  } else if (!arc_session_runner_->IsStopped()) {
+  } else if (state_ == State::ACTIVE) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping
     // ARC was postponed to contain its internal state into the report.
     // Here, on retry, stop it, then restart.
-    DCHECK_EQ(state_, State::ACTIVE);
     support_host_->ShowArcLoading();
     ShutdownSession();
     reenable_arc_ = true;
@@ -1032,7 +1024,6 @@ void ArcSessionManager::SetArcSessionRunnerForTesting(
     std::unique_ptr<ArcSessionRunner> arc_session_runner) {
   DCHECK(arc_session_runner);
   DCHECK(arc_session_runner_);
-  DCHECK(arc_session_runner_->IsStopped());
   arc_session_runner_->RemoveObserver(this);
   arc_session_runner_ = std::move(arc_session_runner);
   arc_session_runner_->AddObserver(this);
