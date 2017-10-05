@@ -53,7 +53,7 @@ typedef struct {
   int resize_width;
   int resize_height;
 #if CONFIG_FRAME_SUPERRES
-  uint8_t superres_num;
+  uint8_t superres_denom;
 #endif  // CONFIG_FRAME_SUPERRES
 } size_params_type;
 

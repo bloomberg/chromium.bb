@@ -1168,24 +1168,22 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
   }
 }
 
-void av1_calculate_scaled_size(int *width, int *height, int num) {
-  if (num != SCALE_DENOMINATOR) {
-    *width = *width * num / SCALE_DENOMINATOR;
-    *height = *height * num / SCALE_DENOMINATOR;
+void av1_calculate_scaled_size(int *width, int *height, int denom) {
+  if (denom != SCALE_NUMERATOR) {
+    *width = *width * SCALE_NUMERATOR / denom;
+    *height = *height * SCALE_NUMERATOR / denom;
     // Make width and height even
     *width += *width & 1;
     *height += *height & 1;
   }
 }
 
-// Inverse of av1_calculate_scaled_size() above: calculates the original size
-// from the given scaled dimensions and the scale numerator.
-void av1_calculate_unscaled_size(int *width, int *height, int num) {
-  if (num != SCALE_DENOMINATOR) {
+void av1_calculate_unscaled_size(int *width, int *height, int denom) {
+  if (denom != SCALE_NUMERATOR) {
     // Note: av1_calculate_scaled_size() rounds *up* after division when the
     // resulting dimensions are odd. So here, we round *down*.
-    *width = *width * SCALE_DENOMINATOR / num;
-    *height = *height * SCALE_DENOMINATOR / num;
+    *width = *width * denom / SCALE_NUMERATOR;
+    *height = *height * denom / SCALE_NUMERATOR;
   }
 }
 

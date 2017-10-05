@@ -4249,12 +4249,12 @@ static void write_render_size(const AV1_COMMON *cm,
 static void write_superres_scale(const AV1_COMMON *const cm,
                                  struct aom_write_bit_buffer *wb) {
   // First bit is whether to to scale or not
-  if (cm->superres_scale_numerator == SCALE_DENOMINATOR) {
+  if (cm->superres_scale_denominator == SCALE_NUMERATOR) {
     aom_wb_write_bit(wb, 0);  // no scaling
   } else {
     aom_wb_write_bit(wb, 1);  // scaling, write scale factor
     aom_wb_write_literal(
-        wb, cm->superres_scale_numerator - SUPERRES_SCALE_NUMERATOR_MIN,
+        wb, cm->superres_scale_denominator - SUPERRES_SCALE_DENOMINATOR_MIN,
         SUPERRES_SCALE_BITS);
   }
 }

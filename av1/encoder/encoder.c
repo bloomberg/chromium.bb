@@ -3088,7 +3088,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   av1_loop_filter_init(cm);
 #if CONFIG_FRAME_SUPERRES
-  cm->superres_scale_numerator = SCALE_DENOMINATOR;
+  cm->superres_scale_denominator = SCALE_NUMERATOR;
   cm->superres_upscaled_width = oxcf->width;
   cm->superres_upscaled_height = oxcf->height;
 #endif  // CONFIG_FRAME_SUPERRES
@@ -4429,21 +4429,21 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 56789;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  if (oxcf->pass == 1) return SCALE_DENOMINATOR;
-  uint8_t new_num = SCALE_DENOMINATOR;
+  if (oxcf->pass == 1) return SCALE_NUMERATOR;
+  uint8_t new_denom = SCALE_NUMERATOR;
 
   switch (oxcf->resize_mode) {
-    case RESIZE_NONE: new_num = SCALE_DENOMINATOR; break;
+    case RESIZE_NONE: new_denom = SCALE_NUMERATOR; break;
     case RESIZE_FIXED:
       if (cpi->common.frame_type == KEY_FRAME)
-        new_num = oxcf->resize_kf_scale_numerator;
+        new_denom = oxcf->resize_kf_scale_denominator;
       else
-        new_num = oxcf->resize_scale_numerator;
+        new_denom = oxcf->resize_scale_denominator;
       break;
-    case RESIZE_RANDOM: new_num = lcg_rand16(&seed) % 9 + 8; break;
+    case RESIZE_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
     default: assert(0);
   }
-  return new_num;
+  return new_denom;
 }
 
 #if CONFIG_FRAME_SUPERRES
@@ -4451,19 +4451,19 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 34567;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  if (oxcf->pass == 1) return SCALE_DENOMINATOR;
-  uint8_t new_num = SCALE_DENOMINATOR;
+  if (oxcf->pass == 1) return SCALE_NUMERATOR;
+  uint8_t new_denom = SCALE_NUMERATOR;
   int bottom_index, top_index, q, qthresh;
 
   switch (oxcf->superres_mode) {
-    case SUPERRES_NONE: new_num = SCALE_DENOMINATOR; break;
+    case SUPERRES_NONE: new_denom = SCALE_NUMERATOR; break;
     case SUPERRES_FIXED:
       if (cpi->common.frame_type == KEY_FRAME)
-        new_num = oxcf->superres_kf_scale_numerator;
+        new_denom = oxcf->superres_kf_scale_denominator;
       else
-        new_num = oxcf->superres_scale_numerator;
+        new_denom = oxcf->superres_scale_denominator;
       break;
-    case SUPERRES_RANDOM: new_num = lcg_rand16(&seed) % 9 + 8; break;
+    case SUPERRES_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
     case SUPERRES_QTHRESH:
       qthresh = (cpi->common.frame_type == KEY_FRAME ? oxcf->superres_kf_qthresh
                                                      : oxcf->superres_qthresh);
@@ -4471,74 +4471,86 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       q = av1_rc_pick_q_and_bounds(cpi, cpi->oxcf.width, cpi->oxcf.height,
                                    &bottom_index, &top_index);
       if (q < qthresh) {
-        new_num = SCALE_DENOMINATOR;
+        new_denom = SCALE_NUMERATOR;
       } else {
-        new_num = SCALE_DENOMINATOR - 1 - ((q - qthresh) >> 3);
-        new_num = AOMMAX(SCALE_DENOMINATOR / 2, new_num);
-        // printf("SUPERRES: q %d, qthresh %d: num %d\n", q, qthresh, new_num);
+        new_denom = SCALE_NUMERATOR + 1 + ((q - qthresh) >> 3);
+        new_denom = AOMMIN(SCALE_NUMERATOR << 1, new_denom);
+        // printf("SUPERRES: q %d, qthresh %d: denom %d\n", q, qthresh,
+        // new_denom);
       }
       break;
     default: assert(0);
   }
-  return new_num;
+  return new_denom;
 }
+
+static int dimension_is_ok(int orig_dim, int resized_dim, int denom) {
+  return (resized_dim * SCALE_NUMERATOR >= orig_dim * denom / 2);
+}
+
+static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
+  return dimension_is_ok(owidth, rsz->resize_width, rsz->superres_denom) &&
+         dimension_is_ok(oheight, rsz->resize_height, rsz->superres_denom);
+}
+
+#define DIVIDE_AND_ROUND(x, y) (((x) + ((y) >> 1)) / (y))
 
 static int validate_size_scales(RESIZE_MODE resize_mode,
                                 SUPERRES_MODE superres_mode, int owidth,
                                 int oheight, size_params_type *rsz) {
-  if (rsz->resize_width * rsz->superres_num >= SCALE_DENOMINATOR * owidth / 2 &&
-      rsz->resize_height * rsz->superres_num >= SCALE_DENOMINATOR * oheight / 2)
+  if (dimensions_are_ok(owidth, oheight, rsz)) {  // Nothing to do.
     return 1;
-  int resize_num = AOMMIN(((rsz->resize_width * 16 + owidth / 2) / owidth),
-                          ((rsz->resize_height * 16 + oheight / 2) / oheight));
+  }
+
+  // Calculate current resize scale.
+  int resize_denom =
+      AOMMAX(DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width),
+             DIVIDE_AND_ROUND(oheight * SCALE_NUMERATOR, rsz->resize_height));
+
   if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
-    rsz->superres_num =
-        (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * resize_num - 1) /
-        (2 * resize_num);
-    if (rsz->resize_width * rsz->superres_num <
-            SCALE_DENOMINATOR * owidth / 2 ||
-        rsz->resize_height * rsz->superres_num <
-            SCALE_DENOMINATOR * oheight / 2) {
-      if (rsz->superres_num < SCALE_DENOMINATOR) rsz->superres_num++;
+    // Alter superres scale as needed to enforce conformity.
+    rsz->superres_denom =
+        (2 * SCALE_NUMERATOR * SCALE_NUMERATOR) / resize_denom;
+    if (!dimensions_are_ok(owidth, oheight, rsz)) {
+      if (rsz->superres_denom > SCALE_NUMERATOR) --rsz->superres_denom;
     }
   } else if (resize_mode == RESIZE_RANDOM && superres_mode != SUPERRES_RANDOM) {
-    resize_num =
-        (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * rsz->superres_num - 1) /
-        (2 * rsz->superres_num);
+    // Alter resize scale as needed to enforce conformity.
+    resize_denom =
+        (2 * SCALE_NUMERATOR * SCALE_NUMERATOR) / rsz->superres_denom;
     rsz->resize_width = owidth;
     rsz->resize_height = oheight;
     av1_calculate_scaled_size(&rsz->resize_width, &rsz->resize_height,
-                              resize_num);
-    if (rsz->resize_width * rsz->superres_num <
-            SCALE_DENOMINATOR * owidth / 2 ||
-        rsz->resize_height * rsz->superres_num <
-            SCALE_DENOMINATOR * oheight / 2) {
-      if (resize_num < SCALE_DENOMINATOR) resize_num++;
+                              resize_denom);
+    if (!dimensions_are_ok(owidth, oheight, rsz)) {
+      if (resize_denom > SCALE_NUMERATOR) {
+        --resize_denom;
+        rsz->resize_width = owidth;
+        rsz->resize_height = oheight;
+        av1_calculate_scaled_size(&rsz->resize_width, &rsz->resize_height,
+                                  resize_denom);
+      }
     }
   } else if (resize_mode == RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
+    // Alter both resize and superres scales as needed to enforce conformity.
     do {
-      if (resize_num < rsz->superres_num)
-        ++resize_num;
+      if (resize_denom > rsz->superres_denom)
+        --resize_denom;
       else
-        ++rsz->superres_num;
+        --rsz->superres_denom;
       rsz->resize_width = owidth;
       rsz->resize_height = oheight;
       av1_calculate_scaled_size(&rsz->resize_width, &rsz->resize_height,
-                                resize_num);
-    } while ((rsz->resize_width * rsz->superres_num <
-                  SCALE_DENOMINATOR * owidth / 2 ||
-              rsz->resize_height * rsz->superres_num <
-                  SCALE_DENOMINATOR * oheight / 2) &&
-             (resize_num < SCALE_DENOMINATOR ||
-              rsz->superres_num < SCALE_DENOMINATOR));
-  } else {
+                                resize_denom);
+    } while (!dimensions_are_ok(owidth, oheight, rsz) &&
+             (resize_denom > SCALE_NUMERATOR ||
+              rsz->superres_denom > SCALE_NUMERATOR));
+  } else {  // We are allowed to alter neither resize scale nor superres scale.
     return 0;
   }
-  if (rsz->resize_width * rsz->superres_num >= SCALE_DENOMINATOR * owidth / 2 &&
-      rsz->resize_height * rsz->superres_num >= SCALE_DENOMINATOR * oheight / 2)
-    return 1;
-  return 0;
+  return dimensions_are_ok(owidth, oheight, rsz);
 }
+#undef DIVIDE_AND_ROUND
 #endif  // CONFIG_FRAME_SUPERRES
 
 // Calculates resize and superres params for next frame
@@ -4548,24 +4560,24 @@ size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
     oxcf->width,
     oxcf->height,
 #if CONFIG_FRAME_SUPERRES
-    SCALE_DENOMINATOR
+    SCALE_NUMERATOR
 #endif  // CONFIG_FRAME_SUPERRES
   };
-  int resize_num;
+  int resize_denom;
   if (oxcf->pass == 1) return rsz;
   if (cpi->resize_pending_width && cpi->resize_pending_height) {
     rsz.resize_width = cpi->resize_pending_width;
     rsz.resize_height = cpi->resize_pending_height;
     cpi->resize_pending_width = cpi->resize_pending_height = 0;
   } else {
-    resize_num = calculate_next_resize_scale(cpi);
+    resize_denom = calculate_next_resize_scale(cpi);
     rsz.resize_width = cpi->oxcf.width;
     rsz.resize_height = cpi->oxcf.height;
     av1_calculate_scaled_size(&rsz.resize_width, &rsz.resize_height,
-                              resize_num);
+                              resize_denom);
   }
 #if CONFIG_FRAME_SUPERRES
-  rsz.superres_num = calculate_next_superres_scale(cpi);
+  rsz.superres_denom = calculate_next_superres_scale(cpi);
   if (!validate_size_scales(oxcf->resize_mode, oxcf->superres_mode, oxcf->width,
                             oxcf->height, &rsz))
     assert(0 && "Invalid scale parameters");
@@ -4581,8 +4593,8 @@ static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
   AV1_COMMON *cm = &cpi->common;
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
-  cm->superres_scale_numerator = rsz->superres_num;
-  av1_calculate_scaled_size(&encode_width, &encode_height, rsz->superres_num);
+  cm->superres_scale_denominator = rsz->superres_denom;
+  av1_calculate_scaled_size(&encode_width, &encode_height, rsz->superres_denom);
 #endif  // CONFIG_FRAME_SUPERRES
   set_frame_size(cpi, encode_width, encode_height);
 }

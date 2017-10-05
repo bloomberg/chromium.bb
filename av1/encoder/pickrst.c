@@ -546,9 +546,9 @@ static void foreach_rtile_in_tile(const struct rest_search_ctxt *ctxt,
   // top-left and bottom-right of the tile.
   if (!av1_superres_unscaled(cm)) {
     av1_calculate_unscaled_size(&tile_col_start, &tile_row_start,
-                                cm->superres_scale_numerator);
+                                cm->superres_scale_denominator);
     av1_calculate_unscaled_size(&tile_col_end, &tile_row_end,
-                                cm->superres_scale_numerator);
+                                cm->superres_scale_denominator);
     // Make sure we don't fall off the bottom-right of the frame.
     tile_col_end = AOMMIN(tile_col_end, ctxt->plane_width);
     tile_row_end = AOMMIN(tile_row_end, ctxt->plane_height);

@@ -368,8 +368,8 @@ typedef struct AV1Common {
 
   loop_filter_info_n lf_info;
 #if CONFIG_FRAME_SUPERRES
-  // The numerator of the superres scale; the denominator is fixed.
-  uint8_t superres_scale_numerator;
+  // The denominator of the superres scale; the numerator is fixed.
+  uint8_t superres_scale_denominator;
   int superres_upscaled_width;
   int superres_upscaled_height;
 #endif  // CONFIG_FRAME_SUPERRES

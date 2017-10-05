@@ -86,19 +86,19 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *scaled);
 
 // Calculates the scaled size from the given original dimensions and the scale
-// numerator.
-void av1_calculate_scaled_size(int *width, int *height, int num);
+// denominator.
+void av1_calculate_scaled_size(int *width, int *height, int denom);
 
 // Inverse of av1_calculate_scaled_size() above: calculates the original size
-// from the given scaled dimensions and the scale numerator.
-void av1_calculate_unscaled_size(int *width, int *height, int num);
+// from the given scaled dimensions and the scale denominator.
+void av1_calculate_unscaled_size(int *width, int *height, int denom);
 
 #if CONFIG_FRAME_SUPERRES
 void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool);
 
 // Returns 1 if a superres upscaled frame is unscaled and 0 otherwise.
 static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
-  return (cm->superres_scale_numerator == SCALE_DENOMINATOR);
+  return (cm->superres_scale_denominator == SCALE_NUMERATOR);
 }
 #endif  // CONFIG_FRAME_SUPERRES
 

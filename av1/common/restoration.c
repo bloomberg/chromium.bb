@@ -1782,8 +1782,8 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 #if CONFIG_FRAME_SUPERRES
   const int frame_w = cm->superres_upscaled_width;
   const int frame_h = cm->superres_upscaled_height;
-  const int mi_to_px = MI_SIZE * cm->superres_scale_numerator;
-  const int denom = SCALE_DENOMINATOR;
+  const int mi_to_px = MI_SIZE * SCALE_NUMERATOR;
+  const int denom = cm->superres_scale_denominator;
 #else
   const int frame_w = cm->width;
   const int frame_h = cm->height;

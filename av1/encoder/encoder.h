@@ -218,14 +218,14 @@ typedef struct AV1EncoderConfig {
 #endif
   // Internal frame size scaling.
   RESIZE_MODE resize_mode;
-  uint8_t resize_scale_numerator;
-  uint8_t resize_kf_scale_numerator;
+  uint8_t resize_scale_denominator;
+  uint8_t resize_kf_scale_denominator;
 
 #if CONFIG_FRAME_SUPERRES
   // Frame Super-Resolution size scaling.
   SUPERRES_MODE superres_mode;
-  uint8_t superres_scale_numerator;
-  uint8_t superres_kf_scale_numerator;
+  uint8_t superres_scale_denominator;
+  uint8_t superres_kf_scale_denominator;
   int superres_qthresh;
   int superres_kf_qthresh;
 #endif  // CONFIG_FRAME_SUPERRES

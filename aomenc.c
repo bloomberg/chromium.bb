@@ -290,18 +290,18 @@ static const arg_def_t dropframe_thresh =
     ARG_DEF(NULL, "drop-frame", 1, "Temporal resampling threshold (buf %)");
 static const arg_def_t resize_mode =
     ARG_DEF(NULL, "resize-mode", 1, "Frame resize mode");
-static const arg_def_t resize_numerator =
-    ARG_DEF(NULL, "resize-numerator", 1, "Frame resize numerator");
-static const arg_def_t resize_kf_numerator =
-    ARG_DEF(NULL, "resize-kf-numerator", 1, "Frame resize keyframe numerator");
+static const arg_def_t resize_denominator =
+    ARG_DEF(NULL, "resize-denominator", 1, "Frame resize denominator");
+static const arg_def_t resize_kf_denominator = ARG_DEF(
+    NULL, "resize-kf-denominator", 1, "Frame resize keyframe denominator");
 #if CONFIG_FRAME_SUPERRES
 static const arg_def_t superres_mode =
     ARG_DEF(NULL, "superres-mode", 1, "Frame super-resolution mode");
-static const arg_def_t superres_numerator =
-    ARG_DEF(NULL, "superres-numerator", 1, "Frame super-resolution numerator");
-static const arg_def_t superres_kf_numerator =
-    ARG_DEF(NULL, "superres-kf-numerator", 1,
-            "Frame super-resolution keyframe numerator");
+static const arg_def_t superres_denominator = ARG_DEF(
+    NULL, "superres-denominator", 1, "Frame super-resolution denominator");
+static const arg_def_t superres_kf_denominator =
+    ARG_DEF(NULL, "superres-kf-denominator", 1,
+            "Frame super-resolution keyframe denominator");
 static const arg_def_t superres_qthresh = ARG_DEF(
     NULL, "superres-qthresh", 1, "Frame super-resolution qindex threshold");
 static const arg_def_t superres_kf_qthresh =
@@ -333,12 +333,12 @@ static const arg_def_t buf_optimal_sz =
     ARG_DEF(NULL, "buf-optimal-sz", 1, "Client optimal buffer size (ms)");
 static const arg_def_t *rc_args[] = { &dropframe_thresh,
                                       &resize_mode,
-                                      &resize_numerator,
-                                      &resize_kf_numerator,
+                                      &resize_denominator,
+                                      &resize_kf_denominator,
 #if CONFIG_FRAME_SUPERRES
                                       &superres_mode,
-                                      &superres_numerator,
-                                      &superres_kf_numerator,
+                                      &superres_denominator,
+                                      &superres_kf_denominator,
                                       &superres_qthresh,
                                       &superres_kf_qthresh,
 #endif  // CONFIG_FRAME_SUPERRES
@@ -1057,17 +1057,17 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_mode, argi)) {
       config->cfg.rc_resize_mode = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_numerator, argi)) {
-      config->cfg.rc_resize_numerator = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_kf_numerator, argi)) {
-      config->cfg.rc_resize_kf_numerator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &resize_denominator, argi)) {
+      config->cfg.rc_resize_denominator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &resize_kf_denominator, argi)) {
+      config->cfg.rc_resize_kf_denominator = arg_parse_uint(&arg);
 #if CONFIG_FRAME_SUPERRES
     } else if (arg_match(&arg, &superres_mode, argi)) {
       config->cfg.rc_superres_mode = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_numerator, argi)) {
-      config->cfg.rc_superres_numerator = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &superres_kf_numerator, argi)) {
-      config->cfg.rc_superres_kf_numerator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &superres_denominator, argi)) {
+      config->cfg.rc_superres_denominator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &superres_kf_denominator, argi)) {
+      config->cfg.rc_superres_kf_denominator = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &superres_qthresh, argi)) {
       config->cfg.rc_superres_qthresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &superres_kf_qthresh, argi)) {
@@ -1286,12 +1286,12 @@ static void show_stream_config(struct stream_state *stream,
 #endif  // CONFIG_EXT_TILE
   SHOW(rc_dropframe_thresh);
   SHOW(rc_resize_mode);
-  SHOW(rc_resize_numerator);
-  SHOW(rc_resize_kf_numerator);
+  SHOW(rc_resize_denominator);
+  SHOW(rc_resize_kf_denominator);
 #if CONFIG_FRAME_SUPERRES
   SHOW(rc_superres_mode);
-  SHOW(rc_superres_numerator);
-  SHOW(rc_superres_kf_numerator);
+  SHOW(rc_superres_denominator);
+  SHOW(rc_superres_kf_denominator);
   SHOW(rc_superres_qthresh);
   SHOW(rc_superres_kf_qthresh);
 #endif  // CONFIG_FRAME_SUPERRES

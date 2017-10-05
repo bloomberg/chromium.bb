@@ -372,21 +372,21 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int rc_resize_mode;
 
-  /*!\brief Frame resize numerator.
+  /*!\brief Frame resize denominator.
    *
-   * The numerator for resize to use, assuming 16 as the denominator.
+   * The denominator for resize to use, assuming 8 as the numerator.
    *
-   * Valid numerators are  8 - 16 for now.
+   * Valid denominators are  8 - 16 for now.
    */
-  unsigned int rc_resize_numerator;
+  unsigned int rc_resize_denominator;
 
-  /*!\brief Keyframe resize numerator.
+  /*!\brief Keyframe resize denominator.
    *
-   * The numerator for resize to use, assuming 16 as the denominator.
+   * The denominator for resize to use, assuming 8 as the numerator.
    *
-   * Valid numerators are  8 - 16 for now.
+   * Valid denominators are  8 - 16 for now.
    */
-  unsigned int rc_resize_kf_numerator;
+  unsigned int rc_resize_kf_denominator;
 
   /*!\brief Frame super-resolution scaling mode.
    *
@@ -399,27 +399,27 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int rc_superres_mode;
 
-  /*!\brief Frame super-resolution numerator.
+  /*!\brief Frame super-resolution denominator.
    *
-   * The numerator for superres to use. If fixed it will only change if the
+   * The denominator for superres to use. If fixed it will only change if the
    * cumulative scale change over resizing and superres is greater than 1/2;
    * this forces superres to reduce scaling.
    *
-   * Valid numerators are 8 to 16.
+   * Valid denominators are 8 to 16.
    *
    * Used only by SUPERRES_FIXED.
    */
-  unsigned int rc_superres_numerator;
+  unsigned int rc_superres_denominator;
 
-  /*!\brief Keyframe super-resolution numerator.
+  /*!\brief Keyframe super-resolution denominator.
    *
-   * The numerator for superres to use. If fixed it will only change if the
+   * The denominator for superres to use. If fixed it will only change if the
    * cumulative scale change over resizing and superres is greater than 1/2;
    * this forces superres to reduce scaling.
    *
-   * Valid numerators are 8 - 16 for now.
+   * Valid denominators are 8 - 16 for now.
    */
-  unsigned int rc_superres_kf_numerator;
+  unsigned int rc_superres_kf_denominator;
 
   /*!\brief Frame super-resolution q threshold.
    *
