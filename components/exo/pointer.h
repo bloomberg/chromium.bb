@@ -32,6 +32,7 @@ class MouseEvent;
 
 namespace exo {
 class PointerDelegate;
+class PointerGesturePinchDelegate;
 class Surface;
 class SurfaceTreeHost;
 
@@ -53,6 +54,9 @@ class Pointer : public SurfaceTreeHost,
   // pointer location, in surface local coordinates.
   void SetCursor(Surface* surface, const gfx::Point& hotspot);
 
+  // Set delegate for pinch events.
+  void SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate);
+
   // Returns the current cursor for the pointer.
   gfx::NativeCursor GetCursor();
 
@@ -65,6 +69,7 @@ class Pointer : public SurfaceTreeHost,
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from WMHelper::CursorObserver:
   void OnCursorSizeChanged(ui::CursorSize cursor_size) override;
@@ -94,6 +99,9 @@ class Pointer : public SurfaceTreeHost,
 
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
+
+  // The delegate instance that all pinch related events are dispatched to.
+  PointerGesturePinchDelegate* pinch_delegate_ = nullptr;
 
   // The current focus surface for the pointer.
   Surface* focus_surface_ = nullptr;
