@@ -11,6 +11,10 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if defined(USE_AURA)
+#include "services/ui/public/interfaces/window_tree.mojom.h"
+#endif
+
 namespace blink {
 class WebGestureEvent;
 }
@@ -149,6 +153,13 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Called by RenderWidgetHostViewChildFrame to update the visibility of any
   // nested child RWHVCFs inside it.
   virtual void SetVisibilityForChildViews(bool visible) const {}
+
+#if defined(USE_AURA)
+  // Embeds a WindowTreeClient in the parent. This results in the parent
+  // creating a window in the ui server so that this can render to the screen.
+  virtual void EmbedRendererWindowTreeClientInParent(
+      ui::mojom::WindowTreeClientPtr window_tree_client) {}
+#endif
 
  protected:
   virtual ~FrameConnectorDelegate() {}

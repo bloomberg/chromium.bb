@@ -28,9 +28,13 @@ namespace {
 
 void BindMusConnectionOnMainThread(
     uint32_t routing_id,
-    ui::mojom::WindowTreeClientRequest request) {
+    ui::mojom::WindowTreeClientRequest request,
+    mojom::RenderWidgetWindowTreeClientRequest
+        render_widget_window_tree_client_request) {
   RendererWindowTreeClient::CreateIfNecessary(routing_id);
-  RendererWindowTreeClient::Get(routing_id)->Bind(std::move(request));
+  RendererWindowTreeClient::Get(routing_id)
+      ->Bind(std::move(request),
+             std::move(render_widget_window_tree_client_request));
 }
 
 // This object's lifetime is managed by ServiceManagerConnection because it's a
@@ -61,10 +65,14 @@ class RenderWidgetWindowTreeClientFactoryImpl
   // mojom::RenderWidgetWindowTreeClientFactory implementation.
   void CreateWindowTreeClientForRenderWidget(
       uint32_t routing_id,
-      ui::mojom::WindowTreeClientRequest request) override {
+      ui::mojom::WindowTreeClientRequest request,
+      mojom::RenderWidgetWindowTreeClientRequest
+          render_widget_window_tree_client_request) override {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&BindMusConnectionOnMainThread, routing_id,
-                                  base::Passed(&request)));
+        FROM_HERE,
+        base::BindOnce(
+            &BindMusConnectionOnMainThread, routing_id, base::Passed(&request),
+            base::Passed(&render_widget_window_tree_client_request)));
   }
 
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/browser/site_instance_impl.h"
 #include "ipc/ipc_listener.h"
@@ -57,6 +58,8 @@ class RenderFrameProxyHost
     : public IPC::Listener,
       public IPC::Sender {
  public:
+  using DestructionCallback = base::OnceClosure;
+
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
   RenderFrameProxyHost(SiteInstance* site_instance,
@@ -114,6 +117,9 @@ class RenderFrameProxyHost
   // Returns if the RenderFrameProxy for this host is alive.
   bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
 
+  // Sets a callback that is run when this is destroyed.
+  void SetDestructionCallback(DestructionCallback destruction_callback);
+
  private:
   // IPC Message handlers.
   void OnDetach();
@@ -151,6 +157,8 @@ class RenderFrameProxyHost
   // kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
   // are associated with it.
   RenderViewHostImpl* render_view_host_;
+
+  DestructionCallback destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

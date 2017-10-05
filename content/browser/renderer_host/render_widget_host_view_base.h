@@ -40,9 +40,18 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
+#if defined(USE_AURA)
+#include "base/containers/flat_map.h"
+#include "content/common/render_widget_window_tree_client_factory.mojom.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
+#endif
 class SkBitmap;
 
 struct ViewHostMsg_SelectionBounds_Params;
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace cc {
 struct BeginFrameAck;
@@ -451,6 +460,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
     web_contents_accessibility_ = wcax;
   }
 
+#if defined(USE_AURA)
+  void EmbedChildFrameRendererWindowTreeClient(
+      RenderWidgetHostViewBase* root_view,
+      int routing_id,
+      ui::mojom::WindowTreeClientPtr renderer_window_tree_client);
+  void OnChildFrameDestroyed(int routing_id);
+#endif
+
   // Exposed for testing.
   virtual bool IsChildFrameForTesting() const;
   virtual viz::SurfaceId SurfaceIdForTesting() const;
@@ -460,6 +477,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   RenderWidgetHostViewBase();
 
   void NotifyObserversAboutShutdown();
+
+#if defined(USE_AURA)
+  virtual void ScheduleEmbed(
+      ui::mojom::WindowTreeClientPtr client,
+      base::OnceCallback<void(const base::UnguessableToken&)> callback);
+
+  ui::mojom::WindowTreeClientPtr GetWindowTreeClientFromRenderer();
+#endif
 
   // Is this a fullscreen view?
   bool is_fullscreen_;
@@ -495,11 +520,29 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   WebContentsAccessibility* web_contents_accessibility_;
 
  private:
+#if defined(USE_AURA)
+  void OnDidScheduleEmbed(int routing_id,
+                          int embed_id,
+                          const base::UnguessableToken& token);
+#endif
+
   gfx::Rect current_display_area_;
 
   uint32_t renderer_frame_number_;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver> observers_;
+
+#if defined(USE_AURA)
+  mojom::RenderWidgetWindowTreeClientPtr render_widget_window_tree_client_;
+
+  int next_embed_id_ = 0;
+  // Maps from routing_id to embed-id. The |routing_id| is the id supplied to
+  // EmbedChildFrameRendererWindowTreeClient() and the embed-id a unique id
+  // generate at the time EmbedChildFrameRendererWindowTreeClient() was called.
+  // This is done to ensure when OnDidScheduleEmbed() is received another call
+  // too EmbedChildFrameRendererWindowTreeClient() did not come in.
+  base::flat_map<int, int> pending_embeds_;
+#endif
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 

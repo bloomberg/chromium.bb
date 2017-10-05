@@ -99,6 +99,10 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void UnlockMouse() override;
   bool IsInert() const override;
   bool IsHidden() const override;
+#if defined(USE_AURA)
+  void EmbedRendererWindowTreeClientInParent(
+      ui::mojom::WindowTreeClientPtr window_tree_client) override;
+#endif
 
   // Set the visibility of immediate child views, i.e. views whose parent view
   // is |view_|.

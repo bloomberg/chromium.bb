@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
+#include "base/bind.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
@@ -390,6 +391,22 @@ bool CrossProcessFrameConnector::IsInert() const {
 bool CrossProcessFrameConnector::IsHidden() const {
   return is_hidden_;
 }
+
+#if defined(USE_AURA)
+void CrossProcessFrameConnector::EmbedRendererWindowTreeClientInParent(
+    ui::mojom::WindowTreeClientPtr window_tree_client) {
+  RenderWidgetHostViewBase* root = GetRootRenderWidgetHostView();
+  RenderWidgetHostViewBase* parent = GetParentRenderWidgetHostView();
+  if (!parent || !root)
+    return;
+  const int frame_routing_id = frame_proxy_in_parent_renderer_->GetRoutingID();
+  parent->EmbedChildFrameRendererWindowTreeClient(
+      root, frame_routing_id, std::move(window_tree_client));
+  frame_proxy_in_parent_renderer_->SetDestructionCallback(
+      base::BindOnce(&RenderWidgetHostViewBase::OnChildFrameDestroyed,
+                     parent->GetWeakPtr(), frame_routing_id));
+}
+#endif
 
 void CrossProcessFrameConnector::SetVisibilityForChildViews(
     bool visible) const {

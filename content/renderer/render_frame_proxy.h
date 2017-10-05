@@ -37,6 +37,10 @@ struct ContentSecurityPolicyHeader;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
 
+#if defined(USE_AURA)
+class MusEmbeddedFrame;
+#endif
+
 // When a page's frames are rendered by multiple processes, each renderer has a
 // full copy of the frame tree. It has full RenderFrames for the frames it is
 // responsible for rendering and placeholder objects for frames rendered by
@@ -129,6 +133,14 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // Returns the widget used for the local frame root.
   RenderWidget* render_widget() { return render_widget_; }
 
+#if defined(USE_AURA)
+  // Called when mus determines the FrameSinkId.
+  void OnMusFrameSinkIdAllocated(const viz::FrameSinkId& frame_sink_id);
+
+  void SetMusEmbeddedFrame(
+      std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
+#endif
+
   // blink::WebRemoteFrameClient implementation:
   void FrameDetached(DetachType type) override;
   void ForwardPostMessage(blink::WebLocalFrame* sourceFrame,
@@ -158,6 +170,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
             RenderWidget* render_widget);
 
   void ResendFrameRects();
+
+  void MaybeUpdateCompositingHelper();
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -210,6 +224,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;
+
+#if defined(USE_AURA)
+  std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };

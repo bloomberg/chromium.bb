@@ -54,6 +54,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
+#include "content/renderer/mash_util.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -402,6 +403,8 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
   }
 #if defined(USE_AURA)
   RendererWindowTreeClient::CreateIfNecessary(routing_id_);
+  if (IsRunningInMash())
+    RendererWindowTreeClient::Get(routing_id_)->SetVisible(!is_hidden_);
 #endif
 }
 
@@ -2033,6 +2036,11 @@ void RenderWidget::SetHidden(bool hidden) {
   // The status has changed.  Tell the RenderThread about it and ensure
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
+
+#if defined(USE_AURA)
+  if (IsRunningInMash())
+    RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
+#endif
 
   if (is_hidden_) {
     RenderThreadImpl::current()->WidgetHidden();

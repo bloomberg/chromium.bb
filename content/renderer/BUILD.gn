@@ -202,6 +202,8 @@ target(link_target_type, "renderer") {
     "manifest/manifest_parser.h",
     "manifest/manifest_uma_util.cc",
     "manifest/manifest_uma_util.h",
+    "mash_util.cc",
+    "mash_util.h",
     "media/android/media_player_renderer_client.cc",
     "media/android/media_player_renderer_client.h",
     "media/android/media_player_renderer_client_factory.cc",

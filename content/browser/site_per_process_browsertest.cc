@@ -50,7 +50,6 @@
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -108,6 +107,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/overscroll_controller.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/test/mock_overscroll_controller_delegate_aura.h"
 #endif
@@ -1742,12 +1742,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test that an ET_SCROLL event sent to an out-of-process iframe correctly
 // results in a scroll. This is only handled by RenderWidgetHostViewAura
 // and is needed for trackpad scrolling on Chromebooks.
-#if !defined(USE_AURA)
-#define MAYBE_ScrollEventToOOPIF DISABLED_ScrollEventToOOPIF
-#else
-#define MAYBE_ScrollEventToOOPIF ScrollEventToOOPIF
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollEventToOOPIF) {
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollEventToOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1786,6 +1782,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollEventToOOPIF) {
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
 }
+#endif
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
