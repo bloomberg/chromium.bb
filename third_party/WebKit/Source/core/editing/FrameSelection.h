@@ -181,6 +181,11 @@ class CORE_EXPORT FrameSelection final
   void UpdateSecureKeyboardEntryIfActive();
 
   // Returns true if a word is selected.
+  bool SelectWordAroundCaret();
+
+  // TODO(editing-dev): We should replace |SelectWordAroundPosition()|
+  // with |SelectWordAroundCaret()|.
+  // Returns true if a word is selected.
   bool SelectWordAroundPosition(const VisiblePosition&);
 
 #ifndef NDEBUG

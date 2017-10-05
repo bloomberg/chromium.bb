@@ -1177,21 +1177,10 @@ WebString WebLocalFrameImpl::SelectionAsMarkup() const {
 bool WebLocalFrameImpl::SelectWordAroundCaret() {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundCaret");
 
-  FrameSelection& selection = GetFrame()->Selection();
-
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  // TODO(editing-dev): The use of VisibleSelection needs to be audited. See
-  // http://crbug.com/657237 for more details.
-  if (selection.ComputeVisibleSelectionInDOMTree().IsNone() ||
-      selection.ComputeVisibleSelectionInDOMTree().IsRange()) {
-    return false;
-  }
-
-  return GetFrame()->Selection().SelectWordAroundPosition(
-      selection.ComputeVisibleSelectionInDOMTree().VisibleStart());
+  return GetFrame()->Selection().SelectWordAroundCaret();
 }
 
 void WebLocalFrameImpl::SelectRange(const WebPoint& base_in_viewport,
