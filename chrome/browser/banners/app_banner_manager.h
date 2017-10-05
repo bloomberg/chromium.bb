@@ -195,7 +195,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Resets all fetched data for the current page.
   virtual void ResetCurrentPageData();
 
-  void Stop();
+  // Stops the banner pipeline early.
+  void Terminate();
 
   // Stops the banner pipeline, preventing any outstanding callbacks from
   // running and resetting the manager state. This method is virtual to allow
@@ -285,6 +286,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // Called when Blink has prevented a banner from being shown, and is now
   // requesting that it be shown later.
   void DisplayAppBanner(bool user_gesture) override;
+
+  // Returns a status code based on the current state, to log when terminating.
+  InstallableStatusCode TerminationCode() const;
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
