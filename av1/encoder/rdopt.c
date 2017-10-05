@@ -5195,9 +5195,9 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int count32 =
       1 << (2 * (cm->mib_size_log2 - mi_width_log2_lookup[BLOCK_32X32]));
 #if CONFIG_EXT_PARTITION
-  RD_STATS rd_stats_stack[16];
+  RD_STATS *rd_stats_stack = aom_malloc(16 * sizeof(*rd_stats_stack));
 #else
-  RD_STATS rd_stats_stack[4];
+  RD_STATS *rd_stats_stack = aom_malloc(4 * sizeof(*rd_stats_stack));
 #endif  // CONFIG_EXT_PARTITION
 #if CONFIG_EXT_TX
   const TxSetType tx_set_type = get_ext_tx_set_type(
@@ -5229,6 +5229,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       if (tx_rd_record->tx_rd_info[index].hash_value == hash) {
         TX_RD_INFO *tx_rd_info = &tx_rd_record->tx_rd_info[index];
         fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
+        aom_free(rd_stats_stack);
         return;
       }
     }
@@ -5304,6 +5305,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
         (tx_rd_record->index_start + 1) % RD_RECORD_BUFFER_LEN;
   }
   save_tx_rd_info(n4, hash, x, rd_stats, &tx_rd_record->tx_rd_info[index]);
+  aom_free(rd_stats_stack);
 }
 
 static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
