@@ -22,9 +22,6 @@ extern const char kClearKeyCdmAdapterFileName[];
 // Display name for Clear Key CDM.
 extern const char kClearKeyCdmDisplayName[];
 
-// The CDM type used to register Clear Key CDM.
-extern const char kClearKeyCdmType[];
-
 // The default GUID for Clear Key Cdm.
 extern const char kClearKeyCdmGuid[];
 

@@ -17,7 +17,7 @@ class CommandLine;
 void RegisterExternalClearKey(base::CommandLine* command_line,
                               bool expect_cdm_exists = true);
 
-bool IsLibraryCdmRegistered(const std::string& cdm_type);
+bool IsLibraryCdmRegistered(const std::string& cdm_guid);
 
 // TODO(crbug.com/403462): Remove the following after pepper CDM is deprecated.
 

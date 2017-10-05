@@ -35,12 +35,12 @@ void RegisterExternalClearKey(base::CommandLine* command_line,
                                    cdm_path.value());
 }
 
-bool IsLibraryCdmRegistered(const std::string& cdm_type) {
+bool IsLibraryCdmRegistered(const std::string& cdm_guid) {
   std::vector<content::CdmInfo> cdm_info_vector =
       content::CdmRegistry::GetInstance()->GetAllRegisteredCdms();
   for (const auto& cdm_info : cdm_info_vector) {
-    if (cdm_info.type == cdm_type) {
-      DVLOG(2) << "CDM registered for " << cdm_type << " with path "
+    if (cdm_info.guid == cdm_guid) {
+      DVLOG(2) << "CDM registered for " << cdm_guid << " with path "
                << cdm_info.path.value();
       return true;
     }
