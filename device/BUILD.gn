@@ -119,6 +119,8 @@ test("device_unittests") {
       "hid/test_report_descriptors.cc",
       "hid/test_report_descriptors.h",
       "serial/serial_io_handler_posix_unittest.cc",
+      "u2f/fake_hid_impl_for_testing.cc",
+      "u2f/fake_hid_impl_for_testing.h",
       "u2f/u2f_hid_device_unittest.cc",
       "u2f/u2f_register_unittest.cc",
       "u2f/u2f_request_unittest.cc",
@@ -128,6 +130,10 @@ test("device_unittests") {
       "//device/hid",
       "//device/hid:mocks",
       "//device/serial",
+      "//device/u2f",
+      "//device/u2f:mocks",
+      "//services/service_manager/public/cpp",
+      "//services/service_manager/public/interfaces",
     ]
   }
 

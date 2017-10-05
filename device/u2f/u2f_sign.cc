@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "u2f_sign.h"
+#include "device/u2f/u2f_sign.h"
 
 #include "base/memory/ptr_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
 U2fSign::U2fSign(const std::vector<std::vector<uint8_t>>& registered_keys,
                  const std::vector<uint8_t>& challenge_hash,
                  const std::vector<uint8_t>& app_param,
-                 const ResponseCallback& cb)
-    : U2fRequest(cb),
+                 const ResponseCallback& cb,
+                 service_manager::Connector* connector)
+    : U2fRequest(cb, connector),
       registered_keys_(registered_keys),
       challenge_hash_(challenge_hash),
       app_param_(app_param),
@@ -25,9 +27,10 @@ std::unique_ptr<U2fRequest> U2fSign::TrySign(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
-    const ResponseCallback& cb) {
-  std::unique_ptr<U2fRequest> request =
-      std::make_unique<U2fSign>(registered_keys, challenge_hash, app_param, cb);
+    const ResponseCallback& cb,
+    service_manager::Connector* connector) {
+  std::unique_ptr<U2fRequest> request = std::make_unique<U2fSign>(
+      registered_keys, challenge_hash, app_param, cb, connector);
   request->Start();
   return request;
 }

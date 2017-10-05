@@ -7,31 +7,24 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/test_io_thread.h"
-#include "device/base/mock_device_client.h"
-#include "device/hid/mock_hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
-#include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
+#include "device/u2f/fake_hid_impl_for_testing.h"
 #include "device/u2f/u2f_hid_device.h"
+#include "device/u2f/u2f_request.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "u2f_request.h"
 
 namespace device {
 namespace {
-#if defined(OS_MACOSX)
-const uint64_t kTestDeviceId0 = 42;
-const uint64_t kTestDeviceId1 = 43;
-const uint64_t kTestDeviceId2 = 44;
-#else
-const char* kTestDeviceId0 = "device0";
-const char* kTestDeviceId1 = "device1";
-const char* kTestDeviceId2 = "device2";
-#endif
 
 class FakeU2fRequest : public U2fRequest {
  public:
-  FakeU2fRequest(const ResponseCallback& cb) : U2fRequest(cb) {}
+  FakeU2fRequest(const ResponseCallback& cb,
+                 service_manager::Connector* connector)
+      : U2fRequest(cb, connector) {}
   ~FakeU2fRequest() override {}
 
   void TryDevice() override {
@@ -53,8 +46,9 @@ class TestResponseCallback {
   }
 
   void WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
-    run_loop_.Run();
+    base::RunLoop run_loop;
+    closure_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   U2fRequest::ResponseCallback& callback() { return callback_; }
@@ -62,84 +56,100 @@ class TestResponseCallback {
  private:
   base::Closure closure_;
   U2fRequest::ResponseCallback callback_;
-  base::RunLoop run_loop_;
 };
 
 class U2fRequestTest : public testing::Test {
  public:
   U2fRequestTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        io_thread_(base::TestIOThread::kAutoStart) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+
+  void SetUp() override {
+    fake_hid_manager_ = std::make_unique<FakeHidManager>();
+
+    service_manager::mojom::ConnectorRequest request;
+    connector_ = service_manager::Connector::Create(&request);
+    service_manager::Connector::TestApi test_api(connector_.get());
+    test_api.OverrideBinderForTesting(
+        device::mojom::kServiceName, device::mojom::HidManager::Name_,
+        base::Bind(&FakeHidManager::AddBinding,
+                   base::Unretained(fake_hid_manager_.get())));
+  }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::TestIOThread io_thread_;
-  device::MockDeviceClient device_client_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<FakeHidManager> fake_hid_manager_;
 };
 
 TEST_F(U2fRequestTest, TestAddRemoveDevice) {
-  MockHidService* hid_service = device_client_.hid_service();
-  HidCollectionInfo c_info;
-  hid_service->FirstEnumerationComplete();
-
   TestResponseCallback cb;
-  FakeU2fRequest request(cb.callback());
+  FakeU2fRequest request(cb.callback(), connector_.get());
   request.Enumerate();
-
-  c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> u2f_device_0 =
-      base::WrapRefCounted(new HidDeviceInfo(
-          kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
-          device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
-  hid_service->AddDevice(u2f_device_0);
-
-  // Make sure the enumeration is finshed, so HidService is ready to send
-  // the OnDeviceAdded or OnDeviceRemoved to its observers.
-  cb.WaitForCallback();
   EXPECT_EQ(static_cast<size_t>(0), request.devices_.size());
 
+  HidCollectionInfo c_info;
+  c_info.usage = HidUsageAndPage(1, 0xf1d0);
+
   // Add one U2F device
-  scoped_refptr<HidDeviceInfo> u2f_device_1 =
-      base::WrapRefCounted(new HidDeviceInfo(
-          kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
-          device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
-  hid_service->AddDevice(u2f_device_1);
+  auto u2f_device = std::make_unique<device::mojom::HidDeviceInfo>();
+  u2f_device->guid = "A";
+  u2f_device->product_name = "Test Fido Device";
+  u2f_device->serial_number = "123FIDO";
+  u2f_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
+  u2f_device->collections.push_back(c_info);
+  u2f_device->max_input_report_size = 64;
+  u2f_device->max_output_report_size = 64;
+
+  request.DeviceAdded(u2f_device->Clone());
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
 
   // Add one non-U2F device. Verify that it is not added to our device list.
-  scoped_refptr<HidDeviceInfo> other_device =
-      base::WrapRefCounted(new HidDeviceInfo(
-          kTestDeviceId2, 0, 0, "Other Device", "OtherDevice",
-          device::mojom::HidBusType::kHIDBusTypeUSB, std::vector<uint8_t>()));
-  hid_service->AddDevice(other_device);
+  auto other_device = std::make_unique<device::mojom::HidDeviceInfo>();
+  other_device->guid = "B";
+  other_device->product_name = "Other Device";
+  other_device->serial_number = "OtherDevice";
+  other_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
+
+  request.DeviceAdded(other_device->Clone());
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
 
   // Remove the non-U2F device and verify that device list was unchanged.
-  hid_service->RemoveDevice(kTestDeviceId2);
+  request.DeviceRemoved(other_device->Clone());
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
 
   // Remove the U2F device and verify that device list is empty.
-  hid_service->RemoveDevice(kTestDeviceId1);
+  request.DeviceRemoved(u2f_device->Clone());
   EXPECT_EQ(static_cast<size_t>(0), request.devices_.size());
 }
 
 TEST_F(U2fRequestTest, TestIterateDevice) {
   TestResponseCallback cb;
-  FakeU2fRequest request(cb.callback());
+  FakeU2fRequest request(cb.callback(), connector_.get());
   HidCollectionInfo c_info;
+  c_info.usage = HidUsageAndPage(1, 0xf1d0);
+
   // Add one U2F device and one non-U2f device
-  c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> device0 = base::WrapRefCounted(new HidDeviceInfo(
-      kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
-      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
+  auto u2f_device = device::mojom::HidDeviceInfo::New();
+  u2f_device->guid = "A";
+  u2f_device->product_name = "Test Fido device";
+  u2f_device->serial_number = "123FIDO";
+  u2f_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
+  u2f_device->collections.push_back(c_info);
+  u2f_device->max_input_report_size = 64;
+  u2f_device->max_output_report_size = 64;
+
   request.devices_.push_back(
-      std::make_unique<U2fHidDevice>(device0->device()->Clone()));
-  scoped_refptr<HidDeviceInfo> device1 = base::WrapRefCounted(new HidDeviceInfo(
-      kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
-      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
+      std::make_unique<U2fHidDevice>(std::move(u2f_device), nullptr));
+
+  auto other_device = device::mojom::HidDeviceInfo::New();
+  other_device->guid = "B";
+  other_device->product_name = "Other Device";
+  other_device->serial_number = "OtherDevice";
+  other_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
+
   request.devices_.push_back(
-      std::make_unique<U2fHidDevice>(device1->device()->Clone()));
+      std::make_unique<U2fHidDevice>(std::move(other_device), nullptr));
 
   // Move first device to current
   request.IterateDevice();
@@ -160,19 +170,25 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
 }
 
 TEST_F(U2fRequestTest, TestBasicMachine) {
-  MockHidService* hid_service = device_client_.hid_service();
-  hid_service->FirstEnumerationComplete();
   TestResponseCallback cb;
-  FakeU2fRequest request(cb.callback());
+  FakeU2fRequest request(cb.callback(), connector_.get());
   request.Start();
-  // Add one U2F device
+
   HidCollectionInfo c_info;
-  c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> u2f_device =
-      base::WrapRefCounted(new HidDeviceInfo(
-          kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
-          device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
-  hid_service->AddDevice(u2f_device);
+  c_info.usage = HidUsageAndPage(1, 0xf1d0);
+
+  // Add one U2F device
+  auto u2f_device = device::mojom::HidDeviceInfo::New();
+  u2f_device->guid = "A";
+  u2f_device->product_name = "Test Fido device";
+  u2f_device->serial_number = "123FIDO";
+  u2f_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
+  u2f_device->collections.push_back(c_info);
+  u2f_device->max_input_report_size = 64;
+  u2f_device->max_output_report_size = 64;
+
+  fake_hid_manager_->AddDevice(std::move(u2f_device));
+
   cb.WaitForCallback();
   EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
 }

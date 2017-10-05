@@ -7,7 +7,11 @@
 
 #include <vector>
 
-#include "u2f_request.h"
+#include "device/u2f/u2f_request.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace device {
 
@@ -16,14 +20,16 @@ class U2fSign : public U2fRequest {
   U2fSign(const std::vector<std::vector<uint8_t>>& registered_keys,
           const std::vector<uint8_t>& challenge_hash,
           const std::vector<uint8_t>& app_param,
-          const ResponseCallback& cb);
+          const ResponseCallback& cb,
+          service_manager::Connector* connector);
   ~U2fSign() override;
 
   static std::unique_ptr<U2fRequest> TrySign(
       const std::vector<std::vector<uint8_t>>& registered_keys,
       const std::vector<uint8_t>& challenge_hash,
       const std::vector<uint8_t>& app_param,
-      const ResponseCallback& cb);
+      const ResponseCallback& cb,
+      service_manager::Connector* connector);
 
  private:
   void TryDevice() override;

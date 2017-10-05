@@ -8,22 +8,18 @@
 #include <list>
 
 #include "base/cancelable_callback.h"
-#include "device/hid/hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
-#include "u2f_device.h"
-
-namespace net {
-class IOBuffer;
-}  // namespace net
+#include "device/u2f/u2f_device.h"
 
 namespace device {
 
 class U2fMessage;
-class HidConnection;
 
 class U2fHidDevice : public U2fDevice {
  public:
-  U2fHidDevice(device::mojom::HidDeviceInfoPtr);
+  U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info,
+               device::mojom::HidManager* hid_manager);
+
   ~U2fHidDevice() final;
 
   // Send a U2f command to this device
@@ -45,12 +41,13 @@ class U2fHidDevice : public U2fDevice {
 
   using U2fHidMessageCallback =
       base::OnceCallback<void(bool, std::unique_ptr<U2fMessage>)>;
+  using ConnectCallback = device::mojom::HidManager::ConnectCallback;
 
   // Open a connection to this device
-  void Connect(const HidService::ConnectCallback& callback);
+  void Connect(ConnectCallback callback);
   void OnConnect(std::unique_ptr<U2fApduCommand> command,
                  const DeviceCallback& callback,
-                 scoped_refptr<HidConnection> connection);
+                 device::mojom::HidConnectionPtr connection);
   // Ask device to allocate a unique channel id for this connection
   void AllocateChannel(std::unique_ptr<U2fApduCommand> command,
                        const DeviceCallback& callback);
@@ -76,13 +73,13 @@ class U2fHidDevice : public U2fDevice {
                        std::unique_ptr<U2fMessage> message);
   void OnRead(U2fHidMessageCallback callback,
               bool success,
-              scoped_refptr<net::IOBuffer> buf,
-              size_t size);
+              uint8_t report_id,
+              const base::Optional<std::vector<uint8_t>>& buf);
   void OnReadContinuation(std::unique_ptr<U2fMessage> message,
-                          U2fHidMessageCallback,
+                          U2fHidMessageCallback callback,
                           bool success,
-                          scoped_refptr<net::IOBuffer> buf,
-                          size_t size);
+                          uint8_t report_id,
+                          const base::Optional<std::vector<uint8_t>>& buf);
   void OnWink(const WinkCallback& callback,
               bool success,
               std::unique_ptr<U2fMessage> response);
@@ -96,8 +93,13 @@ class U2fHidDevice : public U2fDevice {
   base::CancelableClosure timeout_callback_;
   std::list<std::pair<std::unique_ptr<U2fApduCommand>, DeviceCallback>>
       pending_transactions_;
+
+  // All the U2fHidDevice instances are owned by U2fRequest. So it is safe to
+  // let the U2fHidDevice share the device::mojo::HidManager raw pointer from
+  // U2fRequest.
+  device::mojom::HidManager* hid_manager_;
   device::mojom::HidDeviceInfoPtr device_info_;
-  scoped_refptr<HidConnection> connection_;
+  device::mojom::HidConnectionPtr connection_;
   base::WeakPtrFactory<U2fHidDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(U2fHidDevice);

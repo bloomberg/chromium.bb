@@ -6,24 +6,33 @@
 #define DEVICE_U2F_U2F_REQUEST_H_
 
 #include "base/cancelable_callback.h"
-#include "base/scoped_observer.h"
 #include "device/hid/hid_device_filter.h"
-#include "device/hid/hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
-#include "u2f_device.h"
+#include "device/u2f/u2f_device.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace device {
 
-// TODO(crbug/763303): Factor out HidService::Observer to make this class
-// transport agnostic, so that BLE devices could take part in requests as well.
-class U2fRequest : HidService::Observer {
+// TODO(crbug/769631): Now the U2F is talking to HID via mojo, once the U2F
+// servicification is unblocked, we'll move U2F back to //service/device/.
+// Then it will talk to HID via C++ as part of servicifying U2F.
+
+// TODO(crbug/763303): Factor out device::mojom::HidManagerClient to make this
+// class transport agnostic, so that BLE devices could take part in requests as
+// well.
+class U2fRequest : device::mojom::HidManagerClient {
  public:
   using ResponseCallback =
       base::Callback<void(U2fReturnCode status_code,
                           const std::vector<uint8_t>& response)>;
 
-  U2fRequest(const ResponseCallback& callback);
-  virtual ~U2fRequest();
+  U2fRequest(const ResponseCallback& callback,
+             service_manager::Connector* connector);
+  ~U2fRequest() override;
 
   void Start();
   void AddDeviceForTesting(std::unique_ptr<U2fDevice> device);
@@ -37,6 +46,10 @@ class U2fRequest : HidService::Observer {
     OFF,
     COMPLETE,
   };
+
+  // device::mojom::HidManagerClient implementation:
+  void DeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
+  void DeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;
 
   void Transition();
   virtual void TryDevice() = 0;
@@ -54,16 +67,16 @@ class U2fRequest : HidService::Observer {
   void IterateDevice();
   void OnWaitComplete();
   void AddDevice(std::unique_ptr<U2fDevice> device);
-  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
-  void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;
-  void OnEnumerate(HidService* hid_service,
-                   std::vector<device::mojom::HidDeviceInfoPtr> devices);
+
+  void OnEnumerate(std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
   std::list<std::unique_ptr<U2fDevice>> devices_;
   std::list<std::unique_ptr<U2fDevice>> attempted_devices_;
   base::CancelableClosure delay_callback_;
+  service_manager::Connector* connector_;
+  device::mojom::HidManagerPtr hid_manager_;
+  mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
   HidDeviceFilter filter_;
-  ScopedObserver<HidService, HidService::Observer> hid_service_observer_;
   base::WeakPtrFactory<U2fRequest> weak_factory_;
 };
 

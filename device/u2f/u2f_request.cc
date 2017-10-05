@@ -2,20 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "u2f_request.h"
+#include "device/u2f/u2f_request.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/base/device_client.h"
-#include "u2f_hid_device.h"
+#include "device/u2f/u2f_hid_device.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
-U2fRequest::U2fRequest(const ResponseCallback& cb)
+U2fRequest::U2fRequest(const ResponseCallback& cb,
+                       service_manager::Connector* connector)
     : state_(State::INIT),
       cb_(cb),
-      hid_service_observer_(this),
+      connector_(connector),
+      binding_(this),
       weak_factory_(this) {
   filter_.SetUsagePage(0xf1d0);
 }
@@ -49,42 +53,46 @@ void U2fRequest::Start() {
 }
 
 void U2fRequest::Enumerate() {
-  HidService* hid_service = DeviceClient::Get()->GetHidService();
-  DCHECK(hid_service);
-  hid_service->GetDevices(base::Bind(&U2fRequest::OnEnumerate,
-                                     weak_factory_.GetWeakPtr(), hid_service));
+  DCHECK(connector_);
+  connector_->BindInterface(device::mojom::kServiceName,
+                            mojo::MakeRequest(&hid_manager_));
+  device::mojom::HidManagerClientAssociatedPtrInfo client;
+  binding_.Bind(mojo::MakeRequest(&client));
+
+  hid_manager_->GetDevicesAndSetClient(
+      std::move(client),
+      base::BindOnce(&U2fRequest::OnEnumerate, weak_factory_.GetWeakPtr()));
 }
 
 void U2fRequest::OnEnumerate(
-    HidService* hid_service,
     std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   for (auto& device_info : devices) {
     if (filter_.Matches(*device_info))
-      devices_.push_back(
-          std::make_unique<U2fHidDevice>(std::move(device_info)));
+      devices_.push_back(std::make_unique<U2fHidDevice>(std::move(device_info),
+                                                        hid_manager_.get()));
   }
-
-  hid_service_observer_.Add(hid_service);
 
   state_ = State::IDLE;
   Transition();
 }
 
-void U2fRequest::OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) {
+void U2fRequest::DeviceAdded(device::mojom::HidDeviceInfoPtr device_info) {
   // Ignore non-U2F devices
   if (!filter_.Matches(*device_info))
     return;
 
-  auto device = std::make_unique<U2fHidDevice>(std::move(device_info));
+  auto device = std::make_unique<U2fHidDevice>(std::move(device_info),
+                                               hid_manager_.get());
   AddDevice(std::move(device));
 }
 
-void U2fRequest::OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) {
+void U2fRequest::DeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) {
   // Ignore non-U2F devices
   if (!filter_.Matches(*device_info))
     return;
 
-  auto device = std::make_unique<U2fHidDevice>(std::move(device_info));
+  auto device = std::make_unique<U2fHidDevice>(std::move(device_info),
+                                               hid_manager_.get());
 
   // Check if the active device was removed
   if (current_device_ && current_device_->GetId() == device->GetId()) {

@@ -15,17 +15,11 @@
 namespace device {
 
 HidManagerImpl::HidManagerImpl()
-    // TODO(ke.he@intel.com): Temporarily we still keep the HidService being
-    // owned and hosted in ChromeDeviceClient. The device service is shutdown
-    // earlier than ChromeDeviceClient, it is safe to hold a raw pointer of
-    // HidService here. After //device/u2f be mojofied or be moved into device
-    // service, we will remove HidService from the ChromeDeviceClient and let
-    // HidManagerImpl to own the HidService.
-    : hid_service_(DeviceClient::Get()->GetHidService()),
+    : hid_service_(device::HidService::Create()),
       hid_service_observer_(this),
       weak_factory_(this) {
   DCHECK(hid_service_);
-  hid_service_observer_.Add(hid_service_);
+  hid_service_observer_.Add(hid_service_.get());
 }
 
 HidManagerImpl::~HidManagerImpl() {}

@@ -6,31 +6,38 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/test_io_thread.h"
-#include "device/base/mock_device_client.h"
-#include "device/hid/mock_hid_service.h"
-#include "device/test/test_device_client.h"
-#include "mock_u2f_device.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
+#include "device/u2f/fake_hid_impl_for_testing.h"
+#include "device/u2f/mock_u2f_device.h"
+#include "device/u2f/u2f_sign.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "u2f_sign.h"
 
 namespace device {
 class U2fSignTest : public testing::Test {
  public:
   U2fSignTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        io_thread_(base::TestIOThread::kAutoStart) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    MockHidService* hid_service = device_client_.hid_service();
-    hid_service->FirstEnumerationComplete();
+    fake_hid_manager_ = std::make_unique<FakeHidManager>();
+
+    service_manager::mojom::ConnectorRequest request;
+    connector_ = service_manager::Connector::Create(&request);
+    service_manager::Connector::TestApi test_api(connector_.get());
+    test_api.OverrideBinderForTesting(
+        device::mojom::kServiceName, device::mojom::HidManager::Name_,
+        base::Bind(&FakeHidManager::AddBinding,
+                   base::Unretained(fake_hid_manager_.get())));
   }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::TestIOThread io_thread_;
-  device::MockDeviceClient device_client_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<FakeHidManager> fake_hid_manager_;
 };
 
 class TestSignCallback {
@@ -70,9 +77,10 @@ TEST_F(U2fSignTest, TestSignSuccess) {
   EXPECT_CALL(*device.get(), TryWink(testing::_))
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
   TestSignCallback cb;
-  std::unique_ptr<U2fRequest> request =
-      U2fSign::TrySign(handles, std::vector<uint8_t>(32),
-                       std::vector<uint8_t>(32), cb.callback());
+
+  std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
+      cb.callback(), connector_.get());
   request->Start();
   request->AddDeviceForTesting(std::move(device));
   std::pair<U2fReturnCode, std::vector<uint8_t>>& response =
@@ -97,9 +105,9 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
       .WillRepeatedly(testing::Invoke(MockU2fDevice::WinkDoNothing));
   TestSignCallback cb;
 
-  std::unique_ptr<U2fRequest> request =
-      U2fSign::TrySign(handles, std::vector<uint8_t>(32),
-                       std::vector<uint8_t>(32), cb.callback());
+  std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
+      cb.callback(), connector_.get());
   request->Start();
   request->AddDeviceForTesting(std::move(device));
   std::pair<U2fReturnCode, std::vector<uint8_t>>& response =
@@ -131,9 +139,9 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
   TestSignCallback cb;
-  std::unique_ptr<U2fRequest> request =
-      U2fSign::TrySign(handles, std::vector<uint8_t>(32),
-                       std::vector<uint8_t>(32), cb.callback());
+  std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
+      cb.callback(), connector_.get());
   request->Start();
   request->AddDeviceForTesting(std::move(device));
   std::pair<U2fReturnCode, std::vector<uint8_t>>& response =
@@ -164,9 +172,9 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
   TestSignCallback cb;
-  std::unique_ptr<U2fRequest> request =
-      U2fSign::TrySign(handles, std::vector<uint8_t>(32),
-                       std::vector<uint8_t>(32), cb.callback());
+  std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
+      cb.callback(), connector_.get());
   request->Start();
   request->AddDeviceForTesting(std::move(device0));
   request->AddDeviceForTesting(std::move(device1));
@@ -201,9 +209,9 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
       .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
 
   TestSignCallback cb;
-  std::unique_ptr<U2fRequest> request =
-      U2fSign::TrySign(handles, std::vector<uint8_t>(32),
-                       std::vector<uint8_t>(32), cb.callback());
+  std::unique_ptr<U2fRequest> request = U2fSign::TrySign(
+      handles, std::vector<uint8_t>(32), std::vector<uint8_t>(32),
+      cb.callback(), connector_.get());
   request->Start();
   request->AddDeviceForTesting(std::move(device0));
   request->AddDeviceForTesting(std::move(device1));
