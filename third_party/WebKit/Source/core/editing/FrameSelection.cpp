@@ -1021,6 +1021,15 @@ void FrameSelection::ScheduleVisualUpdateForPaintInvalidationIfNeeded() const {
     frame_view->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
+bool FrameSelection::SelectWordAroundCaret() {
+  const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
+  // TODO(editing-dev): The use of VisibleSelection needs to be audited. See
+  // http://crbug.com/657237 for more details.
+  if (!selection.IsCaret())
+    return false;
+  return SelectWordAroundPosition(selection.VisibleStart());
+}
+
 bool FrameSelection::SelectWordAroundPosition(const VisiblePosition& position) {
   static const EWordSide kWordSideList[2] = {kRightWordIfOnBoundary,
                                              kLeftWordIfOnBoundary};
