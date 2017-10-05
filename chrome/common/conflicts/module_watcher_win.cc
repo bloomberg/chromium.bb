@@ -86,6 +86,13 @@ using LdrUnregisterDllNotificationFunc = NTSTATUS(NTAPI*)(PVOID cookie);
 namespace {
 
 // Global lock for ensuring synchronization of destruction and notifications.
+//
+// Warning: Since this lock is acquired inside the DLL notification callbacks,
+//          it must never be held when calling into any functions that may
+//          acquire the Loader Lock, as this is a lock order violation that will
+//          cause a deadlock. A noteworthy example in this file are the
+//          LdrRegisterDllNotification and LdrUnregisterDllNotification
+//          functions.
 base::LazyInstance<base::Lock>::Leaky g_module_watcher_lock =
     LAZY_INSTANCE_INITIALIZER;
 // Global pointer to the singleton ModuleWatcher, if one exists. Under
@@ -126,12 +133,16 @@ std::unique_ptr<ModuleWatcher> ModuleWatcher::Create(
       return nullptr;
     g_module_watcher_instance = new ModuleWatcher();
   }
+
+  // Initialization mustn't occur while holding |g_module_watcher_lock|.
   g_module_watcher_instance->Initialize(std::move(callback));
   return base::WrapUnique(g_module_watcher_instance);
 }
 
 ModuleWatcher::~ModuleWatcher() {
+  // Done before acquiring |g_module_watcher_lock|.
   UnregisterDllNotificationCallback();
+
   // As soon as |g_module_watcher_instance| is null any dispatched callbacks
   // will be silently absorbed by LoaderNotificationCallback.
   base::AutoLock lock(g_module_watcher_lock.Get());
