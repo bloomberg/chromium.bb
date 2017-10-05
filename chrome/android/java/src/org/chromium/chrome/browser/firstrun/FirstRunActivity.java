@@ -59,21 +59,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         void onAbortFirstRunExperience();
     }
 
-    // Incoming parameters:
-    public static final String EXTRA_COMING_FROM_CHROME_ICON = "Extra.ComingFromChromeIcon";
-    public static final String EXTRA_CHROME_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
-
-    static final String SHOW_WELCOME_PAGE = "ShowWelcome";
-    static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
-    static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
-    static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
-
-    // Outgoing results:
-    public static final String EXTRA_FIRST_RUN_ACTIVITY_RESULT = "Extra.FreActivityResult";
-    public static final String EXTRA_FIRST_RUN_COMPLETE = "Extra.FreComplete";
-
-    public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
-
     // UMA constants.
     private static final int SIGNIN_SETTINGS_DEFAULT_ACCOUNT = 0;
     private static final int SIGNIN_SETTINGS_ANOTHER_ACCOUNT = 1;
@@ -304,8 +289,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(
-                FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, mLaunchedFromChromeIcon);
+        outState.putBoolean(EXTRA_COMING_FROM_CHROME_ICON, mLaunchedFromChromeIcon);
     }
 
     @Override
@@ -464,8 +448,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         } else if (getIntent() != null) {
             readFrom = getIntent().getExtras();
         }
-        mLaunchedFromChromeIcon =
-                readFrom.getBoolean(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON);
+        mLaunchedFromChromeIcon = readFrom.getBoolean(EXTRA_COMING_FROM_CHROME_ICON);
     }
 
     /**
