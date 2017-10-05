@@ -241,7 +241,7 @@ template <>
 struct ASH_PUBLIC_EXPORT
     StructTraits<ash::mojom::ShelfItemDataView, ShelfItem> {
   static ash::ShelfItemType type(const ShelfItem& i) { return i.type; }
-  static const SkBitmap& image(const ShelfItem& i);
+  static const gfx::ImageSkia& image(const ShelfItem& i) { return i.image; }
   static ash::ShelfItemStatus status(const ShelfItem& i) { return i.status; }
   static const ash::ShelfID& shelf_id(const ShelfItem& i) { return i.id; }
   static const base::string16& title(const ShelfItem& i) { return i.title; }

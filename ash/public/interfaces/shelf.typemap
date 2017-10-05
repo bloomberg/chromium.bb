@@ -14,8 +14,8 @@ sources = [
 ]
 public_deps = [
   "//mojo/common:common_custom_types",
-  "//skia/public/interfaces",
   "//ui/base",
+  "//ui/gfx/image/mojo:struct_traits",
 ]
 type_mappings = [
   "ash.mojom.MenuItemType=ui::MenuModel::ItemType",

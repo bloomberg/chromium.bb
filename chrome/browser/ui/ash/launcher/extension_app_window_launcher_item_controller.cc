@@ -50,18 +50,17 @@ ash::MenuItemList ExtensionAppWindowLauncherItemController::GetAppMenuItems(
     favicon::FaviconDriver* favicon_driver =
         favicon::ContentFaviconDriver::FromWebContents(
             app_window->web_contents());
-    gfx::Image icon = favicon_driver->GetFavicon();
-    if (icon.IsEmpty()) {
+    item->image = favicon_driver->GetFavicon().AsImageSkia();
+    if (item->image.isNull()) {
       const gfx::ImageSkia* app_icon = nullptr;
       if (app_window->GetNativeWindow()) {
         app_icon = app_window->GetNativeWindow()->GetProperty(
             aura::client::kAppIconKey);
       }
       if (app_icon && !app_icon->isNull())
-        icon = gfx::Image(*app_icon);
+        item->image = *app_icon;
     }
-    if (!icon.IsEmpty())
-      item->image = *icon.ToSkBitmap();
+
     items.push_back(std::move(item));
     ++window_index;
   }

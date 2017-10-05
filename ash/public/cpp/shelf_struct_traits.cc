@@ -5,8 +5,7 @@
 #include "ash/public/cpp/shelf_struct_traits.h"
 
 #include "mojo/common/common_custom_types_struct_traits.h"
-#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/mojo/image_skia_struct_traits.h"
 
 namespace mojo {
 
@@ -24,23 +23,13 @@ bool StructTraits<ash::mojom::ShelfIDDataView, ash::ShelfID>::Read(
 }
 
 // static
-const SkBitmap& ShelfItemStructTraits::image(const ash::ShelfItem& i) {
-  // TODO(crbug.com/655874): Remove this when we have a gfx::Image[Skia] mojom.
-  static const SkBitmap kNullSkBitmap;
-  return i.image.isNull() ? kNullSkBitmap : *i.image.bitmap();
-}
-
-// static
 bool ShelfItemStructTraits::Read(ash::mojom::ShelfItemDataView data,
                                  ash::ShelfItem* out) {
-  SkBitmap image;
-  if (!data.ReadType(&out->type) || !data.ReadImage(&image) ||
+  if (!data.ReadType(&out->type) || !data.ReadImage(&out->image) ||
       !data.ReadStatus(&out->status) || !data.ReadShelfId(&out->id) ||
       !data.ReadTitle(&out->title)) {
     return false;
   }
-  // TODO(crbug.com/655874): Support high-dpi images via gfx::Image[Skia] mojom.
-  out->image = gfx::ImageSkia::CreateFrom1xBitmap(image);
   out->shows_tooltip = data.shows_tooltip();
   out->pinned_by_policy = data.pinned_by_policy();
   return true;

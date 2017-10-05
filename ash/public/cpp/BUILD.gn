@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 # C++ headers and sources that can be used outside ash.
 component("ash_public_cpp") {
   sources = [
@@ -78,6 +80,20 @@ component("ash_public_cpp") {
       [ "//ash/public/interfaces:interfaces_internal" ]
 }
 
+# Using a test service because the traits need to pass handles around. Revisit
+# this after Deserialize(Serialize()) API works with handles.
+mojom("test_interfaces") {
+  visibility = [ ":unit_tests" ]
+
+  sources = [
+    "shelf_struct_traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    "//ash/public/interfaces:interfaces_internal",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -87,6 +103,7 @@ source_set("unit_tests") {
 
   deps = [
     ":ash_public_cpp",
+    ":test_interfaces",
     "//base",
     "//testing/gtest",
     "//ui/gfx:test_support",

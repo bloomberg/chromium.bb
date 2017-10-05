@@ -9,7 +9,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # //ash/public/cpp, and //ash/public/cpp needs to depend on this for generated
 # code (such as enums and constants).
 mojom("interfaces_internal") {
-  visibility = [ "//ash/public/cpp:ash_public_cpp" ]
+  visibility = [ "//ash/public/cpp:*" ]
 
   sources = [
     "accelerator_controller.mojom",

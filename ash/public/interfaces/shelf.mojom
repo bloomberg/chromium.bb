@@ -5,8 +5,8 @@
 module ash.mojom;
 
 import "mojo/common/string16.mojom";
-import "skia/public/interfaces/bitmap.mojom";
 import "ui/events/mojo/event.mojom";
+import "ui/gfx/image/mojo/image.mojom";
 
 // The types of menu items shown in shelf context and application list menus.
 // These values roughly match ui::MenuModel::ItemType (sans TYPE_BUTTON_ITEM).
@@ -135,7 +135,7 @@ struct MenuItem {
   MenuItemType type;                 // The type of the menu item.
   int64 command_id;                  // The client's arbitrary item command id.
   mojo.common.mojom.String16 label;  // The string label, may be empty.
-  skia.mojom.Bitmap? image;          // The image icon, may be null.
+  gfx.mojom.ImageSkia? image;        // The image icon, may be null.
   array<MenuItem>? submenu;          // The optional nested submenu item list.
   bool enabled;                      // The enabled state.
   bool checked;                      // The checked state.
@@ -154,12 +154,12 @@ struct ShelfID {
 // ShelfItems are used to populate the shelf.
 // This structure matches ash::ShelfItem.
 struct ShelfItem {
-  ShelfItemType type;        // The type of the shelf item.
-  skia.mojom.Bitmap? image;  // An icon image Bitmap, shown on the shelf.
-  ShelfItemStatus status;    // The running/closed/etc. status of the item.
-  ShelfID shelf_id;          // The id for the shelf item and its windows.
+  ShelfItemType type;          // The type of the shelf item.
+  gfx.mojom.ImageSkia? image;  // An icon image Bitmap, shown on the shelf.
+  ShelfItemStatus status;      // The running/closed/etc. status of the item.
+  ShelfID shelf_id;            // The id for the shelf item and its windows.
   mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
-  bool shows_tooltip;        // Whether the tooltip should be shown on hover.
-  bool pinned_by_policy;     // Whether the item is pinned by policy prefs, the
-                             // user cannot un-pin these items.
+  bool shows_tooltip;          // Whether the tooltip should be shown on hover.
+  bool pinned_by_policy;       // Whether the item is pinned by policy prefs,
+                               // the user cannot un-pin these items.
 };

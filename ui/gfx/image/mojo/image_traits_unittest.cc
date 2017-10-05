@@ -15,6 +15,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/image/mojo/image_skia_struct_traits.h"
 #include "ui/gfx/image/mojo/image_traits_test_service.mojom.h"
 
 namespace gfx {
@@ -39,6 +40,7 @@ class TestImageSkiaSource : public ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(TestImageSkiaSource);
 };
 
+// Revisit this after Deserialize(Serialize()) API works with handles.
 class ImageTraitsTest : public testing::Test,
                         public mojom::ImageTraitsTestService {
  public:

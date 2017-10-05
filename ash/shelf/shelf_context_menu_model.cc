@@ -201,7 +201,7 @@ void ShelfContextMenuModel::AddItems(ui::SimpleMenuModel* model,
     }
     if (!item->image.isNull()) {
       model->SetIcon(model->GetIndexOfCommandId(item->command_id),
-                     gfx::Image::CreateFrom1xBitmap(item->image));
+                     gfx::Image(item->image));
     }
   }
 }
