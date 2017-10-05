@@ -126,9 +126,7 @@ class CheckerImageTrackerTest : public testing::Test,
   }
 
   bool ShouldCheckerImage(const DrawImage& draw_image, WhichTree tree) {
-    bool required_for_activation = true;
-    return checker_image_tracker_->ShouldCheckerImage(draw_image, tree,
-                                                      required_for_activation);
+    return checker_image_tracker_->ShouldCheckerImage(draw_image, tree);
   }
 
   CheckerImageTracker::ImageDecodeQueue BuildImageDecodeQueue(
@@ -562,27 +560,6 @@ TEST_F(CheckerImageTrackerTest, DisableForSoftwareRaster) {
   // New image should not be checkered while disabled.
   DrawImage image2 = CreateImage(ImageType::CHECKERABLE);
   EXPECT_FALSE(ShouldCheckerImage(image2, WhichTree::PENDING_TREE));
-}
-
-TEST_F(CheckerImageTrackerTest, OnlyCheckerRequiredForActivation) {
-  SetUpTracker(true);
-
-  // Should checker when required for activation.
-  DrawImage image1 = CreateImage(ImageType::CHECKERABLE);
-  bool required_for_activation = true;
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image1, WhichTree::PENDING_TREE, required_for_activation));
-
-  // Now the same image is not required for activation. We should still continue
-  // checkering it.
-  required_for_activation = false;
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image1, WhichTree::PENDING_TREE, required_for_activation));
-
-  // New image should not be checkered if it is not required for activation.
-  DrawImage image2 = CreateImage(ImageType::CHECKERABLE);
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      image2, WhichTree::PENDING_TREE, required_for_activation));
 }
 
 }  // namespace

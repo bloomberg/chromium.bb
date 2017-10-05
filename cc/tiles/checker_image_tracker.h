@@ -59,9 +59,7 @@ class CC_EXPORT CheckerImageTracker {
 
   // Returns true if the decode for |image| will be deferred to the image decode
   // service and it should be be skipped during raster.
-  bool ShouldCheckerImage(const DrawImage& image,
-                          WhichTree tree,
-                          bool required_for_activation);
+  bool ShouldCheckerImage(const DrawImage& image, WhichTree tree);
 
   // Provides a prioritized queue of images to decode.
   using ImageDecodeQueue = std::vector<ImageDecodeRequest>;

@@ -901,8 +901,7 @@ void TileManager::PartitionImagesForCheckering(
           frame_index;
     }
 
-    if (checker_image_tracker_.ShouldCheckerImage(
-            draw_image, tree, tile->required_for_activation()))
+    if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree))
       checkered_images->push_back(draw_image.paint_image());
     else
       sync_decoded_images->push_back(std::move(draw_image));
@@ -925,8 +924,7 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
         original_draw_image->paint_image(), tree);
     DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
                          frame_index, raster_color_space);
-    if (checker_image_tracker_.ShouldCheckerImage(
-            draw_image, tree, tile->required_for_activation())) {
+    if (checker_image_tracker_.ShouldCheckerImage(draw_image, tree)) {
       image_decode_queue->emplace_back(draw_image.paint_image(), decode_type);
     }
   }
