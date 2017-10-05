@@ -9,6 +9,8 @@
 
 #include <type_traits>
 
+#include "base/logging.h"
+
 // Collection of simple utilities used in for low-level computation.
 
 namespace zucchini {
@@ -28,6 +30,25 @@ template <typename T>
 bool RangeCovers(T begin, T size, T value) {
   static_assert(std::is_unsigned<T>::value, "Value type must be unsigned.");
   return begin <= value && value - begin < size;
+}
+
+// Returns the integer in inclusive range |[lo, hi]| that's closest to |value|.
+// This departs from the usual usage of semi-inclusive ranges, but is useful
+// because (1) sentinels can use this, (2) a valid output always exists. It is
+// assumed that |lo <= hi|.
+template <class T>
+T InclusiveClamp(T value, T lo, T hi) {
+  static_assert(std::is_unsigned<T>::value, "Value type must be unsigned.");
+  DCHECK_LE(lo, hi);
+  return value <= lo ? lo : (value >= hi ? hi : value);
+}
+
+// Returns the minimum multiple of |m| that's no less than |x|. Assumes |m > 0|
+// and |x| is sufficiently small so that no overflow occurs.
+template <class T>
+constexpr T ceil(T x, T m) {
+  static_assert(std::is_unsigned<T>::value, "Value type must be unsigned.");
+  return T((x + m - 1) / m) * m;
 }
 
 }  // namespace zucchini
