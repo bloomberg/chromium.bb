@@ -16,6 +16,33 @@
 
 namespace device {
 
+class PlatformSensorProviderWin::SensorThread final : public base::Thread {
+ public:
+  SensorThread() : base::Thread("Sensor thread") { init_com_with_mta(true); }
+
+  void SetSensorManagerForTesting(
+      base::win::ScopedComPtr<ISensorManager> sensor_manager) {
+    sensor_manager_ = sensor_manager;
+  }
+
+  const base::win::ScopedComPtr<ISensorManager>& sensor_manager() const {
+    return sensor_manager_;
+  }
+
+ protected:
+  void Init() override {
+    if (sensor_manager_)
+      return;
+    ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
+                       IID_PPV_ARGS(&sensor_manager_));
+  }
+
+  void CleanUp() override { sensor_manager_.Reset(); }
+
+ private:
+  base::win::ScopedComPtr<ISensorManager> sensor_manager_;
+};
+
 // static
 PlatformSensorProviderWin* PlatformSensorProviderWin::GetInstance() {
   return base::Singleton<
@@ -25,7 +52,8 @@ PlatformSensorProviderWin* PlatformSensorProviderWin::GetInstance() {
 
 void PlatformSensorProviderWin::SetSensorManagerForTesting(
     base::win::ScopedComPtr<ISensorManager> sensor_manager) {
-  sensor_manager_ = sensor_manager;
+  CreateSensorThread();
+  sensor_thread_->SetSensorManagerForTesting(sensor_manager);
 }
 
 PlatformSensorProviderWin::PlatformSensorProviderWin() = default;
@@ -68,35 +96,25 @@ void PlatformSensorProviderWin::CreateSensorInternal(
   }
 }
 
-bool PlatformSensorProviderWin::InitializeSensorManager() {
-  if (sensor_manager_)
-    return true;
-
-  HRESULT hr = ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
-                                  IID_PPV_ARGS(&sensor_manager_));
-  return SUCCEEDED(hr) && sensor_manager_.Get();
-}
-
 void PlatformSensorProviderWin::AllSensorsRemoved() {
   StopSensorThread();
 }
 
-bool PlatformSensorProviderWin::StartSensorThread() {
-  if (!sensor_thread_) {
-    sensor_thread_ = base::MakeUnique<base::Thread>("Sensor thread");
-    sensor_thread_->init_com_with_mta(true);
-  }
+void PlatformSensorProviderWin::CreateSensorThread() {
+  if (!sensor_thread_)
+    sensor_thread_ = base::MakeUnique<SensorThread>();
+}
 
+bool PlatformSensorProviderWin::StartSensorThread() {
+  CreateSensorThread();
   if (!sensor_thread_->IsRunning())
     return sensor_thread_->Start();
   return true;
 }
 
 void PlatformSensorProviderWin::StopSensorThread() {
-  if (sensor_thread_ && sensor_thread_->IsRunning()) {
-    sensor_manager_.Reset();
+  if (sensor_thread_ && sensor_thread_->IsRunning())
     sensor_thread_->Stop();
-  }
 }
 
 void PlatformSensorProviderWin::SensorReaderCreated(
@@ -121,9 +139,10 @@ void PlatformSensorProviderWin::SensorReaderCreated(
 std::unique_ptr<PlatformSensorReaderWin>
 PlatformSensorProviderWin::CreateSensorReader(mojom::SensorType type) {
   DCHECK(sensor_thread_->task_runner()->BelongsToCurrentThread());
-  if (!InitializeSensorManager())
+  if (!sensor_thread_->sensor_manager())
     return nullptr;
-  return PlatformSensorReaderWin::Create(type, sensor_manager_);
+  return PlatformSensorReaderWin::Create(type,
+                                         sensor_thread_->sensor_manager());
 }
 
 }  // namespace device

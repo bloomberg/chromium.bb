@@ -13,7 +13,6 @@
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-class Thread;
 }  // namespace base
 
 namespace device {
@@ -46,7 +45,7 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
  private:
   PlatformSensorProviderWin();
 
-  bool InitializeSensorManager();
+  void CreateSensorThread();
   bool StartSensorThread();
   void StopSensorThread();
   std::unique_ptr<PlatformSensorReaderWin> CreateSensorReader(
@@ -60,8 +59,8 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
  private:
   friend struct base::DefaultSingletonTraits<PlatformSensorProviderWin>;
 
-  base::win::ScopedComPtr<ISensorManager> sensor_manager_;
-  std::unique_ptr<base::Thread> sensor_thread_;
+  class SensorThread;
+  std::unique_ptr<SensorThread> sensor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderWin);
 };
