@@ -272,7 +272,7 @@ static void amdgpu_cs_uvd_enc_create(void)
 static void check_result(struct amdgpu_uvd_enc *enc)
 {
 	uint64_t sum;
-	uint32_t s = 26382;
+	uint32_t s = 175602;
 	uint32_t *ptr, size;
 	int i, j, r;
 
@@ -463,6 +463,8 @@ static void amdgpu_cs_uvd_enc_encode(void)
 	ib_cpu[len++] = chroma_offset >> 32;
 	ib_cpu[len++] = chroma_offset;
 	memcpy((ib_cpu + len), uve_encode_param, sizeof(uve_encode_param));
+	ib_cpu[len] = ALIGN(enc.width, align);
+	ib_cpu[len + 1] = ALIGN(enc.width, align);
 	len += sizeof(uve_encode_param) / 4;
 
 	memcpy((ib_cpu + len), uve_op_speed_enc_mode, sizeof(uve_op_speed_enc_mode));

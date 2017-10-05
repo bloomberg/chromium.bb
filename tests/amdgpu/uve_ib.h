@@ -297,8 +297,8 @@ static const uint32_t uve_slice_header[] = {
 };
 
 static const uint32_t uve_encode_param[] = {
-	0x000000a0,
-	0x00000080,
+	0x00000000,
+	0x00000000,
 	0x00000000,
 	0x00000000,
 	0xffffffff,
