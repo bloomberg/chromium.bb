@@ -5,10 +5,11 @@
 #ifndef SKIA_PUBLIC_INTERFACES_IMAGE_FILTER_STRUCT_TRAITS_H_
 #define SKIA_PUBLIC_INTERFACES_IMAGE_FILTER_STRUCT_TRAITS_H_
 
+#include "skia/ext/skia_utils_base.h"
 #include "skia/public/interfaces/image_filter.mojom-shared.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace mojo {
 
@@ -34,7 +35,7 @@ template <>
 struct StructTraits<skia::mojom::ImageFilterDataView, sk_sp<SkImageFilter>> {
   static ImageFilterBuffer data(const sk_sp<SkImageFilter>& filter) {
     ImageFilterBuffer buffer;
-    buffer.data = sk_sp<SkData>(SkValidatingSerializeFlattenable(filter.get()));
+    buffer.data = skia::ValidatingSerializeFlattenable(filter.get());
     return buffer;
   }
 

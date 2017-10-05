@@ -22,6 +22,7 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -274,7 +275,7 @@ void ParamTraits<sk_sp<SkImageFilter>>::Write(base::Pickle* m,
                "ParamTraits::SkImageFilter::Write");
   SkImageFilter* filter = p.get();
   if (filter) {
-    sk_sp<SkData> data(SkValidatingSerializeFlattenable(filter));
+    sk_sp<SkData> data(skia::ValidatingSerializeFlattenable(filter));
     m->WriteData(static_cast<const char*>(data->data()),
                  base::checked_cast<int>(data->size()));
   } else {
