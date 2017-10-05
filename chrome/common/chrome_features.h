@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
-#include "device/vr/features/features.h"  // nogncheck
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
@@ -102,10 +101,6 @@ extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalAppBanners;
 extern const base::Feature kExperimentalKeyboardLockUI;
-
-#if BUILDFLAG(ENABLE_VR)
-extern const base::Feature kExperimentalVRFeatures;
-#endif
 
 #if defined(OS_MACOSX)
 extern const base::Feature kFullscreenToolbarReveal;

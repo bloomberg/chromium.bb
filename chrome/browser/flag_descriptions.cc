@@ -558,10 +558,6 @@ const char kExperimentalSecurityFeaturesDescription[] =
     "example. And locking powerful features to secure contexts. This flag will "
     "probably annoy you.";
 
-const char kExperimentalVRFeaturesName[] = "Experimental VR features";
-const char kExperimentalVRFeaturesDescription[] =
-    "Enables VR browsing features that are under development.";
-
 const char kExperimentalWebPlatformFeaturesName[] =
     "Experimental Web Platform features";
 const char kExperimentalWebPlatformFeaturesDescription[] =
