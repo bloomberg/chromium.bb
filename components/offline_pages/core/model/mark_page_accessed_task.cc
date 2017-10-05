@@ -5,8 +5,6 @@
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 
 #include "base/bind.h"
-#include "base/time/clock.h"
-#include "base/time/default_clock.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 #include "sql/connection.h"

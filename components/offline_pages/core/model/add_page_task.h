@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TASKS_ADD_PAGE_TASK_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TASKS_ADD_PAGE_TASK_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_ADD_PAGE_TASK_H_
+#define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_ADD_PAGE_TASK_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -49,4 +49,4 @@ class AddPageTask : public Task {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TASKS_ADD_PAGE_TASK_H
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_MODEL_ADD_PAGE_TASK_H_
