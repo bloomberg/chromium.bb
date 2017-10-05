@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
+#include "platform/bindings/CallbackFunctionBase.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
@@ -23,26 +24,16 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT V8LongCallbackFunction final : public GarbageCollectedFinalized<V8LongCallbackFunction>, public TraceWrapperBase {
+class CORE_EXPORT V8LongCallbackFunction final : public CallbackFunctionBase {
  public:
   static V8LongCallbackFunction* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~V8LongCallbackFunction() = default;
 
-  DEFINE_INLINE_TRACE() {}
-  DECLARE_TRACE_WRAPPERS();
-
   bool call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue);
-
-  v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return callback_.NewLocal(isolate);
-  }
 
  private:
   V8LongCallbackFunction(ScriptState*, v8::Local<v8::Function>);
-
-  RefPtr<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>

@@ -475,6 +475,8 @@ jumbo_component("platform") {
     "audio/mac/FFTFrameMac.cpp",
     "bindings/ActiveScriptWrappable.cpp",
     "bindings/ActiveScriptWrappable.h",
+    "bindings/CallbackFunctionBase.cpp",
+    "bindings/CallbackFunctionBase.h",
     "bindings/ConditionalFeatures.cpp",
     "bindings/ConditionalFeatures.h",
     "bindings/DOMDataStore.h",

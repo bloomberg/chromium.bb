@@ -16,26 +16,16 @@ class ScriptState;
 class {{forward_declaration}};
 {% endfor %}
 
-class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}>, public TraceWrapperBase {
+class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
  public:
   static {{cpp_class}}* Create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~{{cpp_class}}() = default;
 
-  DEFINE_INLINE_TRACE() {}
-  DECLARE_TRACE_WRAPPERS();
-
   bool call({{argument_declarations | join(', ')}});
-
-  v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
-    return callback_.NewLocal(isolate);
-  }
 
  private:
   {{cpp_class}}(ScriptState*, v8::Local<v8::Function>);
-
-  RefPtr<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Function> callback_;
 };
 
 template <>
