@@ -234,7 +234,8 @@ class BuildConfig(AttrDict):
 
   Each dictionary entry is in turn a dictionary of config_param->value.
 
-  See _settings for details on known configurations, and their documentation.
+  See DefaultSettings for details on known configurations, and their
+  documentation.
   """
   def GetBotId(self, remote_trybot=False):
     """Get the 'bot id' of a particular bot.
@@ -281,7 +282,7 @@ class BuildConfig(AttrDict):
 
     Args:
       args: Dictionaries or templates to update this config with.
-      kwargs: Settings to inject; see _settings for valid values.
+      kwargs: Settings to inject; see DefaultSettings for valid values.
 
     Returns:
       self after changes are applied.
@@ -335,7 +336,7 @@ class BuildConfig(AttrDict):
 
     Args:
       args: Mapping instances to mixin.
-      kwargs: Settings to inject; see _settings for valid values.
+      kwargs: Settings to inject; see DefaultSettings for valid values.
 
     Returns:
       A new _config instance.
@@ -726,12 +727,12 @@ def DefaultSettings():
       # profile information found in the chrome ebuild file.
       afdo_use=False,
 
-      # A list of the vm_tests to run by default.
+      # A list of VMTestConfig objects to run by default.
       vm_tests=[VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
 
-      # A list of all VM Tests to use if VM Tests are forced on (--vmtest
-      # command line or trybot). None means no override.
+      # A list of all VMTestConfig objects to use if VM Tests are forced on
+      # (--vmtest command line or trybot). None means no override.
       vm_tests_override=None,
 
       # The number of times to run the VMTest stage. If this is >1, then we
@@ -742,8 +743,8 @@ def DefaultSettings():
       # A list of HWTestConfig objects to run.
       hw_tests=[],
 
-      # A list of all HW Tests to use if HW Tests are forced on (--hwtest
-      # command line or trybot). None means no override.
+      # A list of all HWTestConfig objects to use if HW Tests are forced on
+      # (--hwtest command line or trybot). None means no override.
       hw_tests_override=None,
 
       # If true, uploads artifacts for hw testing. Upload payloads for test
@@ -754,8 +755,8 @@ def DefaultSettings():
       # If true, uploads individual image tarballs.
       upload_standalone_images=True,
 
-      # Default to not run gce tests. Currently only some lakitu builders run
-      # gce tests.
+      # A list of GCETestConfig objects to use. Currently only some lakitu
+      # builders run gce tests.
       gce_tests=[],
 
       # List of patterns for portage packages for which stripped binpackages

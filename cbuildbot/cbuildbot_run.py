@@ -924,10 +924,16 @@ class _RealBuilderRun(object):
 
   __slots__ = _BuilderRunBase.__slots__ + (
       '_run_base',  # The _BuilderRunBase object where most functionality is.
-      '_config',    # Config to use for dynamically overriding self.config.
+      '_config',    # BuildConfig to use for dynamically overriding self.config.
   )
 
   def __init__(self, run_base, build_config):
+    """_RealBuilderRun constructor.
+
+    Args:
+      run_base: _BuilderRunBase object.
+      build_config: BuildConfig object.
+    """
     self._run_base = run_base
     self._config = build_config
 
