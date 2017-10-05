@@ -823,7 +823,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 }
 
 // Tests if entering browser fullscreen would log into the histogram.
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FullscreenHistogram) {
+// See https://crbug.com/771993 re disabling.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       DISABLED_FullscreenHistogram) {
   base::HistogramTester histogram_tester;
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kShowFullscreenToolbar, true);
