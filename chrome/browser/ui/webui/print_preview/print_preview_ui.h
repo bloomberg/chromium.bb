@@ -39,12 +39,13 @@ struct PageSizeMargins;
 class PrintPreviewUI : public ConstrainedWebDialogUI {
  public:
   explicit PrintPreviewUI(content::WebUI* web_ui);
+
   ~PrintPreviewUI() override;
 
   // Gets the print preview |data|. |index| is zero-based, and can be
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview
   // document.
-  void GetPrintPreviewDataForIndex(
+  virtual void GetPrintPreviewDataForIndex(
       int index,
       scoped_refptr<base::RefCountedBytes>* data) const;
 
@@ -58,7 +59,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void ClearAllPreviewData();
 
   // Returns the available draft page count.
-  int GetAvailableDraftPageCount() const;
+  virtual int GetAvailableDraftPageCount() const;
 
   // Setters
   void SetInitiatorTitle(const base::string16& initiator_title);
@@ -87,7 +88,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   int32_t GetIDForPrintPreviewUI() const;
 
   // Notifies the Web UI of a print preview request with |request_id|.
-  void OnPrintPreviewRequest(int request_id);
+  virtual void OnPrintPreviewRequest(int request_id);
 
   // Notifies the Web UI about the page count of the request preview.
   void OnDidGetPreviewPageCount(
@@ -128,13 +129,13 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void OnInvalidPrinterSettings();
 
   // Notifies the Web UI to cancel the pending preview request.
-  void OnCancelPendingPreviewRequest();
+  virtual void OnCancelPendingPreviewRequest();
 
   // Hides the print preview dialog.
-  void OnHidePreviewDialog();
+  virtual void OnHidePreviewDialog();
 
   // Closes the print preview dialog.
-  void OnClosePrintPreviewDialog();
+  virtual void OnClosePrintPreviewDialog();
 
   // Notifies the WebUI to set print preset options from source PDF.
   void OnSetOptionsFromDocument(
@@ -164,9 +165,15 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // to set the print preview settings contained in |settings|.
   void SendManipulateSettingsForTest(const base::DictionaryValue& settings);
 
+ protected:
+  // Alternate constructor for tests
+  PrintPreviewUI(content::WebUI* web_ui,
+                 std::unique_ptr<PrintPreviewHandler> handler);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
+  friend class FakePrintPreviewUI;
 
   base::TimeTicks initial_preview_start_time_;
 
