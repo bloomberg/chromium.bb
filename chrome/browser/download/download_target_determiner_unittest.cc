@@ -18,12 +18,14 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_confirmation_result.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -71,10 +73,22 @@ using ::testing::Truly;
 using ::testing::WithArg;
 using ::testing::_;
 using content::DownloadItem;
+using ConflictAction = DownloadPathReservationTracker::FilenameConflictAction;
 using safe_browsing::FileTypePolicies;
 using safe_browsing::DownloadFileType;
 
 namespace {
+
+const char kTransientPathGenerationHistogram[] =
+    "Download.PathGenerationEvent.Transient";
+
+const char kTransientPathValidationHistogram[] =
+    "Download.PathValidationResult.Transient";
+
+template <typename T>
+base::HistogramBase::Sample ToHistogramSample(T t) {
+  return static_cast<base::HistogramBase::Sample>(t);
+}
 
 // No-op delegate.
 class NullWebContentsDelegate : public content::WebContentsDelegate {
@@ -111,7 +125,8 @@ ACTION_P2(ScheduleCallback2, result0, result1) {
 enum TestCaseType {
   SAVE_AS,
   AUTOMATIC,
-  FORCED  // Requires that forced_file_path be non-empty.
+  FORCED,  // Requires that forced_file_path be non-empty.
+  TRANSIENT,
 };
 
 // Used with DownloadTestCase. Type of intermediate filename to expect.
@@ -220,6 +235,8 @@ class MockDownloadTargetDeterminerDelegate
 
 class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  public:
+  DownloadTargetDeterminerTest() = default;
+
   // ::testing::Test
   void SetUp() override;
   void TearDown() override;
@@ -290,6 +307,8 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   base::ScopedTempDir test_download_dir_;
   base::FilePath test_virtual_dir_;
   safe_browsing::FileTypePoliciesTestOverlay file_type_configuration_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadTargetDeterminerTest);
 };
 
 void DownloadTargetDeterminerTest::SetUp() {
@@ -324,8 +343,7 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
       (test_case.test_type == SAVE_AS) ?
       DownloadItem::TARGET_DISPOSITION_PROMPT :
       DownloadItem::TARGET_DISPOSITION_OVERWRITE;
-  EXPECT_EQ(test_case.test_type == FORCED,
-            !forced_file_path.empty());
+  EXPECT_TRUE((test_case.test_type != FORCED) || !forced_file_path.empty());
 
   ON_CALL(*item, GetBrowserContext())
       .WillByDefault(Return(profile()));
@@ -365,6 +383,9 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
       .WillByDefault(Return(false));
   ON_CALL(*item, IsTemporary())
       .WillByDefault(Return(false));
+  ON_CALL(*item, IsTransient())
+      .WillByDefault(Return(test_case.test_type == TestCaseType::TRANSIENT));
+
   return item;
 }
 
@@ -2094,6 +2115,102 @@ TEST_F(DownloadTargetDeterminerTest, ResumedWithUserValidatedDownload) {
   EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(0);
   EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
   RunTestCase(test_case, GetPathInDownloadDir(kInitialPath), item.get());
+}
+
+// Test that verifies transient download target determination.
+TEST_F(DownloadTargetDeterminerTest, TransientDownload) {
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+
+  DownloadTestCase transient_test_case = {
+      TRANSIENT,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadFileType::NOT_DANGEROUS,
+      "http://example.com/foo",
+      "",
+      FILE_PATH_LITERAL("12345"), /* forced_file_path */
+      FILE_PATH_LITERAL("12345"),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      EXPECT_LOCAL_PATH};
+
+  std::unique_ptr<content::MockDownloadItem> item(
+      CreateActiveDownloadItem(0, transient_test_case));
+  base::FilePath expected_path =
+      GetPathInDownloadDir(transient_test_case.expected_local_path);
+
+  EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
+  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false,
+                                              ConflictAction::OVERWRITE, _))
+      .Times(1);
+  EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _)).Times(1);
+  EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(1);
+  EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
+
+  base::HistogramTester histogram_tester;
+  RunTestCase(transient_test_case, GetPathInDownloadDir(kInitialPath),
+              item.get());
+  histogram_tester.ExpectBucketCount(
+      kTransientPathGenerationHistogram,
+      ToHistogramSample<DownloadPathGenerationEvent>(
+          DownloadPathGenerationEvent::USE_FORCE_PATH),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kTransientPathValidationHistogram,
+      ToHistogramSample<PathValidationResult>(PathValidationResult::SUCCESS),
+      1);
+  histogram_tester.ExpectTotalCount(kTransientPathGenerationHistogram, 1);
+  histogram_tester.ExpectTotalCount(kTransientPathValidationHistogram, 1);
+}
+
+// Simulate resumption on transient download. The download item does not provide
+// forced path in this case.
+TEST_F(DownloadTargetDeterminerTest, TransientDownloadResumption) {
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+  base::FilePath expected_path = GetPathInDownloadDir(kInitialPath);
+
+  DownloadTestCase transient_test_case = {
+      TRANSIENT,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadFileType::NOT_DANGEROUS,
+      "http://example.com/foo",
+      "",
+      FILE_PATH_LITERAL(""), /* forced_file_path */
+      kInitialPath,
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      EXPECT_LOCAL_PATH};
+
+  // Simulate resumption that provides the full path and a failure reason.
+  std::unique_ptr<content::MockDownloadItem> item(
+      CreateActiveDownloadItem(0, transient_test_case));
+
+  ON_CALL(*item.get(), GetFullPath())
+      .WillByDefault(ReturnRefOfCopy(expected_path));
+  ON_CALL(*item.get(), GetLastReason())
+      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+
+  EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
+  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false,
+                                              ConflictAction::OVERWRITE, _))
+      .Times(1);
+  EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
+  EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(1);
+  EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
+
+  base::HistogramTester histogram_tester;
+  RunTestCase(transient_test_case, GetPathInDownloadDir(kInitialPath),
+              item.get());
+  histogram_tester.ExpectBucketCount(
+      kTransientPathGenerationHistogram,
+      ToHistogramSample<DownloadPathGenerationEvent>(
+          DownloadPathGenerationEvent::USE_EXISTING_VIRTUAL_PATH),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kTransientPathValidationHistogram,
+      ToHistogramSample<PathValidationResult>(PathValidationResult::SUCCESS),
+      1);
+  histogram_tester.ExpectTotalCount(kTransientPathGenerationHistogram, 1);
+  histogram_tester.ExpectTotalCount(kTransientPathValidationHistogram, 1);
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

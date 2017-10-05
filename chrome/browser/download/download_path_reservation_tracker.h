@@ -17,12 +17,15 @@ namespace content {
 class DownloadItem;
 }
 
+// Used in UMA, do not remove, change or reuse existing entries.
+// Update histograms.xml and enums.xml when adding entries.
 enum class PathValidationResult {
-  SUCCESS,
+  SUCCESS = 0,
   PATH_NOT_WRITABLE,
   NAME_TOO_LONG,
   CONFLICT,
-  SAME_AS_SOURCE
+  SAME_AS_SOURCE,
+  COUNT,
 };
 
 // Chrome attempts to uniquify filenames that are assigned to downloads in order

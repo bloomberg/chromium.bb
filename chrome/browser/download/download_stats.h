@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 
+#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "content/public/browser/download_danger_type.h"
 
 // Record the total number of items and the number of in-progress items showing
@@ -53,7 +54,7 @@ enum ChromeDownloadSource {
   // The download was initiated by chrome.downloads.download().
   DOWNLOAD_INITIATED_BY_EXTENSION,
 
-  CHROME_DOWNLOAD_SOURCE_LAST_ENTRY,
+  CHROME_DOWNLOAD_SOURCE_LAST_ENTRY
 };
 
 // How a download was opened. Note that a download could be opened multiple
@@ -71,6 +72,24 @@ enum ChromeDownloadOpenMethod {
   DOWNLOAD_OPEN_METHOD_USER_PLATFORM,
 
   DOWNLOAD_OPEN_METHOD_LAST_ENTRY
+};
+
+// Records path generation behavior in download target determination process.
+// Used in UMA, do not remove, change or reuse existing entries.
+// Update histograms.xml and enums.xml when adding entries.
+enum class DownloadPathGenerationEvent {
+  // Use existing virtual path provided to download target determiner.
+  USE_EXISTING_VIRTUAL_PATH = 0,
+  // Use the force path provided to download target determiner.
+  USE_FORCE_PATH,
+  // Use last prompt directory.
+  USE_LAST_PROMPT_DIRECTORY,
+  // Use the default download directory.
+  USE_DEFAULTL_DOWNLOAD_DIRECTORY,
+  // No valid target file path is provided, the download will fail soon.
+  NO_VALID_PATH,
+
+  COUNT
 };
 
 // Increment one of the above counts.
@@ -93,5 +112,13 @@ void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method);
 // Record if the database is available to provide the next download id before
 // starting all downloads.
 void RecordDatabaseAvailability(bool is_available);
+
+// Record download path generation event in target determination process.
+void RecordDownloadPathGeneration(DownloadPathGenerationEvent event,
+                                  bool is_transient);
+
+// Record path validation result.
+void RecordDownloadPathValidation(PathValidationResult result,
+                                  bool is_transient);
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
