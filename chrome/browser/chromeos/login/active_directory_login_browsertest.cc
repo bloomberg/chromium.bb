@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -111,8 +112,15 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   }
 
   void SetUpOnMainThread() override {
-    LoginManagerTest::SetUpOnMainThread();
+    // Set the threshold to a max value to disable the offline message screen
+    // on slow configurations like MSAN, where it otherwise triggers on every
+    // run.
+    LoginDisplayHost::default_host()
+        ->GetOobeUI()
+        ->signin_screen_handler()
+        ->SetOfflineTimeoutForTesting(base::TimeDelta::Max());
     fake_auth_policy_client()->DisableOperationDelayForTesting();
+    LoginManagerTest::SetUpOnMainThread();
   }
 
   void MarkAsActiveDirectoryEnterprise() {
@@ -229,7 +237,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     return "document.querySelector('#" + parent_id + " /deep/ #" + element_id +
            "')";
   }
-
   TestAuthPolicyClient* fake_auth_policy_client() {
     return fake_auth_policy_client_;
   }
@@ -257,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginSuccess) {
 }
 
 // Test successful Active Directory login.
-// Fails on MSAN: https://crbug.com/770738.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, DISABLED_LoginSuccess) {
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
   TestNoError();
   TestDomainVisible();
 
@@ -275,8 +281,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginErrors) {
 }
 
 // Test different UI errors for Active Directory login.
-// Fails on MSAN: https://crbug.com/770738.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, DISABLED_LoginErrors) {
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   SetupActiveDirectoryJSNotifications();
   TestNoError();
   TestDomainVisible();
