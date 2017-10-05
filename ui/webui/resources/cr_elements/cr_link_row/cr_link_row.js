@@ -45,18 +45,10 @@ Polymer({
 
   _createRipple: function() {
     this._rippleContainer = this.$.icon;
-    return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+    var ripple = Polymer.PaperRippleBehavior._createRipple();
+    ripple.id = 'ink';
+    ripple.setAttribute('recenters', '');
+    ripple.classList.add('circle');
+    return ripple;
   },
-
-  /**
-   * @param {...*} var_args
-   */
-  ensureRipple: function(var_args) {
-    var lastRipple = this._ripple;
-    Polymer.PaperRippleBehavior.ensureRipple.apply(this, arguments);
-    if (this._ripple && this._ripple !== lastRipple) {
-      this._ripple.center = true;
-      this._ripple.classList.add('circle');
-    }
-  }
 });
