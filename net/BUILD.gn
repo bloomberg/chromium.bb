@@ -6209,3 +6209,15 @@ fuzzer_test("net_http2_frame_decoder_fuzzer") {
     "//net",
   ]
 }
+
+fuzzer_test("net_hpack_decoder_fuzzer") {
+  sources = [
+    "http2/hpack/decoder/hpack_decoder_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
