@@ -208,6 +208,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   LocalFrameView* view = layout_view_.GetFrameView();
   if (view->ShouldThrottleRendering())
     return;
+  view->ResetNeedsForcedCompositingUpdate();
 
   for (Frame* child =
            layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();

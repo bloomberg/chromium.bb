@@ -216,6 +216,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       allows_layout_invalidation_after_layout_clean_(true),
       forcing_layout_parent_view_(false),
       needs_intersection_observation_(false),
+      needs_forced_compositing_update_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()) {
@@ -5249,6 +5250,12 @@ void LocalFrameView::RecordDeferredLoadingStats() {
                                    total_screens_away));
 }
 
+void LocalFrameView::SetNeedsForcedCompositingUpdate() {
+  needs_forced_compositing_update_ = true;
+  if (LocalFrameView* parent = ParentFrameView())
+    parent->SetNeedsForcedCompositingUpdate();
+}
+
 void LocalFrameView::SetNeedsIntersectionObservation() {
   needs_intersection_observation_ = true;
   if (LocalFrameView* parent = ParentFrameView())
@@ -5259,7 +5266,7 @@ bool LocalFrameView::ShouldThrottleRendering() const {
   bool throttled_for_global_reasons = CanThrottleRendering() &&
                                       frame_->GetDocument() &&
                                       Lifecycle().ThrottlingAllowed();
-  if (!throttled_for_global_reasons)
+  if (!throttled_for_global_reasons || needs_forced_compositing_update_)
     return false;
 
   // Only lifecycle phases up to layout are needed to generate an
