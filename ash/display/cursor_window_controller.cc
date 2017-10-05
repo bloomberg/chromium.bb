@@ -254,7 +254,7 @@ void CursorWindowController::UpdateCursorImage() {
     return;
   }
   const gfx::ImageSkia* image =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   if (!is_cursor_compositing_enabled_) {
     gfx::ImageSkia rotated = *image;
     switch (display_.rotation()) {

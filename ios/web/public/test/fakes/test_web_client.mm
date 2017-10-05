@@ -34,9 +34,10 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
 
 base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
     int resource_id) const {
-  if (!ResourceBundle::HasSharedInstance())
+  if (!ui::ResourceBundle::HasSharedInstance())
     return nullptr;
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 NSString* TestWebClient::GetEarlyPageScript(BrowserState* browser_state) const {

@@ -230,7 +230,7 @@ BOOL ImageHasAlphaChannel(UIImage* image) {
 
 UIImage* NativeReversableImage(int imageID, BOOL reversable) {
   DCHECK(imageID);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   UIImage* image = rb.GetNativeImageNamed(imageID).ToUIImage();
   return (reversable && UseRTLLayout())
              ? [image imageFlippedForRightToLeftLayoutDirection]

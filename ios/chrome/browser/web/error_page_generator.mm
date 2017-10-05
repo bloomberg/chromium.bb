@@ -54,10 +54,10 @@
         &errorStrings);
 
     ui::ScaleFactor scaleFactor =
-        ResourceBundle::GetSharedInstance().GetMaxScaleFactor();
+        ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor();
 
     const base::StringPiece templateHTML(
-        ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
             IDR_NET_ERROR_HTML, scaleFactor));
     if (templateHTML.empty())
       NOTREACHED() << "unable to load template. ID: " << IDR_NET_ERROR_HTML;

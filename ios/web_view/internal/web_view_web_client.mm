@@ -38,13 +38,14 @@ std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
 base::StringPiece WebViewWebClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
     int resource_id) const {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 NSString* WebViewWebClient::GetEarlyPageScript(

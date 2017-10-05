@@ -99,7 +99,7 @@ class TaskViewerContents
   gfx::ImageSkia GetWindowAppIcon() override {
     // TODO(jamescook): Create a new .pak file for this app and make a custom
     // icon, perhaps one that looks like the Chrome OS task viewer icon.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_SETTINGS);
   }
 
@@ -122,19 +122,19 @@ class TaskViewerContents
     return static_cast<int>(instances_.size());
   }
   base::string16 GetText(int row, int column_id) override {
-    switch(column_id) {
-    case 0:
-      DCHECK(row < static_cast<int>(instances_.size()));
-      return base::UTF8ToUTF16(instances_[row]->display_name);
-    case 1:
-      DCHECK(row < static_cast<int>(instances_.size()));
-      return base::UTF8ToUTF16(instances_[row]->identity.name());
-    case 2:
-      DCHECK(row < static_cast<int>(instances_.size()));
-      return base::IntToString16(instances_[row]->pid);
-    default:
-      NOTREACHED();
-      break;
+    switch (column_id) {
+      case 0:
+        DCHECK(row < static_cast<int>(instances_.size()));
+        return base::UTF8ToUTF16(instances_[row]->display_name);
+      case 1:
+        DCHECK(row < static_cast<int>(instances_.size()));
+        return base::UTF8ToUTF16(instances_[row]->identity.name());
+      case 2:
+        DCHECK(row < static_cast<int>(instances_.size()));
+        return base::IntToString16(instances_[row]->pid);
+      default:
+        NOTREACHED();
+        break;
     }
     return base::string16();
   }
@@ -340,4 +340,4 @@ void TaskViewer::Create(::mash::mojom::LaunchableRequest request) {
 }
 
 }  // namespace task_viewer
-}  // namespace main
+}  // namespace mash

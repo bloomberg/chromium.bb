@@ -179,8 +179,8 @@ void AwMainDelegate::PreSandboxStartup() {
     int pak_fd = global_descriptors->Get(kAndroidWebViewLocalePakDescriptor);
     base::MemoryMappedFile::Region pak_region =
         global_descriptors->GetRegion(kAndroidWebViewLocalePakDescriptor);
-    ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
-                                                        pak_region);
+    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
+                                                            pak_region);
 
     std::pair<int, ui::ScaleFactor> extra_paks[] = {
         {kAndroidWebViewMainPakDescriptor, ui::SCALE_FACTOR_NONE},
@@ -189,7 +189,7 @@ void AwMainDelegate::PreSandboxStartup() {
     for (const auto& pak_info : extra_paks) {
       pak_fd = global_descriptors->Get(pak_info.first);
       pak_region = global_descriptors->GetRegion(pak_info.first);
-      ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+      ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
           base::File(pak_fd), pak_region, pak_info.second);
     }
 

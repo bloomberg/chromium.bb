@@ -38,7 +38,7 @@
 
 - (void)generateHtml:(HtmlCallback)callback {
   base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resourceId_));
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resourceId_));
   NSString* result = [[NSString alloc] initWithBytes:html.data()
                                               length:html.size()
                                             encoding:encoding_];

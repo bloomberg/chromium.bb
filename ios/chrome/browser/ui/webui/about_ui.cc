@@ -33,7 +33,7 @@ const char kStringsJsPath[] = "strings.js";
 class AboutUIHTMLSource : public web::URLDataSourceIOS {
  public:
   // Construct a data source for the specified |source_name|.
-  AboutUIHTMLSource(const std::string& source_name);
+  explicit AboutUIHTMLSource(const std::string& source_name);
 
   // web::URLDataSourceIOS implementation.
   std::string GetSource() const override;
@@ -129,7 +129,7 @@ void AboutUIHTMLSource::StartDataRequest(
     if (path == kCreditsJsPath)
       idr = IDR_ABOUT_UI_CREDITS_JS;
     base::StringPiece raw_response =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(idr);
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(idr);
     if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
       const uint8_t* next_encoded_byte =
           reinterpret_cast<const uint8_t*>(raw_response.data());

@@ -229,7 +229,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     learn_more_->SetFocusPainter(CreateFocusPainter());
     learn_more_->SetFocusForPlatform();
 
-    ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     learn_more_->SetImage(
         views::Button::STATE_NORMAL,
         rb.GetImageSkiaNamed(IDR_NOTIFICATION_ADVANCED_SETTINGS));
