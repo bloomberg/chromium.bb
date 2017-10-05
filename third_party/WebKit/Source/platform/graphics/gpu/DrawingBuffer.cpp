@@ -722,7 +722,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   return true;
 }
 
-bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dest_gl,
                                           GLenum texture_target,
                                           GLuint texture,
                                           bool premultiply_alpha,
@@ -732,9 +732,11 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                           SourceDrawingBuffer source_buffer) {
   ScopedStateRestorer scoped_state_restorer(this);
 
+  gpu::gles2::GLES2Interface* src_gl = gl_;
+
   if (contents_changed_) {
     ResolveIfNeeded();
-    gl_->Flush();
+    src_gl->Flush();
   }
 
   if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(texture_target))
@@ -751,13 +753,13 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
     produce_sync_token = front_color_buffer_->produce_sync_token;
   } else {
     target = back_color_buffer_->parameters.target;
-    gl_->GenMailboxCHROMIUM(mailbox.name);
-    gl_->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id, target,
-                                      mailbox.name);
-    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
-    gl_->OrderingBarrierCHROMIUM();
-    gl_->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
-                                        produce_sync_token.GetData());
+    src_gl->GenMailboxCHROMIUM(mailbox.name);
+    src_gl->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id, target,
+                                         mailbox.name);
+    const GLuint64 fence_sync = src_gl->InsertFenceSyncCHROMIUM();
+    src_gl->OrderingBarrierCHROMIUM();
+    src_gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
+                                           produce_sync_token.GetData());
   }
 
   if (!produce_sync_token.HasData()) {
@@ -765,9 +767,9 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
     return false;
   }
 
-  gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
+  dest_gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
   GLuint source_texture =
-      gl->CreateAndConsumeTextureCHROMIUM(target, mailbox.name);
+      dest_gl->CreateAndConsumeTextureCHROMIUM(target, mailbox.name);
 
   GLboolean unpack_premultiply_alpha_needed = GL_FALSE;
   GLboolean unpack_unpremultiply_alpha_needed = GL_FALSE;
@@ -776,21 +778,21 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   else if (want_alpha_channel_ && !premultiplied_alpha_ && premultiply_alpha)
     unpack_premultiply_alpha_needed = GL_TRUE;
 
-  gl->CopySubTextureCHROMIUM(
+  dest_gl->CopySubTextureCHROMIUM(
       source_texture, 0, texture_target, texture, 0, dest_texture_offset.X(),
       dest_texture_offset.Y(), source_sub_rectangle.X(),
       source_sub_rectangle.Y(), source_sub_rectangle.Width(),
       source_sub_rectangle.Height(), flip_y, unpack_premultiply_alpha_needed,
       unpack_unpremultiply_alpha_needed);
 
-  gl->DeleteTextures(1, &source_texture);
+  dest_gl->DeleteTextures(1, &source_texture);
 
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+  const GLuint64 fence_sync = dest_gl->InsertFenceSyncCHROMIUM();
 
-  gl->OrderingBarrierCHROMIUM();
+  dest_gl->OrderingBarrierCHROMIUM();
   gpu::SyncToken sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-  gl_->WaitSyncTokenCHROMIUM(sync_token.GetData());
+  dest_gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  src_gl->WaitSyncTokenCHROMIUM(sync_token.GetData());
 
   return true;
 }
