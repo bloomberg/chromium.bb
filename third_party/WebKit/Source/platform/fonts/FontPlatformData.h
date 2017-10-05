@@ -143,9 +143,6 @@ class PLATFORM_EXPORT FontPlatformData {
   void SetSyntheticItalic(bool synthetic_italic) {
     synthetic_italic_ = synthetic_italic;
   }
-  void SetAvoidEmbeddedBitmaps(bool embedded_bitmaps) {
-    avoid_embedded_bitmaps_ = embedded_bitmaps;
-  }
   bool operator==(const FontPlatformData&) const;
   const FontPlatformData& operator=(const FontPlatformData&);
 
@@ -182,7 +179,6 @@ class PLATFORM_EXPORT FontPlatformData {
   float text_size_;
   bool synthetic_bold_;
   bool synthetic_italic_;
-  bool avoid_embedded_bitmaps_;
   FontOrientation orientation_;
 
  private:

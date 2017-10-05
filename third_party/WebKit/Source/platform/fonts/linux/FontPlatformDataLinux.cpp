@@ -46,7 +46,11 @@ void FontPlatformData::SetupPaint(SkPaint* paint,
   paint->setFakeBoldText(synthetic_bold_);
   paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
-  paint->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+  // TODO(drott): Due to Skia bug 5917
+  // https://bugs.chromium.org/p/skia/issues/detail?id=5917 correct advance
+  // width scaling with FreeType for font sizes under 257px currently only works
+  // with:
+  // paint->setHinting(SkPaint::kNo_Hinting);
 }
 
 }  // namespace blink
