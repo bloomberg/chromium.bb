@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SSL_CAPTIVE_PORTAL_HELPER_ANDROID_H_
 
 #include <jni.h>
-#include <stddef.h>
 #include <string>
 
 namespace chrome {

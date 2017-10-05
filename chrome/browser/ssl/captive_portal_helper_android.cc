@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ssl/captive_portal_helper_android.h"
+#include "chrome/browser/ssl/captive_portal_helper.h"
+
+#include <stddef.h>
+
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/CaptivePortalHelper_jni.h"
+#include "net/android/network_library.h"
 
 namespace chrome {
 namespace android {
@@ -44,4 +50,9 @@ std::string GetCaptivePortalServerUrl(JNIEnv* env) {
 }
 
 }  // namespace android
+
+bool IsBehindCaptivePortal() {
+  return net::android::GetIsCaptivePortal();
+}
+
 }  // namespace chrome
