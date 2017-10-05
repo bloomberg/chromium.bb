@@ -4291,14 +4291,21 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _browserState->GetPrefs()->SetInt64(prefs::kRateThisAppDialogLastShownTime,
                                       base::Time::Now().ToInternalValue());
 
-  // Some versions of iOS7 do not support linking directly to the "Ratings and
-  // Reviews" appstore page.  For iOS7 fall back to an alternative URL that
-  // links to the main appstore page for the Chrome app.
-  NSURL* storeURL =
-      [NSURL URLWithString:(@"itms-apps://itunes.apple.com/WebObjects/"
-                            @"MZStore.woa/wa/"
-                            @"viewContentsUserReviews?type=Purple+Software&id="
-                            @"535886823&pt=9008&ct=rating")];
+  // iOS11 no longer supports the itms link to the app store. So, use a deep
+  // link for iOS11 and the itms link for prior versions.
+  NSURL* storeURL;
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    storeURL =
+        [NSURL URLWithString:(@"https://itunes.apple.com/us/app/"
+                              @"google-chrome-the-fast-and-secure-web-browser/"
+                              @"id535886823?action=write-review")];
+  } else {
+    storeURL = [NSURL
+        URLWithString:(@"itms-apps://itunes.apple.com/WebObjects/"
+                       @"MZStore.woa/wa/"
+                       @"viewContentsUserReviews?type=Purple+Software&id="
+                       @"535886823&pt=9008&ct=rating")];
+  }
 
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppDialogShown"));
   [self clearPresentedStateWithCompletion:nil dismissOmnibox:YES];
