@@ -185,7 +185,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 PaletteTray::~PaletteTray() {
@@ -393,6 +392,8 @@ void PaletteTray::Initialize() {
     return;
 
   TrayBackgroundView::Initialize();
+
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 
   // OnPaletteEnabledPrefChanged will get called with the initial pref value,
   // which will take care of showing the palette.
