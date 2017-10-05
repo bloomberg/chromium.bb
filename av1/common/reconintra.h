@@ -71,6 +71,14 @@ static INLINE int av1_use_angle_delta(BLOCK_SIZE bsize) {
 }
 #endif  // CONFIG_EXT_INTRA
 
+#if CONFIG_INTRABC
+static INLINE int av1_allow_intrabc(BLOCK_SIZE bsize,
+                                    const AV1_COMMON *const cm) {
+  return (bsize >= BLOCK_8X8 || bsize == BLOCK_4X4) &&
+         cm->allow_screen_content_tools;
+}
+#endif  // CONFIG_INTRABC
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

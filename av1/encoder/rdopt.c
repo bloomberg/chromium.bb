@@ -9424,7 +9424,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                        RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                        int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
-  if (bsize < BLOCK_8X8 || !cm->allow_screen_content_tools) return INT64_MAX;
+  if (!av1_allow_intrabc(bsize, cm)) return INT64_MAX;
 
   MACROBLOCKD *const xd = &x->e_mbd;
   const TileInfo *tile = &xd->tile;

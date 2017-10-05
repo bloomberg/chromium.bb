@@ -1984,7 +1984,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     }
 #if CONFIG_INTRABC
   } else {
-    if (cm->allow_screen_content_tools && bsize >= BLOCK_8X8) {
+    if (av1_allow_intrabc(bsize, cm)) {
       FRAME_COUNTS *const counts = td->counts;
       ++counts->intrabc[mbmi->use_intrabc];
     } else {
@@ -5278,6 +5278,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     av1_generate_block_hash_value(cpi->source, 4, block_hash_values[0],
                                   block_hash_values[1], is_block_same[0],
                                   is_block_same[1]);
+    av1_add_to_hash_map_by_row_with_precal_data(
+        &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
+        pic_width, pic_height, 4);
     av1_generate_block_hash_value(cpi->source, 8, block_hash_values[1],
                                   block_hash_values[0], is_block_same[1],
                                   is_block_same[0]);

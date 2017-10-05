@@ -2573,8 +2573,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     const int block_height = block_size_high[bsize];
     const int block_width = block_size_wide[bsize];
     if (block_height == block_width && x_pos >= 0 && y_pos >= 0) {
-      if (block_width == 8 || block_width == 16 || block_width == 32 ||
-          block_width == 64) {
+      if (block_width == 4 || block_width == 8 || block_width == 16 ||
+          block_width == 32 || block_width == 64) {
         uint8_t *what = x->plane[0].src.buf;
         const int what_stride = x->plane[0].src.stride;
         block_hash block_hashes[MAX_HASH_MV_TABLE_SIZE];
