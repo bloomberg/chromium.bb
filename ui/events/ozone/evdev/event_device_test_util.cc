@@ -173,6 +173,44 @@ const DeviceCapabilities kiBuffaloGamepad = {
     arraysize(kiBuffaloGamepadAbsAxes),
 };
 
+// Captured from Pixelbook.
+const DeviceAbsoluteAxis kEveTouchScreenAbsAxes[] = {
+    {ABS_X, {4624, 0, 10368, 0, 0, 40}},
+    {ABS_Y, {2177, 0, 6912, 0, 0, 40}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 1}},
+    {ABS_MT_TOUCH_MINOR, {0, 0, 255, 0, 0, 1}},
+    {ABS_MT_ORIENTATION, {0, 0, 1, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 10368, 0, 0, 40}},
+    {ABS_MT_POSITION_Y, {0, 0, 6912, 0, 0, 40}},
+    {ABS_MT_TOOL_TYPE, {0, 0, 2, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}}};
+
+const DeviceCapabilities kEveTouchScreen = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-6/"
+    "i2c-WCOM50C1:00/0018:2D1F:5143.0001/input/input4/event4",
+    /* name */ "WCOM50C1:00 2D1F:5143",
+    /* phys */ "i2c-WCOM50C1:00",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "2d1f",
+    /* product */ "5143",
+    /* version */ "0100",
+    /* prop */ "2",
+    /* ev */ "1b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "6f3800001000003",
+    /* msc */ "20",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kEveTouchScreenAbsAxes,
+    arraysize(kEveTouchScreenAbsAxes),
+};
+
 // Captured from Chromebook Pixel.
 const DeviceCapabilities kLinkKeyboard = {
     /* path */ "/sys/devices/platform/i8042/serio0/input/input6/event6",
