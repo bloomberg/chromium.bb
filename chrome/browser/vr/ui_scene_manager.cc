@@ -39,6 +39,7 @@
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/transform_util.h"
 
 namespace vr {
@@ -56,6 +57,15 @@ void BindColor(UiSceneManager* model, Rect* rect, P p) {
             r->SetEdgeColor(c);
           },
           base::Unretained(rect))));
+}
+
+template <typename P>
+void BindColor(UiSceneManager* model, Text* text, P p) {
+  text->AddBinding(base::MakeUnique<Binding<SkColor>>(
+      base::Bind([](UiSceneManager* m, P p) { return (m->color_scheme()).*p; },
+                 base::Unretained(model), p),
+      base::Bind([](Text* t, const SkColor& c) { t->SetColor(c); },
+                 base::Unretained(text))));
 }
 
 }  // namespace
@@ -300,10 +310,8 @@ void UiSceneManager::CreateSplashScreen() {
   // Add "Powered by Chrome" text.
   auto text = base::MakeUnique<Text>(
       512, kSplashScreenTextFontHeightM, kSplashScreenTextWidthM,
-      base::Bind([](ColorScheme color_scheme) {
-        return color_scheme.splash_screen_text_color;
-      }),
-      IDS_VR_POWERED_BY_CHROME_MESSAGE);
+      l10n_util::GetStringUTF16(IDS_VR_POWERED_BY_CHROME_MESSAGE));
+  BindColor(this, text.get(), &ColorScheme::splash_screen_text_color);
   text->set_name(kSplashScreenText);
   text->SetVisible(true);
   text->set_draw_phase(kPhaseOverlayForeground);
@@ -327,10 +335,8 @@ void UiSceneManager::CreateSplashScreen() {
 void UiSceneManager::CreateUnderDevelopmentNotice() {
   auto text = base::MakeUnique<Text>(
       512, kUnderDevelopmentNoticeFontHeightM, kUnderDevelopmentNoticeWidthM,
-      base::Bind([](ColorScheme color_scheme) {
-        return color_scheme.world_background_text;
-      }),
-      IDS_VR_UNDER_DEVELOPMENT_NOTICE);
+      l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
+  BindColor(this, text.get(), &ColorScheme::world_background_text);
   text->set_name(kUnderDevelopmentNotice);
   text->set_draw_phase(kPhaseForeground);
   text->set_hit_testable(false);
