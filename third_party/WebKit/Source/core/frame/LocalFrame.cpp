@@ -68,6 +68,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/loader/IdlenessDetector.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
@@ -217,6 +218,7 @@ LocalFrame::~LocalFrame() {
 DEFINE_TRACE(LocalFrame) {
   visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
+  visitor->Trace(idleness_detector_);
   visitor->Trace(loader_);
   visitor->Trace(navigation_scheduler_);
   visitor->Trace(view_);
@@ -270,6 +272,7 @@ void LocalFrame::Detach(FrameDetachType type) {
 
   if (IsLocalRoot())
     performance_monitor_->Shutdown();
+  idleness_detector_->Shutdown();
 
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   loader_.StopAllLoaders();
@@ -772,6 +775,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     probe_sink_ = LocalFrameRoot().probe_sink_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
+  idleness_detector_ = new IdlenessDetector(this);
 }
 
 WebFrameScheduler* LocalFrame::FrameScheduler() {

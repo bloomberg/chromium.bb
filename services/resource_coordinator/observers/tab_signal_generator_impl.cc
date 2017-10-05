@@ -38,7 +38,7 @@ void TabSignalGeneratorImpl::OnFramePropertyChanged(
     const FrameCoordinationUnitImpl* frame_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  if (property_type == mojom::PropertyType::kNetworkIdle) {
+  if (property_type == mojom::PropertyType::kNetworkAlmostIdle) {
     // Ignore when the signal doesn't come from main frame.
     if (!frame_cu->IsMainFrame())
       return;
