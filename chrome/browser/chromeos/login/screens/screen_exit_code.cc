@@ -68,6 +68,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "VOICE_INTERACTION_VALUE_PROP_ACCEPTED";
     case ScreenExitCode::WAIT_FOR_CONTAINER_READY_FINISHED:
       return "WAIT_FOR_CONTAINER_READY_FINISHED";
+    case ScreenExitCode::WAIT_FOR_CONTAINER_READY_ERROR:
+      return "WAIT_FOR_CONTAINER_READY_ERROR";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

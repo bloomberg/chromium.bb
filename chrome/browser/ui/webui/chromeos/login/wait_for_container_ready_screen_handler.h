@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/screens/wait_for_container_ready_screen_view.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -18,7 +19,8 @@ namespace chromeos {
 class WaitForContainerReadyScreenHandler
     : public BaseScreenHandler,
       public WaitForContainerReadyScreenView,
-      public ArcAppListPrefs::Observer {
+      public ArcAppListPrefs::Observer,
+      public arc::ArcSessionManager::Observer {
  public:
   WaitForContainerReadyScreenHandler();
   ~WaitForContainerReadyScreenHandler() override;
@@ -35,6 +37,9 @@ class WaitForContainerReadyScreenHandler
 
   // ArcAppListPrefs::Observer overrides.
   void OnPackageListInitialRefreshed() override;
+
+  // ArcSessionManager::Observer overrides.
+  void OnArcErrorShowRequested(ArcSupportHost::Error error) override;
 
  private:
   // BaseScreenHandler:

@@ -1283,6 +1283,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
     case ScreenExitCode::WAIT_FOR_CONTAINER_READY_FINISHED:
       OnWaitForContainerReadyFinished();
       break;
+    case ScreenExitCode::WAIT_FOR_CONTAINER_READY_ERROR:
+      OnOobeFlowFinished();
+      break;
     default:
       NOTREACHED();
   }

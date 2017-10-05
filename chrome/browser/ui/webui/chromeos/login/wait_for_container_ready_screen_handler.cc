@@ -32,6 +32,7 @@ WaitForContainerReadyScreenHandler::~WaitForContainerReadyScreenHandler() {
   }
   timer_.Stop();
 
+  arc::ArcSessionManager::Get()->RemoveObserver(this);
   if (!profile_)
     return;
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
@@ -97,6 +98,13 @@ void WaitForContainerReadyScreenHandler::OnPackageListInitialRefreshed() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void WaitForContainerReadyScreenHandler::OnArcErrorShowRequested(
+    ArcSupportHost::Error error) {
+  // Error occurs during Arc provisioning, close the screen.
+  if (screen_)
+    screen_->OnContainerError();
+}
+
 void WaitForContainerReadyScreenHandler::Initialize() {
   profile_ = ProfileManager::GetPrimaryUserProfile();
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
@@ -105,6 +113,7 @@ void WaitForContainerReadyScreenHandler::Initialize() {
     if (!is_app_list_ready_)
       prefs->AddObserver(this);
   }
+  arc::ArcSessionManager::Get()->AddObserver(this);
 
   if (!screen_ || !show_on_init_)
     return;
@@ -116,7 +125,7 @@ void WaitForContainerReadyScreenHandler::Initialize() {
 void WaitForContainerReadyScreenHandler::OnMaxContainerWaitTimeout() {
   // TODO(updowndota): Add histogram to Voice Interaction OptIn flow.
   if (screen_)
-    screen_->OnContainerReady();
+    screen_->OnContainerError();
 }
 
 void WaitForContainerReadyScreenHandler::NotifyContainerReady() {

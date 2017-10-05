@@ -31,6 +31,9 @@ class WaitForContainerReadyScreen : public BaseScreen {
   // Called when the container is ready, exit the screen.
   void OnContainerReady();
 
+  // Called when error occurs or timeout, exit the screen.
+  void OnContainerError();
+
  private:
   WaitForContainerReadyScreenView* view_;
 
