@@ -9,13 +9,11 @@
 #include <memory>
 
 #include "base/bind_helpers.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/net/cookies/cookie_store_ios_client.h"
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "net/base/mac/url_conversions.h"
@@ -28,21 +26,10 @@
 
 namespace net {
 
-class TestingCookieStoreIOS : public CookieStoreIOS {
- public:
-  TestingCookieStoreIOS(std::unique_ptr<SystemCookieStore> system_store)
-      : CookieStoreIOS(std::move(system_store)),
-        scoped_cookie_store_ios_client_(
-            base::MakeUnique<TestCookieStoreIOSClient>()) {}
-
- private:
-  ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
-};
-
 struct CookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
     ClearCookies();
-    return base::MakeUnique<TestingCookieStoreIOS>(
+    return base::MakeUnique<CookieStoreIOS>(
         base::MakeUnique<NSHTTPSystemCookieStore>());
   }
 
@@ -104,8 +91,6 @@ class CookieStoreIOSTest : public testing::Test {
         kTestCookieURLFooBaz("http://foo.google.com/baz"),
         kTestCookieURLFoo("http://foo.google.com"),
         kTestCookieURLBarBar("http://bar.google.com/bar"),
-        scoped_cookie_store_ios_client_(
-            base::MakeUnique<TestCookieStoreIOSClient>()),
         backend_(new TestPersistentCookieStore) {
     ClearCookies();
     std::unique_ptr<NSHTTPSystemCookieStore> system_store(
@@ -137,33 +122,25 @@ class CookieStoreIOSTest : public testing::Test {
   void SetSystemCookie(const GURL& url,
                        const std::string& name,
                        const std::string& value) {
-    system_store_->SetCookieAsync(
-        [NSHTTPCookie cookieWithProperties:@{
-          NSHTTPCookiePath : base::SysUTF8ToNSString(url.path()),
-          NSHTTPCookieName : base::SysUTF8ToNSString(name),
-          NSHTTPCookieValue : base::SysUTF8ToNSString(value),
-          NSHTTPCookieDomain : base::SysUTF8ToNSString(url.host()),
-        }],
-        base::BindOnce(&net::CookieStoreIOS::NotifySystemCookiesChanged));
+    system_store_->SetCookie([NSHTTPCookie cookieWithProperties:@{
+      NSHTTPCookiePath : base::SysUTF8ToNSString(url.path()),
+      NSHTTPCookieName : base::SysUTF8ToNSString(name),
+      NSHTTPCookieValue : base::SysUTF8ToNSString(value),
+      NSHTTPCookieDomain : base::SysUTF8ToNSString(url.host()),
+    }]);
+    net::CookieStoreIOS::NotifySystemCookiesChanged();
     base::RunLoop().RunUntilIdle();
   }
 
   void DeleteSystemCookie(const GURL& gurl, const std::string& name) {
-    base::WeakPtr<SystemCookieStore> weak_system_store =
-        system_store_->GetWeakPtr();
-    system_store_->GetCookiesForURLAsync(
-        gurl, base::BindBlockArc(^(NSArray<NSHTTPCookie*>* cookies) {
-          for (NSHTTPCookie* cookie in cookies) {
-            if ([[cookie name] isEqualToString:base::SysUTF8ToNSString(name)] &&
-                weak_system_store) {
-              weak_system_store->DeleteCookieAsync(
-                  cookie,
-                  base::BindOnce(
-                      &net::CookieStoreIOS::NotifySystemCookiesChanged));
-              break;
-            }
-          }
-        }));
+    NSArray* cookies = system_store_->GetCookiesForURL(gurl);
+    for (NSHTTPCookie* cookie in cookies) {
+      if (cookie.name.UTF8String == name) {
+        system_store_->DeleteCookie(cookie);
+        break;
+      }
+    }
+    net::CookieStoreIOS::NotifySystemCookiesChanged();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -174,7 +151,6 @@ class CookieStoreIOSTest : public testing::Test {
   const GURL kTestCookieURLBarBar;
 
   base::MessageLoop loop_;
-  ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   scoped_refptr<TestPersistentCookieStore> backend_;
   // |system_store_| will point to the NSHTTPSystemCookieStore object owned by
   // |store_|. Once the store_ object is deleted the NSHTTPSystemCookieStore
@@ -234,8 +210,6 @@ TEST_F(CookieStoreIOSTest, SameValueDoesNotCallHook) {
 TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   base::MessageLoop loop;
   const GURL kTestCookieURLFooBar("http://foo.google.com/bar");
-  ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
-      base::MakeUnique<TestCookieStoreIOSClient>());
   ClearCookies();
   std::unique_ptr<CookieStoreIOS> cookie_store(base::MakeUnique<CookieStoreIOS>(
       base::MakeUnique<NSHTTPSystemCookieStore>()));
@@ -251,7 +225,6 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   cookie_store->GetAllCookiesForURLAsync(
       kTestCookieURLFooBar,
       base::Bind(&GetAllCookiesCallback::Run, base::Unretained(&callback)));
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback.did_run());
   EXPECT_EQ(1u, callback.cookie_list().size());
   net::CanonicalCookie cookie = callback.cookie_list()[0];

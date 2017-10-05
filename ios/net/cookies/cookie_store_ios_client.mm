@@ -27,6 +27,10 @@ CookieStoreIOSClient::CookieStoreIOSClient() {}
 
 CookieStoreIOSClient::~CookieStoreIOSClient() {}
 
+void CookieStoreIOSClient::WillChangeCookieStorage() const {}
+
+void CookieStoreIOSClient::DidChangeCookieStorage() const {}
+
 scoped_refptr<base::SequencedTaskRunner>
 CookieStoreIOSClient::GetTaskRunner() const {
   return scoped_refptr<base::SequencedTaskRunner>();
