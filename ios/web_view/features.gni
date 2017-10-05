@@ -7,7 +7,7 @@ declare_args() {
   ios_web_view_include_cronet = false
 
   # Controls if sign and sync APIs are exposed.
-  ios_web_view_enable_sync = false
+  ios_web_view_enable_sync = true
 
   # Controls the output name of the built framework.
   ios_web_view_output_name = "ChromeWebView"
