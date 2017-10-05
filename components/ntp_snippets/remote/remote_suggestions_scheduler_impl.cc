@@ -143,6 +143,10 @@ const char* const kTriggerTypesParamValueForEmptyList = "-";
 
 const int kBlockBackgroundFetchesMinutesAfterClearingHistory = 30;
 
+// Variation parameter for minimal age of a fetch to be considered "stale".
+const char kMinAgeForStaleFetchHoursParamName[] =
+    "min_age_for_stale_fetch_hours";
+
 // Returns the time interval to use for scheduling remote suggestion fetches for
 // the given interval and user_class.
 base::TimeDelta GetDesiredFetchingInterval(
@@ -412,6 +416,16 @@ bool RemoteSuggestionsSchedulerImpl::FetchingSchedule::is_empty() const {
          interval_shown_fallback.is_zero();
 }
 
+base::TimeDelta
+RemoteSuggestionsSchedulerImpl::FetchingSchedule::GetStalenessInterval() const {
+  // The default value for staleness is |interval_startup_wifi| which is not
+  // constant. It depends on user class and is configurable by field trial
+  // params as well.
+  return base::TimeDelta::FromHours(base::GetFieldTrialParamByFeatureAsInt(
+      ntp_snippets::kArticleSuggestionsFeature,
+      kMinAgeForStaleFetchHoursParamName, interval_startup_wifi.InHours()));
+}
+
 // The TriggerType enum specifies values for the events that can trigger
 // fetching remote suggestions. These values are written to logs. New enum
 // values can be added, but existing enums must never be renumbered or deleted
@@ -478,7 +492,8 @@ void RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
                               0);
   registry->RegisterInt64Pref(prefs::kSnippetShownFetchingIntervalWifi, 0);
   registry->RegisterInt64Pref(prefs::kSnippetShownFetchingIntervalFallback, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetLastFetchAttempt, 0);
+  registry->RegisterInt64Pref(prefs::kSnippetLastFetchAttemptTime, 0);
+  registry->RegisterInt64Pref(prefs::kSnippetLastSuccessfulFetchTime, 0);
 }
 
 void RemoteSuggestionsSchedulerImpl::SetProvider(
@@ -498,7 +513,7 @@ void RemoteSuggestionsSchedulerImpl::RunQueuedTriggersIfReady() {
     std::set<TriggerType> queued_triggers_copy;
     queued_triggers_copy.swap(queued_triggers_);
     for (const TriggerType trigger : queued_triggers_copy) {
-      RefetchInTheBackgroundIfAppropriate(trigger);
+      RefetchIfAppropriate(trigger);
     }
   }
 }
@@ -545,29 +560,28 @@ void RemoteSuggestionsSchedulerImpl::OnInteractiveFetchFinished(
 
 void RemoteSuggestionsSchedulerImpl::OnPersistentSchedulerWakeUp() {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
-  RefetchInTheBackgroundIfAppropriate(
-      TriggerType::PERSISTENT_SCHEDULER_WAKE_UP);
+  RefetchIfAppropriate(TriggerType::PERSISTENT_SCHEDULER_WAKE_UP);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnBrowserForegrounded() {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   // TODO(jkrcal): Consider that this is called whenever we open or return to an
   // Activity. Therefore, keep work light for fast start up calls.
-  RefetchInTheBackgroundIfAppropriate(TriggerType::BROWSER_FOREGROUNDED);
+  RefetchIfAppropriate(TriggerType::BROWSER_FOREGROUNDED);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnBrowserColdStart() {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   // TODO(jkrcal): Consider that work here must be kept light for fast
   // cold start ups.
-  RefetchInTheBackgroundIfAppropriate(TriggerType::BROWSER_COLD_START);
+  RefetchIfAppropriate(TriggerType::BROWSER_COLD_START);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnSuggestionsSurfaceOpened() {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   // TODO(jkrcal): Consider that this is called whenever we open an NTP.
   // Therefore, keep work light for fast start up calls.
-  RefetchInTheBackgroundIfAppropriate(TriggerType::SURFACE_OPENED);
+  RefetchIfAppropriate(TriggerType::SURFACE_OPENED);
 }
 
 void RemoteSuggestionsSchedulerImpl::StartScheduling() {
@@ -662,8 +676,21 @@ void RemoteSuggestionsSchedulerImpl::StoreFetchingSchedule() {
       SerializeTimeDelta(schedule_.interval_shown_fallback));
 }
 
-void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
-    TriggerType trigger) {
+bool RemoteSuggestionsSchedulerImpl::IsLastSuccessfulFetchStale() const {
+  // Avoid claiming staleness on the first fetch ever (after installing /
+  // upgrading Chrome to a version that writes this pref). We really do not
+  // know when was the last fetch.
+  if (!profile_prefs_->HasPrefPath(prefs::kSnippetLastSuccessfulFetchTime)) {
+    return false;
+  }
+  const base::Time last_successful_fetch_time = DeserializeTime(
+      profile_prefs_->GetInt64(prefs::kSnippetLastSuccessfulFetchTime));
+
+  return clock_->Now() - last_successful_fetch_time >
+         schedule_.GetStalenessInterval();
+}
+
+void RemoteSuggestionsSchedulerImpl::RefetchIfAppropriate(TriggerType trigger) {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
 
   if (background_fetch_in_progress_) {
@@ -691,7 +718,7 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
   }
 
   const base::Time last_fetch_attempt_time = base::Time::FromInternalValue(
-      profile_prefs_->GetInt64(prefs::kSnippetLastFetchAttempt));
+      profile_prefs_->GetInt64(prefs::kSnippetLastFetchAttemptTime));
 
   if (trigger == TriggerType::SURFACE_OPENED &&
       !time_until_first_shown_trigger_reported_) {
@@ -709,7 +736,7 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
   }
 
   if (trigger != TriggerType::PERSISTENT_SCHEDULER_WAKE_UP &&
-      !ShouldRefetchInTheBackgroundNow(last_fetch_attempt_time, trigger)) {
+      !ShouldRefetchNow(last_fetch_attempt_time, trigger)) {
     debug_logger_->Log(FROM_HERE, "stop, because too soon");
     return;
   }
@@ -741,12 +768,23 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
 
   debug_logger_->Log(FROM_HERE, "issuing a fetch");
   background_fetch_in_progress_ = true;
-  provider_->RefetchInTheBackground(base::Bind(
-      &RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundFinished,
-      base::Unretained(this)));
+
+  if ((trigger == TriggerType::BROWSER_COLD_START ||
+       trigger == TriggerType::BROWSER_FOREGROUNDED ||
+       trigger == TriggerType::SURFACE_OPENED) &&
+      IsLastSuccessfulFetchStale()) {
+    provider_->RefetchWhileDisplaying(
+        base::Bind(&RemoteSuggestionsSchedulerImpl::RefetchFinished,
+                   base::Unretained(this)));
+    return;
+  }
+
+  provider_->RefetchInTheBackground(
+      base::Bind(&RemoteSuggestionsSchedulerImpl::RefetchFinished,
+                 base::Unretained(this)));
 }
 
-bool RemoteSuggestionsSchedulerImpl::ShouldRefetchInTheBackgroundNow(
+bool RemoteSuggestionsSchedulerImpl::ShouldRefetchNow(
     base::Time last_fetch_attempt_time,
     TriggerType trigger) {
   // If we have no persistent scheduler to ask, err on the side of caution.
@@ -820,14 +858,13 @@ bool RemoteSuggestionsSchedulerImpl::AcquireQuota(bool interactive_request) {
   return false;
 }
 
-void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundFinished(
-    Status fetch_status) {
+void RemoteSuggestionsSchedulerImpl::RefetchFinished(Status fetch_status) {
   background_fetch_in_progress_ = false;
   OnFetchCompleted(fetch_status);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
-  profile_prefs_->SetInt64(prefs::kSnippetLastFetchAttempt,
+  profile_prefs_->SetInt64(prefs::kSnippetLastFetchAttemptTime,
                            SerializeTime(clock_->Now()));
   time_until_first_shown_trigger_reported_ = false;
   time_until_first_startup_trigger_reported_ = false;
@@ -839,11 +876,15 @@ void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
   if (fetch_status.code != StatusCode::SUCCESS) {
     return;
   }
+
+  profile_prefs_->SetInt64(prefs::kSnippetLastSuccessfulFetchTime,
+                           SerializeTime(clock_->Now()));
+
   ApplyPersistentFetchingSchedule();
 }
 
 void RemoteSuggestionsSchedulerImpl::ClearLastFetchAttemptTime() {
-  profile_prefs_->ClearPref(prefs::kSnippetLastFetchAttempt);
+  profile_prefs_->ClearPref(prefs::kSnippetLastFetchAttemptTime);
 }
 
 std::set<RemoteSuggestionsSchedulerImpl::TriggerType>

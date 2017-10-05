@@ -393,7 +393,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
           signin_manager, pref_service, additional_toggle_pref),
       std::move(prefetched_pages_tracker),
-      std::move(breaking_news_raw_data_provider), debug_logger);
+      std::move(breaking_news_raw_data_provider), debug_logger,
+      std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
   service->set_remote_suggestions_provider(provider.get());

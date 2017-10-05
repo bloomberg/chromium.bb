@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -64,6 +65,8 @@ class RemoteSuggestionsFetcher;
 
 namespace {
 
+const int kDefaultStartupIntervalHours = 24;
+
 ACTION_TEMPLATE(SaveArgByMove,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(pointer)) {
@@ -84,16 +87,25 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
  public:
   MockRemoteSuggestionsProvider(Observer* observer)
       : RemoteSuggestionsProvider(observer) {}
-  // Gmock cannot mock methods that have movable-only type callbacks as
-  // parameters such as FetchDoneCallback, DismissedSuggestionsCallback,
-  // ImageFetchedCallback, FetchStatusCallback. As a work-around,
-  // RefetchInTheBackground calls the mock method RefetchInTheBackgroundMock,
-  // which may then be checked with EXPECT_CALL.
+  // Gmock cannot mock a method with movable-only type callback
+  // FetchStatusCallback as a parameter. As a work-around, this function calls
+  // the mock function with value passed by pointer. The mock function may then
+  // be checked with EXPECT_CALL.
   void RefetchInTheBackground(
       RemoteSuggestionsProvider::FetchStatusCallback callback) override {
-    RefetchInTheBackgroundMock(&callback);
+    RefetchInTheBackground(&callback);
   }
-  MOCK_METHOD1(RefetchInTheBackgroundMock,
+  MOCK_METHOD1(RefetchInTheBackground,
+               void(RemoteSuggestionsProvider::FetchStatusCallback*));
+  // Gmock cannot mock a method with movable-only type callback
+  // FetchStatusCallback as a parameter. As a work-around, this function calls
+  // the mock function with value passed by pointer. The mock function may then
+  // be checked with EXPECT_CALL.
+  void RefetchWhileDisplaying(
+      RemoteSuggestionsProvider::FetchStatusCallback callback) override {
+    RefetchWhileDisplaying(&callback);
+  }
+  MOCK_METHOD1(RefetchWhileDisplaying,
                void(RemoteSuggestionsProvider::FetchStatusCallback*));
   MOCK_CONST_METHOD0(suggestions_fetcher_for_debugging,
                      const RemoteSuggestionsFetcher*());
@@ -106,33 +118,40 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
                void(base::Time begin,
                     base::Time end,
                     const base::Callback<bool(const GURL& url)>& filter));
+  // Gmock cannot mock a method with movable-only type callback
+  // FetchDoneCallback as a parameter. As a work-around, this function calls the
+  // mock function with value passed by pointer. The mock function may then be
+  // checked with EXPECT_CALL.
   void Fetch(const Category& category,
              const std::set<std::string>& set,
              FetchDoneCallback callback) override {
-    FetchMock(category, set, callback);
+    Fetch(category, set, &callback);
   }
-  MOCK_METHOD3(FetchMock,
+  MOCK_METHOD3(Fetch,
                void(const Category&,
                     const std::set<std::string>&,
-                    const FetchDoneCallback&));
+                    FetchDoneCallback*));
   MOCK_METHOD0(ReloadSuggestions, void());
   MOCK_METHOD1(ClearCachedSuggestions, void(Category));
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category));
   MOCK_METHOD1(DismissSuggestion, void(const ContentSuggestion::ID&));
+  // Gmock cannot mock a method with movable-only type callback
+  // ImageFetchedCallback as a parameter. As a work-around, this function calls
+  // the mock function with value passed by pointer. The mock function may then
+  // be checked with EXPECT_CALL.
   void FetchSuggestionImage(const ContentSuggestion::ID& id,
                             ImageFetchedCallback callback) override {
-    FetchSuggestionImageMock(id, callback);
+    FetchSuggestionImage(id, &callback);
   }
-  MOCK_METHOD2(FetchSuggestionImageMock,
-               void(const ContentSuggestion::ID&, const ImageFetchedCallback&));
+  MOCK_METHOD2(FetchSuggestionImage,
+               void(const ContentSuggestion::ID&, ImageFetchedCallback*));
   void GetDismissedSuggestionsForDebugging(
       Category category,
       DismissedSuggestionsCallback callback) override {
-    GetDismissedSuggestionsForDebuggingMock(category, callback);
+    GetDismissedSuggestionsForDebugging(category, &callback);
   }
-  MOCK_METHOD2(GetDismissedSuggestionsForDebuggingMock,
-               void(Category category,
-                    const DismissedSuggestionsCallback& callback));
+  MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
+               void(Category category, DismissedSuggestionsCallback* callback));
   MOCK_METHOD0(OnSignInStateChanged, void());
 };
 
@@ -230,7 +249,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
     // After a successful fetch, the client updates it's schedule, so we expect
     // another call here.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).RetiresOnSaturation();
-    EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(Invoke(
             [](RemoteSuggestionsProvider::FetchStatusCallback* callback) {
               std::move(*callback).Run(Status::Success());
@@ -402,10 +421,10 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   {
     InSequence s;
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
   // First enable the scheduler -- calling Schedule() for the first time.
   ActivateProviderAndEula();
@@ -422,8 +441,8 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
     InSequence s;
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // We do not capture and execute the callback to keep the fetch in-flight.
-    EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
-    // RefetchInTheBackground is not called after the second trigger.
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+    // Refetch is not called after the second trigger.
   }
   // First enable the scheduler -- calling Schedule() for the first time.
   ActivateProviderAndEula();
@@ -579,7 +598,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Make the first soft fetch successful.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnSuggestionsSurfaceOpened();
   std::move(signal_fetch_done).Run(Status::Success());
@@ -596,7 +615,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Make the first persistent fetch successful.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnPersistentSchedulerWakeUp();
   std::move(signal_fetch_done).Run(Status::Success());
@@ -612,7 +631,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Make the first soft fetch failed.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnSuggestionsSurfaceOpened();
   std::move(signal_fetch_done).Run(Status(StatusCode::PERMANENT_ERROR, ""));
@@ -629,7 +648,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Make the first persistent fetch failed.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnPersistentSchedulerWakeUp();
   std::move(signal_fetch_done).Run(Status(StatusCode::PERMANENT_ERROR, ""));
@@ -646,12 +665,12 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
     // Initial scheduling after being enabled.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The first call to NTPOpened results in a fetch.
-    EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
     // Rescheduling after a succesful fetch.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The second call to NTPOpened 4hrs later again results in a fetch.
-    EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
 
   // First enable the scheduler.
@@ -659,8 +678,8 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   // Make the first soft fetch successful.
   scheduler()->OnBrowserForegrounded();
   std::move(signal_fetch_done).Run(Status::Success());
-  // Open NTP again after 9hrs.
-  test_clock()->Advance(base::TimeDelta::FromHours(24));
+  test_clock()->Advance(
+      base::TimeDelta::FromHours(kDefaultStartupIntervalHours));
   scheduler()->OnBrowserForegrounded();
 }
 
@@ -699,7 +718,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   ActivateProviderAndEula();
 
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
 
   // Trigger a fetch.
@@ -715,7 +734,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   ActivateProviderAndEula();
 
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
 
   // Trigger a fetch.
@@ -838,7 +857,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForShownTriggerOnWifi) {
 
   // The first call to NTPOpened results in a fetch.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnSuggestionsSurfaceOpened();
   // Rescheduling after a succesful fetch.
@@ -854,7 +873,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForShownTriggerOnWifi) {
 
   // Open NTP after another delay, now together long enough to issue a fetch.
   test_clock()->Advance(base::TimeDelta::FromMinutes(2));
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnSuggestionsSurfaceOpened();
 }
 
@@ -874,7 +893,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // The first call to NTPOpened results in a fetch.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnSuggestionsSurfaceOpened();
   // Rescheduling after a succesful fetch.
@@ -887,7 +906,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Open NTP after another delay, now together long enough to issue a fetch.
   test_clock()->Advance(base::TimeDelta::FromMinutes(10));
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnSuggestionsSurfaceOpened();
 }
 
@@ -905,7 +924,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // The first call to NTPOpened results in a fetch.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnSuggestionsSurfaceOpened();
   // Rescheduling after a succesful fetch.
@@ -918,7 +937,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Open NTP after another delay, now together long enough to issue a fetch.
   test_clock()->Advance(base::TimeDelta::FromHours(7));
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnSuggestionsSurfaceOpened();
 }
 
@@ -938,7 +957,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // The first call to NTPOpened results in a fetch.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnSuggestionsSurfaceOpened();
   // Rescheduling after a succesful fetch.
@@ -951,7 +970,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Open NTP after another delay, now together long enough to issue a fetch.
   test_clock()->Advance(base::TimeDelta::FromMinutes(10));
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnSuggestionsSurfaceOpened();
 }
 
@@ -969,7 +988,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // A trigger after another 16 minutes is performed (more than 30m after
   // clearing the history).
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   test_clock()->Advance(base::TimeDelta::FromMinutes(16));
   scheduler()->OnBrowserForegrounded();
 }
@@ -983,7 +1002,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   ActivateProviderAndEula();
 
   // The first trigger results in a fetch.
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
   scheduler()->OnBrowserForegrounded();
   // Make the fetch successful -- this results in rescheduling.
@@ -1025,7 +1044,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // As long as the quota suffices, the call gets through.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .Times(5)
       .WillRepeatedly(SaveArgByMove<0>(&signal_fetch_done));
   for (int x = 0; x < 5; ++x) {
@@ -1049,7 +1068,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   ActivateProviderAndEula();
 
   // The startup triggers are ignored.
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_)).Times(0);
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
   scheduler()->OnBrowserForegrounded();
   scheduler()->OnBrowserColdStart();
 
@@ -1071,11 +1090,179 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldIgnoreSignalsWhenOffline) {
   scheduler()->OnProviderActivated();
 
   // All signals are ignored because of being offline.
-  EXPECT_CALL(*provider(), RefetchInTheBackgroundMock(_)).Times(0);
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
   scheduler()->OnPersistentSchedulerWakeUp();
   scheduler()->OnSuggestionsSurfaceOpened();
   scheduler()->OnBrowserForegrounded();
   scheduler()->OnBrowserColdStart();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldNotRefetchWhileDisplayingBeforeDefaultDelay) {
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateProviderAndEula();
+
+  // The first refetch is never considered due to staleness.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
+  scheduler()->OnBrowserForegrounded();
+  std::move(signal_fetch_done).Run(Status::Success());
+
+  // The staleness threshold by default equals to the startup interval.
+  test_clock()->Advance(
+      base::TimeDelta::FromHours(kDefaultStartupIntervalHours) -
+      base::TimeDelta::FromMinutes(1));
+
+  // Not long enough: non-stale.
+  EXPECT_CALL(*provider(), RefetchWhileDisplaying(_)).Times(0);
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  // Use the SurfaceOpened trigger as this has the shortest intervals and thus
+  // allows to test both short and long delay in the same way.
+  scheduler()->OnSuggestionsSurfaceOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldRefetchWhileDisplayingAfterDefaultDelay) {
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateProviderAndEula();
+
+  // The first refetch is never considered due to staleness.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
+  scheduler()->OnBrowserForegrounded();
+  std::move(signal_fetch_done).Run(Status::Success());
+
+  // The staleness threshold by default equals to the startup interval.
+  test_clock()->Advance(
+      base::TimeDelta::FromHours(kDefaultStartupIntervalHours) +
+      base::TimeDelta::FromMinutes(1));
+
+  // Long enough: stale.
+  EXPECT_CALL(*provider(), RefetchWhileDisplaying(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
+  // Use the SurfaceOpened trigger as this has the shortest intervals and thus
+  // allows to test both short and long delay in the same way.
+  scheduler()->OnSuggestionsSurfaceOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldNotRefetchWhileDisplayingBeforeConfigurableDelay) {
+  constexpr int kStaleHours = 18;
+  SetVariationParameter("min_age_for_stale_fetch_hours",
+                        base::IntToString(kStaleHours));
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateProviderAndEula();
+
+  // The first refetch is never considered due to staleness.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
+  scheduler()->OnBrowserForegrounded();
+  std::move(signal_fetch_done).Run(Status::Success());
+
+  // The staleness threshold by default equals to the startup interval.
+  test_clock()->Advance(base::TimeDelta::FromHours(kStaleHours) -
+                        base::TimeDelta::FromMinutes(1));
+
+  // Not long enough: non-stale.
+  EXPECT_CALL(*provider(), RefetchWhileDisplaying(_)).Times(0);
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  // Use the SurfaceOpened trigger as this has the shortest intervals and thus
+  // allows to test both short and long delay in the same way.
+  scheduler()->OnSuggestionsSurfaceOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldRefetchWhileDisplayingAfterConfigurableDelay) {
+  constexpr int kStaleHours = 18;
+  SetVariationParameter("min_age_for_stale_fetch_hours",
+                        base::IntToString(kStaleHours));
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateProviderAndEula();
+
+  // The first refetch is never considered due to staleness.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
+  scheduler()->OnBrowserForegrounded();
+  std::move(signal_fetch_done).Run(Status::Success());
+
+  test_clock()->Advance(base::TimeDelta::FromHours(kStaleHours) +
+                        base::TimeDelta::FromMinutes(1));
+
+  // Long enough: stale.
+  EXPECT_CALL(*provider(), RefetchWhileDisplaying(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
+  // Use the SurfaceOpened trigger as this has the shortest intervals and thus
+  // allows to test both short and long delay in the same way.
+  scheduler()->OnSuggestionsSurfaceOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldNotRefetchWhileDisplayingBeforeFallbackConfigurableDelay) {
+  constexpr int kStartupHours = 12;
+  SetVariationParameter("startup_fetching_interval_hours-wifi-active_ntp_user",
+                        base::IntToString(kStartupHours));
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateProviderAndEula();
+
+  // The first refetch is never considered due to staleness.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
+  scheduler()->OnBrowserForegrounded();
+  std::move(signal_fetch_done).Run(Status::Success());
+
+  // The staleness threshold by default equals to the startup interval.
+  test_clock()->Advance(base::TimeDelta::FromHours(kStartupHours) -
+                        base::TimeDelta::FromMinutes(1));
+
+  // Not long enough: non-stale.
+  EXPECT_CALL(*provider(), RefetchWhileDisplaying(_)).Times(0);
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  // Use the SurfaceOpened trigger as this has the shortest intervals and thus
+  // allows to test both short and long delay in the same way.
+  scheduler()->OnSuggestionsSurfaceOpened();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldRefetchWhileDisplayingAfterFallbackConfigurableDelay) {
+  constexpr int kStartupHours = 12;
+  SetVariationParameter("startup_fetching_interval_hours-wifi-active_ntp_user",
+                        base::IntToString(kStartupHours));
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
+  // First enable the scheduler -- this will trigger the persistent scheduling.
+  ActivateProviderAndEula();
+
+  // The first refetch is never considered due to staleness.
+  RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
+      .WillOnce(SaveArgByMove<0>(&signal_fetch_done));
+  scheduler()->OnBrowserForegrounded();
+  std::move(signal_fetch_done).Run(Status::Success());
+
+  test_clock()->Advance(base::TimeDelta::FromHours(kStartupHours) +
+                        base::TimeDelta::FromMinutes(1));
+
+  // Long enough: stale.
+  EXPECT_CALL(*provider(), RefetchWhileDisplaying(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
+  // Use the SurfaceOpened trigger as this has the shortest intervals and thus
+  // allows to test both short and long delay in the same way.
+  scheduler()->OnSuggestionsSurfaceOpened();
 }
 
 }  // namespace ntp_snippets

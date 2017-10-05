@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -82,8 +83,7 @@ const int kDefaultMaxAdditionalPrefetchedSuggestions = 5;
 const char kMaxAgeForAdditionalPrefetchedSuggestionParamName[] =
     "max_age_for_additional_prefetched_suggestion_minutes";
 
-const base::TimeDelta kDefaultMaxAgeForAdditionalPrefetchedSuggestion =
-    base::TimeDelta::FromHours(36);
+const int kDefaultMaxAgeForAdditionalPrefetchedSuggestionMinutes = 36 * 60;
 
 bool IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled() {
   // TODO(vitaliii): Use GetFieldTrialParamByFeature(As.*)? from
@@ -138,7 +138,7 @@ base::TimeDelta GetMaxAgeForAdditionalPrefetchedSuggestion() {
   return base::TimeDelta::FromMinutes(base::GetFieldTrialParamByFeatureAsInt(
       kKeepPrefetchedContentSuggestions,
       kMaxAgeForAdditionalPrefetchedSuggestionParamName,
-      kDefaultMaxAgeForAdditionalPrefetchedSuggestion.InMinutes()));
+      kDefaultMaxAgeForAdditionalPrefetchedSuggestionMinutes));
 }
 
 // Whether notifications for fetched suggestions are enabled. Note that this
@@ -213,6 +213,22 @@ int GetFetchMoreSuggestionsCount() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kArticleSuggestionsFeature, kFetchMoreSuggestionsCountParamName,
       kFetchMoreSuggestionsCountDefault);
+}
+
+// Variation parameter for the timeout when refetching suggestions while
+// displaying. If the fetch takes too long and the timeout is over, the category
+// status is forced back to AVAILABLE and the existing (possibly stale)
+// suggestions are notified.
+const char kTimeoutForRefetchWhileDisplayingSecondsParamName[] =
+    "timeout_for_refetch_while_displaying_seconds";
+
+const int kDefaultTimeoutForRefetchWhileDisplayingSeconds = 5;
+
+base::TimeDelta GetTimeoutForRefetchWhileDisplaying() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      ntp_snippets::kArticleSuggestionsFeature,
+      kTimeoutForRefetchWhileDisplayingSecondsParamName,
+      kDefaultTimeoutForRefetchWhileDisplayingSeconds));
 }
 
 template <typename SuggestionPtrContainer>
@@ -352,7 +368,8 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     std::unique_ptr<RemoteSuggestionsStatusService> status_service,
     std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
     std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
-    Logger* debug_logger)
+    Logger* debug_logger,
+    std::unique_ptr<base::OneShotTimer> fetch_timeout_timer)
     : RemoteSuggestionsProvider(observer),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
@@ -372,8 +389,10 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
       breaking_news_raw_data_provider_(
           std::move(breaking_news_raw_data_provider)),
-      debug_logger_(debug_logger) {
+      debug_logger_(debug_logger),
+      fetch_timeout_timer_(std::move(fetch_timeout_timer)) {
   DCHECK(debug_logger_);
+  DCHECK(fetch_timeout_timer_);
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
   // TODO(treib): Rethink this.
@@ -434,6 +453,56 @@ void RemoteSuggestionsProviderImpl::ReloadSuggestions() {
 void RemoteSuggestionsProviderImpl::RefetchInTheBackground(
     FetchStatusCallback callback) {
   FetchSuggestions(/*interactive_request=*/false, std::move(callback));
+}
+
+void RemoteSuggestionsProviderImpl::RefetchWhileDisplaying(
+    FetchStatusCallback callback) {
+  debug_logger_->Log(FROM_HERE, /*message=*/std::string());
+  if (!AreArticlesAvailable()) {
+    // If the article section is not AVAILABLE, we cannot safely flip its status
+    // to AVAILABLE_LOADING and back. Instead, we fallback to the standard
+    // background refetch.
+    debug_logger_->Log(
+        FROM_HERE,
+        "fallback because the articles category is not displayed yet");
+    // TODO(jkrcal): If the provider is not ready() we fallback to
+    // RefetchInTheBackground which post-pones the FetchSuggestions() task until
+    // the provider gets ready. When the provider gets ready, the provider calls
+    // FetchSuggestions() directly, without flipping the category status as
+    // implemented in this function. We should postpone the
+    // RefetchWhileDisplaying task here, instead (or deal with postponing in the
+    // scheduler only).
+    RefetchInTheBackground(std::move(callback));
+    return;
+  }
+
+  NotifyRefetchWhileDisplayingStarted();
+  // |fetch_timeout_timer_| makes sure the UI stops waiting after a certain time
+  // period (in that case, it can fall-back to the old suggestions).
+  fetch_timeout_timer_->Start(
+      FROM_HERE, GetTimeoutForRefetchWhileDisplaying(),
+      base::Bind(&RemoteSuggestionsProviderImpl::
+                     NotifyRefetchWhileDisplayingFailedOrTimeouted,
+                 base::Unretained(this)));
+
+  FetchStatusCallback callback_wrapped = base::BindOnce(
+      &RemoteSuggestionsProviderImpl::OnRefetchWhileDisplayingFinished,
+      base::Unretained(this), std::move(callback));
+
+  FetchSuggestions(/*interactive_request=*/true, std::move(callback_wrapped));
+}
+
+void RemoteSuggestionsProviderImpl::OnRefetchWhileDisplayingFinished(
+    FetchStatusCallback callback,
+    Status status) {
+  fetch_timeout_timer_->Stop();
+  // If the fetch succeeds, it already notified new results.
+  if (!status.IsSuccess()) {
+    NotifyRefetchWhileDisplayingFailedOrTimeouted();
+  }
+  if (callback) {
+    std::move(callback).Run(status);
+  }
 }
 
 const RemoteSuggestionsFetcher*
@@ -557,6 +626,36 @@ void RemoteSuggestionsProviderImpl::MarkEmptyCategoriesAsLoading() {
       UpdateCategoryStatus(category, CategoryStatus::AVAILABLE_LOADING);
     }
   }
+}
+
+bool RemoteSuggestionsProviderImpl::AreArticlesAvailable() {
+  if (!ready()) {
+    return false;
+  }
+  auto articles_it = category_contents_.find(articles_category_);
+  DCHECK(articles_it != category_contents_.end());
+  CategoryContent& content = articles_it->second;
+  return content.status == CategoryStatus::AVAILABLE;
+}
+
+void RemoteSuggestionsProviderImpl::NotifyRefetchWhileDisplayingStarted() {
+  auto articles_it = category_contents_.find(articles_category_);
+  DCHECK(articles_it != category_contents_.end());
+  CategoryContent& content = articles_it->second;
+  DCHECK_EQ(content.status, CategoryStatus::AVAILABLE);
+  UpdateCategoryStatus(articles_it->first, CategoryStatus::AVAILABLE_LOADING);
+}
+
+void RemoteSuggestionsProviderImpl::
+    NotifyRefetchWhileDisplayingFailedOrTimeouted() {
+  auto articles_it = category_contents_.find(articles_category_);
+  DCHECK(articles_it != category_contents_.end());
+  CategoryContent& content = articles_it->second;
+  DCHECK_EQ(content.status, CategoryStatus::AVAILABLE_LOADING);
+  UpdateCategoryStatus(articles_it->first, CategoryStatus::AVAILABLE);
+  // TODO(jkrcal): Technically, we have no new suggestions; we should not
+  // notify. This is a work-around before crbug.com/768410 gets fixed.
+  NotifyNewSuggestions(articles_category_, content.suggestions);
 }
 
 CategoryStatus RemoteSuggestionsProviderImpl::GetCategoryStatus(

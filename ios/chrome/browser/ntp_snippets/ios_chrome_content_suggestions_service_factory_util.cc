@@ -196,7 +196,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(signin_manager,
                                                            prefs, pref_name),
       /*prefetched_pages_tracker=*/nullptr,
-      /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger());
+      /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger(),
+      std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
   service->set_remote_suggestions_provider(provider.get());

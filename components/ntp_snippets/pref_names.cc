@@ -11,7 +11,10 @@ const char kEnableSnippets[] = "ntp_snippets.enable";
 
 const char kRemoteSuggestionCategories[] = "ntp_snippets.remote_categories";
 
-const char kSnippetLastFetchAttempt[] = "ntp_snippets.last_fetch_attempt";
+const char kSnippetLastFetchAttemptTime[] = "ntp_snippets.last_fetch_attempt";
+
+const char kSnippetLastSuccessfulFetchTime[] =
+    "ntp_snippets.last_successful_fetch_time";
 
 // For backwards compatibility, we do not rename the "fetching_" prefs (should
 // be "persistent_fetching_").

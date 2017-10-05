@@ -71,6 +71,12 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
     bool operator!=(const FetchingSchedule& other) const;
     bool is_empty() const;
 
+    // Interval since the last successful fetch after which to consider the
+    // current content stale.
+    base::TimeDelta GetStalenessInterval() const;
+
+    // Intervals since the last fetch attempt after which to fetch again
+    // (depending on the trigger and connectivity).
     base::TimeDelta interval_persistent_wifi;
     base::TimeDelta interval_persistent_fallback;
     base::TimeDelta interval_startup_wifi;
@@ -91,14 +97,16 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   // schedule.
   void StopScheduling();
 
+  bool IsLastSuccessfulFetchStale() const;
+
   // Trigger a background refetch for the given |trigger| if enabled and if the
   // timing is appropriate for another fetch.
-  void RefetchInTheBackgroundIfAppropriate(TriggerType trigger);
+  void RefetchIfAppropriate(TriggerType trigger);
 
   // Checks whether it is time to perform a soft background fetch for |trigger|,
   // according to |schedule|.
-  bool ShouldRefetchInTheBackgroundNow(base::Time last_fetch_attempt_time,
-                                       TriggerType trigger);
+  bool ShouldRefetchNow(base::Time last_fetch_attempt_time,
+                        TriggerType trigger);
 
   // Returns whether all components are ready for background fetches.
   bool IsReadyForBackgroundFetches() const;
@@ -108,8 +116,8 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   // Returns true if quota is available for another request.
   bool AcquireQuota(bool interactive_request);
 
-  // Callback after RefetchInTheBackground is completed.
-  void RefetchInTheBackgroundFinished(Status fetch_status);
+  // Callback after Refetch is completed.
+  void RefetchFinished(Status fetch_status);
 
   // Common function to call after a fetch of any type is finished.
   void OnFetchCompleted(Status fetch_status);

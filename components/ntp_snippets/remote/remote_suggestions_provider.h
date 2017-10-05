@@ -32,6 +32,12 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   // of the fetch (unless nullptr).
   virtual void RefetchInTheBackground(FetchStatusCallback callback) = 0;
 
+  // Refetches the suggestions in a state ready for display. Similar to
+  // |RefetchInTheBackground| above, but observers will be notified about the
+  // ongoing refetch and may be notified with old suggestions if the fetch fails
+  // or does not finish before timeout.
+  virtual void RefetchWhileDisplaying(FetchStatusCallback callback) = 0;
+
   virtual const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const = 0;
 
