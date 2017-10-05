@@ -99,7 +99,7 @@ std::unique_ptr<views::ImageButton> CreateDeleteButton(
 std::unique_ptr<views::Label> CreateDeletedPasswordLabel() {
   auto text = base::MakeUnique<views::Label>(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED),
-      CONTEXT_DEPRECATED_SMALL);
+      CONTEXT_BODY_TEXT_LARGE);
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return text;
 }
@@ -110,8 +110,6 @@ std::unique_ptr<views::Link> CreateUndoLink(views::LinkListener* listener) {
   undo_link->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   undo_link->set_listener(listener);
   undo_link->SetUnderline(false);
-  undo_link->SetFontList(views::style::GetFont(CONTEXT_DEPRECATED_SMALL,
-                                               views::style::STYLE_LINK));
   return undo_link;
 }
 
@@ -119,8 +117,8 @@ std::unique_ptr<views::Link> CreateUndoLink(views::LinkListener* listener) {
 
 std::unique_ptr<views::Label> CreateUsernameLabel(
     const autofill::PasswordForm& form) {
-  auto label = base::MakeUnique<views::Label>(GetDisplayUsername(form),
-                                              CONTEXT_DEPRECATED_SMALL);
+  auto label = base::MakeUnique<views::Label>(
+      GetDisplayUsername(form), CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
 }
@@ -141,7 +139,8 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
           : l10n_util::GetStringFUTF16(
                 IDS_PASSWORDS_VIA_FEDERATION,
                 base::UTF8ToUTF16(form.federation_origin.host()));
-  auto label = base::MakeUnique<views::Label>(text, CONTEXT_DEPRECATED_SMALL);
+  auto label = base::MakeUnique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE,
+                                              STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   if (form.federation_origin.unique() && !is_password_visible)
     label->SetObscured(true);
