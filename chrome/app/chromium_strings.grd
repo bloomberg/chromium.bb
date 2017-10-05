@@ -420,14 +420,6 @@ Chromium is unable to recover your settings.
         <message name="IDS_SYNC_OVERVIEW" desc="Chrome OS: The message that appears in the options dialog when sync has not been set up by the user.">
           Set up Sync to save your personalized browser features to the web and access them from Chromium on any computer.
         </message>
-        <message name="IDS_ABOUT_BUTTON" desc="The label for the button to open the about page.">
-          About Chromium OS
-        </message>
-      </if>
-      <if expr="not chromeos">
-        <message name="IDS_ABOUT_BUTTON" desc="The label for the button to open the about page.">
-          About Chromium
-        </message>
       </if>
       <if expr="is_win">
         <!-- Try Chrome Toast Dialog -->
