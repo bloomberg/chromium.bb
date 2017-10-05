@@ -62,4 +62,13 @@ public abstract class BuildHooksAndroid {
     }
 
     protected abstract void initCustomResourcesImpl(Context context);
+
+    /**
+     * Record custom resources related UMA. Requires native library to be loaded.
+     */
+    public static void maybeRecordResourceMetrics() {
+        sInstance.maybeRecordResourceMetricsImpl();
+    }
+
+    protected abstract void maybeRecordResourceMetricsImpl();
 }

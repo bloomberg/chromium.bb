@@ -716,6 +716,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.CompressedResources.ExtractionStatus"
+    enum="AndroidResourceExtractionStatus">
+  <owner>estevenson@chromium.org</owner>
+  <owner>agrieve@chromium.org</owner>
+  <summary>
+    Describes the result of Android resource extraction, and is recorded once
+    per browser start as part of deferred startup (not at time of extraction).
+  </summary>
+</histogram>
+
 <histogram name="Android.CompressedResources.ExtractionTime" units="ms">
   <owner>estevenson@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
