@@ -13,8 +13,7 @@ class WebState;
 
 // Owned by PasswordController. It is responsible for registering and handling
 // callbacks for JS methods |navigator.credentials.*|.
-// TODO(crbug.com/435047): Implement JSCredentialManager responsible for
-// sending results back to website. Expected flow of CredentialManager class:
+// Expected flow of CredentialManager class:
 // 0. Add script command callbacks, initialize JSCredentialManager
 // 1. A command is sent from JavaScript to the browser.
 // 2. HandleScriptCommand is called, it parses the message and constructs a
