@@ -2414,6 +2414,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsCheckerImagingEnabled())
     command_line->AppendSwitch(cc::switches::kEnableCheckerImaging);
 
+  if (IsCompositorImageAnimationEnabled())
+    command_line->AppendSwitch(switches::kEnableCompositorImageAnimations);
+
   if (IsGpuAsyncWorkerContextEnabled())
     command_line->AppendSwitch(switches::kEnableGpuAsyncWorkerContext);
 
@@ -2539,7 +2542,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableAutomation,
     switches::kEnableBrowserSideNavigation,
-    switches::kEnableCompositorImageAnimations,
     switches::kEnableDisplayList2dCanvas,
     switches::kEnableDistanceFieldText,
     switches::kEnableExperimentalCanvasFeatures,

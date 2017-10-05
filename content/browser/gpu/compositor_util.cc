@@ -304,6 +304,17 @@ bool IsGpuAsyncWorkerContextEnabled() {
   return true;
 }
 
+bool IsCompositorImageAnimationEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCompositorImageAnimations))
+    return true;
+
+  if (base::FeatureList::IsEnabled(features::kCompositorImageAnimation))
+    return true;
+
+  return false;
+}
+
 std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;

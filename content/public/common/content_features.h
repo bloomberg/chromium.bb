@@ -30,6 +30,7 @@ CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kCheckerImaging;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueFixedPosition;
 CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
+CONTENT_EXPORT extern const base::Feature kCompositorImageAnimation;
 CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicy;
