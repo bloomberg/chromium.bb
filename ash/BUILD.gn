@@ -1594,6 +1594,8 @@ static_library("test_support_common") {
     "display/screen_orientation_controller_test_api.h",
     "highlighter/highlighter_controller_test_api.cc",
     "highlighter/highlighter_controller_test_api.h",
+    "ime/test_ime_controller.cc",
+    "ime/test_ime_controller.h",
     "keyboard/test_keyboard_ui.cc",
     "keyboard/test_keyboard_ui.h",
     "laser/laser_pointer_controller_test_api.cc",
