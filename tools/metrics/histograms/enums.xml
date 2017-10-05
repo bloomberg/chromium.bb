@@ -860,6 +860,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="LowMemory"/>
 </enum>
 
+<enum name="AndroidResourceExtractionStatus">
+  <int value="0" label="No extraction performed"/>
+  <int value="1" label="Extraction success"/>
+  <int value="2" label="Extraction failure"/>
+</enum>
+
 <enum name="AndroidRestoreResult">
   <int value="0" label="No restore attempted"/>
   <int value="1" label="Restore successful"/>

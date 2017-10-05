@@ -35,4 +35,6 @@ public class BuildHooksAndroidImpl extends BuildHooksAndroid {
     }
 
     protected void initCustomResourcesImpl(Context context) {}
+
+    protected void maybeRecordResourceMetricsImpl() {}
 }

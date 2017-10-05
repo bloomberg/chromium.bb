@@ -29,6 +29,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.build.BuildHooksAndroid;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AfterStartupTaskUtils;
 import org.chromium.chrome.browser.AppHooks;
@@ -410,6 +411,9 @@ public class ProcessInitializationHandler {
                 logEGLShaderCacheSizeHistogram();
             }
         });
+
+        deferredStartupHandler.addDeferredTask(
+                () -> { BuildHooksAndroid.maybeRecordResourceMetrics(); });
     }
 
     private void initChannelsAsync() {
