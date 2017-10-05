@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="../resources/testharness.js"></script>
+  <script src="../resources/testharnessreport.js"></script>
   <style type="text/css">
     .target {
       position: relative;
@@ -9,83 +11,62 @@
       background-color: red;
       left: 0px;
       margin-bottom: 10px;
-      animation: test 0.8s linear forwards;
-      animation-play-state: paused;
-      animation: test 0.8s linear forwards;
+      animation: test 5s linear forwards;
       animation-play-state: paused;
     }
     .running {
       animation-play-state: running;
-      animation-play-state: running;
     }
     #animation1 {
-      animation-delay: -0.2s;
-      animation-delay: -0.2s;
+      animation-delay: -4.7s;
     }
     #animation2 {
       animation-delay: 0s;
-      animation-delay: 0s;
     }
     #animation3 {
-      animation-delay: 0.2s;
-      animation-delay: 0.2s;
+      animation-delay: 0.1s;
     }
     @keyframes test {
         from { left: 100px; }
-        to   { left: 300px; }
-    }
-    @keyframes test {
-        from { left: 100px; }
-        to   { left: 300px; }
+        to   { left: 600px; }
     }
   </style>
-  <script src="resources/animation-test-helpers.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    const expectedValues = [
-      // [time, element-id, property, expected-value, tolerance]
-      [0.0, "animation1", "left", 150, 0],
-      [0.3, "animation1", "left", 150, 0],
-      [0.5, "animation1", "left", 175, 15],
-      [0.6, "animation1", "left", 200, 15],
-      [0.8, "animation1", "left", 250, 15],
-      [1.0, "animation1", "left", 300, 15],
-      [1.2, "animation1", "left", 300, 0],
+</head>
+<body>
+  <div class="target" id="animation1"></div>
+  <div class="target" id="animation2"></div>
+  <div class="target" id="animation3"></div>
+  <script>
+    'use strict';
 
-      [0.0, "animation2", "left", 100, 0],
-      [0.3, "animation2", "left", 100, 0],
-      [0.5, "animation2", "left", 125, 15],
-      [0.6, "animation2", "left", 150, 15],
-      [0.8, "animation2", "left", 200, 15],
-      [1.0, "animation2", "left", 250, 15],
-      [1.2, "animation2", "left", 300, 15],
-      [1.4, "animation2", "left", 300, 0],
+    var t = async_test('An animation which is initially paused produces the correct output when first created, and can be unpaused.');
 
-      [0.0, "animation3", "left", 0, 0],
-      [0.5, "animation3", "left", 0, 0],
-      [0.7, "animation3", "left", 125, 15],
-      [0.8, "animation3", "left", 150, 15],
-      [1.0, "animation3", "left", 200, 15],
-      [1.2, "animation3", "left", 250, 15],
-      [1.4, "animation3", "left", 300, 15],
-      [1.6, "animation3", "left", 300, 0],
-    ];
+    setTimeout(t.step_func(() => { // this set timeout should be ok in the test environment
+      assert_equals(getComputedStyle(animation1).left, '570px');
+      assert_equals(getComputedStyle(animation2).left, '100px');
+      assert_equals(getComputedStyle(animation3).left, '0px');
 
-    function run() {
+      animation1.addEventListener('animationend', t.step_func_done(finished));
+
       var targets = document.getElementsByClassName('target');
       for (var i = 0; i < targets.length; ++i) {
         targets[i].classList.add('running');
       }
-    }
 
-    var disablePauseAnimationAPI = true;
-    runAnimationTest(expectedValues, {0.4: run}, null, disablePauseAnimationAPI);
+      assert_equals(getComputedStyle(animation1).left, '570px');
+      assert_equals(getComputedStyle(animation2).left, '100px');
+      assert_equals(getComputedStyle(animation3).left, '0px');
+    }), 102); // arbitrary
+
+    function finished() {
+      var left1 = parseFloat(getComputedStyle(animation1).left);
+      var left2 = parseFloat(getComputedStyle(animation2).left);
+      var left3 = parseFloat(getComputedStyle(animation3).left);
+      assert_equals(left1, 600);
+      assert_greater_than(left1, left2);
+      assert_greater_than(left2, left3);
+      assert_greater_than_equal(left3, 120);
+    }
   </script>
-</head>
-<body>
-  <p>This tests that an animation which is initially paused produces the correct output when first created, and can be unpaused.</p>
-  <div class="target" id="animation1"></div>
-  <div class="target" id="animation2"></div>
-  <div class="target" id="animation3"></div>
-  <div id="result"></div>
 </body>
 </html>

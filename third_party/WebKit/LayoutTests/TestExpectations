@@ -1144,10 +1144,6 @@ crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/contentSecurit
 crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
-crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
-
-# Added Linux in crbug.com/750549
-
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
