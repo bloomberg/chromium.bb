@@ -56,8 +56,8 @@ class SearchResultTileItemListViewTest
 
     // Sets up the views.
     textfield_ = base::MakeUnique<views::Textfield>();
-    view_ = base::MakeUnique<SearchResultTileItemListView>(textfield_.get(),
-                                                           &view_delegate_);
+    view_ = base::MakeUnique<SearchResultTileItemListView>(
+        nullptr, textfield_.get(), &view_delegate_);
     view_->SetResults(view_delegate_.GetModel()->results());
   }
 
