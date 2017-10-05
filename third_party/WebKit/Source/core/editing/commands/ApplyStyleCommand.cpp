@@ -872,8 +872,7 @@ void ApplyStyleCommand::FixRangeAndApplyInlineStyle(
   if (start.ComputeEditingOffset() >= CaretMaxOffset(start.AnchorNode())) {
     start_node = NodeTraversal::Next(*start_node);
     if (!start_node ||
-        ComparePositions(end,
-                         FirstPositionInOrBeforeNodeDeprecated(start_node)) < 0)
+        ComparePositions(end, FirstPositionInOrBeforeNode(*start_node)) < 0)
       return;
   }
 
@@ -1273,8 +1272,8 @@ HTMLElement* ApplyStyleCommand::HighestAncestorWithConflictingInlineStyle(
     return 0;
 
   HTMLElement* result = nullptr;
-  Node* unsplittable_element = UnsplittableElementForPosition(
-      FirstPositionInOrBeforeNodeDeprecated(node));
+  Node* unsplittable_element =
+      UnsplittableElementForPosition(FirstPositionInOrBeforeNode(*node));
 
   for (Node* n = node; n; n = n->parentNode()) {
     if (n->IsHTMLElement() &&
@@ -1535,18 +1534,17 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
   UpdateStartEnd(s, e);
 }
 
-bool ApplyStyleCommand::ElementFullySelected(HTMLElement& element,
+bool ApplyStyleCommand::ElementFullySelected(const HTMLElement& element,
                                              const Position& start,
                                              const Position& end) const {
   // The tree may have changed and Position::upstream() relies on an up-to-date
   // layout.
   element.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  return ComparePositions(FirstPositionInOrBeforeNodeDeprecated(&element),
-                          start) >= 0 &&
-         ComparePositions(MostBackwardCaretPosition(
-                              LastPositionInOrAfterNodeDeprecated(&element)),
-                          end) <= 0;
+  return ComparePositions(FirstPositionInOrBeforeNode(element), start) >= 0 &&
+         ComparePositions(
+             MostBackwardCaretPosition(LastPositionInOrAfterNode(element)),
+             end) <= 0;
 }
 
 void ApplyStyleCommand::SplitTextAtStart(const Position& start,
@@ -1842,6 +1840,7 @@ Position ApplyStyleCommand::PositionToComputeInlineStyleChange(
     Node* start_node,
     Member<HTMLSpanElement>& dummy_element,
     EditingState* editing_state) {
+  DCHECK(start_node);
   // It's okay to obtain the style at the startNode because we've removed all
   // relevant styles from the current run.
   if (!start_node->IsElementNode()) {
@@ -1853,7 +1852,7 @@ Position ApplyStyleCommand::PositionToComputeInlineStyleChange(
     return Position::BeforeNode(*dummy_element);
   }
 
-  return FirstPositionInOrBeforeNodeDeprecated(start_node);
+  return FirstPositionInOrBeforeNode(*start_node);
 }
 
 void ApplyStyleCommand::ApplyInlineStyleChange(

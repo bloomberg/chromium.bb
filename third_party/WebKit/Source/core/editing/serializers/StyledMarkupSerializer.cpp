@@ -360,7 +360,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
       }
 
       if (!n->GetLayoutObject() &&
-          !EnclosingElementWithTag(FirstPositionInOrBeforeNodeDeprecated(n),
+          !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*n),
                                    selectTag)) {
         next = Strategy::NextSkippingChildren(*n);
         // Don't skip over pastEnd.

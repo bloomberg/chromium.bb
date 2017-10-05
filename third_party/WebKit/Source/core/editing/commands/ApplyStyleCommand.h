@@ -127,7 +127,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                          const Position& start,
                          const Position& end,
                          EditingState*);
-  bool ElementFullySelected(HTMLElement&,
+  bool ElementFullySelected(const HTMLElement&,
                             const Position& start,
                             const Position& end) const;
 
