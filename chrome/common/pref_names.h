@@ -585,6 +585,7 @@ extern const char kGeolocationAccessToken[];
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
 extern const char kMediaDeviceIdSalt[];
+extern const char kMediaStorageIdSalt[];
 
 extern const char kPrintPreviewStickySettings[];
 extern const char kCloudPrintRoot[];

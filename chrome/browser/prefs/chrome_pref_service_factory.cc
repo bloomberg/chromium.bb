@@ -177,6 +177,8 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
      EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
      ValueType::IMPERSONAL},
 #endif  // defined(OS_WIN)
+    {29, prefs::kMediaStorageIdSalt, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 
     // See note at top, new items added here also need to be added to
     // histograms.xml's TrackedPreference enum.

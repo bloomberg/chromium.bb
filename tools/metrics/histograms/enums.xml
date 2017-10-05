@@ -38687,6 +38687,7 @@ would be helpful to identify which type is being sent.
   <int value="26" label="kSettingsResetPromptLastTriggeredForDefaultSearch"/>
   <int value="27" label="kSettingsResetPromptLastTriggeredForStartupUrls"/>
   <int value="28" label="kSettingsResetPromptLastTriggeredForHomepage"/>
+  <int value="29" label="kMediaStorageIdSalt"/>
 </enum>
 
 <enum name="TranslateBubbleUiEvent">
