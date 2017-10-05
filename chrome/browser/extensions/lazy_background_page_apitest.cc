@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -637,6 +639,37 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventProcessCleanup) {
 
   // Lazy Background Page doesn't exist anymore.
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
+}
+
+// Tests that lazy listeners persist when the event page is torn down, but
+// the listeners associated with the process do not.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventListenerCleanup) {
+  EventRouter* event_router = EventRouter::Get(profile());
+  const char* kEvent = api::tabs::OnUpdated::kEventName;
+  EXPECT_FALSE(event_router->HasLazyEventListenerForTesting(kEvent));
+  EXPECT_FALSE(event_router->HasNonLazyEventListenerForTesting(kEvent));
+
+  // The extension should load and register a listener for the tabs.onUpdated
+  // event.
+  ExtensionTestMessageListener listener("ready", true /* Will reply */);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("lazy_background_page/event_cleanup"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  EXPECT_TRUE(IsBackgroundPageAlive(extension->id()));
+  EXPECT_TRUE(event_router->HasLazyEventListenerForTesting(kEvent));
+  EXPECT_TRUE(event_router->HasNonLazyEventListenerForTesting(kEvent));
+
+  // Wait for the background page to spin down.
+  LazyBackgroundObserver background_page_waiter;
+  listener.Reply("good night");
+  background_page_waiter.WaitUntilClosed();
+
+  // Only the lazy listener should remain.
+  EXPECT_FALSE(IsBackgroundPageAlive(extension->id()));
+  EXPECT_TRUE(event_router->HasLazyEventListenerForTesting(kEvent));
+  EXPECT_FALSE(event_router->HasNonLazyEventListenerForTesting(kEvent));
 }
 
 }  // namespace extensions
