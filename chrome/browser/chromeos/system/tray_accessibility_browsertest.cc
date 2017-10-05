@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_test_api.h"
 #include "ash/system/tray_accessibility.h"
@@ -170,6 +171,10 @@ class TrayAccessibilityTest
     return tray()->detailed_menu_ != nullptr;
   }
 
+  ash::tray::AccessibilityDetailedView* GetDetailedMenu() {
+    return tray()->detailed_menu_;
+  }
+
   void CloseDetailMenu() {
     ASSERT_TRUE(tray()->detailed_menu_);
     tray()->OnDetailedViewDestroyed();
@@ -177,76 +182,81 @@ class TrayAccessibilityTest
   }
 
   void ClickSpokenFeedbackOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->spoken_feedback_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view =
+        tray()->detailed_menu_->spoken_feedback_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickHighContrastOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->high_contrast_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view = tray()->detailed_menu_->high_contrast_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickScreenMagnifierOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->screen_magnifier_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view =
+        tray()->detailed_menu_->screen_magnifier_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickAutoclickOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->autoclick_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view = tray()->detailed_menu_->autoclick_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickVirtualKeyboardOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->virtual_keyboard_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view =
+        tray()->detailed_menu_->virtual_keyboard_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickLargeMouseCursorOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->large_cursor_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view = tray()->detailed_menu_->large_cursor_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickMonoAudioOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->mono_audio_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view = tray()->detailed_menu_->mono_audio_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickCaretHighlightOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->caret_highlight_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view =
+        tray()->detailed_menu_->caret_highlight_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickHighlightMouseCursorOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->highlight_mouse_cursor_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view =
+        tray()->detailed_menu_->highlight_mouse_cursor_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
-  void ClickHighlishtKeyboardFocusOnDetailMenu() {
-    views::View* button =
+  void ClickHighlightKeyboardFocusOnDetailMenu() {
+    ash::HoverHighlightView* view =
         tray()->detailed_menu_->highlight_keyboard_focus_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickStickyKeysOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->sticky_keys_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view = tray()->detailed_menu_->sticky_keys_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   void ClickTapDraggingOnDetailMenu() {
-    views::View* button = tray()->detailed_menu_->tap_dragging_view_;
-    ASSERT_TRUE(button);
-    tray()->detailed_menu_->OnViewClicked(button);
+    ash::HoverHighlightView* view = tray()->detailed_menu_->tap_dragging_view_;
+    ASSERT_TRUE(view);
+    tray()->detailed_menu_->OnViewClicked(view);
   }
 
   bool IsSpokenFeedbackEnabledOnDetailMenu() const {
@@ -1104,11 +1114,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
   EXPECT_FALSE(AccessibilityManager::Get()->IsFocusHighlightEnabled());
 
   EXPECT_TRUE(CreateDetailedMenu());
-  ClickHighlishtKeyboardFocusOnDetailMenu();
+  ClickHighlightKeyboardFocusOnDetailMenu();
   EXPECT_TRUE(AccessibilityManager::Get()->IsFocusHighlightEnabled());
 
   EXPECT_TRUE(CreateDetailedMenu());
-  ClickHighlishtKeyboardFocusOnDetailMenu();
+  ClickHighlightKeyboardFocusOnDetailMenu();
   EXPECT_FALSE(AccessibilityManager::Get()->IsFocusHighlightEnabled());
 
   // Confirms that the check item toggles sticky keys.
@@ -1706,6 +1716,29 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
   EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
+}
+
+// Verify that the accessiblity system detailed menu remains open when an item
+// is selected or deselected.
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DetailMenuRemainsOpen) {
+  EXPECT_TRUE(CreateDetailedMenu());
+  ASSERT_TRUE(IsAutoclickMenuShownOnDetailMenu());
+
+  ClickAutoclickOnDetailMenu();
+  EXPECT_TRUE(IsAutoclickEnabledOnDetailMenu());
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+  EXPECT_TRUE(GetDetailedMenu());
+
+  ClickAutoclickOnDetailMenu();
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+  EXPECT_TRUE(GetDetailedMenu());
 }
 
 INSTANTIATE_TEST_CASE_P(TrayAccessibilityTestInstance,
