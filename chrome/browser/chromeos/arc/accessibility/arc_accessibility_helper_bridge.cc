@@ -358,7 +358,7 @@ AXTreeSourceArc* ArcAccessibilityHelperBridge::GetOrCreateFromPackageName(
 
 AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromNotificationKey(
     const std::string& notification_key) {
-  CHECK(notification_key_to_tree_.count(notification_key) == 0);
+  CHECK_EQ(0U, notification_key_to_tree_.count(notification_key));
 
   notification_key_to_tree_[notification_key].reset(new AXTreeSourceArc(this));
   return notification_key_to_tree_[notification_key].get();

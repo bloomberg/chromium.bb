@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_IME_ARC_IME_BRIDGE_IMPL_H_
 #define COMPONENTS_ARC_IME_ARC_IME_BRIDGE_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/arc/common/ime.mojom.h"

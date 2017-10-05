@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_async_file_util.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"

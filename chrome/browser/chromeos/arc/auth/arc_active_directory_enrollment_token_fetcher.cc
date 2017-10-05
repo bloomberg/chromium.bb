@@ -160,7 +160,8 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::
     }
   }
 
-  VLOG(1) << "Enrollment token fetch finished. Status: " << (int)fetch_status;
+  VLOG(1) << "Enrollment token fetch finished. Status: "
+          << static_cast<int>(fetch_status);
   dm_token_.clear();
   auth_session_id_.clear();
   std::move(callback_).Run(fetch_status, enrollment_token, user_id);

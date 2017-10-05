@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"

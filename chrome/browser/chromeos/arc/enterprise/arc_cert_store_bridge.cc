@@ -6,6 +6,8 @@
 
 #include <cert.h>
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/logging.h"

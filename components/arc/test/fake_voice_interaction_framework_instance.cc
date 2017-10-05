@@ -4,6 +4,8 @@
 
 #include "components/arc/test/fake_voice_interaction_framework_instance.h"
 
+#include <utility>
+
 namespace arc {
 
 FakeVoiceInteractionFrameworkInstance::FakeVoiceInteractionFrameworkInstance() =

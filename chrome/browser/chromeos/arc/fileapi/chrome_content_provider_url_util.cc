@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
 
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
 
