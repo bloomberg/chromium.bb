@@ -1,0 +1,212 @@
+Tests that audits panel works.
+
+
+========== Audits2 Dialog State ==========
+Dialog is visible
+
+[x] Progressive Web App
+[x] Performance
+[x] Best practices
+[x] Accessibility
+Run audit: enabled visible
+Cancel: enabled visible
+
+
+=============== Lighthouse Status Updates ===============
+Loading…
+Initializing…
+Loading page & waiting for onload
+Retrieving trace
+Retrieving devtoolsLog and network records
+Retrieving: URL
+Retrieving: Viewport
+Retrieving: ViewportDimensions
+Retrieving: ThemeColor
+Retrieving: Manifest
+Retrieving: ChromeConsoleMessages
+Retrieving: ImageUsage
+Retrieving: Accessibility
+Retrieving: EventListeners
+Retrieving: AnchorsWithNoRelNoopener
+Retrieving: AppCacheManifest
+Retrieving: DOMStats
+Retrieving: OptimizedImages
+Retrieving: PasswordInputsWithPreventedPaste
+Retrieving: ResponseCompression
+Retrieving: TagsBlockingFirstPaint
+Retrieving: WebSQL
+Loading page & waiting for onload
+Retrieving devtoolsLog and network records
+Retrieving: ServiceWorker
+Retrieving: Offline
+Retrieving: StartUrl
+Loading page & waiting for onload
+Retrieving devtoolsLog and network records
+Retrieving: HTTPRedirect
+Retrieving: HTMLWithoutJavaScript
+Disconnecting from browser...
+Analyzing and running audits...
+Evaluating: Uses HTTPS
+Evaluating: Redirects HTTP traffic to HTTPS
+Evaluating: Registers a Service Worker
+Evaluating: Responds with a 200 when offline
+Evaluating: Has a `<meta name="viewport">` tag with `width` or `initial-scale`
+Evaluating: Contains some content when JavaScript is not available
+Evaluating: First meaningful paint
+Evaluating: Page load is fast enough on 3G
+Evaluating: Perceptual Speed Index
+Evaluating: Screenshot Thumbnails
+Evaluating: Estimated Input Latency
+Evaluating: First Interactive (beta)
+Evaluating: Consistently Interactive (beta)
+Evaluating: User Timing marks and measures
+Evaluating: Critical Request Chains
+Evaluating: User can be prompted to Install the Web App
+Evaluating: Configured for a custom splash screen
+Evaluating: Address bar matches brand colors
+Evaluating: Manifest's `short_name` won't be truncated when displayed on homescreen
+Evaluating: Content is sized correctly for the viewport
+Evaluating: Avoids deprecated APIs
+Evaluating: Site works cross-browser
+Evaluating: Page transitions don't feel like they block on the network
+Evaluating: Each page has a URL
+Evaluating: `[accesskey]` values are unique.
+Evaluating: `[aria-*]` attributes match their roles.
+Evaluating: `[role]`s have all required `[aria-*]` attributes.
+Evaluating: Elements with `[role]` that require specific children `[role]`s, are present.
+Evaluating: `[role]`s are contained by their required parent element.
+Evaluating: `[role]` values are valid.
+Evaluating: `[aria-*]` attributes have valid values.
+Evaluating: `[aria-*]` attributes are valid and not misspelled.
+Evaluating: `<audio>` elements contain a `<track>` element with `[kind="captions"]`.
+Evaluating: Buttons have an accessible name.
+Evaluating: The page contains a heading, skip link, or landmark region.
+Evaluating: Background and foreground colors have a sufficient contrast ratio.
+Evaluating: `<dl>`'s contain only properly-ordered `<dt>` and `<dd>` groups, `<script>` or `<template>` elements.
+Evaluating: Definition list items are wrapped in `<dl>` elements.
+Evaluating: Document has a `<title>` element.
+Evaluating: `[id]` attributes on the page are unique.
+Evaluating: `<frame>` or `<iframe>` elements have a title.
+Evaluating: `<html>` element has a `[lang]` attribute.
+Evaluating: `<html>` element has a valid value for its `[lang]` attribute.
+Evaluating: Image elements have `[alt]` attributes.
+Evaluating: `<input type="image">` elements have `[alt]` text.
+Evaluating: Form elements have associated labels.
+Evaluating: Presentational `<table>` elements avoid using `<th>`, `<caption>` or the `[summary]` attribute.
+Evaluating: Links have a discernible name.
+Evaluating: Lists contain only `<li>` elements and script supporting elements (`<script>` and `<template>`).
+Evaluating: List items (`<li>`) are contained within `<ul>` or `<ol>` parent elements.
+Evaluating: The document does not use `<meta http-equiv="refresh">`.
+Evaluating: `[user-scalable="no"]` is not used in the `<meta name="viewport">` element and the `[maximum-scale]` attribute is not less than 5.
+Evaluating: `<object>` elements have `[alt]` text.
+Evaluating: No element has a `[tabindex]` value greater than 0.
+Evaluating: Cells in a `<table>` element that use the `[headers]` attribute only refer to other cells of that same table.
+Evaluating: `<th>` elements and elements with `[role="columnheader"/"rowheader"]` have data cells they describe.
+Evaluating: `[lang]` attributes have a valid value.
+Evaluating: `<video>` elements contain a `<track>` element with `[kind="captions"]`.
+Evaluating: `<video>` elements contain a `<track>` element with `[kind="description"]`.
+Evaluating: Avoids enormous network payloads
+Evaluating: Offscreen images
+Evaluating: Serve images as WebP
+Evaluating: Optimize images
+Evaluating: Enable text compression
+Evaluating: Properly size images
+Evaluating: Avoids Application Cache
+Evaluating: Avoids an excessive DOM size
+Evaluating: Opens external anchors using `rel="noopener"`
+Evaluating: Avoids requesting the geolocation permission on page load
+Evaluating: Reduce render-blocking stylesheets
+Evaluating: Avoids `document.write()`
+Evaluating: Avoids Mutation Events in its own scripts
+Evaluating: Avoids WebSQL DB
+Evaluating: Avoids requesting the notification permission on page load
+Evaluating: Allows users to paste into password fields
+Evaluating: Reduce render-blocking scripts
+Evaluating: Uses HTTP/2 for its own resources
+Evaluating: Uses passive listeners to improve scrolling performance
+Generating results...
+
+=============== Lighthouse Results ===============
+URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
+Version: 2.3.1
+
+
+accesskeys: true
+appcache-manifest: true
+aria-allowed-attr: true
+aria-required-attr: true
+aria-required-children: true
+aria-required-parent: true
+aria-roles: true
+aria-valid-attr: true
+aria-valid-attr-value: true
+audio-caption: true
+button-name: true
+bypass: true
+color-contrast: true
+consistently-interactive: false
+content-width: false
+critical-request-chains: true
+definition-list: true
+deprecations: true
+dlitem: true
+document-title: false
+dom-size: true
+duplicate-id: true
+estimated-input-latency: false
+external-anchors-use-rel-noopener: true
+first-interactive: false
+first-meaningful-paint: false
+frame-title: true
+geolocation-on-start: true
+html-has-lang: false
+html-lang-valid: true
+image-alt: true
+input-image-alt: true
+is-on-https: true
+label: true
+layout-table: true
+link-blocking-first-paint: false
+link-name: true
+list: true
+listitem: true
+load-fast-enough-for-pwa: false
+manifest-short-name-length: false
+meta-refresh: true
+meta-viewport: true
+no-document-write: true
+no-mutation-events: true
+no-websql: true
+notification-on-start: true
+object-alt: true
+offscreen-images: false
+password-inputs-can-be-pasted-into: true
+pwa-cross-browser: false
+pwa-each-page-has-url: false
+pwa-page-transitions: false
+redirects-http: false
+screenshot-thumbnails: false
+script-blocking-first-paint: false
+service-worker: false
+speed-index-metric: false
+splash-screen: false
+tabindex: true
+td-headers-attr: true
+th-has-data-cells: true
+themed-omnibox: false
+total-byte-weight: true
+user-timings: true
+uses-http2: false
+uses-optimized-images: false
+uses-passive-event-listeners: true
+uses-request-compression: false
+uses-responsive-images: false
+uses-webp-images: false
+valid-lang: true
+video-caption: true
+video-description: true
+viewport: false
+webapp-install-banner: false
+without-javascript: false
+works-offline: false
+

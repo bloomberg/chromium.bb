@@ -162,6 +162,9 @@ crbug.com/763197 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-im
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 
+crbug.com/680917 http/tests/devtools/audits2/ [ Slow ]
+crbug.com/680917 virtual/mojo-loading/http/tests/devtools/audits2/ [ Slow ]
+
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
 crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Slow ]
