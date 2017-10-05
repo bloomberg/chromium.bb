@@ -748,7 +748,9 @@ if (enable_java_templates) {
         deps = []
       }
 
-      if (!defined(lint_suppressions_file)) {
+      if (defined(invoker.lint_suppressions_file)) {
+        lint_suppressions_file = invoker.lint_suppressions_file
+      } else if (!defined(lint_suppressions_file)) {
         lint_suppressions_file = "//build/android/lint/suppressions.xml"
       }
 
@@ -2702,6 +2704,10 @@ if (enable_java_templates) {
       if (_chromium_code) {
         _has_lint_target = true
         android_lint("${_template_name}__lint") {
+          if (defined(invoker.lint_suppressions_file)) {
+            lint_suppressions_file = invoker.lint_suppressions_file
+          }
+
           android_manifest = _android_manifest
           build_config = _build_config
 
