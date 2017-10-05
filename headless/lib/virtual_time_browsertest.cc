@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using testing::Contains;
+using testing::ElementsAre;
 
 namespace headless {
 
@@ -96,32 +96,10 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   // emulation::Observer implementation:
   void OnVirtualTimeBudgetExpired(
       const emulation::VirtualTimeBudgetExpiredParams& params) override {
-    std::vector<std::string> expected_log = {"step1",
-                                             "Advanced to 100ms",
-                                             "step2",
-                                             "Paused @ 100ms",
-                                             "Advanced to 200ms",
-                                             "step3",
-                                             "Paused @ 200ms",
-                                             "Advanced to 300ms",
-                                             "step4",
-                                             "pass"};
-    // Note after the PASS step there are a number of virtual time advances, but
-    // this list seems to be non-deterministic because there's all sorts of
-    // timers in the system.  We don't really care about that here.
-    ASSERT_GE(log_.size(), expected_log.size());
-    for (size_t i = 0; i < expected_log.size(); i++) {
-      EXPECT_EQ(expected_log[i], log_[i]) << "At index " << i;
-    }
-    EXPECT_THAT(log_, Contains("Advanced to 5000ms"));
-    EXPECT_THAT(log_, Contains("Paused @ 5000ms"));
+    EXPECT_THAT(log_, ElementsAre("step1", "step2", "Paused @ 100ms", "step3",
+                                  "Paused @ 200ms", "step4", "pass",
+                                  "Paused @ 5000ms"));
     FinishAsynchronousTest();
-  }
-
-  void OnVirtualTimeAdvanced(
-      const emulation::VirtualTimeAdvancedParams& params) override {
-    log_.push_back(
-        base::StringPrintf("Advanced to %dms", params.GetVirtualTimeElapsed()));
   }
 
   void OnVirtualTimePaused(

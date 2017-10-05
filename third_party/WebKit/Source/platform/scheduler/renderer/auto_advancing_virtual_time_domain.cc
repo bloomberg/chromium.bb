@@ -9,9 +9,7 @@ namespace scheduler {
 
 AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
     base::TimeTicks initial_time)
-    : VirtualTimeDomain(initial_time),
-      can_advance_virtual_time_(true),
-      observer_(nullptr) {}
+    : VirtualTimeDomain(initial_time), can_advance_virtual_time_(true) {}
 
 AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {}
 
@@ -22,8 +20,6 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
     return base::nullopt;
 
   AdvanceTo(run_time);
-  if (observer_)
-    observer_->OnVirtualTimeAdvanced();
   return base::TimeDelta();  // Makes DoWork post an immediate continuation.
 }
 
@@ -39,10 +35,6 @@ void AutoAdvancingVirtualTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
   // We ignore this because RequestWakeUpAt doesn't post a delayed task.
 }
 
-void AutoAdvancingVirtualTimeDomain::SetObserver(Observer* observer) {
-  observer_ = observer;
-}
-
 void AutoAdvancingVirtualTimeDomain::SetCanAdvanceVirtualTime(
     bool can_advance_virtual_time) {
   can_advance_virtual_time_ = can_advance_virtual_time;
@@ -53,10 +45,6 @@ void AutoAdvancingVirtualTimeDomain::SetCanAdvanceVirtualTime(
 const char* AutoAdvancingVirtualTimeDomain::GetName() const {
   return "AutoAdvancingVirtualTimeDomain";
 }
-
-AutoAdvancingVirtualTimeDomain::Observer::Observer() {}
-
-AutoAdvancingVirtualTimeDomain::Observer::~Observer() {}
 
 }  // namespace scheduler
 }  // namespace blink

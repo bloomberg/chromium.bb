@@ -180,11 +180,6 @@ void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   GetFrontend()->virtualTimeBudgetExpired();
 }
 
-void InspectorEmulationAgent::OnVirtualTimeAdvanced(
-    WTF::TimeDelta virtual_time_offset) {
-  GetFrontend()->virtualTimeAdvanced(virtual_time_offset.InMilliseconds());
-}
-
 void InspectorEmulationAgent::OnVirtualTimePaused(
     WTF::TimeDelta virtual_time_offset) {
   GetFrontend()->virtualTimePaused(virtual_time_offset.InMilliseconds());
