@@ -19,10 +19,17 @@ const base::Feature TabUnderNavigationThrottle::kBlockTabUnders{
 // static
 std::unique_ptr<content::NavigationThrottle>
 TabUnderNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
-  if (handle->IsInMainFrame() && base::FeatureList::IsEnabled(kBlockTabUnders))
+  if (handle->IsInMainFrame())
     return base::WrapUnique(new TabUnderNavigationThrottle(handle));
   return nullptr;
 }
+
+TabUnderNavigationThrottle::~TabUnderNavigationThrottle() = default;
+
+TabUnderNavigationThrottle::TabUnderNavigationThrottle(
+    content::NavigationHandle* handle)
+    : content::NavigationThrottle(handle),
+      block_(base::FeatureList::IsEnabled(kBlockTabUnders)) {}
 
 // static
 bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
@@ -56,12 +63,6 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
   return true;
 }
 
-TabUnderNavigationThrottle::~TabUnderNavigationThrottle() = default;
-
-TabUnderNavigationThrottle::TabUnderNavigationThrottle(
-    content::NavigationHandle* handle)
-    : content::NavigationThrottle(handle) {}
-
 content::NavigationThrottle::ThrottleCheckResult
 TabUnderNavigationThrottle::MaybeBlockNavigation() {
   content::WebContents* contents = navigation_handle()->GetWebContents();
@@ -71,9 +72,14 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
   if (delegate && popup_opener &&
       popup_opener->has_opened_popup_since_last_user_gesture() &&
       IsSuspiciousClientRedirect(navigation_handle(), started_in_background_)) {
-    delegate->OnDidBlockFramebust(contents, navigation_handle()->GetURL());
-    LogAction(Action::kBlocked);
-    return content::NavigationThrottle::CANCEL;
+    popup_opener->OnDidTabUnder();
+    LogAction(Action::kDidTabUnder);
+
+    if (block_) {
+      LogAction(Action::kBlocked);
+      delegate->OnDidBlockFramebust(contents, navigation_handle()->GetURL());
+      return content::NavigationThrottle::CANCEL;
+    }
   }
   return content::NavigationThrottle::PROCEED;
 }

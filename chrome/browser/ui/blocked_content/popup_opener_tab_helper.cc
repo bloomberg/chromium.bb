@@ -30,16 +30,10 @@ void PopupOpenerTabHelper::CreateForWebContents(
 }
 
 PopupOpenerTabHelper::~PopupOpenerTabHelper() {
-  if (visibility_tracker_after_redirect_) {
-    base::TimeDelta foreground_duration =
-        visibility_tracker_after_redirect_->GetForegroundDuration();
-    UMA_HISTOGRAM_LONG_TIMES("Tab.VisibleTimeAfterCrossOriginRedirect",
-                             foreground_duration);
-    if (!last_popup_open_time_before_redirect_.is_null()) {
-      UMA_HISTOGRAM_LONG_TIMES(
-          "Tab.OpenedPopup.VisibleTimeAfterCrossOriginRedirect",
-          foreground_duration);
-    }
+  if (visibility_tracker_after_tab_under_) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Tab.TabUnder.VisibleTime",
+        visibility_tracker_after_tab_under_->GetForegroundDuration());
   }
   DCHECK(visibility_tracker_);
   UMA_HISTOGRAM_LONG_TIMES("Tab.VisibleTime",
@@ -48,8 +42,26 @@ PopupOpenerTabHelper::~PopupOpenerTabHelper() {
 
 void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
   has_opened_popup_since_last_user_gesture_ = true;
-  if (!visibility_tracker_after_redirect_)
-    last_popup_open_time_before_redirect_ = tick_clock_->NowTicks();
+  last_popup_open_time_ = tick_clock_->NowTicks();
+}
+
+void PopupOpenerTabHelper::OnDidTabUnder() {
+  // The tab already did a tab-under.
+  if (visibility_tracker_after_tab_under_)
+    return;
+
+  // Tab-under requires a popup, so this better not be null.
+  DCHECK(!last_popup_open_time_.is_null());
+  UMA_HISTOGRAM_LONG_TIMES("Tab.TabUnder.PopupToTabUnderTime",
+                           tick_clock_->NowTicks() - last_popup_open_time_);
+
+  // Careful, the tab can be in the foreground at this time! Current tab-under
+  // heuristics use whether the navigation *started* in the background. We could
+  // be getting this signal at redirect time, once we've realized that the
+  // navigation is moving cross-origin.
+  visibility_tracker_after_tab_under_ =
+      base::MakeUnique<ScopedVisibilityTracker>(tick_clock_.get(),
+                                                web_contents()->IsVisible());
 }
 
 PopupOpenerTabHelper::PopupOpenerTabHelper(
@@ -61,54 +73,15 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(
       tick_clock_.get(), web_contents->IsVisible());
 }
 
-void PopupOpenerTabHelper::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (visibility_tracker_after_redirect_)
-    return;
-
-  if (navigation_handle->IsInMainFrame() && !web_contents()->IsVisible())
-    pending_background_navigations_.insert(navigation_handle);
-  // There should be at max 2 main frame navigations occurring at the same time.
-  DCHECK_LE(pending_background_navigations_.size(), 2u);
-}
-
-void PopupOpenerTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (visibility_tracker_after_redirect_ || !navigation_handle->IsInMainFrame())
-    return;
-
-  size_t num_erased = pending_background_navigations_.erase(navigation_handle);
-  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage())
-    return;
-
-  if (!TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
-          navigation_handle, num_erased != 0 /* started_in_background */)) {
-    return;
-  }
-
-  if (!last_popup_open_time_before_redirect_.is_null()) {
-    // If long times doesn't have enough resolution, consider switching the
-    // macro.
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Tab.OpenedPopup.PopupToCrossOriginRedirectTime",
-        tick_clock_->NowTicks() - last_popup_open_time_before_redirect_);
-  }
-
-  visibility_tracker_after_redirect_ =
-      base::MakeUnique<ScopedVisibilityTracker>(tick_clock_.get(),
-                                                false /* is_visible */);
-  pending_background_navigations_.clear();
-}
-
 void PopupOpenerTabHelper::WasShown() {
-  if (visibility_tracker_after_redirect_)
-    visibility_tracker_after_redirect_->OnShown();
+  if (visibility_tracker_after_tab_under_)
+    visibility_tracker_after_tab_under_->OnShown();
   visibility_tracker_->OnShown();
 }
 
 void PopupOpenerTabHelper::WasHidden() {
-  if (visibility_tracker_after_redirect_)
-    visibility_tracker_after_redirect_->OnHidden();
+  if (visibility_tracker_after_tab_under_)
+    visibility_tracker_after_tab_under_->OnHidden();
   visibility_tracker_->OnHidden();
 }
 
