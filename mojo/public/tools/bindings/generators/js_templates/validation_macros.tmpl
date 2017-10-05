@@ -52,7 +52,7 @@ err = messageValidator.validateEnum({{offset}}, {{field|validate_enum_params}});
 // validate {{name}}
 err = messageValidator.validateUnion({{offset}}, {{field|validate_union_params}});
 {{_check_err()}}
-{%-   else %}
+{%-   else -%}
 {{_validate_field(field, offset, name)}}
 {%-   endif %}
 {%- endmacro %}
