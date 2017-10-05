@@ -74,7 +74,7 @@ void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
 
 std::unique_ptr<base::Value>
 ContentServiceManagerMainDelegate::CreateServiceCatalog() {
-  return content_main_params_.delegate->CreateServiceCatalog();
+  return nullptr;
 }
 
 bool ContentServiceManagerMainDelegate::ShouldLaunchAsServiceProcess(
@@ -129,7 +129,7 @@ ContentServiceManagerMainDelegate::CreateEmbeddedService(
     const std::string& service_name) {
   // TODO
 
-  return content_main_params_.delegate->CreateEmbeddedService(service_name);
+  return nullptr;
 }
 
 }  // namespace content

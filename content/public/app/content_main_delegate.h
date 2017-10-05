@@ -16,10 +16,6 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
 
-namespace base {
-class Value;
-}
-
 namespace content {
 
 class ContentBrowserClient;
@@ -93,10 +89,6 @@ class CONTENT_EXPORT ContentMainDelegate {
   // process.
   virtual service_manager::ProcessType OverrideProcessType();
 
-  // Creates a service catalog for the Service Manager to use when embedded by
-  // content.
-  virtual std::unique_ptr<base::Value> CreateServiceCatalog();
-
   // Allows the content embedder to adjust arbitrary command line arguments for
   // any service process started by the Service Manager.
   virtual void AdjustServiceProcessCommandLine(
@@ -118,11 +110,6 @@ class CONTENT_EXPORT ContentMainDelegate {
   virtual void OnServiceManagerInitialized(
       const base::Closure& quit_closure,
       service_manager::BackgroundServiceManager* service_manager);
-
-  // Allows the embedder to instantiate one of its own embedded services by
-  // name. If the named service is unknown, this should return null.
-  virtual std::unique_ptr<service_manager::Service> CreateEmbeddedService(
-      const std::string& service_name);
 
  protected:
   friend class ContentClientInitializer;
