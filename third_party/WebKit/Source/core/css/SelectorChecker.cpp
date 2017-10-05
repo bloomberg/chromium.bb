@@ -414,10 +414,13 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       return kSelectorFailsAllSiblings;
 
     case CSSSelector::kShadowPseudo: {
-      if (RuntimeEnabledFeatures::
-              ShadowPseudoElementInCSSDynamicProfileEnabled()) {
-        if (!is_ua_rule_ && mode_ != kQueryingRules &&
-            context.selector->GetPseudoType() == CSSSelector::kPseudoShadow) {
+      if (!is_ua_rule_ &&
+          context.selector->GetPseudoType() == CSSSelector::kPseudoShadow) {
+        if (mode_ == kQueryingRules) {
+          UseCounter::Count(context.element->GetDocument(),
+                            WebFeature::kPseudoShadowInStaticProfile);
+        } else if (RuntimeEnabledFeatures::
+                       ShadowPseudoElementInCSSDynamicProfileEnabled()) {
           Deprecation::CountDeprecation(context.element->GetDocument(),
                                         WebFeature::kCSSSelectorPseudoShadow);
         }
@@ -437,9 +440,14 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
     }
 
     case CSSSelector::kShadowDeep: {
-      if (!is_ua_rule_ && mode_ != kQueryingRules) {
-        Deprecation::CountDeprecation(context.element->GetDocument(),
-                                      WebFeature::kCSSDeepCombinator);
+      if (!is_ua_rule_) {
+        if (mode_ == kQueryingRules) {
+          UseCounter::Count(context.element->GetDocument(),
+                            WebFeature::kDeepCombinatorInStaticProfile);
+        } else {
+          Deprecation::CountDeprecation(context.element->GetDocument(),
+                                        WebFeature::kCSSDeepCombinator);
+        }
       }
       if (ShadowRoot* root = context.element->ContainingShadowRoot()) {
         if (root->GetType() == ShadowRootType::kUserAgent)
