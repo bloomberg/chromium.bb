@@ -41,7 +41,6 @@ namespace views {
 
 // Insets around the view.
 static const int kHorizontalInset = 2;
-static const int kVerticalInset = 2;
 // Padding before/after the image.
 static const int kImagePadding = 4;
 // Size of the arrow region.
@@ -607,9 +606,9 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
     }
   }
 
-  int min_row = std::max(0, (min_y - kVerticalInset) / row_height_);
-  int max_row = (max_y - kVerticalInset) / row_height_;
-  if ((max_y - kVerticalInset) % row_height_ != 0)
+  int min_row = std::max(0, min_y / row_height_);
+  int max_row = max_y / row_height_;
+  if (max_y % row_height_ != 0)
     max_row++;
   int current_row = root_row();
   PaintRows(canvas, min_row, max_row, &root_, root_depth(), &current_row);
@@ -694,10 +693,9 @@ void TreeView::UpdatePreferredSize() {
   if (!model_)
     return;
 
-  preferred_size_.SetSize(
-      root_.GetMaxWidth(text_offset_, root_shown_ ? 1 : 0) +
-      kTextHorizontalPadding * 2,
-      row_height_ * GetRowCount() + kVerticalInset * 2);
+  preferred_size_.SetSize(root_.GetMaxWidth(text_offset_, root_shown_ ? 1 : 0) +
+                              kTextHorizontalPadding * 2,
+                          row_height_ * GetRowCount());
 }
 
 void TreeView::LayoutEditor() {
@@ -868,8 +866,8 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
 gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
   int row, ignored_depth;
   row = GetRowForInternalNode(node, &ignored_depth);
-  return gfx::Rect(bounds().x(), row * row_height_ + kVerticalInset,
-                   bounds().width(), row_height_);
+  return gfx::Rect(bounds().x(), row * row_height_, bounds().width(),
+                   row_height_);
 }
 
 gfx::Rect TreeView::GetBackgroundBoundsForNode(InternalNode* node) {
@@ -910,10 +908,8 @@ gfx::Rect TreeView::GetAuxiliaryTextBoundsForNode(InternalNode* node) {
 gfx::Rect TreeView::GetForegroundBoundsForNodeImpl(InternalNode* node,
                                                    int row,
                                                    int depth) {
-  gfx::Rect rect(depth * kIndent + kHorizontalInset,
-                 row * row_height_ + kVerticalInset,
-                 text_offset_ + node->text_width() +
-                 kTextHorizontalPadding * 2,
+  gfx::Rect rect(depth * kIndent + kHorizontalInset, row * row_height_,
+                 text_offset_ + node->text_width() + kTextHorizontalPadding * 2,
                  row_height_);
   rect.set_x(GetMirroredXWithWidthInView(rect.x(), rect.width()));
   return rect;
@@ -940,7 +936,7 @@ int TreeView::GetRowForInternalNode(InternalNode* node, int* depth) {
 }
 
 TreeView::InternalNode* TreeView::GetNodeAtPoint(const gfx::Point& point) {
-  int row = (point.y() - kVerticalInset) / row_height_;
+  int row = point.y() / row_height_;
   int depth = -1;
   InternalNode* node = GetNodeByRow(row, &depth);
   if (!node)
@@ -1071,9 +1067,8 @@ bool TreeView::IsPointInExpandControl(InternalNode* node,
   int row = GetRowForInternalNode(node, &depth);
 
   int arrow_dx = depth * kIndent + kHorizontalInset;
-  gfx::Rect arrow_bounds(bounds().x() + arrow_dx,
-                         row * row_height_ + kVerticalInset, kArrowRegionSize,
-                         row_height_);
+  gfx::Rect arrow_bounds(bounds().x() + arrow_dx, row * row_height_,
+                         kArrowRegionSize, row_height_);
   if (base::i18n::IsRTL())
     arrow_bounds.set_x(bounds().width() - arrow_dx - kArrowRegionSize);
   return arrow_bounds.Contains(point);

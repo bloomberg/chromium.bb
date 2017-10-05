@@ -22,21 +22,6 @@ class ExampleTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
   ExampleTreeViewDrawingProvider() {}
   ~ExampleTreeViewDrawingProvider() override {}
 
-  SkColor GetBackgroundColorForNode(views::TreeView* tree_view,
-                                    ui::TreeModelNode* node) override {
-    if (tree_view->GetSelectedNode() == node)
-      return SK_ColorBLACK;
-    return views::TreeViewDrawingProvider::GetBackgroundColorForNode(tree_view,
-                                                                     node);
-  }
-
-  SkColor GetTextColorForNode(views::TreeView* tree_view,
-                              ui::TreeModelNode* node) override {
-    if (tree_view->GetSelectedNode() == node)
-      return SkColorSetRGB(0x80, 0x80, 0x80);
-    return views::TreeViewDrawingProvider::GetTextColorForNode(tree_view, node);
-  }
-
   base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
                                          ui::TreeModelNode* node) override {
     if (tree_view->GetSelectedNode() == node)
