@@ -88,6 +88,11 @@ class BasePinButton : public views::Button, public views::ButtonListener {
 
     SetInkDropMode(InkDropHostView::InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
+
+    // Layer rendering is needed for animation. Enable it here for
+    // focus painter to paint.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
   }
 
   ~BasePinButton() override = default;
@@ -171,12 +176,6 @@ class DigitPinButton : public BasePinButton {
     AddChildView(label);
     AddChildView(sub_label);
 
-    // Layer rendering.
-    label->SetPaintToLayer();
-    label->layer()->SetFillsBoundsOpaquely(false);
-    sub_label->SetPaintToLayer();
-    sub_label->layer()->SetFillsBoundsOpaquely(false);
-
     SetAccessibleName(GetButtonLabelForNumber(value));
   }
 
@@ -201,11 +200,6 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
         delay_timer_(base::MakeUnique<base::OneShotTimer>()),
         repeat_timer_(base::MakeUnique<base::RepeatingTimer>()) {
     image_ = new views::ImageView();
-
-    // Layer rendering.
-    image_->SetPaintToLayer();
-    image_->layer()->SetFillsBoundsOpaquely(false);
-
     AddChildView(image_);
 
     SetAccessibleName(
