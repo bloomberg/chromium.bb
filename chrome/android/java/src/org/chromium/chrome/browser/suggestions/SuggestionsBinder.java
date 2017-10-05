@@ -57,14 +57,16 @@ public class SuggestionsBinder {
     private final TextView mPublisherTextView;
     private final TextView mAgeTextView;
     private final TintedImageView mThumbnailView;
-    // TODO(dgn): Modern suggestions currently do not support the video overlay at all.
-    private final @Nullable ImageView mThumbnailVideoOverlay;
+    private final @Nullable ImageView mVideoBadge;
     private final ImageView mOfflineBadge;
     private final View mPublisherBar;
 
     /** Total horizontal space occupied by the thumbnail, sum of its size and margin. */
     private final int mThumbnailFootprintPx;
     private final int mThumbnailSize;
+
+    boolean mHasVideoBadge;
+    boolean mHasOfflineBadge;
 
     @Nullable
     private ImageFetcher.DownloadThumbnailRequest mThumbnailRequest;
@@ -82,10 +84,9 @@ public class SuggestionsBinder {
         mHeadlineTextView = mCardContainerView.findViewById(R.id.article_headline);
         mPublisherTextView = mCardContainerView.findViewById(R.id.article_publisher);
         mAgeTextView = mCardContainerView.findViewById(R.id.article_age);
-        mThumbnailVideoOverlay =
-                mCardContainerView.findViewById(R.id.article_thumbnail_video_overlay);
-        mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
+        mVideoBadge = mCardContainerView.findViewById(R.id.video_badge);
         mOfflineBadge = mCardContainerView.findViewById(R.id.offline_icon);
+        mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
 
         mThumbnailSize = getThumbnailSize(mCardContainerView.getResources());
         mThumbnailFootprintPx = mThumbnailSize
@@ -105,14 +106,12 @@ public class SuggestionsBinder {
     }
 
     public void updateFieldsVisibility(
-            boolean showHeadline, boolean showThumbnail, boolean showThumbnailVideoOverlay) {
+            boolean showHeadline, boolean showThumbnail, boolean showThumbnailVideoBadge) {
         mHeadlineTextView.setVisibility(showHeadline ? View.VISIBLE : View.GONE);
         mHeadlineTextView.setMaxLines(MAX_HEADER_LINES);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
-        if (mThumbnailVideoOverlay != null) {
-            mThumbnailVideoOverlay.setVisibility(
-                    showThumbnailVideoOverlay ? View.VISIBLE : View.GONE);
-        }
+        mHasVideoBadge = showThumbnailVideoBadge;
+        updateVisibilityForBadges();
 
         ViewGroup.MarginLayoutParams publisherBarParams =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
@@ -139,8 +138,19 @@ public class SuggestionsBinder {
     }
 
     public void updateOfflineBadgeVisibility(boolean visible) {
-        if (visible == (mOfflineBadge.getVisibility() == View.VISIBLE)) return;
-        mOfflineBadge.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mHasOfflineBadge = visible;
+        updateVisibilityForBadges();
+    }
+
+    private void updateVisibilityForBadges() {
+        // Never show both the video and offline badges. That would be overpromising as the video is
+        // not available offline, just the page that embeds it. It would also clutter the UI. The
+        // offline badge takes precedence.
+        if (mVideoBadge != null) {
+            mVideoBadge.setVisibility(
+                    mHasVideoBadge && !mHasOfflineBadge ? View.VISIBLE : View.GONE);
+        }
+        mOfflineBadge.setVisibility(mHasOfflineBadge ? View.VISIBLE : View.GONE);
     }
 
     private void setFavicon() {

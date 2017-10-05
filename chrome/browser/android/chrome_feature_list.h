@@ -33,7 +33,6 @@ extern const base::Feature kContentSuggestionsLargeThumbnail;
 extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContentSuggestionsSettings;
 extern const base::Feature kContentSuggestionsThumbnailDominantColor;
-extern const base::Feature kContentSuggestionsVideoOverlay;
 extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kContextualSearchUrlActions;
 extern const base::Feature kContextualSuggestionsCarousel;

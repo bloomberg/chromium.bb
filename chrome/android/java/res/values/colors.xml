@@ -115,6 +115,7 @@
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
     <color name="suggestions_modern_bg">@android:color/white</color>
+    <color name="suggestions_modern_icon_black">#1F000000</color>
 
     <!-- Incognito NTP Colors. -->
     <color name="incognito_text">#b3ffffff</color>

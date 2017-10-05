@@ -2400,6 +2400,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_NTP_OFFLINE_BADGE" desc="Content description for the badge that indicates offline availability of a most visited item or content suggestion on the new tab page.">
         Available offline
       </message>
+      <message name="IDS_ACCESSIBILITY_SUGGESTION_WITH_VIDEO_BADGE" desc="Content description for the badge that indicates a content suggestion on the new tab page has a video.">
+        With video
+      </message>
       <message name="IDS_NTP_CHROME_HOME_PROMO" desc="Tappable line of text that appears when a user opens a new tab in Chrome. This text is promotional and is intended to suggest that users try a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). When tapped, a dialog explaining the feature opens. “Try” is imperative. “To browse” (infinitive) means to browse the web.">
         Try an <ph name="BEGIN_LINK">&lt;link&gt;</ph>easier way to browse<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
