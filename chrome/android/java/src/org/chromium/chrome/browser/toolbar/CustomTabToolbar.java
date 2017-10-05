@@ -254,8 +254,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
-        return ColorUtils.isUsingDefaultToolbarColor(
-                getResources(), getToolbarDataProvider().getPrimaryColor());
+        return !mToolbarDataProvider.isUsingBrandColor();
     }
 
     @Override
