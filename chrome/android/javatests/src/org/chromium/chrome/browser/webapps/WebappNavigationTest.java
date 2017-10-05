@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -39,6 +40,7 @@ import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 
@@ -253,6 +255,31 @@ public class WebappNavigationTest {
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testLink");
 
         waitForExternalAppOrIntentPicker();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    @RetryOnFailure
+    // Regression test for crbug.com/771174.
+    public void testCanNavigateAfterReparentingToTabbedChrome() throws Exception {
+        runWebappActivityAndWaitForIdle(
+                mActivityTestRule.createIntent()
+                        .putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI)
+                        .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
+
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.open_in_browser_id);
+
+        ChromeTabbedActivity tabbedChrome = waitFor(ChromeTabbedActivity.class);
+        mActivityTestRule.waitUntilIdle(tabbedChrome);
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> tabbedChrome.getActivityTab().loadUrl(new LoadUrlParams(OFF_ORIGIN_URL)));
+
+        mActivityTestRule.waitUntilIdle(tabbedChrome);
+        // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
+        Assert.assertTrue(tabbedChrome.getActivityTab().getUrl().contains("https://www.google."));
     }
 
     private void runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
