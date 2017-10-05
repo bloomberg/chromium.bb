@@ -7,6 +7,15 @@
   <message name="IDS_MD_EXTENSIONS_ERROR_PAGE_HEADING" desc="The heading of the page displaying an extension's errors.">
     Errors
   </message>
+  <message name="IDS_MD_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION" desc="The label indicating that an error was caused within an anonymous function in the code.">
+    anonymous function
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS" desc="The text for the button to view an extension error in the developer tools.">
+    View in Developer Tools
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ERROR_STACK_TRACE" desc="The label for the stack trace of an extension's error.">
+    Stack Trace
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_ERRORS" desc="The label of the button to bring the user to the page showing an extension's errors.">
     Errors
   </message>

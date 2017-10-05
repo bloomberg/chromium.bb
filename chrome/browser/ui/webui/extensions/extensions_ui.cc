@@ -135,6 +135,11 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_EXTENSIONS_INSTALL_DROP_TARGET);
   source->AddLocalizedString("errorsPageHeading",
                              IDS_MD_EXTENSIONS_ERROR_PAGE_HEADING);
+  source->AddLocalizedString("anonymousFunction",
+                             IDS_MD_EXTENSIONS_ERROR_ANONYMOUS_FUNCTION);
+  source->AddLocalizedString("openInDevtool",
+                             IDS_MD_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS);
+  source->AddLocalizedString("stackTrace", IDS_MD_EXTENSIONS_ERROR_STACK_TRACE);
   source->AddLocalizedString("getMoreExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS);
   source->AddLocalizedString("keyboardShortcuts",

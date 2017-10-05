@@ -317,6 +317,11 @@ cr.define('extensions', function() {
         });
       });
     }
+
+    /** @override */
+    openDevTools(args) {
+      chrome.developerPrivate.openDevTools(args);
+    }
   }
 
   cr.addSingletonGetter(Service);
