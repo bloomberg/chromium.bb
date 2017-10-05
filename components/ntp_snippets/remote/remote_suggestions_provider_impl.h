@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
@@ -72,7 +73,8 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       std::unique_ptr<RemoteSuggestionsStatusService> status_service,
       std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
       std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
-      Logger* debug_logger);
+      Logger* debug_logger,
+      std::unique_ptr<base::OneShotTimer> fetch_timeout_timer);
 
   ~RemoteSuggestionsProviderImpl() override;
 
@@ -89,6 +91,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // RemoteSuggestionsProvider implementation.
   void RefetchInTheBackground(FetchStatusCallback callback) override;
+  void RefetchWhileDisplaying(FetchStatusCallback callback) override;
 
   // TODO(fhorschig): Remove this getter when there is an interface for the
   // fetcher that allows better mocks.
@@ -393,6 +396,12 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   void MarkEmptyCategoriesAsLoading();
 
+  bool AreArticlesAvailable();
+  void NotifyRefetchWhileDisplayingStarted();
+  void NotifyRefetchWhileDisplayingFailedOrTimeouted();
+  void OnRefetchWhileDisplayingFinished(FetchStatusCallback callback,
+                                        Status status);
+
   State state_;
 
   PrefService* pref_service_;
@@ -455,6 +464,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // Additional logging, accesible through snippets-internals.
   Logger* debug_logger_;
+
+  // A Timer for canceling too long fetches.
+  std::unique_ptr<base::OneShotTimer> fetch_timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProviderImpl);
 };

@@ -17,7 +17,10 @@ extern const char kEnableSnippets[];
 extern const char kRemoteSuggestionCategories[];
 
 // The pref name for the last time when a background fetch was attempted.
-extern const char kSnippetLastFetchAttempt[];
+extern const char kSnippetLastFetchAttemptTime[];
+
+// The pref name for the last time when a background fetch was successfull.
+extern const char kSnippetLastSuccessfulFetchTime[];
 
 // Pref names for minimal intervals between two successive background fetches.
 //
