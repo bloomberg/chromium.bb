@@ -2333,7 +2333,7 @@ static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
 static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
                                       int stride, const TxfmParam *txfm_param) {
   int bd = txfm_param->bd;
-    const TX_TYPE tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int32_t *src = cast_to_int32(input);
   switch (tx_type) {
     case DCT_DCT:
@@ -2371,7 +2371,7 @@ static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
 static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
                                       int stride, const TxfmParam *txfm_param) {
   int bd = txfm_param->bd;
-    const TX_TYPE tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int32_t *src = cast_to_int32(input);
   switch (tx_type) {
     case DCT_DCT:
@@ -2410,7 +2410,7 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
 static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
                                       int stride, const TxfmParam *txfm_param) {
   int bd = txfm_param->bd;
-    const TX_TYPE tx_type = txfm_param->tx_type;
+  const TX_TYPE tx_type = txfm_param->tx_type;
   const int32_t *src = cast_to_int32(input);
   switch (tx_type) {
     case DCT_DCT:
