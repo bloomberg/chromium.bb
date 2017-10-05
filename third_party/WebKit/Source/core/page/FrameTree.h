@@ -47,9 +47,6 @@ class CORE_EXPORT FrameTree final {
   };
   void SetName(const AtomicString&, ReplicationPolicy = kDoNotReplicate);
 
-  // TODO(andypaicu): remove this once we have gathered the data
-  void ExperimentalSetNulledName();
-
   Frame* Parent() const;
   Frame& Top() const;
   Frame* NextSibling() const;
@@ -74,9 +71,6 @@ class CORE_EXPORT FrameTree final {
   AtomicString name_;  // The actual frame name (may be empty).
 
   mutable unsigned scoped_child_count_;
-
-  // TODO(andypaicu): remove this once we have gathered the data
-  bool experimental_set_nulled_name_;
 };
 
 }  // namespace blink
