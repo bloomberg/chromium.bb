@@ -82,6 +82,7 @@ public class WebappActivity extends SingleTabActivity {
     protected WebappInfo mWebappInfo;
 
     private WebappSplashScreenController mSplashController;
+    private TabObserver mTabObserver;
 
     private boolean mIsInitialized;
     private Integer mBrandColor;
@@ -153,7 +154,8 @@ public class WebappActivity extends SingleTabActivity {
             if (NetworkChangeNotifier.isOnline()) getActivityTab().reloadIgnoringCache();
         }
 
-        getActivityTab().addObserver(createTabObserver());
+        mTabObserver = createTabObserver();
+        getActivityTab().addObserver(mTabObserver);
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 mWebappInfo.displayMode());
     }
@@ -637,6 +639,9 @@ public class WebappActivity extends SingleTabActivity {
         if (TextUtils.isEmpty(url)) {
             url = IntentHandler.getUrlFromIntent(getIntent());
         }
+
+        tab.removeObserver(mTabObserver);
+        mTabObserver = null;
 
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
