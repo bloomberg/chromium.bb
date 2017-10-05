@@ -4438,6 +4438,36 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateCollision) {
   entry2->Close();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheConvertToSparseStream2LeftOver) {
+  // Testcase for what happens when we have a sparse stream and a left over
+  // empty stream 2 file.
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* entry;
+  std::string key("a key");
+  ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+  // Create an empty stream 2. To do that, we first make a non-empty one, then
+  // truncate it (since otherwise the write would just get ignored).
+  EXPECT_EQ(kSize, WriteData(entry, /* stream = */ 2, /* offset = */ 0,
+                             buffer.get(), kSize, false));
+  EXPECT_EQ(0, WriteData(entry, /* stream = */ 2, /* offset = */ 0,
+                         buffer.get(), 0, true));
+
+  EXPECT_EQ(kSize, WriteSparseData(entry, 5, buffer.get(), kSize));
+  entry->Close();
+
+  // Reopen, and try to get the sparse data back.
+  ASSERT_THAT(OpenEntry(key, &entry), IsOk());
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize));
+  EXPECT_EQ(kSize, ReadSparseData(entry, 5, buffer2.get(), kSize));
+  EXPECT_EQ(0, memcmp(buffer->data(), buffer2->data(), kSize));
+  entry->Close();
+}
+
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
  public:
   DiskCacheSimplePrefetchTest()
