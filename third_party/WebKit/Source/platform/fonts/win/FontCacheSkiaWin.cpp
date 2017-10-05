@@ -35,6 +35,7 @@
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
 #include "platform/Language.h"
+#include "platform/fonts/BitmapGlyphsBlacklist.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/FontPlatformData.h"
@@ -397,6 +398,9 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
            !tf->isItalic()) ||
               font_description.IsSyntheticItalic(),
           font_description.Orientation()));
+
+  result->SetAvoidEmbeddedBitmaps(
+      BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(tf.get()));
 
   return result;
 }

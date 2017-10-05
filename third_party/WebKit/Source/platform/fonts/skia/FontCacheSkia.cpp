@@ -41,6 +41,7 @@
 #include "platform/Language.h"
 #include "platform/font_family_names.h"
 #include "platform/fonts/AlternateFontFamily.h"
+#include "platform/fonts/BitmapGlyphsBlacklist.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
@@ -288,15 +289,22 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   if (!tf)
     return nullptr;
 
-  return WTF::WrapUnique(new FontPlatformData(
-      tf, name.data(), font_size,
-      (font_description.Weight() >
-           FontSelectionValue(200) +
-               FontSelectionValue(tf->fontStyle().weight()) ||
-       font_description.IsSyntheticBold()),
-      ((font_description.Style() == ItalicSlopeValue()) && !tf->isItalic()) ||
-          font_description.IsSyntheticItalic(),
-      font_description.Orientation()));
+  std::unique_ptr<FontPlatformData> font_platform_data =
+      WTF::WrapUnique(new FontPlatformData(
+          tf, name.data(), font_size,
+          (font_description.Weight() >
+               FontSelectionValue(200) +
+                   FontSelectionValue(tf->fontStyle().weight()) ||
+           font_description.IsSyntheticBold()),
+          ((font_description.Style() == ItalicSlopeValue()) &&
+           !tf->isItalic()) ||
+              font_description.IsSyntheticItalic(),
+          font_description.Orientation()));
+
+  font_platform_data->SetAvoidEmbeddedBitmaps(
+      BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(tf.get()));
+
+  return font_platform_data;
 }
 #endif  // !defined(OS_WIN)
 

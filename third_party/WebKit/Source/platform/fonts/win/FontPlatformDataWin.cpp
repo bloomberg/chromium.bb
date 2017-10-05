@@ -74,6 +74,8 @@ void FontPlatformData::SetupPaint(SkPaint* paint, float, const Font*) const {
   flags |= text_flags;
 
   paint->setFlags(flags);
+
+  paint->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
 }
 
 static bool IsWebFont(const String& family_name) {
