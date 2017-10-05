@@ -929,8 +929,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkButtonDisconnect", IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT},
       {"networkButtonForget", IDS_SETTINGS_INTERNET_BUTTON_FORGET},
       {"networkButtonViewAccount", IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT},
-      {"networkCAUseDefault", IDS_SETTINGS_INTERNET_NETWORK_CA_USE_DEFAULT},
-      {"networkCADoNotCheck", IDS_SETTINGS_INTERNET_NETWORK_CA_DO_NOT_CHECK},
       {"networkCertificateName",
        IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME},
       {"networkCertificateNameHardwareBacked",
@@ -938,9 +936,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkCertificateNoneInstalled",
        IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NONE_INSTALLED},
       {"networkConnectNotAllowed", IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED},
-      {"networkConfigSaveCredentials",
-       IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS},
-      {"networkConfigShare", IDS_SETTINGS_INTERNET_CONFIG_SHARE},
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},
@@ -2130,6 +2125,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   chromeos::network_element::AddLocalizedStrings(html_source);
   chromeos::network_element::AddOncLocalizedStrings(html_source);
+  chromeos::network_element::AddDetailsLocalizedStrings(html_source);
   chromeos::network_element::AddConfigLocalizedStrings(html_source);
 #endif
   policy_indicator::AddLocalizedStrings(html_source);

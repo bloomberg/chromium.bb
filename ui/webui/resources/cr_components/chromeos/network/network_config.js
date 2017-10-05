@@ -1016,9 +1016,18 @@ Polymer({
           error);
       return;
     }
-    this.networkProperties.GUID = guid;
-    this.fire('network-connect', {networkProperties: this.networkProperties});
-    this.close_();
+    this.networkingPrivate.startConnect(guid, () => {
+      error = chrome.runtime.lastError && chrome.runtime.lastError.message;
+      if (error) {
+        if (error == 'connecting' || error == 'connected' ||
+            error == 'connect-canceled') {
+          return;
+        }
+        // TODO(stevenjb): Display error message.
+        console.error('Error connecting to network: ' + error);
+      }
+      this.close_();
+    });
   },
 
   /**

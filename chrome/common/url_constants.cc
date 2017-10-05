@@ -128,6 +128,8 @@ const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIOobeURL[] = "chrome://oobe/";
 const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
+const char kChromeUIIntenetConfigDialogURL[] =
+    "chrome://internet-config-dialog/";
 const char kChromeUIIntenetDetailDialogURL[] =
     "chrome://internet-detail-dialog/";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";
@@ -315,6 +317,7 @@ const char kChromeUINetworkHost[] = "network";
 const char kChromeUIOobeHost[] = "oobe";
 const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIPowerHost[] = "power";
+const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
 const char kChromeUIRotateHost[] = "rotate";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
@@ -733,6 +736,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIOobeHost,
     kChromeUIOSCreditsHost,
     kChromeUIPowerHost,
+    kChromeUIInternetConfigDialogHost,
     kChromeUIInternetDetailDialogHost,
     kChromeUIVoiceSearchHost,
 #endif

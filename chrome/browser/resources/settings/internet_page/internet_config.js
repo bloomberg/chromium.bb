@@ -45,8 +45,8 @@ Polymer({
     enableSave_: String,
 
     /**
-     * The current properties if an existing network being configured.
-     * This will be undefined when configuring a new network.
+     * The current properties if an existing network being configured, or
+     * a minimal subset for a new network.
      * @private {!chrome.networkingPrivate.NetworkProperties|undefined}
      */
     networkProperties_: Object,

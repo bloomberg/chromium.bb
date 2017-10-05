@@ -21,7 +21,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   // Add default strings first.
   chromeos::network_element::AddLocalizedStrings(html_source);
   chromeos::network_element::AddOncLocalizedStrings(html_source);
-  chromeos::network_element::AddConfigLocalizedStrings(html_source);
+  chromeos::network_element::AddDetailsLocalizedStrings(html_source);
   // Add additional strings and overrides needed by the dialog.
   struct {
     const char* name;
@@ -34,7 +34,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkSectionProxy", IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},
       {"save", IDS_SAVE},
-      // Override for network_element::AddConfigLocalizedStrings
+      // Override for network_element::AddDetailsLocalizedStrings
       {"networkProxyConnectionType",
        IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE_DIALOG},
   };
