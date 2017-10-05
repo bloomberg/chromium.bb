@@ -1314,4 +1314,78 @@ TEST_P(FrameThrottlingTest, DisplayNoneChildrenRemainThrottled) {
       child_frame_element->contentDocument()->View()->CanThrottleRendering());
 }
 
+TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
+  // This test verifies removal of PaintLayer due to style change will force
+  // unthrottling a frame. This is because destructing PaintLayer would cause
+  // CompositedLayerMapping and composited layers to be destructed and detach
+  // from layer tree immediately. Layers could have dangling scroll/clip
+  // parent if compositing update were omitted.
+  WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<iframe sandbox id='frame' src='iframe.html' style='position:relative; "
+      "top:1000px;'></iframe>");
+  frame_resource.Complete(
+      "<div id='scroller' style='overflow:scroll; width:300px; height:200px;'>"
+      "  <div style='height:1000px;'></div>"
+      "  <div id='sibling' style='transform:translateZ(0);'>Foo</div>"
+      "</div>");
+
+  CompositeFrame();
+  auto* frame_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  {
+    DocumentLifecycle::AllowThrottlingScope throttling_scope(
+        GetDocument().Lifecycle());
+    EXPECT_TRUE(
+        frame_element->contentDocument()->View()->ShouldThrottleRendering());
+  }
+
+  auto* scroller_element =
+      frame_element->contentDocument()->getElementById("scroller");
+  ASSERT_TRUE(scroller_element->GetLayoutObject()->HasLayer());
+  auto* scroller_layer =
+      ToLayoutBoxModelObject(scroller_element->GetLayoutObject())->Layer();
+  EXPECT_TRUE(scroller_layer->NeedsCompositedScrolling());
+
+  auto* sibling_element =
+      frame_element->contentDocument()->getElementById("sibling");
+  ASSERT_TRUE(sibling_element->GetLayoutObject()->HasLayer());
+  auto* sibling_layer =
+      ToLayoutBoxModelObject(sibling_element->GetLayoutObject())->Layer();
+  auto* sibling_clm = sibling_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(sibling_clm);
+
+  scroller_element->setAttribute(styleAttr, "overflow:visible;");
+  EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
+            frame_element->contentDocument()->Lifecycle().GetState());
+
+  // This simulates a javascript query to layout results, e.g.
+  // document.body.offsetTop, which will force style & layout to be computed,
+  // whether the frame is throttled or not.
+  frame_element->contentDocument()
+      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
+            frame_element->contentDocument()->Lifecycle().GetState());
+  {
+    DocumentLifecycle::AllowThrottlingScope throttling_scope(
+        GetDocument().Lifecycle());
+    EXPECT_FALSE(
+        frame_element->contentDocument()->View()->ShouldThrottleRendering());
+  }
+
+  CompositeFrame();
+  {
+    DocumentLifecycle::AllowThrottlingScope throttling_scope(
+        GetDocument().Lifecycle());
+    EXPECT_TRUE(
+        frame_element->contentDocument()->View()->ShouldThrottleRendering());
+  }
+  EXPECT_EQ(DocumentLifecycle::kCompositingClean,
+            frame_element->contentDocument()->Lifecycle().GetState());
+}
+
 }  // namespace blink

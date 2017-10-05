@@ -1379,6 +1379,12 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange() {
   if (!parent_)
     return;
 
+  // Destructing PaintLayer would cause CompositedLayerMapping and composited
+  // layers to be destructed and detach from layer tree immediately. Layers
+  // could have dangling scroll/clip parent if compositing update were omitted.
+  if (LocalFrameView* frame_view = layout_object_.GetDocument().View())
+    frame_view->SetNeedsForcedCompositingUpdate();
+
   bool did_set_paint_invalidation = false;
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     DisableCompositingQueryAsserts
