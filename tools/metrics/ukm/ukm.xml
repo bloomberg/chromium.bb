@@ -1343,4 +1343,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="TabManager.Background.ForegroundedOrClosed">
+  <owner>chrisha@chromium.org</owner>
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    Collects the duration in MS from when the tab is backgrounded to when it is
+    brought to foreground or closed.
+  </summary>
+  <metric name="IsForegrounded">
+    <summary>
+      Boolean value indicating whether or not it's triggered because the tab is
+      brought to foreground again.
+    </summary>
+  </metric>
+  <metric name="TimeFromBackgrounded">
+    <summary>
+      Duration in MS from when the tab is backgrounded to when it is brought to
+      foreground or closed.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

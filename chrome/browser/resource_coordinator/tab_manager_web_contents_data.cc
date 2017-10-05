@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 using base::TimeTicks;
 using content::WebContents;
@@ -27,7 +28,8 @@ TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       test_tick_clock_(nullptr),
       time_to_purge_(base::TimeDelta::FromMinutes(30)),
-      is_purged_(false) {}
+      is_purged_(false),
+      ukm_source_id_(0) {}
 
 TabManager::WebContentsData::~WebContentsData() {}
 
@@ -69,6 +71,21 @@ void TabManager::WebContentsData::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   SetIsInSessionRestore(false);
   g_browser_process->GetTabManager()->OnDidFinishNavigation(navigation_handle);
+
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->IsInMainFrame()) {
+    return;
+  }
+
+  ukm_source_id_ = ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                          ukm::SourceIdType::NAVIGATION_ID);
+}
+
+void TabManager::WebContentsData::WasShown() {
+  if (tab_data_.last_inactive_time == base::TimeTicks::UnixEpoch())
+    return;
+  ReportUKMWhenBackgroundTabIsClosedOrForegrounded(true);
 }
 
 void TabManager::WebContentsData::WebContentsDestroyed() {
@@ -85,6 +102,11 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
     UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.ReloadToCloseTime", delta,
                                base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
+  }
+
+  if (!web_contents()->IsVisible() &&
+      tab_data_.last_inactive_time != base::TimeTicks::UnixEpoch()) {
+    ReportUKMWhenBackgroundTabIsClosedOrForegrounded(false);
   }
 
   SetTabLoadingState(TAB_IS_NOT_LOADING);
@@ -203,6 +225,17 @@ TimeTicks TabManager::WebContentsData::NowTicks() const {
     return TimeTicks::Now();
 
   return test_tick_clock_->NowTicks();
+}
+
+void TabManager::WebContentsData::
+    ReportUKMWhenBackgroundTabIsClosedOrForegrounded(bool is_foregrounded) {
+  if (!ukm_source_id_)
+    return;
+  auto duration = NowTicks() - tab_data_.last_inactive_time;
+  ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id_)
+      .SetTimeFromBackgrounded(duration.InMilliseconds())
+      .SetIsForegrounded(is_foregrounded)
+      .Record(g_browser_process->ukm_recorder());
 }
 
 TabManager::WebContentsData::Data::Data()
