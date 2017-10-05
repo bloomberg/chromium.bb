@@ -976,14 +976,6 @@ shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 reverse'");
 shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 reverse none running'");
 shouldBe("checkAnimationShorthandValue()", "true");
 
-// FIXME : https://code.google.com/p/chromium/issues/detail?id=273092
-/*style.animation = "ease-in ease-out 5s";
-shouldBe("style.animation", "'ease-in ease-out 5s'");
-shouldBe("computedStyle.animation", "'ease-in 0s ease-out 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'ease-in ease-out 5s'");
-shouldBe("computedStyle.webkitAnimation", "'ease-in 0s ease-out 0s 1 normal none running'");
-shouldBe("computedStyle.animationName", "'ease-in'");*/
-
 style.animation = "myShorthandAnim reverse ease-in backwards 20s 5 paused";
 shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 reverse backwards paused'");
 shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused'");
@@ -1156,13 +1148,6 @@ shouldBe("style.animation", "'default 2'");
 shouldBe("computedStyle.animation", "'default 0s ease 0s 2 normal none running'");
 shouldBe("style.webkitAnimation", "'default 2'");
 shouldBe("computedStyle.webkitAnimation", "'default 0s ease 0s 2 normal none running'");
-
-// FIXME : https://code.google.com/p/chromium/issues/detail?id=273092
-/*style.animation = "ease-in ease-otu 5s";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");*/
 
 document.body.removeChild(testContainer);
 </script>
