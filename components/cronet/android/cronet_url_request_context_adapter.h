@@ -224,18 +224,19 @@ class CronetURLRequestContextAdapter
   // that weakly references |network_quality_estimator_|.
   std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
 
-  std::unique_ptr<net::URLRequestContext> context_;
-
   // Manages the PrefService and all associated persistence managers
   // such as NetworkQualityPrefsManager, HostCachePersistenceManager, etc.
   // It should be destroyed before |network_quality_estimator_| and
-  // |context_|.
+  // after |context_|.
   std::unique_ptr<CronetPrefsManager> cronet_prefs_manager_;
 
-  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::URLRequestContext> context_;
 
   // Context config is only valid until context is initialized.
   std::unique_ptr<URLRequestContextConfig> context_config_;
+  // As is the proxy config service, as ownership is passed to the
+  // URLRequestContextBuilder.
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
 
   // Effective experimental options. Kept for NetLog.
   std::unique_ptr<base::DictionaryValue> effective_experimental_options_;

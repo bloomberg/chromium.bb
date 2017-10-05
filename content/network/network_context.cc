@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -96,9 +95,6 @@ NetworkContext::~NetworkContext() {
   // so have to be careful.
   while (!url_loaders_.empty())
     (*url_loaders_.begin())->Cleanup();
-
-  if (http_server_properties_manager_)
-    http_server_properties_manager_->ShutdownOnPrefSequence();
 
   // May be nullptr in tests.
   if (network_service_)
@@ -260,17 +256,11 @@ void NetworkContext::ApplyContextParamsToBuilder(
     HttpServerPropertiesPrefDelegate::RegisterPrefs(pref_registry.get());
     pref_service_ = pref_service_factory.Create(pref_registry.get());
 
-    std::unique_ptr<net::HttpServerPropertiesManager> http_server_properties =
+    builder->SetHttpServerProperties(
         std::make_unique<net::HttpServerPropertiesManager>(
-            // HttpServerPropertiesManager implicitly takes ownership of the
-            // PrefDelegate.
-            new HttpServerPropertiesPrefDelegate(pref_service_.get()),
-            base::ThreadTaskRunnerHandle::Get(),
-            base::ThreadTaskRunnerHandle::Get(), builder->net_log());
-    http_server_properties_manager_ = http_server_properties.get();
-    http_server_properties_manager_->InitializeOnNetworkSequence();
-
-    builder->SetHttpServerProperties(std::move(http_server_properties));
+            std::make_unique<HttpServerPropertiesPrefDelegate>(
+                pref_service_.get()),
+            builder->net_log()));
   }
 
   builder->set_data_enabled(network_context_params->enable_data_url_support);
@@ -311,12 +301,8 @@ void NetworkContext::ClearNetworkingHistorySince(
   url_request_context_->transport_security_state()->DeleteAllDynamicDataSince(
       time);
 
-  if (http_server_properties_manager_) {
-    http_server_properties_manager_->Clear(std::move(completion_callback));
-  } else {
-    url_request_context_->http_server_properties()->Clear();
-    std::move(completion_callback).Run();
-  }
+  url_request_context_->http_server_properties()->Clear();
+  std::move(completion_callback).Run();
 }
 
 }  // namespace content

@@ -27,18 +27,15 @@ class PrefServiceAdapter
   ~PrefServiceAdapter() override { pref_store_->RemoveObserver(this); }
 
   // PrefDelegate implementation.
-  bool HasServerProperties() override {
-    return pref_store_->GetValue(path_, nullptr);
-  }
-  const base::DictionaryValue& GetServerProperties() const override {
+  const base::DictionaryValue* GetServerProperties() const override {
     const base::Value* value;
     if (pref_store_->GetValue(path_, &value)) {
       const base::DictionaryValue* dict;
       if (value->GetAsDictionary(&dict))
-        return *dict;
+        return dict;
     }
 
-    return empty_dictionary_;
+    return nullptr;
   }
   void SetServerProperties(const base::DictionaryValue& value) override {
     return pref_store_->SetValue(path_, value.CreateDeepCopy(),
@@ -47,9 +44,6 @@ class PrefServiceAdapter
   void StartListeningForUpdates(const base::Closure& callback) override {
     on_changed_callback_ = callback;
   }
-  void StopListeningForUpdates() override {
-    on_changed_callback_ = base::Closure();
-  }
 
   // PrefStore::Observer implementation.
   void OnPrefValueChanged(const std::string& key) override {
@@ -57,17 +51,13 @@ class PrefServiceAdapter
       on_changed_callback_.Run();
   }
   void OnInitializationCompleted(bool succeeded) override {
-    if (succeeded && on_changed_callback_ && HasServerProperties())
+    if (succeeded && on_changed_callback_)
       on_changed_callback_.Run();
   }
 
  private:
   scoped_refptr<WriteablePrefStore> pref_store_;
   const std::string path_;
-
-  // Returned when the pref is not set. Since the method returns a const
-  // net::DictionaryValue&, can't just create one on the stack.
-  base::DictionaryValue empty_dictionary_;
 
   base::Closure on_changed_callback_;
 
@@ -77,13 +67,11 @@ class PrefServiceAdapter
 }  // namespace
 
 // static
-net::HttpServerPropertiesManager*
+std::unique_ptr<net::HttpServerPropertiesManager>
 HttpServerPropertiesManagerFactory::CreateManager(
     scoped_refptr<WriteablePrefStore> pref_store,
     net::NetLog* net_log) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  return new net::HttpServerPropertiesManager(
-      new PrefServiceAdapter(std::move(pref_store)),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO), net_log);
+  return std::make_unique<net::HttpServerPropertiesManager>(
+      std::make_unique<PrefServiceAdapter>(std::move(pref_store)), net_log);
 }
