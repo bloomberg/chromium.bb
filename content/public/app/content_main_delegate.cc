@@ -57,10 +57,6 @@ service_manager::ProcessType ContentMainDelegate::OverrideProcessType() {
   return service_manager::ProcessType::kDefault;
 }
 
-std::unique_ptr<base::Value> ContentMainDelegate::CreateServiceCatalog() {
-  return nullptr;
-}
-
 void ContentMainDelegate::AdjustServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {}
@@ -74,11 +70,6 @@ bool ContentMainDelegate::ShouldTerminateServiceManagerOnInstanceQuit(
 void ContentMainDelegate::OnServiceManagerInitialized(
     const base::Closure& quit_closure,
     service_manager::BackgroundServiceManager* service_manager) {}
-
-std::unique_ptr<service_manager::Service>
-ContentMainDelegate::CreateEmbeddedService(const std::string& service_name) {
-  return nullptr;
-}
 
 ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
 #if defined(CHROME_MULTIPLE_DLL_CHILD)
