@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
@@ -335,6 +336,9 @@ void UiElement::LayOutChildren() {
       case XNONE:
         x_offset = 0.0f;
         break;
+      default:
+        NOTREACHED();
+        return;
     }
     float y_offset;
     switch (child->y_anchoring()) {
@@ -347,6 +351,9 @@ void UiElement::LayOutChildren() {
       case YNONE:
         y_offset = 0.0f;
         break;
+      default:
+        NOTREACHED();
+        return;
     }
     child->SetLayoutOffset(x_offset, y_offset);
   }

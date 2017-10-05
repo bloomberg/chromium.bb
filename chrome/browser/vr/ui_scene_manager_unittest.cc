@@ -20,12 +20,9 @@
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 namespace vr {
-
-using TargetProperty::BOUNDS;
-using TargetProperty::TRANSFORM;
-using TargetProperty::OPACITY;
 
 namespace {
 const std::set<UiElementName> kFloorCeilingBackgroundElements = {
@@ -60,8 +57,8 @@ const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
 };
 
-static constexpr float kTolerance = 1e-5;
-static constexpr float kSmallDelaySeconds = 0.1;
+static constexpr float kTolerance = 1e-5f;
+static constexpr float kSmallDelaySeconds = 0.1f;
 
 MATCHER_P2(SizeFsAreApproximatelyEqual, other, tolerance, "") {
   return cc::MathUtil::ApproximatelyEqual(arg.width(), other.width(),

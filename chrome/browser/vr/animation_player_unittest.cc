@@ -16,7 +16,7 @@
 
 namespace vr {
 
-static constexpr float kNoise = 1e-6;
+static constexpr float kNoise = 1e-6f;
 
 class TestAnimationTarget : public cc::AnimationTarget {
  public:

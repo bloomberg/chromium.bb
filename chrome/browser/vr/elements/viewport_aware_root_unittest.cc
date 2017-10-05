@@ -148,10 +148,10 @@ TEST_F(ViewportAwareRootTest, TestAdjustRotationForHeadPose) {
   CheckRotateClockwiseAndReverse(gfx::Vector3dF{0.f, 0.f, -1.f});
 
   CheckRotateClockwiseAndReverse(
-      gfx::Vector3dF{0.f, std::sin(1), -std::cos(1)});
+      gfx::Vector3dF{0.f, std::sin(1.0f), -std::cos(1.0f)});
 
   CheckRotateClockwiseAndReverse(
-      gfx::Vector3dF{0.f, -std::sin(1.5), -std::cos(1.5)});
+      gfx::Vector3dF{0.f, -std::sin(1.5f), -std::cos(1.5f)});
 }
 
 TEST_F(ViewportAwareRootTest, ChildElementsRepositioned) {
