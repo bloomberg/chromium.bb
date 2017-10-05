@@ -623,6 +623,8 @@ void ChromeDownloadManagerDelegate::NotifyExtensions(
     const base::FilePath& virtual_path,
     const NotifyExtensionsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!download->IsTransient());
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionDownloadsEventRouter* router =
       DownloadCoreServiceFactory::GetForBrowserContext(profile_)
@@ -669,6 +671,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
     DownloadConfirmationReason reason,
     const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!download->IsTransient());
+
 #if defined(OS_ANDROID)
   switch (reason) {
     case DownloadConfirmationReason::NONE:

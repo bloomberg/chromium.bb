@@ -216,7 +216,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
   }
 
   // Sets whether the download is to be treated as transient. A transient
-  // download is short-lived and is not shown in the UI.
+  // download is short-lived and is not shown in the UI, and will not prompt
+  // to user for target file path determination.
   void set_transient(bool transient) { transient_ = transient; }
 
   // Sets the optional guid for the download, the guid serves as the unique

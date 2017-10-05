@@ -9238,6 +9238,22 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Wrong MIME Type Failure"/>
 </enum>
 
+<enum name="DownloadPathGenerationEvent">
+  <int value="0" label="Use existing virtual path"/>
+  <int value="1" label="Use force path"/>
+  <int value="2" label="Use last prompt directory"/>
+  <int value="3" label="Use default directory"/>
+  <int value="4" label="No valid path"/>
+</enum>
+
+<enum name="DownloadPathValidationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Path not writable"/>
+  <int value="2" label="Name too long"/>
+  <int value="3" label="Conflict"/>
+  <int value="4" label="Same as source"/>
+</enum>
+
 <enum name="DownloadSavePackageEvent">
   <int value="0" label="Started"/>
   <int value="1" label="Cancelled"/>

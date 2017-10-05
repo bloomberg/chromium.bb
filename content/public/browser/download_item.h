@@ -415,7 +415,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual base::Time GetLastAccessTime() const = 0;
 
   // Returns whether the download item is transient. Transient items are cleaned
-  // up after completion and not shown in the UI.
+  // up after completion and not shown in the UI, and will not prompt to user
+  // for target file path determination.
   virtual bool IsTransient() const = 0;
 
   //    Misc State accessors ---------------------------------------------------
