@@ -38,8 +38,8 @@
 #include "SkTypeface.h"
 
 #include "build/build_config.h"
-#include "platform/FontFamilyNames.h"
 #include "platform/Language.h"
+#include "platform/font_family_names.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
