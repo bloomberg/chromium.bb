@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ENTERPRISE_ARC_CERT_STORE_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ENTERPRISE_ARC_CERT_STORE_BRIDGE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/cert_store.mojom.h"

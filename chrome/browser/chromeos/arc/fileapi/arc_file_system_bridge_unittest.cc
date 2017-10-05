@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"

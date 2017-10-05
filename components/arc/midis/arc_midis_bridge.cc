@@ -4,6 +4,8 @@
 
 #include "components/arc/midis/arc_midis_bridge.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "chromeos/dbus/arc_midis_client.h"

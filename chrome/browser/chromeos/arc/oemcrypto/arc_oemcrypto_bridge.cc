@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/oemcrypto/arc_oemcrypto_bridge.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

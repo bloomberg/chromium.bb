@@ -548,7 +548,7 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
     mojom::AccessibilityNodeInfoData* node,
     aura::Window* focused_window) const {
   DCHECK(focused_window);
-  DCHECK(root_id_ != -1);
+  DCHECK_NE(root_id_, -1);
 
   gfx::Rect node_bounds = node->bounds_in_screen;
 

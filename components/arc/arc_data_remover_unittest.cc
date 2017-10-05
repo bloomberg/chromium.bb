@@ -4,6 +4,8 @@
 
 #include "components/arc/arc_data_remover.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"

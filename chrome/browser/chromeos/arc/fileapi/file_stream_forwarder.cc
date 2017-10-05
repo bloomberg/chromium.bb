@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"

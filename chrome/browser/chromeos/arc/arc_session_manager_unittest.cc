@@ -773,10 +773,9 @@ INSTANTIATE_TEST_CASE_P(
                                      1,   // base::Value(false)
                                      2),  // base::Value(true)
                      /* location_service_pref_value */
-                     testing::Values(0,  // base::Value()
-                                     1,  // base::Value(false)
-                                     2)  // base::Value(true)
-                     ));
+                     testing::Values(0,     // base::Value()
+                                     1,     // base::Value(false)
+                                     2)));  // base::Value(true)
 
 class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
  public:
