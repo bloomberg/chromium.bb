@@ -2564,10 +2564,6 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   av1_merge_rd_stats(rd_stats, &best_rd_stats);
 
-  //  if (x->plane[plane].eobs[block] == 0)
-  //    if (best_tx_type != DCT_DCT)
-  //      exit(0);
-
   if (best_eob == 0 && is_inter_block(mbmi)) best_tx_type = DCT_DCT;
 
   if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = best_tx_type;

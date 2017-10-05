@@ -426,8 +426,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     ctx = get_br_ctx(tcoeffs, scan[c], bwl, height);
 
-    if (ec_ctx->coeff_lps[txs_ctx][plane_type][ctx] == 0) exit(0);
-
 #if BR_NODE
     for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
 #if LV_MAP_PROB
