@@ -12773,7 +12773,8 @@
           "--browser=exact",
           "--browser-executable=./test_chrome",
           "--xvfb",
-          "--skip=scripts_smoke_unittest.ScriptsSmokeTest.testRunTelemetryBenchmarkAsGoogletest"
+          "--skip=scripts_smoke_unittest.ScriptsSmokeTest.testRunTelemetryBenchmarkAsGoogletest",
+          "--skip=benchmarks.benchmark_smoke_unittest.BenchmarkSmokeTest.v8.runtime_stats.top_25"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
@@ -12788,7 +12789,9 @@
           "--browser=exact",
           "--browser-executable=./test_chrome",
           "--jobs=1",
-          "--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings"
+          "--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings",
+          "--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForElement",
+          "--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForJavaScriptCondition"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
