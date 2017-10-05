@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
@@ -76,7 +76,6 @@ class UiSceneManagerTest : public testing::Test {
 
   void GetBackgroundColor(SkColor* background_color) const;
 
-  base::MessageLoop message_loop_;
   std::unique_ptr<MockBrowserInterface> browser_;
   std::unique_ptr<MockContentInputDelegate> content_input_delegate_;
   std::unique_ptr<UiScene> scene_;

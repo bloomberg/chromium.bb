@@ -5,7 +5,6 @@
 #include "chrome/browser/vr/ui_scene_manager.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/content_element.h"
