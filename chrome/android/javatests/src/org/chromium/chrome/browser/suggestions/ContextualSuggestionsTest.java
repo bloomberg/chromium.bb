@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -83,7 +82,8 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
-    @SmallTest
+    //@SmallTest
+    @DisabledTest(message = "see crbug.com/758179")
     @Feature({"ContextualSuggestions"})
     @CommandLineFlags.Add(ChromeHome.ENABLE_FLAGS)
     public void testCarouselIsNotShownWhenFlagIsDisabled() throws IOException {
@@ -120,7 +120,8 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
-    @SmallTest
+    //@SmallTest
+    @DisabledTest(message = "see crbug.com/758179")
     @Feature({"ContextualSuggestions"})
     @CommandLineFlags.Add(ENABLE_CONTEXTUAL_SUGGESTIONS)
     public void testCarouselIsShownWhenItReceivedSuggestions() throws Exception {
@@ -142,7 +143,8 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
-    @MediumTest
+    //@MediumTest
+    @DisabledTest(message = "see crbug.com/758179")
     @Feature({"ContextualSuggestions", "RenderTest"})
     @CommandLineFlags.Add(ENABLE_CONTEXTUAL_SUGGESTIONS)
     public void testCardAppearance() throws Exception {
