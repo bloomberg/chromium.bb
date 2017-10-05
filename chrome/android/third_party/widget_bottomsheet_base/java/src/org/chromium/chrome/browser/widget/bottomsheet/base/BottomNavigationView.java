@@ -140,10 +140,6 @@ public class BottomNavigationView extends FrameLayout {
             mMenuView.setItemTextColor(
                     createDefaultColorStateList(android.R.attr.textColorSecondary));
         }
-        if (a.hasValue(R.styleable.BottomNavigationView_elevation)) {
-            ViewCompat.setElevation(
-                    this, a.getDimensionPixelSize(R.styleable.BottomNavigationView_elevation, 0));
-        }
 
         int itemBackground = a.getResourceId(R.styleable.BottomNavigationView_itemBackground, 0);
         mMenuView.setItemBackgroundRes(itemBackground);
@@ -154,9 +150,6 @@ public class BottomNavigationView extends FrameLayout {
         a.recycle();
 
         addView(mMenuView, params);
-        if (Build.VERSION.SDK_INT < 21) {
-            addCompatibilityTopDivider(context);
-        }
 
         mMenu.setCallback(new MenuBuilder.Callback() {
             @Override
