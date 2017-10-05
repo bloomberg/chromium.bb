@@ -184,6 +184,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   bool IsEmojiHandwritingVoiceOnImeMenuEnabled() override;
   void SetImeMenuFeatureEnabled(ImeMenuFeature feature, bool enabled) override;
   bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const override;
+  void NotifyObserversImeExtraInputStateChange() override;
 
   // chromeos::UserAddingScreen:
   void OnUserAddingStarted() override;

@@ -204,5 +204,7 @@ bool MockInputMethodManager::GetImeMenuFeatureEnabled(
   return features_enabled_state_ & feature;
 }
 
+void MockInputMethodManager::NotifyObserversImeExtraInputStateChange() {}
+
 }  // namespace input_method
 }  // namespace chromeos

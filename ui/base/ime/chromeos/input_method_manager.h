@@ -79,6 +79,14 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     virtual void InputMethodChanged(InputMethodManager* manager,
                                     Profile* profile,
                                     bool show_message) = 0;
+    // Called when the availability of any of the extra input methods (emoji,
+    // handwriting, voice) has changed. The overall state is toggle-able
+    // independently of the individual options.
+    virtual void OnExtraInputEnabledStateChange(
+        bool is_extra_input_options_enabled,
+        bool is_emoji_enabled,
+        bool is_handwriting_enabled,
+        bool is_voice_enabled){};
   };
 
   // CandidateWindowObserver is notified of events related to the candidate
@@ -320,6 +328,10 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
   // Returns the true if the given feature is enabled.
   virtual bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const = 0;
+
+  // Notifies when any of the extra inputs (emoji, handwriting, voice) enabled
+  // status has changed.
+  virtual void NotifyObserversImeExtraInputStateChange() = 0;
 };
 
 }  // namespace input_method

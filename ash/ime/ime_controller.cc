@@ -136,6 +136,17 @@ void ImeController::SetCapsLockState(bool caps_enabled) {
     observer.OnCapsLockChanged(caps_enabled);
 }
 
+void ImeController::SetExtraInputOptionsEnabledState(
+    bool is_extra_input_options_enabled,
+    bool is_emoji_enabled,
+    bool is_handwriting_enabled,
+    bool is_voice_enabled) {
+  is_extra_input_options_enabled_ = is_extra_input_options_enabled;
+  is_emoji_enabled_ = is_emoji_enabled;
+  is_handwriting_enabled_ = is_handwriting_enabled;
+  is_voice_enabled_ = is_voice_enabled;
+}
+
 void ImeController::SetCapsLockFromTray(bool caps_enabled) {
   if (client_)
     client_->SetCapsLockFromTray(caps_enabled);

@@ -299,9 +299,9 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       force_show_keyboard_(false),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false),
-      emoji_enabled_(false),
-      handwriting_enabled_(false),
-      voice_enabled_(false),
+      is_emoji_enabled_(false),
+      is_handwriting_enabled_(false),
+      is_voice_enabled_(false),
       weak_ptr_factory_(this) {
   DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
@@ -351,7 +351,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
 
   if (show_bottom_buttons) {
     bubble_view->AddChildView(new ImeButtonsView(
-        this, emoji_enabled_, handwriting_enabled_, voice_enabled_));
+        this, is_emoji_enabled_, is_handwriting_enabled_, is_voice_enabled_));
   }
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
@@ -405,25 +405,22 @@ bool ImeMenuTray::ShouldShowBottomButtons() {
   // 2) third party IME extensions.
   // 3) login/lock screen.
   // 4) password input client.
-  InputMethodManager* input_method_manager = InputMethodManager::Get();
+
   bool should_show_buttom_buttoms =
-      input_method_manager &&
-      input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
+      ime_controller_->is_extra_input_options_enabled() &&
       !ime_controller_->current_ime().third_party && !IsInLoginOrLockScreen() &&
       !IsInPasswordInputContext();
 
   if (!should_show_buttom_buttoms) {
-    emoji_enabled_ = handwriting_enabled_ = voice_enabled_ = false;
+    is_emoji_enabled_ = is_handwriting_enabled_ = is_voice_enabled_ = false;
     return false;
   }
 
-  emoji_enabled_ = input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_EMOJI);
-  handwriting_enabled_ = input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_HANDWRITING);
-  voice_enabled_ = input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_VOICE);
-  return emoji_enabled_ || handwriting_enabled_ || voice_enabled_;
+  is_emoji_enabled_ = ime_controller_->is_emoji_enabled();
+  is_handwriting_enabled_ = ime_controller_->is_handwriting_enabled();
+  is_voice_enabled_ = ime_controller_->is_voice_enabled();
+
+  return is_emoji_enabled_ || is_handwriting_enabled_ || is_voice_enabled_;
 }
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
