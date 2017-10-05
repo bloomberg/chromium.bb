@@ -51,7 +51,8 @@ class WebFileSystem;
 
 class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                               public Supplement<LocalFrame>,
-                              public Supplement<WorkerClients> {
+                              public Supplement<WorkerClients>,
+                              public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
   WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 
