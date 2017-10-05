@@ -51,10 +51,20 @@ class LayoutListMarker final : public LayoutBox {
   // Returns the list's style as one of a reduced high level categorical set of
   // styles.
   ListStyleCategory GetListStyleCategory() const;
+  static ListStyleCategory GetListStyleCategory(EListStyleType);
 
   bool IsInside() const;
 
   void UpdateMarginsAndContent();
+
+  // Compute inline margins for 'list-style-position: inside' and 'outside'.
+  static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForInside(
+      const ComputedStyle&,
+      bool is_image);
+  static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
+      const ComputedStyle&,
+      bool is_image,
+      LayoutUnit marker_inline_size);
 
   IntRect GetRelativeMarkerRect() const;
   LayoutRect LocalSelectionRect() const final;

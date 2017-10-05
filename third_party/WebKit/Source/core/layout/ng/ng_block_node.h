@@ -45,6 +45,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   NGLayoutInputNode FirstChild();
 
+  // Layout an atomic inline; e.g., inline block.
+  RefPtr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
+                                            bool use_first_line_style);
+
   // Runs layout on the underlying LayoutObject and creates a fragment for the
   // resulting geometry.
   RefPtr<NGLayoutResult> RunOldLayout(const NGConstraintSpace&);

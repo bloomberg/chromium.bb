@@ -286,69 +286,89 @@ void LayoutListMarker::ComputePreferredLogicalWidths() {
 }
 
 void LayoutListMarker::UpdateMargins() {
-  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return;
-  const FontMetrics& font_metrics = font_data->GetFontMetrics();
-
   LayoutUnit margin_start;
   LayoutUnit margin_end;
-
+  const ComputedStyle& style = StyleRef();
   if (IsInside()) {
-    if (IsImage()) {
-      margin_end = LayoutUnit(kCMarkerPaddingPx);
-    } else {
-      switch (GetListStyleCategory()) {
-        case ListStyleCategory::kSymbol:
-          margin_start = LayoutUnit(-1);
-          margin_end =
-              LayoutUnit(kCUAMarkerMarginEm * Style()->ComputedFontSize());
-          break;
-        default:
-          break;
-      }
-    }
+    std::tie(margin_start, margin_end) =
+        InlineMarginsForInside(style, IsImage());
   } else {
-    if (Style()->IsLeftToRightDirection()) {
-      if (IsImage()) {
-        margin_start = -MinPreferredLogicalWidth() - kCMarkerPaddingPx;
-      } else {
-        int offset = font_metrics.Ascent() * 2 / 3;
-        switch (GetListStyleCategory()) {
-          case ListStyleCategory::kNone:
-            break;
-          case ListStyleCategory::kSymbol:
-            margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
-            break;
-          default:
-            margin_start =
-                text_.IsEmpty() ? LayoutUnit() : -MinPreferredLogicalWidth();
-        }
-      }
-      margin_end = -margin_start - MinPreferredLogicalWidth();
-    } else {
-      if (IsImage()) {
-        margin_end = LayoutUnit(kCMarkerPaddingPx);
-      } else {
-        int offset = font_metrics.Ascent() * 2 / 3;
-        switch (GetListStyleCategory()) {
-          case ListStyleCategory::kNone:
-            break;
-          case ListStyleCategory::kSymbol:
-            margin_end =
-                offset + kCMarkerPaddingPx + 1 - MinPreferredLogicalWidth();
-            break;
-          default:
-            margin_end = LayoutUnit();
-        }
-      }
-      margin_start = -margin_end - MinPreferredLogicalWidth();
-    }
+    std::tie(margin_start, margin_end) =
+        InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
   }
-
   MutableStyleRef().SetMarginStart(Length(margin_start, kFixed));
   MutableStyleRef().SetMarginEnd(Length(margin_end, kFixed));
+}
+
+std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
+    const ComputedStyle& style,
+    bool is_image) {
+  LayoutUnit margin_start;
+  LayoutUnit margin_end;
+  if (is_image)
+    return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
+  switch (GetListStyleCategory(style.ListStyleType())) {
+    case ListStyleCategory::kSymbol:
+      return {LayoutUnit(-1),
+              LayoutUnit(kCUAMarkerMarginEm * style.ComputedFontSize())};
+    default:
+      break;
+  }
+  return {};
+}
+
+std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForOutside(
+    const ComputedStyle& style,
+    bool is_image,
+    LayoutUnit marker_inline_size) {
+  LayoutUnit margin_start;
+  LayoutUnit margin_end;
+  if (style.IsLeftToRightDirection()) {
+    if (is_image) {
+      margin_start = -marker_inline_size - kCMarkerPaddingPx;
+    } else {
+      switch (GetListStyleCategory(style.ListStyleType())) {
+        case ListStyleCategory::kNone:
+          break;
+        case ListStyleCategory::kSymbol: {
+          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+          DCHECK(font_data);
+          if (!font_data)
+            return {};
+          const FontMetrics& font_metrics = font_data->GetFontMetrics();
+          int offset = font_metrics.Ascent() * 2 / 3;
+          margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
+          break;
+        }
+        default:
+          margin_start = -marker_inline_size;
+      }
+    }
+    margin_end = -margin_start - marker_inline_size;
+  } else {
+    if (is_image) {
+      margin_end = LayoutUnit(kCMarkerPaddingPx);
+    } else {
+      switch (GetListStyleCategory(style.ListStyleType())) {
+        case ListStyleCategory::kNone:
+          break;
+        case ListStyleCategory::kSymbol: {
+          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+          DCHECK(font_data);
+          if (!font_data)
+            return {};
+          const FontMetrics& font_metrics = font_data->GetFontMetrics();
+          int offset = font_metrics.Ascent() * 2 / 3;
+          margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
+          break;
+        }
+        default:
+          margin_end = LayoutUnit();
+      }
+    }
+    margin_start = -margin_end - marker_inline_size;
+  }
+  return {margin_start, margin_end};
 }
 
 LayoutUnit LayoutListMarker::LineHeight(
@@ -376,7 +396,12 @@ LayoutUnit LayoutListMarker::BaselinePosition(
 
 LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory()
     const {
-  switch (Style()->ListStyleType()) {
+  return GetListStyleCategory(StyleRef().ListStyleType());
+}
+
+LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory(
+    EListStyleType type) {
+  switch (type) {
     case EListStyleType::kNone:
       return ListStyleCategory::kNone;
     case EListStyleType::kDisc:

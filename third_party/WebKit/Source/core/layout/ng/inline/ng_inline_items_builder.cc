@@ -487,6 +487,10 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
       has_bidi_controls_ = true;
       break;
   }
+
+  if (style->Display() == EDisplay::kListItem &&
+      style->ListStyleType() != EListStyleType::kNone)
+    is_empty_inline_ = false;
 }
 
 template <typename OffsetMappingBuilder>

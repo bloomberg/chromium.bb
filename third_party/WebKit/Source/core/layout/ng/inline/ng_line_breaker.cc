@@ -187,6 +187,8 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
                                                 : LineBreakState::kIsBreakable;
       MoveToNextOf(item);
     } else {
+      if (item.Type() == NGInlineItem::kListMarker)
+        line_.should_create_line_box = true;
       item_result->prohibit_break_after = true;
       state = LineBreakState::kNotBreakable;
       MoveToNextOf(item);
@@ -470,43 +472,19 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
   line_.should_create_line_box = true;
 
-  // TODO(kojii): For inline-blocks, the block layout algorithm needs to use
-  // :first-line style. We could pass UseFirstLineStyle() or style through
-  // constraint space, though it doesn't solve nested case. Revisit after
-  // discussion on nested case.
-  LayoutBox* layout_box = ToLayoutBox(item.GetLayoutObject());
-  NGBlockNode node = NGBlockNode(layout_box);
-  const ComputedStyle& style = node.Style();
-
-  NGConstraintSpaceBuilder space_builder(constraint_space_);
-  // Request to compute baseline during the layout, except when we know the box
-  // would synthesize box-baseline.
-  if (NGBaseline::ShouldPropagateBaselines(layout_box)) {
-    space_builder.SetUseFirstLineStyle(line_info.UseFirstLineStyle());
-    space_builder.AddBaselineRequest(
-        {NGBaselineAlgorithmType::kAtomicInline,
-         IsHorizontalWritingMode(constraint_space_.WritingMode())
-             ? FontBaseline::kAlphabeticBaseline
-             : FontBaseline::kIdeographicBaseline});
-  }
-  RefPtr<NGConstraintSpace> constraint_space =
-      space_builder.SetIsNewFormattingContext(true)
-          .SetIsShrinkToFit(true)
-          .SetAvailableSize(constraint_space_.AvailableSize())
-          .SetPercentageResolutionSize(
-              constraint_space_.PercentageResolutionSize())
-          .SetTextDirection(style.Direction())
-          .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
-  item_result->layout_result = node.Layout(*constraint_space);
-
+  item_result->layout_result =
+      NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
+          .LayoutAtomicInline(constraint_space_, line_info.UseFirstLineStyle());
   DCHECK(item_result->layout_result->PhysicalFragment());
+
   item_result->inline_size =
       NGFragment(constraint_space_.WritingMode(),
                  *item_result->layout_result->PhysicalFragment())
           .InlineSize();
 
+  DCHECK(item.Style());
   item_result->margins =
-      ComputeMarginsForVisualContainer(constraint_space_, style);
+      ComputeMarginsForVisualContainer(constraint_space_, *item.Style());
   item_result->inline_size += item_result->margins.InlineSum();
 
   line_.position += item_result->inline_size;

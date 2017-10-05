@@ -434,6 +434,34 @@ void NGBlockNode::CopyChildFragmentPosition(
   }
 }
 
+RefPtr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
+    const NGConstraintSpace& parent_constraint_space,
+    bool use_first_line_style) {
+  NGConstraintSpaceBuilder space_builder(parent_constraint_space);
+  space_builder.SetUseFirstLineStyle(use_first_line_style);
+
+  // Request to compute baseline during the layout, except when we know the box
+  // would synthesize box-baseline.
+  if (NGBaseline::ShouldPropagateBaselines(ToLayoutBox(GetLayoutObject()))) {
+    space_builder.AddBaselineRequest(
+        {NGBaselineAlgorithmType::kAtomicInline,
+         IsHorizontalWritingMode(parent_constraint_space.WritingMode())
+             ? FontBaseline::kAlphabeticBaseline
+             : FontBaseline::kIdeographicBaseline});
+  }
+
+  const ComputedStyle& style = Style();
+  RefPtr<NGConstraintSpace> constraint_space =
+      space_builder.SetIsNewFormattingContext(true)
+          .SetIsShrinkToFit(true)
+          .SetAvailableSize(parent_constraint_space.AvailableSize())
+          .SetPercentageResolutionSize(
+              parent_constraint_space.PercentageResolutionSize())
+          .SetTextDirection(style.Direction())
+          .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
+  return Layout(*constraint_space);
+}
+
 RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
