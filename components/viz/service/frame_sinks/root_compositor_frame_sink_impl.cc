@@ -31,7 +31,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
           true /* needs_sync_points */)),
       display_begin_frame_source_(std::move(begin_frame_source)),
       display_(std::move(display)),
-      hit_test_aggregator_(this) {
+      hit_test_aggregator_(frame_sink_manager->hit_test_manager(), this) {
   DCHECK(display_begin_frame_source_);
   DCHECK(display_);
 

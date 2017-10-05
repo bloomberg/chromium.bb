@@ -172,9 +172,6 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     }
   }
 
-  frame_sink_manager()->SubmitHitTestRegionList(
-      current_surface_id_, frame_index, std::move(hit_test_region_list));
-
   Surface* prev_surface =
       surface_manager_->GetSurfaceForId(current_surface_id_);
   Surface* current_surface = nullptr;
@@ -218,6 +215,9 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     current_surface->SetPreviousFrameSurface(prev_surface);
     surface_manager_->DestroySurface(prev_surface->surface_id());
   }
+
+  frame_sink_manager()->SubmitHitTestRegionList(
+      current_surface_id_, frame_index, std::move(hit_test_region_list));
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
