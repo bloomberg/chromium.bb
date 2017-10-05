@@ -30,6 +30,14 @@ def CopyFile(f, dest, deps):
     shutil.copytree(f, os.path.join(dest, os.path.basename(f)))
     deps.extend(_get_all_files(f))
   else:
+    if os.path.exists(dest):
+      # We remove the destination here if it already exists because,
+      # if the destination is a symlink, shutil.copy() will copy to
+      # the link target rather than replacing the link.
+      if os.path.isfile(dest):
+        os.remove(dest)
+      elif os.path.isfile(os.path.join(dest, os.path.basename(f))):
+        os.remove(os.path.join(dest, os.path.basename(f)))
     shutil.copy(f, dest)
     deps.append(f)
 

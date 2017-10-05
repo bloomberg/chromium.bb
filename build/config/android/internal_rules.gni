@@ -390,6 +390,7 @@ template("copy_ex") {
                              "data",
                              "deps",
                              "inputs",
+                             "outputs",
                              "sources",
                              "testonly",
                              "visibility",
@@ -398,27 +399,13 @@ template("copy_ex") {
       sources = []
     }
     script = "//build/android/gyp/copy_ex.py"
-    depfile = "$target_gen_dir/$target_name.d"
-
-    _stamp_file = "$target_gen_dir/$target_name.stamp"
-    outputs = [
-      _stamp_file,
-    ]
 
     args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--stamp",
-      rebase_path(_stamp_file, root_build_dir),
       "--dest",
       rebase_path(invoker.dest, root_build_dir),
     ]
     rebased_sources = rebase_path(sources, root_build_dir)
     args += [ "--files=$rebased_sources" ]
-
-    if (defined(invoker.clear_dir) && invoker.clear_dir) {
-      args += [ "--clear" ]
-    }
 
     if (defined(invoker.args)) {
       args += invoker.args
@@ -1335,7 +1322,11 @@ if (enable_java_templates) {
     }
 
     _output_jar_target = "${target_name}__copy"
-    copy(_output_jar_target) {
+
+    # This is copy_ex rather than copy to ensure that JARs (rather than
+    # possibly broken symlinks to them) get copied into the output
+    # directory.
+    copy_ex(_output_jar_target) {
       deps = _deps
       if (defined(invoker.deps)) {
         deps += invoker.deps
@@ -1343,6 +1334,7 @@ if (enable_java_templates) {
       if (defined(invoker.public_deps)) {
         public_deps = invoker.public_deps
       }
+      dest = _output_jar_path
       sources = [
         _previous_output_jar,
       ]

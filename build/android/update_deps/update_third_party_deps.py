@@ -64,6 +64,14 @@ def _CheckFileList(local_path, file_list):
   return abs_path_list
 
 
+def _PurgeSymlinks(local_path):
+  for dirpath, _, filenames in os.walk(local_path):
+    for f in filenames:
+      path = os.path.join(dirpath, f)
+      if os.path.islink(path):
+        os.remove(path)
+
+
 def Upload(arguments):
   """Upload files in a third_party directory to google storage"""
   bucket_url, local_path = _CheckPaths(arguments.bucket_path,
@@ -84,6 +92,7 @@ def Download(arguments):
   """Download files based on sha1 files in a third_party dir from gcs"""
   bucket_url, local_path = _CheckPaths(arguments.bucket_path,
                                        arguments.local_path)
+  _PurgeSymlinks(local_path)
   download_from_google_storage.download_from_google_storage(
       local_path,
       bucket_url,
