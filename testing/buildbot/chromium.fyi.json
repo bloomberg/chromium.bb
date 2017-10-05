@@ -12791,7 +12791,8 @@
           "--jobs=1",
           "--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings",
           "--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForElement",
-          "--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForJavaScriptCondition"
+          "--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForJavaScriptCondition",
+          "--skip=telemetry.internal.actions.key_event_unittest.KeyPressActionTest.testPressEndAndHome"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
