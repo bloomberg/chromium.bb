@@ -21,11 +21,14 @@ import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApplicationStatus;
@@ -86,6 +89,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -394,6 +398,11 @@ public class Tab
      * The Text bubble used to display In Product help widget for download feature on videos.
      */
     private TextBubble mDownloadIPHBubble;
+
+    /**
+     * The popup used to display the pulse around the download button on videos.
+     */
+    private PopupWindow mPulsePopupWindow;
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
@@ -3135,6 +3144,13 @@ public class Tab
         nativeEnableEmbeddedMediaExperience(mNativeTabAndroid, enabled);
     }
 
+    /**
+     * Called when the orientation of the activity has changed.
+     */
+    public void onOrientationChange() {
+        hideMediaDownloadInProductHelp();
+    }
+
     @CalledByNative
     private void showMediaDownloadInProductHelp(int x, int y, int width, int height) {
         // If we are not currently showing the widget, ask the tracker if we can show it.
@@ -3155,18 +3171,53 @@ public class Tab
             mDownloadIPHBubble.addOnDismissListener(new OnDismissListener() {
                 @Override
                 public void onDismiss() {
-                    hideMediaDownloadInProductHelp();
+                    ThreadUtils.postOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            hideMediaDownloadInProductHelp();
+                        }
+                    });
                 }
             });
         }
 
         Rect rect = new Rect(x, y, x + width, y + height);
         mDownloadIPHBubble.setAnchorRect(rect);
+        mDownloadIPHBubble.setPreferredOrientation(TextBubble.Orientation.BELOW);
         mDownloadIPHBubble.show();
+        createPulse(rect);
+    }
+
+    private void createPulse(Rect rect) {
+        if (mPulsePopupWindow == null) {
+            PulseDrawable pulseDrawable = PulseDrawable.createCircle(mThemedApplicationContext);
+            View view = new Button(getActivity());
+            view.setLayoutParams(new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            view.setBackground(pulseDrawable);
+
+            mPulsePopupWindow = new PopupWindow(getActivity());
+            mPulsePopupWindow.setBackgroundDrawable(null);
+            mPulsePopupWindow.setContentView(view);
+            mPulsePopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+            mPulsePopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            mPulsePopupWindow.getContentView().setOnClickListener(
+                    v -> hideMediaDownloadInProductHelp());
+            mPulsePopupWindow.showAtLocation(
+                    getView(), Gravity.TOP | Gravity.START, rect.left, rect.top);
+            pulseDrawable.start();
+        }
+
+        mPulsePopupWindow.update(rect.left, rect.top, rect.width(), rect.height());
     }
 
     @CalledByNative
     private void hideMediaDownloadInProductHelp() {
+        if (mPulsePopupWindow != null && mPulsePopupWindow.isShowing()) {
+            mPulsePopupWindow.dismiss();
+            mPulsePopupWindow = null;
+        }
+
         if (mDownloadIPHBubble == null) return;
 
         mDownloadIPHBubble.dismiss();

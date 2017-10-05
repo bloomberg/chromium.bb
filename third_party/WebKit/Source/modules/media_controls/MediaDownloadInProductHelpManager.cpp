@@ -47,10 +47,17 @@ bool MediaDownloadInProductHelpManager::IsShowingInProductHelp() const {
   return media_in_product_help_.is_bound();
 }
 
+void MediaDownloadInProductHelpManager::UpdateInProductHelp() {
+  if (!IsShowingInProductHelp() || !CanShowInProductHelp())
+    return;
+
+  MaybeDispatchDownloadInProductHelpTrigger(false);
+}
+
 void MediaDownloadInProductHelpManager::
-    MaybeDispatchDownloadInProductHelpTrigger() {
+    MaybeDispatchDownloadInProductHelpTrigger(bool create) {
   // Only show in-product-help once for an element.
-  if (media_download_in_product_trigger_observed_)
+  if (create && media_download_in_product_trigger_observed_)
     return;
 
   auto* frame = controls_->GetDocument().GetFrame();
@@ -63,13 +70,19 @@ void MediaDownloadInProductHelpManager::
   if (button_rect.IsEmpty())
     return;
 
+  if (download_button_rect_ == button_rect && media_in_product_help_.is_bound())
+    return;
+
+  download_button_rect_ = button_rect;
   media_download_in_product_trigger_observed_ = true;
-  frame->Client()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&media_in_product_help_));
-  media_in_product_help_.set_connection_error_handler(ConvertToBaseCallback(
-      WTF::Bind(&MediaDownloadInProductHelpManager::DismissInProductHelp,
-                WrapWeakPersistent(this))));
-  DCHECK(media_in_product_help_.is_bound());
+  if (!media_in_product_help_.is_bound()) {
+    frame->Client()->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&media_in_product_help_));
+    media_in_product_help_.set_connection_error_handler(ConvertToBaseCallback(
+        WTF::Bind(&MediaDownloadInProductHelpManager::DismissInProductHelp,
+                  WrapWeakPersistent(this))));
+    DCHECK(media_in_product_help_.is_bound());
+  }
 
   // MaybeShow should always make the controls visible since we early out if
   // CanShow is false for the controls.
@@ -79,7 +92,7 @@ void MediaDownloadInProductHelpManager::
 
 void MediaDownloadInProductHelpManager::StateUpdated() {
   if (CanShowInProductHelp())
-    MaybeDispatchDownloadInProductHelpTrigger();
+    MaybeDispatchDownloadInProductHelpTrigger(true);
   else
     DismissInProductHelp();
 }
@@ -91,6 +104,7 @@ bool MediaDownloadInProductHelpManager::CanShowInProductHelp() const {
 }
 
 void MediaDownloadInProductHelpManager::DismissInProductHelp() {
+  download_button_rect_ = IntRect();
   if (!media_in_product_help_.is_bound())
     return;
 

@@ -28,13 +28,14 @@ class MODULES_EXPORT MediaDownloadInProductHelpManager final
   void SetDownloadButtonVisibility(bool can_show);
   void SetIsPlaying(bool is_playing);
   bool IsShowingInProductHelp() const;
+  void UpdateInProductHelp();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   void StateUpdated();
   bool CanShowInProductHelp() const;
-  void MaybeDispatchDownloadInProductHelpTrigger();
+  void MaybeDispatchDownloadInProductHelpTrigger(bool create);
   void DismissInProductHelp();
 
   Member<MediaControlsImpl> controls_;
@@ -43,6 +44,7 @@ class MODULES_EXPORT MediaDownloadInProductHelpManager final
   bool button_can_show_ = false;
   bool is_playing_ = false;
   bool media_download_in_product_trigger_observed_ = false;
+  IntRect download_button_rect_;
 
   mojom::blink::MediaDownloadInProductHelpPtr media_in_product_help_;
 };

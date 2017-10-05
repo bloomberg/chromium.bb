@@ -43,6 +43,9 @@ public class TextBubble implements OnTouchListener {
      */
     public static final long NO_TIMEOUT = 0;
 
+    /** Orientation preferences for the bubble */
+    public enum Orientation { MAX_AVAILABLE_SPACE, BELOW, ABOVE }
+
     /**
      * A set of bubbles which are active at this moment. This set can be used to dismiss the
      * bubbles on a back press event.
@@ -105,6 +108,9 @@ public class TextBubble implements OnTouchListener {
     private int mY;
     private int mWidth;
     private int mHeight;
+
+    // Preferred orientation for the bubble with respect to the anchor.
+    private Orientation mPreferredOrientation = Orientation.MAX_AVAILABLE_SPACE;
 
     /**
      * Tracks whether or not we are in the process of updating the bubble, which might include a
@@ -260,6 +266,15 @@ public class TextBubble implements OnTouchListener {
     }
 
     /**
+     * Sets the preferred orientation of the bubble with respect to the anchor view such as above or
+     * below the anchor.
+     * @param orientation The orientation preferred.
+     */
+    public void setPreferredOrientation(Orientation orientation) {
+        mPreferredOrientation = orientation;
+    }
+
+    /**
      * Causes this bubble to position/size itself.  The calculations will happen even if the bubble
      * isn't visible.
      */
@@ -310,6 +325,9 @@ public class TextBubble implements OnTouchListener {
             if (currentPositionBelow && idealFitsBelow) positionBelow = true;
             if (!currentPositionBelow && idealFitsAbove) positionBelow = false;
         }
+
+        if (mPreferredOrientation == Orientation.BELOW && idealFitsBelow) positionBelow = true;
+        if (mPreferredOrientation == Orientation.ABOVE && idealFitsAbove) positionBelow = false;
 
         int maxContentHeight = positionBelow ? spaceBelowAnchor : spaceAboveAnchor;
         contentView.measure(

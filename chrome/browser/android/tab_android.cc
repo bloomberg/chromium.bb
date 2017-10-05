@@ -897,18 +897,23 @@ void TabAndroid::ShowMediaDownloadInProductHelp(
 
   // We need to account for the browser controls offset to get the location for
   // the widget in the view.
-  float content_offset = web_contents_->GetNativeView()->content_offset();
-  gfx::Rect rect_in_view(rect_in_frame.x(), rect_in_frame.y() + content_offset,
+  gfx::NativeView view = web_contents_->GetNativeView();
+  gfx::Rect rect_in_view(rect_in_frame.x(),
+                         rect_in_frame.y() + view->content_offset(),
                          rect_in_frame.width(), rect_in_frame.height());
-  gfx::Rect rect_in_view_scaled = gfx::ScaleToEnclosingRectSafe(
-      rect_in_view,
-      ui::GetScaleFactorForNativeView(web_contents_->GetNativeView()));
+  gfx::Rect scaled_rect_on_screen = gfx::ScaleToEnclosingRectSafe(
+      rect_in_view, ui::GetScaleFactorForNativeView(view));
+
+  // We also need to account for the offset of the viewport location on screen.
+  scaled_rect_on_screen.set_origin(
+      scaled_rect_on_screen.origin() +
+      view->GetLocationOfContainerViewInWindow().OffsetFromOrigin());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_showMediaDownloadInProductHelp(
-      env, weak_java_tab_.get(env), rect_in_view_scaled.x(),
-      rect_in_view_scaled.y(), rect_in_view_scaled.width(),
-      rect_in_view_scaled.height());
+      env, weak_java_tab_.get(env), scaled_rect_on_screen.x(),
+      scaled_rect_on_screen.y(), scaled_rect_on_screen.width(),
+      scaled_rect_on_screen.height());
 }
 
 void TabAndroid::DismissMediaDownloadInProductHelp() {
