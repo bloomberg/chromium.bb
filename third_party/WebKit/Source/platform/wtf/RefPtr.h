@@ -31,8 +31,6 @@
 namespace WTF {
 
 template <typename T>
-class RefPtrValuePeeker;
-template <typename T>
 class RefPtr;
 
 template <typename T>
@@ -73,9 +71,6 @@ class RefPtr {
     ptr_ = nullptr;
     return *this;
   }
-  // This is required by HashMap<RefPtr>>.
-  template <typename U>
-  RefPtr& operator=(RefPtrValuePeeker<U>);
 
   void swap(RefPtr&);
 
@@ -88,14 +83,6 @@ class RefPtr {
 
   scoped_refptr<T> ptr_;
 };
-
-template <typename T>
-template <typename U>
-inline RefPtr<T>& RefPtr<T>::operator=(RefPtrValuePeeker<U> optr) {
-  RefPtr ptr = static_cast<U*>(optr);
-  swap(ptr);
-  return *this;
-}
 
 template <class T>
 inline void RefPtr<T>::swap(RefPtr& o) {
@@ -168,7 +155,6 @@ class RefPtrValuePeeker {
 
  public:
   ALWAYS_INLINE RefPtrValuePeeker(T* p) : ptr_(p) {}
-  ALWAYS_INLINE RefPtrValuePeeker(std::nullptr_t) : ptr_(nullptr) {}
   template <typename U>
   RefPtrValuePeeker(const RefPtr<U>& p) : ptr_(p.get()) {}
 
