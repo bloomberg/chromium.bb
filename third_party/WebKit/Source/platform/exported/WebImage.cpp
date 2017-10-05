@@ -110,6 +110,49 @@ WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
   return frames;
 }
 
+WebVector<WebImage::AnimationFrame> WebImage::AnimationFromData(
+    const WebData& data) {
+  std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
+      data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore()));
+  if (!decoder || !decoder->IsSizeAvailable() || decoder->FrameCount() == 0)
+    return WebVector<WebImage::AnimationFrame>();
+
+  const size_t frame_count = decoder->FrameCount();
+  IntSize last_size = decoder->FrameSizeAtIndex(0);
+
+  Vector<WebImage::AnimationFrame> frames;
+  frames.ReserveCapacity(frame_count);
+  for (size_t i = 0; i < frame_count; ++i) {
+    // If frame size changes, this is most likely not an animation and is
+    // instead an image with multiple versions at different resolutions. If
+    // that's the case, return only the first frame (or no frames if we failed
+    // decoding the first one).
+    if (last_size != decoder->FrameSizeAtIndex(i)) {
+      frames.resize(frames.IsEmpty() ? 0 : 1);
+      return frames;
+    }
+    last_size = decoder->FrameSizeAtIndex(i);
+
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
+
+    SkBitmap bitmap = frame->Bitmap();
+    if (bitmap.isNull() || frame->GetStatus() != ImageFrame::kFrameComplete)
+      continue;
+
+    // Make the bitmap a deep copy, otherwise the next loop iteration will
+    // replace the contents of the previous frame. DecodeFrameBufferAtIndex
+    // reuses the same underlying pixel buffer.
+    bitmap.setImmutable();
+
+    AnimationFrame output;
+    output.bitmap = bitmap;
+    output.duration = frame->Duration();
+    frames.push_back(output);
+  }
+
+  return frames;
+}
+
 void WebImage::Reset() {
   bitmap_.reset();
 }

@@ -34,6 +34,7 @@
 #include "WebCommon.h"
 #include "WebVector.h"
 
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if INSIDE_BLINK
@@ -49,6 +50,13 @@ struct WebSize;
 // A container for an ARGB bitmap.
 class WebImage {
  public:
+  // An image with a duration associated. An animation is a sequence of
+  // AnimationFrames played in succession.
+  struct AnimationFrame {
+    SkBitmap bitmap;
+    base::TimeDelta duration;
+  };
+
   ~WebImage() { Reset(); }
 
   WebImage() { Init(); }
@@ -71,6 +79,10 @@ class WebImage {
   // Returns a list of all frames in the image. Only the first frame at each
   // pixel size will be returned.
   BLINK_PLATFORM_EXPORT static WebVector<WebImage> FramesFromData(
+      const WebData&);
+
+  // Returns a list of all animation frames in the image.
+  BLINK_PLATFORM_EXPORT static WebVector<AnimationFrame> AnimationFromData(
       const WebData&);
 
   BLINK_PLATFORM_EXPORT void Reset();

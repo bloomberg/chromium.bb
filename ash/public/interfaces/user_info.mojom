@@ -44,6 +44,10 @@ struct UserInfo {
   string display_name;
   string display_email;
   gfx.mojom.ImageSkia avatar;
+  // The raw bytes for the avatar. Useful if the avatar is animated.
+  // TODO(crbug.com/770373): Use a shared buffer (mojo.Blob), as this may be
+  // large enough to congest IPC.
+  array<uint8> avatar_bytes;
   // True if this user has a newly created profile (first time login on the
   // device)
   bool is_new_profile;
