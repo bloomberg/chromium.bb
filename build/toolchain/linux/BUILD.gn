@@ -178,12 +178,14 @@ clang_toolchain("clang_mips64el") {
 }
 
 gcc_toolchain("mipsel") {
-  cc = "mipsel-linux-gnu-gcc"
-  cxx = "mipsel-linux-gnu-g++"
-  ar = "mipsel-linux-gnu-ar"
+  toolprefix = "mipsel-linux-gnu-"
+
+  cc = "${toolprefix}gcc"
+  cxx = " ${toolprefix}g++"
+  ar = "${toolprefix}ar"
   ld = cxx
-  readelf = "mipsel-linux-gnu-readelf"
-  nm = "mipsel-linux-gnu-nm"
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
 
   toolchain_args = {
     cc_wrapper = ""
@@ -195,12 +197,14 @@ gcc_toolchain("mipsel") {
 }
 
 gcc_toolchain("mips64el") {
-  cc = "gcc"
-  cxx = "g++"
-  ar = "ar"
+  toolprefix = "mips64el-linux-gnuabi64-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+  ar = "${toolprefix}ar"
   ld = cxx
-  readelf = "readelf"
-  nm = "nm"
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
 
   toolchain_args = {
     cc_wrapper = ""
@@ -244,12 +248,14 @@ gcc_toolchain("ppc64") {
 }
 
 gcc_toolchain("mips") {
-  cc = "gcc"
-  cxx = "g++"
+  toolprefix = "mips-linux-gnu-"
 
-  readelf = "readelf"
-  nm = "nm"
-  ar = "ar"
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+  ar = "${toolprefix}ar"
   ld = cxx
 
   toolchain_args = {
@@ -260,12 +266,14 @@ gcc_toolchain("mips") {
 }
 
 gcc_toolchain("mips64") {
-  cc = "gcc"
-  cxx = "g++"
+  toolprefix = "mips64-linux-gnuabi64-"
 
-  readelf = "readelf"
-  nm = "nm"
-  ar = "ar"
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+  ar = "${toolprefix}ar"
   ld = cxx
 
   toolchain_args = {
