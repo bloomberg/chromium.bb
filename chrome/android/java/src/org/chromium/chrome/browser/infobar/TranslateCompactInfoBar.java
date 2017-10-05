@@ -466,6 +466,11 @@ public class TranslateCompactInfoBar extends InfoBar
         dismissMenusAndSnackbars();
     }
 
+    @Override
+    protected CharSequence getAccessibilityMessage(CharSequence defaultMessage) {
+        return getContext().getString(R.string.translate_button);
+    }
+
     /**
      * Returns true if overflow menu is showing.  This is only used for automation testing.
      */
