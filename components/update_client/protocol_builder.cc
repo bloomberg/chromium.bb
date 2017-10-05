@@ -159,9 +159,7 @@ std::string BuildUninstalledEventElement(const Component& component) {
   using base::StringAppendF;
 
   std::string event;
-  StringAppendF(&event, "<event eventtype=\"4\"  extracode1=\"%d\"",
-                component.extra_code1());
-
+  StringAppendF(&event, "<event eventtype=\"4\" eventresult=\"1\"");
   if (component.extra_code1())
     StringAppendF(&event, " extracode1=\"%d\"", component.extra_code1());
   StringAppendF(&event, "/>");
