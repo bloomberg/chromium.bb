@@ -39,7 +39,7 @@ component("views") {
     "//url",
   ]
 
-  if (use_ash) {
+  if (is_chromeos) {
     deps += [ "//ash" ]
   }
 }
