@@ -322,6 +322,10 @@ void PaintLayerClipper::CalculateRects(
     const LayoutPoint* offset_from_root) const {
   if (use_geometry_mapper_) {
     DCHECK(fragment_data);
+    // TODO(chrishtr): find the root cause of not having a fragment and fix
+    // it.
+    if (!fragment_data)
+      return;
     CalculateRectsWithGeometryMapper(context, *fragment_data, paint_dirty_rect,
                                      layer_bounds, background_rect,
                                      foreground_rect, offset_from_root);
