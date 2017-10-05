@@ -121,6 +121,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_pixel_buffer_object = false;
     bool oes_rgb8_rgba8 = false;
     bool angle_robust_resource_initialization = false;
+    bool nv_fence = false;
   };
 
   FeatureInfo();

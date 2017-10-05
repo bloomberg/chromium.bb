@@ -1008,11 +1008,21 @@ error::Error GLES2DecoderPassthroughImpl::DoFenceSync(GLenum condition,
 
 error::Error GLES2DecoderPassthroughImpl::DoFinish() {
   glFinish();
+
+  error::Error error = ProcessReadPixels(true);
+  if (error != error::kNoError) {
+    return error;
+  }
   return ProcessQueries(true);
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoFlush() {
   glFlush();
+
+  error::Error error = ProcessReadPixels(false);
+  if (error != error::kNoError) {
+    return error;
+  }
   return ProcessQueries(false);
 }
 
@@ -1984,6 +1994,84 @@ error::Error GLES2DecoderPassthroughImpl::DoReadPixels(GLint x,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoReadPixelsAsync(
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    GLsizei bufsize,
+    GLsizei* length,
+    GLsizei* columns,
+    GLsizei* rows,
+    uint32_t pixels_shm_id,
+    uint32_t pixels_shm_offset,
+    uint32_t result_shm_id,
+    uint32_t result_shm_offset) {
+  DCHECK(feature_info_->feature_flags().use_async_readpixels &&
+         bound_buffers_[GL_PIXEL_PACK_BUFFER] == 0);
+
+  FlushErrors();
+  ScopedPackStateRowLengthReset reset_row_length(
+      bufsize != 0 && feature_info_->gl_version_info().is_es3);
+
+  PendingReadPixels pending_read_pixels;
+  pending_read_pixels.pixels_shm_id = pixels_shm_id;
+  pending_read_pixels.pixels_shm_offset = pixels_shm_offset;
+  pending_read_pixels.result_shm_id = result_shm_id;
+  pending_read_pixels.result_shm_offset = result_shm_offset;
+
+  glGenBuffersARB(1, &pending_read_pixels.buffer_service_id);
+  glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pending_read_pixels.buffer_service_id);
+
+  // GL_STREAM_READ is not available until ES3.
+  const GLenum usage_hint = feature_info_->gl_version_info().IsAtLeastGLES(3, 0)
+                                ? GL_STREAM_READ
+                                : GL_STATIC_DRAW;
+
+  const uint32_t bytes_per_pixel =
+      GLES2Util::ComputeImageGroupSize(format, type);
+  if (bytes_per_pixel == 0) {
+    InsertError(GL_INVALID_ENUM, "Invalid ReadPixels format or type.");
+    return error::kNoError;
+  }
+
+  if (width < 0 || height < 0) {
+    InsertError(GL_INVALID_VALUE, "Width and height cannot be negative.");
+    return error::kNoError;
+  }
+
+  if (!base::CheckMul(bytes_per_pixel, width, height)
+           .AssignIfValid(&pending_read_pixels.pixels_size)) {
+    return error::kOutOfBounds;
+  }
+
+  glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pending_read_pixels.pixels_size,
+               nullptr, usage_hint);
+
+  // No need to worry about ES3 pixel pack parameters, because no
+  // PIXEL_PACK_BUFFER is bound, and all these settings haven't been
+  // sent to GL.
+  glReadPixels(x, y, width, height, format, type, nullptr);
+
+  glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+
+  // Test for errors now before creating a fence
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  pending_read_pixels.fence.reset(gl::GLFence::Create());
+
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  pending_read_pixels_.push_back(std::move(pending_read_pixels));
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoReleaseShaderCompiler() {
   glReleaseShaderCompiler();
   return error::kNoError;
@@ -2915,9 +3003,16 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginTransformFeedback(
 error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
                                                         uint32_t submit_count) {
   if (IsEmulatedQueryTarget(target)) {
-    if (active_queries_.find(target) == active_queries_.end()) {
+    auto active_query_iter = active_queries_.find(target);
+    if (active_query_iter == active_queries_.end()) {
       InsertError(GL_INVALID_OPERATION, "No active query on target.");
       return error::kNoError;
+    }
+    if (target == GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM &&
+        !pending_read_pixels_.empty()) {
+      GLuint query_service_id = active_query_iter->second.service_id;
+      pending_read_pixels_.back().waiting_async_pack_queries.insert(
+          query_service_id);
     }
   } else {
     // Flush all previous errors

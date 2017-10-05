@@ -178,6 +178,14 @@ GLES2DecoderPassthroughImpl::BoundTexture::operator=(const BoundTexture&) =
 GLES2DecoderPassthroughImpl::BoundTexture&
 GLES2DecoderPassthroughImpl::BoundTexture::operator=(BoundTexture&&) = default;
 
+GLES2DecoderPassthroughImpl::PendingReadPixels::PendingReadPixels() = default;
+GLES2DecoderPassthroughImpl::PendingReadPixels::~PendingReadPixels() = default;
+GLES2DecoderPassthroughImpl::PendingReadPixels::PendingReadPixels(
+    PendingReadPixels&&) = default;
+GLES2DecoderPassthroughImpl::PendingReadPixels&
+GLES2DecoderPassthroughImpl::PendingReadPixels::operator=(PendingReadPixels&&) =
+    default;
+
 GLES2DecoderPassthroughImpl::EmulatedColorBuffer::EmulatedColorBuffer(
     const EmulatedDefaultFramebufferFormat& format_in)
     : format(format_in) {
@@ -793,6 +801,12 @@ bool GLES2DecoderPassthroughImpl::Initialize(
 void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   if (have_context) {
     FlushErrors();
+
+    // Destroy all pending read pixels operations
+    for (const PendingReadPixels& pending_read_pixels : pending_read_pixels_) {
+      glDeleteBuffersARB(1, &pending_read_pixels.buffer_service_id);
+    }
+    pending_read_pixels_.clear();
   }
 
   if (!have_context) {
@@ -1210,11 +1224,14 @@ void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
-  return gpu_tracer_->HasTracesToProcess();
+  return gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty() ||
+         !pending_queries_.empty();
 }
 
 void GLES2DecoderPassthroughImpl::PerformIdleWork() {
   gpu_tracer_->ProcessTraces();
+  ProcessReadPixels(false);
+  ProcessQueries(false);
 }
 
 bool GLES2DecoderPassthroughImpl::HasPollingWork() const {
@@ -1589,8 +1606,19 @@ GLenum GLES2DecoderPassthroughImpl::PopError() {
 }
 
 bool GLES2DecoderPassthroughImpl::FlushErrors() {
+  auto get_next_error = [this]() {
+    // Always read a real GL error so that it can be replaced by the injected
+    // error
+    GLenum error = glGetError();
+    if (!injected_driver_errors_.empty()) {
+      error = injected_driver_errors_.front();
+      injected_driver_errors_.pop_front();
+    }
+    return error;
+  };
+
   bool had_error = false;
-  GLenum error = glGetError();
+  GLenum error = get_next_error();
   while (error != GL_NO_ERROR) {
     errors_.insert(error);
     had_error = true;
@@ -1609,9 +1637,13 @@ bool GLES2DecoderPassthroughImpl::FlushErrors() {
       break;
     }
 
-    error = glGetError();
+    error = get_next_error();
   }
   return had_error;
+}
+
+void GLES2DecoderPassthroughImpl::InjectDriverError(GLenum error) {
+  injected_driver_errors_.push_back(error);
 }
 
 bool GLES2DecoderPassthroughImpl::CheckResetStatus() {
@@ -1683,9 +1715,20 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
         break;
 
       case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
-        // TODO: Use a fence and do a real async readback
+        // Initialize the result to being available.  Will be marked as
+        // unavailable if any pending read pixels operations reference this
+        // query.
         result_available = GL_TRUE;
         result = GL_TRUE;
+        for (const PendingReadPixels& pending_read_pixels :
+             pending_read_pixels_) {
+          if (pending_read_pixels.waiting_async_pack_queries.count(
+                  query.service_id) > 0) {
+            result_available = GL_FALSE;
+            result = GL_FALSE;
+            break;
+          }
+        }
         break;
 
       case GL_GET_ERROR_QUERY_CHROMIUM:
@@ -1744,6 +1787,69 @@ void GLES2DecoderPassthroughImpl::RemovePendingQuery(GLuint service_id) {
 
     pending_queries_.erase(pending_iter);
   }
+}
+
+error::Error GLES2DecoderPassthroughImpl::ProcessReadPixels(bool did_finish) {
+  while (!pending_read_pixels_.empty()) {
+    const PendingReadPixels& pending_read_pixels = pending_read_pixels_.front();
+    if (did_finish || pending_read_pixels.fence->HasCompleted()) {
+      using Result = cmds::ReadPixels::Result;
+      Result* result = nullptr;
+      if (pending_read_pixels.result_shm_id != 0) {
+        result = GetSharedMemoryAs<Result*>(
+            pending_read_pixels.result_shm_id,
+            pending_read_pixels.result_shm_offset, sizeof(*result));
+        if (!result) {
+          glDeleteBuffersARB(1, &pending_read_pixels.buffer_service_id);
+          pending_read_pixels_.pop_front();
+          break;
+        }
+      }
+
+      void* pixels =
+          GetSharedMemoryAs<void*>(pending_read_pixels.pixels_shm_id,
+                                   pending_read_pixels.pixels_shm_offset,
+                                   pending_read_pixels.pixels_size);
+      if (!pixels) {
+        glDeleteBuffersARB(1, &pending_read_pixels.buffer_service_id);
+        pending_read_pixels_.pop_front();
+        break;
+      }
+
+      glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB,
+                   pending_read_pixels.buffer_service_id);
+      void* data = nullptr;
+      if (feature_info_->feature_flags().map_buffer_range) {
+        data =
+            glMapBufferRange(GL_PIXEL_PACK_BUFFER_ARB, 0,
+                             pending_read_pixels.pixels_size, GL_MAP_READ_BIT);
+      } else {
+        data = glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
+      }
+      if (!data) {
+        InsertError(GL_OUT_OF_MEMORY, "Failed to map pixel pack buffer.");
+        pending_read_pixels_.pop_front();
+        break;
+      }
+
+      memcpy(pixels, data, pending_read_pixels.pixels_size);
+      glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+      glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB,
+                   resources_->buffer_id_map.GetServiceIDOrInvalid(
+                       bound_buffers_[GL_PIXEL_PACK_BUFFER_ARB]));
+      glDeleteBuffersARB(1, &pending_read_pixels.buffer_service_id);
+
+      if (result != nullptr) {
+        result->success = 1;
+      }
+
+      pending_read_pixels_.pop_front();
+    }
+  }
+
+  // If glFinish() has been called, all of our fences should be completed.
+  DCHECK(!did_finish || pending_read_pixels_.empty());
+  return error::kNoError;
 }
 
 void GLES2DecoderPassthroughImpl::UpdateTextureBinding(

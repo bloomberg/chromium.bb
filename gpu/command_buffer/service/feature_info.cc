@@ -1423,6 +1423,7 @@ void FeatureInfo::InitializeFeatures() {
       gl::HasExtension(extensions, "GL_OES_rgb8_rgba8");
   feature_flags_.angle_robust_resource_initialization =
       gl::HasExtension(extensions, "GL_ANGLE_robust_resource_initialization");
+  feature_flags_.nv_fence = gl::HasExtension(extensions, "GL_NV_fence");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

@@ -867,7 +867,22 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   }
 
   template <typename T>
+  T GetSharedMemoryAsWithSize(size_t* out_shmem_size) {
+    *out_shmem_size = shared_memory_size_;
+    return reinterpret_cast<T>(shared_memory_address_);
+  }
+
+  template <typename T>
   T GetSharedMemoryAsWithOffset(uint32_t offset) {
+    void* ptr = reinterpret_cast<int8_t*>(shared_memory_address_) + offset;
+    return reinterpret_cast<T>(ptr);
+  }
+
+  template <typename T>
+  T GetSharedMemoryAsWithOffsetAndSize(uint32_t offset,
+                                       size_t* out_shmem_size) {
+    EXPECT_LT(offset, shared_memory_size_);
+    *out_shmem_size = shared_memory_size_ - offset;
     void* ptr = reinterpret_cast<int8_t*>(shared_memory_address_) + offset;
     return reinterpret_cast<T>(ptr);
   }
@@ -877,11 +892,17 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
     return reinterpret_cast<T*>(immediate_buffer_);
   }
 
+  GLES2DecoderPassthroughImpl* GetDecoder() const { return decoder_.get(); }
   PassthroughResources* GetPassthroughResources() const {
     return group_->passthrough_resources();
   }
+  const base::circular_deque<GLES2DecoderPassthroughImpl::PendingReadPixels>&
+  GetPendingReadPixels() const {
+    return decoder_->pending_read_pixels_;
+  }
 
   GLint GetGLError();
+  void InjectGLError(GLenum error);
 
  protected:
   void DoBindBuffer(GLenum target, GLuint client_id);
@@ -929,6 +950,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   uint32_t shared_memory_offset_;
   void* shared_memory_address_;
   void* shared_memory_base_;
+  size_t shared_memory_size_;
 
   uint32_t immediate_buffer_[64];
 
