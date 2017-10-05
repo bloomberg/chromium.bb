@@ -5,7 +5,7 @@
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 
 #include "base/macros.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/runtime_enabled_features.h"

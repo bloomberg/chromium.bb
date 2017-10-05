@@ -33,8 +33,8 @@
 
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
-#include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
+#include "platform/font_family_names.h"
 #include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCacheClient.h"

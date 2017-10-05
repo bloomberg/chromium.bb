@@ -23,12 +23,12 @@ blink_platform_msa_files = [ "graphics/cpu/mips/WebGLImageConversionMSA.h" ]
 blink_platform_sse_files = [ "graphics/cpu/x86/WebGLImageConversionSSE.h" ]
 
 make_names("font_family_names") {
-  in_files = [ "fonts/FontFamilyNames.json5" ]
+  in_files = [ "fonts/font_family_names.json5" ]
   output_dir = blink_platform_output_dir
 }
 
 make_names("http_names") {
-  in_files = [ "network/HTTPNames.json5" ]
+  in_files = [ "network/http_names.json5" ]
   output_dir = blink_platform_output_dir
 }
 

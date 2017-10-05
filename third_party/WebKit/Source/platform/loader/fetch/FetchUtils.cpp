@@ -4,7 +4,7 @@
 
 #include "platform/loader/fetch/FetchUtils.h"
 
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/wtf/HashSet.h"

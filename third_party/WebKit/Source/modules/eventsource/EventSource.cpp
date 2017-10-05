@@ -50,7 +50,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/eventsource/EventSourceInit.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"

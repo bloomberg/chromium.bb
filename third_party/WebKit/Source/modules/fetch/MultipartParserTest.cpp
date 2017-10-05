@@ -4,7 +4,7 @@
 
 #include "modules/fetch/MultipartParser.h"
 
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <string.h>

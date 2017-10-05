@@ -28,8 +28,8 @@
 
 #include "core/css/StyleSheetContents.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
-#include "platform/HTTPNames.h"
 #include "platform/SharedBuffer.h"
+#include "platform/http_names.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"

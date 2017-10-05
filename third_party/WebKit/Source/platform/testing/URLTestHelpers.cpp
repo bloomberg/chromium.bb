@@ -33,7 +33,7 @@
 #include <string>
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"

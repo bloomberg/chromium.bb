@@ -26,7 +26,7 @@
 
 #include "platform/loader/fetch/ResourceResponse.h"
 
-#include "platform/HTTPNames.h"
+#include "platform/http_names.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"

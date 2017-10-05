@@ -9,10 +9,10 @@
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
-#include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
