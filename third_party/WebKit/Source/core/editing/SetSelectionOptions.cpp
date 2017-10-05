@@ -26,15 +26,15 @@ SetSelectionOptions::Builder::SetCursorAlignOnScroll(
   return *this;
 }
 
-SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetDoNotSetFocus(
-    bool new_value) {
-  data_.do_not_set_focus_ = new_value;
-  return *this;
-}
-
 SetSelectionOptions::Builder&
 SetSelectionOptions::Builder::SetDoNotClearStrategy(bool new_value) {
   data_.do_not_clear_strategy_ = new_value;
+  return *this;
+}
+
+SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetDoNotSetFocus(
+    bool new_value) {
+  data_.do_not_set_focus_ = new_value;
   return *this;
 }
 
@@ -44,9 +44,9 @@ SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetGranularity(
   return *this;
 }
 
-SetSelectionOptions::Builder&
-SetSelectionOptions::Builder::SetShouldCloseTyping(bool new_value) {
-  data_.should_close_typing_ = new_value;
+SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetSetSelectionBy(
+    SetSelectionBy new_value) {
+  data_.set_selection_by_ = new_value;
   return *this;
 }
 
@@ -56,15 +56,15 @@ SetSelectionOptions::Builder::SetShouldClearTypingStyle(bool new_value) {
   return *this;
 }
 
-SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetShouldShowHandle(
-    bool new_value) {
-  data_.should_show_handle_ = new_value;
+SetSelectionOptions::Builder&
+SetSelectionOptions::Builder::SetShouldCloseTyping(bool new_value) {
+  data_.should_close_typing_ = new_value;
   return *this;
 }
 
-SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetSetSelectionBy(
-    SetSelectionBy new_value) {
-  data_.set_selection_by_ = new_value;
+SetSelectionOptions::Builder& SetSelectionOptions::Builder::SetShouldShowHandle(
+    bool new_value) {
+  data_.should_show_handle_ = new_value;
   return *this;
 }
 

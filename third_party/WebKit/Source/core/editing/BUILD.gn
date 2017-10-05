@@ -339,6 +339,7 @@ source_set("unit_tests") {
     "SelectionControllerTest.cpp",
     "SelectionModifierTest.cpp",
     "SelectionTemplateTest.cpp",
+    "SetSelectionOptionsTest.cpp",
     "SurroundingTextTest.cpp",
     "VisiblePositionTest.cpp",
     "VisibleSelectionTest.cpp",
