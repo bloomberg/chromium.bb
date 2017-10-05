@@ -892,6 +892,14 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #endif  // CONFIG_RECT_TX
 
+static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+  return bsize > BLOCK_4X4;
+#else
+  return bsize >= BLOCK_8X8;
+#endif
+}
+
 #if CONFIG_MRC_TX
 #define USE_MRC_INTRA 0
 #define USE_MRC_INTER 1

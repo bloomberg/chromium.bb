@@ -348,12 +348,7 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-// For sub8x8 blocks the tx_size symbol does not need to be sent
-#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
-  if (bsize > BLOCK_4X4) {
-#else
-  if (bsize >= BLOCK_8X8) {
-#endif
+  if (block_signals_txsize(bsize)) {
     const TX_SIZE tx_size = mbmi->tx_size;
     const int is_inter = is_inter_block(mbmi);
     const TX_SIZE tx_size_ctx = get_tx_size_context(xd);
@@ -1754,14 +1749,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
   if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
-#if CONFIG_RECT_TX
-      bsize > BLOCK_4X4 &&
-#else
+#if CONFIG_CB4X4 && CONFIG_VAR_TX && !CONFIG_RECT_TX
       (bsize >= BLOCK_8X8 || (bsize > BLOCK_4X4 && is_inter)) &&
-#endif  // CONFIG_RECT_TX
 #else
-      bsize >= BLOCK_8X8 &&
+      block_signals_txsize(bsize) &&
 #endif
 #if CONFIG_SUPERTX
       !supertx_enabled &&
@@ -2157,15 +2148,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   int enable_tx_size = cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
-#if CONFIG_RECT_TX
-                       bsize > BLOCK_4X4 &&
-#else
-                       bsize >= BLOCK_8X8 &&
-#endif  // CONFIG_RECT_TX
-#else
-                       bsize >= BLOCK_8X8 &&
-#endif
+                       block_signals_txsize(bsize) &&
                        !xd->lossless[mbmi->segment_id];
 
 #if CONFIG_INTRABC
