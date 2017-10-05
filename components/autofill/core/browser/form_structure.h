@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "url/gurl.h"
 
@@ -242,6 +243,9 @@ class FormStructure {
 
   // Returns a FormData containing the data this form structure knows about.
   FormData ToFormData() const;
+
+  // Returns the possible form types.
+  std::set<FormType> GetFormTypes();
 
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;

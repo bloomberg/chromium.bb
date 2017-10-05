@@ -727,10 +727,9 @@ void FormStructure::LogQualityMetrics(
 
   for (size_t i = 0; i < field_count(); ++i) {
     auto* const field = this->field(i);
-
     if (IsUPIVirtualPaymentAddress(field->value)) {
       AutofillMetrics::LogUserHappinessMetric(
-          AutofillMetrics::USER_DID_ENTER_UPI_VPA);
+          AutofillMetrics::USER_DID_ENTER_UPI_VPA, field->Type().group());
     }
 
     form_interactions_ukm_logger->LogFieldFillStatus(*this, *field,
@@ -1433,6 +1432,15 @@ base::string16 FormStructure::FindLongestCommonPrefix(
     }
   }
   return filtered_strings[0];
+}
+
+std::set<FormType> FormStructure::GetFormTypes() {
+  std::set<FormType> form_types;
+  for (const auto& field : fields_) {
+    form_types.insert(
+        FormTypes::FieldTypeGroupToFormType(field->Type().group()));
+  }
+  return form_types;
 }
 
 }  // namespace autofill

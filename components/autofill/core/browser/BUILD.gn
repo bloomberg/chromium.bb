@@ -96,6 +96,8 @@ static_library("browser") {
     "form_group.h",
     "form_structure.cc",
     "form_structure.h",
+    "form_types.cc",
+    "form_types.h",
     "legal_message_line.cc",
     "legal_message_line.h",
     "name_field.cc",

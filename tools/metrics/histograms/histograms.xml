@@ -94726,6 +94726,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Autofill.FieldPredictionQuality.ByFieldType"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="AutofillFormType" separator=".">
+  <suffix name="Address" label="Address form"/>
+  <suffix name="CreditCard" label="Credit card form"/>
+  <suffix name="Password" label="Password form"/>
+  <suffix name="UnknownFormType" label="Unknown form type"/>
+  <affected-histogram name="Autofill.UserHappiness"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="AutofillPayloadCompressionType" separator=".">
   <suffix name="Query" label="Query request compression"/>
   <suffix name="Upload" label="Upload request compression"/>
