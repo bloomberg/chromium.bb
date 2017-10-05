@@ -127,6 +127,7 @@ class TabModelTest : public PlatformTest {
     NSMutableArray<CRWSessionStorage*>* sessions = [NSMutableArray array];
     for (int i = 0; i < 3; i++) {
       CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+      session_storage.lastCommittedItemIndex = -1;
       [sessions addObject:session_storage];
     }
     return base::scoped_nsobject<SessionWindowIOS>(

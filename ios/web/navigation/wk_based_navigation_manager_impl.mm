@@ -190,6 +190,11 @@ int WKBasedNavigationManagerImpl::GetPreviousItemIndex() const {
   return previous_item_index_;
 }
 
+void WKBasedNavigationManagerImpl::SetPreviousItemIndex(
+    int previous_item_index) {
+  previous_item_index_ = previous_item_index;
+}
+
 BrowserState* WKBasedNavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }
