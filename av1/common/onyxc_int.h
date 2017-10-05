@@ -937,6 +937,7 @@ static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
 
 static INLINE aom_cdf_prob cdf_element_prob(const aom_cdf_prob *cdf,
                                             size_t element) {
+  assert(cdf != NULL);
 #if !CONFIG_ANS
   return (element > 0 ? cdf[element - 1] : CDF_PROB_TOP) - cdf[element];
 #else

@@ -109,6 +109,7 @@ static INLINE int aom_daala_reader_has_error(daala_reader *r) {
 static INLINE int daala_read_symbol(daala_reader *r, const aom_cdf_prob *cdf,
                                     int nsymbs) {
   int symb;
+  assert(cdf != NULL);
   symb = od_ec_decode_cdf_q15(&r->ec, cdf, nsymbs);
 
 #if CONFIG_BITSTREAM_DEBUG
