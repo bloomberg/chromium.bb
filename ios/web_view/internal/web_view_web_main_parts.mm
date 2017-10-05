@@ -6,7 +6,17 @@
 
 #include "base/base_paths.h"
 #include "base/path_service.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
+#include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
+#include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
+#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
+#include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
+#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
+#include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
+#include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
+#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -43,6 +53,19 @@ void WebViewWebMainParts::PreCreateThreads() {
 
 void WebViewWebMainParts::PreMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Initialize();
+
+  WebViewCookieSettingsFactory::GetInstance();
+  WebViewHostContentSettingsMapFactory::GetInstance();
+  WebViewAccountFetcherServiceFactory::GetInstance();
+  WebViewAccountTrackerServiceFactory::GetInstance();
+  WebViewGaiaCookieManagerServiceFactory::GetInstance();
+  WebViewOAuth2TokenServiceFactory::GetInstance();
+  WebViewSigninClientFactory::GetInstance();
+  WebViewSigninErrorControllerFactory::GetInstance();
+  WebViewSigninManagerFactory::GetInstance();
+
+  ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
+      /*schemes=*/nullptr, 0);
 }
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {

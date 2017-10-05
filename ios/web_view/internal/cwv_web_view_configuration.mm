@@ -38,8 +38,8 @@
   dispatch_once(&onceToken, ^{
     auto browserState =
         base::MakeUnique<ios_web_view::WebViewBrowserState>(false);
-    defaultConfiguration =
-        [[self alloc] initWithBrowserState:std::move(browserState)];
+    defaultConfiguration = [[CWVWebViewConfiguration alloc]
+        initWithBrowserState:std::move(browserState)];
   });
   return defaultConfiguration;
 }
@@ -50,8 +50,8 @@
   dispatch_once(&onceToken, ^{
     auto browserState =
         base::MakeUnique<ios_web_view::WebViewBrowserState>(true);
-    incognitoConfiguration =
-        [[self alloc] initWithBrowserState:std::move(browserState)];
+    incognitoConfiguration = [[CWVWebViewConfiguration alloc]
+        initWithBrowserState:std::move(browserState)];
   });
   return incognitoConfiguration;
 }

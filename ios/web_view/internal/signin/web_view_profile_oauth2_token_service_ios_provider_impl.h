@@ -8,15 +8,19 @@
 #include <string>
 #include <vector>
 
+#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
+
+@class CWVAuthenticationController;
 
 // Implementation of ProfileOAuth2TokenServiceIOSProvider.
 class WebViewProfileOAuth2TokenServiceIOSProviderImpl
     : public ProfileOAuth2TokenServiceIOSProvider {
  public:
-  WebViewProfileOAuth2TokenServiceIOSProviderImpl() = default;
-  ~WebViewProfileOAuth2TokenServiceIOSProviderImpl() override = default;
+  WebViewProfileOAuth2TokenServiceIOSProviderImpl(
+      CWVAuthenticationController* controller);
+  ~WebViewProfileOAuth2TokenServiceIOSProviderImpl() override;
 
   // ios::ProfileOAuth2TokenServiceIOSProvider
   void GetAccessToken(const std::string& gaia_id,
@@ -30,6 +34,8 @@ class WebViewProfileOAuth2TokenServiceIOSProviderImpl
       NSError* error) const override;
 
  private:
+  base::WeakNSObject<CWVAuthenticationController> controller_;
+
   DISALLOW_COPY_AND_ASSIGN(WebViewProfileOAuth2TokenServiceIOSProviderImpl);
 };
 

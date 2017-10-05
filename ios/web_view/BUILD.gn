@@ -43,6 +43,15 @@ ios_web_view_public_headers = [
   "public/cwv_web_view.h",
   "public/cwv_web_view_configuration.h",
 ]
+if (ios_web_view_enable_sync) {
+  ios_web_view_public_headers += [
+    "public/ChromeSync.h",
+    "public/cwv_authentication_controller.h",
+    "public/cwv_authentication_controller_delegate.h",
+    "public/cwv_identity.h",
+    "public/cwv_web_view_configuration+sync.h",
+  ]
+}
 
 ios_web_view_sources = [
   "internal/app/application_context.cc",
@@ -127,6 +136,14 @@ ios_web_view_sources = [
   "internal/web_view_web_state_policy_decider.mm",
 ]
 ios_web_view_sources += ios_web_view_public_headers
+if (ios_web_view_enable_sync) {
+  ios_web_view_sources += [
+    "internal/cwv_web_view_configuration+sync.mm",
+    "internal/signin/cwv_authentication_controller.mm",
+    "internal/signin/cwv_authentication_controller_internal.h",
+    "internal/signin/cwv_identity.mm",
+  ]
+}
 
 ios_web_view_deps = [
   ":packed_resources",
@@ -142,6 +159,7 @@ ios_web_view_deps = [
   "//components/proxy_config",
   "//components/signin/core/browser",
   "//components/signin/ios/browser",
+  "//components/signin/ios/browser:active_state_manager",
   "//components/ssl_config",
   "//components/translate/core/browser",
   "//components/translate/core/common",
@@ -174,6 +192,9 @@ ios_framework_bundle("web_view") {
   public = [
     "public/ChromeWebView.h",
   ]
+  if (ios_web_view_enable_sync) {
+    public += [ "public/ChromeSync.h" ]
+  }
 
   sources = ios_web_view_sources
   if (ios_web_view_include_cronet) {
