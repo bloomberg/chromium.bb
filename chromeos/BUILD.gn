@@ -559,8 +559,6 @@ static_library("test_support") {
     "dbus/mock_lorgnette_manager_client.h",
     "dbus/mock_permission_broker_client.cc",
     "dbus/mock_permission_broker_client.h",
-    "dbus/mock_session_manager_client.cc",
-    "dbus/mock_session_manager_client.h",
     "dbus/mock_shill_manager_client.cc",
     "dbus/mock_shill_manager_client.h",
     "dbus/mock_shill_profile_client.cc",
