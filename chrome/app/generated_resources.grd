@@ -2100,15 +2100,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL" desc="Header for multiple automatic downloads page on Content Settings dialog">
         Automatic Downloads
       </message>
-      <message name="IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to download multiple files automatically.">
-        Allow all sites to download multiple files automatically
-      </message>
-      <message name="IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure multiple automatic downloads per-site.">
-        Ask when a site tries to download files automatically after the first file (recommended)
-      </message>
-      <message name="IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to download multiple files automatically.">
-        Do not allow any site to download multiple files automatically
-      </message>
       <message name="IDS_BLOCKED_DOWNLOAD_NO_ACTION" desc="Radio button to keep blocking automatic downloads">
         Continue blocking automatic downloads of multiple files
       </message>
@@ -2825,9 +2816,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL" desc="Title of the notebook page displaying server certificates">
           Servers
         </message>
-        <message name="IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL" desc="Title of the notebook page displaying certificate authorities">
-          Authorities
-        </message>
         <message name="IDS_CERT_MANAGER_OTHER_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
           Others
         </message>
@@ -2836,9 +2824,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
         <message name="IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION" desc="Description label above the tree showing server certificates">
           You have certificates on file that identify these servers:
-        </message>
-        <message name="IDS_CERT_MANAGER_AUTHORITIES_TREE_DESCRIPTION" desc="Description label above the Certificate Authorities tree">
-          You have certificates on file that identify these certificate authorities:
         </message>
         <message name="IDS_CERT_MANAGER_OTHER_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
           You have certificates on file that do not fit in any of the other categories:
@@ -2927,12 +2912,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for certificate file read errors.">
           There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
         </message>
-        <message name="IDS_CERT_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">
-          Incorrect password.
-        </message>
-        <message name="IDS_CERT_MANAGER_CERT_PARSE_ERROR" desc="The message in the certificate manager error dialog for importing invalid certificate files.">
-          Unable to parse file.
-        </message>
         <message name="IDS_CERT_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
           Unknown error.
         </message>
@@ -2968,9 +2947,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
         <message name="IDS_CERT_MANAGER_IMPORT_CA_DESCRIPTION_FORMAT" desc="Description in dialog for importing a Certification Authority and setting its trust flags">
           Do you want to trust "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" as a Certification Authority?
-        </message>
-        <message name="IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
-          Certification Authority Import Error
         </message>
         <message name="IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT" desc="The format of per-certificate error messages in import failure dialog">
           <ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>: <ph name="ERROR">$2<ex>Not a Certification Authority</ex></ph>
@@ -6155,16 +6131,6 @@ I don't think this site should be blocked!
         Manage...
       </message>
 
-      <message name="IDS_BACKGROUND_SYNC_HEADER" desc="Header for background sync on the Content Settings dialog. Background sync allows websites to queue an operation for the next time the device is online.">
-        Background sync
-      </message>
-      <message name="IDS_BACKGROUND_SYNC_ALLOW_RADIO" desc="A radio button on the Content Settings dialog to allow all sites to use background sync.">
-        Allow recently closed sites to finish sending and receiving data (recommended)
-      </message>
-      <message name="IDS_BACKGROUND_SYNC_BLOCK_RADIO" desc="A radio button on the Content Settings dialog to block all sites from using background sync.">
-        Do not allow recently closed sites to finish sending and receiving data
-      </message>
-
       <message name="IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL" desc="Label for Zoom Level tab and a header the on Content Settings dialog (zoom levels indicate that a page should be shown for example at 110% magnification).">
         Zoom Levels
       </message>
@@ -7057,9 +7023,6 @@ I don't think this site should be blocked!
           </message>
         </if>
 
-        <message name="IDS_ABOUT_TITLE" desc="Label used for title of the About page, chrome://help.">
-          About
-        </message>
         <if expr="not chromeos and use_titlecase">
           <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
             Relaunch
@@ -7193,14 +7156,8 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup.">
           Autofill
         </message>
-        <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
-          Add an address
-        </message>
         <message name="IDS_AUTOFILL_ADD_CONTACT_CAPTION" desc="The caption on the edit Autofill contact dialog for the new entry.">
           Add a contact
-        </message>
-        <message name="IDS_AUTOFILL_USE_PAYMENTS_DATA" desc="The text for the checkbox that controls the Autofill/Payments integration feature.">
-          Cards and addresses using Google Payments
         </message>
 
         <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
@@ -7373,9 +7330,6 @@ I don't think this site should be blocked!
         Google Payments
       </message>
 
-      <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
-        Appearance
-      </message>
       <if expr="not is_linux or chromeos">
         <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
           Themes
