@@ -24,10 +24,13 @@
 #include "platform/wtf/Compiler.h"
 #include <stddef.h>
 
+template <typename T>
+class scoped_refptr;
+
 namespace WTF {
 
 template <typename T>
-class RefPtr;
+using RefPtr = scoped_refptr<T>;
 template <typename T>
 class StringBuffer;
 class PartitionAllocator;
