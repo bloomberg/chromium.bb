@@ -44793,6 +44793,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLSessionConcurrentLookupCount">
+  <obsolete>
+    Removed on 2017-10-02.
+  </obsolete>
   <owner>nharper@chromium.org</owner>
   <summary>
     For each SSL connection where we resume a session and negotiate HTTP/2, the
