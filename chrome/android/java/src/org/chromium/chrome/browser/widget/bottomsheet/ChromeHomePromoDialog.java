@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.SysUtils;
@@ -71,7 +71,7 @@ public class ChromeHomePromoDialog extends PromoDialog {
 
         View toggleLayout = getLayoutInflater().inflate(R.layout.chrome_home_promo_toggle, null);
 
-        Switch toggle = (Switch) toggleLayout.findViewById(R.id.chrome_home_toggle);
+        SwitchCompat toggle = (SwitchCompat) toggleLayout.findViewById(R.id.chrome_home_toggle);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean enabled) {

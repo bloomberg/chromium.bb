@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.animation;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Property;
 
 /**
@@ -24,6 +25,7 @@ public class AnimatorProperties {
         @Override
         public void set(Drawable d, Integer alpha) {
             d.setAlpha(alpha);
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) d.invalidateSelf();
         }
     };
 }

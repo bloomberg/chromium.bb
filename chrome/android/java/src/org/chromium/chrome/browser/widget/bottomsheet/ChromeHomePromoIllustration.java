@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -36,7 +37,7 @@ import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 /**
  * Promo illustration for Chrome Home.
  */
-public class ChromeHomePromoIllustration extends Drawable {
+public class ChromeHomePromoIllustration extends Drawable implements Drawable.Callback {
     private static final long DURATION_BETWEEN_REPEATS_MS = 1000;
 
     private static final long DURATION_SHEET_COLLAPSED_MS = 500;
@@ -85,11 +86,20 @@ public class ChromeHomePromoIllustration extends Drawable {
         mBackgroundDrawable = VectorDrawableCompat.create(
                 resources, R.drawable.chrome_home_promo_phone_background, context.getTheme());
         mSheetDrawable = new SheetDrawable();
+
         mHomeSectionDrawable = new HomeSectionDrawable(resources,
+                ApiCompatibilityUtils.getDrawable(resources, R.drawable.ic_file_download_white_24dp)
+                        .mutate(),
                 bookmarkStar.getConstantState().newDrawable(resources).mutate(),
+                ApiCompatibilityUtils.getDrawable(resources, R.drawable.ic_watch_later_24dp)
+                        .mutate(),
                 phoneOmniboxNtpTileColor);
+        mHomeSectionDrawable.setCallback(this);
+
         mBookmarkSectionDrawable = new BookmarkSectionDrawable(
                 bookmarkStar.getConstantState().newDrawable(resources).mutate());
+        mBookmarkSectionDrawable.setCallback(this);
+
         mHighlightDrawable = new HighlightDrawable(
                 resources, bookmarkStar.getConstantState().newDrawable(resources).mutate());
 
@@ -118,7 +128,8 @@ public class ChromeHomePromoIllustration extends Drawable {
 
         int phoneInnerHeight = mPhoneDrawable.getInnerHeight();
         int phoneInnerWidth = mPhoneDrawable.getInnerWidth();
-        mSheetDrawable.setBounds(0, 0, phoneInnerWidth, phoneInnerHeight);
+        mSheetDrawable.setBounds(0, 0,
+                (int) (phoneInnerWidth + (phoneWidth - phoneInnerWidth) / 2f), phoneInnerHeight);
         mHomeSectionDrawable.setBounds(
                 0, 0, phoneInnerWidth, (int) (phoneInnerHeight * HOME_SHEET_HEIGHT_PERCENT));
         mBookmarkSectionDrawable.setBounds(mSheetDrawable.getBounds());
@@ -133,13 +144,14 @@ public class ChromeHomePromoIllustration extends Drawable {
     @Override
     public boolean setVisible(boolean visible, boolean restart) {
         boolean changed = super.setVisible(visible, restart);
-        if (!changed) return false;
         if (!visible) {
             mAnimator.cancel();
         } else {
-            mAnimator.start();
+            if (!mAnimator.isRunning() && !mAnimator.isStarted()) {
+                mAnimator.start();
+            }
         }
-        return true;
+        return changed;
     }
 
     private void buildAnimation() {
@@ -239,6 +251,8 @@ public class ChromeHomePromoIllustration extends Drawable {
     }
 
     @Override
+    @SuppressLint("NewApi") // getAlpha() requires API 19, but the inner classes do not rely on
+                            // super.getAlpha() for the value.
     public void draw(Canvas canvas) {
         canvas.save();
         // Center the phone in the drawable.
@@ -246,14 +260,19 @@ public class ChromeHomePromoIllustration extends Drawable {
 
         canvas.save();
         Rect phoneBounds = mPhoneDrawable.getBounds();
-        canvas.translate(mPhoneDrawable.getInnerLeft(), mPhoneDrawable.getInnerTop());
-        canvas.clipRect(0, 0, mPhoneDrawable.getInnerWidth(), mPhoneDrawable.getInnerHeight());
-
-        canvas.save();
-        mBackgroundDrawable.draw(canvas);
-        canvas.restore();
-
         Rect sheetBounds = mSheetDrawable.getBounds();
+        float sheetPhoneWidthDiff = (phoneBounds.width() - sheetBounds.width()) / 2f;
+        canvas.translate(
+                mPhoneDrawable.getInnerLeft() - sheetPhoneWidthDiff, mPhoneDrawable.getInnerTop());
+        canvas.clipRect(0, 0, sheetBounds.width(), sheetBounds.height());
+
+        if (mSheetAnimationPercent < 1f) {
+            canvas.save();
+            canvas.translate(sheetPhoneWidthDiff, 0);
+            mBackgroundDrawable.draw(canvas);
+            canvas.restore();
+        }
+
         float sheetTranslationY;
         if (mSheetAnimationPercent <= 0.5) {
             int hideableAmount = mHomeSectionDrawable.getBounds().height()
@@ -266,8 +285,10 @@ public class ChromeHomePromoIllustration extends Drawable {
         }
         canvas.translate(0, sheetTranslationY);
         mSheetDrawable.draw(canvas);
-        mHomeSectionDrawable.draw(canvas);
-        mBookmarkSectionDrawable.draw(canvas);
+
+        canvas.translate(sheetPhoneWidthDiff, 0);
+        if (mHomeSectionDrawable.getAlpha() > 0) mHomeSectionDrawable.draw(canvas);
+        if (mBookmarkSectionDrawable.getAlpha() > 0) mBookmarkSectionDrawable.draw(canvas);
         canvas.restore();
 
         mPhoneDrawable.draw(canvas);
@@ -303,6 +324,22 @@ public class ChromeHomePromoIllustration extends Drawable {
     @Override
     public void setColorFilter(ColorFilter colorFilter) {
         assert false : "Unsupported";
+    }
+
+    // Drawable.Callback implementation.
+    @Override
+    public void invalidateDrawable(Drawable who) {
+        invalidateSelf();
+    }
+
+    @Override
+    public void scheduleDrawable(Drawable who, Runnable what, long when) {
+        scheduleSelf(what, when);
+    }
+
+    @Override
+    public void unscheduleDrawable(Drawable who, Runnable what) {
+        unscheduleSelf(what);
     }
 
     private static class HomeSectionDrawable extends Drawable {
@@ -345,18 +382,17 @@ public class ChromeHomePromoIllustration extends Drawable {
 
         private int mBottomBarOffsetY;
 
-        public HomeSectionDrawable(Resources resources, Drawable bookmarkStarDrawable,
+        public HomeSectionDrawable(Resources resources, Drawable downloadIconDrawable,
+                Drawable bookmarkStarDrawable, Drawable historyIconDrawable,
                 @ColorRes int omniboxNtpTileColor) {
             int tintColor = ApiCompatibilityUtils.getColor(resources, R.color.black_alpha_65);
-            mDownloadIcon = ApiCompatibilityUtils.getDrawable(
-                    resources, R.drawable.ic_file_download_white_24dp);
+            mDownloadIcon = downloadIconDrawable;
             mDownloadIcon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
 
             mBookmarkStarIcon = bookmarkStarDrawable;
             mBookmarkStarIcon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
 
-            mHistoryIcon =
-                    ApiCompatibilityUtils.getDrawable(resources, R.drawable.ic_watch_later_24dp);
+            mHistoryIcon = historyIconDrawable;
             mHistoryIcon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
 
             mOmniboxNtpTileColor = omniboxNtpTileColor;
