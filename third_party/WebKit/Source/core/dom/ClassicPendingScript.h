@@ -85,7 +85,6 @@ class CORE_EXPORT ClassicPendingScript final
   // Handle the end of streaming.
   void FinishWaitingForStreaming();
   void FinishReadyStreaming();
-  void CancelStreaming();
 
   void CheckState() const override;
 
@@ -102,20 +101,6 @@ class CORE_EXPORT ClassicPendingScript final
 
   Member<ScriptStreamer> streamer_;
   WTF::Closure streamer_done_;
-
-  // This flag tracks whether streamer_ is currently streaming. It is used
-  // mainly to prevent re-streaming a script while it is being streamed.
-  //
-  // ReadyState unfortunately doesn't contain this information, because
-  // 1, the WaitingFor* states can occur with or without streaming, and
-  // 2, during the state transition, we need to first transition ready_state_,
-  //    then run callbacks, and only then consider the streaming done. So
-  //    during AdvanceReadyState and callback processing, the ready state
-  //    and is_currently_streaming_ are temporarily different. (They must
-  //    be consistent before and after AdvanceReadyState.)
-  //
-  // (See also: crbug.com/754360)
-  bool is_currently_streaming_;
 
   // This is a temporary flag to confirm that ClassicPendingScript is not
   // touched after its refinalizer call and thus https://crbug.com/715309
