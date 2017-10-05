@@ -44,6 +44,7 @@
       <structure name="IDR_MD_EXTENSIONS_ERROR_PAGE_HTML"
                  file="error_page.html"
                  flattenhtml="true"
+                 allowexternalscript="true"
                  type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_ERROR_PAGE_JS"
                  file="error_page.js"
@@ -71,7 +72,8 @@
       <structure name="IDR_MD_EXTENSIONS_MANAGER_HTML"
                  file="manager.html"
                  type="chrome_html"
-                 flattenhtml="true" />
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_MD_EXTENSIONS_MANAGER_JS"
                  file="manager.js"
                  type="chrome_html"
@@ -151,7 +153,8 @@
       <structure name="IDR_MD_EXTENSIONS_TOOLBAR_HTML"
                  file="toolbar.html"
                  type="chrome_html"
-                 flattenhtml="true" />
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_MD_EXTENSIONS_TOOLBAR_JS"
                  file="toolbar.js"
                  type="chrome_html"
