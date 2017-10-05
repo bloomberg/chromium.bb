@@ -73,7 +73,7 @@ blink::WebFeaturePolicyFeature PermissionTypeToFeaturePolicyFeature(
     case PermissionType::GEOLOCATION:
       return blink::WebFeaturePolicyFeature::kGeolocation;
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return blink::WebFeaturePolicyFeature::kEme;
+      return blink::WebFeaturePolicyFeature::kEncryptedMedia;
     case PermissionType::AUDIO_CAPTURE:
       return blink::WebFeaturePolicyFeature::kMicrophone;
     case PermissionType::VIDEO_CAPTURE:

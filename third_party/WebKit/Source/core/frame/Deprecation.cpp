@@ -234,7 +234,7 @@ void Deprecation::CountDeprecationFeaturePolicy(
   // (until the general syntax is shipped) and this is also a good enough
   // approximation for deprecation messages.
   switch (feature) {
-    case WebFeaturePolicyFeature::kEme:
+    case WebFeaturePolicyFeature::kEncryptedMedia:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::

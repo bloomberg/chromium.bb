@@ -18,7 +18,7 @@ enum class WebFeaturePolicyFeature {
   // Controls access to video input devices.
   kCamera,
   // Controls whether navigator.requestMediaKeySystemAccess is allowed.
-  kEme,
+  kEncryptedMedia,
   // Controls whether Element.requestFullscreen is allowed.
   kFullscreen,
   // Controls access to Geolocation interface.
