@@ -27,6 +27,12 @@ class WebFrameScheduler {
     kNotThrottled,
   };
 
+  // Represents the type of frame: main (top-level) vs not.
+  enum class FrameType {
+    kMainFrame,
+    kSubframe,
+  };
+
   class ActiveConnectionHandle {
    public:
     ActiveConnectionHandle() {}
@@ -70,6 +76,10 @@ class WebFrameScheduler {
   // frames.
   virtual void SetCrossOrigin(bool) = 0;
   virtual bool IsCrossOrigin() const = 0;
+
+  // Returns the frame type, which currently determines whether this frame is
+  // the top level frame, i.e. a main frame.
+  virtual FrameType GetFrameType() const = 0;
 
   // The tasks runners below are listed in increasing QoS order.
   // - throttleable task queue. Designed for custom user-provided javascript

@@ -28,6 +28,9 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return false; }
+  WebFrameScheduler::FrameType GetFrameType() const override {
+    return WebFrameScheduler::FrameType::kSubframe;
+  }
   RefPtr<WebTaskRunner> ThrottleableTaskRunner() override { return nullptr; }
   RefPtr<WebTaskRunner> DeferrableTaskRunner() override { return nullptr; }
   RefPtr<WebTaskRunner> PausableTaskRunner() override { return nullptr; }

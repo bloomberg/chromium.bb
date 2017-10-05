@@ -46,8 +46,8 @@ class WebViewSchedulerImplTest : public ::testing::Test {
     web_view_scheduler_.reset(
         new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(),
                                  DisableBackgroundTimerThrottling()));
-    web_frame_scheduler_ =
-        web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+    web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
+        nullptr, WebFrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
@@ -69,16 +69,20 @@ class WebViewSchedulerImplTest : public ::testing::Test {
 
 TEST_F(WebViewSchedulerImplTest, TestDestructionOfFrameSchedulersBefore) {
   std::unique_ptr<blink::WebFrameScheduler> frame1(
-      web_view_scheduler_->CreateFrameScheduler(nullptr));
+      web_view_scheduler_->CreateFrameScheduler(
+          nullptr, WebFrameScheduler::FrameType::kSubframe));
   std::unique_ptr<blink::WebFrameScheduler> frame2(
-      web_view_scheduler_->CreateFrameScheduler(nullptr));
+      web_view_scheduler_->CreateFrameScheduler(
+          nullptr, WebFrameScheduler::FrameType::kSubframe));
 }
 
 TEST_F(WebViewSchedulerImplTest, TestDestructionOfFrameSchedulersAfter) {
   std::unique_ptr<blink::WebFrameScheduler> frame1(
-      web_view_scheduler_->CreateFrameScheduler(nullptr));
+      web_view_scheduler_->CreateFrameScheduler(
+          nullptr, WebFrameScheduler::FrameType::kSubframe));
   std::unique_ptr<blink::WebFrameScheduler> frame2(
-      web_view_scheduler_->CreateFrameScheduler(nullptr));
+      web_view_scheduler_->CreateFrameScheduler(
+          nullptr, WebFrameScheduler::FrameType::kSubframe));
   web_view_scheduler_.reset();
 }
 
@@ -159,7 +163,8 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2(
       new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
-      web_view_scheduler2->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler2->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   web_view_scheduler_->SetPageVisible(true);
   web_view_scheduler2->SetPageVisible(false);
@@ -415,7 +420,8 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
   web_view_scheduler_->EnableVirtualTime();
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler_->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   web_frame_scheduler->ThrottleableTaskRunner()->PostDelayedTask(
       BLINK_FROM_HERE, WTF::Bind(&RunOrderTask, 1, WTF::Unretained(&run_order)),
@@ -442,7 +448,10 @@ WTF::Closure MakeDeletionTask(T* obj) {
 TEST_F(WebViewSchedulerImplTest, DeleteWebFrameSchedulers_InTask) {
   for (int i = 0; i < 10; i++) {
     WebFrameSchedulerImpl* web_frame_scheduler =
-        web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr).release();
+        web_view_scheduler_
+            ->CreateWebFrameSchedulerImpl(
+                nullptr, WebFrameScheduler::FrameType::kSubframe)
+            .release();
     web_frame_scheduler->ThrottleableTaskRunner()->PostDelayedTask(
         BLINK_FROM_HERE, MakeDeletionTask(web_frame_scheduler),
         TimeDelta::FromMilliseconds(1));
@@ -460,7 +469,10 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
   web_view_scheduler_->SetPageVisible(false);
 
   WebFrameSchedulerImpl* web_frame_scheduler =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr).release();
+      web_view_scheduler_
+          ->CreateWebFrameSchedulerImpl(nullptr,
+                                        WebFrameScheduler::FrameType::kSubframe)
+          .release();
   RefPtr<blink::WebTaskRunner> timer_task_runner =
       web_frame_scheduler->ThrottleableTaskRunner();
 
@@ -578,9 +590,11 @@ TEST_F(WebViewSchedulerImplTest, ProvisionalLoads) {
   EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
 
   std::unique_ptr<WebFrameSchedulerImpl> frame1 =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler_->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
   std::unique_ptr<WebFrameSchedulerImpl> frame2 =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler_->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   // Provisional loads are refcounted.
   web_view_scheduler_->DidBeginProvisionalLoad(frame1.get());
@@ -605,7 +619,8 @@ TEST_F(WebViewSchedulerImplTest, WillNavigateBackForwardSoon) {
   EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
 
   std::unique_ptr<WebFrameSchedulerImpl> frame =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler_->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   web_view_scheduler_->WillNavigateBackForwardSoon(frame.get());
   EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
@@ -621,7 +636,8 @@ TEST_F(WebViewSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
   std::vector<int> run_order;
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler_->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
   web_view_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
   web_view_scheduler_->EnableVirtualTime();
 
@@ -737,8 +753,8 @@ TEST_F(WebViewSchedulerImplTest, BackgroundTimerThrottling) {
       new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
 
   std::vector<base::TimeTicks> run_times;
-  web_frame_scheduler_ =
-      web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
+  web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
+      nullptr, WebFrameScheduler::FrameType::kSubframe);
   web_view_scheduler_->SetPageVisible(true);
 
   mock_task_runner_->RunUntilTime(base::TimeTicks() +
@@ -807,9 +823,11 @@ TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   std::vector<base::TimeTicks> run_times;
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler1 =
-      web_view_scheduler->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
-      web_view_scheduler->CreateWebFrameSchedulerImpl(nullptr);
+      web_view_scheduler->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   web_view_scheduler->SetPageVisible(false);
 

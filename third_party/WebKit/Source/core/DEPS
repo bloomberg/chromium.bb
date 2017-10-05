@@ -23,3 +23,11 @@ include_rules = [
     "!core/frame/WebLocalFrameImpl.h",
     "!core/frame/WebRemoteFrameImpl.h",
 ]
+
+specific_include_rules = {
+    # Allow tests to use Web(Local|Remote)FrameBase.h.
+    ".*Test\.cpp" : [
+        "+core/frame/WebLocalFrameImpl.h",
+        "+core/frame/WebRemoteFrameImpl.h",
+    ]
+}

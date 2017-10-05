@@ -100,6 +100,9 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return false; }
+  WebFrameScheduler::FrameType GetFrameType() const override {
+    return WebFrameScheduler::FrameType::kSubframe;
+  }
   WebViewScheduler* GetWebViewScheduler() override { return nullptr; }
   void DidStartLoading(unsigned long identifier) override {}
   void DidStopLoading(unsigned long identifier) override {}
@@ -151,7 +154,8 @@ String EmptyChromeClient::AcceptLanguages() {
 }
 
 std::unique_ptr<WebFrameScheduler> EmptyChromeClient::CreateFrameScheduler(
-    BlameContext*) {
+    BlameContext* blame_context,
+    WebFrameScheduler::FrameType frame_type) {
   return WTF::MakeUnique<EmptyFrameScheduler>();
 }
 
