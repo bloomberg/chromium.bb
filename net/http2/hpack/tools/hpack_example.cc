@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "net/http2/platform/api/http2_string_utils.h"
+#include "net/http2/tools/http2_bug_tracker.h"
 
 namespace net {
 namespace test {
@@ -38,9 +39,9 @@ void HpackExampleToStringOrDie(Http2StringPiece example, Http2String* output) {
       example.remove_prefix(pos + 1);
       continue;
     }
-    CHECK(false) << "Can't parse byte " << static_cast<int>(c0) << " (0x"
-                 << std::hex << c0 << ")"
-                 << "\nExample: " << example;
+    HTTP2_BUG << "Can't parse byte " << static_cast<int>(c0) << " (0x"
+              << std::hex << c0 << ")"
+              << "\nExample: " << example;
   }
   CHECK_LT(0u, output->size()) << "Example is empty.";
 }

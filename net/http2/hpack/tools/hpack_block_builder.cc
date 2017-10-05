@@ -4,6 +4,7 @@
 
 #include "net/http2/hpack/tools/hpack_block_builder.h"
 
+#include "net/http2/tools/http2_bug_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -65,7 +66,7 @@ void HpackBlockBuilder::AppendEntryTypeAndVarint(HpackEntryType entry_type,
       prefix_length = 4;
       break;
     default:
-      NOTREACHED();
+      HTTP2_BUG << "Unreached, entry_type=" << entry_type;
       high_bits = 0;
       prefix_length = 0;
   }
