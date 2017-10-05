@@ -19,14 +19,7 @@ namespace blink {
 }
 
 {{cpp_class}}::{{cpp_class}}(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    : script_state_(scriptState),
-    callback_(scriptState->GetIsolate(), this, callback) {
-  DCHECK(!callback_.IsEmpty());
-}
-
-DEFINE_TRACE_WRAPPERS({{cpp_class}}) {
-  visitor->TraceWrappers(callback_.Cast<v8::Value>());
-}
+    : CallbackFunctionBase(scriptState, callback) {}
 
 bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
   if (callback_.IsEmpty())

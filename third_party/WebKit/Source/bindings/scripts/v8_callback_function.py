@@ -12,6 +12,7 @@ from v8_globals import includes
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
     'bindings/core/v8/NativeValueTraits.h',
+    'platform/bindings/CallbackFunctionBase.h',
     'platform/bindings/ScriptWrappable.h',
     'platform/bindings/TraceWrapperV8Reference.h',
     'platform/heap/Handle.h',
