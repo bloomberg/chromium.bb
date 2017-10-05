@@ -96,9 +96,7 @@ class SmoothnessToughPathRenderingCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('IE Chalkboard',
-                          [story_module.expectations.ALL],
-                          'crbug.com/771368')
+        pass # Nothing.
     return StoryExpectations()
 
 
