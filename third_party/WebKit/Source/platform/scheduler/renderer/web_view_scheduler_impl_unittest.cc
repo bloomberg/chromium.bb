@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebTaskRunner.h"
@@ -694,6 +695,65 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
   EXPECT_THAT(virtual_times_ms, ElementsAre(initial_virtual_time_ms + 1,
                                             initial_virtual_time_ms + 2,
                                             initial_virtual_time_ms + 5));
+}
+
+namespace {
+class MockObserver : public WebViewScheduler::VirtualTimeObserver {
+ public:
+  ~MockObserver() override {}
+
+  void OnVirtualTimeAdvanced(base::TimeDelta virtual_time_offset) override {
+    virtual_time_log_.push_back(base::StringPrintf(
+        "Advanced to %dms",
+        static_cast<int>(virtual_time_offset.InMilliseconds())));
+  }
+
+  void OnVirtualTimePaused(base::TimeDelta virtual_time_offset) override {
+    virtual_time_log_.push_back(base::StringPrintf(
+        "Paused at %dms",
+        static_cast<int>(virtual_time_offset.InMilliseconds())));
+  }
+
+  const std::vector<std::string>& virtual_time_log() const {
+    return virtual_time_log_;
+  }
+
+ private:
+  std::vector<std::string> virtual_time_log_;
+};
+
+void NopTask() {}
+}  // namespace
+
+TEST_F(WebViewSchedulerImplTest, VirtualTimeObserver) {
+  MockObserver mock_observer;
+  web_view_scheduler_->AddVirtualTimeObserver(&mock_observer);
+  web_view_scheduler_->EnableVirtualTime();
+
+  web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE, WTF::Bind(&NopTask), TimeDelta::FromMilliseconds(200));
+
+  web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE, WTF::Bind(&NopTask), TimeDelta::FromMilliseconds(20));
+
+  web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE, WTF::Bind(&NopTask), TimeDelta::FromMilliseconds(2));
+
+  web_view_scheduler_->GrantVirtualTimeBudget(
+      base::TimeDelta::FromMilliseconds(1000),
+      WTF::Bind(
+          [](WebViewScheduler* scheduler) {
+            scheduler->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
+          },
+          WTF::Unretained(web_view_scheduler_.get())));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      mock_observer.virtual_time_log(),
+      ElementsAre("Advanced to 2ms", "Advanced to 20ms", "Advanced to 200ms",
+                  "Advanced to 1000ms", "Paused at 1000ms"));
+  web_view_scheduler_->RemoveVirtualTimeObserver(&mock_observer);
 }
 
 namespace {
