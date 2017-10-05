@@ -239,7 +239,7 @@ ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
       ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
       item->command_id = GetCommandId(browser_menu_items_.size(), kNoTab);
       item->label = GetBrowserListTitle(tab);
-      item->image = *GetBrowserListIcon(tab).ToSkBitmap();
+      item->image = GetBrowserListIcon(tab).AsImageSkia();
       items.push_back(std::move(item));
     } else {
       for (uint16_t i = 0; i < tab_strip->count() && i < kMaxItems; ++i) {
@@ -247,7 +247,7 @@ ash::MenuItemList BrowserShortcutLauncherItemController::GetAppMenuItems(
         ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
         item->command_id = GetCommandId(browser_menu_items_.size(), i);
         item->label = controller->GetAppListTitle(tab);
-        item->image = *controller->GetAppListIcon(tab).ToSkBitmap();
+        item->image = controller->GetAppListIcon(tab).AsImageSkia();
         items.push_back(std::move(item));
       }
     }

@@ -122,7 +122,7 @@ ash::MenuItemList AppShortcutLauncherItemController::GetAppMenuItems(
     ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
     item->command_id = base::checked_cast<uint32_t>(i);
     item->label = controller->GetAppListTitle(tab);
-    item->image = *controller->GetAppListIcon(tab).ToSkBitmap();
+    item->image = controller->GetAppListIcon(tab).AsImageSkia();
     items.push_back(std::move(item));
   }
   return items;
