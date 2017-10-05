@@ -89,6 +89,15 @@ class FakeDownloadItem : public DownloadItem {
   void SetIsTransient(bool is_transient);
   bool IsTransient() const override;
 
+  void SetIsDone(bool is_done);
+  bool IsDone() const override;
+
+  void SetETag(const std::string& etag);
+  const std::string& GetETag() const override;
+
+  void SetLastModifiedTime(const std::string& last_modified_time);
+  const std::string& GetLastModifiedTime() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
@@ -102,7 +111,6 @@ class FakeDownloadItem : public DownloadItem {
   bool IsPaused() const override;
   bool IsTemporary() const override;
   bool CanResume() const override;
-  bool IsDone() const override;
   const GURL& GetReferrerUrl() const override;
   const GURL& GetSiteUrl() const override;
   const GURL& GetTabUrl() const override;
@@ -113,8 +121,6 @@ class FakeDownloadItem : public DownloadItem {
   std::string GetRemoteAddress() const override;
   bool HasUserGesture() const override;
   ui::PageTransition GetTransitionType() const override;
-  const std::string& GetLastModifiedTime() const override;
-  const std::string& GetETag() const override;
   bool IsSavePackageDownload() const override;
   const base::FilePath& GetFullPath() const override;
   const base::FilePath& GetForcedFilePath() const override;
@@ -167,6 +173,9 @@ class FakeDownloadItem : public DownloadItem {
   int64_t received_bytes_ = 0;
   int64_t total_bytes_ = 0;
   bool is_transient_ = false;
+  bool is_done_ = false;
+  std::string etag_;
+  std::string last_modified_time_;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

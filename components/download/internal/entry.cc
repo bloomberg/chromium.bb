@@ -7,7 +7,10 @@
 namespace download {
 
 Entry::Entry()
-    : bytes_downloaded(0u), attempt_count(0), cleanup_attempt_count(0) {}
+    : bytes_downloaded(0u),
+      attempt_count(0),
+      resumption_count(0),
+      cleanup_attempt_count(0) {}
 Entry::Entry(const Entry& other) = default;
 
 Entry::Entry(const DownloadParams& params)
@@ -18,6 +21,7 @@ Entry::Entry(const DownloadParams& params)
       request_params(params.request_params),
       bytes_downloaded(0u),
       attempt_count(0),
+      resumption_count(0),
       cleanup_attempt_count(0),
       traffic_annotation(params.traffic_annotation) {}
 
@@ -41,6 +45,7 @@ bool Entry::operator==(const Entry& other) const {
          last_cleanup_check_time == other.last_cleanup_check_time &&
          bytes_downloaded == other.bytes_downloaded &&
          attempt_count == other.attempt_count &&
+         resumption_count == other.resumption_count &&
          cleanup_attempt_count == other.cleanup_attempt_count &&
          traffic_annotation == other.traffic_annotation;
 }

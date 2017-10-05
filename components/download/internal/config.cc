@@ -27,6 +27,9 @@ const uint32_t kDefaultMaxScheduledDownloads = 15;
 // Default value for maximum retry count.
 const uint32_t kDefaultMaxRetryCount = 5;
 
+// Default value for maximum resumption count.
+const uint32_t kDefaultMaxResumptionCount = 15;
+
 // Default value for file keep alive time, keep the file alive for 12 hours by
 // default.
 const base::TimeDelta kDefaultFileKeepAliveTime =
@@ -88,6 +91,8 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
       kMaxScheduledDownloadsConfig, kDefaultMaxScheduledDownloads);
   config->max_retry_count =
       GetFinchConfigUInt(kMaxRetryCountConfig, kDefaultMaxRetryCount);
+  config->max_resumption_count =
+      GetFinchConfigUInt(kMaxResumptionCountConfig, kDefaultMaxResumptionCount);
   config->file_keep_alive_time =
       base::TimeDelta::FromMinutes(base::saturated_cast<int>(
           GetFinchConfigUInt(kFileKeepAliveTimeMinutesConfig,
@@ -130,6 +135,7 @@ Configuration::Configuration()
       max_running_downloads(kDefaultMaxRunningDownloads),
       max_scheduled_downloads(kDefaultMaxScheduledDownloads),
       max_retry_count(kDefaultMaxRetryCount),
+      max_resumption_count(kDefaultMaxResumptionCount),
       file_keep_alive_time(kDefaultFileKeepAliveTime),
       max_file_keep_alive_time(kDefaultMaxFileKeepAliveTime),
       file_cleanup_window(kDefaultFileCleanupWindow),

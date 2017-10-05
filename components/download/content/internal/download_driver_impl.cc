@@ -54,6 +54,7 @@ FailureType FailureTypeFromInterruptReason(
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+    case content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
       return FailureType::NOT_RECOVERABLE;
     default:
       return FailureType::RECOVERABLE;
@@ -76,6 +77,7 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
   entry.guid = item->GetGuid();
   entry.state = ToDriverEntryState(item->GetState());
   entry.paused = item->IsPaused();
+  entry.done = item->IsDone();
   entry.bytes_downloaded = item->GetReceivedBytes();
   entry.expected_total_size = item->GetTotalBytes();
   entry.current_file_path =
@@ -90,6 +92,11 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
         (entry.response_headers->HasHeader("Content-Range") &&
          entry.response_headers->response_code() == net::HTTP_PARTIAL_CONTENT);
     entry.can_resume &= entry.response_headers->HasStrongValidators();
+  } else {
+    // If we haven't issued the request yet, treat this like a resume based on
+    // the etag and last modified time.
+    entry.can_resume =
+        !item->GetETag().empty() || !item->GetLastModifiedTime().empty();
   }
   entry.url_chain = item->GetUrlChain();
   return entry;
