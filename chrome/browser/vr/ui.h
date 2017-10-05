@@ -54,7 +54,6 @@ class Ui : public BrowserUiInterface, public UiInterface {
   void SetFullscreen(bool enabled) override;
   void SetToolbarState(const ToolbarState& state) override;
   void SetIncognito(bool enabled) override;
-  void SetWebVrSecureOrigin(bool secure) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;
   void SetIsExiting() override;

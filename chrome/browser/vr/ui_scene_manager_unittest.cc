@@ -92,44 +92,6 @@ TEST_F(UiSceneManagerTest, ExitPresentAndFullscreenOnAppButtonClick) {
   manager_->OnAppButtonClicked();
 }
 
-TEST_F(UiSceneManagerTest, WebVrWarningsShowWhenInitiallyInWebVr) {
-  MakeManager(kNotInCct, kInWebVr);
-
-  EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
-  EXPECT_TRUE(IsVisible(kWebVrHttpSecurityWarning));
-
-  manager_->SetWebVrSecureOrigin(true);
-  EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
-  EXPECT_FALSE(IsVisible(kWebVrHttpSecurityWarning));
-
-  manager_->SetWebVrSecureOrigin(false);
-  EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
-  EXPECT_TRUE(IsVisible(kWebVrHttpSecurityWarning));
-
-  manager_->SetWebVrMode(false, false);
-  EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
-  EXPECT_FALSE(IsVisible(kWebVrHttpSecurityWarning));
-}
-
-TEST_F(UiSceneManagerTest, WebVrWarningsDoNotShowWhenInitiallyOutsideWebVr) {
-  MakeManager(kNotInCct, kNotInWebVr);
-
-  EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
-  EXPECT_FALSE(IsVisible(kWebVrHttpSecurityWarning));
-
-  manager_->SetWebVrMode(true, false);
-  EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
-  EXPECT_TRUE(IsVisible(kWebVrHttpSecurityWarning));
-}
-
-TEST_F(UiSceneManagerTest, WebVrTransientWarningTimesOut) {
-  MakeManager(kNotInCct, kInWebVr);
-  EXPECT_TRUE(IsVisible(kWebVrHttpSecurityWarning));
-
-  AnimateBy(MsToDelta(31000));
-  EXPECT_FALSE(IsVisible(kWebVrHttpSecurityWarning));
-}
-
 TEST_F(UiSceneManagerTest, ToastStateTransitions) {
   // Tests toast not showing when directly entering VR though WebVR
   // presentation.
@@ -258,41 +220,8 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   EXPECT_EQ(initial_background, no_longer_incognito_again_background);
 }
 
-TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
-  MakeAutoPresentedManager();
-  manager_->SetWebVrSecureOrigin(false);
-  manager_->SetWebVrMode(true, false);
-  // Initially, the security warnings should not be visible since the first
-  // WebVR frame is not received.
-  auto initial_elements = std::set<UiElementName>();
-  initial_elements.insert(kSplashScreenText);
-  initial_elements.insert(kSplashScreenBackground);
-  VerifyElementsVisible("Initial", initial_elements);
-
-  // The splash screen should go away.
-  manager_->OnWebVrFrameAvailable();
-  AnimateBy(base::TimeDelta::FromSecondsD(kSplashScreenMinDurationSeconds +
-                                          kSmallDelaySeconds));
-  VerifyElementsVisible(
-      "Autopresented",
-      std::set<UiElementName>{kWebVrPermanentHttpSecurityWarning,
-                              kWebVrHttpSecurityWarning, kWebVrUrlToast});
-
-  // Make sure the transient elements go away.
-  AnimateBy(base::TimeDelta::FromSeconds(kWebVrUrlToastTimeoutSeconds));
-  UiElement* transient_url_bar =
-      scene_->GetUiElementByName(kWebVrUrlToastTransientParent);
-  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY}));
-  // Finish the transition.
-  AnimateBy(MsToDelta(1000));
-  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY}));
-  VerifyElementsVisible(
-      "End state", std::set<UiElementName>{kWebVrPermanentHttpSecurityWarning});
-}
-
 TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   MakeAutoPresentedManager();
-  manager_->SetWebVrSecureOrigin(true);
 
   // Initially, we should only show the splash screen.
   auto initial_elements = std::set<UiElementName>();
@@ -387,8 +316,6 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
 TEST_F(UiSceneManagerTest, SecurityIconClickTriggersUnsupportedMode) {
   MakeManager(kNotInCct, kNotInWebVr);
 
-  manager_->SetWebVrSecureOrigin(true);
-
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
@@ -402,8 +329,6 @@ TEST_F(UiSceneManagerTest, SecurityIconClickTriggersUnsupportedMode) {
 TEST_F(UiSceneManagerTest, UiUpdatesForShowingExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
 
-  manager_->SetWebVrSecureOrigin(true);
-
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
@@ -414,8 +339,6 @@ TEST_F(UiSceneManagerTest, UiUpdatesForShowingExitPrompt) {
 
 TEST_F(UiSceneManagerTest, UiUpdatesForHidingExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
-
-  manager_->SetWebVrSecureOrigin(true);
 
   // Initial state.
   manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
@@ -428,8 +351,6 @@ TEST_F(UiSceneManagerTest, UiUpdatesForHidingExitPrompt) {
 
 TEST_F(UiSceneManagerTest, BackplaneClickTriggersOnExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
-
-  manager_->SetWebVrSecureOrigin(true);
 
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
@@ -447,8 +368,6 @@ TEST_F(UiSceneManagerTest, BackplaneClickTriggersOnExitPrompt) {
 TEST_F(UiSceneManagerTest, PrimaryButtonClickTriggersOnExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
 
-  manager_->SetWebVrSecureOrigin(true);
-
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
   manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
@@ -463,8 +382,6 @@ TEST_F(UiSceneManagerTest, PrimaryButtonClickTriggersOnExitPrompt) {
 
 TEST_F(UiSceneManagerTest, SecondaryButtonClickTriggersOnExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
-
-  manager_->SetWebVrSecureOrigin(true);
 
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
@@ -481,8 +398,6 @@ TEST_F(UiSceneManagerTest, SecondaryButtonClickTriggersOnExitPrompt) {
 
 TEST_F(UiSceneManagerTest, SecondExitPromptTriggersOnExitPrompt) {
   MakeManager(kNotInCct, kNotInWebVr);
-
-  manager_->SetWebVrSecureOrigin(true);
 
   // Initial state.
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
@@ -501,7 +416,6 @@ TEST_F(UiSceneManagerTest, SecondExitPromptTriggersOnExitPrompt) {
 TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
   MakeManager(kNotInCct, kInWebVr);
 
-  manager_->SetWebVrSecureOrigin(true);
   manager_->SetAudioCapturingIndicator(true);
   manager_->SetVideoCapturingIndicator(true);
   manager_->SetScreenCapturingIndicator(true);
@@ -530,7 +444,6 @@ TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
 
   // Transition to WebVR mode
   manager_->SetWebVrMode(true, false);
-  manager_->SetWebVrSecureOrigin(true);
 
   // All elements should be hidden.
   VerifyElementsVisible("Elements hidden", std::set<UiElementName>{});

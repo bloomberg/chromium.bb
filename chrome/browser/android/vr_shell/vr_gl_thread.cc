@@ -206,13 +206,6 @@ void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
                             enabled, show_toast));
 }
 
-void VrGLThread::SetWebVrSecureOrigin(bool secure) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetWebVrSecureOrigin,
-                            browser_ui_, secure));
-}
-
 void VrGLThread::SetAudioCapturingIndicator(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(

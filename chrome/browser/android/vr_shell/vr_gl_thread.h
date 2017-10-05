@@ -65,7 +65,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetFullscreen(bool enabled) override;
   void SetToolbarState(const vr::ToolbarState& state) override;
   void SetIncognito(bool incognito) override;
-  void SetWebVrSecureOrigin(bool secure) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;
   void SetIsExiting() override;
