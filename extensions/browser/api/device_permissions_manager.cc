@@ -31,7 +31,6 @@ namespace extensions {
 
 using content::BrowserContext;
 using content::BrowserThread;
-using device::HidService;
 using device::UsbDevice;
 using device::UsbService;
 using extensions::APIPermission;

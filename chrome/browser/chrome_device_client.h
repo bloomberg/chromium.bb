@@ -21,15 +21,8 @@ class ChromeDeviceClient : device::DeviceClient {
 
   // device::DeviceClient implementation
   device::UsbService* GetUsbService() override;
-#if !defined(OS_ANDROID)
-  device::HidService* GetHidService() override;
-#endif  // !defined(OS_ANDROID)
 
  private:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<device::HidService> hid_service_;
-#endif  // !defined(OS_ANDROID)
-
   std::unique_ptr<device::UsbService> usb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDeviceClient);

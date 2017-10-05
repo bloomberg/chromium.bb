@@ -5,7 +5,6 @@
 #include "extensions/shell/browser/shell_device_client.h"
 
 #include "content/public/browser/browser_thread.h"
-#include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"
 
 using content::BrowserThread;

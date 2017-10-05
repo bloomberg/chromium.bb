@@ -34,10 +34,4 @@ UsbService* DeviceClient::GetUsbService() {
   return nullptr;
 }
 
-HidService* DeviceClient::GetHidService() {
-  // This should never be called by clients which do not support the HID API.
-  NOTREACHED();
-  return nullptr;
-}
-
 }  // namespace device

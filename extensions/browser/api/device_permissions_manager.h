@@ -20,7 +20,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "device/hid/hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/usb/usb_service.h"
 

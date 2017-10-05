@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
-#include "device/test/test_device_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -20,9 +19,9 @@ class HidServiceTest : public ::testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
- private:
+ protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  TestDeviceClient device_client_;
+  std::unique_ptr<HidService> service_;
 };
 
 void OnGetDevices(const base::Closure& quit_closure,
@@ -36,13 +35,12 @@ void OnGetDevices(const base::Closure& quit_closure,
 }  // namespace
 
 TEST_F(HidServiceTest, GetDevices) {
-  // The HID service is not available on all platforms.
-  HidService* service = DeviceClient::Get()->GetHidService();
-  if (service) {
-    base::RunLoop loop;
-    service->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
-    loop.Run();
-  }
+  service_ = HidService::Create();
+  ASSERT_TRUE(service_);
+
+  base::RunLoop loop;
+  service_->GetDevices(base::Bind(&OnGetDevices, loop.QuitClosure()));
+  loop.Run();
 }
 
 }  // namespace device
