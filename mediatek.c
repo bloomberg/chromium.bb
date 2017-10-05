@@ -126,7 +126,7 @@ static int mediatek_bo_unmap(struct bo *bo, struct map_info *data)
 static int mediatek_bo_flush(struct bo *bo, struct map_info *data)
 {
 	struct mediatek_private_map_data *priv = data->priv;
-	if (priv)
+	if (priv && (data->map_flags & BO_MAP_WRITE))
 		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
 
 	return 0;

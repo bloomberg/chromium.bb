@@ -82,6 +82,7 @@ struct map_info {
 	void *addr;
 	size_t length;
 	uint32_t handle;
+	uint32_t map_flags;
 	int32_t refcount;
 	void *priv;
 };

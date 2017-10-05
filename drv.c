@@ -401,6 +401,8 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 
 	if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
 		data = (struct map_info *)ptr;
+		/* TODO(gsingh): support mapping same buffer with different flags. */
+		assert(data->map_flags == map_flags);
 		data->refcount++;
 		goto success;
 	}
@@ -417,6 +419,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	data->refcount = 1;
 	data->addr = addr;
 	data->handle = bo->handles[plane].u32;
+	data->map_flags = map_flags;
 	drmHashInsert(bo->drv->map_table, bo->handles[plane].u32, (void *)data);
 
 success:

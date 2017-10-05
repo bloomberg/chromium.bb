@@ -44,7 +44,6 @@ enum tegra_map_type {
 struct tegra_private_map_data {
 	void *tiled;
 	void *untiled;
-	uint32_t map_flags;
 };
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
@@ -323,7 +322,6 @@ static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane, ui
 		priv = calloc(1, sizeof(*priv));
 		priv->untiled = calloc(1, bo->total_size);
 		priv->tiled = addr;
-		priv->map_flags = map_flags;
 		data->priv = priv;
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_READ_TILED_BUFFER);
 		addr = priv->untiled;
@@ -349,7 +347,7 @@ static int tegra_bo_flush(struct bo *bo, struct map_info *data)
 {
 	struct tegra_private_map_data *priv = data->priv;
 
-	if (priv && (priv->map_flags & BO_MAP_WRITE))
+	if (priv && (data->map_flags & BO_MAP_WRITE))
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_WRITE_TILED_BUFFER);
 
 	return 0;
