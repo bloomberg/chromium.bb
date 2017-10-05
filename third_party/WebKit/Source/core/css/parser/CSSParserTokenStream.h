@@ -85,6 +85,7 @@ class CORE_EXPORT CSSParserTokenStream {
   const CSSParserToken& UncheckedConsume() {
     DCHECK(HasLookAhead());
     DCHECK_NE(next_.GetBlockType(), CSSParserToken::kBlockStart);
+    DCHECK_NE(next_.GetBlockType(), CSSParserToken::kBlockEnd);
     has_look_ahead_ = false;
     offset_ = tokenizer_.Offset();
     return next_;
