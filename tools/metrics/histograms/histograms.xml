@@ -46372,7 +46372,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.3GPPRegistrationDelayedDrop"
     enum="NetworkCellular3GPPRegistrationDelayedDrop">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of cellular network
     flakes. A network flake occurs when the signal strength goes below detection
@@ -46381,7 +46381,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.AutoConnectTotalTime" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the total amount of time spent
     from the start of the first auto-connect request until when the cellular
@@ -46390,7 +46390,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.AutoConnectTries">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of auto-connect
     tries that were attempted before the cellular modem successfully connected
@@ -46400,7 +46400,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.DevicePresenceStatus"
     enum="BooleanPresent">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the presence of a Cellular device in
     the system. A sample is emitted once every 3 minutes.
@@ -46412,7 +46412,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
     encountered by Shill.  This indicates that Shill is using minimal DHCP
@@ -46423,7 +46423,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.Disconnect"
     enum="NetworkDisconnectType">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network usage metric that tracks whether the cellular network was
     disconnected due to an error or was explicitly disconnected by the user.
@@ -46431,7 +46431,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.Drop" enum="NetworkCellularTechnology">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS cellular network metric that tracks the number of drops based on
     the network technology.
@@ -46440,7 +46440,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.ExpiredLeaseLengthSeconds"
     units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
     cellular network at the time it expired without the DHCP client being able
@@ -46450,7 +46450,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.IPv6ConnectivityStatus"
     enum="IPv6ConnectivityStatus">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the presence of complete IPv6
     configuration at the time when cellular connection is established.
@@ -46459,7 +46459,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.NetworkConnectionIPType"
     enum="NetworkConnectionIPType">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the types of IP configuration used for
     establishing cellular connections.
@@ -46468,7 +46468,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.OutOfCreditsReason"
     enum="NetworkCellularOutOfCreditsReason">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS cellular network metric that tracks the number of out-of-credits
     detected based on the cause that triggered the out-of-credits.
@@ -46476,7 +46476,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.PortalAttempts">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of portal detection
     attempts per pass for a cellular network. This includes failure, timeout and
@@ -46485,7 +46485,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.PortalAttemptsToOnline">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the total number of portal
     detection attempts performed for a cellular network between the Connected
@@ -46495,7 +46495,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.PortalResult"
     enum="NetworkPortalResult">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the result of portal detections
     for a cellular network.
@@ -46503,7 +46503,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.SignalStrengthBeforeDrop">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the signal strength (0-100) of the
     cellular modem before it dropped from the network.
@@ -46511,7 +46511,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeOnline" units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the time spent using cellular to transport
     data.  These data are mostly useful when summed and compared to TimeOnline
@@ -46520,7 +46520,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToConfig" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join a cellular
     network and configure Layer 3 state.
@@ -46528,7 +46528,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToConnect" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to connect a cellular
     modem.
@@ -46536,7 +46536,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToDisable" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to disable a cellular
     modem.
@@ -46544,7 +46544,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToEnable" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to enable a cellular
     modem.
@@ -46552,7 +46552,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToInitialize" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to initialize a
     cellular modem.
@@ -46560,7 +46560,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToOnline" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
     cellular network is online after configuring Layer 3 state.
@@ -46568,7 +46568,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToPortal" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
     cellular network is in a captive portal after configuring Layer 3 state.
@@ -46576,7 +46576,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToScan" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to scan a cellular
     network and register a modem.
@@ -46585,7 +46585,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.ConnectionDiagnosticsIssue"
     enum="ConnectionDiagnosticsIssue">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the connectivity issue diagnosed by the
     ConnectionDiagnostics class in Shill. This metric is logged each time a
@@ -46595,7 +46595,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.CorruptedProfile" enum="NetworkCorruptedProfile">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS cellular network metric that tracks the number of corrupted
     profiles encountered by Shill.
@@ -46604,7 +46604,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.DarkResumeActionResult"
     enum="ShillSuspendTerminationDarkResumeActionResult">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of dark resume
     actions that successfully complete or fail when shill suspends.
@@ -46612,7 +46612,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.DarkResumeActionsTimeTaken" units="ms">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes dark resume actions to complete when shill suspends.
@@ -46623,7 +46623,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 01/2015. Migrated to Network.Shill.DarkResumeActionsTimeTaken.
   </obsolete>
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes dark resume actions to complete when shill suspends.
@@ -46631,7 +46631,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.DarkResumeScanNumRetries">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of times a dark resume scan is
     retried in a single dark resume.
@@ -46640,7 +46640,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.DarkResumeScanRetryResult"
     enum="DarkResumeScanRetryResult">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks whether dark resume scan retries led to
     the system suspending from dark resume in a connected state. This metric is
@@ -46650,7 +46650,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.DeviceConnectionStatus" enum="ConnectionStatus">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the connection status of
     the device. A sample is emitted once every 3 minutes.
@@ -46658,7 +46658,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.DeviceRemovedEvent" enum="DeviceTechnologyType">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the network device removed events for
     each device type.
@@ -46684,7 +46684,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.DHCPOptionFailureDetected"
     enum="NetworkTechnology">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
     encountered by Shill for each network technology.  This indicates that Shill
@@ -46695,7 +46695,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.DevicePresenceStatus"
     enum="BooleanPresent">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the presence of an Ethernet device in
     the system. A sample is emitted once every 3 minutes.
@@ -46707,7 +46707,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
     encountered by Shill.  This indicates that Shill is using minimal DHCP
@@ -46718,7 +46718,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.Disconnect"
     enum="NetworkDisconnectType">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network usage metric that tracks whether the Ethernet network was
     disconnected due to an error or was explicitly disconnected by the user.
@@ -46727,7 +46727,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"
     units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for
     an Ethernet network at the time it expired without the DHCP client being
@@ -46736,7 +46736,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.LinkMonitorBroadcastErrorsAtFailure">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of LinkMonitor
     broadcast errors that were accrued on an Ethernet network at the time that
@@ -46746,7 +46746,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.LinkMonitorFailure"
     enum="LinkMonitorFailureType">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS metric that signals the type of failure the LinkMonitor
     encountered which caused it to stop monitoring an Ethernet network.
@@ -46755,7 +46755,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"
     units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of milliseconds
     between an ARP request and a received reply on an Ethernet network.
@@ -46764,7 +46764,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.LinkMonitorSecondsToFailure"
     units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of seconds from
     the start of the LinkMonitor until failure on an Ethernet network.
@@ -46772,7 +46772,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.LinkMonitorUnicastErrorsAtFailure">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of LinkMonitor
     unicast errors that were accrued on an Ethernet network at the time that the
@@ -46781,7 +46781,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.PortalAttempts">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of portal detection
     attempts per pass for an Ethernet network. This includes failure, timeout
@@ -46790,7 +46790,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.PortalAttemptsToOnline">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the total number of portal
     detection attempts performed for an Ethernet network between the Connected
@@ -46800,7 +46800,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Ethernet.PortalResult"
     enum="NetworkPortalResult">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the result of portal detections
     for an Ethernet network.
@@ -46808,7 +46808,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeOnline" units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the time spent using Ethernet to transport
     data.  These data are mostly useful when summed and compared to TimeOnline
@@ -46817,7 +46817,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToConfig" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join a wired
     Ethernet network and configure Layer 3 state (typically acquire a DHCP
@@ -46826,7 +46826,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToInitialize" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to initialize an
     Ethernet device.
@@ -46834,7 +46834,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToOnline" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
     Ethernet network is online after configuring Layer 3 state.
@@ -46842,7 +46842,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToPortal" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
     Ethernet network is in a captive portal after configuring Layer 3 state.
@@ -46859,12 +46859,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.ServiceErrors" enum="NetworkServiceError">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>Chrome OS connection manager service errors seen.</summary>
 </histogram>
 
 <histogram name="Network.Shill.ServicesOnSameNetwork">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of services that are connected
     to the currently connected network.
@@ -46873,7 +46873,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.SuspendActionResult"
     enum="ShillSuspendTerminationDarkResumeActionResult">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of suspend actions
     that successfully complete or fail when shill suspends.
@@ -46881,7 +46881,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.SuspendActionsTimeTaken" units="ms">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes suspend actions to complete when shill suspends.
@@ -46892,7 +46892,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 01/2015. Migrated to Network.Shill.SuspendActionsTimeTaken.
   </obsolete>
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes suspend actions to complete when shill suspends.
@@ -46901,7 +46901,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.TerminationActionResult"
     enum="ShillSuspendTerminationDarkResumeActionResult">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of termination
     actions that successfully complete or fail when shill terminates. Previously
@@ -46914,7 +46914,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 10/2014. Migrated to Network.Shill.SuspendActionResult.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of termination
     actions that successfully complete or fail when shill suspends.
@@ -46926,7 +46926,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 10/2014. Migrated to Network.Shill.TerminationActionResult.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of termination
     actions that successfully complete or fail when shill terminates.
@@ -46934,7 +46934,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.TerminationActionsTimeTaken" units="ms">
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes termination actions to complete when shill terminates.
@@ -46945,7 +46945,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 01/2015. Migrated to Network.Shill.TerminationActionsTimeTaken.
   </obsolete>
-  <owner>samueltan@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes termination actions to complete when shill terminates.
@@ -46956,7 +46956,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 10/2014. Migrated to Network.Shill.SuspendActionTime.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes termination actions to complete when shill suspends.
@@ -46967,7 +46967,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 10/2014. Migrated to Network.Shill.TerminationActionTime.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes termination actions to complete when shill terminates.
@@ -46975,7 +46975,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.TimeToDrop" units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network stability metric sampling the time in seconds between the
     networking going online to going offline. Offline events due to device
@@ -46985,7 +46985,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.UserInitiatedEvents" enum="UserInitiatedEvent">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of user-initiated events.
   </summary>
@@ -47001,7 +47001,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Vpn.RemoteAuthenticationType"
     enum="VPNRemoteAuthenticationType">
-  <owner>quiche@chromium.org</owner>
+  <owner>cernekee@chromium.org</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
     that tracks the remote authentication method.
@@ -47009,7 +47009,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeOnline" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>cernekee@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the time spent using VPN to transport
     data.  These data are mostly useful when summed and compared to TimeOnline
@@ -47021,7 +47021,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToConfig" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>cernekee@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
     state on a VPN network (typically acquire a DHCP lease).
@@ -47029,7 +47029,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToOnline" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>cernekee@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
     WiMax network is online after configuring Layer 3 state.
@@ -47038,7 +47038,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Vpn.UserAuthenticationType"
     enum="VPNUserAuthenticationType">
-  <owner>quiche@chromium.org</owner>
+  <owner>cernekee@chromium.org</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
     that tracks the user authentication method.
@@ -47046,7 +47046,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ApDisconnectReason" enum="WiFiReasonCode">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  Reason code reported when the AP
     disconnects a WiFi connection.
@@ -47054,7 +47054,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ApDisconnectType" enum="WiFiStatusType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  Broad category of reason AP disconnected a
     WiFi connection.
@@ -47062,7 +47062,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.ApMode" enum="WiFiApMode">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  The AP mode setting for each successful
     WiFi connection.
@@ -47070,7 +47070,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.AutoConnectableServices">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of wifi services available for
     auto-connect when auto-connect is initiated for wifi device.
@@ -47078,7 +47078,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.AvailableBSSesAtConnect">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of BSSes (endpoints) available
     for the currently connecting wifi service.
@@ -47086,7 +47086,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.Channel" enum="NetworkChannelType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  The channel used for each successful WiFi
     connection.
@@ -47095,7 +47095,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.ClientDisconnectReason"
     enum="WiFiReasonCode">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  Reason code reported when the client
     disconnects a WiFi connection.
@@ -47103,7 +47103,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ClientDisconnectType" enum="WiFiStatusType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  Broad category of reason client
     disconnected a WiFi connection.
@@ -47112,7 +47112,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.DarkResumeUnmatchedScanResultsReceived"
     enum="DarkResumeUnmatchedScanResultReceived">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks whether any unmatched scan results are
     received during dark resume cycles. An unmatched scan result is a set of
@@ -47123,14 +47123,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.DarkResumeWakeReason"
     enum="DarkResumeWakeReason">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the wake reason for dark resume.
   </summary>
 </histogram>
 
 <histogram name="Network.Shill.Wifi.DevicePresenceStatus" enum="BooleanPresent">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the presence of a WiFi device in the
     system. A sample is emitted once every 3 minutes.
@@ -47142,7 +47142,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
     encountered by Shill.  This indicates that Shill is using minimal DHCP
@@ -47152,7 +47152,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.Disconnect" enum="NetworkDisconnectType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric that tracks whether an 802.11 wireless
     network was disconnected due to an error or was explicitly disconnected by
@@ -47161,7 +47161,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.EapInnerProtocol" enum="EAPInnerProtocol">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful 802.1x wireless
     connection that tracks the configured inner authentication method.
@@ -47169,7 +47169,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.EapOuterProtocol" enum="EAPOuterProtocol">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful 802.1x wireless
     connection that tracks the configured outer authentication method.
@@ -47177,7 +47177,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.ExpiredLeaseLengthSeconds" units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
     WiFi network at the time it expired without the DHCP client being able to
@@ -47187,7 +47187,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wifi.FallbackDNSTestResult"
     enum="FallbackDNSTestResult">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the result of the fallback
     DNS test. The fallback DNS test is performed when portal detection failed
@@ -47196,7 +47196,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.FrequenciesConnectedEver">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS metric sampling the number of different frequencies (i.e.
     channels) on which a device has connected to a WiFi network. This value is
@@ -47209,7 +47209,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wifi.IPv6ConnectivityStatus"
     enum="IPv6ConnectivityStatus">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the presence of complete IPv6
     configuration at the time when WiFi connection is established.
@@ -47217,7 +47217,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorBroadcastErrorsAtFailure">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of LinkMonitor
     broadcast errors that were accrued on an 802.11 wireiless network at the
@@ -47227,7 +47227,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wifi.LinkMonitorFailure"
     enum="LinkMonitorFailureType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS metric that signals the type of failure the LinkMonitor
     encountered which caused it to stop monitoring an 802.11 wireless network.
@@ -47235,7 +47235,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorResponseTimeSample" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of milliseconds
     between an ARP request and a received reply on an 802.11 wireless network.
@@ -47244,7 +47244,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wifi.LinkMonitorSecondsToFailure"
     units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of seconds from
     the start of the LinkMonitor until failure on an 802.11 wireless network.
@@ -47252,7 +47252,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.LinkMonitorUnicastErrorsAtFailure">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the number of LinkMonitor
     unicast errors that were accrued on an 802.11 wireless network at the time
@@ -47262,7 +47262,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wifi.NetworkConnectionIPType"
     enum="NetworkConnectionIPType">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the types of IP configuration used for
     establishing WiFi connections.
@@ -47271,7 +47271,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wifi.NetworkProblemDetected"
     enum="NetworkProblemType">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the network problems
     encountered by TrafficMonitor after WiFi connection is established.
@@ -47279,7 +47279,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.PhyMode" enum="NetworkPhyModeType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  The channel type used for each successful
     WiFi connection.
@@ -47287,7 +47287,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.PortalAttempts">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of portal detection
     attempts per pass for an 802.11 wireless network. This includes failure,
@@ -47296,7 +47296,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.PortalAttemptsToOnline">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the total number of portal
     detection attempts performed for an 802.11 wireless network between the
@@ -47306,7 +47306,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.PortalResult" enum="NetworkPortalResult">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the result of portal detections
     for an 802.11 wireless network.
@@ -47324,7 +47324,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.RememberedSystemNetworkCount">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of 802.11 wireless networks
     configured from the system configuration profile. This metric is sampled
@@ -47338,7 +47338,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.RememberedUserNetworkCount">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the number of 802.11 wireless networks
     configured from a user configuration profile. This metric is sampled each
@@ -47347,7 +47347,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ScanResult" enum="WiFiScanResult">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric describing, for a WiFi scan attempt, what
     scan method is used and whether it ends in a connection.
@@ -47355,7 +47355,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ScanTimeInEbusy" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric describing, for a WiFi scan attempt, how many
     milliseconds were spent waiting to talk to the kernel/drivers.
@@ -47363,7 +47363,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.Security" enum="NetworkSecurityType">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric.  The security setting for each successful
     WiFi connection.
@@ -47379,7 +47379,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.SignalStrength" units="negative dBm">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric indicating the negative of the dBm received signal
     strength recorded at the time a successful WiFi connection started.
@@ -47387,7 +47387,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.StoppedTxQueueLength" units="frames">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric indicating the maximal length of any stopped
     mac80211 transmit queue. The metric is reported when a queue-status check
@@ -47398,7 +47398,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.StoppedTxQueueReason"
     enum="NetworkQueueStopReason">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric indicating the reason that mac80211 transmit queues
     were stopped. The metric is reported when a queue-status check determines
@@ -47461,7 +47461,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeOnline" units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the time spent using WiFi to transport
     data.  These data are mostly useful when summed and compared to TimeOnline
@@ -47470,7 +47470,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeResumeToReady" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time from the resume event
     to the time when an 802.11 wireless network has configured its Layer 3
@@ -47479,7 +47479,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToConfig" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
     state on an 802.11 wireless network (typically acquire a DHCP lease).
@@ -47487,7 +47487,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToConnect" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to connect to a WiFi
     Basic Service Set (which consists of the access point and associated
@@ -47496,7 +47496,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToInitialize" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to initialize an
     802.11 wireless device.
@@ -47504,7 +47504,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToJoin" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to join (associate
     plus authenticate) an 802.11 wireless network.
@@ -47512,7 +47512,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToOnline" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
     802.11 wireless network is online after configuring Layer 3 state.
@@ -47520,7 +47520,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToPortal" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that an
     802.11 wireless network is in a captive portal after configuring Layer 3
@@ -47529,7 +47529,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToScan" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to scan WiFi until a
     connection is found.
@@ -47537,7 +47537,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToScanAndConnect" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time between the beginning
     of a WiFi scan (if the scan includes both a progressive scan and a full
@@ -47547,7 +47547,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.TransmitBitrateMbps" units="Mbps">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the transmit bitrate in
     Mbps for the wifi device when it is connected to a network. The bitrate is
@@ -47556,7 +47556,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.UnreliableLinkSignalStrength">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric sampling the signal strength (0-100) of the wifi
     network when it becomes unreliable (experiencing multiple link failures in a
@@ -47566,7 +47566,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.UserInitiatedConnectionFailureReason"
     enum="ConnectionFailureReason">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the reasons of failed
     user-initiated WiFi connection attempts. The result of the user-initiated
@@ -47577,7 +47577,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.UserInitiatedConnectionResult"
     enum="ConnectionResult">
-  <owner>zqiu@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the result of
     user-initiated WiFi connection attempts.
@@ -47586,7 +47586,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.VerifyWakeOnWiFiSettingsResult"
     enum="VerifyWakeOnWiFiSettingsResult">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of times NIC wake on
     WiFi settings verification succeeds or fails in shill. This metric is
@@ -47597,7 +47597,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.WakeOnWiFiFeaturesEnabledState"
     enum="WakeOnWiFiFeaturesEnabledState">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric that tracks the wake on WiFi features that
     are enabled in shill. Recorded once every 10 minutes.
@@ -47606,7 +47606,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.WakeOnWiFiThrottled"
     enum="WakeOnWiFiThrottled">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks whether wake on WiFi was disabled
     during a period of system suspension because of too many dark resume wakes.
@@ -47617,7 +47617,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.WakeReasonReceivedBeforeOnDarkResume"
     enum="WakeReasonReceivedBeforeOnDarkResume">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks whether a wake reason was received
     during dark resume before executing WakeOnWiFi::OnDarkResume.
@@ -47626,7 +47626,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.WiFi.WiFiConnectionStatusAfterWake"
     enum="WiFiConnectionStatusAfterWake">
-  <owner>samueltan@chromium.org</owner>
+  <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network usage metric that tracks the WiFi connection status after
     waking from suspend, both when wake on WiFi is enabled and disabled.
@@ -47636,7 +47636,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Wimax.DevicePresenceStatus"
     enum="BooleanPresent">
-  <owner>zqiu@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the presence of a WiMax device in the
     system. A sample is emitted once every 3 minutes.
@@ -47648,7 +47648,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
   </obsolete>
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
     encountered by Shill.  This indicates that Shill is using minimal DHCP
@@ -47658,7 +47658,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wimax.ExpiredLeaseLengthSeconds" units="seconds">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
     WiMax network at the time it expired without the DHCP client being able to
@@ -47667,7 +47667,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wimax.TimeToConfig" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
     state on a WiMax network (typically acquire a DHCP lease).
@@ -47675,7 +47675,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wimax.TimeToInitialize" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to initialize a WiMax
     device.
@@ -47683,7 +47683,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wimax.TimeToOnline" units="ms">
-  <owner>quiche@chromium.org</owner>
+  <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
     WiMax network is online after configuring Layer 3 state.
