@@ -1,3 +1,4 @@
 include_rules = [
  "+chromeos/cryptohome",
+ "+services/data_decoder/public/cpp/decode_image.h",
 ]

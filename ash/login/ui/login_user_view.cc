@@ -5,6 +5,8 @@
 #include "ash/login/ui/login_user_view.h"
 
 #include "ash/ash_constants.h"
+#include "ash/login/ui/animated_rounded_image_view.h"
+#include "ash/login/ui/image_parser.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_constants.h"
 #include "ash/login/ui/non_accessible_view.h"
@@ -12,6 +14,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/user/rounded_image_view.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -85,24 +88,52 @@ views::View* MakePreferredSizeView(gfx::Size size) {
 class LoginUserView::UserImage : public NonAccessibleView {
  public:
   UserImage(int size)
-      : NonAccessibleView(kLoginUserImageClassName), size_(size) {
+      : NonAccessibleView(kLoginUserImageClassName),
+        size_(size),
+        weak_factory_(this) {
     SetLayoutManager(new views::FillLayout());
 
     // TODO(jdufault): We need to render a black border. We will probably have
-    // to add support directly to RoundedImageView, since the existing
+    // to add support directly to AnimatedRoundedImageView, since the existing
     // views::Border renders based on bounds (ie, a rectangle).
-    image_ = new tray::RoundedImageView(size_ / 2);
+    image_ = new AnimatedRoundedImageView(size_ / 2);
     AddChildView(image_);
   }
   ~UserImage() override = default;
 
   void UpdateForUser(const mojom::LoginUserInfoPtr& user) {
-    image_->SetImage(user->basic_user_info->avatar, gfx::Size(size_, size_));
+    // Set the initial image from |avatar| since we already have it available.
+    // Then, decode the bytes via blink's PNG decoder and play any animated
+    // frames if they are available.
+    if (!user->basic_user_info->avatar.isNull())
+      image_->SetImage(user->basic_user_info->avatar, gfx::Size(size_, size_));
+
+    // Decode the avatar using blink, as blink's PNG decoder supports APNG,
+    // which is the format used for the animated avators.
+    if (!user->basic_user_info->avatar_bytes.empty()) {
+      DecodeAnimation(user->basic_user_info->avatar_bytes,
+                      base::Bind(&LoginUserView::UserImage::OnImageDecoded,
+                                 weak_factory_.GetWeakPtr()));
+    }
   }
 
+  void SetAnimationEnabled(bool enable) { image_->SetAnimationEnabled(enable); }
+
  private:
-  tray::RoundedImageView* image_ = nullptr;
+  void OnImageDecoded(AnimationFrames animation) {
+    // If there is only a single frame to display, show the existing avatar.
+    if (animation.size() <= 1) {
+      LOG_IF(ERROR, animation.empty()) << "Decoding user avatar failed";
+      return;
+    }
+
+    image_->SetAnimation(animation, gfx::Size(size_, size_));
+  }
+
+  AnimatedRoundedImageView* image_ = nullptr;
   int size_;
+
+  base::WeakPtrFactory<UserImage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImage);
 };
@@ -416,6 +447,9 @@ void LoginUserView::UpdateOpacity() {
     auto user_dropdown_settings = build_settings(user_dropdown_);
     user_dropdown_->layer()->SetOpacity(target_opacity);
   }
+
+  // Animate avatar only if we are opaque.
+  user_image_->SetAnimationEnabled(is_opaque_);
 }
 
 void LoginUserView::SetLargeLayout() {

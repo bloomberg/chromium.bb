@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -96,8 +97,8 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 
   std::vector<std::string> kEmptyRecommendedLocales;
   const std::vector<std::string>& recommended_locales =
-      public_session_recommended_locales ?
-          *public_session_recommended_locales : kEmptyRecommendedLocales;
+      public_session_recommended_locales ? *public_session_recommended_locales
+                                         : kEmptyRecommendedLocales;
 
   // Construct the list of available locales. This list consists of the
   // recommended locales, followed by all others.
@@ -106,10 +107,9 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 
   // Select the the first recommended locale that is actually available or the
   // current UI locale if none of them are available.
-  const std::string selected_locale = FindMostRelevantLocale(
-      recommended_locales,
-      *available_locales.get(),
-      g_browser_process->GetApplicationLocale());
+  const std::string selected_locale =
+      FindMostRelevantLocale(recommended_locales, *available_locales.get(),
+                             g_browser_process->GetApplicationLocale());
 
   // Set |kKeyInitialLocales| to the list of available locales.
   user_dict->Set(kKeyInitialLocales, std::move(available_locales));
@@ -453,12 +453,36 @@ void UserSelectionScreen::FillUserMojoStruct(
   user_info->basic_user_info->display_name =
       base::UTF16ToUTF8(user->GetDisplayName());
   user_info->basic_user_info->display_email = user->display_email();
-  user_info->basic_user_info->avatar = user->GetImage();
-  if (user_info->basic_user_info->avatar.isNull()) {
+
+  if (!user->GetImage().isNull()) {
+    user_info->basic_user_info->avatar = user->GetImage();
+  } else {
     user_info->basic_user_info->avatar =
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGIN_DEFAULT_USER);
   }
+
+  // TODO(jdufault): Unify image handling between this code and
+  // user_image_source::GetUserImageInternal.
+  auto load_image_from_resource = [&](int resource_id) {
+    auto& rb = ui::ResourceBundle::GetSharedInstance();
+    base::StringPiece avatar =
+        rb.GetRawDataResourceForScale(resource_id, rb.GetMaxScaleFactor());
+    user_info->basic_user_info->avatar_bytes.assign(avatar.begin(),
+                                                    avatar.end());
+  };
+  if (user->has_image_bytes()) {
+    user_info->basic_user_info->avatar_bytes.assign(
+        user->image_bytes()->front(),
+        user->image_bytes()->front() + user->image_bytes()->size());
+  } else if (user->HasDefaultImage()) {
+    int resource_id = chromeos::default_user_image::kDefaultImageResourceIDs
+        [user->image_index()];
+    load_image_from_resource(resource_id);
+  } else if (user->image_is_stub()) {
+    load_image_from_resource(IDR_LOGIN_DEFAULT_USER);
+  }
+
   user_info->auth_type = auth_type;
   user_info->is_signed_in = user->is_logged_in();
   user_info->is_device_owner = is_owner;
@@ -527,9 +551,7 @@ void UserSelectionScreen::OnPasswordClearTimerExpired() {
 void UserSelectionScreen::OnUserActivity(const ui::Event* event) {
   if (!password_clear_timer_.IsRunning()) {
     password_clear_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kPasswordClearTimeoutSec),
-        this,
+        FROM_HERE, base::TimeDelta::FromSeconds(kPasswordClearTimeoutSec), this,
         &UserSelectionScreen::OnPasswordClearTimerExpired);
   }
   password_clear_timer_.Reset();
@@ -546,15 +568,13 @@ const user_manager::UserList UserSelectionScreen::PrepareUserListForSending(
   size_t non_owner_count = 0;
 
   for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
+       it != users.end(); ++it) {
     bool is_owner = ((*it)->GetAccountId() == owner);
     bool is_public_account =
         ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
     if ((is_public_account && !is_signin_to_add) || is_owner ||
         (!is_public_account && non_owner_count < max_non_owner_users)) {
-
       if (!is_owner)
         ++non_owner_count;
       if (is_owner && users_to_send.size() > kMaxUsers) {
