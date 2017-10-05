@@ -10,11 +10,14 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "ui/display/util/display_util_export.h"
 
 namespace gfx {
 class Size;
 }
+
+struct SkColorSpacePrimaries;
 
 // EDID (Extended Display Identification Data) is a format for monitor
 // metadata. This provides a parser for the data.
@@ -46,6 +49,12 @@ DISPLAY_UTIL_EXPORT bool ParseOutputDeviceData(
 DISPLAY_UTIL_EXPORT bool ParseOutputOverscanFlag(
     const std::vector<uint8_t>& edid,
     bool* flag);
+
+// Extracts from |edid| the |primaries| chromaticity coordinates (CIE xy
+// coordinates for Red, Green and Blue channels and for the White Point).
+DISPLAY_UTIL_EXPORT bool ParseChromaticityCoordinates(
+    const std::vector<uint8_t>& edid,
+    SkColorSpacePrimaries* primaries) WARN_UNUSED_RESULT;
 
 }  // namespace display
 

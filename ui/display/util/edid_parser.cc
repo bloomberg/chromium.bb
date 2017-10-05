@@ -11,6 +11,7 @@
 #include "base/hash.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -39,23 +40,21 @@ bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
   ParseOutputDeviceData(edid, &manufacturer_id, &product_code, &product_name,
                         nullptr, nullptr);
 
-  if (manufacturer_id != 0) {
-    // Generates product specific value from product_name instead of product
-    // code.
-    // See crbug.com/240341
-    uint32_t product_code_hash =
-        product_name.empty() ? 0 : base::Hash(product_name);
-    // An ID based on display's index will be assigned later if this call
-    // fails.
-    *display_id_out =
-        GenerateDisplayID(manufacturer_id, product_code_hash, output_index);
-    // product_id is 64-bit signed so it can store -1 as kInvalidProductID and
-    // not match a valid product id which will all be in the lowest 32-bits.
-    if (product_id_out)
-      *product_id_out = GetProductID(manufacturer_id, product_code);
-    return true;
-  }
-  return false;
+  if (manufacturer_id == 0)
+    return false;
+
+  // Generates product specific value from product_name instead of product code.
+  // See crbug.com/240341
+  uint32_t product_code_hash =
+      product_name.empty() ? 0 : base::Hash(product_name);
+  // An ID based on display's index will be assigned later if this call fails.
+  *display_id_out =
+      GenerateDisplayID(manufacturer_id, product_code_hash, output_index);
+  // |product_id_out| is 64-bit signed so it can store -1 as kInvalidProductID
+  // and not match a valid product id which will all be in the lowest 32-bits.
+  if (product_id_out)
+    *product_id_out = GetProductID(manufacturer_id, product_code);
+  return true;
 }
 
 bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
@@ -258,6 +257,86 @@ bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
   }
 
   return false;
+}
+
+bool ParseChromaticityCoordinates(const std::vector<uint8_t>& edid,
+                                  SkColorSpacePrimaries* primaries) {
+  DCHECK(primaries);
+
+  // Offsets, lengths, positions and masks are taken from [1] (or [2]).
+  // [1] http://en.wikipedia.org/wiki/Extended_display_identification_data
+  // [2] "VESA Enhanced EDID Standard " Release A, Revision 1, Feb 2000, Sec 3.7
+  //  "Phosphor or Filter Chromaticity: 10 bytes"
+  const unsigned int kChromaticityOffset = 25;
+  const unsigned int kChromaticityLength = 10;
+
+  const unsigned int kRedGreenLsbOffset = 25;
+  const unsigned int kRedxLsbPosition = 6;
+  const unsigned int kRedyLsbPosition = 4;
+  const unsigned int kGreenxLsbPosition = 3;
+  const unsigned int kGreenyLsbPosition = 0;
+
+  const unsigned int kBlueWhiteLsbOffset = 26;
+  const unsigned int kBluexLsbPosition = 6;
+  const unsigned int kBlueyLsbPosition = 4;
+  const unsigned int kWhitexLsbPosition = 3;
+  const unsigned int kWhiteyLsbPosition = 0;
+
+  // All LSBits parts are 2 bits wide.
+  const unsigned int kLsbMask = 0x3;
+
+  const unsigned int kRedxMsbOffset = 27;
+  const unsigned int kRedyMsbOffset = 28;
+  const unsigned int kGreenxMsbOffset = 29;
+  const unsigned int kGreenyMsbOffset = 30;
+  const unsigned int kBluexMsbOffset = 31;
+  const unsigned int kBlueyMsbOffset = 32;
+  const unsigned int kWhitexMsbOffset = 33;
+  const unsigned int kWhiteyMsbOffset = 34;
+
+  static_assert(
+      kChromaticityOffset + kChromaticityLength == kWhiteyMsbOffset + 1,
+      "EDID Parameter section length error");
+
+  if (edid.size() < kChromaticityOffset + kChromaticityLength) {
+    LOG(ERROR) << "too short EDID data: chromaticity coordinates";
+    return false;
+  }
+
+  const uint8_t red_green_lsbs = edid[kRedGreenLsbOffset];
+  const uint8_t blue_white_lsbs = edid[kBlueWhiteLsbOffset];
+
+  // Recompose the 10b values by appropriately mixing the 8 MSBs and the 2 LSBs,
+  // then rescale to 1024;
+  primaries->fRX = ((edid[kRedxMsbOffset] << 2) +
+                    ((red_green_lsbs >> kRedxLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fRY = ((edid[kRedyMsbOffset] << 2) +
+                    ((red_green_lsbs >> kRedyLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fGX = ((edid[kGreenxMsbOffset] << 2) +
+                    ((red_green_lsbs >> kGreenxLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fGY = ((edid[kGreenyMsbOffset] << 2) +
+                    ((red_green_lsbs >> kGreenyLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fBX = ((edid[kBluexMsbOffset] << 2) +
+                    ((blue_white_lsbs >> kBluexLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fBY = ((edid[kBlueyMsbOffset] << 2) +
+                    ((blue_white_lsbs >> kBlueyLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fWX = ((edid[kWhitexMsbOffset] << 2) +
+                    ((blue_white_lsbs >> kWhitexLsbPosition) & kLsbMask)) /
+                   1024.0f;
+  primaries->fWY = ((edid[kWhiteyMsbOffset] << 2) +
+                    ((blue_white_lsbs >> kWhiteyLsbPosition) & kLsbMask)) /
+                   1024.0f;
+
+  // TODO(mcasas): Up to two additional White Point coordinates can be provided
+  // in a Display Descriptor.Read them if we are not satisfied with |fWX| or
+  // |FWy|. https://crbug.com/771345.
+  return true;
 }
 
 }  // namespace display
