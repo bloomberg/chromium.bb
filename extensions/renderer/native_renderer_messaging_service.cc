@@ -77,7 +77,7 @@ NativeRendererMessagingService::~NativeRendererMessagingService() {}
 
 gin::Handle<GinPort> NativeRendererMessagingService::Connect(
     ScriptContext* script_context,
-    const std::string& target_id,
+    const ExtensionId& target_id,
     const std::string& channel_name,
     bool include_tls_channel_id) {
   if (!ScriptContextIsValid(script_context))
@@ -167,7 +167,7 @@ bool NativeRendererMessagingService::ContextHasMessagePort(
 void NativeRendererMessagingService::DispatchOnConnectToListeners(
     ScriptContext* script_context,
     const PortId& target_port_id,
-    const std::string& target_extension_id,
+    const ExtensionId& target_extension_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
