@@ -607,7 +607,7 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
       Position(owner_element_parent, owner_element_node_index));
   VisiblePosition after_owner_element = CreateVisiblePosition(
       Position(owner_element_parent, owner_element_node_index + 1),
-      VP_UPSTREAM_IF_POSSIBLE);
+      TextAffinity::kUpstreamIfPossible);
 
   SelectionInDOMTree::Builder builder;
   builder

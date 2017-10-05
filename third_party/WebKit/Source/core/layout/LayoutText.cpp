@@ -532,11 +532,12 @@ static PositionWithAffinity CreatePositionWithAffinityForBox(
       affinity = TextAffinity::kDownstream;
       break;
     case kAlwaysUpstream:
-      affinity = VP_UPSTREAM_IF_POSSIBLE;
+      affinity = TextAffinity::kUpstreamIfPossible;
       break;
     case kUpstreamIfPositionIsNotAtStart:
-      affinity = offset > box->CaretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE
-                                                : TextAffinity::kDownstream;
+      affinity = offset > box->CaretMinOffset()
+                     ? TextAffinity::kUpstreamIfPossible
+                     : TextAffinity::kDownstream;
       break;
   }
   int text_start_offset =
