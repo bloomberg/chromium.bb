@@ -22,6 +22,21 @@ import org.chromium.chrome.browser.util.IntentUtils;
 public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     private static final String TAG = "FirstRunActivity";
 
+    // Incoming parameters:
+    public static final String EXTRA_COMING_FROM_CHROME_ICON = "Extra.ComingFromChromeIcon";
+    public static final String EXTRA_CHROME_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
+
+    static final String SHOW_WELCOME_PAGE = "ShowWelcome";
+    static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
+    static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
+    static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
+
+    // Outgoing results:
+    public static final String EXTRA_FIRST_RUN_ACTIVITY_RESULT = "Extra.FreActivityResult";
+    public static final String EXTRA_FIRST_RUN_COMPLETE = "Extra.FreComplete";
+
+    public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
+
     private boolean mNativeInitialized;
 
     @Override
@@ -72,13 +87,13 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
      * @return Whether a pending intent was sent.
      */
     protected final boolean sendPendingIntentIfNecessary(final boolean complete) {
-        PendingIntent pendingIntent = IntentUtils.safeGetParcelableExtra(
-                getIntent(), FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT);
+        PendingIntent pendingIntent =
+                IntentUtils.safeGetParcelableExtra(getIntent(), EXTRA_CHROME_LAUNCH_INTENT);
         if (pendingIntent == null) return false;
 
         Intent extraDataIntent = new Intent();
-        extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, true);
-        extraDataIntent.putExtra(FirstRunActivity.EXTRA_FIRST_RUN_COMPLETE, complete);
+        extraDataIntent.putExtra(EXTRA_FIRST_RUN_ACTIVITY_RESULT, true);
+        extraDataIntent.putExtra(EXTRA_FIRST_RUN_COMPLETE, complete);
 
         try {
             // After the PendingIntent has been sent, send a first run callback to custom tabs if
