@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/http2/platform/api/http2_string_utils.h"
+#include "net/http2/tools/http2_bug_tracker.h"
 
 namespace net {
 
@@ -350,8 +351,7 @@ DecodeStatus HpackEntryTypeDecoder::Start(DecodeBuffer* db) {
       // All of those bits are 1, so the varint extends into another byte.
       return varint_decoder_.StartExtended(0x7f, db);
   }
-  CHECK(false) << "Unreachable, byte=" << std::hex
-               << static_cast<uint32_t>(byte);
+  HTTP2_BUG << "Unreachable, byte=" << std::hex << static_cast<uint32_t>(byte);
   return DecodeStatus::kDecodeError;
 }
 

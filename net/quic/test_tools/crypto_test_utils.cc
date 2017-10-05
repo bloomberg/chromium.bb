@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 
 #include <memory>
+#include <string>
 
 #include "net/quic/core/crypto/channel_id.h"
 #include "net/quic/core/crypto/common_cert_set.h"
@@ -19,6 +20,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -611,7 +613,7 @@ class MockCommonCertSets : public CommonCertSets {
       : cert_(cert.as_string()), hash_(hash), index_(index) {}
 
   QuicStringPiece GetCommonHashes() const override {
-    CHECK(false) << "not implemented";
+    QUIC_BUG << "not implemented";
     return QuicStringPiece();
   }
 

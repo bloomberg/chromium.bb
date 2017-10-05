@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "net/http2/tools/http2_bug_tracker.h"
 
 namespace net {
 namespace {
@@ -79,7 +80,7 @@ DecodeStatus HpackEntryDecoder::Start(DecodeBuffer* db,
       return status;
   }
 
-  NOTREACHED();
+  HTTP2_BUG << "Unreachable";
   return DecodeStatus::kDecodeError;
 }
 
@@ -220,7 +221,7 @@ bool HpackEntryDecoder::DispatchOnType(HpackEntryDecoderListener* listener) {
       return true;
   }
 
-  NOTREACHED();
+  HTTP2_BUG << "Unreachable, entry_type=" << entry_type;
   return true;
 }
 
