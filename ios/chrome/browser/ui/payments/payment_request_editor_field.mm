@@ -22,6 +22,7 @@
 @synthesize autoCapitalizationType = _autoCapitalizationType;
 @synthesize item = _item;
 @synthesize sectionIdentifier = _sectionIdentifier;
+@synthesize pristine = _pristine;
 
 - (instancetype)initWithAutofillUIType:(AutofillUIType)autofillUIType
                              fieldType:(EditorFieldType)fieldType
@@ -39,6 +40,7 @@
     _returnKeyType = UIReturnKeyNext;
     _keyboardType = UIKeyboardTypeDefault;
     _autoCapitalizationType = UITextAutocapitalizationTypeWords;
+    _pristine = YES;
   }
   return self;
 }
