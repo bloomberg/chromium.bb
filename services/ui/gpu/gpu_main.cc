@@ -44,9 +44,24 @@ std::unique_ptr<base::MessagePump> CreateMessagePumpMac() {
 }
 #endif  // defined(OS_MACOSX)
 
-std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
-  auto thread = std::make_unique<base::Thread>("CompositorThread");
+}  // namespace
+
+namespace ui {
+
+GpuMain::GpuMain(mojom::GpuMainRequest request)
+    : gpu_thread_("GpuThread"),
+      io_thread_("GpuIOThread"),
+      binding_(this) {
+  // TODO: crbug.com/609317: Remove this when Mus Window Server and GPU are
+  // split into separate processes. Until then this is necessary to be able to
+  // run Mushrome (chrome --mus) with Mus running in the browser process.
+  if (!base::PowerMonitor::Get()) {
+    power_monitor_ = base::MakeUnique<base::PowerMonitor>(
+        base::MakeUnique<base::PowerMonitorDeviceSource>());
+  }
+
   base::Thread::Options thread_options;
+
 #if defined(OS_WIN)
   thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #elif defined(USE_X11)
@@ -67,31 +82,12 @@ std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
-  CHECK(thread->StartWithOptions(thread_options));
-  return thread;
-}
-
-}  // namespace
-
-namespace ui {
-
-GpuMain::GpuMain(mojom::GpuMainRequest request)
-    : io_thread_("GpuIOThread"),
-      gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      compositor_thread_(CreateAndStartCompositorThread()),
-      compositor_thread_task_runner_(compositor_thread_->task_runner()),
-      binding_(this, std::move(request)) {
-  // TODO(crbug.com/609317): Remove this when Mus Window Server and GPU are
-  // split into separate processes. Until then this is necessary to be able to
-  // run Mushrome (chrome --mus) with Mus running in the browser process.
-  if (!base::PowerMonitor::Get()) {
-    power_monitor_ = base::MakeUnique<base::PowerMonitor>(
-        base::MakeUnique<base::PowerMonitorDeviceSource>());
-  }
+  CHECK(gpu_thread_.StartWithOptions(thread_options));
+  gpu_thread_task_runner_ = gpu_thread_.task_runner();
 
   // TODO(sad): We do not need the IO thread once gpu has a separate process. It
   // should be possible to use |main_task_runner_| for doing IO tasks.
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  thread_options = base::Thread::Options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // TODO(reveman): Remove this in favor of setting it explicitly for each type
@@ -100,39 +96,29 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
 
-  gpu_init_ = std::make_unique<gpu::GpuInit>();
-  gpu_init_->set_sandbox_helper(this);
-  // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
-  // split into a separate process.
-  gpu_init_->InitializeInProcess(base::CommandLine::ForCurrentProcess());
-  gpu_service_ = base::MakeUnique<viz::GpuServiceImpl>(
-      gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
-      io_thread_.task_runner(), gpu_init_->gpu_feature_info());
+  compositor_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+
+  // |this| will outlive the gpu thread and so it's safe to use
+  // base::Unretained here.
+  gpu_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuMain::InitOnGpuThread, base::Unretained(this),
+                 io_thread_.task_runner(), compositor_thread_task_runner_));
+  gpu_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuMain::BindOnGpu, base::Unretained(this),
+                            base::Passed(std::move(request))));
 }
 
 GpuMain::~GpuMain() {
-  DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
-  io_thread_.Stop();
-}
+  DCHECK(compositor_thread_task_runner_->BelongsToCurrentThread());
+  // Tear down the compositor first because it blocks on the gpu service.
+  TearDownOnCompositorThread();
 
-void GpuMain::TearDown() {
-  DCHECK(!gpu_thread_task_runner_->BelongsToCurrentThread());
-  DCHECK(!compositor_thread_task_runner_->BelongsToCurrentThread());
-  // The compositor holds on to some resources from gpu service. So destroy the
-  // compositor first, before destroying the gpu service.
-  base::WaitableEvent compositor_wait(
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  compositor_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::TearDownOnCompositorThread,
-                            base::Unretained(this), &compositor_wait));
-  compositor_wait.Wait();
-  base::WaitableEvent gpu_wait(base::WaitableEvent::ResetPolicy::MANUAL,
-                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::TearDownOnGpuThread,
-                            base::Unretained(this), &gpu_wait));
-  gpu_wait.Wait();
+      FROM_HERE,
+      base::Bind(&GpuMain::TearDownOnGpuThread, base::Unretained(this)));
+  gpu_thread_.Stop();
+  io_thread_.Stop();
 }
 
 void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
@@ -140,17 +126,9 @@ void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
                                const gpu::GpuPreferences& preferences,
                                mojo::ScopedSharedBufferHandle activity_flags) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
-  gpu_service_->UpdateGPUInfoFromPreferences(preferences);
-  gpu_service_->InitializeWithHost(
-      std::move(gpu_host),
+  CreateGpuServiceOnGpuThread(
+      std::move(request), std::move(gpu_host), preferences,
       gpu::GpuProcessActivityFlags(std::move(activity_flags)));
-  gpu_service_->Bind(std::move(request));
-
-  if (pending_frame_sink_manager_request_.is_pending()) {
-    CreateFrameSinkManagerInternal(
-        std::move(pending_frame_sink_manager_request_),
-        std::move(pending_frame_sink_manager_client_info_));
-  }
 }
 
 void GpuMain::CreateFrameSinkManager(
@@ -163,6 +141,23 @@ void GpuMain::CreateFrameSinkManager(
     return;
   }
   CreateFrameSinkManagerInternal(std::move(request), client.PassInterface());
+}
+
+void GpuMain::BindOnGpu(mojom::GpuMainRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void GpuMain::InitOnGpuThread(
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_runner) {
+  gpu_init_.reset(new gpu::GpuInit());
+  gpu_init_->set_sandbox_helper(this);
+  // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
+  // split into a separate process.
+  gpu_init_->InitializeInProcess(base::CommandLine::ForCurrentProcess());
+  gpu_service_ = base::MakeUnique<viz::GpuServiceImpl>(
+      gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_runner,
+      gpu_init_->gpu_feature_info());
 }
 
 void GpuMain::CreateFrameSinkManagerInternal(
@@ -199,19 +194,33 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
                                         std::move(client));
 }
 
-void GpuMain::TearDownOnCompositorThread(base::WaitableEvent* wait) {
+void GpuMain::TearDownOnCompositorThread() {
   frame_sink_manager_.reset();
   display_provider_.reset();
-  wait->Signal();
 }
 
-void GpuMain::TearDownOnGpuThread(base::WaitableEvent* wait) {
-  gpu_command_service_ = nullptr;
+void GpuMain::TearDownOnGpuThread() {
   binding_.Close();
   gpu_service_.reset();
   gpu_memory_buffer_factory_.reset();
   gpu_init_.reset();
-  wait->Signal();
+}
+
+void GpuMain::CreateGpuServiceOnGpuThread(
+    viz::mojom::GpuServiceRequest request,
+    mojom::GpuHostPtr gpu_host,
+    const gpu::GpuPreferences& preferences,
+    gpu::GpuProcessActivityFlags activity_flags) {
+  gpu_service_->UpdateGPUInfoFromPreferences(preferences);
+  gpu_service_->InitializeWithHost(std::move(gpu_host),
+                                   std::move(activity_flags));
+  gpu_service_->Bind(std::move(request));
+
+  if (pending_frame_sink_manager_request_.is_pending()) {
+    CreateFrameSinkManagerInternal(
+        std::move(pending_frame_sink_manager_request_),
+        std::move(pending_frame_sink_manager_client_info_));
+  }
 }
 
 void GpuMain::PreSandboxStartup() {
