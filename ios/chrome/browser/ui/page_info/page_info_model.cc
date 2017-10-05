@@ -155,7 +155,7 @@ PageInfoModel::SectionInfo PageInfoModel::GetSectionInfo(int index) {
 }
 
 gfx::Image* PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (icon_id) {
     case ICON_NONE:
     case ICON_STATE_INTERNAL_PAGE:

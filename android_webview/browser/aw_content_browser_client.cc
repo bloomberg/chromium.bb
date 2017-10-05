@@ -88,7 +88,7 @@ namespace {
 // This class filters out incoming aw_contents related IPC messages for the
 // renderer process on the IPC thread.
 class AwContentsMessageFilter : public content::BrowserMessageFilter {
-public:
+ public:
   explicit AwContentsMessageFilter(int process_id);
 
   // BrowserMessageFilter methods.
@@ -104,8 +104,8 @@ public:
                                   bool* ignore_navigation);
   void OnSubFrameCreated(int parent_render_frame_id, int child_render_frame_id);
 
-private:
- ~AwContentsMessageFilter() override;
+ private:
+  ~AwContentsMessageFilter() override;
 
   int process_id_;
 
@@ -297,7 +297,7 @@ std::string AwContentBrowserClient::GetAcceptLangs(
 }
 
 const gfx::ImageSkia* AwContentBrowserClient::GetDefaultFavicon() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // TODO(boliu): Bundle our own default favicon?
   return rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
 }

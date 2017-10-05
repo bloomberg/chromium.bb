@@ -76,13 +76,13 @@ IOSChromeMainParts::~IOSChromeMainParts() {}
 void IOSChromeMainParts::PreMainMessageLoopStart() {
   l10n_util::OverrideLocaleWithCocoaLocale();
   const std::string loaded_locale =
-      ResourceBundle::InitSharedInstanceWithLocale(
-          std::string(), nullptr, ResourceBundle::LOAD_COMMON_RESOURCES);
+      ui::ResourceBundle::InitSharedInstanceWithLocale(
+          std::string(), nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
   CHECK(!loaded_locale.empty());
 
   base::FilePath resources_pack_path;
   PathService::Get(ios::FILE_RESOURCES_PACK, &resources_pack_path);
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_100P);
 }
 

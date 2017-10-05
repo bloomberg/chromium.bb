@@ -273,7 +273,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
   else
     replacements.push_back("");
   *error_html = base::ReplaceStringPlaceholders(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_AW_LOAD_ERROR_HTML),
       replacements, nullptr);
 }

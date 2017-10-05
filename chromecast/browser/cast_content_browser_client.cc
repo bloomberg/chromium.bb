@@ -570,7 +570,7 @@ void CastContentBrowserClient::RegisterInProcessServices(
 std::unique_ptr<base::Value>
 CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int id = -1;
   if (service_name == content::mojom::kBrowserServiceName)
     id = IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY;

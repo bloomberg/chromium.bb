@@ -62,8 +62,9 @@ std::string CastDevToolsManagerDelegate::GetDiscoveryPageHTML() {
 #if defined(OS_ANDROID)
   return std::string();
 #else
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_CAST_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_CAST_SHELL_DEVTOOLS_DISCOVERY_PAGE)
+      .as_string();
 #endif
 }
 

@@ -46,7 +46,7 @@ void AshInteractiveUITestBase::SetUp() {
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
   env_ = aura::Env::CreateInstance();
 

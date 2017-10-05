@@ -143,13 +143,14 @@ base::string16 ChromeWebClient::GetLocalizedString(int message_id) const {
 base::StringPiece ChromeWebClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
     int resource_id) const {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(

@@ -102,7 +102,7 @@ class CatalogViewerContents : public views::WidgetDelegateView,
   gfx::ImageSkia GetWindowAppIcon() override {
     // TODO(jamescook): Create a new .pak file for this app and make a custom
     // icon, perhaps one that looks like the Chrome OS task viewer icon.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_SETTINGS);
   }
 
@@ -111,16 +111,16 @@ class CatalogViewerContents : public views::WidgetDelegateView,
     return static_cast<int>(entries_.size());
   }
   base::string16 GetText(int row, int column_id) override {
-    switch(column_id) {
-    case 0:
-      DCHECK(row < static_cast<int>(entries_.size()));
-      return base::UTF8ToUTF16(entries_[row].name);
-    case 1:
-      DCHECK(row < static_cast<int>(entries_.size()));
-      return base::UTF8ToUTF16(entries_[row].url);
-    default:
-      NOTREACHED();
-      break;
+    switch (column_id) {
+      case 0:
+        DCHECK(row < static_cast<int>(entries_.size()));
+        return base::UTF8ToUTF16(entries_[row].name);
+      case 1:
+        DCHECK(row < static_cast<int>(entries_.size()));
+        return base::UTF8ToUTF16(entries_[row].url);
+      default:
+        NOTREACHED();
+        break;
     }
     return base::string16();
   }

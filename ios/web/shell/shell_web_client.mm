@@ -78,13 +78,14 @@ std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
 base::StringPiece ShellWebClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* ShellWebClient::GetDataResourceBytes(
     int resource_id) const {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 void ShellWebClient::RegisterServices(StaticServiceMap* services) {

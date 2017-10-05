@@ -64,7 +64,7 @@ void GetFaviconBitmapForNativeURL(
     favicon_bitmap.icon_type = favicon_base::FAVICON;
     favicon_bitmap.pixel_size = candidate_sizes[selected_index];
     favicon_bitmap.bitmap_data =
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
             resource_id, scale_factor);
 
     if (!favicon_bitmap.is_valid())
