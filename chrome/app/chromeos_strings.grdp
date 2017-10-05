@@ -4298,7 +4298,7 @@ Battery full
     Get to your apps fast
   </message>
   <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_1" desc="First part of message on the first-run tutorial bubble pointing to application list button.">
-    Use the Launcher to quickly get to new apps and activities.
+    Use the Launcher to quickly get to new apps and activities. To get here by keyboard, press Alt + Shift + L.
   </message>
   <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_2" desc="Second part of message on the first-run tutorial bubble pointing to application list button. Only shown if the device is Google Assistant capable.">
     Just hold the Launcher icon to talk to your Google Assistant.
@@ -4307,7 +4307,7 @@ Battery full
     Check your Chromebook status
   </message>
   <message name="IDS_FIRST_RUN_TRAY_STEP_TEXT" desc="Text on the first-run tutorial bubble pointing to system tray bubble.">
-    Manage connections, updates, and settings with the status tray.
+    Manage connections, updates, and settings with the status tray. To get here by keyboard, press Alt + Shift + S.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_HEADER" desc="Header of the first-run tutorial bubble pointing to help button in system tray.">
     Explore your Chromebook
