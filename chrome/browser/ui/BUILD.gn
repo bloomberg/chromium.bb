@@ -467,6 +467,7 @@ split_static_library("ui") {
     "//components/user_prefs",
     "//components/variations",
     "//components/variations/service",
+    "//components/vector_icons",
     "//components/version_ui",
     "//components/web_cache/browser",
     "//components/web_resource",

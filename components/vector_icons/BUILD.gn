@@ -19,6 +19,8 @@ aggregate_vector_icons("components_vector_icons") {
     "close_16.icon",
     "edit.icon",
     "error_circle.icon",
+    "folder.1x.icon",
+    "folder.icon",
     "forward_arrow.1x.icon",
     "forward_arrow.icon",
     "help_outline.icon",

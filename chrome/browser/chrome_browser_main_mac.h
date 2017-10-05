@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
-#include "chrome/browser/resource_delegate_mac.h"
 
 class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
  public:
@@ -27,8 +26,6 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
   static void DidEndMainMessageLoop();
 
  private:
-  MacResourceDelegate resource_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsMac);
 };
 
