@@ -3350,6 +3350,12 @@ static void rd_test_partition3(
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_STATS sum_rdc, this_rdc;
+#if CONFIG_UNPOISON_PARTITION_CTX
+  const AV1_COMMON *const cm = &cpi->common;
+  const int hbs = mi_size_wide[bsize] / 2;
+  const int has_rows = mi_row + hbs < cm->mi_rows;
+  const int has_cols = mi_col + hbs < cm->mi_cols;
+#endif  // CONFIG_UNPOISON_PARTITION_CTX
 #if CONFIG_SUPERTX || CONFIG_EXT_PARTITION_TYPES_AB
   const AV1_COMMON *const cm = &cpi->common;
 #endif
