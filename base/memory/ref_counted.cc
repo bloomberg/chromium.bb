@@ -21,12 +21,12 @@ bool RefCountedThreadSafeBase::HasOneRef() const {
   return ref_count_.IsOne();
 }
 
-RefCountedThreadSafeBase::~RefCountedThreadSafeBase() {
 #if DCHECK_IS_ON()
+RefCountedThreadSafeBase::~RefCountedThreadSafeBase() {
   DCHECK(in_dtor_) << "RefCountedThreadSafe object deleted without "
                       "calling Release()";
-#endif
 }
+#endif
 
 #if defined(ARCH_CPU_64_BIT)
 void RefCountedBase::AddRefImpl() const {

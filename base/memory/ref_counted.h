@@ -167,7 +167,11 @@ class BASE_EXPORT RefCountedThreadSafeBase {
 #endif
   }
 
+#if DCHECK_IS_ON()
   ~RefCountedThreadSafeBase();
+#else
+  ~RefCountedThreadSafeBase() = default;
+#endif
 
 // Release and AddRef are suitable for inlining on X86 because they generate
 // very small code sequences. On other platforms (ARM), it causes a size
