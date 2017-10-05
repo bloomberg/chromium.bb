@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_NET_HTTP_SERVER_PROPERTIES_MANAGER_FACTORY_H_
 #define IOS_CHROME_BROWSER_NET_HTTP_SERVER_PROPERTIES_MANAGER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/prefs/writeable_pref_store.h"
@@ -18,7 +20,7 @@ class NetLog;
 class HttpServerPropertiesManagerFactory {
  public:
   // Create an instance of HttpServerPropertiesManager.
-  static net::HttpServerPropertiesManager* CreateManager(
+  static std::unique_ptr<net::HttpServerPropertiesManager> CreateManager(
       scoped_refptr<WriteablePrefStore> pref_store,
       net::NetLog* net_log);
 

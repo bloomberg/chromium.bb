@@ -21,7 +21,6 @@ class ChromeBrowserState;
 namespace net {
 class CookieStore;
 class HttpNetworkSession;
-class HttpServerPropertiesManager;
 class HttpTransactionFactory;
 }  // namespace net
 
@@ -136,10 +135,6 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
 
   mutable std::unique_ptr<net::HttpNetworkSession> http_network_session_;
   mutable std::unique_ptr<net::HttpTransactionFactory> main_http_factory_;
-
-  // Same as |ChromeBrowserState::http_server_properties_|, owned there to
-  // maintain destruction ordering.
-  mutable net::HttpServerPropertiesManager* http_server_properties_manager_;
 
   mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
 

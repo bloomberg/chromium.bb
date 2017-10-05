@@ -96,11 +96,6 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
-  net::HttpServerPropertiesManager* http_server_properties_manager_for_testing()
-      const {
-    return http_server_properties_manager_;
-  }
-
  private:
   NetworkContext();
 
@@ -141,9 +136,6 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   mojo::Binding<mojom::NetworkContext> binding_;
 
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
-
-  // Owned by |owned_url_request_context_|. May be nullptr.
-  net::HttpServerPropertiesManager* http_server_properties_manager_ = nullptr;
 
   // Temporary class to help diagnose the impact of https://crbug.com/711579.
   // Every 24-hours, measures the size of the network cache and emits an UMA

@@ -272,14 +272,14 @@ void CronetEnvironment::CleanUpOnNetworkThread() {
     cronet_prefs_manager_->PrepareForShutdown();
   }
 
+  // TODO(lilyhoughton) this should be smarter about making sure there are no
+  // pending requests, etc.
+  main_context_.reset();
+
   // cronet_prefs_manager_ should be deleted on the network thread.
   cronet_prefs_manager_.reset();
 
   file_thread_.reset();
-
-  // TODO(lilyhoughton) this should be smarter about making sure there are no
-  // pending requests, etc.
-  main_context_.reset();
 }
 
 CronetEnvironment::~CronetEnvironment() {

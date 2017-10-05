@@ -176,13 +176,9 @@ ChromeBrowserStateImplIOData::LazyParams::~LazyParams() {}
 ChromeBrowserStateImplIOData::ChromeBrowserStateImplIOData()
     : ChromeBrowserStateIOData(
           ios::ChromeBrowserStateType::REGULAR_BROWSER_STATE),
-      http_server_properties_manager_(nullptr),
       app_cache_max_size_(0) {}
 
-ChromeBrowserStateImplIOData::~ChromeBrowserStateImplIOData() {
-  if (http_server_properties_manager_)
-    http_server_properties_manager_->ShutdownOnPrefSequence();
-}
+ChromeBrowserStateImplIOData::~ChromeBrowserStateImplIOData() {}
 
 void ChromeBrowserStateImplIOData::InitializeInternal(
     std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
@@ -206,11 +202,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
 
   ApplyProfileParamsToContext(main_context);
 
-  http_server_properties_manager_ =
-      HttpServerPropertiesManagerFactory::CreateManager(network_json_store_,
-                                                        io_thread->net_log());
-  set_http_server_properties(base::WrapUnique(http_server_properties_manager_));
-  http_server_properties_manager_->InitializeOnNetworkSequence();
+  set_http_server_properties(HttpServerPropertiesManagerFactory::CreateManager(
+      network_json_store_, io_thread->net_log()));
 
   main_context->set_transport_security_state(transport_security_state());
 
@@ -353,8 +346,6 @@ void ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread(
   DCHECK(transport_security_state());
   // Completes synchronously.
   transport_security_state()->DeleteAllDynamicDataSince(time);
-  DCHECK(http_server_properties_manager_);
-  http_server_properties_manager_->Clear(
-      base::BindOnce(base::IgnoreResult(&web::WebThread::PostTask),
-                     web::WebThread::UI, FROM_HERE, completion));
+  http_server_properties()->Clear();
+  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, completion);
 }

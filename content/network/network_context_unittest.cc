@@ -428,15 +428,10 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   network_context->url_request_context()
       ->http_server_properties()
       ->SetSupportsSpdy(kSchemeHostPort, true);
-  network_context->http_server_properties_manager_for_testing()
-      ->UpdatePrefsForTesting();
-  // Wait HttpServerProperties manager to flush to the pref service.
-  scoped_task_environment_.RunUntilIdle();
-
-  // Delete the NetworkContext and wait for its JsonPrefStore to flush to disk.
+  // Deleting the context will cause it to flush state. Wait for the pref
+  // service to flush to disk.
   network_context.reset();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(base::PathExists(file_path));
 
   // Create a new NetworkContext using the same path for HTTP server properties.
   context_params = mojom::NetworkContextParams::New();
@@ -444,18 +439,6 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   network_context = CreateContextWithParams(std::move(context_params));
 
   // Wait for properties to load from disk.
-  scoped_task_environment_.RunUntilIdle();
-
-  // Wait for net::HttpServerPropertiesManager to decide to read the prefs again
-  // from the pref file, now that it's been read.
-  base::RunLoop run_loop;
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      net::HttpServerPropertiesManager::GetUpdateCacheDelayForTesting());
-  run_loop.Run();
-
-  // Wait for the net::HttpServerPropertiesManager to actually read the prefs.
-  // TODO(mmenke): All this waiting is rather silly. Fix it.
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(network_context->url_request_context()

@@ -6,7 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/prefs/json_pref_store.h"
@@ -101,14 +103,8 @@ class PrefServiceAdapter
   ~PrefServiceAdapter() override {}
 
   // PrefDelegate implementation.
-  bool HasServerProperties() override {
-    return pref_service_->HasPrefPath(path_);
-  }
-
-  const base::DictionaryValue& GetServerProperties() const override {
-    // Guaranteed not to return null when the pref is registered
-    // (RegisterProfilePrefs was called).
-    return *pref_service_->GetDictionary(path_);
+  const base::DictionaryValue* GetServerProperties() const override {
+    return pref_service_->GetDictionary(path_);
   }
 
   void SetServerProperties(const base::DictionaryValue& value) override {
@@ -117,10 +113,9 @@ class PrefServiceAdapter
 
   void StartListeningForUpdates(const base::Closure& callback) override {
     pref_change_registrar_.Add(path_, callback);
-  }
-
-  void StopListeningForUpdates() override {
-    pref_change_registrar_.RemoveAll();
+    // Notify the pref manager that settings are already loaded, as a result
+    // of initializing the pref store synchornously.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 
  private:
@@ -245,9 +240,7 @@ CronetPrefsManager::CronetPrefsManager(
   }
 
   http_server_properties_manager_ = new net::HttpServerPropertiesManager(
-      new PrefServiceAdapter(pref_service_.get()), network_task_runner,
-      network_task_runner, net_log);
-  http_server_properties_manager_->InitializeOnNetworkSequence();
+      std::make_unique<PrefServiceAdapter>(pref_service_.get()), net_log);
 
   // Passes |http_server_properties_manager_| ownership to |context_builder|.
   // The ownership will be subsequently passed to UrlRequestContext.
@@ -289,9 +282,10 @@ void CronetPrefsManager::PrepareForShutdown() {
     pref_service_->CommitPendingWrite();
 
   // Shutdown managers on the Pref sequence.
-  http_server_properties_manager_->ShutdownOnPrefSequence();
   if (network_qualities_prefs_manager_)
     network_qualities_prefs_manager_->ShutdownOnPrefSequence();
+
+  host_cache_persistence_manager_.reset();
 }
 
 }  // namespace cronet

@@ -26,15 +26,9 @@ void HttpServerPropertiesPrefDelegate::RegisterPrefs(
   pref_registry->RegisterDictionaryPref(kPrefPath);
 }
 
-bool HttpServerPropertiesPrefDelegate::HasServerProperties() {
-  return pref_service_->HasPrefPath(kPrefPath);
-}
-
-const base::DictionaryValue&
+const base::DictionaryValue*
 HttpServerPropertiesPrefDelegate::GetServerProperties() const {
-  // Guaranteed not to return null when the pref is registered
-  // (RegisterProfilePrefs was called).
-  return *pref_service_->GetDictionary(kPrefPath);
+  return pref_service_->GetDictionary(kPrefPath);
 }
 
 void HttpServerPropertiesPrefDelegate::SetServerProperties(
@@ -52,10 +46,6 @@ void HttpServerPropertiesPrefDelegate::StartListeningForUpdates(
     pref_service_->AddPrefInitObserver(base::Bind(
         [](const base::Closure& callback, bool) { callback.Run(); }, callback));
   }
-}
-
-void HttpServerPropertiesPrefDelegate::StopListeningForUpdates() {
-  pref_change_registrar_.RemoveAll();
 }
 
 }  // namespace content
