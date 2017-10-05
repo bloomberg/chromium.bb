@@ -9,8 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "device/vr/test/fake_vr_device.h"
@@ -79,7 +77,6 @@ class VRDeviceManagerTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
   device::FakeVRDeviceProvider* provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceManagerTest);

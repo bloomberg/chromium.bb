@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -21,6 +22,10 @@ class VrCommonTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
+
+    scoped_task_environment_ =
+        base::MakeUnique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
     mojo::edk::Init();
 
@@ -42,6 +47,8 @@ class VrCommonTestSuite : public base::TestSuite {
   }
 
  private:
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+
   DISALLOW_COPY_AND_ASSIGN(VrCommonTestSuite);
 };
 
