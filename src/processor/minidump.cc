@@ -2504,7 +2504,6 @@ void MinidumpModule::Print() {
              cv_record_70->cv_signature);
       printf("  (cv_record).signature           = %s\n",
              MDGUIDToString(cv_record_70->signature).c_str());
-      printf("\n");
       printf("  (cv_record).age                 = %d\n",
              cv_record_70->age);
       printf("  (cv_record).pdb_file_name       = \"%s\"\n",
