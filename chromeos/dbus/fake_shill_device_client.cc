@@ -95,12 +95,6 @@ void FakeShillDeviceClient::GetProperties(
                  weak_ptr_factory_.GetWeakPtr(), device_path, callback));
 }
 
-void FakeShillDeviceClient::ProposeScan(const dbus::ObjectPath& device_path,
-                                        VoidDBusMethodCallback callback) {
-  // Deprecated.
-  PostVoidCallback(std::move(callback), DBUS_METHOD_CALL_SUCCESS);
-}
-
 void FakeShillDeviceClient::SetProperty(const dbus::ObjectPath& device_path,
                                         const std::string& name,
                                         const base::Value& value,

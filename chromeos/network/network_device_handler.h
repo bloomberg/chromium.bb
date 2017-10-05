@@ -77,21 +77,6 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 
-  // Requests a network scan on the device specified by |device_path|.
-  // For cellular networks, the result of this call gets asynchronously stored
-  // in the corresponding DeviceState object through a property update. For all
-  // other technologies a service gets created for each found network, which
-  // can be accessed through the corresponding NetworkState object.
-  //
-  // TODO(armansito): Device.ProposeScan is deprecated and the preferred method
-  // of requesting a network scan is Manager.RequestScan, however shill
-  // currently doesn't support cellular network scans via Manager.RequestScan.
-  // Remove this method once shill supports it (crbug.com/262356).
-  virtual void ProposeScan(
-      const std::string& device_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
   // Tells the device specified by |device_path| to register to the cellular
   // network with id |network_id|. If |network_id| is empty then registration
   // will proceed in automatic mode, which will cause the modem to register

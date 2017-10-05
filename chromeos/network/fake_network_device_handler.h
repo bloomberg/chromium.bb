@@ -37,11 +37,6 @@ class CHROMEOS_EXPORT FakeNetworkDeviceHandler : public NetworkDeviceHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
-  void ProposeScan(
-      const std::string& device_path,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
   void RegisterCellularNetwork(
       const std::string& device_path,
       const std::string& network_id,

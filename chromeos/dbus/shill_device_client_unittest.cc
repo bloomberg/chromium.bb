@@ -139,21 +139,6 @@ TEST_F(ShillDeviceClientTest, GetProperties) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ShillDeviceClientTest, ProposeScan) {
-  // Create response.
-  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
-
-  // Set expectations.
-  PrepareForMethodCall(shill::kProposeScanFunction,
-                       base::Bind(&ExpectNoArgument),
-                       response.get());
-  // Call method.
-  client_->ProposeScan(dbus::ObjectPath(kExampleDevicePath),
-                       base::Bind(&ExpectNoResultValue));
-  // Run the message loop.
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(ShillDeviceClientTest, SetProperty) {
   const bool kValue = true;
   // Create response.
