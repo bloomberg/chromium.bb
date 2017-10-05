@@ -17,11 +17,11 @@ namespace vr {
 
 namespace {
 
-constexpr float kHeight = 0.064;
-constexpr float kWidthHeightRatio = 16.0;
-constexpr float kFontHeight = 0.024;
-constexpr float kWidthPadding = 0.02;
-constexpr float kCornerRadius = 0.004;
+constexpr float kHeight = 0.064f;
+constexpr float kWidthHeightRatio = 16.0f;
+constexpr float kFontHeight = 0.024f;
+constexpr float kWidthPadding = 0.02f;
+constexpr float kCornerRadius = 0.004f;
 
 }  // namespace
 

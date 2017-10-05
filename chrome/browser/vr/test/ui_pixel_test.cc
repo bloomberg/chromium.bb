@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/test/ui_pixel_test.h"
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_input_manager.h"
@@ -15,7 +16,7 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/test/gl_image_test_template.h"
+#include "ui/gl/test/gl_test_helper.h"
 
 namespace vr {
 
@@ -31,6 +32,9 @@ UiPixelTest::UiPixelTest() : frame_buffer_size_(kPixelHalfScreen) {}
 UiPixelTest::~UiPixelTest() = default;
 
 void UiPixelTest::SetUp() {
+// TODO(crbug/771794): Test temporarily disabled on Windows because it crashes
+// on trybots. Fix before enabling Windows support.
+#ifndef OS_WIN
   gl_test_environment_ =
       base::MakeUnique<GlTestEnvironment>(frame_buffer_size_);
 
@@ -42,12 +46,17 @@ void UiPixelTest::SetUp() {
 
   browser_ = base::MakeUnique<MockBrowserInterface>();
   content_input_delegate_ = base::MakeUnique<MockContentInputDelegate>();
+#endif
 }
 
 void UiPixelTest::TearDown() {
+// TODO(crbug/771794): Test temporarily disabled on Windows because it crashes
+// on trybots. Fix before enabling Windows support.
+#ifndef OS_WIN
   ui_.reset();
   glDeleteTextures(1, &content_texture_);
   gl_test_environment_.reset();
+#endif
 }
 
 void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,

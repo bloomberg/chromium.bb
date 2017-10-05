@@ -20,7 +20,7 @@ namespace vr {
 
 namespace {
 
-static constexpr float kTolerance = 1e-5;
+static constexpr float kTolerance = 1e-5f;
 
 static int s_next_animation_id = 1;
 static int s_next_group_id = 1;

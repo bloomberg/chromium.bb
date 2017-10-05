@@ -31,6 +31,8 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
  private:
   std::vector<std::unique_ptr<VRDevice>> devices_;
   bool initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeVRDeviceProvider);
 };
 
 }  // namespace device
