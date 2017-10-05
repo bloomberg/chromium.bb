@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * The FakeAccountManagerDelegate is intended for testing components that use AccountManagerFacade.
@@ -43,7 +44,7 @@ import java.util.UUID;
  * Currently, this implementation supports adding and removing accounts, handling credentials
  * (including confirming them), and handling of dummy auth tokens.
  *
- * If you want to auto-approve a given authtokentype, use addAccountHolderExplicitly(...) with
+ * If you want to auto-approve a given authtokentype, use {@link #addAccountHolderBlocking} with
  * an AccountHolder you have built with hasBeenAccepted("yourAuthTokenType", true).
  *
  * If you want to auto-approve all auth token types for a given account, use the {@link
@@ -171,35 +172,119 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     public Account[] getAccountsSyncNoThrow() {
         ArrayList<Account> result = new ArrayList<>();
-        for (AccountHolder ah : mAccounts) {
-            result.add(ah.getAccount());
+        synchronized (mAccounts) {
+            for (AccountHolder ah : mAccounts) {
+                result.add(ah.getAccount());
+            }
         }
         return result.toArray(new Account[0]);
     }
 
     /**
-     * Add an AccountHolder directly.
+     * Add an AccountHolder.
+     *
+     * WARNING: this method will not wait for the cache in AccountManagerFacade to be updated. Tests
+     * that get accounts from AccountManagerFacade should use {@link #addAccountHolderBlocking}.
      *
      * @param accountHolder the account holder to add
      */
     public void addAccountHolderExplicitly(AccountHolder accountHolder) {
-        boolean added = mAccounts.add(accountHolder);
-        Assert.assertTrue("Account was already added", added);
-        for (AccountsChangeObserver observer : mObservers) {
-            observer.onAccountsChanged();
-        }
+        // TODO(https://crbug.com/698258): replace with assertOnUiThread after fixing internal tests
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            synchronized (mAccounts) {
+                boolean added = mAccounts.add(accountHolder);
+                Assert.assertTrue("Account already added", added);
+                for (AccountsChangeObserver observer : mObservers) {
+                    observer.onAccountsChanged();
+                }
+            }
+        });
     }
 
     /**
-     * Remove an AccountHolder directly.
+     * Remove an AccountHolder.
+     *
+     * WARNING: this method will not wait for the cache in AccountManagerFacade to be updated. Tests
+     * that get accounts from AccountManagerFacade should use {@link #removeAccountHolderBlocking}.
      *
      * @param accountHolder the account holder to remove
      */
     public void removeAccountHolderExplicitly(AccountHolder accountHolder) {
-        boolean removed = mAccounts.remove(accountHolder);
-        Assert.assertTrue("Account was already added", removed);
-        for (AccountsChangeObserver observer : mObservers) {
-            observer.onAccountsChanged();
+        // TODO(https://crbug.com/698258): replace with assertOnUiThread after fixing internal tests
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            synchronized (mAccounts) {
+                boolean removed = mAccounts.remove(accountHolder);
+                Assert.assertTrue("Can't find account", removed);
+                for (AccountsChangeObserver observer : mObservers) {
+                    observer.onAccountsChanged();
+                }
+            }
+        });
+    }
+
+    /**
+     * Add an AccountHolder and waits for AccountManagerFacade to update its cache. Requires
+     * AccountManagerFacade to be initialized with this delegate.
+     *
+     * @param accountHolder the account holder to add
+     */
+    public void addAccountHolderBlocking(AccountHolder accountHolder) {
+        ThreadUtils.assertOnBackgroundThread();
+
+        CountDownLatch cacheUpdated = new CountDownLatch(1);
+        AccountsChangeObserver observer = () -> {
+            // Observers are invoked asynchronously, so this call may be unrelated to accountHolder,
+            // hereby this check that account is in AccountManagerFacade cache.
+            if (AccountManagerFacade.get().hasAccountForName(accountHolder.getAccount().name)) {
+                cacheUpdated.countDown();
+            }
+        };
+
+        try {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                AccountManagerFacade.get().addObserver(observer);
+                addAccountHolderExplicitly(accountHolder);
+            });
+
+            cacheUpdated.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Exception occurred while waiting for future", e);
+        } finally {
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> AccountManagerFacade.get().removeObserver(observer));
+        }
+    }
+
+    /**
+     * Removes an AccountHolder and waits for AccountManagerFacade to update its cache. Requires
+     * AccountManagerFacade to be initialized with this delegate.
+     *
+     * @param accountHolder the account holder to remove
+     */
+    public void removeAccountHolderBlocking(AccountHolder accountHolder) {
+        ThreadUtils.assertOnBackgroundThread();
+
+        CountDownLatch cacheUpdated = new CountDownLatch(1);
+        AccountsChangeObserver observer = () -> {
+            // Observers are invoked asynchronously, so this call may be unrelated to accountHolder,
+            // hereby this check that account isn't in AccountManagerFacade cache.
+            if (!AccountManagerFacade.get().hasAccountForName(accountHolder.getAccount().name)) {
+                cacheUpdated.countDown();
+            }
+        };
+
+        try {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                AccountManagerFacade.get().addObserver(observer);
+                removeAccountHolderExplicitly(accountHolder);
+            });
+
+            cacheUpdated.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Exception occurred while waiting for future", e);
+        } finally {
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> AccountManagerFacade.get().removeObserver(observer));
         }
     }
 
@@ -228,9 +313,11 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         if (authToken == null) {
             throw new IllegalArgumentException("AuthToken can not be null");
         }
-        for (AccountHolder ah : mAccounts) {
-            if (ah.removeAuthToken(authToken)) {
-                break;
+        synchronized (mAccounts) {
+            for (AccountHolder ah : mAccounts) {
+                if (ah.removeAuthToken(authToken)) {
+                    break;
+                }
             }
         }
     }
@@ -265,21 +352,18 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             return;
         }
 
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(true);
-            }
-        });
+        ThreadUtils.postOnUiThread(() -> callback.onResult(true));
     }
 
     private AccountHolder getAccountHolder(Account account) {
         if (account == null) {
             throw new IllegalArgumentException("Account can not be null");
         }
-        for (AccountHolder accountHolder : mAccounts) {
-            if (account.equals(accountHolder.getAccount())) {
-                return accountHolder;
+        synchronized (mAccounts) {
+            for (AccountHolder accountHolder : mAccounts) {
+                if (account.equals(accountHolder.getAccount())) {
+                    return accountHolder;
+                }
             }
         }
         throw new IllegalArgumentException("Can not find AccountHolder for account " + account);

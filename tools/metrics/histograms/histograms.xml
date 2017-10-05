@@ -76049,6 +76049,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidPopulateAccountCacheWaitingTime" units="ms">
+  <owner>bsazonov@chromium.org</owner>
+  <summary>
+    The time UI thread spent waiting for the list of accounts to be populated.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidSigninPromoAction"
     enum="AndroidSigninPromoAction">
   <obsolete>

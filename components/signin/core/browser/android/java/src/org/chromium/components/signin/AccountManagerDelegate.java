@@ -40,8 +40,7 @@ public interface AccountManagerDelegate {
     void removeObserver(AccountsChangeObserver observer);
 
     /**
-     * Get all the accounts.
-     * This method shouldn't be called on the UI thread (violated due to crbug.com/517697).
+     * Get all the accounts synchronously.
      */
     @WorkerThread
     Account[] getAccountsSync() throws AccountManagerDelegateException;
