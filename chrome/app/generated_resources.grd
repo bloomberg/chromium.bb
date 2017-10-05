@@ -2885,9 +2885,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
           PKCS #12 Export Error
         </message>
-        <message name="IDS_CERT_MANAGER_WRITE_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file write errors.">
-          There was an error while trying to write the file: <ph name="ERROR_TEXT">$1<ex>Permission denied.</ex></ph>.
-        </message>
         <message name="IDS_CERT_MANAGER_UNTRUSTED" desc="This text is displayed next to untrusted certificates in a red box. Untrusted certificates are sometimes added in order to explicitly distrust them. Thus, they will be listed but it's important that the user note that they serve a different purpose from the rest.">
           Untrusted
         </message>
@@ -5838,23 +5835,14 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Content Settings dialog data -->
-      <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
-        Content settings
-      </message>
       <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
         Cookies
       </message>
       <message name="IDS_COOKIES_HEADER" desc="Header for cookie exception management page on Content Settings dialog">
         Cookie and site data exceptions
       </message>
-      <message name="IDS_COOKIES_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data to be stored on your computer.">
-        Allow local data to be set (recommended)
-      </message>
       <message name="IDS_COOKIES_SESSION_ONLY_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data for the current session only.">
         Keep local data only until you quit your browser
-      </message>
-      <message name="IDS_COOKIES_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking cookies and other site data from being stored on your computer.">
-        Block sites from setting any data
       </message>
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
         Block third-party cookies and site data
@@ -6328,9 +6316,6 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Cloud Print proxy strings -->
-      <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL" desc="Label for the cloud print section of the Chrome OS advanced options dialog.">
-        Set up or manage printers in <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>.
-      </message>
       <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED" desc="Status message to be sent to the server when we failed to retrieve information about a printer to register.">
         An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME">$1<ex>HP Laserjet 7900</ex></ph>. This printer could not be registered with <ph name="CLOUD_PRINT_NAME">$2<ex>Google Cloud Print</ex></ph>.
       </message>
@@ -7523,9 +7508,6 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_COOKIE_SENDFOR_LABEL" desc="The Cookie Send For label">
         Send for
       </message>
-      <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL" desc="The Cookie Accessible to Script label">
-        Accessible to script
-      </message>
       <message name="IDS_COOKIES_COOKIE_CREATED_LABEL" desc="The Cookie Created label">
         Created
       </message>
@@ -7665,18 +7647,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_COOKIES_CHANNEL_IDS" desc="Label for the folder under which a list of TLS Channel IDs (name of an internet standard) are displayed">
         Channel IDs
-      </message>
-      <message name="IDS_COOKIES_CHANNEL_ID_ORIGIN_LABEL" desc="The channel id label for the server domain">
-        Domain:
-      </message>
-      <message name="IDS_COOKIES_CHANNEL_ID_TYPE_LABEL" desc="The channel id Type label">
-        Certificate Type:
-      </message>
-      <message name="IDS_COOKIES_CHANNEL_ID_CREATED_LABEL" desc="The channel id Created label">
-        Created:
-      </message>
-      <message name="IDS_COOKIES_CHANNEL_ID_EXPIRES_LABEL" desc="The channel id Expires label">
-        Expires:
       </message>
       <message name="IDS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
         Service Workers
