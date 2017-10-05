@@ -571,11 +571,15 @@ DEFINE_TRACE(FontFaceSetDocument) {
   visitor->Trace(failed_fonts_);
   visitor->Trace(non_css_connected_faces_);
   visitor->Trace(async_runner_);
-  EventTargetWithInlineData::Trace(visitor);
   Supplement<Document>::Trace(visitor);
   SuspendableObject::Trace(visitor);
   FontFace::LoadFontCallback::Trace(visitor);
   FontFaceSet::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(FontFaceSetDocument) {
+  FontFaceSet::TraceWrappers(visitor);
+  Supplement<Document>::TraceWrappers(visitor);
 }
 
 }  // namespace blink

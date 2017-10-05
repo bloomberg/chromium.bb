@@ -7158,13 +7158,8 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->TraceWrappers(script_runner_);
   visitor->TraceWrappers(scripted_animation_controller_);
   visitor->TraceWrappers(scripted_idle_task_controller_);
-  // Cannot trace in Supplementable<Document> as it is part of platform/ and
-  // thus cannot refer to ScriptWrappableVisitor.
-  visitor->TraceWrappersWithManualWriteBarrier(
-      static_cast<FontFaceSetDocument*>(
-          Supplementable<Document>::supplements_.at(
-              FontFaceSetDocument::SupplementName())));
   ContainerNode::TraceWrappers(visitor);
+  Supplementable<Document>::TraceWrappers(visitor);
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

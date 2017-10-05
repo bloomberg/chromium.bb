@@ -104,6 +104,7 @@ class CORE_EXPORT FontFaceSetDocument final
   void AddFontFacesToFontFaceCache(FontFaceCache*);
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   FontFaceSetIterable::IterationSource* StartIteration(

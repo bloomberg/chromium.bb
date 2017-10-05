@@ -26,6 +26,7 @@
 #ifndef Supplementable_h
 #define Supplementable_h
 
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
@@ -87,16 +88,26 @@ namespace blink {
 // the method could easily cause racy condition.
 //
 // Note that reattachThread() does nothing if assertion is not enabled.
-//
 
 template <typename T>
 class Supplementable;
 
+// Supplement<T>-specific version of TraceWrapperBase class. In order to support
+// wrapper-tracing from Supplementable<T> to Supplement<T> (especially when
+// crossing core/modules boundary), Supplement<T> needs to be wrapper-traceable.
+// This class provides a common API for all subclasses of Supplement<T> to
+// support wrapper-tracing.
+class PLATFORM_EXPORT TraceWrapperBaseForSupplement {
+ public:
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
+};
+
 template <typename T>
-class Supplement : public GarbageCollectedMixin {
+class Supplement : public GarbageCollectedMixin,
+                   public TraceWrapperBaseForSupplement {
  public:
   // TODO(haraken): Remove the default constructor.
-  // All Supplement objects should be instantiated with m_host.
+  // All Supplement objects should be instantiated with |supplementable_|.
   Supplement() {}
 
   explicit Supplement(T& supplementable) : supplementable_(&supplementable) {}
@@ -163,10 +174,15 @@ class Supplementable : public virtual GarbageCollectedMixin {
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(supplements_); }
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    for (const auto& supplement : supplements_.Values())
+      visitor->TraceWrappers(supplement);
+  }
 
  protected:
-  using SupplementMap =
-      HeapHashMap<const char*, Member<Supplement<T>>, PtrHash<const char>>;
+  using SupplementMap = HeapHashMap<const char*,
+                                    TraceWrapperMember<Supplement<T>>,
+                                    PtrHash<const char>>;
   SupplementMap supplements_;
 
   Supplementable()

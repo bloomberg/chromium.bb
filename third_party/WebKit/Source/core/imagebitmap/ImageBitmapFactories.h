@@ -62,7 +62,8 @@ typedef HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOr
 class ImageBitmapFactories final
     : public GarbageCollectedFinalized<ImageBitmapFactories>,
       public Supplement<LocalDOMWindow>,
-      public Supplement<WorkerGlobalScope> {
+      public Supplement<WorkerGlobalScope>,
+      public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
  public:

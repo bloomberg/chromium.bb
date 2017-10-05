@@ -4,6 +4,7 @@
 
 #include "platform/bindings/ScriptWrappableVisitor.h"
 
+#include "platform/Supplementable.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScopedPersistent.h"
@@ -266,6 +267,11 @@ void ScriptWrappableVisitor::MarkWrapper(
 
 void ScriptWrappableVisitor::DispatchTraceWrappers(
     const TraceWrapperBase* wrapper_base) const {
+  wrapper_base->TraceWrappers(this);
+}
+
+void ScriptWrappableVisitor::DispatchTraceWrappersForSupplement(
+    const TraceWrapperBaseForSupplement* wrapper_base) const {
   wrapper_base->TraceWrappers(this);
 }
 
