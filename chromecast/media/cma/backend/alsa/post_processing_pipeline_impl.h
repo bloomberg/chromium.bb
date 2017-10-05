@@ -61,6 +61,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   int total_delay_frames_ = 0;
   float current_multiplier_;
   float cast_volume_;
+  float current_dbfs_;
 
   // factory_ keeps shared libraries open, so it must outlive processors_.
   PostProcessorFactory factory_;

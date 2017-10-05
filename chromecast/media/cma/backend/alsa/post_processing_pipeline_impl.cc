@@ -97,8 +97,8 @@ int PostProcessingPipelineImpl::ProcessFrames(float* data,
 
   total_delay_frames_ = 0;
   for (auto& processor : processors_) {
-    total_delay_frames_ +=
-        processor.ptr->ProcessFrames(data, num_frames, cast_volume_);
+    total_delay_frames_ += processor.ptr->ProcessFrames(
+        data, num_frames, cast_volume_, current_dbfs_);
   }
   return total_delay_frames_;
 }
@@ -133,9 +133,9 @@ void PostProcessingPipelineImpl::UpdateCastVolume(float multiplier) {
     return;
   }
   current_multiplier_ = multiplier;
-  float dbfs = std::log10(multiplier) * 20;
+  current_dbfs_ = std::log10(multiplier) * 20;
   DCHECK(chromecast::media::VolumeControl::DbFSToVolume);
-  cast_volume_ = chromecast::media::VolumeControl::DbFSToVolume(dbfs);
+  cast_volume_ = chromecast::media::VolumeControl::DbFSToVolume(current_dbfs_);
 }
 
 // Send string |config| to postprocessor |name|.

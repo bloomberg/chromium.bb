@@ -20,7 +20,7 @@ class PostProcessingPipeline {
   virtual ~PostProcessingPipeline() = default;
   virtual int ProcessFrames(float* data,
                             int num_frames,
-                            float current_volume,
+                            float current_multiplier,
                             bool is_silence) = 0;
   virtual bool SetSampleRate(int sample_rate) = 0;
   virtual bool IsRinging() = 0;

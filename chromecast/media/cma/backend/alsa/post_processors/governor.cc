@@ -47,7 +47,10 @@ bool Governor::SetSampleRate(int sample_rate) {
   return true;
 }
 
-int Governor::ProcessFrames(float* data, int frames, float volume) {
+int Governor::ProcessFrames(float* data,
+                            int frames,
+                            float volume,
+                            float volume_dbfs) {
   if (volume != volume_) {
     volume_ = volume;
     slew_volume_.SetVolume(GetGovernorMultiplier());
