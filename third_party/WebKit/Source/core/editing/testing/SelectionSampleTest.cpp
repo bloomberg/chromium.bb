@@ -19,6 +19,24 @@ class SelectionSampleTest : public EditingTestBase {
   }
 };
 
+TEST_F(SelectionSampleTest, GetSelectionTextFlatTree) {
+  const SelectionInDOMTree selection = SelectionSample::SetSelectionText(
+      GetDocument().body(),
+      "<p>"
+      "  <template data-mode=open>"
+      "    ze^ro <slot name=one></slot> <slot name=two></slot> three"
+      "  </template>"
+      "  <b slot=two>tw|o</b><b slot=one>one</b>"
+      "</p>");
+  GetDocument().body()->UpdateDistribution();
+  EXPECT_EQ(
+      "<p>"
+      "    ze^ro <b slot=\"one\">one</b> <b slot=\"two\">tw|o</b> three  "
+      "</p>",
+      SelectionSample::GetSelectionTextInFlatTree(
+          *GetDocument().body(), ConvertToSelectionInFlatTree(selection)));
+}
+
 TEST_F(SelectionSampleTest, SetEmpty1) {
   const SelectionInDOMTree& selection =
       SelectionSample::SetSelectionText(GetDocument().body(), "|");

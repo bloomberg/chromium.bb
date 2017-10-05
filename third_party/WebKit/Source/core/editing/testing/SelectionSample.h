@@ -36,6 +36,8 @@ class SelectionSample final {
   // Note: We don't escape "--" in comment.
   static std::string GetSelectionText(const ContainerNode&,
                                       const SelectionInDOMTree&);
+  static std::string GetSelectionTextInFlatTree(const ContainerNode&,
+                                                const SelectionInFlatTree&);
   static void ConvertTemplatesToShadowRootsForTesring(HTMLElement&);
 };
 
