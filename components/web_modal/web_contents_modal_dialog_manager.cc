@@ -77,9 +77,9 @@ void WebContentsModalDialogManager::WillClose(gfx::NativeWindow dialog) {
 
   bool removed_topmost_dialog = dlg == child_dialogs_.begin();
   child_dialogs_.erase(dlg);
-  if (delegate_ && delegate_->IsWebContentsVisible(web_contents()) &&
-      !child_dialogs_.empty() && removed_topmost_dialog &&
-      !closing_all_dialogs_) {
+  if (!closing_all_dialogs_ &&
+      (!child_dialogs_.empty() && removed_topmost_dialog) &&
+      (delegate_ && delegate_->IsWebContentsVisible(web_contents()))) {
     child_dialogs_.front().manager->Show();
   }
 
