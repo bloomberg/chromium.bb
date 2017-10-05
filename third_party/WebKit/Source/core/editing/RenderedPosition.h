@@ -35,6 +35,7 @@
 #include "core/editing/Forward.h"
 #include "core/layout/line/InlineBox.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -125,32 +126,19 @@ class CORE_EXPORT RenderedPosition {
   InlineBox* inline_box_;
   int offset_;
 
-  static InlineBox* UncachedInlineBox() {
-    return reinterpret_cast<InlineBox*>(1);
-  }
-  // Needs to be different form 0 so pick 1 because it's also on the null page.
-
-  mutable InlineBox* prev_leaf_child_;
-  mutable InlineBox* next_leaf_child_;
+  mutable Optional<InlineBox*> prev_leaf_child_;
+  mutable Optional<InlineBox*> next_leaf_child_;
 
   FRIEND_TEST_ALL_PREFIXES(RenderedPositionTest, GetSamplePointForVisibility);
 };
 
 inline RenderedPosition::RenderedPosition()
-    : layout_object_(nullptr),
-      inline_box_(nullptr),
-      offset_(0),
-      prev_leaf_child_(UncachedInlineBox()),
-      next_leaf_child_(UncachedInlineBox()) {}
+    : layout_object_(nullptr), inline_box_(nullptr), offset_(0) {}
 
 inline RenderedPosition::RenderedPosition(LayoutObject* layout_object,
                                           InlineBox* box,
                                           int offset)
-    : layout_object_(layout_object),
-      inline_box_(box),
-      offset_(offset),
-      prev_leaf_child_(UncachedInlineBox()),
-      next_leaf_child_(UncachedInlineBox()) {}
+    : layout_object_(layout_object), inline_box_(box), offset_(offset) {}
 
 CORE_EXPORT bool LayoutObjectContainsPosition(LayoutObject*, const Position&);
 
