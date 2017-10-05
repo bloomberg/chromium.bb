@@ -11,16 +11,20 @@
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
+#include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace content {
 
 namespace {
 
-bool InitializeSandbox(service_manager::SandboxType sandbox_type,
-                       const base::FilePath& allowed_dir,
-                       base::OnceClosure hook) {
+// NOTE: This function is the exact code for the entry point of mac sandbox
+// once it moves to service_manager/sandbox.
+bool InitializeSandboxInternal(service_manager::SandboxType sandbox_type,
+                               const base::FilePath& allowed_dir,
+                               base::OnceClosure hook) {
   // Warm up APIs before turning on the sandbox.
   Sandbox::SandboxWarmup(sandbox_type);
 
@@ -30,6 +34,29 @@ bool InitializeSandbox(service_manager::SandboxType sandbox_type,
 
   // Actually sandbox the process.
   return Sandbox::EnableSandbox(sandbox_type, allowed_dir);
+}
+
+// Helper method to make a closure from a closure.
+base::OnceClosure MaybeWrapWithGPUSandboxHook(
+    service_manager::SandboxType sandbox_type,
+    base::OnceClosure original) {
+  if (sandbox_type != service_manager::SANDBOX_TYPE_GPU)
+    return original;
+
+  return base::Bind(
+      [](base::OnceClosure arg) {
+        // Preload either the desktop GL or the osmesa so, depending on the
+        // --use-gl flag.
+        gl::init::InitializeGLOneOff();
+
+        // Preload VideoToolbox.
+        media::InitializeVideoToolbox();
+
+        // Invoke original hook.
+        if (!arg.is_null())
+          std::move(arg).Run();
+      },
+      base::Passed(std::move(original)));
 }
 
 // Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns
@@ -66,7 +93,9 @@ bool GetSandboxInfoFromCommandLine(service_manager::SandboxType* sandbox_type,
 
 bool InitializeSandbox(service_manager::SandboxType sandbox_type,
                        const base::FilePath& allowed_dir) {
-  return InitializeSandbox(sandbox_type, allowed_dir, base::OnceClosure());
+  return InitializeSandboxInternal(
+      sandbox_type, allowed_dir,
+      MaybeWrapWithGPUSandboxHook(sandbox_type, base::OnceClosure()));
 }
 
 bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook) {
@@ -74,7 +103,9 @@ bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook) {
       service_manager::SANDBOX_TYPE_INVALID;
   base::FilePath allowed_dir;
   return !GetSandboxInfoFromCommandLine(&sandbox_type, &allowed_dir) ||
-         InitializeSandbox(sandbox_type, allowed_dir, std::move(hook));
+         InitializeSandboxInternal(
+             sandbox_type, allowed_dir,
+             MaybeWrapWithGPUSandboxHook(sandbox_type, std::move(hook)));
 }
 
 bool InitializeSandbox() {

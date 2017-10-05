@@ -35,9 +35,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
-#include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/sandbox_compiler.h"
 #include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu.sb.h"
@@ -46,9 +43,7 @@
 #include "services/service_manager/sandbox/mac/renderer.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
-#include "third_party/icu/source/common/unicode/uchar.h"
-#include "ui/base/layout.h"
-#include "ui/gl/init/gl_factory.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 namespace {
@@ -178,15 +173,6 @@ void Sandbox::SandboxWarmup(service_manager::SandboxType sandbox_type) {
     CFTimeZoneCopySystem();
   }
 
-  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU) {
-    // Preload either the desktop GL or the osmesa so, depending on the
-    // --use-gl flag.
-    gl::init::InitializeGLOneOff();
-
-    // Preload VideoToolbox.
-    media::InitializeVideoToolbox();
-  }
-
   if (sandbox_type == service_manager::SANDBOX_TYPE_PPAPI) {
     // Preload AppKit color spaces used for Flash/ppapi. http://crbug.com/348304
     NSColor* color = [NSColor controlTextColor];
@@ -247,7 +233,7 @@ bool Sandbox::EnableSandbox(service_manager::SandboxType sandbox_type,
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   bool enable_logging =
-      command_line->HasSwitch(switches::kEnableSandboxLogging);;
+      command_line->HasSwitch(service_manager::switches::kEnableSandboxLogging);
   if (!compiler.InsertBooleanParam(kSandboxEnableLogging, enable_logging))
     return false;
 
