@@ -7,14 +7,19 @@
 #include <WebKit/WebKit.h>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/crw_test_back_forward_list.h"
-#include "ios/web/test/fakes/test_navigation_manager_delegate.h"
 #include "ios/web/test/test_url_constants.h"
+#include "net/base/url_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -53,6 +58,32 @@ bool WebUIUrlRewriter(GURL* url, BrowserState* browser_state) {
   return false;
 }
 
+class MockNavigationManagerDelegate : public NavigationManagerDelegate {
+ public:
+  void SetWebViewNavigationProxy(id web_view) { mock_web_view_ = web_view; }
+
+  MOCK_METHOD0(ClearTransientContent, void());
+  MOCK_METHOD0(RecordPageStateInNavigationItem, void());
+  MOCK_METHOD0(UpdateHtml5HistoryState, void());
+  MOCK_METHOD1(WillLoadCurrentItemWithUrl, void(const GURL&));
+  MOCK_METHOD0(WillChangeUserAgentType, void());
+  MOCK_METHOD0(LoadCurrentItem, void());
+  MOCK_METHOD0(LoadIfNecessary, void());
+  MOCK_METHOD0(Reload, void());
+  MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
+  MOCK_METHOD0(OnNavigationItemChanged, void());
+  MOCK_METHOD1(OnNavigationItemCommitted, void(const LoadCommittedDetails&));
+
+ private:
+  WebState* GetWebState() override { return nullptr; }
+
+  id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override {
+    return mock_web_view_;
+  }
+
+  id mock_web_view_;
+};
+
 // Test fixture for WKBasedNavigationManagerImpl.
 class WKBasedNavigationManagerTest : public PlatformTest {
  protected:
@@ -69,14 +100,13 @@ class WKBasedNavigationManagerTest : public PlatformTest {
     url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITHOUT_PORT);
   }
 
- protected:
   std::unique_ptr<NavigationManagerImpl> manager_;
   CRWTestBackForwardList* mock_wk_list_;
   id mock_web_view_;
+  MockNavigationManagerDelegate delegate_;
 
  private:
   TestBrowserState browser_state_;
-  TestNavigationManagerDelegate delegate_;
 };
 
 // Tests that GetItemAtIndex() on an empty manager will sync navigation items to
@@ -529,6 +559,44 @@ TEST_F(WKBasedNavigationManagerTest, CanGoToOffset) {
   EXPECT_TRUE(manager_->CanGoToOffset(1));
   EXPECT_EQ(2, manager_->GetIndexForOffset(1));
   EXPECT_FALSE(manager_->CanGoToOffset(2));
+}
+
+// Tests that non-empty session history can be restored.
+TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
+  auto item0 = base::MakeUnique<NavigationItemImpl>();
+  item0->SetURL(GURL("http://www.0.com"));
+  item0->SetTitle(base::ASCIIToUTF16("Test Website 0"));
+  auto item1 = base::MakeUnique<NavigationItemImpl>();
+  item1->SetURL(GURL("http://www.1.com"));
+
+  std::vector<std::unique_ptr<NavigationItem>> items;
+  items.push_back(std::move(item0));
+  items.push_back(std::move(item1));
+
+  EXPECT_CALL(delegate_, WillLoadCurrentItemWithUrl(testing::_)).Times(1);
+  manager_->Restore(0 /* last_committed_item_index */, std::move(items));
+
+  NavigationItem* pending_item = manager_->GetPendingItem();
+  ASSERT_TRUE(pending_item != nullptr);
+  GURL pending_url = pending_item->GetURL();
+  EXPECT_TRUE(pending_url.SchemeIsFile());
+  EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
+
+  std::string session_json;
+  net::GetValueForKeyInQuery(pending_url, "session", &session_json);
+  EXPECT_EQ(
+      "{\"offset\":-1,\"titles\":[\"Test Website 0\",\"\"],"
+      "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
+      session_json);
+}
+
+// Tests that Restore() accepts empty session history and performs no-op.
+TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithEmptyHistory) {
+  EXPECT_CALL(delegate_, WillLoadCurrentItemWithUrl(testing::_)).Times(0);
+  manager_->Restore(-1 /* last_committed_item_index */,
+                    std::vector<std::unique_ptr<NavigationItem>>());
+
+  ASSERT_EQ(nullptr, manager_->GetPendingItem());
 }
 
 }  // namespace web

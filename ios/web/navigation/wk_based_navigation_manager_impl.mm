@@ -7,16 +7,23 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/base/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -346,7 +353,52 @@ bool WKBasedNavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
 void WKBasedNavigationManagerImpl::Restore(
     int last_committed_item_index,
     std::vector<std::unique_ptr<NavigationItem>> items) {
-  DLOG(WARNING) << "Not yet implemented.";
+  DCHECK(GetItemCount() == 0 && !GetPendingItem());
+  DCHECK_LT(last_committed_item_index, static_cast<int>(items.size()));
+  DCHECK(items.empty() || last_committed_item_index >= 0);
+  if (items.empty())
+    return;
+
+  // This function restores session history by loading a magic local file
+  // (restore_session.html) into the web view. The session history is encoded
+  // in the query parameter. When loaded, restore_session.html parses the
+  // session history and replays them into the web view using History API.
+
+  // TODO(crbug.com/771200): Retain these original NavigationItems restored from
+  // storage and associate them with new WKBackForwardListItems created after
+  // history restore so information such as scroll position is restored.
+
+  // The URLs and titles of the restored entries are stored in two separate
+  // lists instead of a single list of objects to reduce the size of the JSON
+  // string to be included in the query parameter.
+  base::Value restored_urls(base::Value::Type::LIST);
+  base::Value restored_titles(base::Value::Type::LIST);
+  restored_urls.GetList().reserve(items.size());
+  restored_titles.GetList().reserve(items.size());
+  for (size_t index = 0; index < items.size(); index++) {
+    restored_urls.GetList().push_back(
+        base::Value(items[index]->GetURL().spec()));
+    restored_titles.GetList().push_back(base::Value(items[index]->GetTitle()));
+  }
+  base::Value session(base::Value::Type::DICTIONARY);
+  int offset = last_committed_item_index + 1 - items.size();
+  session.SetKey("offset", base::Value(offset));
+  session.SetKey("urls", std::move(restored_urls));
+  session.SetKey("titles", std::move(restored_titles));
+
+  std::string session_json;
+  base::JSONWriter::Write(session, &session_json);
+
+  std::string restore_session_resource_path = base::SysNSStringToUTF8(
+      [base::mac::FrameworkBundle() pathForResource:@"restore_session"
+                                             ofType:@"html"]);
+  std::string url_spec = base::StringPrintf(
+      "%s://%s", url::kFileScheme, restore_session_resource_path.c_str());
+  GURL url = net::AppendQueryParameter(GURL(url_spec), "session", session_json);
+
+  WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_RELOAD;
+  LoadURLWithParams(params);
 }
 
 NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(

@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+  <script>
+    /**
+     * Main entry point. This page operates in two modes:
+     * 1. If ?session= is provided, restoreSession() parses URLs from the query
+     *    parameter and uses History API to insert into the current session
+     *    history an entry for each URL in order. Due to same origin policy,
+     *    the entries link back to this page with the target URL encoded in
+     *    the query parameter. The actual redirection takes place when user
+     *    navigates to the restored session entries.
+     * 2. If ?targetUrl= is provided, redirect() immediately redirect the page
+     *    to the URL encoded in the query parameter.
+     */
+    window.onload = function() {
+      // Remember the base URL of this page before it is changed by the History
+      // API calls so it can be used to create redirect page URLs.
+      let baseUrl = [
+        window.location.protocol,
+        window.location.host,
+        window.location.pathname].join('');
+
+      if (window.location.search == '') {
+        handleError("Search query is mandatory");
+      }
+
+      let params = new URLSearchParams(document.location.search.substring(1));
+      let sessionHistory = params.get("session");
+      let targetUrl = params.get("targetUrl");
+      if (sessionHistory) {
+        restoreSession(baseUrl, sessionHistory);
+      } else if (targetUrl) {
+        redirect(targetUrl);
+      } else {
+        handleError("Missing both sessionHistory and targetUrl");
+      }
+    };
+
+    /**
+     * The window.onpopstate event fires when the user navigates to one of the
+     * history entries created by restoreSession(). This handler forces a reload
+     * to reidrect to the target URL.
+     */
+    window.onpopstate = function(event) {
+      location.reload();
+    }
+
+    /**
+     * Manipulates the current session history to mimic the provided serialized
+     * history.
+     * @param {string} encodedSessionHistory An escaped string serialization of
+     *    a JSON object that represents the session history to recreate. It
+     *    contains three fields:
+     *    urls: A list of strings that represent the URLs visited in the session
+     *        in order.
+     *    titles: A list of strings that represent the page title of each URL in
+     *        the URL list. It must have the same length as 'urls'.
+     *    offset: An non-positive integer that represents the last visible entry
+     *        relative to the end of the list. This is used to jump back to the
+     *        last visible entry after restoring the entire list.
+     * @param {string} baseUrl The URL of this page without the query parameter.
+     *    The restored history entry initially points to this page with the
+     *    target URL encoded in the query parameter. A user is redirected to the
+     *    target URL when they navigates to the restored entry.
+     */
+    function restoreSession(baseUrl, encodedSessionHistory) {
+      function getRestoreURL(targetUrl) {
+        return baseUrl + '?targetUrl=' + encodeURIComponent(targetUrl);
+      }
+
+      var sessionHistory = [];
+      try {
+        sessionHistory = JSON.parse(decodeURIComponent(encodedSessionHistory));
+
+        if (sessionHistory.urls.length < 1) {
+          handleError("sessionHistory is empty");
+          return;
+        }
+
+        history.replaceState(
+            null,  /* state */
+            sessionHistory.titles[0] || "Untitled",
+            getRestoreURL(sessionHistory.urls[0] || "about:blank"));
+
+        for (var i = 1; i < sessionHistory.urls.length; i++) {
+          history.pushState(
+              null,  /* state */
+              sessionHistory.titles[i] || "Untitled",
+              getRestoreURL(sessionHistory.urls[i] || "about:blank"));
+        }
+
+        var currentItemOffset = parseInt(sessionHistory.offset);
+        history.go(currentItemOffset);
+      } catch (e) {
+        handleError(e.name + ": " + e.message);
+      }
+    }
+
+    /**
+     * Redirects to a target URL.
+     * @param {string} encodedTargetUrl An escaped version of the target URL.
+     */
+    function redirect(encodedTargetUrl) {
+      var target = decodeURIComponent(encodedTargetUrl);
+      window.location.replace(target);
+    }
+
+    /**
+     * Sends error message to native controller.
+     */
+    function handleError(message) {
+      console.log("Error: " + message);
+      if (__gCrWeb.message) {
+        __gCrWeb.message.invokeOnHost(
+          {"command": "restoresession.error", "message": message});
+        __gCrWeb.message.invokeQueues();
+      }
+    }
+  </script>
+  </head>
+  <body>
+  </body>
+</html>

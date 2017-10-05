@@ -25,6 +25,7 @@ source_set("web") {
   deps = [
     ":core",
     ":js_resources",
+    ":navigation_resources",
     ":reload_type",
     ":resources",
     ":user_agent",
@@ -841,6 +842,15 @@ js_compile_checked("js_resources") {
     "web_state/js/resources/plugin_placeholder.js",
     "web_state/js/resources/post_request.js",
     "web_state/js/resources/window_id.js",
+  ]
+}
+
+bundle_data("navigation_resources") {
+  sources = [
+    "navigation/resources/restore_session.html",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
 
