@@ -154,7 +154,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
         if (!needsUpgrade) {
             if (!mStorage.didPreviousUpdateSucceed()) {
-                recordUpdate(WebApkInstallResult.SUCCESS, false /* relaxUpdates */);
+                onFinishedUpdate(WebApkInstallResult.SUCCESS, false /* relaxUpdates */);
             }
             return;
         }
@@ -199,18 +199,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         }
 
         final String updateRequestPath = mStorage.createAndSetUpdateRequestFilePath(info);
-        Callback<Boolean> callback = new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean success) {
-                if (!success) {
-                    recordUpdate(WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
-                    mStorage.updateLastRequestedShellApkVersion(
-                            WebApkVersion.CURRENT_SHELL_APK_VERSION);
-                    mStorage.deletePendingUpdateRequestFile();
-                    return;
-                }
-                scheduleUpdate(updateRequestPath);
+        Callback<Boolean> callback = (success) -> {
+            if (!success) {
+                onFinishedUpdate(WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
+                return;
             }
+            scheduleUpdate(updateRequestPath);
         };
         nativeStoreWebApkUpdateRequestToFile(updateRequestPath, info.manifestStartUrl(),
                 info.scopeUri().toString(), info.name(), info.shortName(), primaryIconUrl,
@@ -259,15 +253,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      * Sends update request to the WebAPK Server.
      */
     protected void updateAsyncImpl(String updateRequestPath) {
-        WebApkUpdateCallback callback = new WebApkUpdateCallback() {
-            @Override
-            public void onResultFromNative(@WebApkInstallResult int result, boolean relaxUpdates) {
-                recordUpdate(result, relaxUpdates);
-                mStorage.updateLastRequestedShellApkVersion(
-                        WebApkVersion.CURRENT_SHELL_APK_VERSION);
-                mStorage.deletePendingUpdateRequestFile();
-            }
-        };
+        WebApkUpdateCallback callback =
+                (result, relaxUpdates) -> onFinishedUpdate(result, relaxUpdates);
         nativeUpdateWebApkFromFile(updateRequestPath, callback);
     }
 
@@ -334,7 +321,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     /**
      * Updates {@link WebappDataStorage} with the time of the latest WebAPK update and whether the
-     * WebAPK update succeeded.
+     * WebAPK update succeeded. Also updates the last requested "shell APK version".
      */
     private void recordUpdate(@WebApkInstallResult int result, boolean relaxUpdates) {
         // Update the request time and result together. It prevents getting a correct request time
@@ -342,6 +329,16 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         mStorage.updateTimeOfLastWebApkUpdateRequestCompletion();
         mStorage.updateDidLastWebApkUpdateRequestSucceed(result == WebApkInstallResult.SUCCESS);
         mStorage.setRelaxedUpdates(relaxUpdates);
+        mStorage.updateLastRequestedShellApkVersion(WebApkVersion.CURRENT_SHELL_APK_VERSION);
+    }
+
+    /**
+     * Callback for when WebAPK update finishes or succeeds. Unlike {@link #recordUpdate()}
+     * cannot be called while update is in progress.
+     */
+    private void onFinishedUpdate(@WebApkInstallResult int result, boolean relaxUpdates) {
+        recordUpdate(result, relaxUpdates);
+        mStorage.deletePendingUpdateRequestFile();
     }
 
     /**
