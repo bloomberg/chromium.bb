@@ -73,10 +73,10 @@ class AwContentsClientBridge {
       const GURL& origin_url,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback& callback);
+      content::JavaScriptDialogManager::DialogClosedCallback callback);
   void RunBeforeUnloadDialog(
       const GURL& origin_url,
-      const content::JavaScriptDialogManager::DialogClosedCallback& callback);
+      content::JavaScriptDialogManager::DialogClosedCallback callback);
   bool ShouldOverrideUrlLoading(const base::string16& url,
                                 bool has_user_gesture,
                                 bool is_redirect,

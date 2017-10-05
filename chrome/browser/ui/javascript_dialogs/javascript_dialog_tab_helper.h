@@ -45,11 +45,11 @@ class JavaScriptDialogTabHelper
                            content::JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
-                           const DialogClosedCallback& callback,
+                           DialogClosedCallback callback,
                            bool* did_suppress_message) override;
   void RunBeforeUnloadDialog(content::WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override;
+                             DialogClosedCallback callback) override;
   bool HandleJavaScriptDialog(content::WebContents* web_contents,
                               bool accept,
                               const base::string16* prompt_override) override;

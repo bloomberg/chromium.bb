@@ -3570,14 +3570,14 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager {
                            JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
-                           const DialogClosedCallback& callback,
+                           DialogClosedCallback callback,
                            bool* did_suppress_message) override {
     *did_suppress_message = true;
   };
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override {}
+                             DialogClosedCallback callback) override {}
 
   bool HandleJavaScriptDialog(WebContents* web_contents,
                               bool accept,

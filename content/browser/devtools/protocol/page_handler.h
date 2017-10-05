@@ -20,6 +20,7 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/readback_types.h"
@@ -66,14 +67,14 @@ class PageHandler : public DevToolsDomainHandler,
   void DidDetachInterstitialPage();
   bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
   using JavaScriptDialogCallback =
-      base::Callback<void(bool, const base::string16&)>;
+      content::JavaScriptDialogManager::DialogClosedCallback;
   void DidRunJavaScriptDialog(const GURL& url,
                               const base::string16& message,
                               const base::string16& default_prompt,
                               JavaScriptDialogType dialog_type,
-                              const JavaScriptDialogCallback& callback);
+                              JavaScriptDialogCallback callback);
   void DidRunBeforeUnloadConfirm(const GURL& url,
-                                 const JavaScriptDialogCallback& callback);
+                                 JavaScriptDialogCallback callback);
   void DidCloseJavaScriptDialog(bool success, const base::string16& user_input);
 
   Response Enable() override;
