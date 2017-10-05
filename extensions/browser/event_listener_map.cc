@@ -240,6 +240,20 @@ void EventListenerMap::LoadUnfilteredLazyListeners(
   }
 }
 
+void EventListenerMap::LoadUnfilteredWorkerListeners(
+    const ExtensionId& extension_id,
+    const std::set<std::string>& event_names) {
+  for (const auto& name : event_names) {
+    AddListener(EventListener::ForExtensionServiceWorker(
+        name, extension_id, nullptr,
+        // TODO(lazyboy): We need to store correct scopes of each worker into
+        // ExtensionPrefs for events. This currently assumes all workers are
+        // registered in the '/' scope.
+        Extension::GetBaseURLFromExtensionId(extension_id), kMainThreadId,
+        nullptr));
+  }
+}
+
 void EventListenerMap::LoadFilteredLazyListeners(
     const std::string& extension_id,
     const DictionaryValue& filtered) {

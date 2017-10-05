@@ -218,10 +218,7 @@ class EventRouter : public KeyedService,
                   const std::string& extension_id);
 
   // Returns whether or not the given extension has any registered events.
-  bool HasRegisteredEvents(const ExtensionId& extension_id) const {
-    return !GetRegisteredEvents(extension_id, RegisteredEventType::kLazy)
-                .empty();
-  }
+  bool HasRegisteredEvents(const ExtensionId& extension_id) const;
 
   // Clears registered events for testing purposes.
   void ClearRegisteredEventsForTest(const ExtensionId& extension_id);

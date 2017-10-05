@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.cc"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
@@ -44,6 +46,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/url_constants.h"
@@ -295,6 +298,30 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   PushMessagingServiceImpl* push_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPushMessagingTest);
+};
+
+class ServiceWorkerLazyBackgroundTest : public ServiceWorkerTest {
+ public:
+  ServiceWorkerLazyBackgroundTest() {}
+  ~ServiceWorkerLazyBackgroundTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ServiceWorkerTest::SetUpCommandLine(command_line);
+    // Disable background network activity as it can suddenly bring the Lazy
+    // Background Page alive.
+    command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
+    command_line->AppendSwitch(::switches::kNoProxyServer);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ServiceWorkerTest::SetUpInProcessBrowserTestFixture();
+    // Set shorter delays to prevent test timeouts.
+    ProcessManager::SetEventPageIdleTimeForTesting(1);
+    ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerLazyBackgroundTest);
 };
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, RegisterSucceeds) {
@@ -730,6 +757,66 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, EventsToStoppedWorker) {
   ASSERT_EQ("chrome.tabs.onUpdated callback", result);
 }
 
+// Tests that events to service worker arrives correctly event if the owner
+// extension of the worker is not running.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
+                       EventsToStoppedExtension) {
+  // Extensions APIs from SW are only enabled on trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+
+  LazyBackgroundObserver lazy_observer;
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/events_to_stopped_extension"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ProcessManager* pm = ProcessManager::Get(browser()->profile());
+  EXPECT_GT(pm->GetLazyKeepaliveCount(extension), 0);
+
+  // |extension|'s background page opens a tab to its resource.
+  content::WebContents* extension_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(extension_web_contents));
+  EXPECT_EQ(extension->GetResourceURL("page.html").spec(),
+            extension_web_contents->GetURL().spec());
+  {
+    // Let the service worker start and register a listener to
+    // chrome.tabs.onCreated event.
+    ExtensionTestMessageListener add_listener_done("listener-added", false);
+    content::ExecuteScriptAsync(extension_web_contents,
+                                "window.runServiceWorkerAsync()");
+    EXPECT_TRUE(add_listener_done.WaitUntilSatisfied());
+
+    base::RunLoop run_loop;
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    content::StopServiceWorkerForPattern(
+        storage_partition->GetServiceWorkerContext(),
+        // The service worker is registered at the top level scope.
+        extension->url(), run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Close the tab to |extension|'s resource. This will also close the
+  // extension's event page.
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
+  lazy_observer.Wait();
+
+  // At this point both the extension worker and extension event page is not
+  // running. Since the worker registered a listener for tabs.onCreated, it
+  // will be started to dispatch the event once we create a tab.
+  ExtensionTestMessageListener newtab_listener("hello-newtab", false);
+  newtab_listener.set_failure_message("WRONG_NEWTAB");
+  content::WebContents* new_web_contents =
+      AddTab(browser(), GURL("about:blank"));
+  EXPECT_TRUE(new_web_contents);
+  EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
+}
+
 // Tests that worker ref count increments while extension API function is
 // active.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, WorkerRefCount) {
@@ -986,6 +1073,12 @@ INSTANTIATE_TEST_CASE_P(ServiceWorkerPushMessagingTestWithNativeBindings,
                         ::testing::Values(NATIVE_BINDINGS));
 INSTANTIATE_TEST_CASE_P(ServiceWorkerPushMessagingTestWithJSBindings,
                         ServiceWorkerPushMessagingTest,
+                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerLazyBackgroundTestWithNativeBindings,
+                        ServiceWorkerLazyBackgroundTest,
+                        ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerLazyBackgroundTestWithJSBindings,
+                        ServiceWorkerLazyBackgroundTest,
                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace extensions
