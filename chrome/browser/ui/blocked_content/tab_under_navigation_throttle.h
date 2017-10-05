@@ -41,11 +41,20 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
     // Logged when a navigation is blocked.
     kBlocked,
 
+    // Logged at the same time as kBlocked, but will additionally be logged even
+    // if the experiment is turned off.
+    kDidTabUnder,
+
     kCount
   };
 
   static std::unique_ptr<content::NavigationThrottle> MaybeCreate(
       content::NavigationHandle* handle);
+
+  ~TabUnderNavigationThrottle() override;
+
+ private:
+  explicit TabUnderNavigationThrottle(content::NavigationHandle* handle);
 
   // This method is described at the top of this file.
   //
@@ -58,11 +67,6 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
       content::NavigationHandle* navigation_handle,
       bool started_in_background);
 
-  ~TabUnderNavigationThrottle() override;
-
- private:
-  explicit TabUnderNavigationThrottle(content::NavigationHandle* handle);
-
   content::NavigationThrottle::ThrottleCheckResult MaybeBlockNavigation();
 
   // content::NavigationThrottle:
@@ -74,6 +78,10 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   void LogAction(Action) const;
 
   bool started_in_background_ = false;
+
+  // True if the experiment is turned on and the class should actually attempt
+  // to block tab-unders.
+  bool block_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabUnderNavigationThrottle);
 };

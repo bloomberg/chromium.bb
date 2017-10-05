@@ -83081,6 +83081,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tab.OpenedPopup.PopupToCrossOriginRedirectTime" units="ms">
+  <obsolete>
+    Deprecated in favor of Tab.TabUnder.PopupToTabUnderTime.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from when a tab opens a popup to when it navigates itself
@@ -83090,6 +83093,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Tab.OpenedPopup.VisibleTimeAfterCrossOriginRedirect"
     units="ms">
+  <obsolete>
+    Deprecated in favor of Tab.TabUnder.VisibleTime.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the total time a tab is visible after it navigates itself
@@ -83269,6 +83275,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.TabUnder.PopupToTabUnderTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from when a tab opens a popup to when it performs a
+    tab-under (i.e. navigates cross origin, in the background without a user
+    gesture).
+  </summary>
+</histogram>
+
+<histogram name="Tab.TabUnder.VisibleTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the total time a tab is visible after it navigates itself
+    cross-origin in the background, without a user gesture. The tab must have
+    opened a popup since the last user gesture in the tab. Measured at
+    WebContents destruction.
+  </summary>
+</histogram>
+
 <histogram name="Tab.TabUnderAction" enum="TabUnderAction">
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -83347,6 +83372,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tab.VisibleTimeAfterCrossOriginRedirect" units="ms">
+  <obsolete>
+    This metric was deprecated in favor of just using Tab.TabUnder.VisibleTime
+    directly. Consider bringing it back if we care about visible time after a
+    suspicious redirect without an associated popup.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the total time a tab is visible after it navigates itself
