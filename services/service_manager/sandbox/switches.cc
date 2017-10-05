@@ -28,6 +28,7 @@ const char kRendererProcess[] = "renderer";
 const char kUtilityProcess[] = "utility";
 const char kDisableGpuSandbox[] = "disable-gpu-sandbox";
 const char kNoSandbox[] = "no-sandbox";
+const char kEnableSandboxLogging[] = "enable-sandbox-logging";
 
 }  // namespace switches
 }  // namespace service_manager

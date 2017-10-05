@@ -32,6 +32,7 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kRendererProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilityProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 
 }  // namespace switches
 }  // namespace service_manager
