@@ -125,7 +125,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   ASSERT_EQ(1U, map.size());
   AutocompleteMatch match = map.begin()->second;
   ASSERT_EQ(1U, match.duplicate_matches.size());
-  AutocompleteMatch duplicate = match.duplicate_matches.front();
+  AutocompleteMatch duplicate = match.duplicate_matches[0];
 
   EXPECT_EQ(answer_contents, match.answer_contents);
   EXPECT_EQ(answer_type, match.answer_type);
@@ -159,7 +159,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   ASSERT_EQ(1U, map.size());
   match = map.begin()->second;
   ASSERT_EQ(1U, match.duplicate_matches.size());
-  duplicate = match.duplicate_matches.front();
+  duplicate = match.duplicate_matches[0];
 
   EXPECT_EQ(answer_contents2, match.answer_contents);
   EXPECT_EQ(answer_type2, match.answer_type);

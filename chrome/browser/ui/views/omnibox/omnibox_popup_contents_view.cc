@@ -200,10 +200,10 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
-  size_t i = 0;
-  for (const auto& match : model_->result()) {
+  const size_t result_size = model_->result().size();
+  for (size_t i = 0; i < result_size; ++i) {
     OmniboxResultView* view = result_view_at(i);
-    ++i;
+    const AutocompleteMatch& match = GetMatchAtIndex(i);
     view->SetMatch(match);
     view->SetVisible(true);
     if (match.answer && !model_->answer_bitmap().isNull()) {
@@ -212,7 +212,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     }
   }
 
-  for (; i < AutocompleteResult::GetMaxMatches(); ++i)
+  for (size_t i = result_size; i < AutocompleteResult::GetMaxMatches(); ++i)
     child_at(i)->SetVisible(false);
 
   int top_edge_overlap = 0;

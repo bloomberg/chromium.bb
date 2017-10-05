@@ -850,11 +850,10 @@ void HistoryURLProvider::QueryComplete(
     PromoteMatchesIfNecessary(*params);
 
     // Determine relevance of highest scoring match, if any.
-    int relevance =
-        matches_.empty()
-            ? CalculateRelevance(NORMAL,
-                                 static_cast<int>(params->matches.size() - 1))
-            : matches_.front().relevance;
+    int relevance = matches_.empty() ?
+        CalculateRelevance(NORMAL,
+                           static_cast<int>(params->matches.size() - 1)) :
+        matches_[0].relevance;
 
     // Convert the history matches to autocomplete matches.  If we promoted the
     // first match, skip over it.
@@ -985,7 +984,7 @@ bool HistoryURLProvider::PromoteOrCreateShorterSuggestion(
   // Determine the base URL from which to search, and whether that URL could
   // itself be added as a match.  We can add the base iff it's not "effectively
   // the same" as any "what you typed" match.
-  const history::HistoryMatch& match = params->matches.front();
+  const history::HistoryMatch& match = params->matches[0];
   GURL search_base = ConvertToHostOnly(match, params->input.text());
   bool can_add_search_base_to_matches = !params->have_what_you_typed_match;
   if (search_base.is_empty()) {

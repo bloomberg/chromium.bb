@@ -344,6 +344,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   // Also guarantee that all relevance scores are decreasing (but do not assign
   // any scores below 1).
   WordMap terms_map(CreateWordMapForString(term_string));
+  matches_.reserve(shortcut_matches.size());
   for (ShortcutMatch& match : shortcut_matches) {
     max_relevance = std::min(max_relevance, match.relevance);
     matches_.push_back(ShortcutToACMatch(*match.shortcut, max_relevance, input,

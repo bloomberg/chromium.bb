@@ -155,13 +155,11 @@ void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
     ASSERT_EQ(keyword_cases[i].num_results, matches.size());
-    EXPECT_TRUE(std::equal(matches.begin(), matches.end(),
-                           &keyword_cases[i].output[0],
-                           [&](auto match, auto testcase) {
-                             return testcase.member == match.*member &&
-                                    testcase.allowed_to_be_default_match ==
-                                        match.allowed_to_be_default_match;
-                           }));
+    for (size_t j = 0; j < matches.size(); ++j) {
+      EXPECT_EQ(keyword_cases[i].output[j].member, matches[j].*member);
+      EXPECT_EQ(keyword_cases[i].output[j].allowed_to_be_default_match,
+                matches[j].allowed_to_be_default_match);
+    }
   }
 }
 

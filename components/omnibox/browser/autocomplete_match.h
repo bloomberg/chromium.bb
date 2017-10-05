@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -21,13 +20,10 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-struct AutocompleteMatch;
 class AutocompleteProvider;
 class SuggestionAnswer;
 class TemplateURL;
 class TemplateURLService;
-
-using ACMatches = std::list<AutocompleteMatch>;
 
 namespace base {
 class Time;
@@ -451,7 +447,7 @@ struct AutocompleteMatch {
 
   // A list of matches culled during de-duplication process, retained to
   // ensure if a match is deleted, the duplicates are deleted as well.
-  ACMatches duplicate_matches;
+  std::vector<AutocompleteMatch> duplicate_matches;
 
 #ifndef NDEBUG
   // Does a data integrity check on this match.
@@ -464,7 +460,8 @@ struct AutocompleteMatch {
 #endif
 };
 
-using ACMatchClassification = AutocompleteMatch::ACMatchClassification;
-using ACMatchClassifications = std::vector<ACMatchClassification>;
+typedef AutocompleteMatch::ACMatchClassification ACMatchClassification;
+typedef std::vector<ACMatchClassification> ACMatchClassifications;
+typedef std::vector<AutocompleteMatch> ACMatches;
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_MATCH_H_

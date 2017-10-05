@@ -119,17 +119,15 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     }
   }
 
-  int i = 0;
-  for (auto& m : matches_)
-    m.relevance = kRelevance + matches_.size() - (i++ + 1);
+  for (size_t i = 0; i < matches_.size(); ++i)
+    matches_[i].relevance = kRelevance + matches_.size() - (i + 1);
   if (!HistoryProvider::PreventInlineAutocomplete(input) &&
-      (matches_.size() == 1) &&
-      !matches_.front().inline_autocompletion.empty()) {
+      (matches_.size() == 1) && !matches_[0].inline_autocompletion.empty()) {
     // If there's only one possible completion of the user's input and
     // allowing completions is okay, give the match a high enough score to
     // allow it to beat url-what-you-typed and be inlined.
-    matches_.front().relevance = 1250;
-    matches_.front().allowed_to_be_default_match = true;
+    matches_[0].relevance = 1250;
+    matches_[0].allowed_to_be_default_match = true;
   }
 }
 

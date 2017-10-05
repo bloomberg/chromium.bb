@@ -180,8 +180,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
 void OmniboxPopupModel::ResetToDefaultMatch() {
   const AutocompleteResult& result = this->result();
   CHECK(!result.empty());
-  SetSelectedLine(std::distance(result.begin(), result.default_match()), true,
-                  false);
+  SetSelectedLine(result.default_match() - result.begin(), true, false);
   view_->OnDragCanceled();
 }
 
@@ -247,10 +246,8 @@ bool OmniboxPopupModel::IsStarredMatch(const AutocompleteMatch& match) const {
 void OmniboxPopupModel::OnResultChanged() {
   answer_bitmap_ = SkBitmap();
   const AutocompleteResult& result = this->result();
-  selected_line_ = result.default_match() == result.end()
-                       ? kNoMatch
-                       : static_cast<size_t>(std::distance(
-                             result.begin(), result.default_match()));
+  selected_line_ = result.default_match() == result.end() ?
+      kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
   // There had better not be a nonempty result set with no default match.
   CHECK((selected_line_ != kNoMatch) || result.empty());
   has_selected_match_ = false;
@@ -326,12 +323,11 @@ void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,
   favicons_cache_.Put(page_url, icon);
 
   // Notify all affected matches.
-  size_t index = 0;
-  for (auto& match : result()) {
+  for (size_t i = 0; i < result().size(); ++i) {
+    auto& match = result().match_at(i);
     if (!AutocompleteMatch::IsSearchType(match.type) &&
         match.destination_url == page_url) {
-      view_->OnMatchIconUpdated(index);
+      view_->OnMatchIconUpdated(i);
     }
-    ++index;
   }
 }

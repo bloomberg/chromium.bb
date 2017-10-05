@@ -657,8 +657,8 @@ void AutocompleteController::UpdateAssistedQueryStats(
   AppendAvailableAutocompletion(
       last_type, last_subtype, count, &autocompletions);
   // Go over all matches and set AQS if the match supports it.
-  size_t index = 0;
-  for (auto match = result->begin(); match != result->end(); ++match, ++index) {
+  for (size_t index = 0; index < result->size(); ++index) {
+    AutocompleteMatch* match = result->match_at(index);
     const TemplateURL* template_url =
         match->GetTemplateURL(template_url_service_, false);
     if (!template_url || !match->search_terms_args.get())
@@ -666,9 +666,11 @@ void AutocompleteController::UpdateAssistedQueryStats(
     std::string selected_index;
     // Prevent trivial suggestions from getting credit for being selected.
     if (!IsTrivialAutocompletion(*match))
-      selected_index = base::SizeTToString(index);
+      selected_index = base::StringPrintf("%" PRIuS, index);
     match->search_terms_args->assisted_query_stats =
-        "chrome." + selected_index + "." + autocompletions;
+        base::StringPrintf("chrome.%s.%s",
+                           selected_index.c_str(),
+                           autocompletions.c_str());
     match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
         *match->search_terms_args, template_url_service_->search_terms_data()));
   }
