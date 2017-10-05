@@ -420,6 +420,15 @@ TEST_F(DisplaySchedulerWaitForAllSurfacesTest, WaitForAllSurfacesBeforeDraw) {
   scheduler_.ProcessSurfaceDamage(sid1, ack, false);
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  // Stray BeginFrameAcks for older BeginFrames are ignored.
+  ack.sequence_number--;
+  scheduler_.ProcessSurfaceDamage(sid1, ack, false);
+  // If the acknowledgment above was not ignored and instead updated the surface
+  // state for sid1, the surface would become a pending surface again, and the
+  // deadline would no longer be immediate. Since it is ignored, we are
+  // expecting the deadline to remain immedate.
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
 
   // System should be idle now because we had a frame without damage. Restore it
