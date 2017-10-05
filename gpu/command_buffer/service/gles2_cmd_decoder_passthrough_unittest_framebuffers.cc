@@ -163,5 +163,205 @@ TEST_F(GLES2DecoderPassthroughTest, ReadPixelsOutOfRange) {
   }
 }
 
+TEST_F(GLES2DecoderPassthroughTest, ReadPixelsAsync) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+
+  ReadPixels read_pixels_cmd;
+  read_pixels_cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
+                       pixels_shm_id, pixels_shm_offset, result_shm_id,
+                       result_shm_offset, true);
+  result->success = 0;
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(read_pixels_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetDecoder()->HasMoreIdleWork());
+
+  {
+    // Verify internals of pending read pixels
+    const auto& all_pending_read_pixels = GetPendingReadPixels();
+    EXPECT_EQ(1u, all_pending_read_pixels.size());
+
+    const auto& pending_read_pixels = all_pending_read_pixels.front();
+    EXPECT_NE(nullptr, pending_read_pixels.fence);
+    EXPECT_EQ(pixels_shm_id, pending_read_pixels.pixels_shm_id);
+    EXPECT_EQ(pixels_shm_offset, pending_read_pixels.pixels_shm_offset);
+    EXPECT_EQ(result_shm_offset, pending_read_pixels.result_shm_offset);
+    EXPECT_EQ(result_shm_id, pending_read_pixels.result_shm_id);
+    EXPECT_NE(0u, pending_read_pixels.buffer_service_id);
+    EXPECT_TRUE(pending_read_pixels.waiting_async_pack_queries.empty());
+  }
+
+  Finish finish_cmd;
+  finish_cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(finish_cmd));
+  EXPECT_FALSE(GetDecoder()->HasMoreIdleWork());
+  EXPECT_TRUE(GetPendingReadPixels().empty());
+}
+
+TEST_F(GLES3DecoderPassthroughTest, ReadPixelsAsyncSkippedIfPBOBound) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+
+  cmds::BindBuffer bind_cmd;
+  bind_cmd.Init(GL_PIXEL_PACK_BUFFER, kClientBufferId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmds::BufferData buffer_data_cmd;
+  size_t read_pixels_result_size = kWidth * kHeight * 4;
+  buffer_data_cmd.Init(GL_PIXEL_PACK_BUFFER, read_pixels_result_size, 0, 0,
+                       GL_STREAM_DRAW);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(buffer_data_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Check that there is no idle work to do when a PBO is already bound and that
+  // the ReadPixel succeeded
+  ReadPixels read_pixels_cmd;
+  read_pixels_cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0,
+                       result_shm_id, result_shm_offset, true);
+  result->success = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(read_pixels_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(GetDecoder()->HasMoreIdleWork());
+}
+
+TEST_F(GLES2DecoderPassthroughTest, ReadPixelsAsyncModifyCommand) {
+  typedef ReadPixels::Result Result;
+  size_t shm_size = 0;
+  Result* result = GetSharedMemoryAsWithSize<Result*>(&shm_size);
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+
+  size_t pixels_memory_size = shm_size - 1;
+  char* pixels = reinterpret_cast<char*>(result + 1);
+
+  constexpr char kDummyValue = 11;
+  size_t read_pixels_result_size = kWidth * kHeight * 4;
+  EXPECT_GT(pixels_memory_size, read_pixels_result_size);
+  memset(pixels, kDummyValue, pixels_memory_size);
+
+  ReadPixels read_pixels_cmd;
+  read_pixels_cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
+                       pixels_shm_id, pixels_shm_offset, result_shm_id,
+                       result_shm_offset, true);
+  result->success = 0;
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(read_pixels_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetDecoder()->HasMoreIdleWork());
+
+  // Change command after ReadPixels issued, but before we finish the read,
+  // should have no impact.
+  read_pixels_cmd.Init(1, 2, 6, 7, GL_RGB, GL_UNSIGNED_SHORT, pixels_shm_id,
+                       pixels_shm_offset, result_shm_id, result_shm_offset,
+                       false);
+
+  Finish finish_cmd;
+  finish_cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(finish_cmd));
+  EXPECT_FALSE(GetDecoder()->HasMoreIdleWork());
+  EXPECT_TRUE(GetPendingReadPixels().empty());
+
+  // Validate that only the correct bytes of pixels have been written to.
+  for (size_t i = 0; i < pixels_memory_size; i++) {
+    // ANGLE's null context always returns 42 for all pixel bytes for ReadPixels
+    // calls.
+    constexpr char kReadPixelsValue = 42;
+    char expected_value =
+        i < read_pixels_result_size ? kReadPixelsValue : kDummyValue;
+    EXPECT_EQ(expected_value, pixels[i]);
+  }
+}
+
+TEST_F(GLES2DecoderPassthroughTest, ReadPixelsAsyncChangePackAlignment) {
+  typedef ReadPixels::Result Result;
+  size_t shm_size = 0;
+  Result* result = GetSharedMemoryAsWithSize<Result*>(&shm_size);
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+
+  size_t pixels_memory_size = shm_size - 1;
+  char* pixels = reinterpret_cast<char*>(result + 1);
+
+  constexpr char kDummyValue = 11;
+  size_t read_pixels_result_size = kWidth * kHeight * 4;
+  EXPECT_GT(pixels_memory_size, read_pixels_result_size);
+  memset(pixels, kDummyValue, pixels_memory_size);
+
+  ReadPixels read_pixels_cmd;
+  read_pixels_cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
+                       pixels_shm_id, pixels_shm_offset, result_shm_id,
+                       result_shm_offset, true);
+  result->success = 0;
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(read_pixels_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetDecoder()->HasMoreIdleWork());
+
+  PixelStorei pixel_store_i_cmd;
+  pixel_store_i_cmd.Init(GL_PACK_ALIGNMENT, 8);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(pixel_store_i_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  Finish finish_cmd;
+  finish_cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(finish_cmd));
+  EXPECT_FALSE(GetDecoder()->HasMoreIdleWork());
+  EXPECT_TRUE(GetPendingReadPixels().empty());
+
+  // Validate that only the correct bytes of pixels have been written to.
+  for (size_t i = 0; i < pixels_memory_size; i++) {
+    // ANGLE's null context always returns 42 for all pixel bytes for ReadPixels
+    // calls.
+    constexpr char kReadPixelsValue = 42;
+    char expected_value =
+        i < read_pixels_result_size ? kReadPixelsValue : kDummyValue;
+    EXPECT_EQ(expected_value, pixels[i]);
+  }
+}
+
+TEST_F(GLES2DecoderPassthroughTest, ReadPixelsAsyncError) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = shared_memory_id_;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = shared_memory_id_;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+
+  // Inject an INVALID_OPERATION error on the call to ReadPixels
+  InjectGLError(GL_NO_ERROR);
+  InjectGLError(GL_INVALID_OPERATION);
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels_shm_id,
+           pixels_shm_offset, result_shm_id, result_shm_offset, true);
+  result->success = 0;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  EXPECT_FALSE(GetDecoder()->HasMoreIdleWork());
+  EXPECT_TRUE(GetPendingReadPixels().empty());
+}
+
 }  // namespace gles2
 }  // namespace gpu

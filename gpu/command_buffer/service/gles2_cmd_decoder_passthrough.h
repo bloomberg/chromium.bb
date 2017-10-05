@@ -23,8 +23,13 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
+
+namespace gl {
+class GLFence;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -284,6 +289,9 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
                  bool can_bind_to_sampler) override;
 
  private:
+  // Allow unittests to inspect internal state tracking
+  friend class GLES2DecoderPassthroughTestBase;
+
   const char* GetCommandName(unsigned int command_id) const;
 
   void* GetScratchMemory(size_t size);
@@ -336,12 +344,18 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   GLenum PopError();
   bool FlushErrors();
 
+  // Inject a driver-level GL error that will replace the result of the next
+  // call to glGetError
+  void InjectDriverError(GLenum error);
+
   bool CheckResetStatus();
   bool IsRobustnessSupported();
 
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
+
+  error::Error ProcessReadPixels(bool did_finish);
 
   void UpdateTextureBinding(GLenum target,
                             GLuint client_id,
@@ -467,6 +481,31 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   };
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 
+  // Pending async ReadPixels calls
+  struct PendingReadPixels {
+    PendingReadPixels();
+    ~PendingReadPixels();
+    PendingReadPixels(PendingReadPixels&&);
+    PendingReadPixels& operator=(PendingReadPixels&&);
+
+    std::unique_ptr<gl::GLFence> fence = nullptr;
+    GLuint buffer_service_id = 0;
+    uint32_t pixels_size = 0;
+    uint32_t pixels_shm_id = 0;
+    uint32_t pixels_shm_offset = 0;
+    uint32_t result_shm_id = 0;
+    uint32_t result_shm_offset = 0;
+
+    // Service IDs of GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM queries waiting for
+    // this read pixels operation to complete
+    base::flat_set<GLuint> waiting_async_pack_queries;
+
+    DISALLOW_COPY_AND_ASSIGN(PendingReadPixels);
+  };
+  base::circular_deque<PendingReadPixels> pending_read_pixels_;
+
+  // Error state
+  base::circular_deque<GLenum> injected_driver_errors_;
   std::set<GLenum> errors_;
 
   // Default framebuffer emulation
