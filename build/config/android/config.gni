@@ -137,8 +137,8 @@ if (is_android) {
     # Mark APKs as android:debuggable="true".
     debuggable_apks = !is_official_build
 
-    # Set to false to disable the Errorprone compiler
-    use_errorprone_java_compiler = true
+    # Set to true to enable the Errorprone compiler
+    use_errorprone_java_compiler = false
 
     # Enables EMMA Java code coverage. Instruments classes during build to
     # produce .ec files during runtime
