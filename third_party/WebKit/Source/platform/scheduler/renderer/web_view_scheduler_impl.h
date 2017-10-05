@@ -15,6 +15,7 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
+#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 
@@ -32,7 +33,9 @@ class RendererSchedulerImpl;
 class CPUTimeBudgetPool;
 class WebFrameSchedulerImpl;
 
-class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
+class PLATFORM_EXPORT WebViewSchedulerImpl
+    : public WebViewScheduler,
+      public AutoAdvancingVirtualTimeDomain::Observer {
  public:
   WebViewSchedulerImpl(
       WebScheduler::InterventionReporter* intervention_reporter,
@@ -57,6 +60,9 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void RequestBeginMainFrameNotExpected(bool new_state) override;
   void AddVirtualTimeObserver(VirtualTimeObserver*) override;
   void RemoveVirtualTimeObserver(VirtualTimeObserver*) override;
+
+  // AutoAdvancingVirtualTimeDomain::Observer implementation:
+  void OnVirtualTimeAdvanced() override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
