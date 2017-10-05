@@ -12,11 +12,12 @@
 namespace cc {
 
 TransformNode::TransformNode()
-    : id(TransformTree::kInvalidNodeId),
-      parent_id(TransformTree::kInvalidNodeId),
-      sticky_position_constraint_id(-1),
-      source_node_id(TransformTree::kInvalidNodeId),
-      sorting_context_id(0),
+    : flattens_inherited_transform(false),
+      scrolls(false),
+      should_be_snapped(false),
+      moved_by_outer_viewport_bounds_delta_x(false),
+      moved_by_outer_viewport_bounds_delta_y(false),
+      in_subtree_of_page_scale_layer(false),
       needs_local_transform_update(true),
       node_and_ancestors_are_animated_or_invertible(true),
       is_invertible(true),
@@ -25,25 +26,15 @@ TransformNode::TransformNode()
       is_currently_animating(false),
       to_screen_is_potentially_animated(false),
       has_only_translation_animations(true),
-      flattens_inherited_transform(false),
       node_and_ancestors_are_flat(true),
       node_and_ancestors_have_only_integer_translation(true),
-      scrolls(false),
-      should_be_snapped(false),
-      moved_by_inner_viewport_bounds_delta_x(false),
-      moved_by_inner_viewport_bounds_delta_y(false),
-      moved_by_outer_viewport_bounds_delta_x(false),
-      moved_by_outer_viewport_bounds_delta_y(false),
-      in_subtree_of_page_scale_layer(false),
-      transform_changed(false),
-      post_local_scale_factor(1.0f) {}
+      transform_changed(false) {}
 
 TransformNode::TransformNode(const TransformNode&) = default;
 
 bool TransformNode::operator==(const TransformNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
-         element_id == other.element_id && pre_local == other.pre_local &&
-         local == other.local && post_local == other.post_local &&
+         element_id == other.element_id && local == other.local &&
          to_parent == other.to_parent &&
          source_node_id == other.source_node_id &&
          sorting_context_id == other.sorting_context_id &&
@@ -64,10 +55,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.node_and_ancestors_have_only_integer_translation &&
          scrolls == other.scrolls &&
          should_be_snapped == other.should_be_snapped &&
-         moved_by_inner_viewport_bounds_delta_x ==
-             other.moved_by_inner_viewport_bounds_delta_x &&
-         moved_by_inner_viewport_bounds_delta_y ==
-             other.moved_by_inner_viewport_bounds_delta_y &&
          moved_by_outer_viewport_bounds_delta_x ==
              other.moved_by_outer_viewport_bounds_delta_x &&
          moved_by_outer_viewport_bounds_delta_y ==
@@ -82,31 +69,12 @@ bool TransformNode::operator==(const TransformNode& other) const {
          source_to_parent == other.source_to_parent;
 }
 
-void TransformNode::update_pre_local_transform(
-    const gfx::Point3F& transform_origin) {
-  pre_local.MakeIdentity();
-  pre_local.Translate3d(-transform_origin.x(), -transform_origin.y(),
-                        -transform_origin.z());
-}
-
-void TransformNode::update_post_local_transform(
-    const gfx::PointF& position,
-    const gfx::Point3F& transform_origin) {
-  post_local.MakeIdentity();
-  post_local.Scale(post_local_scale_factor, post_local_scale_factor);
-  post_local.Translate3d(
-      position.x() + source_offset.x() + transform_origin.x(),
-      position.y() + source_offset.y() + transform_origin.y(),
-      transform_origin.z());
-}
-
 void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
   element_id.AddToTracedValue(value);
-  MathUtil::AddToTracedValue("pre_local", pre_local, value);
+  MathUtil::AddToTracedValue("transform_origin", transform_origin, value);
   MathUtil::AddToTracedValue("local", local, value);
-  MathUtil::AddToTracedValue("post_local", post_local, value);
   value->SetInteger("source_node_id", source_node_id);
   value->SetInteger("sorting_context_id", sorting_context_id);
   MathUtil::AddToTracedValue("scroll_offset", scroll_offset, value);

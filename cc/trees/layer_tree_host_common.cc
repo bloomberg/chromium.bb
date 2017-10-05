@@ -560,7 +560,7 @@ void CalculateDrawPropertiesInternal(
               : 1.f;
       property_trees->transform_tree.SetRootTransformsAndScales(
           inputs->device_scale_factor, page_scale_factor_for_root,
-          inputs->device_transform, inputs->root_layer->position());
+          inputs->device_transform);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees,
           inputs->can_adjust_raster_scales);
