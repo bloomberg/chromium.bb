@@ -432,6 +432,16 @@ bool EventRouter::HasLazyEventListenerForTesting(
                      });
 }
 
+bool EventRouter::HasNonLazyEventListenerForTesting(
+    const std::string& event_name) {
+  const EventListenerMap::ListenerList& listeners =
+      listeners_.GetEventListenersByName(event_name);
+  return std::any_of(listeners.begin(), listeners.end(),
+                     [](const std::unique_ptr<EventListener>& listener) {
+                       return !listener->IsLazy();
+                     });
+}
+
 void EventRouter::RemoveFilterFromEvent(const std::string& event_name,
                                         const std::string& extension_id,
                                         const DictionaryValue* filter) {
