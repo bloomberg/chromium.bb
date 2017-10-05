@@ -630,8 +630,6 @@ crbug.com/749251 [ Mac ] http/tests/devtools/application-panel/resources-panel-w
 
 crbug.com/761798 [ Mac ] inspector-protocol/emulation/device-emulation-desktop.js [ Failure ]
 
-crbug.com/233303 [ Win7 Debug ] http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
-crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
 crbug.com/761881 [ Win7 Debug ] http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.html [ Pass Crash ]
 crbug.com/761881 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.html [ Pass Crash ]
 
