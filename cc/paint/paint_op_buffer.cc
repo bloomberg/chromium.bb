@@ -13,6 +13,7 @@
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/scoped_image_flags.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -23,22 +24,6 @@ SkIRect RoundOutRect(const SkRect& rect) {
   SkIRect result;
   rect.roundOut(&result);
   return result;
-}
-
-bool IsImageShader(const PaintFlags& flags) {
-  return flags.HasShader() &&
-         flags.getShader()->shader_type() == PaintShader::Type::kImage;
-}
-
-bool IsImageOp(const PaintOp* op) {
-  if (op->GetType() == PaintOpType::DrawImage)
-    return true;
-  else if (op->GetType() == PaintOpType::DrawImageRect)
-    return true;
-  else if (op->IsDrawOp() && op->IsPaintOpWithFlags())
-    return IsImageShader(static_cast<const PaintOpWithFlags*>(op)->flags);
-
-  return false;
 }
 
 bool QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
@@ -58,65 +43,6 @@ bool QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
   return canvas->quickReject(rect);
 }
 
-// Encapsulates a ImageProvider::DecodedImageHolder and a SkPaint. Use of
-// this class ensures that the DecodedImageHolder outlives the dependent
-// SkPaint.
-class ScopedImageFlags {
- public:
-  ScopedImageFlags(ImageProvider* image_provider,
-                   const PaintFlags& flags,
-                   const SkMatrix& ctm) {
-    DCHECK(IsImageShader(flags));
-
-    const PaintImage& paint_image = flags.getShader()->paint_image();
-    SkMatrix matrix = flags.getShader()->GetLocalMatrix();
-
-    SkMatrix total_image_matrix = matrix;
-    total_image_matrix.preConcat(ctm);
-    SkRect src_rect =
-        SkRect::MakeIWH(paint_image.width(), paint_image.height());
-    DrawImage draw_image(paint_image, RoundOutRect(src_rect),
-                         flags.getFilterQuality(), total_image_matrix);
-    scoped_decoded_draw_image_ =
-        image_provider->GetDecodedDrawImage(draw_image);
-
-    if (!scoped_decoded_draw_image_)
-      return;
-    const auto& decoded_image = scoped_decoded_draw_image_.decoded_image();
-    DCHECK(decoded_image.image());
-
-    bool need_scale = !decoded_image.is_scale_adjustment_identity();
-    if (need_scale) {
-      matrix.preScale(1.f / decoded_image.scale_adjustment().width(),
-                      1.f / decoded_image.scale_adjustment().height());
-    }
-
-    sk_sp<SkImage> sk_image =
-        sk_ref_sp<SkImage>(const_cast<SkImage*>(decoded_image.image().get()));
-    PaintImage decoded_paint_image = PaintImageBuilder()
-                                         .set_id(paint_image.stable_id())
-                                         .set_image(std::move(sk_image))
-                                         .TakePaintImage();
-    decoded_flags_.emplace(flags);
-    decoded_flags_.value().setFilterQuality(decoded_image.filter_quality());
-    decoded_flags_.value().setShader(
-        PaintShader::MakeImage(decoded_paint_image, flags.getShader()->tx(),
-                               flags.getShader()->ty(), &matrix));
-  }
-
-  PaintFlags* decoded_flags() {
-    return decoded_flags_ ? &decoded_flags_.value() : nullptr;
-  }
-
-  ~ScopedImageFlags() = default;
-
- private:
-  base::Optional<PaintFlags> decoded_flags_;
-  ImageProvider::ScopedDecodedDrawImage scoped_decoded_draw_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedImageFlags);
-};
-
 void RasterWithAlpha(const PaintOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params,
@@ -133,7 +59,7 @@ void RasterWithAlpha(const PaintOp* op,
     // ImageProvider if it consists of an image shader.
     base::Optional<ScopedImageFlags> scoped_flags;
     const PaintFlags* decoded_flags = &flags_op->flags;
-    if (params.image_provider && IsImageShader(flags_op->flags)) {
+    if (params.image_provider && flags_op->HasDiscardableImagesFromFlags()) {
       scoped_flags.emplace(params.image_provider, flags_op->flags,
                            canvas->getTotalMatrix());
       decoded_flags = scoped_flags.value().decoded_flags();
@@ -1455,10 +1381,45 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
   return false;
 }
 
+// static
+bool PaintOp::OpHasDiscardableImages(const PaintOp* op) {
+  if (op->IsPaintOpWithFlags() && static_cast<const PaintOpWithFlags*>(op)
+                                      ->HasDiscardableImagesFromFlags()) {
+    return true;
+  }
+
+  if (op->GetType() == PaintOpType::DrawImage &&
+      static_cast<const DrawImageOp*>(op)->HasDiscardableImages()) {
+    return true;
+  } else if (op->GetType() == PaintOpType::DrawImageRect &&
+             static_cast<const DrawImageRectOp*>(op)->HasDiscardableImages()) {
+    return true;
+  } else if (op->GetType() == PaintOpType::DrawRecord &&
+             static_cast<const DrawRecordOp*>(op)->HasDiscardableImages()) {
+    return true;
+  }
+
+  return false;
+}
+
 void PaintOp::DestroyThis() {
   auto func = g_destructor_functions[type];
   if (func)
     func(this);
+}
+
+bool PaintOpWithFlags::HasDiscardableImagesFromFlags() const {
+  if (!IsDrawOp())
+    return false;
+
+  if (!flags.HasShader())
+    return false;
+  else if (flags.getShader()->shader_type() == PaintShader::Type::kImage)
+    return flags.getShader()->paint_image().IsLazyGenerated();
+  else if (flags.getShader()->shader_type() == PaintShader::Type::kPaintRecord)
+    return flags.getShader()->paint_record()->HasDiscardableImages();
+
+  return false;
 }
 
 void PaintOpWithFlags::RasterWithFlags(SkCanvas* canvas,
@@ -1738,7 +1699,8 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
           // general case we defer this to the SkCanvas but if we will be
           // using an ImageProvider for pre-decoding images, we can save
           // performing an expensive decode that will never be rasterized.
-          const bool skip_op = params.image_provider && IsImageOp(draw_op) &&
+          const bool skip_op = params.image_provider &&
+                               PaintOp::OpHasDiscardableImages(draw_op) &&
                                QuickRejectDraw(draw_op, canvas);
           if (skip_op) {
             // Now that we know this op will be skipped, we can push the save
@@ -1768,15 +1730,15 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       }
     }
 
-    if (params.image_provider && IsImageOp(op)) {
+    if (params.image_provider && PaintOp::OpHasDiscardableImages(op)) {
       if (QuickRejectDraw(op, canvas))
         continue;
 
       auto* flags_op = op->IsPaintOpWithFlags()
                            ? static_cast<const PaintOpWithFlags*>(op)
                            : nullptr;
-      if (flags_op && IsImageShader(flags_op->flags)) {
-        ScopedImageFlags scoped_flags(image_provider, flags_op->flags,
+      if (flags_op && flags_op->HasDiscardableImagesFromFlags()) {
+        ScopedImageFlags scoped_flags(params.image_provider, flags_op->flags,
                                       canvas->getTotalMatrix());
 
         // Only rasterize the op if we successfully decoded the image.
