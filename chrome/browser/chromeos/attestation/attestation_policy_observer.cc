@@ -76,17 +76,15 @@ void DBusStringCallback(
     const base::Callback<void(const std::string&)> on_success,
     const base::Closure& on_failure,
     const base::Location& from_here,
-    chromeos::DBusMethodCallStatus status,
-    bool result,
-    const std::string& data) {
-  if (status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result) {
-    LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString()
-               << " - " << status << " - " << result;
+    base::Optional<chromeos::CryptohomeClient::TpmAttestationDataResult>
+        result) {
+  if (!result.has_value() || !result->success) {
+    LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString();
     if (!on_failure.is_null())
       on_failure.Run();
     return;
   }
-  on_success.Run(data);
+  on_success.Run(result->data);
 }
 
 }  // namespace
@@ -189,12 +187,19 @@ void AttestationPolicyObserver::GetNewCertificate() {
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
       true,              // Force a new key to be generated.
-      base::Bind(DBusStringCallback,
-                 base::Bind(&AttestationPolicyObserver::UploadCertificate,
-                            weak_factory_.GetWeakPtr()),
-                 base::Bind(&AttestationPolicyObserver::Reschedule,
-                            weak_factory_.GetWeakPtr()),
-                 FROM_HERE, DBUS_METHOD_CALL_SUCCESS));
+      base::Bind(
+          [](const base::Callback<void(const std::string&)> on_success,
+             const base::Closure& on_failure, const base::Location& from_here,
+             bool success, const std::string& data) {
+            DBusStringCallback(on_success, on_failure, from_here,
+                               CryptohomeClient::TpmAttestationDataResult{
+                                   success, std::move(data)});
+          },
+          base::Bind(&AttestationPolicyObserver::UploadCertificate,
+                     weak_factory_.GetWeakPtr()),
+          base::Bind(&AttestationPolicyObserver::Reschedule,
+                     weak_factory_.GetWeakPtr()),
+          FROM_HERE));
 }
 
 void AttestationPolicyObserver::GetExistingCertificate() {
