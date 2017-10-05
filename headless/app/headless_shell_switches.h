@@ -24,6 +24,7 @@ extern const char kRemoteDebuggingAddress[];
 extern const char kRemoteDebuggingSocketFd[];
 extern const char kRepl[];
 extern const char kScreenshot[];
+extern const char kSSLKeyLogFile[];
 extern const char kTimeout[];
 extern const char kUseGL[];
 extern const char kUserAgent[];
