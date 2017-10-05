@@ -172,17 +172,12 @@ by a child template that "extends" this file.
             android:excludeFromRecents="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.Main"
+        <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.APP_BROWSER" />
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
-                {% if channel in ['dev', 'canary', 'default'] %}
-                <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
-                {% endif %}
             </intent-filter>
             <!-- Matches the common case of intents with no MIME type.
                  Make sure to keep in sync with the next filter.  -->
@@ -403,13 +398,18 @@ by a child template that "extends" this file.
             </intent-filter>
             {% endblock %}
         </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.LauncherMain"
+        <activity-alias android:name="com.google.android.apps.chrome.Main"
             android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.APP_BROWSER" />
+                {% if channel in ['dev', 'canary', 'default'] %}
+                <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
+                {% endif %}
             </intent-filter>
         </activity-alias>
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
