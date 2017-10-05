@@ -832,6 +832,7 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
 
   if (!want_active || is_blocked) {
     if (active) {
+      stats::LogEntryEvent(stats::DownloadEvent::SUSPEND);
       stats::LogDownloadPauseReason(blocked_by_criteria, !want_active,
                                     blocked_by_navigation,
                                     blocked_by_downloads);
@@ -849,6 +850,9 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
         entry->resumption_count++;
         model_->Update(*entry);
 
+        stats::LogEntryResumptionCount(entry->resumption_count);
+        stats::LogEntryEvent(stats::DownloadEvent::RESUME);
+
         if (entry->resumption_count > config_->max_resumption_count) {
           HandleCompleteDownload(CompletionType::OUT_OF_RESUMPTIONS,
                                  entry->guid);
@@ -858,6 +862,9 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
         // This is a costly resumption.
         entry->attempt_count++;
         model_->Update(*entry);
+
+        stats::LogEntryRetryCount(entry->attempt_count);
+        stats::LogEntryEvent(stats::DownloadEvent::RETRY);
 
         if (entry->attempt_count > config_->max_retry_count) {
           HandleCompleteDownload(CompletionType::OUT_OF_RETRIES, entry->guid);
@@ -869,6 +876,7 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
     if (driver_entry.has_value()) {
       driver_->Resume(entry->guid);
     } else {
+      stats::LogEntryEvent(stats::DownloadEvent::START);
       driver_->Start(
           entry->request_params, entry->guid, entry->target_file_path,
           net::NetworkTrafficAnnotationTag(entry->traffic_annotation));

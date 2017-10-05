@@ -125,6 +125,28 @@ enum class FileCleanupReason {
   COUNT = 4,
 };
 
+// Enum used by UMA metrics to log a type of download event that occurred in the
+// Controller.
+enum class DownloadEvent {
+  // The Controller started a download.
+  START = 0,
+
+  // The Controller resumed a download (we assume this is a light weight
+  // resumption that does not require a complete download restart).
+  RESUME = 1,
+
+  // The Controller is retrying a download (we assume this is a heavy weight
+  // resumption that requires a complete download restart).
+  RETRY = 2,
+
+  // The Controller suspended an active download due to priorities, device
+  // activity, or a request from the Client (see LogDownloadPauseReason).
+  SUSPEND = 3,
+
+  // The count of entries for the enum.
+  COUNT = 4,
+};
+
 // Logs the results of starting up the Controller.  Will log each failure reason
 // if |status| contains more than one initialization failure.
 void LogControllerStartupStatus(bool in_recovery, const StartupStatus& status);
@@ -193,6 +215,15 @@ void LogFileDirDiskUtilization(int64_t total_disk_space,
 // Logs if the final download file path is different from the requested file
 // path.
 void LogFilePathRenamed(bool renamed);
+
+// Logs an action the Controller takes on an active download.
+void LogEntryEvent(DownloadEvent event);
+
+// At the time of a resumption, logs which resumption attempt count this is.
+void LogEntryResumptionCount(uint32_t resume_count);
+
+// At the time of a retry, logs which retry attempt count this is.
+void LogEntryRetryCount(uint32_t retry_count);
 
 }  // namespace stats
 }  // namespace download
