@@ -105,6 +105,9 @@ class ArcNotificationContentView
   ArcNotificationItem* item_ = nullptr;
   ArcNotificationSurface* surface_ = nullptr;
 
+  // The flag to prevent an infinite loop of changing the visibility.
+  bool updating_control_buttons_visibility_ = false;
+
   const std::string notification_key_;
 
   // A pre-target event handler to forward events on the surface to this view.
