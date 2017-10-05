@@ -87,6 +87,9 @@ struct Entry {
   // Stores the number of retries for this download.
   uint32_t attempt_count;
 
+  // Stores the number of resumptions for this download.
+  uint32_t resumption_count;
+
   // Stores the number of times the service tried to delete the download file.
   uint32_t cleanup_attempt_count;
 

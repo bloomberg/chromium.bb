@@ -77,6 +77,7 @@ Entry BuildEntry(DownloadClient client,
                  base::Time last_cleanup_check_time,
                  uint64_t bytes_downloaded,
                  int attempt_count,
+                 int resumption_count,
                  int cleanup_attempt_count) {
   Entry entry = BuildEntry(client, guid);
   entry.scheduling_params.cancel_time = cancel_time;
@@ -92,6 +93,7 @@ Entry BuildEntry(DownloadClient client,
   entry.last_cleanup_check_time = last_cleanup_check_time;
   entry.bytes_downloaded = bytes_downloaded;
   entry.attempt_count = attempt_count;
+  entry.resumption_count = resumption_count;
   entry.cleanup_attempt_count = cleanup_attempt_count;
   return entry;
 }

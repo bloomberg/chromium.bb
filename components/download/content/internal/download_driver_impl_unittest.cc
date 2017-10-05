@@ -39,6 +39,7 @@ const char kFakeGuid[] = "fake_guid";
 // driver entry.
 MATCHER_P(DriverEntryEqual, entry, "") {
   return entry.guid == arg.guid && entry.state == arg.state &&
+         entry.done == arg.done &&
          entry.bytes_downloaded == arg.bytes_downloaded &&
          entry.current_file_path.value() == arg.current_file_path.value();
 }

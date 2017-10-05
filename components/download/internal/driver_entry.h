@@ -48,6 +48,9 @@ struct DriverEntry {
   // If the download is paused.
   bool paused;
 
+  // If the download is done.
+  bool done;
+
   // Whether the download is resumable. Determined by whether "Accept-Ranges" or
   // "Content-Range" is present in the response headers and if it has strong
   // validators. If false, the download may not be resumable.

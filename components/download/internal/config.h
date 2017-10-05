@@ -24,6 +24,9 @@ constexpr char kMaxScheduledDownloadsConfig[] = "max_scheduled_downloads";
 // Configuration name for maximum retry count.
 constexpr char kMaxRetryCountConfig[] = "max_retry_count";
 
+// Configuration name for maximum resumption count.
+constexpr char kMaxResumptionCountConfig[] = "max_resumption_count";
+
 // Configuration name for file keep alive time.
 constexpr char kFileKeepAliveTimeMinutesConfig[] =
     "file_keep_alive_time_minutes";
@@ -84,6 +87,10 @@ struct Configuration {
 
   // The maximum number of retries before the download is aborted.
   uint32_t max_retry_count;
+
+  // The maximum number of conceptually 'free' resumptions before the download
+  // is aborted.  This is a failsafe to prevent constantly hammering the source.
+  uint32_t max_resumption_count;
 
   // The time that the download service will keep the files around before
   // deleting them if the client hasn't handle the files.

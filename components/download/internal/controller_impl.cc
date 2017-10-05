@@ -43,7 +43,9 @@ Client::FailureReason FailureReasonFromCompletionType(CompletionType type) {
   DCHECK_NE(CompletionType::SUCCEED, type);
 
   switch (type) {
-    case CompletionType::FAIL:
+    case CompletionType::FAIL:            // Intentional fallthrough.
+    case CompletionType::OUT_OF_RETRIES:  // Intentional fallthrough.
+    case CompletionType::OUT_OF_RESUMPTIONS:
       return Client::FailureReason::NETWORK;
     case CompletionType::ABORT:
       return Client::FailureReason::ABORTED;
@@ -404,7 +406,7 @@ void ControllerImpl::OnDownloadFailed(const DriverEntry& download,
     return;
   }
 
-  if (failure_type == FailureType::RECOVERABLE) {
+  if (!download.done && failure_type == FailureType::RECOVERABLE) {
     // Because the network offline signal comes later than actual download
     // failure, retry the download after a delay to avoid the retry to fail
     // immediately again.
@@ -414,9 +416,6 @@ void ControllerImpl::OnDownloadFailed(const DriverEntry& download,
                    weak_ptr_factory_.GetWeakPtr(), download.guid),
         config_->download_retry_delay);
   } else {
-    // TODO(dtrainor, xingliu): We probably have to prevent cancel calls from
-    // coming through here as we remove downloads (especially through
-    // initialization).
     HandleCompleteDownload(CompletionType::FAIL, download.guid);
   }
 }
@@ -801,44 +800,69 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
     return;
   }
 
-  // This method will need to figure out what to do with a failed download and
-  // either a) restart it or b) fail the download.
-
   base::Optional<DriverEntry> driver_entry = driver_->Find(entry->guid);
 
-  bool currently_in_progress =
-      driver_entry.has_value() &&
-      driver_entry->state == DriverEntry::State::IN_PROGRESS;
-
-  bool meets_device_criteria = device_status_listener_->CurrentDeviceStatus()
-                                   .MeetsCondition(entry->scheduling_params)
-                                   .MeetsRequirements();
-  bool force_pause =
-      !externally_active_downloads_.empty() &&
-      entry->scheduling_params.priority != SchedulingParams::Priority::UI;
-  bool entry_paused = entry->state == Entry::State::PAUSED;
-  bool should_block_on_navigation = ShouldBlockDownloadOnNavigation(entry);
-
-  bool pause_driver = entry_paused || force_pause || !meets_device_criteria ||
-                      should_block_on_navigation;
-  if (currently_in_progress && pause_driver) {
-    stats::LogDownloadPauseReason(!meets_device_criteria, entry_paused,
-                                  should_block_on_navigation, force_pause);
+  // Check if the DriverEntry is in a finished state already.  If so we need to
+  // clean up our Entry and finish the download.
+  if (driver_entry.has_value() && driver_entry->done) {
+    if (driver_entry->state == DriverEntry::State::COMPLETE) {
+      HandleCompleteDownload(CompletionType::SUCCEED, entry->guid);
+    } else {
+      HandleCompleteDownload(
+          CompletionType::FAIL /* Make a more detailed failure type? */,
+          entry->guid);
+    }
+    return;
   }
 
-  if (pause_driver) {
+  bool active = driver_entry.has_value() &&
+                driver_entry->state == DriverEntry::State::IN_PROGRESS;
+  bool want_active = entry->state == Entry::State::ACTIVE;
+
+  bool blocked_by_criteria = !device_status_listener_->CurrentDeviceStatus()
+                                  .MeetsCondition(entry->scheduling_params)
+                                  .MeetsRequirements();
+  bool blocked_by_downloads =
+      !externally_active_downloads_.empty() &&
+      entry->scheduling_params.priority <= SchedulingParams::Priority::NORMAL;
+
+  bool blocked_by_navigation = ShouldBlockDownloadOnNavigation(entry);
+  bool is_blocked =
+      blocked_by_criteria || blocked_by_downloads || blocked_by_navigation;
+
+  if (!want_active || is_blocked) {
+    if (active) {
+      stats::LogDownloadPauseReason(blocked_by_criteria, !want_active,
+                                    blocked_by_navigation,
+                                    blocked_by_downloads);
+    }
+
     if (driver_entry.has_value())
       driver_->Pause(entry->guid);
   } else {
-    bool is_new_attempt =
-        !driver_entry.has_value() ||
-        driver_entry->state == DriverEntry::State::INTERRUPTED;
-    if (is_new_attempt) {
-      entry->attempt_count++;
-      model_->Update(*entry);
-      if (entry->attempt_count >= config_->max_retry_count) {
-        HandleCompleteDownload(CompletionType::FAIL, entry->guid);
-        return;
+    if (!active) {
+      // If we aren't active, resuming is going to cost something.  Track
+      // against throttle limits.
+
+      if (driver_entry.has_value() && driver_entry->can_resume) {
+        // This is, as far as we can tell, a free resumption.
+        entry->resumption_count++;
+        model_->Update(*entry);
+
+        if (entry->resumption_count > config_->max_resumption_count) {
+          HandleCompleteDownload(CompletionType::OUT_OF_RESUMPTIONS,
+                                 entry->guid);
+          return;
+        }
+      } else {
+        // This is a costly resumption.
+        entry->attempt_count++;
+        model_->Update(*entry);
+
+        if (entry->attempt_count > config_->max_retry_count) {
+          HandleCompleteDownload(CompletionType::OUT_OF_RETRIES, entry->guid);
+          return;
+        }
       }
     }
 
