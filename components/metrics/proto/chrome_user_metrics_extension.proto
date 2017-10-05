@@ -12,7 +12,6 @@ option java_package = "org.chromium.components.metrics";
 package metrics;
 
 import "cast_logs.proto";
-import "extension_install.proto";
 import "histogram_event.proto";
 import "memory_leak_report.proto";
 import "omnibox_event.proto";
