@@ -47,4 +47,8 @@ void WaitForContainerReadyScreen::OnContainerReady() {
   Finish(ScreenExitCode::WAIT_FOR_CONTAINER_READY_FINISHED);
 }
 
+void WaitForContainerReadyScreen::OnContainerError() {
+  Finish(ScreenExitCode::WAIT_FOR_CONTAINER_READY_ERROR);
+}
+
 }  // namespace chromeos
