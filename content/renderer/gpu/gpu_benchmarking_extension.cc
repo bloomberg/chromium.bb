@@ -348,21 +348,17 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   if (!context.Init(false))
     return false;
 
-  // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->PageScaleFactor();
-
   if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
     // Ensure the mouse is centered and visible, in case it will
     // trigger any hover or mousemove effects.
     context.web_view()->SetIsActive(true);
     blink::WebRect contentRect =
-        context.web_view()->MainFrame()->VisibleContentRect();
+        context.render_view_impl()->GetWidget()->ViewRect();
     blink::WebMouseEvent mouseMove(
         blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-    mouseMove.SetPositionInWidget(
-        (contentRect.x + contentRect.width / 2) * page_scale_factor,
-        (contentRect.y + contentRect.height / 2) * page_scale_factor);
+    mouseMove.SetPositionInWidget((contentRect.x + contentRect.width / 2),
+                                  (contentRect.y + contentRect.height / 2));
     context.web_view()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
     context.web_view()->SetCursorVisibilityState(true);
@@ -385,10 +381,9 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   gesture_params.speed_in_pixels_s = speed_in_pixels_s;
   gesture_params.prevent_fling = prevent_fling;
 
-  gesture_params.anchor.SetPoint(start_x * page_scale_factor,
-                                 start_y * page_scale_factor);
+  gesture_params.anchor.SetPoint(start_x, start_y);
 
-  float distance_length = pixels_to_scroll * page_scale_factor;
+  float distance_length = pixels_to_scroll;
   gfx::Vector2dF distance;
   if (direction == "down")
     distance.set_y(-distance_length);
@@ -440,16 +435,11 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
 
   SyntheticSmoothDragGestureParams gesture_params;
 
-  // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->PageScaleFactor();
-
-  gesture_params.start_point.SetPoint(start_x * page_scale_factor,
-                                      start_y * page_scale_factor);
-  gfx::PointF end_point(end_x * page_scale_factor,
-                        end_y * page_scale_factor);
+  gesture_params.start_point.SetPoint(start_x, start_y);
+  gfx::PointF end_point(end_x, end_y);
   gfx::Vector2dF distance = end_point - gesture_params.start_point;
   gesture_params.distances.push_back(distance);
-  gesture_params.speed_in_pixels_s = speed_in_pixels_s * page_scale_factor;
+  gesture_params.speed_in_pixels_s = speed_in_pixels_s;
   gesture_params.gesture_source_type =
       static_cast<SyntheticGestureParams::GestureSourceType>(
           gesture_source_type);
@@ -600,6 +590,11 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("visualViewportY", &GpuBenchmarking::VisualViewportY)
       .SetMethod("visualViewportHeight", &GpuBenchmarking::VisualViewportHeight)
       .SetMethod("visualViewportWidth", &GpuBenchmarking::VisualViewportWidth)
+      // TODO(bokan): Temporary bit on gpuBenchmarking to let telemetry know
+      // when changes to gesture methods have landed in Chrome and it can start
+      // passing visual viewport coordinates. Will be removed once all changes
+      // are rolled. crbug.com/610021.
+      .SetValue("gesturesExpectedInViewportCoordinates", 1)
       .SetMethod("clearImageCache", &GpuBenchmarking::ClearImageCache)
       .SetMethod("runMicroBenchmark", &GpuBenchmarking::RunMicroBenchmark)
       .SetMethod("sendMessageToMicroBenchmark",
@@ -682,13 +677,12 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   if (!context.Init(true))
     return false;
 
-  float page_scale_factor = context.web_view()->PageScaleFactor();
   blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
 
   float pixels_to_scroll = 0;
   v8::Local<v8::Function> callback;
-  float start_x = rect.width / (page_scale_factor * 2);
-  float start_y = rect.height / (page_scale_factor * 2);
+  float start_x = rect.width / 2;
+  float start_y = rect.height / 2;
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
   std::string direction = "down";
   float speed_in_pixels_s = 800;
@@ -743,14 +737,13 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
   if (!context.Init(true))
     return false;
 
-  float page_scale_factor = context.web_view()->PageScaleFactor();
   blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
 
   std::string direction = "up";
   float pixels_to_scroll = 0;
   v8::Local<v8::Function> callback;
-  float start_x = rect.width / (page_scale_factor * 2);
-  float start_y = rect.height / (page_scale_factor * 2);
+  float start_x = rect.width / 2;
+  float start_y = rect.height / 2;
   float speed_in_pixels_s = 800;
 
   if (!GetOptionalArg(args, &direction) ||
@@ -774,7 +767,6 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   if (!context.Init(false))
     return false;
 
-  float page_scale_factor = context.web_view()->PageScaleFactor();
   blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
 
   std::string direction = "down";
@@ -782,8 +774,8 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   float overscroll_length = 0;
   int repeat_count = 1;
   v8::Local<v8::Function> callback;
-  float start_x = rect.width / (page_scale_factor * 2);
-  float start_y = rect.height / (page_scale_factor * 2);
+  float start_x = rect.width / 2;
+  float start_y = rect.height / 2;
   float speed_in_pixels_s = 800;
 
   if (!GetOptionalArg(args, &direction) ||
@@ -805,11 +797,8 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
 
   gesture_params.speed_in_pixels_s = speed_in_pixels_s;
 
-  gesture_params.anchor.SetPoint(start_x * page_scale_factor,
-                                 start_y * page_scale_factor);
+  gesture_params.anchor.SetPoint(start_x, start_y);
 
-  distance_length *= page_scale_factor;
-  overscroll_length *= page_scale_factor;
   gfx::Vector2dF distance;
   gfx::Vector2dF overscroll;
   if (direction == "down") {
@@ -862,13 +851,8 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
 
   SyntheticPinchGestureParams gesture_params;
 
-  // TODO(bokan): Remove page scale here when change land in Catapult.
-  // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->PageScaleFactor();
-
   gesture_params.scale_factor = scale_factor;
-  gesture_params.anchor.SetPoint(anchor_x * page_scale_factor,
-                                 anchor_y * page_scale_factor);
+  gesture_params.anchor.SetPoint(anchor_x, anchor_y);
   gesture_params.relative_pointer_speed_in_pixels_s =
       relative_pointer_speed_in_pixels_s;
 
@@ -950,19 +934,16 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
   }
 
   // Convert coordinates from CSS pixels to density independent pixels (DIPs).
-  float page_scale_factor = context.web_view()->PageScaleFactor();
   gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
   rect -= rect.OffsetFromOrigin();
-  if (!rect.Contains(position_x * page_scale_factor,
-                     position_y * page_scale_factor)) {
+  if (!rect.Contains(position_x, position_y)) {
     args->ThrowError();
     return false;
   }
 
   SyntheticTapGestureParams gesture_params;
 
-  gesture_params.position.SetPoint(position_x * page_scale_factor,
-                                   position_y * page_scale_factor);
+  gesture_params.position.SetPoint(position_x, position_y);
   gesture_params.duration_ms = duration_ms;
 
   if (gesture_source_type < 0 ||
