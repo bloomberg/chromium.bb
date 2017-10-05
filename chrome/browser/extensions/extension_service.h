@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/process_manager.h"
@@ -58,7 +59,6 @@ class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
 class ExtensionErrorController;
-class ExtensionRegistrar;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
@@ -725,7 +725,7 @@ class ExtensionService
   std::unique_ptr<extensions::AppDataMigrator> app_data_migrator_;
 
   // Helper to register and unregister extensions.
-  std::unique_ptr<extensions::ExtensionRegistrar> extension_registrar_;
+  extensions::ExtensionRegistrar extension_registrar_;
 
   using InstallGateRegistry = std::map<extensions::ExtensionPrefs::DelayReason,
                                        extensions::InstallGate*>;
