@@ -617,6 +617,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void onFinishInflate() {
         super.onFinishInflate();
 
+        // Chrome Home does not support a home button. Remove the View to save memory.
+        removeView(mHomeButton);
+        mBrowsingModeViews.remove(mHomeButton);
+        mHomeButton = null;
+
         mExpandButton = (TintedImageButton) findViewById(R.id.expand_sheet_button);
         mExpandButton.setOnClickListener(new OnClickListener() {
             @Override
