@@ -21,7 +21,6 @@ class BrowserUiInterface {
   virtual void SetFullscreen(bool enabled) = 0;
   virtual void SetToolbarState(const ToolbarState& state) = 0;
   virtual void SetIncognito(bool enabled) = 0;
-  virtual void SetWebVrSecureOrigin(bool secure) = 0;
   virtual void SetLoading(bool loading) = 0;
   virtual void SetLoadProgress(float progress) = 0;
   virtual void SetIsExiting() = 0;

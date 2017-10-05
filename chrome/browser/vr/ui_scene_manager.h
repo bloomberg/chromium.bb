@@ -96,7 +96,6 @@ class UiSceneManager {
   void SetFullscreen(bool fullscreen);
   void SetIncognito(bool incognito);
   void SetToolbarState(const ToolbarState& state);
-  void SetWebVrSecureOrigin(bool secure);
   void SetWebVrMode(bool web_vr, bool show_toast);
   void SetIsExiting();
   void SetVideoCapturingIndicator(bool enabled);
@@ -128,7 +127,7 @@ class UiSceneManager {
   void Create2dBrowsingSubtreeRoots();
   void CreateWebVrRoot();
   void CreateScreenDimmer();
-  void CreateSecurityWarnings();
+  void CreateWebVRExitWarning();
   void CreateSystemIndicators();
   void CreateContentQuad(ContentInputDelegate* delegate);
   void CreateSplashScreen();
@@ -142,7 +141,6 @@ class UiSceneManager {
   void CreateToasts();
 
   void ConfigureScene();
-  void ConfigureSecurityWarnings();
   void ConfigureExclusiveScreenToast();
   void ConfigureIndicators();
   void ConfigureBackgroundColor();
@@ -163,8 +161,6 @@ class UiSceneManager {
   UiScene* scene_;
 
   // UI element pointers (not owned by the scene manager).
-  UiElement* permanent_security_warning_ = nullptr;
-  TransientElement* security_warning_transient_parent_ = nullptr;
   TransientElement* exclusive_screen_toast_transient_parent_ = nullptr;
   TransientElement* exclusive_screen_toast_viewport_aware_transient_parent_ =
       nullptr;
@@ -199,7 +195,6 @@ class UiSceneManager {
   bool prompting_to_exit_ = false;
   bool exiting_ = false;
 
-  bool secure_origin_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;
   bool audio_capturing_ = false;

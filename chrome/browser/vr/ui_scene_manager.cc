@@ -91,7 +91,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateBackground();
   CreateViewportAwareRoot();
   CreateContentQuad(content_input_delegate);
-  CreateSecurityWarnings();
+  CreateWebVRExitWarning();
   CreateSystemIndicators();
   CreateUrlBar(model);
   CreateWebVrUrlToast();
@@ -157,39 +157,11 @@ void UiSceneManager::CreateScreenDimmer() {
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 }
 
-void UiSceneManager::CreateSecurityWarnings() {
+void UiSceneManager::CreateWebVRExitWarning() {
   std::unique_ptr<UiElement> element;
 
   // TODO(mthiesse): Programatically compute the proper texture size for these
   // textured UI elements.
-  element = base::MakeUnique<PermanentSecurityWarning>(512);
-  element->set_name(kWebVrPermanentHttpSecurityWarning);
-  element->set_draw_phase(kPhaseOverlayForeground);
-  element->SetSize(kPermanentWarningWidthDMM, kPermanentWarningHeightDMM);
-  element->SetTranslate(0, kWarningDistance * sin(kWarningAngleRadians),
-                        -kWarningDistance * cos(kWarningAngleRadians));
-  element->SetRotate(1, 0, 0, kWarningAngleRadians);
-  element->SetScale(kWarningDistance, kWarningDistance, 1);
-  element->SetVisible(false);
-  element->set_hit_testable(false);
-  permanent_security_warning_ = element.get();
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
-
-  // Create transient security warning.
-  security_warning_transient_parent_ = AddTransientParent(
-      kWebVrHttpSecurityWarningTransientParent, kWebVrViewportAwareRoot,
-      kWarningTimeoutSeconds, false);
-  auto transient_warning = base::MakeUnique<TransientSecurityWarning>(1024);
-  element = std::move(transient_warning);
-  element->set_name(kWebVrHttpSecurityWarning);
-  element->set_draw_phase(kPhaseOverlayForeground);
-  element->SetSize(kTransientWarningWidthDMM, kTransientWarningHeightDMM);
-  element->SetTranslate(0, 0, -kWarningDistance);
-  element->SetScale(kWarningDistance, kWarningDistance, 1);
-  element->set_hit_testable(false);
-  scene_->AddUiElement(kWebVrHttpSecurityWarningTransientParent,
-                       std::move(element));
-
   // Create transient exit warning.
   element = base::MakeUnique<ExitWarning>(1024);
   element->set_name(kExitWarning);
@@ -759,7 +731,6 @@ void UiSceneManager::ConfigureScene() {
       !(web_vr_mode_ || exiting_ || showing_web_vr_splash_screen_));
 
   ConfigureExclusiveScreenToast();
-  ConfigureSecurityWarnings();
   ConfigureIndicators();
   ConfigureBackgroundColor();
 }
@@ -799,13 +770,6 @@ void UiSceneManager::SetLocationAccessIndicator(bool enabled) {
 void UiSceneManager::SetBluetoothConnectedIndicator(bool enabled) {
   bluetooth_connected_ = enabled;
   ConfigureIndicators();
-}
-
-void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
-  if (secure_origin_ == secure)
-    return;
-  secure_origin_ = secure;
-  ConfigureSecurityWarnings();
 }
 
 void UiSceneManager::SetIncognito(bool incognito) {
@@ -862,13 +826,6 @@ void UiSceneManager::SetExitVrPromptEnabled(bool enabled,
   exit_vr_prompt_reason_ = reason;
   prompting_to_exit_ = enabled;
   ConfigureScene();
-}
-
-void UiSceneManager::ConfigureSecurityWarnings() {
-  bool enabled =
-      web_vr_mode_ && !secure_origin_ && !showing_web_vr_splash_screen_;
-  permanent_security_warning_->SetVisible(enabled);
-  security_warning_transient_parent_->SetVisible(enabled);
 }
 
 void UiSceneManager::ConfigureIndicators() {

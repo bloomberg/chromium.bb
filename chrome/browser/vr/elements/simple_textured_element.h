@@ -11,8 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/exclusive_screen_toast_texture.h"
 #include "chrome/browser/vr/elements/exit_warning_texture.h"
-#include "chrome/browser/vr/elements/insecure_content_permanent_texture.h"
-#include "chrome/browser/vr/elements/insecure_content_transient_texture.h"
 #include "chrome/browser/vr/elements/textured_element.h"
 #include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
@@ -40,10 +38,6 @@ class SimpleTexturedElement : public TexturedElement {
 };
 
 typedef SimpleTexturedElement<ExitWarningTexture> ExitWarning;
-typedef SimpleTexturedElement<InsecureContentPermanentTexture>
-    PermanentSecurityWarning;
-typedef SimpleTexturedElement<InsecureContentTransientTexture>
-    TransientSecurityWarning;
 
 }  // namespace vr
 

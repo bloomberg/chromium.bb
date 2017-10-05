@@ -1526,7 +1526,9 @@ const char kWebrtcStunOriginDescription[] =
 const char kWebvrName[] = "WebVR";
 const char kWebvrDescription[] =
     "Enabling this option allows web applications to access experimental "
-    "Virtual Reality APIs.";
+    "Virtual Reality APIs. Warning: Enabling this will also allow WebVR "
+    "content on insecure origins to access these powerful APIs, and may pose a "
+    "security risk.";
 
 const char kWifiCredentialSyncName[] = "WiFi credential sync";
 const char kWifiCredentialSyncDescription[] =

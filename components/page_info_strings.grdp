@@ -324,14 +324,6 @@
       This page contains features not yet supported in VR. Exiting...
     </message>
 
-    <!-- WebVR -->
-    <message name="IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_TRANSIENT" desc="Text that is displayed temporarily as a large toast on first entering a WebVR page over non-secure transport.">
-      Your connection to this site is not private. To exit VR mode at any time, remove headset and press back.
-    </message>
-    <message name="IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT" desc="Text that is displayed in a small permanent notification on a WebVR page loaded over non-secure transport. (Should be short, does not need to be a complete sentence.)">
-      Not secure
-    </message>
-
     <!-- Password Protection -->
     <if expr="not is_android">
       <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if user has reuse their google password on current website.">

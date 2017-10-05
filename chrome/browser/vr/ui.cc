@@ -52,10 +52,6 @@ void Ui::SetIncognito(bool enabled) {
   scene_manager_->SetIncognito(enabled);
 }
 
-void Ui::SetWebVrSecureOrigin(bool secure) {
-  scene_manager_->SetWebVrSecureOrigin(secure);
-}
-
 void Ui::SetLoading(bool loading) {
   model_->loading = loading;
 }
