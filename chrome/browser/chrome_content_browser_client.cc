@@ -1839,8 +1839,11 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     base::CommandLine* command_line) {
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   // Mash services do their own resource loading.
-  if (IsMashServiceName(identity.name()))
-    command_line->AppendSwitch(switches::kDisableServiceProcessResourceLoading);
+  if (IsMashServiceName(identity.name())) {
+    // This switch is used purely for debugging to make it easier to know what
+    // service a process is running.
+    command_line->AppendSwitchASCII("mash-service-name", identity.name());
+  }
   bool copy_switches = false;
   if (identity.name() == ui::mojom::kServiceName) {
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);

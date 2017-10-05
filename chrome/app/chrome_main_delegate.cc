@@ -305,11 +305,6 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
 // Returns true if this subprocess type needs the ResourceBundle initialized
 // and resources loaded.
 bool SubprocessNeedsResourceBundle(const std::string& process_type) {
-  if (process_type == switches::kUtilityProcess &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableServiceProcessResourceLoading)) {
-    return false;
-  }
   return
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
       // The zygote process opens the resources for the renderers.
