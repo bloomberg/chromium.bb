@@ -895,12 +895,6 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantExperiment:
       SSL_set_tls13_variant(ssl_.get(), tls13_experiment);
       break;
-    case kTLS13VariantRecordTypeExperiment:
-      SSL_set_tls13_variant(ssl_.get(), tls13_record_type_experiment);
-      break;
-    case kTLS13VariantNoSessionIDExperiment:
-      SSL_set_tls13_variant(ssl_.get(), tls13_no_session_id_experiment);
-      break;
     case kTLS13VariantExperiment2:
       SSL_set_tls13_variant(ssl_.get(), tls13_experiment2);
       break;

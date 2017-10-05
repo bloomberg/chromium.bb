@@ -3275,18 +3275,6 @@
                     }
                 },
                 {
-                    "name": "NoSessionIDExperiment",
-                    "params": {
-                        "variant": "no-session-id"
-                    }
-                },
-                {
-                    "name": "RecordTypeExperiment",
-                    "params": {
-                        "variant": "record-type"
-                    }
-                },
-                {
                     "name": "Experiment3",
                     "params": {
                         "variant": "experiment3"

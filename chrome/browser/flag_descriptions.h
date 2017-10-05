@@ -790,10 +790,9 @@ extern const char kSpellingFeedbackFieldTrialDescription[];
 extern const char kTLS13VariantName[];
 extern const char kTLS13VariantDescription[];
 extern const char kTLS13VariantDisabled[];
+extern const char kTLS13VariantDeprecated[];
 extern const char kTLS13VariantDraft[];
 extern const char kTLS13VariantExperiment[];
-extern const char kTLS13VariantRecordTypeExperiment[];
-extern const char kTLS13VariantNoSessionIDExperiment[];
 extern const char kTLS13VariantExperiment2[];
 extern const char kTLS13VariantExperiment3[];
 
