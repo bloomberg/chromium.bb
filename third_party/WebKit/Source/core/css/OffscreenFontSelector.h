@@ -44,8 +44,14 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
   }
 
   void FontCacheInvalidated() override;
+  void FontFaceInvalidated() override;
 
   void UpdateGenericFontFamilySettings(const GenericFontFamilySettings&);
+
+  FontFaceCache* GetFontFaceCache() { return &font_face_cache_; }
+
+  bool IsPlatformFamilyMatchAvailable(const FontDescription&,
+                                      const AtomicString& passed_family);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -56,6 +62,8 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
 
  private:
   GenericFontFamilySettings generic_font_family_settings_;
+
+  FontFaceCache font_face_cache_;
 };
 
 }  // namespace blink

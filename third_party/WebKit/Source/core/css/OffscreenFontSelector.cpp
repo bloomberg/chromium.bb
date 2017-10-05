@@ -19,7 +19,9 @@
 
 namespace blink {
 
-OffscreenFontSelector::OffscreenFontSelector() {}
+OffscreenFontSelector::OffscreenFontSelector() {
+  FontCache::GetFontCache()->AddClient(this);
+}
 
 OffscreenFontSelector::~OffscreenFontSelector() {}
 
@@ -37,6 +39,11 @@ void OffscreenFontSelector::UnregisterForInvalidationCallbacks(
 RefPtr<FontData> OffscreenFontSelector::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family_name) {
+  if (CSSSegmentedFontFace* face =
+          font_face_cache_.Get(font_description, family_name)) {
+    return face->GetFontData(font_description);
+  }
+
   AtomicString settings_family_name = FamilyNameFromSettings(
       generic_font_family_settings_, font_description, family_name);
   if (settings_family_name.IsEmpty())
@@ -49,18 +56,44 @@ RefPtr<FontData> OffscreenFontSelector::GetFontData(
 void OffscreenFontSelector::WillUseFontData(
     const FontDescription& font_description,
     const AtomicString& family,
-    const String& text) {}
+    const String& text) {
+  CSSSegmentedFontFace* face = font_face_cache_.Get(font_description, family);
+  if (face)
+    face->WillUseFontData(font_description, text);
+}
 
 void OffscreenFontSelector::WillUseRange(
     const FontDescription& font_description,
     const AtomicString& family,
-    const FontDataForRangeSet& range_set) {}
+    const FontDataForRangeSet& range_set) {
+  CSSSegmentedFontFace* face = font_face_cache_.Get(font_description, family);
+  if (face)
+    face->WillUseRange(font_description, range_set);
+}
+
+bool OffscreenFontSelector::IsPlatformFamilyMatchAvailable(
+    const FontDescription& font_description,
+    const AtomicString& passed_family) {
+  AtomicString family = FamilyNameFromSettings(generic_font_family_settings_,
+                                               font_description, passed_family);
+  if (family.IsEmpty())
+    family = passed_family;
+  return FontCache::GetFontCache()->IsPlatformFamilyMatchAvailable(
+      font_description, family);
+}
 
 void OffscreenFontSelector::ReportNotDefGlyph() const {}
 
-void OffscreenFontSelector::FontCacheInvalidated() {}
+void OffscreenFontSelector::FontCacheInvalidated() {
+  font_face_cache_.IncrementVersion();
+}
+
+void OffscreenFontSelector::FontFaceInvalidated() {
+  FontCacheInvalidated();
+}
 
 DEFINE_TRACE(OffscreenFontSelector) {
+  visitor->Trace(font_face_cache_);
   FontSelector::Trace(visitor);
 }
 
