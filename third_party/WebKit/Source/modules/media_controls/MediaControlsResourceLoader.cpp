@@ -21,22 +21,23 @@ bool ShouldLoadAndroidCSS() {
 #endif
 }
 
-}  // namespace.
+}  // namespace
 
 namespace blink {
 
 MediaControlsResourceLoader::MediaControlsResourceLoader()
-    : UAStyleSheetLoader(){};
+    : UAStyleSheetLoader() {}
 
-MediaControlsResourceLoader::~MediaControlsResourceLoader(){};
+MediaControlsResourceLoader::~MediaControlsResourceLoader() {}
 
-// Offical Android builds that have enable_resource_whitelist_generation
+// Official Android builds that have enable_resource_whitelist_generation
 // turned on will fail to compile due to an unknown-pragmas warning. In
 // Chromium this is expected, but in Blink the compiler treats warnings as
 // errors and so will fail to compile.
 #if defined(OS_WIN)
 #pragma warning(disable : 4068)
 #else
+#pragma GCC diagnostic push
 #pragma GCC diagnostic warning "-Wunknown-pragmas"
 #endif
 String MediaControlsResourceLoader::GetMediaControlsCSS() const {
