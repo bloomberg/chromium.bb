@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
@@ -194,6 +195,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   void RequestOverlayInfoCb(
       bool restart_for_transitions,
       const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+    restart_for_transitions_ = restart_for_transitions;
     provide_overlay_info_cb_ = provide_overlay_info_cb;
   }
 
@@ -208,6 +210,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   std::unique_ptr<DestructionObserver> destruction_observer_;
   ProvideOverlayInfoCB provide_overlay_info_cb_;
+  bool restart_for_transitions_;
   gpu::GpuPreferences gpu_preferences_;
 
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
@@ -259,6 +262,14 @@ TEST_F(MediaCodecVideoDecoderTest,
       .WillByDefault(Return(false));
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
   ASSERT_FALSE(provide_overlay_info_cb_);
+}
+
+TEST_F(MediaCodecVideoDecoderTest, RestartForOverlayTransitionsFlagIsCorrect) {
+  Initialize();
+  ON_CALL(*device_info_, IsSetOutputSurfaceSupported())
+      .WillByDefault(Return(true));
+  mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
+  ASSERT_FALSE(restart_for_transitions_);
 }
 
 TEST_F(MediaCodecVideoDecoderTest,
