@@ -142,7 +142,7 @@ public class FeatureUtilitiesTest {
     }
 
     private void addTestAccount() {
-        mAccountManager.addAccountHolderExplicitly(
+        mAccountManager.addAccountHolderBlocking(
                 AccountHolder.builder(mTestAccount).alwaysAccept(true).build());
     }
 

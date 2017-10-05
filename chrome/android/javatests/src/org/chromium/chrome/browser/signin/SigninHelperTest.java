@@ -149,7 +149,7 @@ public class SigninHelperTest {
         mEventChecker.insertRenameEvent("D", "A"); // Looped.
         Account account = AccountManagerFacade.createAccountFromName("D");
         AccountHolder accountHolder = AccountHolder.builder(account).build();
-        mAccountManager.addAccountHolderExplicitly(accountHolder);
+        mAccountManager.addAccountHolderBlocking(accountHolder);
         SigninHelper.updateAccountRenameData(mContext, mEventChecker);
         Assert.assertEquals("D", getNewSignedInAccountName());
     }

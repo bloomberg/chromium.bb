@@ -67,8 +67,8 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityFromLauncher();
         AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManagerDelegate);
+        mActivityTestRule.startMainActivityFromLauncher();
     }
 
     @Test
@@ -163,7 +163,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     private void addTestAccount() {
         Account account = AccountManagerFacade.createAccountFromName(TEST_ACCOUNT_NAME);
         AccountHolder.Builder accountHolder = AccountHolder.builder(account).alwaysAccept(true);
-        mAccountManagerDelegate.addAccountHolderExplicitly(accountHolder.build());
+        mAccountManagerDelegate.addAccountHolderBlocking(accountHolder.build());
         ProfileDataSource.ProfileData profileData =
                 new ProfileDataSource.ProfileData(TEST_ACCOUNT_NAME, null, TEST_FULL_NAME, null);
         ThreadUtils.runOnUiThreadBlocking(
