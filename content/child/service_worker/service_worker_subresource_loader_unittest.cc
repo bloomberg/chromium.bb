@@ -142,7 +142,8 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                 base::MakeUnique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
             base::Time::Now());
-        std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
+        std::move(callback).Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+                                base::Time::Now());
         return;
     }
     NOTREACHED();

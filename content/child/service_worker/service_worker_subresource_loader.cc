@@ -81,12 +81,19 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     ServiceWorkerStatusCode status,
     base::Time dispatch_event_time) {
-  if (status != SERVICE_WORKER_OK) {
-    // TODO(kinuko): Log the failure.
-    // If status is not OK response callback may not be called.
-    weak_factory_.InvalidateWeakPtrs();
-    OnFallback(dispatch_event_time);
+  // Status OK and WAIT_UNTIL_REJECTED are expected status: the
+  // ServiceWorkerFetchResponseCallback interface (OnResponse*() or OnFallback()
+  // below) is expected to be called normally. In the case of REJECTED,
+  // OnResponse() is called with an error about the rejected promise.
+  if (status == SERVICE_WORKER_OK ||
+      status == SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED) {
+    return;
   }
+  // Otherwise, we have an unexpected error: fetch event dispatch failed. Return
+  // network error.
+  // TODO(kinuko): Log the failure.
+  weak_factory_.InvalidateWeakPtrs();
+  CommitCompleted(net::ERR_FAILED);
 }
 
 void ServiceWorkerSubresourceLoader::OnResponse(
@@ -133,7 +140,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // A response with status code 0 is Blink telling us to respond with network
   // error.
   if (response.status_code == 0) {
-    DeliverErrorResponse();
+    CommitCompleted(net::ERR_FAILED);
     return;
   }
 
@@ -145,6 +152,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
     CommitResponseHeaders();
+    DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(body_as_stream->stream));
     // TODO(falken): Call CommitCompleted() when stream finished.
@@ -183,6 +191,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
 
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
   DCHECK_EQ(Status::kStarted, status_);
+  DCHECK(url_loader_client_.is_bound());
   status_ = Status::kSentHeader;
   // TODO(kinuko): Fill the ssl_info.
   url_loader_client_->OnReceiveResponse(response_head_,
@@ -192,23 +201,12 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
   DCHECK_LT(status_, Status::kCompleted);
+  DCHECK(url_loader_client_.is_bound());
   status_ = Status::kCompleted;
   ResourceRequestCompletionStatus completion_status;
   completion_status.error_code = error_code;
   completion_status.completion_time = base::TimeTicks::Now();
   url_loader_client_->OnComplete(completion_status);
-}
-
-void ServiceWorkerSubresourceLoader::DeliverErrorResponse() {
-  DCHECK_GT(status_, Status::kNotStarted);
-  DCHECK_LT(status_, Status::kCompleted);
-  if (status_ < Status::kSentHeader) {
-    ServiceWorkerLoaderHelpers::SaveResponseHeaders(
-        500, "Service Worker Response Error", ServiceWorkerHeaderMap(),
-        &response_head_);
-    CommitResponseHeaders();
-  }
-  CommitCompleted(net::ERR_FAILED);
 }
 
 // ServiceWorkerSubresourceLoader: URLLoader implementation -----------------
@@ -235,6 +233,7 @@ void ServiceWorkerSubresourceLoader::OnReceiveResponse(
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_EQ(Status::kStarted, status_);
+  DCHECK(url_loader_client_.is_bound());
   status_ = Status::kSentHeader;
   if (response_head.headers->response_code() >= 400) {
     DVLOG(1) << "Blob::OnReceiveResponse got error: "
@@ -277,12 +276,14 @@ void ServiceWorkerSubresourceLoader::OnTransferSizeUpdated(
 
 void ServiceWorkerSubresourceLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  DCHECK(url_loader_client_.is_bound());
   url_loader_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
 void ServiceWorkerSubresourceLoader::OnComplete(
     const ResourceRequestCompletionStatus& status) {
   DCHECK_EQ(Status::kSentHeader, status_);
+  DCHECK(url_loader_client_.is_bound());
   status_ = Status::kCompleted;
   url_loader_client_->OnComplete(status);
 }

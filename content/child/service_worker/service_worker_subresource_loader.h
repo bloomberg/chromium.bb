@@ -86,9 +86,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // Calls url_loader_client_->OnComplete(). Expected to be called after
   // CommitResponseHeaders (i.e. status_ == kSentHeader).
   void CommitCompleted(int error_code);
-  // Calls CommitResponseHeaders() if we haven't sent headers yet,
-  // and CommitCompleted() with error code.
-  void DeliverErrorResponse();
 
   // mojom::URLLoaderClient for Blob response reading (used only when
   // the service worker response had valid Blob UUID):
