@@ -92,6 +92,7 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
       DispatchKeyEventPostIMECallback callback) override {
     std::move(callback).Run(false);
   }
+  void SetCandidateWindowVisible(bool visible) override {}
 
   mojo::Binding<ui::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;

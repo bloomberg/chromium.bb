@@ -43,6 +43,9 @@ class UI_BASE_IME_EXPORT IMECandidateWindowHandlerInterface {
   // |is_focused| is true when the text field gains the focus.
   virtual void FocusStateChanged(bool is_focused) {}
 
+  // Called when candidate window changes visibility.
+  virtual void OnCandidateWindowVisibilityChanged(bool visible) {}
+
  protected:
   IMECandidateWindowHandlerInterface() {}
 };
