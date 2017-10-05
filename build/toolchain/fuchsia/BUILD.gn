@@ -6,11 +6,19 @@ import("//build/toolchain/gcc_toolchain.gni")
 import("//build/config/fuchsia/config.gni")
 
 clang_toolchain("x64") {
-  assert(current_cpu == "x64")
   assert(host_os == "linux")
 
   toolchain_args = {
     current_cpu = "x64"
+    current_os = "fuchsia"
+  }
+}
+
+clang_toolchain("arm64") {
+  assert(host_os == "linux")
+
+  toolchain_args = {
+    current_cpu = "arm64"
     current_os = "fuchsia"
   }
 }
