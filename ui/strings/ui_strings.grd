@@ -608,7 +608,7 @@ need to be translated for each locale.-->
 
       <!-- Message center -->
       <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The accessible name for the Notification Center window.">
-        Notification Center
+        Notification Center, <ph name="unread_notification_count">$1<ex>5</ex></ph> unread notifications
       </message>
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_ACCESSIBLE_NAME" desc="The accessible name for a single notification.">
         Notification
