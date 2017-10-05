@@ -28,7 +28,7 @@ float DbFsToScale(float db) {
 }  // namespace
 
 SaturatedGain::SaturatedGain(const std::string& config, int channels)
-    : channels_(channels), sample_rate_(kNoSampleRate), last_volume_(-1) {
+    : channels_(channels), sample_rate_(kNoSampleRate), last_volume_dbfs_(-1) {
   auto config_dict = base::DictionaryValue::From(DeserializeFromJson(config));
   CHECK(config_dict) << "SaturatedGain config is not valid json: " << config;
   double gain_db;
@@ -45,12 +45,14 @@ bool SaturatedGain::SetSampleRate(int sample_rate) {
   return true;
 }
 
-int SaturatedGain::ProcessFrames(float* data, int frames, float volume) {
-  if (volume != last_volume_) {
-    last_volume_ = volume;
+int SaturatedGain::ProcessFrames(float* data,
+                                 int frames,
+                                 float volume,
+                                 float volume_dbfs) {
+  if (volume_dbfs != last_volume_dbfs_) {
+    last_volume_dbfs_ = volume_dbfs;
     // Don't apply more gain than attenuation.
-    float effective_gain = std::min(
-        1.0f / DbFsToScale(volume_map_.VolumeToDbFS(last_volume_)), gain_);
+    float effective_gain = std::min(DbFsToScale(-last_volume_dbfs_), gain_);
     slew_volume_.SetVolume(effective_gain);
   }
 

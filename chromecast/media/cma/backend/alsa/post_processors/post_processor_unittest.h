@@ -57,8 +57,7 @@ std::string ArrayToString(T* array, size_t size);
 
 // Compute the amplitude of a sinusoid as power * sqrt(2)
 // This is more robust that looking for the maximum value.
-template <typename T>
-float SineAmplitude(std::vector<T> data, int num_channels);
+float SineAmplitude(std::vector<float> data, int num_channels);
 
 // Return a vector of |frames| frames of |kNumChannels| interleaved data.
 // |frequency| is in hz.

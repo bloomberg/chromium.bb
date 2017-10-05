@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/alsa/slew_volume.h"
-#include "chromecast/media/cma/backend/alsa/volume_map.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 
 namespace chromecast {
@@ -23,14 +22,16 @@ class SaturatedGain : public AudioPostProcessor {
 
   // AudioPostProcessor implementation:
   bool SetSampleRate(int sample_rate) override;
-  int ProcessFrames(float* data, int frames, float volume) override;
+  int ProcessFrames(float* data,
+                    int frames,
+                    float volume,
+                    float volume_dbfs) override;
   int GetRingingTimeInFrames() override;
 
  private:
   int channels_;
   int sample_rate_;
-  float last_volume_;
-  VolumeMap volume_map_;
+  float last_volume_dbfs_;
   SlewVolume slew_volume_;
   float gain_;
 

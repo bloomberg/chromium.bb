@@ -193,7 +193,6 @@ cast_shared_library("libcast_saturated_gain_1.0") {
   ]
   deps = [
     ":slew_volume",
-    ":volume_map",
     "//base",
     "//chromecast/base",
     "//chromecast/public/media",

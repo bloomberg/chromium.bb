@@ -60,7 +60,7 @@ class GovernorTest : public ::testing::TestWithParam<float> {
   }
 
   void ProcessFrames(float volume) {
-    EXPECT_EQ(governor_->ProcessFrames(data_.data(), kNumFrames, volume), 0);
+    EXPECT_EQ(governor_->ProcessFrames(data_.data(), kNumFrames, volume, 0), 0);
   }
 
   void CompareBuffers() {

@@ -29,7 +29,10 @@ class Governor : public AudioPostProcessor {
 
   // AudioPostProcessor implementation:
   bool SetSampleRate(int sample_rate) override;
-  int ProcessFrames(float* data, int frames, float volume) override;
+  int ProcessFrames(float* data,
+                    int frames,
+                    float cast_volume,
+                    float volume_dbfs) override;
   int GetRingingTimeInFrames() override;
 
   void SetSlewTimeMsForTest(int slew_time_ms);
