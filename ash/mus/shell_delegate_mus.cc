@@ -52,10 +52,6 @@ void ShellDelegateMus::PreShutdown() {
   NOTIMPLEMENTED();
 }
 
-void ShellDelegateMus::Exit() {
-  NOTIMPLEMENTED();
-}
-
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMus::CreateKeyboardUI() {
   NOTIMPLEMENTED();
   return nullptr;

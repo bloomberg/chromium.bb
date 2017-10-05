@@ -5,8 +5,8 @@
 #include "ash/accelerators/exit_warning_handler.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
@@ -107,7 +107,7 @@ void ExitWarningHandler::HandleAccelerator() {
       CancelTimer();
       Hide();
       base::RecordAction(base::UserMetricsAction("Accel_Exit_Second_Q"));
-      Shell::Get()->shell_delegate()->Exit();
+      Shell::Get()->session_controller()->RequestSignOut();
       break;
     case EXITING:
       break;

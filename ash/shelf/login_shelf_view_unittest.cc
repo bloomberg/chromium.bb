@@ -9,6 +9,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -16,7 +17,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/test_shell_delegate.h"
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
@@ -210,11 +210,12 @@ TEST_F(LoginShelfViewTest, ClickRestartButton) {
 }
 
 TEST_F(LoginShelfViewTest, ClickSignOutButton) {
-  TestShellDelegate* shell_delegate_ =
-      static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
-  EXPECT_EQ(shell_delegate_->num_exit_requests(), 0);
+  NotifySessionStateChanged(SessionState::ACTIVE);
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            Shell::Get()->session_controller()->GetSessionState());
   Click(LoginShelfView::kSignOut);
-  EXPECT_EQ(shell_delegate_->num_exit_requests(), 1);
+  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
+            Shell::Get()->session_controller()->GetSessionState());
 }
 
 TEST_F(LoginShelfViewTest, ClickUnlockButton) {

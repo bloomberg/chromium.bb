@@ -5,9 +5,9 @@
 #include "ash/session/session_aborted_dialog.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,7 +52,7 @@ void SessionAbortedDialog::Show(const std::string& user_email) {
 }
 
 bool SessionAbortedDialog::Accept() {
-  Shell::Get()->shell_delegate()->Exit();
+  Shell::Get()->session_controller()->RequestSignOut();
   return true;
 }
 

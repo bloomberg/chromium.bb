@@ -35,7 +35,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;
-  void Exit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;

@@ -71,9 +71,6 @@ class ASH_EXPORT ShellDelegate {
   // delegate can use Shell instance to perform cleanup tasks.
   virtual void PreShutdown() = 0;
 
-  // Invoked when the user uses Ctrl-Shift-Q to close chrome.
-  virtual void Exit() = 0;
-
   // Create a shell-specific keyboard::KeyboardUI.
   virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
 

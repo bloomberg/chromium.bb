@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
@@ -401,10 +400,6 @@ void ChromeShellDelegate::PreInit() {
 
 void ChromeShellDelegate::PreShutdown() {
   display_configuration_observer_.reset();
-}
-
-void ChromeShellDelegate::Exit() {
-  chrome::AttemptUserExit();
 }
 
 void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
