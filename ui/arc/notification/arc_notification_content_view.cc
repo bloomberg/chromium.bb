@@ -413,6 +413,11 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
   if (!control_buttons_view_)
     return;
 
+  // If the visibility change is ongoing, skip this method to prevent an
+  // infinite loop.
+  if (updating_control_buttons_visibility_)
+    return;
+
   DCHECK(floating_control_buttons_widget_);
 
   const bool target_visiblity =
@@ -421,6 +426,10 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
 
   if (target_visiblity == floating_control_buttons_widget_->IsVisible())
     return;
+
+  // Add the guard to prevent an infinite loop. Changing visibility may generate
+  // an event and it may call thie method again.
+  base::AutoReset<bool> reset(&updating_control_buttons_visibility_, true);
 
   if (target_visiblity)
     floating_control_buttons_widget_->Show();
