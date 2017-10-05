@@ -1445,14 +1445,14 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		goto done;
 	}
 
-	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, gs->pitch);
-
 	if (gs->needs_full_upload) {
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
 		for (j = 0; j < gs->num_textures; j++) {
 			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT,
+				      gs->pitch / gs->hsub[j]);
 			glTexImage2D(GL_TEXTURE_2D, 0,
 				     gs->gl_format[j],
 				     gs->pitch / gs->hsub[j],
@@ -1473,10 +1473,14 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 
 		r = weston_surface_to_buffer_rect(surface, rectangles[i]);
 
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, r.x1);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, r.y1);
 		for (j = 0; j < gs->num_textures; j++) {
 			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT,
+				      gs->pitch / gs->hsub[j]);
+			glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT,
+				      r.x1 / gs->hsub[j]);
+			glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT,
+				      r.y1 / gs->hsub[j]);
 			glTexSubImage2D(GL_TEXTURE_2D, 0,
 					r.x1 / gs->hsub[j],
 					r.y1 / gs->vsub[j],
