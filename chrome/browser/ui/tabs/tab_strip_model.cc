@@ -555,16 +555,11 @@ WebContents* TabStripModel::GetOpenerOfWebContentsAt(int index) {
 void TabStripModel::SetOpenerOfWebContentsAt(int index,
                                              WebContents* opener) {
   DCHECK(ContainsIndex(index));
-  if (opener) {
-    // The TabStripModel only maintains the references to openers that it itself
-    // owns; trying to set an opener to an external WebContents can result in
-    // the opener being used after its freed. See crbug.com/698681.
-    // TODO(devlin): This is a CHECK right now to track down any other cases
-    // where this can happen. If there aren't any, we might be able to downgrade
-    // this to a DCHECK.
-    CHECK_NE(kNoTab, GetIndexOfWebContents(opener))
-        << "Cannot set opener to a web contents not owned by this tab strip.";
-  }
+  // The TabStripModel only maintains the references to openers that it itself
+  // owns; trying to set an opener to an external WebContents can result in
+  // the opener being used after its freed. See crbug.com/698681.
+  DCHECK(!opener || GetIndexOfWebContents(opener) != kNoTab)
+      << "Cannot set opener to a web contents not owned by this tab strip.";
   contents_data_[index]->set_opener(opener);
 }
 
