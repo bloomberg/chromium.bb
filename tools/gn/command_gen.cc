@@ -196,11 +196,11 @@ bool RunIdeWriter(const std::string& ide,
     return res;
   } else if (ide == kSwitchIdeValueVs || ide == kSwitchIdeValueVs2013 ||
              ide == kSwitchIdeValueVs2015 || ide == kSwitchIdeValueVs2017) {
-    VisualStudioWriter::Version version = VisualStudioWriter::Version::Vs2015;
+    VisualStudioWriter::Version version = VisualStudioWriter::Version::Vs2017;
     if (ide == kSwitchIdeValueVs2013)
       version = VisualStudioWriter::Version::Vs2013;
-    else if (ide == kSwitchIdeValueVs2017)
-      version = VisualStudioWriter::Version::Vs2017;
+    else if (ide == kSwitchIdeValueVs2015)
+      version = VisualStudioWriter::Version::Vs2015;
 
     std::string sln_name;
     if (command_line->HasSwitch(kSwitchSln))
