@@ -124,7 +124,7 @@
         <div>$i18n{clearBrowsingData}</div>
       </div>
       <div slot="header">
-        <paper-tabs noink
+        <paper-tabs noink on-selected-changed="recordTabChange_"
             selected="{{prefs.browser.last_clear_browsing_data_tab.value}}">
           <paper-tab>$i18n{basicPageTitle}</paper-tab>
           <paper-tab>$i18n{advancedPageTitle}</paper-tab>
