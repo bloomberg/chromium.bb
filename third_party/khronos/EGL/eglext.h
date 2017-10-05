@@ -33,12 +33,12 @@ extern "C" {
 ** used to make the header, and the header can be found at
 **   http://www.khronos.org/registry/egl
 **
-** Khronos $Revision$ on $Date$
+** Khronos $Git commit SHA1: 65416b63de $ on $Git commit date: 2017-10-03 14:37:16 -0700 $
 */
 
 #include <EGL/eglplatform.h>
 
-#define EGL_EGLEXT_VERSION 20170301
+#define EGL_EGLEXT_VERSION 20171004
 
 /* Generated C header for:
  * API: egl
@@ -132,6 +132,15 @@ EGLAPI EGLBoolean EGLAPIENTRY eglQueryDebugKHR (EGLint attribute, EGLAttrib *val
 EGLAPI EGLint EGLAPIENTRY eglLabelObjectKHR (EGLDisplay display, EGLenum objectType, EGLObjectKHR object, EGLLabelKHR label);
 #endif
 #endif /* EGL_KHR_debug */
+
+#ifndef EGL_KHR_display_reference
+#define EGL_KHR_display_reference 1
+#define EGL_TRACK_REFERENCES_KHR          0x3352
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYDISPLAYATTRIBKHRPROC) (EGLDisplay dpy, EGLint name, EGLAttrib *value);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglQueryDisplayAttribKHR (EGLDisplay dpy, EGLint name, EGLAttrib *value);
+#endif
+#endif /* EGL_KHR_display_reference */
 
 #ifndef EGL_KHR_fence_sync
 #define EGL_KHR_fence_sync 1
@@ -486,6 +495,38 @@ EGLAPI EGLClientBuffer EGLAPIENTRY eglCreateNativeClientBufferANDROID (const EGL
 #define EGL_FRONT_BUFFER_AUTO_REFRESH_ANDROID 0x314C
 #endif /* EGL_ANDROID_front_buffer_auto_refresh */
 
+#ifndef EGL_ANDROID_get_frame_timestamps
+#define EGL_ANDROID_get_frame_timestamps 1
+typedef khronos_stime_nanoseconds_t EGLnsecsANDROID;
+#define EGL_TIMESTAMP_PENDING_ANDROID     EGL_CAST(EGLnsecsANDROID,-2)
+#define EGL_TIMESTAMP_INVALID_ANDROID     EGL_CAST(EGLnsecsANDROID,-1)
+#define EGL_TIMESTAMPS_ANDROID            0x3430
+#define EGL_COMPOSITE_DEADLINE_ANDROID    0x3431
+#define EGL_COMPOSITE_INTERVAL_ANDROID    0x3432
+#define EGL_COMPOSITE_TO_PRESENT_LATENCY_ANDROID 0x3433
+#define EGL_REQUESTED_PRESENT_TIME_ANDROID 0x3434
+#define EGL_RENDERING_COMPLETE_TIME_ANDROID 0x3435
+#define EGL_COMPOSITION_LATCH_TIME_ANDROID 0x3436
+#define EGL_FIRST_COMPOSITION_START_TIME_ANDROID 0x3437
+#define EGL_LAST_COMPOSITION_START_TIME_ANDROID 0x3438
+#define EGL_FIRST_COMPOSITION_GPU_FINISHED_TIME_ANDROID 0x3439
+#define EGL_DISPLAY_PRESENT_TIME_ANDROID  0x343A
+#define EGL_DEQUEUE_READY_TIME_ANDROID    0x343B
+#define EGL_READS_DONE_TIME_ANDROID       0x343C
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETCOMPOSITORTIMINGSUPPORTEDANDROIDPROC) (EGLDisplay dpy, EGLSurface surface, EGLint name);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETCOMPOSITORTIMINGANDROIDPROC) (EGLDisplay dpy, EGLSurface surface, EGLint numTimestamps,  const EGLint *names, EGLnsecsANDROID *values);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETNEXTFRAMEIDANDROIDPROC) (EGLDisplay dpy, EGLSurface surface, EGLuint64KHR *frameId);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETFRAMETIMESTAMPSUPPORTEDANDROIDPROC) (EGLDisplay dpy, EGLSurface surface, EGLint timestamp);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETFRAMETIMESTAMPSANDROIDPROC) (EGLDisplay dpy, EGLSurface surface, EGLuint64KHR frameId, EGLint numTimestamps,  const EGLint *timestamps, EGLnsecsANDROID *values);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglGetCompositorTimingSupportedANDROID (EGLDisplay dpy, EGLSurface surface, EGLint name);
+EGLAPI EGLBoolean EGLAPIENTRY eglGetCompositorTimingANDROID (EGLDisplay dpy, EGLSurface surface, EGLint numTimestamps,  const EGLint *names, EGLnsecsANDROID *values);
+EGLAPI EGLBoolean EGLAPIENTRY eglGetNextFrameIdANDROID (EGLDisplay dpy, EGLSurface surface, EGLuint64KHR *frameId);
+EGLAPI EGLBoolean EGLAPIENTRY eglGetFrameTimestampSupportedANDROID (EGLDisplay dpy, EGLSurface surface, EGLint timestamp);
+EGLAPI EGLBoolean EGLAPIENTRY eglGetFrameTimestampsANDROID (EGLDisplay dpy, EGLSurface surface, EGLuint64KHR frameId, EGLint numTimestamps,  const EGLint *timestamps, EGLnsecsANDROID *values);
+#endif
+#endif /* EGL_ANDROID_get_frame_timestamps */
+
 #ifndef EGL_ANDROID_image_native_buffer
 #define EGL_ANDROID_image_native_buffer 1
 #define EGL_NATIVE_BUFFER_ANDROID         0x3140
@@ -505,7 +546,6 @@ EGLAPI EGLint EGLAPIENTRY eglDupNativeFenceFDANDROID (EGLDisplay dpy, EGLSyncKHR
 
 #ifndef EGL_ANDROID_presentation_time
 #define EGL_ANDROID_presentation_time 1
-typedef khronos_stime_nanoseconds_t EGLnsecsANDROID;
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLPRESENTATIONTIMEANDROIDPROC) (EGLDisplay dpy, EGLSurface surface, EGLnsecsANDROID time);
 #ifdef EGL_EGLEXT_PROTOTYPES
 EGLAPI EGLBoolean EGLAPIENTRY eglPresentationTimeANDROID (EGLDisplay dpy, EGLSurface surface, EGLnsecsANDROID time);
@@ -554,6 +594,11 @@ EGLAPI EGLBoolean EGLAPIENTRY eglQuerySurfacePointerANGLE (EGLDisplay dpy, EGLSu
 #define EGL_ARM_pixmap_multisample_discard 1
 #define EGL_DISCARD_SAMPLES_ARM           0x3286
 #endif /* EGL_ARM_pixmap_multisample_discard */
+
+#ifndef EGL_EXT_bind_to_front
+#define EGL_EXT_bind_to_front 1
+#define EGL_FRONT_BUFFER_EXT              0x3464
+#endif /* EGL_EXT_bind_to_front */
 
 #ifndef EGL_EXT_buffer_age
 #define EGL_EXT_buffer_age 1
@@ -642,6 +687,21 @@ EGLAPI EGLBoolean EGLAPIENTRY eglQueryDisplayAttribEXT (EGLDisplay dpy, EGLint a
 #define EGL_GL_COLORSPACE_BT2020_PQ_EXT   0x3340
 #endif /* EGL_EXT_gl_colorspace_bt2020_pq */
 
+#ifndef EGL_EXT_gl_colorspace_display_p3
+#define EGL_EXT_gl_colorspace_display_p3 1
+#define EGL_GL_COLORSPACE_DISPLAY_P3_EXT  0x3363
+#endif /* EGL_EXT_gl_colorspace_display_p3 */
+
+#ifndef EGL_EXT_gl_colorspace_display_p3_linear
+#define EGL_EXT_gl_colorspace_display_p3_linear 1
+#define EGL_GL_COLORSPACE_DISPLAY_P3_LINEAR_EXT 0x3362
+#endif /* EGL_EXT_gl_colorspace_display_p3_linear */
+
+#ifndef EGL_EXT_gl_colorspace_scrgb
+#define EGL_EXT_gl_colorspace_scrgb 1
+#define EGL_GL_COLORSPACE_SCRGB_EXT       0x3351
+#endif /* EGL_EXT_gl_colorspace_scrgb */
+
 #ifndef EGL_EXT_gl_colorspace_scrgb_linear
 #define EGL_EXT_gl_colorspace_scrgb_linear 1
 #define EGL_GL_COLORSPACE_SCRGB_LINEAR_EXT 0x3350
@@ -693,6 +753,13 @@ EGLAPI EGLBoolean EGLAPIENTRY eglQueryDmaBufFormatsEXT (EGLDisplay dpy, EGLint m
 EGLAPI EGLBoolean EGLAPIENTRY eglQueryDmaBufModifiersEXT (EGLDisplay dpy, EGLint format, EGLint max_modifiers, EGLuint64KHR *modifiers, EGLBoolean *external_only, EGLint *num_modifiers);
 #endif
 #endif /* EGL_EXT_image_dma_buf_import_modifiers */
+
+#ifndef EGL_EXT_image_implicit_sync_control
+#define EGL_EXT_image_implicit_sync_control 1
+#define EGL_IMPORT_SYNC_TYPE_EXT          0x3470
+#define EGL_IMPORT_IMPLICIT_SYNC_EXT      0x3471
+#define EGL_IMPORT_EXPLICIT_SYNC_EXT      0x3472
+#endif /* EGL_EXT_image_implicit_sync_control */
 
 #ifndef EGL_EXT_multiview_window
 #define EGL_EXT_multiview_window 1
@@ -1198,7 +1265,7 @@ EGLAPI EGLuint64NV EGLAPIENTRY eglGetSystemTimeNV (void);
 #define EGL_NATIVE_SURFACE_TIZEN          0x32A1
 #endif /* EGL_TIZEN_image_native_surface */
 
-/* Chromium-specific Added support for EGL_EXT_image_flush_external extension */
+/* Chromium-specific support for EGL_EXT_image_flush_external extension */
 #ifndef EGL_EXT_image_flush_external
 #define EGL_EXT_image_flush_external 1
 #ifdef EGL_EGLEXT_PROTOTYPES
@@ -1214,6 +1281,7 @@ typedef EGLBoolean(EGLAPIENTRYP PFNGLEGLIMAGEFLUSHEXTERNALEXT)(
 #endif
 #endif
 
+/* Chromium-specific support for EGL_ANGLE_stream_producer_d3d_texture_nv12 */
 #ifndef EGL_ANGLE_stream_producer_d3d_texture_nv12
 #define EGL_ANGLE_stream_producer_d3d_texture_nv12
 #define EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE 0x33AB

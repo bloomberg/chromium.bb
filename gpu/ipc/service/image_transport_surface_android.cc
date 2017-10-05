@@ -10,6 +10,8 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_stub.h"
 
+#include <android/native_window.h>
+
 namespace gpu {
 
 // static
