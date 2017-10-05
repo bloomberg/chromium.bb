@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -67,7 +68,9 @@ class TriggeredProfileResetter : public KeyedService {
   virtual base::string16 GetResetToolName();
 
  private:
+#if defined(OS_WIN)
   Profile* profile_;
+#endif  // defined(OS_WIN)
 
   bool has_reset_trigger_ = false;
   bool activate_called_ = false;

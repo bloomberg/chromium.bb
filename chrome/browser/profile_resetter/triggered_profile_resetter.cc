@@ -7,7 +7,11 @@
 #include "base/logging.h"
 
 TriggeredProfileResetter::TriggeredProfileResetter(Profile* profile)
-    : profile_(profile) {}
+#if defined(OS_WIN)
+    : profile_(profile)
+#endif  // defined(OS_WIN)
+{
+}
 
 TriggeredProfileResetter::~TriggeredProfileResetter() {}
 
