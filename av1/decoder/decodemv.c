@@ -141,17 +141,8 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 }
 #endif
 
-static PREDICTION_MODE read_intra_mode_y(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
-                                         aom_reader *r, int size_group) {
-  const PREDICTION_MODE y_mode =
-      read_intra_mode(r, ec_ctx->y_mode_cdf[size_group]);
-  /* TODO(negge): Can we remove this parameter? */
-  (void)xd;
-  return y_mode;
-}
-
 static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
-                                             MACROBLOCKD *xd, aom_reader *r,
+                                             aom_reader *r,
                                              PREDICTION_MODE y_mode) {
   const UV_PREDICTION_MODE uv_mode =
 #if CONFIG_CFL
@@ -159,7 +150,6 @@ static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
 #else
       read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
 #endif  // CONFIG_CFL
-  (void)xd;
   return uv_mode;
 }
 
@@ -1242,7 +1232,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     xd->cfl->is_chroma_reference = 1;
 #endif  // CONFIG_CFL
 #endif  // CONFIG_CB4X4
-    mbmi->uv_mode = read_intra_mode_uv(ec_ctx, xd, r, mbmi->mode);
+    mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
 
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
@@ -1792,37 +1782,38 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 
 #if CONFIG_CB4X4
   (void)i;
-  mbmi->mode = read_intra_mode_y(ec_ctx, xd, r, size_group_lookup[bsize]);
+  mbmi->mode = read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
 #else
   switch (bsize) {
     case BLOCK_4X4:
       for (i = 0; i < 4; ++i)
-        mi->bmi[i].as_mode = read_intra_mode_y(ec_ctx, xd, r, 0);
+        mi->bmi[i].as_mode = read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
       mbmi->mode = mi->bmi[3].as_mode;
       break;
     case BLOCK_4X8:
       mi->bmi[0].as_mode = mi->bmi[2].as_mode =
-          read_intra_mode_y(ec_ctx, xd, r, 0);
+          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
       mi->bmi[1].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-          read_intra_mode_y(ec_ctx, xd, r, 0);
+          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
       break;
     case BLOCK_8X4:
       mi->bmi[0].as_mode = mi->bmi[1].as_mode =
-          read_intra_mode_y(ec_ctx, xd, r, 0);
+          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
       mi->bmi[2].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-          read_intra_mode_y(ec_ctx, xd, r, 0);
+          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
       break;
     default:
-      mbmi->mode = read_intra_mode_y(ec_ctx, xd, r, size_group_lookup[bsize]);
+      mbmi->mode =
+          read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
   }
 #endif
 
 #if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
-    mbmi->uv_mode = read_intra_mode_uv(ec_ctx, xd, r, mbmi->mode);
+    mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
 #else
-  mbmi->uv_mode = read_intra_mode_uv(ec_ctx, xd, r, mbmi->mode);
+  mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
   (void)mi_row;
   (void)mi_col;
 #endif
