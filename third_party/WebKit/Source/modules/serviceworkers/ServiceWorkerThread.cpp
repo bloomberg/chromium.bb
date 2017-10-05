@@ -59,14 +59,14 @@ void ServiceWorkerThread::ClearWorkerBackingThread() {
   worker_backing_thread_ = nullptr;
 }
 
+InstalledScriptsManager* ServiceWorkerThread::GetInstalledScriptsManager() {
+  return installed_scripts_manager_.get();
+}
+
 WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return ServiceWorkerGlobalScope::Create(this, std::move(creation_params),
                                           time_origin_);
-}
-
-InstalledScriptsManager* ServiceWorkerThread::GetInstalledScriptsManager() {
-  return installed_scripts_manager_.get();
 }
 
 }  // namespace blink

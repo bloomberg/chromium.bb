@@ -601,9 +601,6 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
 void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
     const ContentSecurityPolicyResponseHeaders& csp_headers_on_worker_thread,
     const String& referrer_policy_on_worker_thread) {
-  // This should be called before DidCreateWorkerGlobalScope().
-  DCHECK(!worker_global_scope_);
-
   // Post a task to the main thread to set CSP and ReferrerPolicy on the shadow
   // page.
   DCHECK(embedded_worker_);
