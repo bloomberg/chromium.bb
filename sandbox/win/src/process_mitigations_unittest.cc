@@ -342,7 +342,7 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t** argv) {
       reinterpret_cast<GetProcessDEPPolicyFunction>(::GetProcAddress(
           ::GetModuleHandleW(L"kernel32.dll"), "GetProcessDEPPolicy"));
   if (get_process_dep_policy) {
-    BOOL is_permanent = FALSE;
+    BOOL is_permanent = false;
     DWORD dep_flags = 0;
 
     if (!get_process_dep_policy(::GetCurrentProcess(), &dep_flags,
@@ -354,7 +354,7 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t** argv) {
       return SBOX_TEST_SECOND_ERROR;
 
   } else {
-    NtQueryInformationProcessFunction query_information_process = NULL;
+    NtQueryInformationProcessFunction query_information_process = nullptr;
     ResolveNTFunctionPtr("NtQueryInformationProcess",
                          &query_information_process);
     if (!query_information_process)
@@ -384,7 +384,7 @@ SBOX_TESTS_COMMAND int CheckDep(int argc, wchar_t** argv) {
 // ForceMsSigned tests:
 // Try to load the DLL given in arg1.
 SBOX_TESTS_COMMAND int TestDllLoad(int argc, wchar_t** argv) {
-  if (argc < 1 || argv[0] == nullptr)
+  if (argc < 1 || !argv[0])
     return SBOX_TEST_INVALID_PARAMETER;
 
   base::string16 dll = argv[0];
@@ -443,8 +443,9 @@ SBOX_TESTS_COMMAND int CheckWin10FontLoad(int argc, wchar_t** argv) {
     return SBOX_TEST_NOT_FOUND;
 
   DWORD font_count = 0;
-  HANDLE font_handle = add_font_mem_resource(
-      &font_data[0], static_cast<DWORD>(font_data.size()), NULL, &font_count);
+  HANDLE font_handle =
+      add_font_mem_resource(&font_data[0], static_cast<DWORD>(font_data.size()),
+                            nullptr, &font_count);
 
   if (font_handle) {
     rem_font_mem_resource(font_handle);
@@ -741,8 +742,9 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Success) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex =
+      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -759,8 +761,9 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex =
+      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -778,8 +781,9 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsBaseline) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex =
+      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -796,8 +800,9 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex =
+      ::CreateMutexW(nullptr, false, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 

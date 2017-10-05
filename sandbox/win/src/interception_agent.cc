@@ -7,6 +7,8 @@
 
 #include "sandbox/win/src/interception_agent.h"
 
+#include <windows.h>
+
 #include <stddef.h>
 
 #include "sandbox/win/src/eat_resolver.h"
@@ -34,13 +36,13 @@ SANDBOX_INTERCEPT NtExports g_nt;
 SANDBOX_INTERCEPT OriginalFunctions g_originals;
 
 // Memory buffer mapped from the parent, with the list of interceptions.
-SANDBOX_INTERCEPT SharedMemory* g_interceptions = NULL;
+SANDBOX_INTERCEPT SharedMemory* g_interceptions = nullptr;
 
 InterceptionAgent* InterceptionAgent::GetInterceptionAgent() {
-  static InterceptionAgent* s_singleton = NULL;
+  static InterceptionAgent* s_singleton = nullptr;
   if (!s_singleton) {
     if (!g_interceptions)
-      return NULL;
+      return nullptr;
 
     size_t array_bytes = g_interceptions->num_intercepted_dlls * sizeof(void*);
     s_singleton = reinterpret_cast<InterceptionAgent*>(
@@ -49,7 +51,7 @@ InterceptionAgent* InterceptionAgent::GetInterceptionAgent() {
     bool success = s_singleton->Init(g_interceptions);
     if (!success) {
       operator delete(s_singleton, NT_ALLOC);
-      s_singleton = NULL;
+      s_singleton = nullptr;
     }
   }
   return s_singleton;
@@ -58,7 +60,7 @@ InterceptionAgent* InterceptionAgent::GetInterceptionAgent() {
 bool InterceptionAgent::Init(SharedMemory* shared_memory) {
   interceptions_ = shared_memory;
   for (int i = 0; i < shared_memory->num_intercepted_dlls; i++)
-    dlls_[i] = NULL;
+    dlls_[i] = nullptr;
   return true;
 }
 
@@ -137,7 +139,7 @@ void InterceptionAgent::OnDllUnload(void* base_address) {
   for (int i = 0; i < interceptions_->num_intercepted_dlls; i++) {
     if (dlls_[i] && dlls_[i]->base == base_address) {
       operator delete(dlls_[i], NT_PAGE);
-      dlls_[i] = NULL;
+      dlls_[i] = nullptr;
       break;
     }
   }
@@ -149,8 +151,8 @@ void InterceptionAgent::OnDllUnload(void* base_address) {
 // complicated.
 bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
                                  DllInterceptionData* thunks) {
-  DCHECK_NT(NULL != thunks);
-  DCHECK_NT(NULL != dll_info);
+  DCHECK_NT(thunks);
+  DCHECK_NT(dll_info);
 
   const FunctionInfo* function = reinterpret_cast<const FunctionInfo*>(
       reinterpret_cast<const char*>(dll_info) + dll_info->offset_to_functions);
@@ -177,7 +179,7 @@ bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
     NTSTATUS ret = resolver->Setup(
         thunks->base, interceptions_->interceptor_base, function->function,
         interceptor, function->interceptor_address, &thunks->thunks[i],
-        sizeof(ThunkData), NULL);
+        sizeof(ThunkData), nullptr);
     if (!NT_SUCCESS(ret)) {
       NOTREACHED_NT();
       return false;
@@ -198,9 +200,9 @@ bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
 
 // This method is called from within the loader lock
 ResolverThunk* InterceptionAgent::GetResolver(InterceptionType type) {
-  static EatResolverThunk* eat_resolver = NULL;
-  static SidestepResolverThunk* sidestep_resolver = NULL;
-  static SmartSidestepResolverThunk* smart_sidestep_resolver = NULL;
+  static EatResolverThunk* eat_resolver = nullptr;
+  static SidestepResolverThunk* sidestep_resolver = nullptr;
+  static SmartSidestepResolverThunk* smart_sidestep_resolver = nullptr;
 
   if (!eat_resolver)
     eat_resolver = new (NT_ALLOC) EatResolverThunk;
@@ -225,7 +227,7 @@ ResolverThunk* InterceptionAgent::GetResolver(InterceptionType type) {
       NOTREACHED_NT();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace sandbox

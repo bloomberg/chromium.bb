@@ -72,7 +72,7 @@ Sid::Sid(const SID* sid) : sid_() {
 
 Sid::Sid(WELL_KNOWN_SID_TYPE type) {
   DWORD size_sid = SECURITY_MAX_SID_SIZE;
-  BOOL result = ::CreateWellKnownSid(type, nullptr, sid_, &size_sid);
+  bool result = ::CreateWellKnownSid(type, nullptr, sid_, &size_sid);
   DCHECK(result);
   (void)result;
 }
@@ -88,7 +88,7 @@ Sid Sid::FromNamedCapability(const wchar_t* capability_name) {
   if (!derive_capablity_sids)
     return Sid();
 
-  if (capability_name == nullptr || ::wcslen(capability_name) == 0)
+  if (!capability_name || ::wcslen(capability_name) == 0)
     return Sid();
 
   SidArray capability_group_sids;

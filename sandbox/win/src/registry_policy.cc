@@ -27,13 +27,13 @@ static const uint32_t kAllowedRegFlags =
 // |access| with the new value.
 NTSTATUS TranslateMaximumAllowed(OBJECT_ATTRIBUTES* obj_attributes,
                                  DWORD* access) {
-  NtOpenKeyFunction NtOpenKey = NULL;
+  NtOpenKeyFunction NtOpenKey = nullptr;
   ResolveNTFunctionPtr("NtOpenKey", &NtOpenKey);
 
-  NtCloseFunction NtClose = NULL;
+  NtCloseFunction NtClose = nullptr;
   ResolveNTFunctionPtr("NtClose", &NtClose);
 
-  NtQueryObjectFunction NtQueryObject = NULL;
+  NtQueryObjectFunction NtQueryObject = nullptr;
   ResolveNTFunctionPtr("NtQueryObject", &NtQueryObject);
 
   // Open the key.
@@ -43,8 +43,8 @@ NTSTATUS TranslateMaximumAllowed(OBJECT_ATTRIBUTES* obj_attributes,
     return status;
 
   OBJECT_BASIC_INFORMATION info = {0};
-  status =
-      NtQueryObject(handle, ObjectBasicInformation, &info, sizeof(info), NULL);
+  status = NtQueryObject(handle, ObjectBasicInformation, &info, sizeof(info),
+                         nullptr);
   CHECK(NT_SUCCESS(NtClose(handle)));
   if (!NT_SUCCESS(status))
     return status;
@@ -62,7 +62,7 @@ NTSTATUS NtCreateKeyInTarget(HANDLE* target_key_handle,
                              ULONG* disposition,
                              HANDLE target_process) {
   *target_key_handle = nullptr;
-  NtCreateKeyFunction NtCreateKey = NULL;
+  NtCreateKeyFunction NtCreateKey = nullptr;
   ResolveNTFunctionPtr("NtCreateKey", &NtCreateKey);
 
   if (MAXIMUM_ALLOWED & desired_access) {
@@ -79,7 +79,7 @@ NTSTATUS NtCreateKeyInTarget(HANDLE* target_key_handle,
     return status;
 
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle, target_process,
-                         target_key_handle, 0, FALSE,
+                         target_key_handle, 0, false,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }
@@ -91,7 +91,7 @@ NTSTATUS NtOpenKeyInTarget(HANDLE* target_key_handle,
                            OBJECT_ATTRIBUTES* obj_attributes,
                            HANDLE target_process) {
   *target_key_handle = nullptr;
-  NtOpenKeyFunction NtOpenKey = NULL;
+  NtOpenKeyFunction NtOpenKey = nullptr;
   ResolveNTFunctionPtr("NtOpenKey", &NtOpenKey);
 
   if (MAXIMUM_ALLOWED & desired_access) {
@@ -107,7 +107,7 @@ NTSTATUS NtOpenKeyInTarget(HANDLE* target_key_handle,
     return status;
 
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle, target_process,
-                         target_key_handle, 0, FALSE,
+                         target_key_handle, 0, false,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }
@@ -195,9 +195,9 @@ bool RegistryPolicy::CreateKeyAction(EvalResult eval_result,
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
   InitObjectAttribs(key, attributes, root_directory, &obj_attributes, &uni_name,
-                    NULL);
+                    nullptr);
   *nt_status = NtCreateKeyInTarget(handle, desired_access, &obj_attributes,
-                                   title_index, NULL, create_options,
+                                   title_index, nullptr, create_options,
                                    disposition, client_info.process);
   return true;
 }
@@ -220,7 +220,7 @@ bool RegistryPolicy::OpenKeyAction(EvalResult eval_result,
   UNICODE_STRING uni_name = {0};
   OBJECT_ATTRIBUTES obj_attributes = {0};
   InitObjectAttribs(key, attributes, root_directory, &obj_attributes, &uni_name,
-                    NULL);
+                    nullptr);
   *nt_status = NtOpenKeyInTarget(handle, desired_access, &obj_attributes,
                                  client_info.process);
   return true;

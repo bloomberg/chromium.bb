@@ -51,7 +51,7 @@ bool SyncDispatcher::CreateEvent(IPCInfo* ipc,
 
   EvalResult result =
       policy_base_->EvalPolicy(IPC_CREATEEVENT_TAG, params.GetBase());
-  HANDLE handle = NULL;
+  HANDLE handle = nullptr;
   // Return operation status on the IPC.
   ipc->return_info.nt_status = SyncPolicy::CreateEventAction(
       result, *ipc->client_info, *name, event_type, initial_state, &handle);
@@ -70,7 +70,7 @@ bool SyncDispatcher::OpenEvent(IPCInfo* ipc,
 
   EvalResult result =
       policy_base_->EvalPolicy(IPC_OPENEVENT_TAG, params.GetBase());
-  HANDLE handle = NULL;
+  HANDLE handle = nullptr;
   // Return operation status on the IPC.
   ipc->return_info.nt_status = SyncPolicy::OpenEventAction(
       result, *ipc->client_info, *name, desired_access, &handle);

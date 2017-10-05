@@ -59,8 +59,8 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Set the heap to terminate on corruption
   if (flags & MITIGATION_HEAP_TERMINATE) {
-    if (!::HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL,
-                              0) &&
+    if (!::HeapSetInformation(nullptr, HeapEnableTerminationOnCorruption,
+                              nullptr, 0) &&
         ERROR_ACCESS_DENIED != ::GetLastError()) {
       return false;
     }
@@ -256,7 +256,7 @@ bool ApplyMitigationsToCurrentThread(MitigationFlags flags) {
     SetThreadInformationFunction set_thread_info_function =
         reinterpret_cast<SetThreadInformationFunction>(
             dll.GetFunctionPointer("SetThreadInformation"));
-    if (set_thread_info_function == nullptr)
+    if (!set_thread_info_function)
       return false;
 
     // NOTE: Must use the pseudo-handle here, a thread HANDLE won't work.

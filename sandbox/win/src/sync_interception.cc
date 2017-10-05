@@ -73,18 +73,18 @@ NTSTATUS WINAPI TargetNtCreateEvent(NtCreateEventFunction orig_CreateEvent,
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (memory == NULL)
+    if (!memory)
       break;
 
     OBJECT_ATTRIBUTES object_attribs_copy = *object_attributes;
     // The RootDirectory points to BaseNamedObjects. We can ignore it.
-    object_attribs_copy.RootDirectory = NULL;
+    object_attribs_copy.RootDirectory = nullptr;
 
-    wchar_t* name = NULL;
+    wchar_t* name = nullptr;
     uint32_t attributes = 0;
     NTSTATUS ret =
-        AllocAndCopyName(&object_attribs_copy, &name, &attributes, NULL);
-    if (!NT_SUCCESS(ret) || name == NULL)
+        AllocAndCopyName(&object_attribs_copy, &name, &attributes, nullptr);
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     CrossCallReturn answer = {0};
@@ -126,18 +126,18 @@ NTSTATUS WINAPI TargetNtOpenEvent(NtOpenEventFunction orig_OpenEvent,
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (memory == NULL)
+    if (!memory)
       break;
 
     OBJECT_ATTRIBUTES object_attribs_copy = *object_attributes;
     // The RootDirectory points to BaseNamedObjects. We can ignore it.
-    object_attribs_copy.RootDirectory = NULL;
+    object_attribs_copy.RootDirectory = nullptr;
 
-    wchar_t* name = NULL;
+    wchar_t* name = nullptr;
     uint32_t attributes = 0;
     NTSTATUS ret =
-        AllocAndCopyName(&object_attribs_copy, &name, &attributes, NULL);
-    if (!NT_SUCCESS(ret) || name == NULL)
+        AllocAndCopyName(&object_attribs_copy, &name, &attributes, nullptr);
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     CrossCallReturn answer = {0};

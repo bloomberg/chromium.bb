@@ -63,9 +63,9 @@ bool SpawnWinProc(PROCESS_INFORMATION* pi, bool success_test, HANDLE* event) {
   // Command line must be writable.
   base::string16 cmd_writeable(hooking_win_proc::g_winproc_file);
 
-  if (!::CreateProcessW(NULL, &cmd_writeable[0], NULL, NULL, FALSE,
-                        creation_flags, NULL, NULL, startup_info.startup_info(),
-                        pi)) {
+  if (!::CreateProcessW(nullptr, &cmd_writeable[0], nullptr, nullptr, false,
+                        creation_flags, nullptr, nullptr,
+                        startup_info.startup_info(), pi)) {
     ADD_FAILURE();
     return false;
   }
@@ -92,16 +92,16 @@ bool SpawnWinProc(PROCESS_INFORMATION* pi, bool success_test, HANDLE* event) {
 void TestWin8ExtensionPointHookWrapper(bool is_success_test, bool global_hook) {
   // Set up a couple global events that this test will use.
   HANDLE winproc_event =
-      ::CreateEventW(NULL, FALSE, FALSE, hooking_win_proc::g_winproc_event);
-  if (winproc_event == NULL || winproc_event == INVALID_HANDLE_VALUE) {
+      ::CreateEventW(nullptr, false, false, hooking_win_proc::g_winproc_event);
+  if (!winproc_event) {
     ADD_FAILURE();
     return;
   }
   base::win::ScopedHandle scoped_winproc_event(winproc_event);
 
   HANDLE hook_event =
-      ::CreateEventW(NULL, FALSE, FALSE, hooking_dll::g_hook_event);
-  if (hook_event == NULL || hook_event == INVALID_HANDLE_VALUE) {
+      ::CreateEventW(nullptr, false, false, hooking_dll::g_hook_event);
+  if (!hook_event) {
     ADD_FAILURE();
     return;
   }
@@ -167,7 +167,7 @@ void TestWin8ExtensionPointHookWrapper(bool is_success_test, bool global_hook) {
       // PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE
       // mitigation does NOT disable the hook API.  It ONLY
       // stops global hooks from running in a process.  Hence,
-      // the hook will hit (TRUE) even in the "failure"
+      // the hook will hit (true) even in the "failure"
       // case for a non-global/targeted hook.
       EXPECT_EQ((is_success_test ? true : true), was_hook_called());
   }
@@ -213,7 +213,7 @@ void TestWin8ExtensionPointAppInitWrapper(bool is_success_test) {
   //     AppInit DLL will be in the same directory (and the
   //     full path is needed for reg).
   wchar_t path[MAX_PATH];
-  if (!::GetModuleFileNameW(NULL, path, MAX_PATH)) {
+  if (!::GetModuleFileNameW(nullptr, path, MAX_PATH)) {
     ADD_FAILURE();
     return;
   }
@@ -223,7 +223,7 @@ void TestWin8ExtensionPointAppInitWrapper(bool is_success_test) {
   full_dll_path = full_dll_path.Append(hooking_dll::g_hook_dll_file);
   wchar_t* non_const = const_cast<wchar_t*>(full_dll_path.value().c_str());
   // Now make sure the path is in "short-name" form for registry.
-  DWORD length = ::GetShortPathNameW(non_const, NULL, 0);
+  DWORD length = ::GetShortPathNameW(non_const, nullptr, 0);
   std::vector<wchar_t> short_name(length);
   if (!::GetShortPathNameW(non_const, &short_name[0], length)) {
     ADD_FAILURE();
@@ -284,13 +284,13 @@ void TestWin8ExtensionPointAppInitWrapper(bool is_success_test) {
   }
 
   // 2. Spawn WinProc.
-  HANDLE winproc_event = INVALID_HANDLE_VALUE;
+  HANDLE winproc_event = nullptr;
   base::win::ScopedHandle scoped_event;
   PROCESS_INFORMATION proc_info = {};
   if (all_good) {
-    winproc_event =
-        ::CreateEventW(NULL, FALSE, FALSE, hooking_win_proc::g_winproc_event);
-    if (winproc_event == NULL || winproc_event == INVALID_HANDLE_VALUE) {
+    winproc_event = ::CreateEventW(nullptr, false, false,
+                                   hooking_win_proc::g_winproc_event);
+    if (!winproc_event) {
       ADD_FAILURE();
       all_good = false;
     } else {
@@ -402,8 +402,8 @@ TEST(ProcessMitigationsTest,
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -423,8 +423,8 @@ TEST(ProcessMitigationsTest,
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -443,8 +443,8 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_Hook_Success) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -466,8 +466,8 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_Hook_Failure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -487,8 +487,8 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_AppInit_Success) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -507,8 +507,8 @@ TEST(ProcessMitigationsTest, DISABLED_CheckWin8ExtensionPoint_AppInit_Failure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_extension_point_test_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_extension_point_test_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 

@@ -36,10 +36,10 @@ class ResolverThunk {
   // Example: (without error checking)
   //
   // size_t size = resolver.GetThunkSize();
-  // char* buffer = ::VirtualAllocEx(child_process, NULL, size,
+  // char* buffer = ::VirtualAllocEx(child_process, nullptr, size,
   //                                 MEM_COMMIT, PAGE_READWRITE);
-  // resolver.Setup(ntdll_module, NULL, L"NtCreateFile", NULL,
-  //                &MyReplacementFunction, buffer, size, NULL);
+  // resolver.Setup(ntdll_module, nullptr, L"NtCreateFile", nullptr,
+  //                &MyReplacementFunction, buffer, size, nullptr);
   //
   // In general, the idea is to allocate a single big buffer for all
   // interceptions on the same dll, and call Setup n times.

@@ -18,13 +18,13 @@ namespace {
 // lpSecurityDescriptor member of the SECURITY_ATTRIBUTES parameter returned
 // must be freed using LocalFree by the caller.
 bool GetSecurityAttributes(HANDLE handle, SECURITY_ATTRIBUTES* attributes) {
-  attributes->bInheritHandle = FALSE;
+  attributes->bInheritHandle = false;
   attributes->nLength = sizeof(SECURITY_ATTRIBUTES);
 
-  PACL dacl = NULL;
-  DWORD result = ::GetSecurityInfo(handle, SE_WINDOW_OBJECT,
-                                   DACL_SECURITY_INFORMATION, NULL, NULL, &dacl,
-                                   NULL, &attributes->lpSecurityDescriptor);
+  PACL dacl = nullptr;
+  DWORD result = ::GetSecurityInfo(
+      handle, SE_WINDOW_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr,
+      &dacl, nullptr, &attributes->lpSecurityDescriptor);
   if (ERROR_SUCCESS == result)
     return true;
 
@@ -50,7 +50,7 @@ ResultCode CreateAltWindowStation(HWINSTA* winsta) {
   // generate it.
   *winsta = ::CreateWindowStationW(
       nullptr, 0, GENERIC_READ | WINSTA_CREATEDESKTOP, &attributes);
-  if (*winsta == nullptr && ::GetLastError() == ERROR_ACCESS_DENIED) {
+  if (!*winsta && ::GetLastError() == ERROR_ACCESS_DENIED) {
     *winsta = ::CreateWindowStationW(
         nullptr, 0, WINSTA_READATTRIBUTES | WINSTA_CREATEDESKTOP, &attributes);
   }
@@ -99,7 +99,7 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
   }
 
   // Create the destkop.
-  *desktop = ::CreateDesktop(desktop_name.c_str(), NULL, NULL, 0,
+  *desktop = ::CreateDesktop(desktop_name.c_str(), nullptr, nullptr, 0,
                              DESKTOP_CREATEWINDOW | DESKTOP_READOBJECTS |
                                  READ_CONTROL | WRITE_DAC | WRITE_OWNER,
                              &attributes);
@@ -130,7 +130,7 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
 base::string16 GetWindowObjectName(HANDLE handle) {
   // Get the size of the name.
   DWORD size = 0;
-  ::GetUserObjectInformation(handle, UOI_NAME, NULL, 0, &size);
+  ::GetUserObjectInformation(handle, UOI_NAME, nullptr, 0, &size);
 
   if (!size) {
     NOTREACHED();

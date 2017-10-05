@@ -97,7 +97,7 @@ bool FilesystemDispatcher::NtCreateFile(IPCInfo* ipc,
 
   const wchar_t* filename = name->c_str();
 
-  uint32_t broker = TRUE;
+  uint32_t broker = BROKER_TRUE;
   CountedParameterSet<OpenFile> params;
   params[OpenFile::NAME] = ParamPickerMake(filename);
   params[OpenFile::ACCESS] = ParamPickerMake(desired_access);
@@ -141,7 +141,7 @@ bool FilesystemDispatcher::NtOpenFile(IPCInfo* ipc,
 
   const wchar_t* filename = name->c_str();
 
-  uint32_t broker = TRUE;
+  uint32_t broker = BROKER_TRUE;
   uint32_t create_disposition = FILE_OPEN;
   CountedParameterSet<OpenFile> params;
   params[OpenFile::NAME] = ParamPickerMake(filename);
@@ -184,7 +184,7 @@ bool FilesystemDispatcher::NtQueryAttributesFile(IPCInfo* ipc,
     return true;
   }
 
-  uint32_t broker = TRUE;
+  uint32_t broker = BROKER_TRUE;
   const wchar_t* filename = name->c_str();
   CountedParameterSet<FileName> params;
   params[FileName::NAME] = ParamPickerMake(filename);
@@ -224,7 +224,7 @@ bool FilesystemDispatcher::NtQueryFullAttributesFile(IPCInfo* ipc,
     return true;
   }
 
-  uint32_t broker = TRUE;
+  uint32_t broker = BROKER_TRUE;
   const wchar_t* filename = name->c_str();
   CountedParameterSet<FileName> params;
   params[FileName::NAME] = ParamPickerMake(filename);
@@ -277,7 +277,7 @@ bool FilesystemDispatcher::NtSetInformationFile(IPCInfo* ipc,
     return true;
   }
 
-  uint32_t broker = TRUE;
+  uint32_t broker = BROKER_TRUE;
   const wchar_t* filename = name.c_str();
   CountedParameterSet<FileName> params;
   params[FileName::NAME] = ParamPickerMake(filename);

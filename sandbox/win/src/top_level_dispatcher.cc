@@ -98,7 +98,7 @@ Dispatcher* TopLevelDispatcher::OnMessageReady(IPCParams* ipc,
   Dispatcher* dispatcher = GetDispatcher(ipc->ipc_tag);
   if (!dispatcher) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   return dispatcher->OnMessageReady(ipc, callback);
 }
@@ -146,7 +146,7 @@ bool TopLevelDispatcher::Ping(IPCInfo* ipc, void* arg1) {
 
 Dispatcher* TopLevelDispatcher::GetDispatcher(int ipc_tag) {
   if (ipc_tag >= IPC_LAST_TAG || ipc_tag <= IPC_UNUSED_TAG)
-    return NULL;
+    return nullptr;
 
   return ipc_targets_[ipc_tag];
 }

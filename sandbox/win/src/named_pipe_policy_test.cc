@@ -13,16 +13,12 @@
 namespace sandbox {
 
 SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t** argv) {
-  if (argc < 1 || argc > 2) {
+  if (argc < 1 || argc > 2 || !argv || !argv[0])
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-  }
-  if ((NULL == argv) || (NULL == argv[0])) {
-    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
-  }
 
   HANDLE pipe = ::CreateNamedPipeW(
       argv[0], PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-      PIPE_TYPE_BYTE | PIPE_READMODE_BYTE, 1, 4096, 4096, 2000, NULL);
+      PIPE_TYPE_BYTE | PIPE_READMODE_BYTE, 1, 4096, 4096, 2000, nullptr);
   if (INVALID_HANDLE_VALUE == pipe)
     return SBOX_TEST_DENIED;
 
@@ -39,8 +35,8 @@ SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t** argv) {
   }
 
   OVERLAPPED overlapped = {0};
-  overlapped.hEvent = ::CreateEvent(NULL, TRUE, TRUE, NULL);
-  BOOL result = ::ConnectNamedPipe(pipe, &overlapped);
+  overlapped.hEvent = ::CreateEvent(nullptr, true, true, nullptr);
+  bool result = ::ConnectNamedPipe(pipe, &overlapped);
 
   if (!result) {
     DWORD error = ::GetLastError();

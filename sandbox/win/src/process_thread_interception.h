@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_types.h"
 
@@ -10,41 +12,19 @@
 
 namespace sandbox {
 
+namespace {
+
+using CreateProcessWFunction = decltype(&::CreateProcessW);
+
+using CreateProcessAFunction = decltype(&::CreateProcessA);
+
+using CreateThreadFunction = decltype(&::CreateThread);
+
+using GetUserDefaultLCIDFunction = decltype(&::GetUserDefaultLCID);
+
+}  // namespace
+
 extern "C" {
-
-typedef BOOL(WINAPI* CreateProcessWFunction)(
-    LPCWSTR lpApplicationName,
-    LPWSTR lpCommandLine,
-    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    BOOL bInheritHandles,
-    DWORD dwCreationFlags,
-    LPVOID lpEnvironment,
-    LPCWSTR lpCurrentDirectory,
-    LPSTARTUPINFOW lpStartupInfo,
-    LPPROCESS_INFORMATION lpProcessInformation);
-
-typedef BOOL(WINAPI* CreateProcessAFunction)(
-    LPCSTR lpApplicationName,
-    LPSTR lpCommandLine,
-    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    BOOL bInheritHandles,
-    DWORD dwCreationFlags,
-    LPVOID lpEnvironment,
-    LPCSTR lpCurrentDirectory,
-    LPSTARTUPINFOA lpStartupInfo,
-    LPPROCESS_INFORMATION lpProcessInformation);
-
-typedef HANDLE(WINAPI* CreateThreadFunction)(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId);
-
-typedef LCID(WINAPI* GetUserDefaultLCIDFunction)();
 
 // Interception of NtOpenThread on the child process.
 SANDBOX_INTERCEPT NTSTATUS WINAPI

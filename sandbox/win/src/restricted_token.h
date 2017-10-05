@@ -30,7 +30,7 @@ namespace sandbox {
 // any token handle.
 // Sample usage:
 //    RestrictedToken restricted_token;
-//    DWORD err_code = restricted_token.Init(NULL);  // Use the current
+//    DWORD err_code = restricted_token.Init(nullptr);  // Use the current
 //                                                   // effective token
 //    if (ERROR_SUCCESS != err_code) {
 //      // handle error.
@@ -50,8 +50,8 @@ class RestrictedToken {
   ~RestrictedToken();
 
   // Initializes the RestrictedToken object with effective_token.
-  // If effective_token is NULL, it initializes the RestrictedToken object with
-  // the effective token of the current process.
+  // If effective_token is nullptr, it initializes the RestrictedToken object
+  // with the effective token of the current process.
   DWORD Init(HANDLE effective_token);
 
   // Creates a restricted token.
@@ -73,7 +73,7 @@ class RestrictedToken {
 
   // Lists all sids in the token and mark them as Deny Only except for those
   // present in the exceptions parameter. If there is no exception needed,
-  // the caller can pass an empty list or NULL for the exceptions
+  // the caller can pass an empty list or nullptr for the exceptions
   // parameter.
   //
   // If the function succeeds, the return value is ERROR_SUCCESS. If the
@@ -105,7 +105,7 @@ class RestrictedToken {
 
   // Lists all privileges in the token and add them to the list of privileges
   // to remove except for those present in the exceptions parameter. If
-  // there is no exception needed, the caller can pass an empty list or NULL
+  // there is no exception needed, the caller can pass an empty list or nullptr
   // for the exceptions parameter.
   //
   // If the function succeeds, the return value is ERROR_SUCCESS. If the

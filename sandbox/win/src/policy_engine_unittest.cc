@@ -50,7 +50,7 @@ TEST(PolicyEngineTest, Rules1) {
                                   0, CASE_INSENSITIVE, kPolNone);
   opcode_maker.MakeOpNumberMatch(CreationDispositionArg, OPEN_EXISTING,
                                  kPolNone);
-  opcode_maker.MakeOpVoidPtrMatch(SecurityAttributes, (void*)NULL, kPolNone);
+  opcode_maker.MakeOpVoidPtrMatch(SecurityAttributes, nullptr, kPolNone);
   opcode_maker.MakeOpAction(ASK_BROKER, kPolNone);
 
   // Add rule set #2
@@ -64,7 +64,7 @@ TEST(PolicyEngineTest, Rules1) {
   const wchar_t* filename = L"c:\\Documents and Settings\\Microsoft\\BLAH.txt";
   uint32_t creation_mode = OPEN_EXISTING;
   uint32_t flags = FILE_ATTRIBUTE_NORMAL;
-  void* security_descriptor = NULL;
+  void* security_descriptor = nullptr;
 
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)

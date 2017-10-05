@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "sandbox/win/src/crosscall_client.h"
+#include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_params.h"
 #include "sandbox/win/src/policy_target.h"
@@ -40,7 +41,7 @@ NTSTATUS WINAPI TargetNtCreateFile(NtCreateFileFunction orig_CreateFile,
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return status;
 
-  wchar_t* name = NULL;
+  wchar_t* name = nullptr;
   do {
     if (!ValidParameter(file, sizeof(HANDLE), WRITE))
       break;
@@ -48,19 +49,19 @@ NTSTATUS WINAPI TargetNtCreateFile(NtCreateFileFunction orig_CreateFile,
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     uint32_t attributes = 0;
     NTSTATUS ret =
-        AllocAndCopyName(object_attributes, &name, &attributes, NULL);
-    if (!NT_SUCCESS(ret) || NULL == name)
+        AllocAndCopyName(object_attributes, &name, &attributes, nullptr);
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     uint32_t desired_access_uint32 = desired_access;
     uint32_t options_uint32 = options;
     uint32_t disposition_uint32 = disposition;
-    uint32_t broker = FALSE;
+    uint32_t broker = BROKER_FALSE;
     CountedParameterSet<OpenFile> params;
     params[OpenFile::NAME] = ParamPickerMake(name);
     params[OpenFile::ACCESS] = ParamPickerMake(desired_access_uint32);
@@ -118,7 +119,7 @@ NTSTATUS WINAPI TargetNtOpenFile(NtOpenFileFunction orig_OpenFile,
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return status;
 
-  wchar_t* name = NULL;
+  wchar_t* name = nullptr;
   do {
     if (!ValidParameter(file, sizeof(HANDLE), WRITE))
       break;
@@ -126,19 +127,19 @@ NTSTATUS WINAPI TargetNtOpenFile(NtOpenFileFunction orig_OpenFile,
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     uint32_t attributes;
     NTSTATUS ret =
-        AllocAndCopyName(object_attributes, &name, &attributes, NULL);
-    if (!NT_SUCCESS(ret) || NULL == name)
+        AllocAndCopyName(object_attributes, &name, &attributes, nullptr);
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     uint32_t desired_access_uint32 = desired_access;
     uint32_t options_uint32 = options;
     uint32_t disposition_uint32 = FILE_OPEN;
-    uint32_t broker = FALSE;
+    uint32_t broker = BROKER_FALSE;
     CountedParameterSet<OpenFile> params;
     params[OpenFile::NAME] = ParamPickerMake(name);
     params[OpenFile::ACCESS] = ParamPickerMake(desired_access_uint32);
@@ -190,25 +191,25 @@ TargetNtQueryAttributesFile(NtQueryAttributesFileFunction orig_QueryAttributes,
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return status;
 
-  wchar_t* name = NULL;
+  wchar_t* name = nullptr;
   do {
     if (!ValidParameter(file_attributes, sizeof(FILE_BASIC_INFORMATION), WRITE))
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     uint32_t attributes = 0;
     NTSTATUS ret =
-        AllocAndCopyName(object_attributes, &name, &attributes, NULL);
-    if (!NT_SUCCESS(ret) || NULL == name)
+        AllocAndCopyName(object_attributes, &name, &attributes, nullptr);
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     InOutCountedBuffer file_info(file_attributes,
                                  sizeof(FILE_BASIC_INFORMATION));
 
-    uint32_t broker = FALSE;
+    uint32_t broker = BROKER_FALSE;
     CountedParameterSet<FileName> params;
     params[FileName::NAME] = ParamPickerMake(name);
     params[FileName::BROKER] = ParamPickerMake(broker);
@@ -248,26 +249,26 @@ NTSTATUS WINAPI TargetNtQueryFullAttributesFile(
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return status;
 
-  wchar_t* name = NULL;
+  wchar_t* name = nullptr;
   do {
     if (!ValidParameter(file_attributes, sizeof(FILE_NETWORK_OPEN_INFORMATION),
                         WRITE))
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     uint32_t attributes = 0;
     NTSTATUS ret =
-        AllocAndCopyName(object_attributes, &name, &attributes, NULL);
-    if (!NT_SUCCESS(ret) || NULL == name)
+        AllocAndCopyName(object_attributes, &name, &attributes, nullptr);
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     InOutCountedBuffer file_info(file_attributes,
                                  sizeof(FILE_NETWORK_OPEN_INFORMATION));
 
-    uint32_t broker = FALSE;
+    uint32_t broker = BROKER_FALSE;
     CountedParameterSet<FileName> params;
     params[FileName::NAME] = ParamPickerMake(name);
     params[FileName::BROKER] = ParamPickerMake(broker);
@@ -309,10 +310,10 @@ TargetNtSetInformationFile(NtSetInformationFileFunction orig_SetInformationFile,
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return status;
 
-  wchar_t* name = NULL;
+  wchar_t* name = nullptr;
   do {
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     if (!ValidParameter(io_status, sizeof(IO_STATUS_BLOCK), WRITE))
@@ -325,7 +326,8 @@ TargetNtSetInformationFile(NtSetInformationFileFunction orig_SetInformationFile,
         reinterpret_cast<FILE_RENAME_INFORMATION*>(file_info);
     OBJECT_ATTRIBUTES object_attributes;
     UNICODE_STRING object_name;
-    InitializeObjectAttributes(&object_attributes, &object_name, 0, NULL, NULL);
+    InitializeObjectAttributes(&object_attributes, &object_name, 0, nullptr,
+                               nullptr);
 
     __try {
       if (!IsSupportedRenameCall(file_rename_info, length, file_info_class))
@@ -339,11 +341,12 @@ TargetNtSetInformationFile(NtSetInformationFileFunction orig_SetInformationFile,
       break;
     }
 
-    NTSTATUS ret = AllocAndCopyName(&object_attributes, &name, NULL, NULL);
+    NTSTATUS ret =
+        AllocAndCopyName(&object_attributes, &name, nullptr, nullptr);
     if (!NT_SUCCESS(ret) || !name)
       break;
 
-    uint32_t broker = FALSE;
+    uint32_t broker = BROKER_FALSE;
     CountedParameterSet<FileName> params;
     params[FileName::NAME] = ParamPickerMake(name);
     params[FileName::BROKER] = ParamPickerMake(broker);

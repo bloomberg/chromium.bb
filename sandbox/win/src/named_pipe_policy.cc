@@ -32,7 +32,7 @@ HANDLE CreateNamedPipeHelper(HANDLE target_process,
 
   HANDLE new_pipe;
   if (!::DuplicateHandle(::GetCurrentProcess(), pipe, target_process, &new_pipe,
-                         0, FALSE,
+                         0, false,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return INVALID_HANDLE_VALUE;
   }
@@ -78,7 +78,7 @@ DWORD NamedPipePolicy::CreateNamedPipeAction(EvalResult eval_result,
 
   *pipe = CreateNamedPipeHelper(client_info.process, name.c_str(), open_mode,
                                 pipe_mode, max_instances, out_buffer_size,
-                                in_buffer_size, default_timeout, NULL);
+                                in_buffer_size, default_timeout, nullptr);
 
   if (INVALID_HANDLE_VALUE == *pipe)
     return ERROR_ACCESS_DENIED;

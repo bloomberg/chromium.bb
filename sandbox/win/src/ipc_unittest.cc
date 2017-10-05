@@ -45,9 +45,9 @@ void FixChannels(IPCControl* client_control,
     channel.channel_base = base_start;
     channel.state = kFreeChannel;
     if (mode != FIX_NO_EVENTS) {
-      BOOL signaled = (FIX_PONG_READY == mode) ? TRUE : FALSE;
-      channel.ping_event = ::CreateEventW(NULL, FALSE, FALSE, NULL);
-      channel.pong_event = ::CreateEventW(NULL, FALSE, signaled, NULL);
+      bool signaled = (FIX_PONG_READY == mode) ? true : false;
+      channel.ping_event = ::CreateEventW(nullptr, false, false, nullptr);
+      channel.pong_event = ::CreateEventW(nullptr, false, signaled, nullptr);
     }
     base_start += channel_size;
   }
@@ -67,7 +67,7 @@ TEST(IPCTest, ChannelMaker) {
   // and 216 in 64 bits.
   size_t channel_start = 0;
   IPCControl* client_control = MakeChannels(12 * 64, 4096, &channel_start);
-  ASSERT_TRUE(NULL != client_control);
+  ASSERT_TRUE(client_control);
   EXPECT_EQ(5u, client_control->channels_count);
 #if defined(_WIN64)
   EXPECT_EQ(216u, channel_start);
@@ -173,7 +173,7 @@ TEST(IPCTest, CrossCallStrPacking) {
 
   // Check with an empty string.
   uint32_t tag2 = 777;
-  const wchar_t* null_text = NULL;
+  const wchar_t* null_text = nullptr;
   CrossCall(client, tag2, null_text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
   EXPECT_EQ(1u, actual_params->GetParamsCount());
@@ -181,7 +181,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   uint32_t param_size = 1;
   ArgType type = INVALID_TYPE;
   void* param_addr = actual_params->GetRawParameter(0, &param_size, &type);
-  EXPECT_TRUE(NULL != param_addr);
+  EXPECT_TRUE(param_addr);
   EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
@@ -197,7 +197,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_EQ(tag3, actual_params->GetTag());
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(0, &param_size, &type);
-  EXPECT_TRUE(NULL != param_addr);
+  EXPECT_TRUE(param_addr);
   EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
@@ -218,7 +218,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_STREQ(text, copied_text_p2.c_str());
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(1, &param_size, &type);
-  EXPECT_TRUE(NULL != param_addr);
+  EXPECT_TRUE(param_addr);
   EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
 
@@ -253,7 +253,7 @@ TEST(IPCTest, CrossCallIntPacking) {
   void* param_addr = actual_params->GetRawParameter(0, &param_size, &type);
   ASSERT_EQ(sizeof(dw), param_size);
   EXPECT_EQ(UINT32_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
+  ASSERT_TRUE(param_addr);
   EXPECT_EQ(0, memcmp(&dw, param_addr, param_size));
 
   // Check handling for windows HANDLES.
@@ -266,7 +266,7 @@ TEST(IPCTest, CrossCallIntPacking) {
   param_addr = actual_params->GetRawParameter(1, &param_size, &type);
   ASSERT_EQ(sizeof(h), param_size);
   EXPECT_EQ(VOIDPTR_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
+  ASSERT_TRUE(param_addr);
   EXPECT_EQ(0, memcmp(&h, param_addr, param_size));
 
   // Check combination of 32 and 64 bits.
@@ -278,19 +278,19 @@ TEST(IPCTest, CrossCallIntPacking) {
   param_addr = actual_params->GetRawParameter(0, &param_size, &type);
   ASSERT_EQ(sizeof(h), param_size);
   EXPECT_EQ(VOIDPTR_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
+  ASSERT_TRUE(param_addr);
   EXPECT_EQ(0, memcmp(&h, param_addr, param_size));
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(1, &param_size, &type);
   ASSERT_EQ(sizeof(dw), param_size);
   EXPECT_EQ(UINT32_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
+  ASSERT_TRUE(param_addr);
   EXPECT_EQ(0, memcmp(&dw, param_addr, param_size));
   type = INVALID_TYPE;
   param_addr = actual_params->GetRawParameter(2, &param_size, &type);
   ASSERT_EQ(sizeof(h), param_size);
   EXPECT_EQ(VOIDPTR_TYPE, type);
-  ASSERT_TRUE(NULL != param_addr);
+  ASSERT_TRUE(param_addr);
   EXPECT_EQ(0, memcmp(&h, param_addr, param_size));
 
   CloseChannelEvents(client_control);
@@ -310,7 +310,7 @@ TEST(IPCTest, CrossCallValidation) {
   CrossCallParamsEx* ccp = 0;
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_1.GetSize(),
                                             &out_size);
-  ASSERT_TRUE(NULL != ccp);
+  ASSERT_TRUE(ccp);
   EXPECT_TRUE(ccp->GetBuffer() != buffer);
   EXPECT_EQ(kTag, ccp->GetTag());
   EXPECT_EQ(1u, ccp->GetParamsCount());
@@ -326,46 +326,46 @@ TEST(IPCTest, CrossCallValidation) {
     params_2.CopyParamIn(0, &value, sizeof(value), false, UINT32_TYPE);
     buffer = const_cast<void*>(params_2.GetBuffer());
 
-    EXPECT_TRUE(NULL != buffer);
+    EXPECT_TRUE(buffer);
     ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_1.GetSize(),
                                               &out_size);
-    // If the buffer is malformed the return is NULL.
-    EXPECT_TRUE(NULL == ccp);
+    // If the buffer is malformed the return is nullptr.
+    EXPECT_TRUE(!ccp);
   }
 
   ActualCallParams<1, kBufferSize> params_3(kTag, 1);
   params_3.CopyParamIn(0, &value, sizeof(value), false, UINT32_TYPE);
   buffer = const_cast<void*>(params_3.GetBuffer());
-  EXPECT_TRUE(NULL != buffer);
+  EXPECT_TRUE(buffer);
 
   uint32_t correct_size = params_3.OverrideSize(1);
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
-  EXPECT_TRUE(NULL == ccp);
+  EXPECT_TRUE(!ccp);
 
   // The correct_size is 8 bytes aligned.
   params_3.OverrideSize(correct_size - 7);
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
-  EXPECT_TRUE(NULL == ccp);
+  EXPECT_TRUE(!ccp);
 
   params_3.OverrideSize(correct_size);
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
-  EXPECT_TRUE(NULL != ccp);
+  EXPECT_TRUE(ccp);
 
   // Make sure that two parameters work as expected.
   ActualCallParams<2, kBufferSize> params_4(kTag, 2);
   params_4.CopyParamIn(0, &value, sizeof(value), false, UINT32_TYPE);
   params_4.CopyParamIn(1, buffer, sizeof(buffer), false, VOIDPTR_TYPE);
   buffer = const_cast<void*>(params_4.GetBuffer());
-  EXPECT_TRUE(NULL != buffer);
+  EXPECT_TRUE(buffer);
 
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
-  EXPECT_TRUE(NULL != ccp);
+  EXPECT_TRUE(ccp);
 
 #if defined(_WIN64)
   correct_size = params_4.OverrideSize(1);
   params_4.OverrideSize(correct_size - 1);
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
-  EXPECT_TRUE(NULL == ccp);
+  EXPECT_TRUE(!ccp);
 #endif
 }
 
@@ -408,7 +408,7 @@ TEST(IPCTest, ClientFastServer) {
   IPCControl* client_control =
       MakeChannels(channel_size, 4096 * 2, &base_start);
   FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_NOT_READY);
-  client_control->server_alive = ::CreateMutex(NULL, FALSE, NULL);
+  client_control->server_alive = ::CreateMutex(nullptr, false, nullptr);
 
   char* mem = reinterpret_cast<char*>(client_control);
   SharedMemIPCClient client(mem);
@@ -418,8 +418,9 @@ TEST(IPCTest, ClientFastServer) {
   events.pong = client_control->channels[1].pong_event;
   events.state = &client_control->channels[1].state;
 
-  HANDLE t1 = ::CreateThread(NULL, 0, QuickResponseServer, &events, 0, NULL);
-  ASSERT_TRUE(NULL != t1);
+  HANDLE t1 =
+      ::CreateThread(nullptr, 0, QuickResponseServer, &events, 0, nullptr);
+  ASSERT_TRUE(t1);
   ::CloseHandle(t1);
 
   void* buff0 = client.GetBuffer();
@@ -451,8 +452,9 @@ TEST(IPCTest, ClientFastServer) {
   EXPECT_EQ(kFreeChannel, client_control->channels[1].state);
   EXPECT_EQ(kFreeChannel, client_control->channels[2].state);
 
-  HANDLE t2 = ::CreateThread(NULL, 0, QuickResponseServer, &events, 0, NULL);
-  ASSERT_TRUE(NULL != t2);
+  HANDLE t2 =
+      ::CreateThread(nullptr, 0, QuickResponseServer, &events, 0, nullptr);
+  ASSERT_TRUE(t2);
   ::CloseHandle(t2);
 
   client.FreeBuffer(buff0);
@@ -510,7 +512,7 @@ TEST(IPCTest, ClientSlowServer) {
   IPCControl* client_control =
       MakeChannels(kIPCChannelSize, 4096 * 2, &base_start);
   FixChannels(client_control, base_start, kIPCChannelSize, FIX_PONG_NOT_READY);
-  client_control->server_alive = ::CreateMutex(NULL, FALSE, NULL);
+  client_control->server_alive = ::CreateMutex(nullptr, false, nullptr);
 
   char* mem = reinterpret_cast<char*>(client_control);
   SharedMemIPCClient client(mem);
@@ -520,16 +522,18 @@ TEST(IPCTest, ClientSlowServer) {
   events.pong = client_control->channels[0].pong_event;
   events.state = &client_control->channels[0].state;
 
-  HANDLE t1 = ::CreateThread(NULL, 0, SlowResponseServer, &events, 0, NULL);
-  ASSERT_TRUE(NULL != t1);
+  HANDLE t1 =
+      ::CreateThread(nullptr, 0, SlowResponseServer, &events, 0, nullptr);
+  ASSERT_TRUE(t1);
   ::CloseHandle(t1);
 
   ServerEvents events2 = {0};
   events2.pong = events.pong;
   events2.mutex = client_control->server_alive;
 
-  HANDLE t2 = ::CreateThread(NULL, 0, MainServerThread, &events2, 0, NULL);
-  ASSERT_TRUE(NULL != t2);
+  HANDLE t2 =
+      ::CreateThread(nullptr, 0, MainServerThread, &events2, 0, nullptr);
+  ASSERT_TRUE(t2);
   ::CloseHandle(t2);
 
   ::Sleep(1);
@@ -603,11 +607,11 @@ TEST(IPCTest, SharedMemServerTests) {
   DWORD foo = 6767676;
   CrossCall(client, UnitTestIPCDispatcher::CALL_ONE_TAG, bar, foo, &answer);
   void* buff = client.GetBuffer();
-  ASSERT_TRUE(NULL != buff);
+  ASSERT_TRUE(buff);
 
   UnitTestIPCDispatcher dispatcher;
   // Since we are directly calling InvokeCallback, most of this structure
-  // can be set to NULL.
+  // can be set to nullptr.
   sandbox::SharedMemIPCServer::ServerControl srv_control = {};
   srv_control.channel_size = kIPCChannelSize;
   srv_control.shared_base = reinterpret_cast<char*>(client_control);

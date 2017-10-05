@@ -31,7 +31,7 @@ class ProcessMitigationsWin32KLockdownPolicy {
   static uint32_t EnumDisplayMonitorsAction(const ClientInfo& client_info,
                                             HMONITOR* monitor_list,
                                             uint32_t monitor_list_size);
-  static BOOL GetMonitorInfoAction(const ClientInfo& client_info,
+  static bool GetMonitorInfoAction(const ClientInfo& client_info,
                                    HMONITOR monitor,
                                    MONITORINFO* monitor_info);
 

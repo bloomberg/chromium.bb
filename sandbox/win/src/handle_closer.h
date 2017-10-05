@@ -47,8 +47,8 @@ class HandleCloser {
   ~HandleCloser();
 
   // Adds a handle that will be closed in the target process after lockdown.
-  // A NULL value for handle_name indicates all handles of the specified type.
-  // An empty string for handle_name indicates the handle is unnamed.
+  // A nullptr value for handle_name indicates all handles of the specified
+  // type. An empty string for handle_name indicates the handle is unnamed.
   ResultCode AddHandle(const base::char16* handle_type,
                        const base::char16* handle_name);
 

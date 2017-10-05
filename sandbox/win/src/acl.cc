@@ -15,13 +15,13 @@ namespace sandbox {
 bool GetDefaultDacl(
     HANDLE token,
     std::unique_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl) {
-  if (token == NULL)
+  if (!token)
     return false;
 
-  DCHECK(default_dacl != NULL);
+  DCHECK(default_dacl);
 
   unsigned long length = 0;
-  ::GetTokenInformation(token, TokenDefaultDacl, NULL, 0, &length);
+  ::GetTokenInformation(token, TokenDefaultDacl, nullptr, 0, &length);
   if (length == 0) {
     NOTREACHED();
     return false;
@@ -48,7 +48,7 @@ bool AddSidToDacl(const Sid& sid,
   new_access.grfAccessPermissions = access;
   new_access.grfInheritance = NO_INHERITANCE;
 
-  new_access.Trustee.pMultipleTrustee = NULL;
+  new_access.Trustee.pMultipleTrustee = nullptr;
   new_access.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
   new_access.Trustee.TrusteeForm = TRUSTEE_IS_SID;
   new_access.Trustee.ptstrName = reinterpret_cast<LPWSTR>(sid.GetPSID());
@@ -63,14 +63,14 @@ bool AddSidToDefaultDacl(HANDLE token,
                          const Sid& sid,
                          ACCESS_MODE access_mode,
                          ACCESS_MASK access) {
-  if (token == NULL)
+  if (!token)
     return false;
 
   std::unique_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter> default_dacl;
   if (!GetDefaultDacl(token, &default_dacl))
     return false;
 
-  ACL* new_dacl = NULL;
+  ACL* new_dacl = nullptr;
   if (!AddSidToDacl(sid, default_dacl->DefaultDacl, access_mode, access,
                     &new_dacl))
     return false;
@@ -78,10 +78,10 @@ bool AddSidToDefaultDacl(HANDLE token,
   TOKEN_DEFAULT_DACL new_token_dacl = {0};
   new_token_dacl.DefaultDacl = new_dacl;
 
-  BOOL ret = ::SetTokenInformation(token, TokenDefaultDacl, &new_token_dacl,
+  bool ret = ::SetTokenInformation(token, TokenDefaultDacl, &new_token_dacl,
                                    sizeof(new_token_dacl));
   ::LocalFree(new_dacl);
-  return (TRUE == ret);
+  return ret;
 }
 
 bool RevokeLogonSidFromDefaultDacl(HANDLE token) {
@@ -124,13 +124,13 @@ bool AddKnownSidToObject(HANDLE object,
                          const Sid& sid,
                          ACCESS_MODE access_mode,
                          ACCESS_MASK access) {
-  PSECURITY_DESCRIPTOR descriptor = NULL;
-  PACL old_dacl = NULL;
-  PACL new_dacl = NULL;
+  PSECURITY_DESCRIPTOR descriptor = nullptr;
+  PACL old_dacl = nullptr;
+  PACL new_dacl = nullptr;
 
-  if (ERROR_SUCCESS != ::GetSecurityInfo(object, object_type,
-                                         DACL_SECURITY_INFORMATION, NULL, NULL,
-                                         &old_dacl, NULL, &descriptor))
+  if (ERROR_SUCCESS !=
+      ::GetSecurityInfo(object, object_type, DACL_SECURITY_INFORMATION, nullptr,
+                        nullptr, &old_dacl, nullptr, &descriptor))
     return false;
 
   if (!AddSidToDacl(sid.GetPSID(), old_dacl, access_mode, access, &new_dacl)) {
@@ -139,8 +139,8 @@ bool AddKnownSidToObject(HANDLE object,
   }
 
   DWORD result =
-      ::SetSecurityInfo(object, object_type, DACL_SECURITY_INFORMATION, NULL,
-                        NULL, new_dacl, NULL);
+      ::SetSecurityInfo(object, object_type, DACL_SECURITY_INFORMATION, nullptr,
+                        nullptr, new_dacl, nullptr);
 
   ::LocalFree(new_dacl);
   ::LocalFree(descriptor);

@@ -71,7 +71,7 @@ struct JobTracker {
 
 void JobTracker::FreeResources() {
   if (policy) {
-    BOOL res = ::TerminateJobObject(job.Get(), sandbox::SBOX_ALL_OK);
+    bool res = ::TerminateJobObject(job.Get(), sandbox::SBOX_ALL_OK);
     DCHECK(res);
     // Closing the job causes the target process to be destroyed so this needs
     // to happen before calling OnJobEmpty().
@@ -98,14 +98,14 @@ ResultCode BrokerServicesBase::Init() {
 
   ::InitializeCriticalSection(&lock_);
 
-  job_port_.Set(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0));
+  job_port_.Set(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0));
   if (!job_port_.IsValid())
     return SBOX_ERROR_GENERIC;
 
-  no_targets_.Set(::CreateEventW(NULL, TRUE, FALSE, NULL));
+  no_targets_.Set(::CreateEventW(nullptr, true, false, nullptr));
 
-  job_thread_.Set(::CreateThread(NULL, 0,  // Default security and stack.
-                                 TargetEventsThread, this, NULL, NULL));
+  job_thread_.Set(::CreateThread(nullptr, 0,  // Default security and stack.
+                                 TargetEventsThread, this, 0, nullptr));
   if (!job_thread_.IsValid())
     return SBOX_ERROR_GENERIC;
 
@@ -126,7 +126,7 @@ BrokerServicesBase::~BrokerServicesBase() {
   // the worker thread and also causes the thread to exit. This is what we
   // want to do since we are going to close all outstanding Jobs and notifying
   // the policy objects ourselves.
-  ::PostQueuedCompletionStatus(job_port_.Get(), 0, THREAD_CTRL_QUIT, FALSE);
+  ::PostQueuedCompletionStatus(job_port_.Get(), 0, THREAD_CTRL_QUIT, nullptr);
 
   if (job_thread_.IsValid() &&
       WAIT_TIMEOUT == ::WaitForSingleObject(job_thread_.Get(), 1000)) {
@@ -155,7 +155,7 @@ scoped_refptr<TargetPolicy> BrokerServicesBase::CreatePolicy() {
 // process on a job terminates, but in general this is the place to tell
 // the policy about events.
 DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
-  if (NULL == param)
+  if (!param)
     return 1;
 
   base::PlatformThread::SetName("BrokerEvent");
@@ -171,7 +171,7 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
   while (true) {
     DWORD events = 0;
     ULONG_PTR key = 0;
-    LPOVERLAPPED ovl = NULL;
+    LPOVERLAPPED ovl = nullptr;
 
     if (!::GetQueuedCompletionStatus(port, &events, &key, &ovl, INFINITE)) {
       // this call fails if the port has been closed before we have a
@@ -242,7 +242,7 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
         }
 
         case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT: {
-          BOOL res = ::TerminateJobObject(tracker->job.Get(),
+          bool res = ::TerminateJobObject(tracker->job.Get(),
                                           SBOX_FATAL_MEMORY_EXCEEDED);
           DCHECK(res);
           break;

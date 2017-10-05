@@ -67,11 +67,11 @@ bool IsInheritableHandle(HANDLE handle) {
 HANDLE CreateLowBoxObjectDirectory(PSID lowbox_sid) {
   DWORD session_id = 0;
   if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &session_id))
-    return NULL;
+    return nullptr;
 
-  LPWSTR sid_string = NULL;
+  LPWSTR sid_string = nullptr;
   if (!::ConvertSidToStringSid(lowbox_sid, &sid_string))
-    return NULL;
+    return nullptr;
 
   base::string16 directory_path =
       base::StringPrintf(L"\\Sessions\\%d\\AppContainerNamedObjects\\%ls",
@@ -79,20 +79,20 @@ HANDLE CreateLowBoxObjectDirectory(PSID lowbox_sid) {
           .c_str();
   ::LocalFree(sid_string);
 
-  NtCreateDirectoryObjectFunction CreateObjectDirectory = NULL;
+  NtCreateDirectoryObjectFunction CreateObjectDirectory = nullptr;
   ResolveNTFunctionPtr("NtCreateDirectoryObject", &CreateObjectDirectory);
 
   OBJECT_ATTRIBUTES obj_attr;
   UNICODE_STRING obj_name;
   sandbox::InitObjectAttribs(directory_path, OBJ_CASE_INSENSITIVE | OBJ_OPENIF,
-                             NULL, &obj_attr, &obj_name, NULL);
+                             nullptr, &obj_attr, &obj_name, nullptr);
 
-  HANDLE handle = NULL;
+  HANDLE handle = nullptr;
   NTSTATUS status =
       CreateObjectDirectory(&handle, DIRECTORY_ALL_ACCESS, &obj_attr);
 
   if (!NT_SUCCESS(status))
-    return NULL;
+    return nullptr;
 
   return handle;
 }
@@ -134,9 +134,9 @@ PolicyBase::PolicyBase()
       mitigations_(0),
       delayed_mitigations_(0),
       is_csrss_connected_(true),
-      policy_maker_(NULL),
-      policy_(NULL),
-      lowbox_sid_(NULL),
+      policy_maker_(nullptr),
+      policy_(nullptr),
+      lowbox_sid_(nullptr),
       lockdown_default_dacl_(false),
       enable_opm_redirection_(false) {
   ::InitializeCriticalSection(&lock_);
@@ -397,7 +397,7 @@ void PolicyBase::AddHandleToShare(HANDLE handle) {
   CHECK(handle && handle != INVALID_HANDLE_VALUE);
 
   // Ensure the handle can be inherited.
-  BOOL result =
+  bool result =
       SetHandleInformation(handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
   PCHECK(result);
 
@@ -417,7 +417,7 @@ ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
     // Create the windows job object.
     Job job_obj;
     DWORD result =
-        job_obj.Init(job_level_, NULL, ui_exceptions_, memory_limit_);
+        job_obj.Init(job_level_, nullptr, ui_exceptions_, memory_limit_);
     if (ERROR_SUCCESS != result)
       return SBOX_ERROR_GENERIC;
 
@@ -475,11 +475,11 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   }
 
   if (lowbox_sid_) {
-    NtCreateLowBoxToken CreateLowBoxToken = NULL;
+    NtCreateLowBoxToken CreateLowBoxToken = nullptr;
     ResolveNTFunctionPtr("NtCreateLowBoxToken", &CreateLowBoxToken);
     OBJECT_ATTRIBUTES obj_attr;
-    InitializeObjectAttributes(&obj_attr, NULL, 0, NULL, NULL);
-    HANDLE token_lowbox = NULL;
+    InitializeObjectAttributes(&obj_attr, nullptr, 0, nullptr, nullptr);
+    HANDLE token_lowbox = nullptr;
 
     if (!lowbox_directory_.IsValid())
       lowbox_directory_.Set(CreateLowBoxObjectDirectory(lowbox_sid_));
@@ -492,7 +492,7 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
 
     NTSTATUS status = CreateLowBoxToken(
         &token_lowbox, lockdown->Get(), TOKEN_ALL_ACCESS, &obj_attr,
-        lowbox_sid_, 0, NULL, saved_handles_count, saved_handles);
+        lowbox_sid_, 0, nullptr, saved_handles_count, saved_handles);
     if (!NT_SUCCESS(status))
       return SBOX_ERROR_GENERIC;
 
@@ -517,7 +517,7 @@ PSID PolicyBase::GetLowBoxSid() const {
 }
 
 ResultCode PolicyBase::AddTarget(TargetProcess* target) {
-  if (NULL != policy_)
+  if (policy_)
     policy_maker_->Done();
 
   if (!ApplyProcessMitigationsToSuspendedProcess(target->Process(),
@@ -589,7 +589,7 @@ ResultCode PolicyBase::SetDisconnectCsrss() {
 #if defined(_WIN64)
   if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
     is_csrss_connected_ = false;
-    return AddKernelObjectToClose(L"ALPC Port", NULL);
+    return AddKernelObjectToClose(L"ALPC Port", nullptr);
   }
 #endif  // !defined(_WIN64)
   return SBOX_ALL_OK;
@@ -597,8 +597,8 @@ ResultCode PolicyBase::SetDisconnectCsrss() {
 
 EvalResult PolicyBase::EvalPolicy(int service,
                                   CountedParameterSetBase* params) {
-  if (NULL != policy_) {
-    if (NULL == policy_->entry[service]) {
+  if (policy_) {
+    if (!policy_->entry[service]) {
       // There is no policy for this particular service. This is not a big
       // deal.
       return DENY_ACCESS;
@@ -675,7 +675,7 @@ bool PolicyBase::SetupHandleCloser(TargetProcess* target) {
 ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
                                        Semantics semantics,
                                        const wchar_t* pattern) {
-  if (NULL == policy_) {
+  if (!policy_) {
     policy_ = MakeBrokerPolicyMemory();
     DCHECK(policy_);
     policy_maker_ = new LowLevelPolicy(policy_);

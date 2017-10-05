@@ -60,7 +60,7 @@ TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
       initial_token_(std::move(initial_token)),
       job_(job),
       thread_pool_(thread_pool),
-      base_address_(NULL) {}
+      base_address_(nullptr) {}
 
 TargetProcess::~TargetProcess() {
   // Give a chance to the process to die. In most cases the JOB_KILL_ON_CLOSE
@@ -110,11 +110,11 @@ ResultCode TargetProcess::Create(
 
   PROCESS_INFORMATION temp_process_info = {};
   if (!::CreateProcessAsUserW(lockdown_token_.Get(), exe_path, cmd_line.get(),
-                              NULL,  // No security attribute.
-                              NULL,  // No thread attribute.
+                              nullptr,  // No security attribute.
+                              nullptr,  // No thread attribute.
                               inherit_handles, flags,
-                              NULL,  // Use the environment of the caller.
-                              NULL,  // Use current directory of the caller.
+                              nullptr,  // Use the environment of the caller.
+                              nullptr,  // Use current directory of the caller.
                               startup_info.startup_info(),
                               &temp_process_info)) {
     *win_error = ::GetLastError();
@@ -174,13 +174,13 @@ ResultCode TargetProcess::TransferVariable(const char* name,
 
 #if SANDBOX_EXPORTS
   HMODULE module = ::LoadLibrary(exe_name_.get());
-  if (NULL == module)
+  if (!module)
     return SBOX_ERROR_GENERIC;
 
   child_var = ::GetProcAddress(module, name);
   ::FreeLibrary(module);
 
-  if (NULL == child_var)
+  if (!child_var)
     return SBOX_ERROR_GENERIC;
 
   size_t offset =
@@ -215,9 +215,9 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
   // We use this single memory pool for IPC and for policy.
   DWORD shared_mem_size =
       static_cast<DWORD>(shared_IPC_size + shared_policy_size);
-  shared_section_.Set(::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
+  shared_section_.Set(::CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr,
                                            PAGE_READWRITE | SEC_COMMIT, 0,
-                                           shared_mem_size, NULL));
+                                           shared_mem_size, nullptr));
   if (!shared_section_.IsValid()) {
     *win_error = ::GetLastError();
     return SBOX_ERROR_CREATE_FILE_MAPPING;
@@ -227,14 +227,14 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
   HANDLE target_shared_section;
   if (!::DuplicateHandle(::GetCurrentProcess(), shared_section_.Get(),
                          sandbox_process_info_.process_handle(),
-                         &target_shared_section, access, FALSE, 0)) {
+                         &target_shared_section, access, false, 0)) {
     *win_error = ::GetLastError();
     return SBOX_ERROR_DUPLICATE_SHARED_SECTION;
   }
 
   void* shared_memory = ::MapViewOfFile(
       shared_section_.Get(), FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0);
-  if (NULL == shared_memory) {
+  if (!shared_memory) {
     *win_error = ::GetLastError();
     return SBOX_ERROR_MAP_VIEW_OF_SHARED_SECTION;
   }
@@ -247,7 +247,7 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
   g_shared_section = target_shared_section;
   ret = TransferVariable("g_shared_section", &g_shared_section,
                          sizeof(g_shared_section));
-  g_shared_section = NULL;
+  g_shared_section = nullptr;
   if (SBOX_ALL_OK != ret) {
     *win_error = ::GetLastError();
     return ret;
@@ -296,7 +296,7 @@ ResultCode TargetProcess::AssignLowBoxToken(
   PROCESS_ACCESS_TOKEN process_access_token = {};
   process_access_token.token = token.Get();
 
-  NtSetInformationProcess SetInformationProcess = NULL;
+  NtSetInformationProcess SetInformationProcess = nullptr;
   ResolveNTFunctionPtr("NtSetInformationProcess", &SetInformationProcess);
 
   NTSTATUS status = SetInformationProcess(
@@ -312,7 +312,7 @@ ResultCode TargetProcess::AssignLowBoxToken(
 
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
   TargetProcess* target = new TargetProcess(
-      base::win::ScopedHandle(), base::win::ScopedHandle(), NULL, NULL);
+      base::win::ScopedHandle(), base::win::ScopedHandle(), nullptr, nullptr);
   PROCESS_INFORMATION process_info = {};
   process_info.hProcess = process;
   target->sandbox_process_info_.Set(process_info);

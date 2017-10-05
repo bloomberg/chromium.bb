@@ -52,7 +52,7 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     wchar_t* name;
@@ -60,18 +60,18 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     HANDLE root_directory = 0;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     &root_directory);
-    if (!NT_SUCCESS(ret) || NULL == name)
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     uint32_t desired_access_uint32 = desired_access;
     CountedParameterSet<OpenKey> params;
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
-    wchar_t* full_name = NULL;
+    wchar_t* full_name = nullptr;
 
     if (root_directory) {
       ret = sandbox::AllocAndGetFullPath(root_directory, name, &full_name);
-      if (!NT_SUCCESS(ret) || NULL == full_name)
+      if (!NT_SUCCESS(ret) || !full_name)
         break;
       params[OpenKey::NAME] = ParamPickerMake(full_name);
     } else {
@@ -80,7 +80,7 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
 
     bool query_broker = QueryBroker(IPC_NTCREATEKEY_TAG, params.GetBase());
 
-    if (full_name != NULL)
+    if (full_name)
       operator delete(full_name, NT_ALLOC);
 
     if (!query_broker)
@@ -135,7 +135,7 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
       break;
 
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     wchar_t* name;
@@ -143,18 +143,18 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
     HANDLE root_directory;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     &root_directory);
-    if (!NT_SUCCESS(ret) || NULL == name)
+    if (!NT_SUCCESS(ret) || !name)
       break;
 
     uint32_t desired_access_uint32 = desired_access;
     CountedParameterSet<OpenKey> params;
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
-    wchar_t* full_name = NULL;
+    wchar_t* full_name = nullptr;
 
     if (root_directory) {
       ret = sandbox::AllocAndGetFullPath(root_directory, name, &full_name);
-      if (!NT_SUCCESS(ret) || NULL == full_name)
+      if (!NT_SUCCESS(ret) || !full_name)
         break;
       params[OpenKey::NAME] = ParamPickerMake(full_name);
     } else {
@@ -163,7 +163,7 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
 
     bool query_broker = QueryBroker(IPC_NTOPENKEY_TAG, params.GetBase());
 
-    if (full_name != NULL)
+    if (full_name)
       operator delete(full_name, NT_ALLOC);
 
     if (!query_broker)

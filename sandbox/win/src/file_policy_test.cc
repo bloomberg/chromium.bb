@@ -38,31 +38,31 @@ SBOX_TESTS_COMMAND int File_Create(int argc, wchar_t** argv) {
   std::wstring operation(argv[0]);
 
   if (operation == L"Read") {
-    base::win::ScopedHandle file1(CreateFile(argv[1], GENERIC_READ, kSharing,
-                                             NULL, OPEN_EXISTING, 0, NULL));
-    base::win::ScopedHandle file2(CreateFile(argv[1], FILE_EXECUTE, kSharing,
-                                             NULL, OPEN_EXISTING, 0, NULL));
+    base::win::ScopedHandle file1(CreateFile(
+        argv[1], GENERIC_READ, kSharing, nullptr, OPEN_EXISTING, 0, nullptr));
+    base::win::ScopedHandle file2(CreateFile(
+        argv[1], FILE_EXECUTE, kSharing, nullptr, OPEN_EXISTING, 0, nullptr));
 
     if (file1.IsValid() == file2.IsValid())
       return file1.IsValid() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
     return file1.IsValid() ? SBOX_TEST_FIRST_ERROR : SBOX_TEST_SECOND_ERROR;
 
   } else if (operation == L"Write") {
-    base::win::ScopedHandle file1(CreateFile(argv[1], GENERIC_ALL, kSharing,
-                                             NULL, OPEN_EXISTING, 0, NULL));
+    base::win::ScopedHandle file1(CreateFile(
+        argv[1], GENERIC_ALL, kSharing, nullptr, OPEN_EXISTING, 0, nullptr));
     base::win::ScopedHandle file2(
-        CreateFile(argv[1], GENERIC_READ | FILE_WRITE_DATA, kSharing, NULL,
-                   OPEN_EXISTING, 0, NULL));
+        CreateFile(argv[1], GENERIC_READ | FILE_WRITE_DATA, kSharing, nullptr,
+                   OPEN_EXISTING, 0, nullptr));
 
     if (file1.IsValid() == file2.IsValid())
       return file1.IsValid() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
     return file1.IsValid() ? SBOX_TEST_FIRST_ERROR : SBOX_TEST_SECOND_ERROR;
 
   } else if (operation == L"ReadCreate") {
-    base::win::ScopedHandle file2(
-        CreateFile(argv[1], GENERIC_READ, kSharing, NULL, CREATE_NEW, 0, NULL));
-    base::win::ScopedHandle file1(CreateFile(argv[1], GENERIC_READ, kSharing,
-                                             NULL, CREATE_ALWAYS, 0, NULL));
+    base::win::ScopedHandle file2(CreateFile(argv[1], GENERIC_READ, kSharing,
+                                             nullptr, CREATE_NEW, 0, nullptr));
+    base::win::ScopedHandle file1(CreateFile(
+        argv[1], GENERIC_READ, kSharing, nullptr, CREATE_ALWAYS, 0, nullptr));
 
     if (file1.IsValid() == file2.IsValid())
       return file1.IsValid() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_DENIED;
@@ -82,8 +82,9 @@ SBOX_TESTS_COMMAND int File_Win32Create(int argc, wchar_t** argv) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
 
-  HANDLE file = ::CreateFileW(full_path.c_str(), GENERIC_READ, kSharing, NULL,
-                              OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  HANDLE file =
+      ::CreateFileW(full_path.c_str(), GENERIC_READ, kSharing, nullptr,
+                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (INVALID_HANDLE_VALUE != file) {
     ::CloseHandle(file);
@@ -118,13 +119,13 @@ SBOX_TESTS_COMMAND int File_CreateSys32(int argc, wchar_t** argv) {
 
   OBJECT_ATTRIBUTES obj_attributes = {};
   InitializeObjectAttributes(&obj_attributes, &object_name,
-                             OBJ_CASE_INSENSITIVE, NULL, NULL);
+                             OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
   HANDLE handle;
   IO_STATUS_BLOCK io_block = {};
   NTSTATUS status =
-      NtCreateFile(&handle, FILE_READ_DATA, &obj_attributes, &io_block, NULL, 0,
-                   kSharing, FILE_OPEN, 0, NULL, 0);
+      NtCreateFile(&handle, FILE_READ_DATA, &obj_attributes, &io_block, nullptr,
+                   0, kSharing, FILE_OPEN, 0, nullptr, 0);
   if (NT_SUCCESS(status)) {
     ::CloseHandle(handle);
     return SBOX_TEST_SUCCEEDED;
@@ -153,7 +154,7 @@ SBOX_TESTS_COMMAND int File_OpenSys32(int argc, wchar_t** argv) {
 
   OBJECT_ATTRIBUTES obj_attributes = {};
   InitializeObjectAttributes(&obj_attributes, &object_name,
-                             OBJ_CASE_INSENSITIVE, NULL, NULL);
+                             OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
   HANDLE handle;
   IO_STATUS_BLOCK io_block = {};
@@ -232,7 +233,7 @@ SBOX_TESTS_COMMAND int File_QueryAttributes(int argc, wchar_t** argv) {
 
   OBJECT_ATTRIBUTES obj_attributes = {};
   InitializeObjectAttributes(&obj_attributes, &object_name,
-                             OBJ_CASE_INSENSITIVE, NULL, NULL);
+                             OBJ_CASE_INSENSITIVE, nullptr, nullptr);
 
   FILE_BASIC_INFORMATION info = {};
   FILE_NETWORK_OPEN_INFORMATION full_info = {};
@@ -572,7 +573,7 @@ TEST(FilePolicyTest, TestReparsePoint) {
 
   // Delete the file and create a directory instead.
   ASSERT_TRUE(::DeleteFile(temp_file_name));
-  ASSERT_TRUE(::CreateDirectory(temp_file_name, NULL));
+  ASSERT_TRUE(::CreateDirectory(temp_file_name, nullptr));
 
   // Create a temporary file in the subfolder.
   base::string16 subfolder = temp_file_name;
@@ -580,8 +581,8 @@ TEST(FilePolicyTest, TestReparsePoint) {
   base::string16 temp_file = subfolder + L"\\file_" + temp_file_title;
 
   HANDLE file = ::CreateFile(temp_file.c_str(), FILE_ALL_ACCESS,
-                             FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-                             CREATE_ALWAYS, 0, NULL);
+                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                             CREATE_ALWAYS, 0, nullptr);
   ASSERT_TRUE(INVALID_HANDLE_VALUE != file);
   ASSERT_TRUE(::CloseHandle(file));
 
@@ -589,9 +590,9 @@ TEST(FilePolicyTest, TestReparsePoint) {
   base::string16 temp_dir = temp_directory;
   base::string16 temp_file_in_temp = temp_dir + L"file_" + temp_file_title;
   file = ::CreateFile(temp_file_in_temp.c_str(), FILE_ALL_ACCESS,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
-                      0, NULL);
-  ASSERT_TRUE(file != NULL);
+                      FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                      CREATE_ALWAYS, 0, nullptr);
+  ASSERT_TRUE(INVALID_HANDLE_VALUE != file);
   ASSERT_TRUE(::CloseHandle(file));
 
   // Give write access to the temp directory.
@@ -611,8 +612,8 @@ TEST(FilePolicyTest, TestReparsePoint) {
   // Replace the subfolder by a reparse point to %temp%.
   ::DeleteFile(temp_file.c_str());
   HANDLE dir = ::CreateFile(subfolder.c_str(), FILE_ALL_ACCESS,
-                            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-                            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                            FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   EXPECT_TRUE(INVALID_HANDLE_VALUE != dir);
 
   base::string16 temp_dir_nt;
@@ -626,9 +627,9 @@ TEST(FilePolicyTest, TestReparsePoint) {
 
   // Remove the reparse point.
   dir = ::CreateFile(subfolder.c_str(), FILE_ALL_ACCESS,
-                     FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                     FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
                      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
-                     NULL);
+                     nullptr);
   EXPECT_TRUE(INVALID_HANDLE_VALUE != dir);
   EXPECT_TRUE(DeleteReparsePoint(dir));
   EXPECT_TRUE(::CloseHandle(dir));

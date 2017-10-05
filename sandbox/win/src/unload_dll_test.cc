@@ -21,7 +21,7 @@ SBOX_TESTS_COMMAND int UseOneDLL(int argc, wchar_t** argv) {
   wchar_t option = (argv[0])[0];
   if ((option == L'L') || (option == L'B')) {
     HMODULE module1 = ::LoadLibraryW(argv[1]);
-    rv = (module1 == NULL) ? SBOX_TEST_FAILED : SBOX_TEST_SUCCEEDED;
+    rv = (!module1) ? SBOX_TEST_FAILED : SBOX_TEST_SUCCEEDED;
   }
 
   if ((option == L'U') || (option == L'B')) {
@@ -36,7 +36,7 @@ SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t** argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  base::win::ScopedHandle event_open(::OpenEvent(SYNCHRONIZE, FALSE, argv[0]));
+  base::win::ScopedHandle event_open(::OpenEvent(SYNCHRONIZE, false, argv[0]));
   return event_open.Get() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
 }
 
@@ -73,7 +73,7 @@ TEST(UnloadDllTest, UnloadAviCapDllWithPatching) {
   policy->AddDllToUnload(L"avicap32.dll");
 
   base::win::ScopedHandle handle1(
-      ::CreateEvent(NULL, FALSE, FALSE, L"tst0001"));
+      ::CreateEvent(nullptr, false, false, L"tst0001"));
 
   // Add a couple of rules that ensures that the interception agent add EAT
   // patching on the client which makes sure that the unload dll record does

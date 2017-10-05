@@ -92,8 +92,8 @@ NTSTATUS WINAPI TargetNtSetInformationThread(
 }
 
 // Hooks NtOpenThreadToken to force the open_as_self parameter to be set to
-// FALSE if we are still running with the impersonation token. open_as_self set
-// to TRUE means that the token will be open using the process token instead of
+// false if we are still running with the impersonation token. open_as_self set
+// to true means that the token will be open using the process token instead of
 // the impersonation token. This is bad because the process token does not have
 // access to open the thread token.
 NTSTATUS WINAPI
@@ -103,7 +103,7 @@ TargetNtOpenThreadToken(NtOpenThreadTokenFunction orig_OpenThreadToken,
                         BOOLEAN open_as_self,
                         PHANDLE token) {
   if (!SandboxFactory::GetTargetServices()->GetState()->RevertedToSelf())
-    open_as_self = FALSE;
+    open_as_self = false;
 
   return orig_OpenThreadToken(thread, desired_access, open_as_self, token);
 }
@@ -117,7 +117,7 @@ TargetNtOpenThreadTokenEx(NtOpenThreadTokenExFunction orig_OpenThreadTokenEx,
                           ULONG handle_attributes,
                           PHANDLE token) {
   if (!SandboxFactory::GetTargetServices()->GetState()->RevertedToSelf())
-    open_as_self = FALSE;
+    open_as_self = false;
 
   return orig_OpenThreadTokenEx(thread, desired_access, open_as_self,
                                 handle_attributes, token);

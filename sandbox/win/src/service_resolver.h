@@ -19,7 +19,7 @@ class ServiceResolverThunk : public ResolverThunk {
  public:
   // The service resolver needs a child process to write to.
   ServiceResolverThunk(HANDLE process, bool relaxed)
-      : ntdll_base_(NULL),
+      : ntdll_base_(nullptr),
         process_(process),
         relaxed_(relaxed),
         relative_jump_(0) {}

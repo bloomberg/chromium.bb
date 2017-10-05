@@ -109,7 +109,7 @@ class BrokerServices {
 // The typical usage is as follows:
 //
 //   TargetServices* target_services = Sandbox::GetTargetServices();
-//   if (NULL != target_services) {
+//   if (target_services) {
 //     // We are the target.
 //     target_services->Init();
 //     // Do work that requires high privileges here.

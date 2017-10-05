@@ -26,25 +26,25 @@ namespace sandbox {
 NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
                              const base::string16& name,
                              base::string16* target) {
-  NtOpenDirectoryObjectFunction NtOpenDirectoryObject = NULL;
+  NtOpenDirectoryObjectFunction NtOpenDirectoryObject = nullptr;
   ResolveNTFunctionPtr("NtOpenDirectoryObject", &NtOpenDirectoryObject);
 
-  NtQuerySymbolicLinkObjectFunction NtQuerySymbolicLinkObject = NULL;
+  NtQuerySymbolicLinkObjectFunction NtQuerySymbolicLinkObject = nullptr;
   ResolveNTFunctionPtr("NtQuerySymbolicLinkObject", &NtQuerySymbolicLinkObject);
 
-  NtOpenSymbolicLinkObjectFunction NtOpenSymbolicLinkObject = NULL;
+  NtOpenSymbolicLinkObjectFunction NtOpenSymbolicLinkObject = nullptr;
   ResolveNTFunctionPtr("NtOpenSymbolicLinkObject", &NtOpenSymbolicLinkObject);
 
-  NtCloseFunction NtClose = NULL;
+  NtCloseFunction NtClose = nullptr;
   ResolveNTFunctionPtr("NtClose", &NtClose);
 
   OBJECT_ATTRIBUTES symbolic_link_directory_attributes = {};
   UNICODE_STRING symbolic_link_directory_string = {};
-  InitObjectAttribs(directory_name, OBJ_CASE_INSENSITIVE, NULL,
+  InitObjectAttribs(directory_name, OBJ_CASE_INSENSITIVE, nullptr,
                     &symbolic_link_directory_attributes,
-                    &symbolic_link_directory_string, NULL);
+                    &symbolic_link_directory_string, nullptr);
 
-  HANDLE symbolic_link_directory = NULL;
+  HANDLE symbolic_link_directory = nullptr;
   NTSTATUS status =
       NtOpenDirectoryObject(&symbolic_link_directory, DIRECTORY_QUERY,
                             &symbolic_link_directory_attributes);
@@ -54,9 +54,9 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   OBJECT_ATTRIBUTES symbolic_link_attributes = {};
   UNICODE_STRING name_string = {};
   InitObjectAttribs(name, OBJ_CASE_INSENSITIVE, symbolic_link_directory,
-                    &symbolic_link_attributes, &name_string, NULL);
+                    &symbolic_link_attributes, &name_string, nullptr);
 
-  HANDLE symbolic_link = NULL;
+  HANDLE symbolic_link = nullptr;
   status = NtOpenSymbolicLinkObject(&symbolic_link, GENERIC_READ,
                                     &symbolic_link_attributes);
   CHECK(NT_SUCCESS(NtClose(symbolic_link_directory)));
@@ -86,13 +86,13 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
 }
 
 NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
-  static HANDLE base_named_objects_handle = NULL;
+  static HANDLE base_named_objects_handle = nullptr;
   if (base_named_objects_handle) {
     *directory = base_named_objects_handle;
     return STATUS_SUCCESS;
   }
 
-  NtOpenDirectoryObjectFunction NtOpenDirectoryObject = NULL;
+  NtOpenDirectoryObjectFunction NtOpenDirectoryObject = nullptr;
   ResolveNTFunctionPtr("NtOpenDirectoryObject", &NtOpenDirectoryObject);
 
   DWORD session_id = 0;
@@ -110,8 +110,8 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
 
   UNICODE_STRING directory_name = {};
   OBJECT_ATTRIBUTES object_attributes = {};
-  InitObjectAttribs(base_named_objects_path, OBJ_CASE_INSENSITIVE, NULL,
-                    &object_attributes, &directory_name, NULL);
+  InitObjectAttribs(base_named_objects_path, OBJ_CASE_INSENSITIVE, nullptr,
+                    &object_attributes, &directory_name, nullptr);
   status = NtOpenDirectoryObject(&base_named_objects_handle,
                                  DIRECTORY_ALL_ACCESS, &object_attributes);
   if (NT_SUCCESS(status))
@@ -171,7 +171,7 @@ NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
                                        uint32_t event_type,
                                        uint32_t initial_state,
                                        HANDLE* handle) {
-  NtCreateEventFunction NtCreateEvent = NULL;
+  NtCreateEventFunction NtCreateEvent = nullptr;
   ResolveNTFunctionPtr("NtCreateEvent", &NtCreateEvent);
 
   // The only action supported is ASK_BROKER which means create the requested
@@ -179,7 +179,7 @@ NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
   if (ASK_BROKER != eval_result)
     return false;
 
-  HANDLE object_directory = NULL;
+  HANDLE object_directory = nullptr;
   NTSTATUS status = GetBaseNamedObjectsDirectory(&object_directory);
   if (status != STATUS_SUCCESS)
     return status;
@@ -187,17 +187,17 @@ NTSTATUS SyncPolicy::CreateEventAction(EvalResult eval_result,
   UNICODE_STRING unicode_event_name = {};
   OBJECT_ATTRIBUTES object_attributes = {};
   InitObjectAttribs(event_name, OBJ_CASE_INSENSITIVE, object_directory,
-                    &object_attributes, &unicode_event_name, NULL);
+                    &object_attributes, &unicode_event_name, nullptr);
 
-  HANDLE local_handle = NULL;
+  HANDLE local_handle = nullptr;
   status = NtCreateEvent(&local_handle, EVENT_ALL_ACCESS, &object_attributes,
                          static_cast<EVENT_TYPE>(event_type),
                          static_cast<BOOLEAN>(initial_state != 0));
-  if (NULL == local_handle)
+  if (!local_handle)
     return status;
 
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
-                         client_info.process, handle, 0, FALSE,
+                         client_info.process, handle, 0, false,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }
@@ -209,7 +209,7 @@ NTSTATUS SyncPolicy::OpenEventAction(EvalResult eval_result,
                                      const base::string16& event_name,
                                      uint32_t desired_access,
                                      HANDLE* handle) {
-  NtOpenEventFunction NtOpenEvent = NULL;
+  NtOpenEventFunction NtOpenEvent = nullptr;
   ResolveNTFunctionPtr("NtOpenEvent", &NtOpenEvent);
 
   // The only action supported is ASK_BROKER which means create the requested
@@ -217,7 +217,7 @@ NTSTATUS SyncPolicy::OpenEventAction(EvalResult eval_result,
   if (ASK_BROKER != eval_result)
     return false;
 
-  HANDLE object_directory = NULL;
+  HANDLE object_directory = nullptr;
   NTSTATUS status = GetBaseNamedObjectsDirectory(&object_directory);
   if (status != STATUS_SUCCESS)
     return status;
@@ -225,15 +225,15 @@ NTSTATUS SyncPolicy::OpenEventAction(EvalResult eval_result,
   UNICODE_STRING unicode_event_name = {};
   OBJECT_ATTRIBUTES object_attributes = {};
   InitObjectAttribs(event_name, OBJ_CASE_INSENSITIVE, object_directory,
-                    &object_attributes, &unicode_event_name, NULL);
+                    &object_attributes, &unicode_event_name, nullptr);
 
-  HANDLE local_handle = NULL;
+  HANDLE local_handle = nullptr;
   status = NtOpenEvent(&local_handle, desired_access, &object_attributes);
-  if (NULL == local_handle)
+  if (!local_handle)
     return status;
 
   if (!::DuplicateHandle(::GetCurrentProcess(), local_handle,
-                         client_info.process, handle, 0, FALSE,
+                         client_info.process, handle, 0, false,
                          DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     return STATUS_ACCESS_DENIED;
   }

@@ -130,7 +130,7 @@ class CopyHelper<const wchar_t*> {
     return true;
   }
 
-  // Returns the size of the string in bytes. We define a NULL string to
+  // Returns the size of the string in bytes. We define a nullptr string to
   // be of zero length.
   uint32_t GetSize() const {
     __try {
@@ -230,7 +230,7 @@ class CopyHelper<InOutCountedBuffer> {
     return true;
   }
 
-  // Returns the size of the string in bytes. We define a NULL string to
+  // Returns the size of the string in bytes. We define a nullptr string to
   // be of zero length.
   uint32_t GetSize() const { return t_.Size(); }
 
@@ -249,7 +249,7 @@ class CopyHelper<InOutCountedBuffer> {
 #define XCALL_GEN_PARAMS_OBJ(num, params)                      \
   typedef ActualCallParams<num, kIPCChannelSize> ActualParams; \
   void* raw_mem = ipc_provider.GetBuffer();                    \
-  if (NULL == raw_mem)                                         \
+  if (!raw_mem)                                                \
     return SBOX_ERROR_NO_SPACE;                                \
   ActualParams* params = new (raw_mem) ActualParams(tag);
 

@@ -29,7 +29,8 @@ namespace {
 // HKCU so do not use it with this function.
 bool FlushRegKey(HKEY root) {
   HKEY key;
-  if (ERROR_SUCCESS == ::RegOpenKeyExW(root, NULL, 0, MAXIMUM_ALLOWED, &key)) {
+  if (ERROR_SUCCESS ==
+      ::RegOpenKeyExW(root, nullptr, 0, MAXIMUM_ALLOWED, &key)) {
     if (ERROR_SUCCESS != ::RegCloseKey(key))
       return false;
   }
@@ -95,7 +96,8 @@ bool WarmupWindowsLocales() {
   // warmup all of these functions, but let's not assume that.
   ::GetUserDefaultLangID();
   ::GetUserDefaultLCID();
-  static GetUserDefaultLocaleNameFunction GetUserDefaultLocaleName_func = NULL;
+  static GetUserDefaultLocaleNameFunction GetUserDefaultLocaleName_func =
+      nullptr;
   if (!GetUserDefaultLocaleName_func) {
     HMODULE kernel32_dll = ::GetModuleHandle(kKernel32DllName);
     if (!kernel32_dll) {
@@ -173,9 +175,8 @@ TargetServicesBase* TargetServicesBase::GetInstance() {
 // The broker services a 'test' IPC service with the IPC_PING_TAG tag.
 bool TargetServicesBase::TestIPCPing(int version) {
   void* memory = GetGlobalIPCMemory();
-  if (NULL == memory) {
+  if (!memory)
     return false;
-  }
   SharedMemIPCClient ipc(memory);
   CrossCallReturn answer = {0};
 

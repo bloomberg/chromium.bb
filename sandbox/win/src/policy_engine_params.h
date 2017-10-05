@@ -59,7 +59,7 @@ namespace sandbox {
 //  probably add other types as well.
 class ParameterSet {
  public:
-  ParameterSet() : real_type_(INVALID_TYPE), address_(NULL) {}
+  ParameterSet() : real_type_(INVALID_TYPE), address_(nullptr) {}
 
   // Retrieve the stored parameter. If the type does not match ulong fail.
   bool Get(uint32_t* destination) const {

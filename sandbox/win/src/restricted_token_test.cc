@@ -54,7 +54,7 @@ SBOX_TESTS_COMMAND int RestrictedTokenTest_openprocess(int argc,
     return SBOX_TEST_NOT_FOUND;
   DWORD desired_access = wcstoul(argv[1], nullptr, 0);
   base::win::ScopedHandle process_handle(
-      ::OpenProcess(desired_access, FALSE, pid));
+      ::OpenProcess(desired_access, false, pid));
   if (process_handle.IsValid())
     return SBOX_TEST_SUCCEEDED;
 

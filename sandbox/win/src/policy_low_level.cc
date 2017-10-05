@@ -175,7 +175,7 @@ bool PolicyRule::GenStringOpcode(RuleType rule_type,
     options = kPolUseOREval | kPolNegateEval;
   }
 
-  PolicyOpcode* op = NULL;
+  PolicyOpcode* op = nullptr;
 
   // The fragment string contains the accumulated characters to match with, it
   // never contains wildcards (unless they have been escaped) and while there
@@ -211,9 +211,8 @@ bool PolicyRule::GenStringOpcode(RuleType rule_type,
     op = opcode_factory_->MakeOpWStringMatch(parameter, fragment->c_str(), 0,
                                              match_opts, options);
   }
-  if (NULL == op) {
+  if (!op)
     return false;
-  }
   ++buffer_->opcode_count;
   fragment->clear();
   return true;
@@ -291,14 +290,11 @@ bool PolicyRule::AddNumberMatch(RuleType rule_type,
   uint32_t opts = (rule_type == IF_NOT) ? kPolNegateEval : kPolNone;
 
   if (EQUAL == comparison_op) {
-    if (NULL == opcode_factory_->MakeOpNumberMatch(parameter, number, opts)) {
+    if (!opcode_factory_->MakeOpNumberMatch(parameter, number, opts))
       return false;
-    }
   } else if (AND == comparison_op) {
-    if (NULL ==
-        opcode_factory_->MakeOpNumberAndMatch(parameter, number, opts)) {
+    if (!opcode_factory_->MakeOpNumberAndMatch(parameter, number, opts))
       return false;
-    }
   }
   ++buffer_->opcode_count;
   return true;
@@ -308,9 +304,8 @@ bool PolicyRule::Done() {
   if (done_) {
     return true;
   }
-  if (NULL == opcode_factory_->MakeOpAction(action_, kPolNone)) {
+  if (!opcode_factory_->MakeOpAction(action_, kPolNone))
     return false;
-  }
   ++buffer_->opcode_count;
   done_ = true;
   return true;

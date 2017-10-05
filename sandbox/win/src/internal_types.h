@@ -48,7 +48,7 @@ class IPCInt {
   explicit IPCInt(void* buffer) { buffer_.vp = buffer; }
 
   explicit IPCInt(uint32_t i32) {
-    buffer_.vp = NULL;
+    buffer_.vp = nullptr;
     buffer_.i32 = i32;
   }
 
