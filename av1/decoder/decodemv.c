@@ -145,13 +145,8 @@ static PREDICTION_MODE read_intra_mode_y(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
                                          aom_reader *r, int size_group) {
   const PREDICTION_MODE y_mode =
       read_intra_mode(r, ec_ctx->y_mode_cdf[size_group]);
-#if CONFIG_ENTROPY_STATS
-  FRAME_COUNTS *counts = xd->counts;
-  if (counts) ++counts->y_mode[size_group][y_mode];
-#else
   /* TODO(negge): Can we remove this parameter? */
   (void)xd;
-#endif  // CONFIG_ENTROPY_STATS
   return y_mode;
 }
 
@@ -164,14 +159,7 @@ static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
 #else
       read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
 #endif  // CONFIG_CFL
-
-#if CONFIG_ENTROPY_STATS
-  FRAME_COUNTS *counts = xd->counts;
-  if (counts) ++counts->uv_mode[y_mode][uv_mode];
-#else
-  /* TODO(negge): Can we remove this parameter? */
   (void)xd;
-#endif  // CONFIG_ENTROPY_STATS
   return uv_mode;
 }
 
@@ -1040,24 +1028,14 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       // eset == 0 should correspond to a set with only DCT_DCT and
       // there is no need to read the tx_type
       assert(eset != 0);
-#if CONFIG_ENTROPY_STATS
-      FRAME_COUNTS *counts = xd->counts;
-#endif  // CONFIG_ENTROPY_STATS
       if (inter_block) {
         *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
             r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
             av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
-#if CONFIG_ENTROPY_STATS
-        if (counts) ++counts->inter_ext_tx[eset][square_tx_size][*tx_type];
-#endif  // CONFIG_ENTROPY_STATS
       } else if (ALLOW_INTRA_EXT_TX) {
         *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
             r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
             av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
-#if CONFIG_ENTROPY_STATS
-        if (counts)
-          ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode][*tx_type];
-#endif  // CONFIG_ENTROPY_STATS
       }
     } else {
       *tx_type = DCT_DCT;

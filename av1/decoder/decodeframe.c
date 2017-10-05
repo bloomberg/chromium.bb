@@ -5303,12 +5303,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   av1_zero(zero_counts);
   assert(cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD ||
          cm->error_resilient_mode);
-#if CONFIG_ENTROPY_STATS
-  assert(!memcmp(cm->counts.y_mode, zero_counts.y_mode,
-                 sizeof(cm->counts.y_mode)));
-  assert(!memcmp(cm->counts.uv_mode, zero_counts.uv_mode,
-                 sizeof(cm->counts.uv_mode)));
-#endif
   assert(!memcmp(cm->counts.partition, zero_counts.partition,
                  sizeof(cm->counts.partition)));
   assert(!memcmp(cm->counts.switchable_interp, zero_counts.switchable_interp,
@@ -5364,12 +5358,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
       !memcmp(&cm->counts.mv[0], &zero_counts.mv[0], sizeof(cm->counts.mv[0])));
   assert(
       !memcmp(&cm->counts.mv[1], &zero_counts.mv[1], sizeof(cm->counts.mv[0])));
-#if CONFIG_ENTROPY_STATS
-  assert(!memcmp(cm->counts.inter_ext_tx, zero_counts.inter_ext_tx,
-                 sizeof(cm->counts.inter_ext_tx)));
-  assert(!memcmp(cm->counts.intra_ext_tx, zero_counts.intra_ext_tx,
-                 sizeof(cm->counts.intra_ext_tx)));
-#endif  // CONFIG_ENTROPY_STATS
 }
 #endif  // NDEBUG
 
