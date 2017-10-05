@@ -32,11 +32,6 @@ namespace net {
 // Resume() when more input is available, repeating until kDecodeInProgress is
 // not returned. If kDecodeDone or kDecodeError is returned, then Resume() must
 // not be called until Start() has been called to start decoding a new string.
-//
-// There are 3 variants of Start in this class, participants in a performance
-// experiment. Perflab experiments show it is generally fastest to call
-// StartSpecialCaseShort rather than StartOnly (~9% slower) or
-// StartAndDecodeLength (~10% slower).
 class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
  public:
   enum StringDecoderState {
@@ -45,31 +40,8 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
     kResumeDecodingLength,
   };
 
-  // TODO(jamessynge): Get rid of all but one of the Start and Resume methods
-  // after all of the HPACK decoder is checked in and has been perf tested.
   template <class Listener>
   DecodeStatus Start(DecodeBuffer* db, Listener* cb) {
-    return StartSpecialCaseShort(db, cb);
-  }
-
-  template <class Listener>
-  DecodeStatus StartOnly(DecodeBuffer* db, Listener* cb) {
-    state_ = kStartDecodingLength;
-    return Resume(db, cb);
-  }
-
-  template <class Listener>
-  DecodeStatus StartAndDecodeLength(DecodeBuffer* db, Listener* cb) {
-    DecodeStatus status;
-    if (StartDecodingLength(db, cb, &status)) {
-      state_ = kDecodingString;
-      return DecodeString(db, cb);
-    }
-    return status;
-  }
-
-  template <class Listener>
-  DecodeStatus StartSpecialCaseShort(DecodeBuffer* db, Listener* cb) {
     // Fast decode path is used if the string is under 127 bytes and the
     // entire length of the string is in the decode buffer. More than 83% of
     // string lengths are encoded in just one byte.
