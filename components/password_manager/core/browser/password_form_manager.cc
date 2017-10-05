@@ -1316,8 +1316,8 @@ void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
   pending_credentials_.username_value = submitted_form_->username_value;
   pending_credentials_.other_possible_usernames =
       submitted_form_->other_possible_usernames;
-  pending_credentials_.other_possible_passwords =
-      submitted_form_->other_possible_passwords;
+  pending_credentials_.all_possible_passwords =
+      submitted_form_->all_possible_passwords;
 
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials_.password_value.clear();
