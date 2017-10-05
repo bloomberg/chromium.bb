@@ -222,6 +222,10 @@ chrome.cast.channel.ChannelInfo.prototype.keepAlive;
 chrome.cast.channel.ChannelInfo.prototype.audioOnly;
 
 
+/** @type {!chrome.cast.channel.ConnectInfo} */
+chrome.cast.channel.ChannelInfo.prototype.connectInfo;
+
+
 
 /** @constructor */
 chrome.cast.channel.MessageInfo = function() {};
