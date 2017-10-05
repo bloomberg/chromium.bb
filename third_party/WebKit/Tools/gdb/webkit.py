@@ -145,7 +145,7 @@ class WTFStringImplPrinter(StringPrinter):
 class WTFStringPrinter(StringPrinter):
     "Print a WTF::String"
     def stringimpl_ptr(self):
-        return self.val['impl_']['ptr_']
+        return self.val['impl_']['ptr_']['ptr_']
 
     def get_length(self):
         if not self.stringimpl_ptr():
