@@ -35,8 +35,6 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(const dbus::ObjectPath& device_path,
                      const DictionaryValueCallback& callback) override;
-  void ProposeScan(const dbus::ObjectPath& device_path,
-                   VoidDBusMethodCallback callback) override;
   void SetProperty(const dbus::ObjectPath& device_path,
                    const std::string& name,
                    const base::Value& value,

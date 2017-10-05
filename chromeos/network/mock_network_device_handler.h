@@ -41,11 +41,6 @@ class CHROMEOS_EXPORT MockNetworkDeviceHandler : public NetworkDeviceHandler {
                     const base::Closure& callback,
                     const network_handler::ErrorCallback& error_callback));
 
-  MOCK_METHOD3(ProposeScan,
-               void(const std::string& device_path,
-                    const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
-
   MOCK_METHOD4(RegisterCellularNetwork,
                void(const std::string& device_path,
                     const std::string& network_id,

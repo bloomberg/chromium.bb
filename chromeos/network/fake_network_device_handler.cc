@@ -27,11 +27,6 @@ void FakeNetworkDeviceHandler::RequestRefreshIPConfigs(
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {}
 
-void FakeNetworkDeviceHandler::ProposeScan(
-    const std::string& device_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {}
-
 void FakeNetworkDeviceHandler::RegisterCellularNetwork(
     const std::string& device_path,
     const std::string& network_id,

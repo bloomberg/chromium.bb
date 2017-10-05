@@ -109,24 +109,6 @@ void RefreshIPConfigsCallback(
     callback.Run();
 }
 
-void ProposeScanCallback(
-    const std::string& device_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback,
-    DBusMethodCallStatus call_status) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    network_handler::ShillErrorCallbackFunction(
-        "Device.ProposeScan Failed",
-        device_path,
-        error_callback,
-        base::StringPrintf("DBus call failed: %d", call_status), "");
-    return;
-  }
-  NET_LOG(EVENT) << "Device.ProposeScan succeeded: " << device_path;
-  if (!callback.is_null())
-    callback.Run();
-}
-
 void SetDevicePropertyInternal(
     const std::string& device_path,
     const std::string& property_name,
@@ -329,15 +311,6 @@ void NetworkDeviceHandlerImpl::RequestRefreshIPConfigs(
                       base::Bind(&RefreshIPConfigsCallback,
                                  callback, error_callback),
                       error_callback);
-}
-
-void NetworkDeviceHandlerImpl::ProposeScan(
-    const std::string& device_path,
-    const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetShillDeviceClient()->ProposeScan(
-      dbus::ObjectPath(device_path),
-      base::Bind(&ProposeScanCallback, device_path, callback, error_callback));
 }
 
 void NetworkDeviceHandlerImpl::RegisterCellularNetwork(
