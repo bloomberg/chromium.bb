@@ -125,7 +125,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectionPreservedAfterLossOfFocusIfRequested() throws Throwable {
         requestFocusOnUiThread(true);
 
@@ -151,7 +150,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectionPreservedAfterReshown() throws Throwable {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -169,7 +167,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectionPreservedAfterReattached() throws Throwable {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -184,12 +181,9 @@ public class ContentViewCoreSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @Test
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupNotShownOnLongPressingNonEmptyInput() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mContentViewCore, "empty_input_text");
@@ -352,11 +346,9 @@ public class ContentViewCoreSelectionTest {
         Assert.assertEquals("Maps", returnResult.label);
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @Test
     @DisabledTest(message = "https://crbug.com/592428")
     public void testPastePopupDismissedOnDestroy() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
@@ -374,7 +366,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testActionBarConfiguredCorrectlyForInput() throws Throwable {
         DOMUtils.longPressNode(mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -387,7 +378,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testActionBarConfiguredCorrectlyForPassword() throws Throwable {
         DOMUtils.longPressNode(mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
@@ -400,7 +390,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testActionBarConfiguredCorrectlyForPlainText() throws Throwable {
         DOMUtils.longPressNode(mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -413,7 +402,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testActionBarConfiguredCorrectlyForTextArea() throws Throwable {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -426,7 +414,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPlainTextCopy() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -439,7 +426,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarInputCopy() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -452,7 +438,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPasswordCopy() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -473,7 +458,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarTextAreaCopy() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -486,7 +470,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPlainTextCut() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mContentViewCore, "plain_text_1");
@@ -505,7 +488,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarInputCut() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -522,7 +504,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPasswordCut() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mContentViewCore, "password");
@@ -540,7 +521,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarTextAreaCut() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -557,7 +537,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPlainTextSelectAll() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -571,7 +550,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarInputSelectAll() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
@@ -586,7 +564,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPasswordSelectAll() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "password");
         waitForSelectActionBarVisible(true);
@@ -600,7 +577,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarTextAreaSelectAll() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
@@ -624,11 +600,9 @@ public class ContentViewCoreSelectionTest {
                 });
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"TextSelection", "TextInput"})
-     */
     @Test
+    @SmallTest
+    @Feature({"TextSelection", "TextInput"})
     @DisabledTest(message = "http://crbug.com/606942")
     public void testCursorPositionAfterHidingActionMode() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
@@ -653,7 +627,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarPlainTextPaste() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mContentViewCore, "plain_text_1");
@@ -672,7 +645,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarInputPaste() throws Throwable {
         copyStringToClipboard("SampleTextToCopy");
 
@@ -694,12 +666,9 @@ public class ContentViewCoreSelectionTest {
         Assert.assertEquals("SampleTextToCopy", mSelectionPopupController.getSelectedText());
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"TextInput"})
-    */
-    @Test
-    @DisabledTest(message = "https://crbug.com/592428")
     public void testSelectActionBarPasswordPaste() throws Throwable {
         copyStringToClipboard("SamplePassword2");
 
@@ -748,7 +717,6 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/592428")
     public void testSelectActionBarSearchAndShareLaunchesNewTask() throws Exception {
         DOMUtils.longPressNode(mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);
