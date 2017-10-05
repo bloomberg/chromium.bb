@@ -43,7 +43,7 @@ IdleSpellCheckCallback::~IdleSpellCheckCallback() {}
 DEFINE_TRACE(IdleSpellCheckCallback) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
-  SynchronousMutationObserver::Trace(visitor);
+  DocumentShutdownObserver::Trace(visitor);
   ScriptedIdleTaskController::IdleTask::Trace(visitor);
 }
 

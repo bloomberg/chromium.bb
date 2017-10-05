@@ -28,7 +28,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
-#include "core/dom/SynchronousMutationObserver.h"
+#include "core/dom/DocumentShutdownObserver.h"
 #include "core/editing/Forward.h"
 #include "core/editing/ImeTextSpan.h"
 #include "core/editing/PlainTextRange.h"
@@ -46,7 +46,7 @@ enum class TypingContinuation;
 
 class CORE_EXPORT InputMethodController final
     : public GarbageCollectedFinalized<InputMethodController>,
-      public SynchronousMutationObserver {
+      public DocumentShutdownObserver {
   WTF_MAKE_NONCOPYABLE(InputMethodController);
   USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
 
@@ -163,7 +163,7 @@ class CORE_EXPORT InputMethodController final
   int TextInputFlags() const;
   WebTextInputMode InputModeOfFocusedElement() const;
 
-  // Implements |SynchronousMutationObserver|.
+  // Implements |DocumentShutdownObserver|.
   void ContextDestroyed(Document*) final;
 
   // Returns true if setting selection to specified offsets, otherwise false.
