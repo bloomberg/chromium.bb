@@ -9,8 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.filters.LargeTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
@@ -44,7 +43,8 @@ public class CronetStressTest {
     }
 
     @Test
-    @LargeTest
+    //@LargeTest
+    @DisabledTest(message = "see crbug.com/771366")
     @OnlyRunNativeCronet
     @Feature({"Cronet"})
     public void testLargeNumberOfUploads() throws Exception {
