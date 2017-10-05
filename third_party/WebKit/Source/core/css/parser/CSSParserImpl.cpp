@@ -535,7 +535,9 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
     CountAtRule(context_, id);
 
   if (stream.AtEnd() || stream.UncheckedPeek().GetType() == kSemicolonToken) {
-    stream.UncheckedConsume();
+    if (!stream.UncheckedAtEnd())
+      stream.UncheckedConsume();  // kSemicolonToken
+
     if (allowed_rules == kAllowCharsetRules && id == kCSSAtRuleCharset)
       return ConsumeCharsetRule(prelude);
     if (allowed_rules <= kAllowImportRules && id == kCSSAtRuleImport) {
