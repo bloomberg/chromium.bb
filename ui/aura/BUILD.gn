@@ -373,6 +373,7 @@ test("aura_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
+    "//ui/platform_window/stub",
     "//ui/wm",
   ]
 

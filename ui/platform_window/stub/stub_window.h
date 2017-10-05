@@ -22,6 +22,9 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
                       const gfx::Rect& bounds = gfx::Rect());
   ~StubWindow() override;
 
+ protected:
+  PlatformWindowDelegate* delegate() { return delegate_; }
+
  private:
   // PlatformWindow:
   void Show() override;

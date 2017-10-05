@@ -364,6 +364,12 @@ void WindowTreeHost::OnHostActivated() {
 }
 
 void WindowTreeHost::OnHostLostWindowCapture() {
+  // It is possible for this function to be called during destruction, after the
+  // root window has already been destroyed (e.g. when the ui::PlatformWindow is
+  // destroyed, and during destruction, it loses capture. See more details in
+  // http://crbug.com/770670)
+  if (!window())
+    return;
   Window* capture_window = client::GetCaptureWindow(window());
   if (capture_window && capture_window->GetRootWindow() == window())
     capture_window->ReleaseCapture();
