@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -24,12 +25,14 @@ public class PlatformServiceBridge {
 
     protected PlatformServiceBridge() {}
 
+    @SuppressWarnings("unused")
     public static PlatformServiceBridge getInstance() {
         synchronized (sInstanceLock) {
             if (sInstance != null) return sInstance;
 
-            // Try to get a specialized service bridge.
-            try {
+            // Try to get a specialized service bridge. Starting with Android O, failed reflection
+            // may cause file reads. The reflection will go away soon: https://crbug.com/682070
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
                 Class<?> cls = Class.forName(PLATFORM_SERVICE_BRIDGE);
                 sInstance = (PlatformServiceBridge) cls.getDeclaredConstructor().newInstance();
                 return sInstance;
