@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TASKS_MARK_PAGE_ACCESSED_TASK_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TASKS_MARK_PAGE_ACCESSED_TASK_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_MARK_PAGE_ACCESSED_TASK_H_
+#define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_MARK_PAGE_ACCESSED_TASK_H_
 
 #include "base/macros.h"
 #include "components/offline_pages/core/task.h"
@@ -16,8 +16,8 @@ namespace offline_pages {
 
 class OfflinePageMetadataStoreSQL;
 
-// Task that mark a page accessed in the metadata store. It takes the offline ID
-// of the page accessed, and the time when it was accessed.
+// Task that marks a page accessed in the metadata store. It takes the offline
+// ID of the page accessed, and the time when it was accessed.
 // There is no callback needed for this task.
 class MarkPageAccessedTask : public Task {
  public:
@@ -41,4 +41,4 @@ class MarkPageAccessedTask : public Task {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TASKS_MARK_PAGE_ACCESSED_TASK_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_CORE_MODEL_MARK_PAGE_ACCESSED_TASK_H_
