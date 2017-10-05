@@ -67,6 +67,11 @@ const char kBleAdvertisingInExtensionsDescription[] =
     "Enables BLE Advertising in Chrome Apps. BLE Advertising might interfere "
     "with regular use of Bluetooth Low Energy features.";
 
+const char kBlockTabUndersName[] = "Block tab-unders";
+const char kBlockTabUndersDescription[] =
+    "Blocks tab-unders in Chrome with some native UI to allow the user to "
+    "proceed.";
+
 const char kBrowserSideNavigationName[] = "Enable browser side navigation";
 const char kBrowserSideNavigationDescription[] =
     "Enable browser side navigation (aka PlzNavigate).";

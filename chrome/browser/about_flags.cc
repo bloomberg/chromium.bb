@@ -31,6 +31,7 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -3543,6 +3544,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-downloads-foreground", flag_descriptions::kDownloadsForegroundName,
      flag_descriptions::kDownloadsForegroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kDownloadsForeground)},
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    // TODO(csharrison): Make this available on all platforms when the desktop
+    // UI is finished.
+    {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
+     flag_descriptions::kBlockTabUndersDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},
 #endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
