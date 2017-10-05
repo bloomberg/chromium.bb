@@ -100,7 +100,7 @@ def CheckAuthorizedAuthor(input_api, output_api):
     return [output_api.PresubmitPromptWarning(
         ('%s is not in AUTHORS file. If you are a new contributor, please visit'
         '\n'
-        'http://www.chromium.org/developers/contributing-code and read the '
+        'https://www.chromium.org/developers/contributing-code and read the '
         '"Legal" section\n'
         'If you are a chromite, verify the contributor signed the CLA.') %
         author)]
