@@ -27,12 +27,12 @@
 #include "public/platform/WebCORSPreflightResultCache.h"
 
 #include <memory>
-#include "base/lazy_instance.h"
 #include "platform/http_names.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/ThreadSpecific.h"
 #include "public/platform/WebCORS.h"
 
 namespace blink {
@@ -91,9 +91,6 @@ bool ParseAccessControlAllowList(const std::string& string, SetType& set) {
 
   return true;
 }
-
-static base::LazyInstance<WebCORSPreflightResultCache>::Leaky lazy_cache_ptr_ =
-    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -221,10 +218,13 @@ bool WebCORSPreflightResultCacheItem::AllowsRequest(
 }
 
 WebCORSPreflightResultCache& WebCORSPreflightResultCache::Shared() {
-  return lazy_cache_ptr_.Get();
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebCORSPreflightResultCache>,
+                                  cache, ());
+  return *cache;
 }
 
-WebCORSPreflightResultCache::~WebCORSPreflightResultCache() {}
+WebCORSPreflightResultCache::WebCORSPreflightResultCache() = default;
+WebCORSPreflightResultCache::~WebCORSPreflightResultCache() = default;
 
 void WebCORSPreflightResultCache::AppendEntry(
     const WebString& web_origin,

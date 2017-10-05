@@ -90,11 +90,13 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache
                         WebURLRequest::FetchCredentialsMode,
                         const WebString& method,
                         const WebHTTPHeaderMap& request_headers);
-  WebCORSPreflightResultCache() {}
-
-  ~WebCORSPreflightResultCache();
 
  protected:
+  friend class WTF::ThreadSpecific<WebCORSPreflightResultCache>;
+
+  WebCORSPreflightResultCache();
+  virtual ~WebCORSPreflightResultCache();
+
   typedef std::map<
       std::string,
       std::map<std::string, std::unique_ptr<WebCORSPreflightResultCacheItem>>>

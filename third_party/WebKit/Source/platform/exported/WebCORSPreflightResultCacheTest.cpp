@@ -22,7 +22,8 @@ static double MockTimeFunction() {
 
 class TestWebCORSPreflightResultCache : public WebCORSPreflightResultCache {
  public:
-  TestWebCORSPreflightResultCache(){};
+  TestWebCORSPreflightResultCache() = default;
+  ~TestWebCORSPreflightResultCache() override = default;
 
   // Counts origins and urls in the cache. Thus with a single cache item, this
   // method would return 2. This is to tests whether we clean up the references
