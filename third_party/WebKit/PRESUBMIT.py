@@ -190,6 +190,10 @@ def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
                      'enable-slimming-paint-v2'),
         os.path.join('third_party', 'WebKit', 'LayoutTests', 'flag-specific',
                      'enable-slimming-paint-v2'),
+        os.path.join('third_party', 'WebKit', 'LayoutTests', 'FlagExpectations',
+                     'enable-slimming-paint-v175'),
+        os.path.join('third_party', 'WebKit', 'LayoutTests', 'flag-specific',
+                     'enable-slimming-paint-v175'),
     ]
     for affected_file in change.AffectedFiles():
         file_path = affected_file.LocalPath()
