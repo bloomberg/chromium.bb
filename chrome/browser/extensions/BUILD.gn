@@ -970,6 +970,8 @@ static_library("extensions") {
       configs += [ "//build/config/linux/dbus" ]
     }
     deps += [
+      "//ash",
+      "//ash/public/cpp:ash_public_cpp",
       "//components/arc",
       "//components/chrome_apps",
       "//components/constrained_window",
@@ -1132,13 +1134,6 @@ static_library("extensions") {
 
   if (toolkit_views) {
     deps += [ "//ui/views" ]
-  }
-
-  if (use_ash) {
-    deps += [
-      "//ash",
-      "//ash/public/cpp:ash_public_cpp",
-    ]
   }
 
   if (use_aura) {

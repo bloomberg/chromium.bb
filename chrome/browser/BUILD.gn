@@ -2693,6 +2693,8 @@ split_static_library("browser") {
       "media/public_session_media_access_handler.h",
       "media/public_session_tab_capture_access_handler.cc",
       "media/public_session_tab_capture_access_handler.h",
+      "media/webrtc/desktop_media_list_ash.cc",
+      "media/webrtc/desktop_media_list_ash.h",
       "memory/memory_kills_histogram.h",
       "memory/memory_kills_monitor.cc",
       "memory/memory_kills_monitor.h",
@@ -2712,12 +2714,21 @@ split_static_library("browser") {
       "metrics/perf/windowed_incognito_observer.h",
       "policy/default_geolocation_policy_handler.cc",
       "policy/default_geolocation_policy_handler.h",
+      "signin/signin_error_notifier_ash.cc",
+      "signin/signin_error_notifier_ash.h",
+      "signin/signin_error_notifier_factory_ash.cc",
+      "signin/signin_error_notifier_factory_ash.h",
+      "sync/sync_error_notifier_ash.cc",
+      "sync/sync_error_notifier_ash.h",
+      "sync/sync_error_notifier_factory_ash.cc",
+      "sync/sync_error_notifier_factory_ash.h",
       "task_manager/providers/arc/arc_process_task.cc",
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
       "task_manager/providers/arc/arc_process_task_provider.h",
     ]
     deps += [
+      "//ash",
       "//chrome/browser/chromeos",
       "//services/ui/public/cpp/input_devices",
       "//services/ui/public/cpp/input_devices:input_device_controller",
@@ -3032,23 +3043,6 @@ split_static_library("browser") {
 
   if (toolkit_views) {
     deps += [ "//ui/views" ]
-  }
-
-  if (use_ash) {
-    # Cross-platform Ash sources.
-    sources += [
-      "media/webrtc/desktop_media_list_ash.cc",
-      "media/webrtc/desktop_media_list_ash.h",
-      "signin/signin_error_notifier_ash.cc",
-      "signin/signin_error_notifier_ash.h",
-      "signin/signin_error_notifier_factory_ash.cc",
-      "signin/signin_error_notifier_factory_ash.h",
-      "sync/sync_error_notifier_ash.cc",
-      "sync/sync_error_notifier_ash.h",
-      "sync/sync_error_notifier_factory_ash.cc",
-      "sync/sync_error_notifier_factory_ash.h",
-    ]
-    deps += [ "//ash" ]
   }
 
   if (use_aura) {
