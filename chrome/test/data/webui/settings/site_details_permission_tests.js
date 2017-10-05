@@ -258,7 +258,7 @@ suite('SiteDetailsPermission', function() {
       source: settings.SiteSettingSource.DRM_DISABLED,
     };
     assertEquals(
-        'To change this setting, first turn on device identifiers',
+        'To change this setting, first turn on identifiers',
         testElement.$.permissionItem.innerText.trim());
     assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
     assertTrue(testElement.$.permission.disabled);
