@@ -364,7 +364,7 @@ class ResizeInternalTest : public ResizeTest {
 
   virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     if (frame0_psnr_ == 0.) frame0_psnr_ = pkt->data.psnr.psnr[0];
-    EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 2.0);
+    EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 2.5);
   }
 
 #if WRITE_COMPRESSED_STREAM
@@ -696,8 +696,7 @@ class ResizingCspVideoSource : public ::libaom_test::DummyVideoSource {
   }
 };
 
-#if (defined(DISABLE_TRELLISQ_SEARCH) && DISABLE_TRELLISQ_SEARCH) || \
-    CONFIG_INTRA_EDGE
+#if (defined(DISABLE_TRELLISQ_SEARCH) && DISABLE_TRELLISQ_SEARCH)
 TEST_P(ResizeCspTest, DISABLED_TestResizeCspWorks) {
 #else
 TEST_P(ResizeCspTest, TestResizeCspWorks) {
