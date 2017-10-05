@@ -95,9 +95,6 @@ static constexpr int kWebVrInitialFrameTimeoutSeconds = 5;
 
 static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
 
-static constexpr int kNumSamplesPerPixelBrowserUi = 2;
-static constexpr int kNumSamplesPerPixelWebVr = 1;
-
 // Provides the direction the head is looking towards as a 3x1 unit vector.
 gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose) {
   // Same as multiplying the inverse of the rotation component of the matrix by
@@ -185,7 +182,6 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
                      bool reprojected_rendering,
                      bool daydream_support)
     : ui_(base::MakeUnique<vr::Ui>(ui_host_interface, this, ui_initial_state)),
-      web_vr_mode_(ui_initial_state.in_web_vr),
       surfaceless_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -444,26 +440,24 @@ void VrShellGl::InitializeRenderer() {
   webvr_frame_oustanding_.assign(kPoseRingBufferSize, false);
   webvr_time_js_submit_.assign(kPoseRingBufferSize, base::TimeTicks());
 
+  std::vector<gvr::BufferSpec> specs;
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
-  specs_.push_back(gvr_api_->CreateBufferSpec());
-  specs_.push_back(gvr_api_->CreateBufferSpec());
+  specs.push_back(gvr_api_->CreateBufferSpec());
+  specs.push_back(gvr_api_->CreateBufferSpec());
 
-  gvr::Sizei render_size_default = specs_[kFramePrimaryBuffer].GetSize();
+  gvr::Sizei render_size_default = specs[kFramePrimaryBuffer].GetSize();
   render_size_default_ = {render_size_default.width,
                           render_size_default.height};
 
-  specs_[kFramePrimaryBuffer].SetSamples(
-      web_vr_mode_ ? kNumSamplesPerPixelWebVr : kNumSamplesPerPixelBrowserUi);
-  specs_[kFrameWebVrBrowserUiBuffer].SetSize(
+  specs[kFrameWebVrBrowserUiBuffer].SetSize(
       {render_size_default.width / kWebVrBrowserUiSizeFactor,
        render_size_default.height / kWebVrBrowserUiSizeFactor});
-  specs_[kFrameWebVrBrowserUiBuffer].SetSamples(2);
   render_size_webvr_ui_ = {
       render_size_default.width / kWebVrBrowserUiSizeFactor,
       render_size_default.height / kWebVrBrowserUiSizeFactor};
 
   swap_chain_ =
-      base::MakeUnique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs_));
+      base::MakeUnique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs));
 
   // Allocate a buffer viewport for use in UI drawing. This isn't
   // initialized at this point, it'll be set from other viewport list
@@ -1083,12 +1077,6 @@ void VrShellGl::OnResume() {
 }
 
 void VrShellGl::SetWebVrMode(bool enabled) {
-  if (web_vr_mode_ != enabled) {
-    specs_[kFramePrimaryBuffer].SetSamples(
-        enabled ? kNumSamplesPerPixelWebVr : kNumSamplesPerPixelBrowserUi);
-    swap_chain_ =
-        base::MakeUnique<gvr::SwapChain>(gvr_api_->CreateSwapChain(specs_));
-  }
   web_vr_mode_ = enabled;
 
   if (web_vr_mode_ && submit_client_) {
