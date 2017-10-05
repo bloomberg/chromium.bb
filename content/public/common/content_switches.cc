@@ -625,9 +625,6 @@ const char kIsolateOrigins[] = "isolate-origins";
 // Chrome is running in Mash.
 const char kIsRunningInMash[] = "is-running-in-mash";
 
-// If true indicates the process was created to host a service.
-const char kIsService[] = "is-service";
-
 // Disable latest shipping ECMAScript 6 features.
 const char kDisableJavaScriptHarmonyShipping[] =
     "disable-javascript-harmony-shipping";

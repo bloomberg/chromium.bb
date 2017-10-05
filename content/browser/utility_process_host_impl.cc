@@ -324,7 +324,6 @@ bool UtilityProcessHostImpl::StartProcess() {
 
     const bool is_service = service_identity_.has_value();
     if (is_service) {
-      cmd_line->AppendSwitch(switches::kIsService);
       GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
           *service_identity_, cmd_line.get());
     }
