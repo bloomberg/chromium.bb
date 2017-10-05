@@ -1712,6 +1712,7 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
 }
 
 void ShelfView::ShelfItemDelegateChanged(const ShelfID& id,
+                                         ShelfItemDelegate* old_delegate,
                                          ShelfItemDelegate* delegate) {}
 
 void ShelfView::AfterItemSelected(

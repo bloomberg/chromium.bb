@@ -54,11 +54,11 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
                                const void* key,
                                intptr_t old) override;
 
-  // Get the number of running applications/incarnations of this.
-  size_t window_count() const { return windows_.size(); }
-
   // Activates the window at position |index|.
   void ActivateIndexedApp(size_t index);
+
+  // Get the number of running applications/incarnations of this.
+  size_t window_count() const { return windows_.size(); }
 
   const WindowList& windows() const { return windows_; }
 

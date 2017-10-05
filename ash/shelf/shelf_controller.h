@@ -58,6 +58,7 @@ class ShelfController : public mojom::ShelfController,
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ShelfItem& old_item) override;
   void ShelfItemDelegateChanged(const ShelfID& id,
+                                ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
 
  private:

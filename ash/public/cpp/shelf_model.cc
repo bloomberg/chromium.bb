@@ -223,10 +223,13 @@ void ShelfModel::SetShelfItemDelegate(
     item_delegate->set_shelf_id(safe_shelf_id);
   // This assignment replaces any ShelfItemDelegate already registered for
   // |shelf_id|.
+  std::unique_ptr<ShelfItemDelegate> old_item_delegate =
+      std::move(id_to_item_delegate_map_[safe_shelf_id]);
   id_to_item_delegate_map_[safe_shelf_id] = std::move(item_delegate);
   for (auto& observer : observers_) {
     observer.ShelfItemDelegateChanged(
-        safe_shelf_id, id_to_item_delegate_map_[safe_shelf_id].get());
+        safe_shelf_id, old_item_delegate.get(),
+        id_to_item_delegate_map_[safe_shelf_id].get());
   }
 }
 

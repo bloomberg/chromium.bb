@@ -274,6 +274,7 @@ void ShelfController::ShelfItemChanged(int index, const ShelfItem& old_item) {
 }
 
 void ShelfController::ShelfItemDelegateChanged(const ShelfID& id,
+                                               ShelfItemDelegate* old_delegate,
                                                ShelfItemDelegate* delegate) {
   if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
     return;

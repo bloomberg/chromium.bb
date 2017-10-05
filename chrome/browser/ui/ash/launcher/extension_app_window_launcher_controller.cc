@@ -70,6 +70,27 @@ ExtensionAppWindowLauncherController::ControllerForWindow(
   return controller_iter->second;
 }
 
+void ExtensionAppWindowLauncherController::OnItemDelegateDiscarded(
+    ash::ShelfItemDelegate* delegate) {
+  AppControllerMap::iterator it =
+      app_controller_map_.find(delegate->shelf_id());
+  if (it == app_controller_map_.end() || it->second != delegate)
+    return;
+
+  ExtensionAppWindowLauncherItemController* controller = it->second;
+  // Existing controller is no longer bound with shelf. We have to clean the
+  // cache. See crbug.com/770005.
+  VLOG(1) << "Item controller was released externally for the app "
+          << delegate->shelf_id().app_id << ".";
+  app_controller_map_.erase(it);
+
+  for (ui::BaseWindow* base_window : controller->windows()) {
+    aura::Window* window = base_window->GetNativeWindow();
+    if (window)
+      UnregisterApp(window);
+  }
+}
+
 void ExtensionAppWindowLauncherController::OnAppWindowAdded(
     extensions::AppWindow* app_window) {
   RegisterApp(app_window);
@@ -163,16 +184,18 @@ void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {
 
   AppControllerMap::iterator app_controller_iter =
       app_controller_map_.find(shelf_id);
-  DCHECK(app_controller_iter != app_controller_map_.end());
-  ExtensionAppWindowLauncherItemController* controller;
-  controller = app_controller_iter->second;
+  if (app_controller_iter == app_controller_map_.end())
+    return;
+
+  ExtensionAppWindowLauncherItemController* controller =
+      app_controller_iter->second;
 
   controller->RemoveWindow(controller->GetAppWindow(window));
   if (controller->window_count() == 0) {
     // If this is the last window associated with the app window shelf id,
     // close the shelf item.
-    owner()->CloseLauncherItem(shelf_id);
     app_controller_map_.erase(app_controller_iter);
+    owner()->CloseLauncherItem(shelf_id);
   }
 }
 
