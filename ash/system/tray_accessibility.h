@@ -27,7 +27,6 @@ class View;
 }
 
 namespace ash {
-class HoverHighlightView;
 class SystemTrayItem;
 
 namespace tray {
@@ -37,8 +36,6 @@ class AccessibilityDetailedView : public TrayDetailsView {
  public:
   explicit AccessibilityDetailedView(SystemTrayItem* owner);
   ~AccessibilityDetailedView() override {}
-
-  void OnAccessibilityStatusChanged();
 
  private:
   friend class chromeos::TrayAccessibilityTest;
@@ -58,20 +55,20 @@ class AccessibilityDetailedView : public TrayDetailsView {
   // Add the accessibility feature list.
   void AppendAccessibilityList();
 
-  HoverHighlightView* spoken_feedback_view_ = nullptr;
-  HoverHighlightView* high_contrast_view_ = nullptr;
-  HoverHighlightView* screen_magnifier_view_ = nullptr;
-  HoverHighlightView* large_cursor_view_ = nullptr;
-  HoverHighlightView* autoclick_view_ = nullptr;
-  HoverHighlightView* virtual_keyboard_view_ = nullptr;
-  HoverHighlightView* mono_audio_view_ = nullptr;
-  HoverHighlightView* caret_highlight_view_ = nullptr;
-  HoverHighlightView* highlight_mouse_cursor_view_ = nullptr;
-  HoverHighlightView* highlight_keyboard_focus_view_ = nullptr;
-  HoverHighlightView* sticky_keys_view_ = nullptr;
-  HoverHighlightView* tap_dragging_view_ = nullptr;
+  views::View* spoken_feedback_view_ = nullptr;
+  views::View* high_contrast_view_ = nullptr;
+  views::View* screen_magnifier_view_ = nullptr;
+  views::View* large_cursor_view_ = nullptr;
   views::Button* help_view_ = nullptr;
   views::Button* settings_view_ = nullptr;
+  views::View* autoclick_view_ = nullptr;
+  views::View* virtual_keyboard_view_ = nullptr;
+  views::View* mono_audio_view_ = nullptr;
+  views::View* caret_highlight_view_ = nullptr;
+  views::View* highlight_mouse_cursor_view_ = nullptr;
+  views::View* highlight_keyboard_focus_view_ = nullptr;
+  views::View* sticky_keys_view_ = nullptr;
+  views::View* tap_dragging_view_ = nullptr;
 
   // These exist for tests. The canonical state is stored in prefs.
   bool spoken_feedback_enabled_ = false;
