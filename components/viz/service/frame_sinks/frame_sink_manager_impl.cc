@@ -35,7 +35,9 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(
     DisplayProvider* display_provider)
     : display_provider_(display_provider),
       surface_manager_(lifetime_type),
+      hit_test_manager_(this),
       binding_(this) {
+  surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
 
@@ -47,6 +49,7 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_EQ(clients_.size(), 0u);
   DCHECK_EQ(registered_sources_.size(), 0u);
   surface_manager_.RemoveObserver(this);
+  surface_manager_.RemoveObserver(&hit_test_manager_);
 }
 
 void FrameSinkManagerImpl::BindAndSetClient(
@@ -368,8 +371,13 @@ void FrameSinkManagerImpl::SubmitHitTestRegionList(
     const SurfaceId& surface_id,
     uint64_t frame_index,
     mojom::HitTestRegionListPtr hit_test_region_list) {
-  // TODO(gklassen): Route hit_test_region_list to appropriate
-  // matching RootCompositorFrameSink
+  hit_test_manager_.SubmitHitTestRegionList(surface_id, frame_index,
+                                            std::move(hit_test_region_list));
+}
+
+uint64_t FrameSinkManagerImpl::GetActiveFrameIndex(
+    const SurfaceId& surface_id) {
+  return surface_manager_.GetSurfaceForId(surface_id)->GetActiveFrameIndex();
 }
 
 void FrameSinkManagerImpl::OnAggregatedHitTestRegionListUpdated(

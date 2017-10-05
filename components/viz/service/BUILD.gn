@@ -110,6 +110,8 @@ viz_component("service") {
     "hit_test/hit_test_aggregator.cc",
     "hit_test/hit_test_aggregator.h",
     "hit_test/hit_test_aggregator_delegate.h",
+    "hit_test/hit_test_manager.cc",
+    "hit_test/hit_test_manager.h",
     "surfaces/direct_surface_reference_factory.cc",
     "surfaces/direct_surface_reference_factory.h",
     "surfaces/surface.cc",
