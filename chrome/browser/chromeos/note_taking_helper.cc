@@ -204,9 +204,6 @@ NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
 
 std::unique_ptr<NoteTakingAppInfo> NoteTakingHelper::GetPreferredChromeAppInfo(
     Profile* profile) {
-  if (!ash::palette_utils::HasStylusInput())
-    return nullptr;
-
   std::string preferred_app_id =
       profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
   if (LooksLikeAndroidPackageName(preferred_app_id))

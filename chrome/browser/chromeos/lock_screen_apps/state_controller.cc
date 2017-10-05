@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/system/palette/palette_utils.h"
 #include "ash/wm/window_animations.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -144,10 +145,8 @@ void StateController::SetPrimaryProfile(Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user || !user->HasGaiaAccount()) {
-    if (!ready_callback_.is_null()) {
-      ready_callback_.Run();
-      ready_callback_.Reset();
-    }
+    if (!ready_callback_.is_null())
+      std::move(ready_callback_).Run();
     return;
   }
 
@@ -241,6 +240,7 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
       base::MakeUnique<extensions::lock_screen_data::LockScreenItemStorage>(
           profile, g_browser_process->local_state(), crypto_key,
           base_path.AppendASCII("lock_screen_app_data"));
+  lock_screen_data_->SetSessionLocked(false);
 
   chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
       profile);
@@ -251,16 +251,33 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   app_manager_->Initialize(profile, lock_screen_profile_->GetOriginalProfile());
 
   input_devices_observer_.Add(ui::InputDeviceManager::GetInstance());
+
+  // Do not start state controller if stylus input is not present as lock
+  // screen notes apps are geared towards stylus.
+  // State controller will observe inpt device changes and continue
+  // initialization if stylus input is found.
+  if (!ash::palette_utils::HasStylusInput()) {
+    stylus_input_missing_ = true;
+
+    if (!ready_callback_.is_null())
+      std::move(ready_callback_).Run();
+    return;
+  }
+
+  InitializeWithStylusInputPresent();
+}
+
+void StateController::InitializeWithStylusInputPresent() {
+  stylus_input_missing_ = false;
+
   power_manager_client_observer_.Add(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   session_observer_.Add(session_manager::SessionManager::Get());
   OnSessionStateChanged();
 
   // SessionController is fully initialized at this point.
-  if (!ready_callback_.is_null()) {
-    ready_callback_.Run();
-    ready_callback_.Reset();
-  }
+  if (!ready_callback_.is_null())
+    std::move(ready_callback_).Run();
 }
 
 void StateController::AddObserver(StateObserver* observer) {
@@ -354,6 +371,11 @@ void StateController::OnStylusStateChanged(ui::StylusState state) {
 
   if (state == ui::StylusState::REMOVED)
     RequestNewLockScreenNote(LockScreenNoteOrigin::kStylusEject);
+}
+
+void StateController::OnTouchscreenDeviceConfigurationChanged() {
+  if (stylus_input_missing_ && ash::palette_utils::HasStylusInput())
+    InitializeWithStylusInputPresent();
 }
 
 void StateController::BrightnessChanged(int level, bool user_initiated) {

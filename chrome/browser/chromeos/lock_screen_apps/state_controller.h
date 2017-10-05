@@ -135,6 +135,7 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // ui::InputDeviceEventObserver:
   void OnStylusStateChanged(ui::StylusState state) override;
+  void OnTouchscreenDeviceConfigurationChanged() override;
 
   // chromeos::PowerManagerClient::Observer
   void BrightnessChanged(int level, bool user_initiated) override;
@@ -174,10 +175,14 @@ class StateController : public ash::mojom::TrayActionClient,
   // Returns whether |crypto_key| was successfully retrieved.
   bool GetUserCryptoKey(Profile* profile, std::string* crypto_key);
 
-  // Finishes lock screen apps initialization with primary user profile and
+  // Continues lock screen apps initialization with primary user profile and
   // associated encryption key to be used for encrypting user data created in
   // lock screen context.
   void InitializeWithCryptoKey(Profile* profile, const std::string& crypto_key);
+
+  // Continues lock screen apps initialization. Should be called when stylus
+  // input has been detected.
+  void InitializeWithStylusInputPresent();
 
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
@@ -212,6 +217,11 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
   Profile* lock_screen_profile_ = nullptr;
+
+  // Whether lock screen apps initialization was stopped due to stylus input
+  // missing (or stylus not being otherwise enabled). If stylus availability
+  // changes due to stylus input being detected, initialization will continue.
+  bool stylus_input_missing_ = false;
 
   std::unique_ptr<extensions::lock_screen_data::LockScreenItemStorage>
       lock_screen_data_;

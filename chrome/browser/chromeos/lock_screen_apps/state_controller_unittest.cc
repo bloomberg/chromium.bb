@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/base64.h"
 #include "base/files/file_path.h"
@@ -394,6 +395,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     ASSERT_TRUE(profile_manager_.SetUp());
 
+    SetUpStylusAvailability();
+
     auto power_client = base::MakeUnique<chromeos::FakePowerManagerClient>();
     power_manager_client_ = power_client.get();
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
@@ -483,6 +486,18 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     fake_user_manager()->AddUser(account_id);
   }
 
+  // Sets up input device manager so stylus input is present.
+  // Virtual so test fixture can override initial stylus availability.
+  virtual void SetUpStylusAvailability() { SetStylusEnabled(); }
+
+  // Adds a command line switch to enable stylus.
+  void SetStylusEnabled() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshForceEnableStylusTools);
+    ui::test::DeviceDataManagerTestAPI devices_test_api;
+    devices_test_api.NotifyObserversTouchscreenDeviceConfigurationChanged();
+  }
+
   void InitExtensionSystem(Profile* profile) {
     extensions::TestExtensionSystem* extension_system =
         static_cast<extensions::TestExtensionSystem*>(
@@ -536,6 +551,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
         ->AddExtension(app_.get());
 
     app_manager_->SetInitialAppState(kTestAppId, enable_app_launch);
+
     SetPrimaryProfileAndWaitUntilReady();
 
     if (target_state == TrayActionState::kNotAvailable)
@@ -673,6 +689,18 @@ class LockScreenAppStateKioskUserTest : public LockScreenAppStateTest {
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateKioskUserTest);
 };
 
+// Tests that initially do not have stylus tools set as enabled.
+class LockScreenAppStateNoStylusInputTest : public LockScreenAppStateTest {
+ public:
+  LockScreenAppStateNoStylusInputTest() = default;
+  ~LockScreenAppStateNoStylusInputTest() override = default;
+
+  void SetUpStylusAvailability() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateNoStylusInputTest);
+};
+
 }  // namespace
 
 TEST_F(LockScreenAppStateKioskUserTest, SetPrimaryProfile) {
@@ -683,6 +711,64 @@ TEST_F(LockScreenAppStateKioskUserTest, SetPrimaryProfile) {
   EXPECT_EQ(TrayActionState::kNotAvailable,
             state_controller()->GetLockScreenNoteState());
   EXPECT_EQ(0u, observer()->observed_states().size());
+}
+
+TEST_F(LockScreenAppStateNoStylusInputTest,
+       StylusDetectedAfterInitializationAndScreenLock) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kNotAvailable, true));
+  EXPECT_EQ(TestAppManager::State::kStopped, app_manager()->state());
+  EXPECT_TRUE(LockScreenItemStorage::GetIfAllowed(profile()));
+
+  session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+
+  // Even though session was locked, test app manager is still stopped, and
+  // lock screen apps are unavailable due to stylus not being detected.
+  EXPECT_EQ(TestAppManager::State::kStopped, app_manager()->state());
+  EXPECT_EQ(TrayActionState::kNotAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_EQ(0u, observer()->observed_states().size());
+
+  // Enable stylus input.
+  SetStylusEnabled();
+
+  // Given that stylus was enabled, lock screen apps should be avaialble.
+  EXPECT_EQ(TestAppManager::State::kStarted, app_manager()->state());
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  ExpectObservedStatesMatch({TrayActionState::kAvailable}, "Stylus enabled");
+  ClearObservedStates();
+
+  // Ejecting the stylus should trigger lock screen app launch.
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+  ExpectObservedStatesMatch({TrayActionState::kLaunching},
+                            "Launch on stylus ejected");
+}
+
+TEST_F(LockScreenAppStateNoStylusInputTest, StylusDetectedAfterInitialization) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kNotAvailable, true));
+  EXPECT_EQ(TestAppManager::State::kStopped, app_manager()->state());
+
+  // Enable stylus input after state controller initialization finishes, but
+  // before screen lock.
+  SetStylusEnabled();
+
+  // Given that the session is still unlocked, lock screen apps are still
+  // unavailable.
+  EXPECT_EQ(TestAppManager::State::kStopped, app_manager()->state());
+  EXPECT_EQ(TrayActionState::kNotAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_EQ(0u, observer()->observed_states().size());
+
+  // Given that the screen is locked, lock screen apps should become available.
+  session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_EQ(TestAppManager::State::kStarted, app_manager()->state());
 }
 
 TEST_F(LockScreenAppStateNotSupportedTest, NoInstance) {
