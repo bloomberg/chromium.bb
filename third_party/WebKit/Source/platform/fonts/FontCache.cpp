@@ -380,6 +380,7 @@ void FontCache::AddClient(FontCacheClient* client) {
   CHECK(client);
   if (!font_cache_clients_) {
     font_cache_clients_ = new HeapHashSet<WeakMember<FontCacheClient>>();
+    font_cache_clients_.RegisterAsStaticReference();
   }
   DCHECK(!font_cache_clients_->Contains(client));
   font_cache_clients_->insert(client);

@@ -62,7 +62,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   bool IsPlatformFamilyMatchAvailable(const FontDescription&,
                                       const AtomicString& family);
 
-  void FontFaceInvalidated();
+  void FontFaceInvalidated() override;
 
   // FontCacheClient implementation
   void FontCacheInvalidated() override;
