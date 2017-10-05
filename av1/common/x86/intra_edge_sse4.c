@@ -32,10 +32,9 @@ void av1_filter_intra_edge_sse4_1(uint8_t *p, int sz, int strength) {
   };
 
   // Extend the first and last samples to simplify the loop for the 5-tap case
-  if (strength == 3) {
-    p[-1] = p[0];
-    p[sz] = p[sz - 1];
-  }
+  p[-1] = p[0];
+  __m128i last = _mm_set1_epi8(p[sz - 1]);
+  _mm_storeu_si128((__m128i *)&p[sz], last);
 
   // Adjust input pointer for filter support area
   uint8_t *in = (strength == 3) ? p - 1 : p;
@@ -127,10 +126,9 @@ void av1_filter_intra_edge_high_sse4_1(uint16_t *p, int sz, int strength) {
                   v_const[1][8]) = { { 0, 1, 2, 3, 4, 5, 6, 7 } };
 
   // Extend the first and last samples to simplify the loop for the 5-tap case
-  if (strength == 3) {
-    p[-1] = p[0];
-    p[sz] = p[sz - 1];
-  }
+  p[-1] = p[0];
+  __m128i last = _mm_set1_epi16(p[sz - 1]);
+  _mm_storeu_si128((__m128i *)&p[sz], last);
 
   // Adjust input pointer for filter support area
   uint16_t *in = (strength == 3) ? p - 1 : p;
