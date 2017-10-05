@@ -3007,6 +3007,11 @@ group("telemetry_perf_tests_new") {
   deps = [
     "//chrome/test:telemetry_perf_tests",
   ]
+
+  data = [
+    # Needed for isolate script to execute.
+    "//testing/scripts/run_multiple_telemetry_benchmarks_as_googletest.py",
+  ]
 }
 
 group("angle_perftests") {
