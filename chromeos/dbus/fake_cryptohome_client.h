@@ -127,12 +127,12 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) override;
+      DBusMethodCallback<TpmAttestationDataResult> callback) override;
   void TpmAttestationGetPublicKey(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) override;
+      DBusMethodCallback<TpmAttestationDataResult> callback) override;
   void TpmAttestationRegisterKey(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
@@ -157,7 +157,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) override;
+      DBusMethodCallback<TpmAttestationDataResult> callback) override;
   void TpmAttestationSetKeyPayload(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,

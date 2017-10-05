@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -55,17 +56,15 @@ void DBusBoolRedirectCallback(const base::Closure& on_true,
 
 void DBusDataMethodCallback(
     const AttestationFlow::CertificateCallback& callback,
-    DBusMethodCallStatus status,
-    bool result,
-    const std::string& data) {
-  if (status != DBUS_METHOD_CALL_SUCCESS) {
+    base::Optional<CryptohomeClient::TpmAttestationDataResult> result) {
+  if (!result.has_value()) {
     LOG(ERROR) << "Attestation: DBus data operation failed.";
     if (!callback.is_null())
       callback.Run(false, "");
     return;
   }
   if (!callback.is_null())
-    callback.Run(result, data);
+    callback.Run(result->success, result->data);
 }
 
 }  // namespace

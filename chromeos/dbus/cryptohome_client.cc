@@ -587,7 +587,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) override {
+      DBusMethodCallback<TpmAttestationDataResult> callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationGetCertificate);
@@ -598,8 +598,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnDataMethod,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&CryptohomeClientImpl::OnTpmAttestationDataMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -607,7 +607,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) override {
+      DBusMethodCallback<TpmAttestationDataResult> callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationGetPublicKey);
@@ -618,8 +618,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnDataMethod,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&CryptohomeClientImpl::OnTpmAttestationDataMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -702,7 +702,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const DataMethodCallback& callback) override {
+      DBusMethodCallback<TpmAttestationDataResult> callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationGetKeyPayload);
@@ -713,8 +713,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnDataMethod,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&CryptohomeClientImpl::OnTpmAttestationDataMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -1112,23 +1112,24 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles responses for methods with a bool result and data.
-  void OnDataMethod(const DataMethodCallback& callback,
-                    dbus::Response* response) {
+  void OnTpmAttestationDataMethod(
+      DBusMethodCallback<TpmAttestationDataResult> callback,
+      dbus::Response* response) {
     if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, false, std::string());
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
-    const uint8_t* data_buffer = NULL;
+    TpmAttestationDataResult result;
+    const uint8_t* data_buffer = nullptr;
     size_t data_length = 0;
-    bool result = false;
     if (!reader.PopArrayOfBytes(&data_buffer, &data_length) ||
-        !reader.PopBool(&result)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, false, std::string());
+        !reader.PopBool(&result.success)) {
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    std::string data(reinterpret_cast<const char*>(data_buffer), data_length);
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, result, data);
+    result.data.assign(reinterpret_cast<const char*>(data_buffer), data_length);
+    std::move(callback).Run(std::move(result));
   }
 
   // Handles responses for methods with a BaseReply protobuf method.
