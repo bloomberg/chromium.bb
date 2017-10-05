@@ -111,8 +111,6 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   bool ShouldIgnorePopupOverlayElement(const Element&);
   void GetCustomAttributesForImageElement(const HTMLImageElement&,
                                           Vector<Attribute>*);
-  void GetCustomAttributesForFormControlElement(const Element&,
-                                                Vector<Attribute>*);
 
   WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate_;
   HeapHashSet<WeakMember<const Element>>& shadow_template_elements_;
@@ -304,8 +302,6 @@ Vector<Attribute> MHTMLFrameSerializerDelegate::GetCustomAttributes(
 
   if (auto* image = ToHTMLImageElementOrNull(element)) {
     GetCustomAttributesForImageElement(*image, &attributes);
-  } else if (element.IsFormControlElement()) {
-    GetCustomAttributesForFormControlElement(element, &attributes);
   }
 
   return attributes;
@@ -350,18 +346,6 @@ void MHTMLFrameSerializerDelegate::GetCustomAttributesForImageElement(
   Attribute height_attribute(HTMLNames::heightAttr,
                              AtomicString::Number(element.LayoutBoxHeight()));
   attributes->push_back(height_attribute);
-}
-
-void MHTMLFrameSerializerDelegate::GetCustomAttributesForFormControlElement(
-    const Element& element,
-    Vector<Attribute>* attributes) {
-  // Disable all form elements in MTHML to tell the user that the form cannot be
-  // worked on. MHTML is loaded in full sandboxing mode which disable the form
-  // submission and script execution.
-  if (element.FastHasAttribute(HTMLNames::disabledAttr))
-    return;
-  Attribute disabled_attribute(HTMLNames::disabledAttr, "");
-  attributes->push_back(disabled_attribute);
 }
 
 std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(

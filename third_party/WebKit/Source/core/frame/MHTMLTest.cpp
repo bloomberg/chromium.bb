@@ -31,6 +31,7 @@
 #include <map>
 
 #include "build/build_config.h"
+#include "core/dom/ClassCollection.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
@@ -419,6 +420,27 @@ TEST_F(MHTMLTest, ShadowDom) {
                    ->Shadow()
                    ->OldestShadowRoot()
                    .getElementById("s2"));
+}
+
+TEST_F(MHTMLTest, FormControlElements) {
+  const char kURL[] = "http://www.example.com";
+
+  // Register the mocked frame and load it.
+  RegisterMockedURLLoad(kURL, "form.mht");
+  LoadURLInTopFrame(ToKURL(kURL));
+  ASSERT_TRUE(GetPage());
+  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  ASSERT_TRUE(frame);
+  Document* document = frame->GetDocument();
+  ASSERT_TRUE(document);
+
+  ClassCollection* formControlElements = document->getElementsByClassName("fc");
+  ASSERT_TRUE(formControlElements);
+  for (Element* element : *formControlElements)
+    EXPECT_TRUE(element->IsDisabledFormControl());
+
+  EXPECT_FALSE(document->getElementById("h1")->IsDisabledFormControl());
+  EXPECT_FALSE(document->getElementById("fm")->IsDisabledFormControl());
 }
 
 }  // namespace blink
