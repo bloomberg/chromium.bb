@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -91,6 +92,9 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
 }
 
 RenderFrameProxyHost::~RenderFrameProxyHost() {
+  if (!destruction_callback_.is_null())
+    std::move(destruction_callback_).Run();
+
   if (GetProcess()->HasConnection()) {
     // TODO(nasko): For now, don't send this IPC for top-level frames, as
     // the top-level RenderFrame will delete the RenderFrameProxy.
@@ -220,6 +224,11 @@ void RenderFrameProxyHost::UpdateOpener() {
 
 void RenderFrameProxyHost::SetFocusedFrame() {
   Send(new FrameMsg_SetFocusedFrame(routing_id_));
+}
+
+void RenderFrameProxyHost::SetDestructionCallback(
+    DestructionCallback destruction_callback) {
+  destruction_callback_ = std::move(destruction_callback);
 }
 
 void RenderFrameProxyHost::OnDetach() {

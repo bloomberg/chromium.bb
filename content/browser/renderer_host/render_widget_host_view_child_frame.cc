@@ -45,6 +45,7 @@
 #include "ui/touch_selection/touch_selection_controller.h"
 
 #if defined(USE_AURA)
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/env.h"
 #endif
 
@@ -146,33 +147,42 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
     DetachFromTouchSelectionClientManagerIfNecessary();
   }
   frame_connector_ = frame_connector;
-  if (frame_connector_) {
-    RenderWidgetHostViewBase* parent_view =
-        frame_connector_->GetParentRenderWidgetHostView();
-    if (parent_view) {
-      DCHECK(parent_view->GetFrameSinkId().is_valid() || IsUsingMus());
-      SetParentFrameSinkId(parent_view->GetFrameSinkId());
-    }
+  if (!frame_connector_)
+    return;
 
-    auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
-    if (root_view) {
-      // Make sure we're not using the zero-valued default for
-      // current_device_scale_factor_.
-      current_device_scale_factor_ = root_view->current_device_scale_factor();
-      if (current_device_scale_factor_ == 0.f)
-        current_device_scale_factor_ = 1.f;
+  RenderWidgetHostViewBase* parent_view =
+      frame_connector_->GetParentRenderWidgetHostView();
 
-      auto* manager = root_view->GetTouchSelectionControllerClientManager();
-      if (manager) {
-        // We have managers in Aura and Android, as well as outside of content/.
-        // There is no manager for Mac OS.
-        selection_controller_client_ =
-            base::MakeUnique<TouchSelectionControllerClientChildFrame>(this,
-                                                                       manager);
-        manager->AddObserver(this);
-      }
+  if (parent_view) {
+    DCHECK(parent_view->GetFrameSinkId().is_valid() || IsUsingMus());
+    SetParentFrameSinkId(parent_view->GetFrameSinkId());
+  }
+
+  auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
+  if (root_view) {
+    // Make sure we're not using the zero-valued default for
+    // current_device_scale_factor_.
+    current_device_scale_factor_ = root_view->current_device_scale_factor();
+    if (current_device_scale_factor_ == 0.f)
+      current_device_scale_factor_ = 1.f;
+
+    auto* manager = root_view->GetTouchSelectionControllerClientManager();
+    if (manager) {
+      // We have managers in Aura and Android, as well as outside of content/.
+      // There is no manager for Mac OS.
+      selection_controller_client_ =
+          base::MakeUnique<TouchSelectionControllerClientChildFrame>(this,
+                                                                     manager);
+      manager->AddObserver(this);
     }
   }
+
+#if defined(USE_AURA)
+  if (IsUsingMus()) {
+    frame_connector_->EmbedRendererWindowTreeClientInParent(
+        GetWindowTreeClientFromRenderer());
+  }
+#endif
 }
 
 void RenderWidgetHostViewChildFrame::OnManagerWillDestroy(

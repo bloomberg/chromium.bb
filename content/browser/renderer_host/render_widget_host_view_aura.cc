@@ -1706,6 +1706,14 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 #endif
 }
 
+void RenderWidgetHostViewAura::ScheduleEmbed(
+    ui::mojom::WindowTreeClientPtr client,
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  DCHECK(IsMus());
+  aura::WindowPortMus::Get(window_)->ScheduleEmbed(std::move(client),
+                                                   std::move(callback));
+}
+
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   event_handler_->OnScrollEvent(event);
 }
@@ -1908,16 +1916,9 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   if (!IsMus())
     return;
 
-  // Connect to the renderer, pass it a WindowTreeClient interface request
-  // and embed that client inside our mus window.
-  mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
-  BindInterface(host_->GetProcess(), &factory);
-
-  ui::mojom::WindowTreeClientPtr window_tree_client;
-  factory->CreateWindowTreeClientForRenderWidget(
-      host_->GetRoutingID(), mojo::MakeRequest(&window_tree_client));
+  // Embed the renderer into the Window.
   aura::WindowPortMus::Get(window_)->Embed(
-      std::move(window_tree_client),
+      GetWindowTreeClientFromRenderer(),
       ui::mojom::kEmbedFlagEmbedderInterceptsEvents,
       base::Bind(&EmbedCallback));
 }

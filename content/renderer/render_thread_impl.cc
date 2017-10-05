@@ -112,6 +112,7 @@
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
+#include "content/renderer/mash_util.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -400,11 +401,6 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext/" +
            ui::command_buffer_metrics::ContextTypeToString(type)),
       automatic_flushes, support_locking, limits, attributes, nullptr, type);
-}
-
-bool IsRunningInMash() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(switches::kIsRunningInMash);
 }
 
 // Hook that allows single-sample metric code from //components/metrics to

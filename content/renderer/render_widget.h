@@ -274,7 +274,7 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
-  // RenderWidgetScreenMetricsDelegate
+  // RenderWidgetScreenMetricsEmulatorDelegate
   void Redraw() override;
   void Resize(const ResizeParams& resize_params) override;
   void SetScreenMetricsEmulationParameters(
