@@ -395,6 +395,10 @@ class SiteConfigTest(cros_test_lib.TestCase):
         hw_tests=[config_lib.HWTestConfig('hw_suite')],
         hw_tests_override=[config_lib.HWTestConfig('hw_override')])
 
+    site_config.Add(
+        'tast_vm_tests',
+        tast_vm_tests=[config_lib.TastVMTestConfig('tast_vm_suite', ['(bvt)'])])
+
     site_config.AddGroup(
         'parent',
         default,
@@ -471,6 +475,12 @@ class SiteConfigTest(cros_test_lib.TestCase):
             'name': 'hw_tests',
             'hw_tests': [config_lib.HWTestConfig('hw_suite')],
             'hw_tests_override': [config_lib.HWTestConfig('hw_override')],
+        },
+        'tast_vm_tests': {
+            '_template': None,
+            'name': 'tast_vm_tests',
+            'tast_vm_tests': [
+                config_lib.TastVMTestConfig('tast_vm_suite', ['(bvt)'])],
         },
         'parent': {
             '_template': None,

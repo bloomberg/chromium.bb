@@ -23,6 +23,7 @@ from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import scheduler_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.cbuildbot.stages import tast_test_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import config_lib
@@ -236,14 +237,17 @@ class SimpleBuilder(generic_builders.Builder):
           [generic_stages.RepeatStage, config.vm_test_runs,
            vm_test_stages.VMTestStage, board]]
     else:
-      # Give the VMTests one retry attempt in case failures are flaky.
-      stage_list += [[generic_stages.RetryStage, 1,
+      # Retry VM-based tests in case failures are flaky.
+      stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
                       vm_test_stages.VMTestStage, board]]
 
     if config.gce_tests:
-      # Give the GCETests one retry attempt in case failures are flaky.
-      stage_list += [[generic_stages.RetryStage, 1, vm_test_stages.GCETestStage,
-                      board]]
+      stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+                      vm_test_stages.GCETestStage, board]]
+
+    if config.tast_vm_tests:
+      stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+                      tast_test_stages.TastVMTestStage, board]]
 
     if config.afdo_generate:
       stage_list += [[afdo_stages.AFDODataGenerateStage, board]]

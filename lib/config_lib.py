@@ -266,7 +266,8 @@ class BuildConfig(AttrDict):
         if k == 'child_configs':
           result[k] = [x.deepcopy() for x in v]
         elif k in ('vm_tests', 'vm_tests_override',
-                   'hw_tests', 'hw_tests_override'):
+                   'hw_tests', 'hw_tests_override',
+                   'tast_vm_tests'):
           result[k] = [copy.copy(x) for x in v]
         # type(v) is faster than isinstance.
         elif type(v) is list:
@@ -402,6 +403,30 @@ class GCETestConfig(object):
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
+
+
+class TastVMTestConfig(object):
+  """Config object for a Tast virtual-machine-based test suite.
+
+  Members:
+    name: String containing short human-readable name describing test suite.
+    test_exprs: List of string expressions describing which tests to run; this
+                is passed directly to the 'tast run' command. See
+                https://goo.gl/UPNEgT for info about test expressions.
+    timeout: Number of seconds to wait before timing out waiting for
+             results.
+  """
+  DEFAULT_TEST_TIMEOUT = 60 * 60
+
+  def __init__(self, suite_name, test_exprs, timeout=DEFAULT_TEST_TIMEOUT):
+    """Constructor -- see members above."""
+    self.suite_name = suite_name
+    self.test_exprs = test_exprs
+    self.timeout = timeout
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
 
 class ModelTestConfig(object):
   """Model specific config that controls which test suites are executed.
@@ -764,6 +789,10 @@ def DefaultSettings():
       # A list of GCETestConfig objects to use. Currently only some lakitu
       # builders run gce tests.
       gce_tests=[],
+
+      # A list of TastVMTestConfig objects describing Tast-based test suites
+      # that should be run in a VM.
+      tast_vm_tests=[],
 
       # List of patterns for portage packages for which stripped binpackages
       # should be uploaded to GS. The patterns are used to search for packages
@@ -1753,6 +1782,7 @@ def _DeserializeTestConfigs(build_dict):
   _DeserializeTestConfig(build_dict, 'hw_tests_override', HWTestConfig,
                          preserve_none=True)
   _DeserializeTestConfig(build_dict, 'gce_tests', GCETestConfig)
+  _DeserializeTestConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):

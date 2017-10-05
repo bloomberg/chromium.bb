@@ -98,6 +98,7 @@
         "slave_configs": null,
         "suite_scheduling": false,
         "sync_chrome": null,
+        "tast_vm_tests": [],
         "trybot_list": false,
         "unittest_blacklist": [],
         "unittests": true,
