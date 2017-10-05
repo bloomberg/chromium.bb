@@ -65,7 +65,7 @@ class NativeRendererMessagingService : public RendererMessagingService,
 
   // Creates and opens a new message port in the specified context.
   gin::Handle<GinPort> Connect(ScriptContext* script_context,
-                               const std::string& target_id,
+                               const ExtensionId& target_id,
                                const std::string& name,
                                bool include_tls_channel_id);
 
@@ -92,7 +92,7 @@ class NativeRendererMessagingService : public RendererMessagingService,
   void DispatchOnConnectToListeners(
       ScriptContext* script_context,
       const PortId& target_port_id,
-      const std::string& target_extension_id,
+      const ExtensionId& target_extension_id,
       const std::string& channel_name,
       const ExtensionMsg_TabConnectionInfo* source,
       const ExtensionMsg_ExternalConnectionInfo& info,

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "extensions/common/extension_id.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
@@ -89,7 +90,7 @@ class RendererMessagingService {
   virtual void DispatchOnConnectToListeners(
       ScriptContext* script_context,
       const PortId& target_port_id,
-      const std::string& target_extension_id,
+      const ExtensionId& target_extension_id,
       const std::string& channel_name,
       const ExtensionMsg_TabConnectionInfo* source,
       const ExtensionMsg_ExternalConnectionInfo& info,
