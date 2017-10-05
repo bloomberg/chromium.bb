@@ -15,10 +15,16 @@ namespace content {
 
 void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
                                    base::LaunchOptions* options) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
     type = service_manager::SANDBOX_TYPE_NO_SANDBOX;
+  }
 
   if (type != service_manager::SANDBOX_TYPE_NO_SANDBOX) {
+    // TODO(750938): Implement sandboxed/isolated subprocess launching
+    //               once we implement a solution for accessing file resources
+    //               from sandboxed processes.
+    NOTIMPLEMENTED();
+
     options->clone_flags = LP_CLONE_FDIO_STDIO;
   } else {
     options->clone_flags = LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB |

@@ -16,7 +16,10 @@ void RendererMainPlatformDelegate::PlatformInitialize() {}
 void RendererMainPlatformDelegate::PlatformUninitialize() {}
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  return true;
+  // TODO(750938): Implement sandboxed/isolated subprocess launching,
+  // and perform some checks to ensure that sandboxing is effective.
+
+  return false;
 }
 
 }  // namespace content
