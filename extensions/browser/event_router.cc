@@ -681,6 +681,13 @@ void EventRouter::OnEventAck(BrowserContext* context,
     pm->DecrementLazyKeepaliveCount(host->extension());
 }
 
+bool EventRouter::HasRegisteredEvents(const ExtensionId& extension_id) const {
+  return !GetRegisteredEvents(extension_id, RegisteredEventType::kLazy)
+              .empty() ||
+         !GetRegisteredEvents(extension_id, RegisteredEventType::kServiceWorker)
+              .empty();
+}
+
 void EventRouter::ReportEvent(events::HistogramValue histogram_value,
                               const Extension* extension,
                               bool did_enqueue) {
@@ -783,10 +790,14 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
 void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   // Add all registered lazy listeners to our cache.
-  // TODO(lazyboy): Load extension SW lazy events.
   std::set<std::string> registered_events =
       GetRegisteredEvents(extension->id(), RegisteredEventType::kLazy);
   listeners_.LoadUnfilteredLazyListeners(extension->id(), registered_events);
+
+  std::set<std::string> registered_worker_events =
+      GetRegisteredEvents(extension->id(), RegisteredEventType::kServiceWorker);
+  listeners_.LoadUnfilteredLazyListeners(extension->id(), registered_events);
+
   const DictionaryValue* filtered_events = GetFilteredEvents(extension->id());
   if (filtered_events)
     listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
