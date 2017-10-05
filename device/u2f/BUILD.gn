@@ -29,6 +29,9 @@ source_set("u2f") {
     "//device/base",
     "//device/bluetooth",
     "//net",
+    "//services/device/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
   ]
 
   # HID is not supported on Android.
