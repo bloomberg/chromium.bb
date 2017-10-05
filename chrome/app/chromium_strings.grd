@@ -399,9 +399,6 @@ Chromium is unable to recover your settings.
         </message>
       </if>
       <!-- Options Dialog -->
-      <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
-        Chromium may use web services to improve your browsing experience.
-      </message>
       <if expr="is_win">
         <message name="IDS_SHORTCUT_TOOLTIP" desc="Text for the hover-on tooltip for the Chromium shortcuts.">
           Access the Internet
@@ -896,13 +893,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <if expr="is_macosx">
         <message name="IDS_FIRSTRUN_DLG_MAC_SET_DEFAULT_BROWSER_LABEL" desc="Label for checkbox that sets the default browser">
           Set Chromium as your default browser
-        </message>
-      </if>
-
-      <!-- chrome://settings. Android uses native UI for settings -->
-      <if expr="not is_android">
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chromium as default' browser button">
-          Make Chromium the default browser
         </message>
       </if>
 

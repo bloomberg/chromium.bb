@@ -4903,45 +4903,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set which search engine is used when searching from the
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches.">
-        Enable "Ok Google" to start a voice search.
-      </message>
-      <if expr="chromeos">
-        <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
-          Say "Ok Google" in a new tab, google.com, and the App Launcher
-        </message>
-      </if>
-      <if expr="not chromeos">
-        <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
-          Say "Ok Google" in a new tab and google.com
-        </message>
-      </if>
-      <message name="IDS_HOTWORD_SEARCH_ALWAYS_ON_DESCRIPTION" desc="Description of the hotword-always-on search preference.">
-        Say "Ok Google" when the screen is on and unlocked.
-      </message>
-      <message name="IDS_HOTWORD_RETRAIN_LINK" desc="Link to retrain the hotword voice model.">
-        Retrain voice model
-      </message>
-      <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword search preference">
-        When you say "Ok Google," Chrome will search for what you say next.
-      </message>
       <message name="IDS_HOTWORD_AUDIO_HISTORY_ENABLED" desc="Text to display when the user has audio history enabled.">
         Voice &amp; Audio Activity is enabled for <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
       </message>
-      <message name="IDS_HOTWORD_ALWAYS_ON_AUDIO_HISTORY_DESCRIPTION" desc="Description for the audio history message when always-on is enabled.">
-        Voice &amp; Audio Activity is required to use "Ok Google"
-      </message>
-      <message name="IDS_HOTWORD_AUDIO_HISTORY_MANAGE_LINK" desc="Text for link to manage audio history.">
-        Manage Voice &amp; Audio Activity
-      </message>
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_TITLE" desc="The title text for the bubble to enable the hotword voice search trigger.">
         Ok Google
-      </message>
-      <message name="IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE" desc="The button text that allows the hotword voice search trigger.">
-        OK
-      </message>
-      <message name="IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE" desc="The button text that disallows the hotword voice search trigger.">
-        Cancel
       </message>
       <message name="IDS_HOTWORD_GENERIC_ERROR_MESSAGE" desc="The default error message text when no additional details are known.">
         This feature is temporarily unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Help<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -4951,9 +4917,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_HOTWORD_MICROPHONE_ERROR_MESSAGE" desc="The error message text when hotwording fails because the microphone isn't working.">
         Microphone is currently unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="chrome://settings/content#media-stream-settings"&gt;</ph>Manage microphone<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-      </message>
-      <message name="IDS_HOTWORD_AUDIO_LOGGING_ENABLE" desc="A checkbox in the hotword confirm dialog that allows for sending audio of 'Ok, Google' plus a few seconds before back to Google to improve voice search.">
-        Improve voice search by sending the sound of "Ok Google," and a few seconds before, to Google.
       </message>
       <if expr="is_win">
         <!-- Conflicts page -->
@@ -7227,32 +7190,8 @@ I don't think this site should be blocked!
            Your home page has been set.
         </message>
         <!-- TODO(718146) Move autofill strings to autofill_strings.grd -->
-        <message name="IDS_AUTOFILL_EDIT_PROFILE_BUTTON" desc="The label of the button that edits the currently selected Autofill profile.">
-          Edit...
-        </message>
         <message name="IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup.">
           Autofill
-        </message>
-        <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link in the Autofill settings overlay.">
-          About Autofill
-        </message>
-        <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new Autofill address.">
-          Add new street address...
-        </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new Autofill credit card.">
-          Add new credit card...
-        </message>
-        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
-          Autofill settings
-        </message>
-        <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
-          Addresses
-        </message>
-        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="The name of the Cards group of the Autofill dialog.">
-          Cards
-        </message>
-        <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
-          Edit address
         </message>
         <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
           Add an address
@@ -7260,19 +7199,10 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_ADD_CONTACT_CAPTION" desc="The caption on the edit Autofill contact dialog for the new entry.">
           Add a contact
         </message>
-        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill card dialog. The card can be either credit, debit, or prepaid.">
-          Edit card
-        </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill card dialog the new entry. The card can be either credit, debit, or prepaid.">
-          Add a card
-        </message>
         <message name="IDS_AUTOFILL_USE_PAYMENTS_DATA" desc="The text for the checkbox that controls the Autofill/Payments integration feature.">
           Cards and addresses using Google Payments
         </message>
 
-        <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
-          Email
-        </message>
         <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
           Phone
         </message>
@@ -10081,9 +10011,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_PROFILES_LIST_LEGACY_SUPERVISED_USER_LABEL" desc="Text to display in the multi-profiles list next to the profile name when this profile is supervised.">
           (Supervised)
         </message>
-        <message name="IDS_PROFILES_LIST_CHILD_LABEL" desc="Text to display in the multi-profiles list next to the profile name when this profile is associated with a child account.">
-          (Account for kids)
-        </message>
         <message name="IDS_PROFILES_SINGLE_USER_MESSAGE" desc="Text to display in the multi-profiles section when there is only one user">
           You are currently the only <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> user.
         </message>
@@ -11199,10 +11126,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL" desc="Label for the spinner icon used for accessibility purposes. This label is needed because this state does not have a tooltip.">
         Finding your phone
-      </message>
-      <!-- Device types -->
-      <message name="IDS_EASY_UNLOCK_GENERIC_DEVICE_TYPE" desc="String for an unknown device type. Currently used to cover all non-Chrome-OS devices.">
-        Chrome device
       </message>
 
       <!-- Device permissions dialog strings. -->
