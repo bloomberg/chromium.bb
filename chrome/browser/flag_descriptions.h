@@ -359,6 +359,9 @@ extern const char kExperimentalKeyboardLockUiDescription[];
 extern const char kExperimentalSecurityFeaturesName[];
 extern const char kExperimentalSecurityFeaturesDescription[];
 
+extern const char kExperimentalVRFeaturesName[];
+extern const char kExperimentalVRFeaturesDescription[];
+
 extern const char kExperimentalWebPlatformFeaturesName[];
 extern const char kExperimentalWebPlatformFeaturesDescription[];
 
