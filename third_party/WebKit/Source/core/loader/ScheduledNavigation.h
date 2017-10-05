@@ -21,7 +21,8 @@ class ScheduledNavigation
 
  public:
   enum class Reason {
-    kFormSubmission,
+    kFormSubmissionGet,
+    kFormSubmissionPost,
     kHttpHeaderRefresh,
     kFrameNavigation,
     kMetaTagRefresh,

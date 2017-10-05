@@ -326,12 +326,15 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
   ScheduledFormSubmission(Document* document,
                           FormSubmission* submission,
                           bool replaces_current_item)
-      : ScheduledNavigation(Reason::kFormSubmission,
+      : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
+                                ? Reason::kFormSubmissionGet
+                                : Reason::kFormSubmissionPost,
                             0,
                             document,
                             replaces_current_item,
                             true),
         submission_(submission) {
+    DCHECK_NE(submission->Method(), FormSubmission::kDialogMethod);
     DCHECK(submission_->Form());
   }
 

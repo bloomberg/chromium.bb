@@ -8,10 +8,13 @@ Cleared scheduled navigation
 Scheduled navigation with delay 0 and reason httpHeaderRefresh to url navigation-chain3.pl
 Started loading
 Cleared scheduled navigation
-Scheduled navigation with delay 0 and reason formSubmission to url navigation-chain3.pl?x=y
+Scheduled navigation with delay 0 and reason formSubmissionGet to url navigation-chain3.pl?afterGetForm=bar
 Started loading
 Cleared scheduled navigation
-Scheduled navigation with delay 0 and reason reload to url navigation-chain3.pl?x=y
+Scheduled navigation with delay 0 and reason formSubmissionPost to url navigation-chain3.pl?afterGetForm=bar
+Started loading
+Cleared scheduled navigation
+Scheduled navigation with delay 0 and reason reload to url navigation-chain3.pl?afterGetForm=bar
 Started loading
 Cleared scheduled navigation
 
