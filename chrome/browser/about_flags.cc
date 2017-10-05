@@ -2560,11 +2560,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          chrome::android::kContentSuggestionsThumbnailDominantColor)},
-    {"enable-content-suggestions-video-overlay",
-     flag_descriptions::kEnableContentSuggestionsVideoOverlayName,
-     flag_descriptions::kEnableContentSuggestionsVideoOverlayDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContentSuggestionsVideoOverlay)},
     {"enable-content-suggestions-settings",
      flag_descriptions::kEnableContentSuggestionsSettingsName,
      flag_descriptions::kEnableContentSuggestionsSettingsDescription,

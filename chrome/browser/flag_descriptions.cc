@@ -1703,12 +1703,6 @@ const char kEnableContentSuggestionsThumbnailDominantColorDescription[] =
     "Use content suggestions thumbnail dominant color as a placeholder before "
     "the real thumbnail is fetched (requires Chrome Home).";
 
-const char kEnableContentSuggestionsVideoOverlayName[] =
-    "Video icon overlay on thumbnails for content suggestions cards.";
-const char kEnableContentSuggestionsVideoOverlayDescription[] =
-    "If enabled, the content suggestions cards for suggestions with a video "
-    "will show a video play icon overlay on the thumbnail.";
-
 const char kEnableCopylessPasteName[] = "App Indexing (Copyless Paste)";
 const char kEnableCopylessPasteDescription[] =
     "Provide suggestions for text input, based on your recent context. For "

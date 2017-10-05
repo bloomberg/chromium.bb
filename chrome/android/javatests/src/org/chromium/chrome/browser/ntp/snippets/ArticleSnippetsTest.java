@@ -310,6 +310,58 @@ public class ArticleSnippetsTest {
     @Test
     @MediumTest
     @Feature({"ArticleSnippets", "RenderTest"})
+    public void testVideoSuggestion() throws IOException {
+        SuggestionsCategoryInfo categoryInfo = new SuggestionsCategoryInfo(FULL_CATEGORY,
+                "Section Title", ContentSuggestionsCardLayout.FULL_CARD,
+                ContentSuggestionsAdditionalAction.NONE,
+                /* show_if_empty = */ true, "No suggestions");
+
+        SnippetArticle suggestionWithLightDominantColor =
+                new SnippetArticle(FULL_CATEGORY, "id1", "Snippet", "Publisher", "www.google.com",
+                        mTimestamp, // Publish timestamp
+                        10f, // Score
+                        mTimestamp, // Fetch timestamp
+                        true, // Is video suggestion
+                        0xFFEEEEEE); // Thumbnail dominant color
+        renderSuggestion(suggestionWithLightDominantColor, categoryInfo,
+                "video_suggestion_with_light_dominant_color");
+
+        SnippetArticle suggestionWithLightThumbnail =
+                new SnippetArticle(FULL_CATEGORY, "id1", "Snippet", "Publisher", "www.google.com",
+                        mTimestamp, // Publish timestamp
+                        10f, // Score
+                        mTimestamp, // Fetch timestamp
+                        true, // Is video suggestion
+                        0xFFEEEEEE); // Thumbnail dominant color
+        setThumbnail(suggestionWithLightThumbnail, "chrome/test/data/android/watch.jpg");
+        renderSuggestion(suggestionWithLightThumbnail, categoryInfo,
+                "video_suggestion_with_light_thumbnail");
+
+        SnippetArticle suggestionWithDarkDominantColor =
+                new SnippetArticle(FULL_CATEGORY, "id1", "Snippet", "Publisher", "www.google.com",
+                        mTimestamp, // Publish timestamp
+                        10f, // Score
+                        mTimestamp, // Fetch timestamp
+                        true, // Is video suggestion
+                        0xFF8E5C39); // Thumbnail dominant color
+        renderSuggestion(suggestionWithDarkDominantColor, categoryInfo,
+                "video_suggestion_with_dark_dominant_color");
+
+        SnippetArticle suggestionWithDarkThumbnail =
+                new SnippetArticle(FULL_CATEGORY, "id1", "Snippet", "Publisher", "www.google.com",
+                        mTimestamp, // Publish timestamp
+                        10f, // Score
+                        mTimestamp, // Fetch timestamp
+                        true, // Is video suggestion
+                        0xFF8E5C39); // Thumbnail dominant color
+        setThumbnail(suggestionWithDarkThumbnail, "chrome/test/data/android/capybara.jpg");
+        renderSuggestion(
+                suggestionWithDarkThumbnail, categoryInfo, "video_suggestion_with_dark_thumbnail");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ArticleSnippets", "RenderTest"})
     public void testGenericSigninPromo() throws IOException {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mRecyclerView.init(mUiConfig, null);
@@ -391,6 +443,13 @@ public class ArticleSnippetsTest {
             mContentView.removeView(mSuggestion.itemView);
             mSuggestion.recycle();
         });
+    }
+
+    private void setThumbnail(SnippetArticle suggestion, String thumbnailPath) {
+        Bitmap watch = BitmapFactory.decodeFile(UrlUtils.getIsolatedTestFilePath(thumbnailPath));
+        Drawable drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
+                watch, mActivityTestRule.getActivity().getResources());
+        suggestion.setThumbnail(mUiDelegate.getReferencePool().put(drawable));
     }
 
     private Bitmap getBitmap(@DrawableRes int resId) {

@@ -49,14 +49,36 @@ public class ContextualSuggestionsTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/test.html";
 
     private static final List<SnippetArticle> FAKE_CONTEXTUAL_SUGGESTIONS = Arrays.asList(
-            new SnippetArticle(KnownCategories.CONTEXTUAL, "suggestion0",
-                    "James Roderick to step down as conductor for Laville orchestra",
-                    "The Curious One", "http://example.com", 0, 0.0f, 0L, false, null),
-            new SnippetArticle(KnownCategories.CONTEXTUAL, "suggestion1",
-                    "Boy raises orphaned goat", "Meme feed", "http://example.com", 0, 0.0f, 0L,
-                    false, null),
-            new SnippetArticle(KnownCategories.CONTEXTUAL, "suggestion2", "Top gigs this week",
-                    "Hello World", "http://example.com", 0, 0.0f, 0L, false, null));
+            new SnippetArticle(KnownCategories.CONTEXTUAL, // category
+                    "suggestion0", // idWithinCategory
+                    "James Roderick to step down as conductor for Laville orchestra", // title
+                    "The Curious One", // publisher
+                    "http://example.com", // url
+                    0, // publishTimestamp
+                    0.0f, // score
+                    0L, // fetchTimestamp
+                    false, // isVideoSuggestion
+                    null), // thumbnailDominantColor
+            new SnippetArticle(KnownCategories.CONTEXTUAL, // category
+                    "suggestion1", // idWithinCategory
+                    "Boy raises orphaned goat", // title
+                    "Meme feed", // publisher
+                    "http://example.com", // url
+                    0, // publishTimestamp
+                    0.0f, // score
+                    0L, // fetchTimestamp
+                    false, // isVideoSuggestion
+                    null), // thumbnailDominantColor
+            new SnippetArticle(KnownCategories.CONTEXTUAL, // category
+                    "suggestion2", // idWithinCategory
+                    "Top gigs this week", // title
+                    "Hello World", // publisher
+                    "http://example.com", // url
+                    0, // publishTimestamp
+                    0.0f, // score
+                    0L, // fetchTimestamp
+                    false, // isVideoSuggestion
+                    null)); // thumbnailDominantColor
 
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
@@ -157,9 +179,9 @@ public class ContextualSuggestionsTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         mActivityRule.getObserver().mOpenedCallbackHelper.waitForCallback(0);
 
-        RecyclerView carouselRecyclerView = getCarouselRecyclerView();
+        RecyclerView recyclerView = getCarouselRecyclerView();
 
-        mRenderTestRule.render(carouselRecyclerView.getChildAt(0), "contextual_suggestions_card");
+        mRenderTestRule.render(recyclerView.getChildAt(0), "contextual_suggestions_card");
     }
 
     @Nullable

@@ -140,10 +140,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         boolean showHeadline = shouldShowHeadline();
         boolean showThumbnail = shouldShowThumbnail(layout);
-        boolean showThumbnailVideoOverlay = shouldShowThumbnailVideoOverlay(showThumbnail);
+        boolean showThumbnailVideoBadge = shouldShowThumbnailVideoBadge(showThumbnail);
 
         mSuggestionsBinder.updateFieldsVisibility(
-                showHeadline, showThumbnail, showThumbnailVideoOverlay);
+                showHeadline, showThumbnail, showThumbnailVideoBadge);
     }
 
     /** If the title is empty (or contains only whitespace characters), we do not show it. */
@@ -158,10 +158,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         return true;
     }
 
-    private boolean shouldShowThumbnailVideoOverlay(boolean showThumbnail) {
+    private boolean shouldShowThumbnailVideoBadge(boolean showThumbnail) {
         if (!showThumbnail) return false;
         if (!mArticle.mIsVideoSuggestion) return false;
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_VIDEO_OVERLAY);
+        return FeatureUtilities.isChromeHomeEnabled();
     }
 
     /** Updates the visibility of the card's offline badge by checking the bound article's info. */

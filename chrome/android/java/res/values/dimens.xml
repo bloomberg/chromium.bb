@@ -359,12 +359,9 @@
     <dimen name="chrome_home_suggestions_footer_padding_bottom">24dp</dimen>
     <dimen name="content_suggestions_card_modern_margin">16dp</dimen>
     <dimen name="content_suggestions_card_modern_corner_radius">10dp</dimen>
-    <dimen name="content_suggestions_card_video_overlay_size">48dp</dimen>
-    <dimen name="content_suggestions_card_video_overlay_margin_start">38dp</dimen>
-    <dimen name="content_suggestions_card_video_overlay_margin_top">38dp</dimen>
-    <dimen name="content_suggestions_card_modern_offline_badge_overlay_size">18dp</dimen>
-    <dimen name="content_suggestions_card_modern_offline_badge_overlay_margin_start">8dp</dimen>
-    <dimen name="content_suggestions_card_modern_offline_badge_overlay_margin_top">8dp</dimen>
+    <dimen name="content_suggestions_card_modern_badge_size">18dp</dimen>
+    <dimen name="content_suggestions_card_modern_badge_margin_start">8dp</dimen>
+    <dimen name="content_suggestions_card_modern_badge_margin_top">8dp</dimen>
     <dimen name="contextual_carousel_space_between_cards">8dp</dimen>
     <dimen name="md_incognito_ntp_line_spacing">6sp</dimen>
     <dimen name="md_incognito_ntp_padding_left">16dp</dimen>
