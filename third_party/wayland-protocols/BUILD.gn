@@ -221,6 +221,27 @@ source_set("stylus_protocol") {
   public_configs = [ ":stylus_protocol_config" ]
 }
 
+config("pointer_gestures_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("pointer_gestures_protocol") {
+  sources = [
+    "include/protocol/pointer-gestures-unstable-v1-client-protocol.h",
+    "include/protocol/pointer-gestures-unstable-v1-server-protocol.h",
+    "protocol/pointer-gestures-v1-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":pointer_gestures_protocol_config" ]
+}
+
 config("keyboard_configuration_protocol_config") {
   include_dirs = [ "include/protocol" ]
 }

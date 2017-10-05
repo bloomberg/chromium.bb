@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "components/exo/pointer_delegate.h"
-#include "components/exo/pointer_stylus_delegate.h"
+#include "components/exo/pointer_gesture_pinch_delegate.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -96,6 +96,8 @@ Pointer::~Pointer() {
     focus_surface_->RemoveSurfaceObserver(this);
     focus_surface_->UnregisterCursorProvider(this);
   }
+  if (pinch_delegate_)
+    pinch_delegate_->OnPointerDestroying(this);
   auto* helper = WMHelper::GetInstance();
   helper->RemoveDisplayConfigurationObserver(this);
   helper->RemoveCursorObserver(this);
@@ -149,6 +151,10 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
 
 gfx::NativeCursor Pointer::GetCursor() {
   return cursor_;
+}
+
+void Pointer::SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate) {
+  pinch_delegate_ = delegate;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -291,6 +297,36 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
 void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
   OnMouseEvent(event);
+}
+
+void Pointer::OnGestureEvent(ui::GestureEvent* event) {
+  // We don't want to handle gestures generated from touchscreen events,
+  // we handle touch events in touch.cc
+  if (event->details().device_type() != ui::GestureDeviceType::DEVICE_TOUCHPAD)
+    return;
+
+  if (!focus_surface_ || !pinch_delegate_)
+    return;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_PINCH_BEGIN:
+      pinch_delegate_->OnPointerPinchBegin(event->unique_touch_event_id(),
+                                           event->time_stamp(), focus_surface_);
+      delegate_->OnPointerFrame();
+      break;
+    case ui::ET_GESTURE_PINCH_UPDATE:
+      pinch_delegate_->OnPointerPinchUpdate(event->time_stamp(),
+                                            event->details().scale());
+      delegate_->OnPointerFrame();
+      break;
+    case ui::ET_GESTURE_PINCH_END:
+      pinch_delegate_->OnPointerPinchEnd(event->unique_touch_event_id(),
+                                         event->time_stamp());
+      delegate_->OnPointerFrame();
+      break;
+    default:
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
