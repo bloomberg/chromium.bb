@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -124,29 +126,28 @@ TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
 
   switch (result->type) {
     case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
-      result->value.Append(std::make_unique<base::Value>());
-      break;
     case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
     case bluez::BluetoothServiceAttributeValueBlueZ::INT:
     case bluez::BluetoothServiceAttributeValueBlueZ::UUID:
     case bluez::BluetoothServiceAttributeValueBlueZ::STRING:
     case bluez::BluetoothServiceAttributeValueBlueZ::URL:
-    case bluez::BluetoothServiceAttributeValueBlueZ::BOOL:
+    case bluez::BluetoothServiceAttributeValueBlueZ::BOOL: {
       result->type_size = attr_bluez.size();
-      result->value.Append(attr_bluez.value().CreateDeepCopy());
+      std::string json;
+      base::JSONWriter::Write(attr_bluez.value(), &json);
+      result->json_value = std::move(json);
       break;
+    }
     case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE:
       if (depth + 1 >= arc::kBluetoothSDPMaxDepth) {
         result->type = bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE;
         result->type_size = 0;
-        result->value.Append(std::make_unique<base::Value>());
         return result;
       }
       for (const auto& child : attr_bluez.sequence()) {
         result->sequence.push_back(Convert(child, depth + 1));
       }
       result->type_size = result->sequence.size();
-      result->value.Clear();
       break;
     default:
       NOTREACHED();
@@ -164,24 +165,21 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
 
   switch (type) {
     case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
-      return bluez::BluetoothServiceAttributeValueBlueZ();
     case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
     case bluez::BluetoothServiceAttributeValueBlueZ::INT:
     case bluez::BluetoothServiceAttributeValueBlueZ::UUID:
     case bluez::BluetoothServiceAttributeValueBlueZ::STRING:
     case bluez::BluetoothServiceAttributeValueBlueZ::URL:
     case bluez::BluetoothServiceAttributeValueBlueZ::BOOL: {
-      if (attr->value.GetSize() != 1) {
+      if (!attr->json_value.has_value()) {
         return bluez::BluetoothServiceAttributeValueBlueZ(
             bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
             std::make_unique<base::Value>());
       }
 
-      std::unique_ptr<base::Value> value;
-      attr->value.Remove(0, &value);
-
       return bluez::BluetoothServiceAttributeValueBlueZ(
-          type, static_cast<size_t>(attr->type_size), std::move(value));
+          type, static_cast<size_t>(attr->type_size),
+          base::JSONReader::Read(attr->json_value.value()));
     }
     case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE: {
       if (depth + 1 >= arc::kBluetoothSDPMaxDepth || attr->sequence.empty()) {

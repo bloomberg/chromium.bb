@@ -6,8 +6,6 @@
 
 module arc.mojom;
 
-import "mojo/common/values.mojom";
-
 [Extensible]
 enum BluetoothAdapterState {
   OFF = 0,
@@ -272,8 +270,17 @@ enum BluetoothSdpAttributeType {
 struct BluetoothSdpAttribute {
   BluetoothSdpAttributeType type;
   uint32 type_size;
-  mojo.common.mojom.LegacyListValue value;
   array<BluetoothSdpAttribute> sequence;
+
+  // Holds the stringified JSON value of this attribute.
+  // If the type is NULLTYPE or SEQUENCE, this is empty.
+  // Explicitly specify the ordinal @3, because introducing this is a breaking
+  // change. This field is introduced between version 7 and 8, though
+  // MinVersion is not annotated because of breaking change, too.
+  // See details in the bug linked below.
+  // TODO(crbug.com/767313): Use mojo/common/values.mojom, when new libmojo
+  // (440057 or later) is rolled to ARC repository.
+  string? json_value@3;
 };
 
 struct BluetoothSdpRecord {
