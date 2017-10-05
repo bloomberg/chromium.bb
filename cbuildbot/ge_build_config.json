@@ -290,6 +290,18 @@
       ]
     },
     {
+      "name": "cobblepot",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "cyan",
       "configs": [
         {
@@ -490,6 +502,18 @@
           "leader_board": false,
           "board_group": "rambi",
           "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "gonzo",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -722,6 +746,30 @@
       ]
     },
     {
+      "name": "lasilla-ground",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "lasilla-sky",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "leon",
       "configs": [
         {
@@ -766,6 +814,18 @@
           "leader_board": false,
           "board_group": "sandybridge",
           "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "macchiato-ground",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -909,6 +969,18 @@
           "experimental": false,
           "leader_board": true,
           "board_group": "oak",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "octavius",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
           "arch": "ARM_INTERNAL"
         }
       ]
@@ -1090,6 +1162,18 @@
           "leader_board": false,
           "board_group": "jecht",
           "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "romer",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
@@ -1438,6 +1522,18 @@
           "leader_board": false,
           "board_group": "slippy",
           "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "wooten",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
         }
       ]
     },

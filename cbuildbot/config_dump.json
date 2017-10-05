@@ -6294,6 +6294,7 @@
     },
     "cobblepot-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "cobblepot"
@@ -10182,6 +10183,7 @@
     },
     "gonzo-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "gonzo"
@@ -14403,6 +14405,7 @@
     },
     "lasilla-ground-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "lasilla-ground"
@@ -14549,6 +14552,7 @@
     },
     "lasilla-sky-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "lasilla-sky"
@@ -15547,6 +15551,7 @@
     },
     "macchiato-ground-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "macchiato-ground"
@@ -15782,6 +15787,7 @@
             "celes-release",
             "chell-release",
             "clapper-release",
+            "cobblepot-release",
             "coral-release",
             "cyan-release",
             "daisy-release",
@@ -15801,6 +15807,7 @@
             "gandof-release",
             "glimmer-release",
             "gnawty-release",
+            "gonzo-release",
             "gru-release",
             "guado-accelerator-release",
             "guado-macrophage-release",
@@ -15821,10 +15828,13 @@
             "lakitu-st-release",
             "lakitu_next-release",
             "lars-release",
+            "lasilla-ground-release",
+            "lasilla-sky-release",
             "leon-release",
             "link-release",
             "lulu-release",
             "lumpy-release",
+            "macchiato-ground-release",
             "mccloud-release",
             "monroe-release",
             "nautilus-release",
@@ -15837,6 +15847,7 @@
             "nyan_blaze-release",
             "nyan_kitty-release",
             "oak-release",
+            "octavius-release",
             "orco-release",
             "panther-release",
             "parrot-release",
@@ -15853,6 +15864,7 @@
             "reks-release",
             "relm-release",
             "rikku-release",
+            "romer-release",
             "samus-release",
             "sand-release",
             "scarlet-release",
@@ -15882,6 +15894,7 @@
             "winky-release",
             "wizpig-release",
             "wolf-release",
+            "wooten-release",
             "zako-release",
             "zoombini-release"
         ],
@@ -18382,6 +18395,7 @@
     },
     "octavius-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "octavius"
@@ -21823,6 +21837,81 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "romer-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "romer"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "romer-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "romer"
+        ]
+    },
+    "romer-full": {
+        "_template": "full",
+        "boards": [
+            "romer"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "romer-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "romer"
+        ]
+    },
+    "romer-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "romer"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "romer-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "romer"
+        ],
+        "vm_tests": []
+    },
+    "romer-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "romer"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "romer-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "romer"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "romer-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "romer"
         ]
     },
     "rowan-chrome-pfq": {
@@ -29142,6 +29231,7 @@
     },
     "wooten-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "wooten"
