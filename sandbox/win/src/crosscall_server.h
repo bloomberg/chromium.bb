@@ -95,7 +95,7 @@ class CrossCallParamsEx : public CrossCallParams {
  public:
   // Factory constructor. Pass an IPCbuffer (and buffer size) that contains a
   // pending IPCcall. This constructor will:
-  // 1) validate the IPC buffer. returns NULL is the IPCbuffer is malformed.
+  // 1) validate the IPC buffer. returns nullptr is the IPCbuffer is malformed.
   // 2) make a copy of the IPCbuffer (parameter capture)
   static CrossCallParamsEx* CreateFromBuffer(void* buffer_base,
                                              uint32_t buffer_size,
@@ -103,7 +103,7 @@ class CrossCallParamsEx : public CrossCallParams {
 
   // Provides IPCinput parameter raw access:
   // index : the parameter to read; 0 is the first parameter
-  // returns NULL if the parameter is non-existent. If it exists it also
+  // returns nullptr if the parameter is non-existent. If it exists it also
   // returns the size in *size
   void* GetRawParameter(uint32_t index, uint32_t* size, ArgType* type);
 
@@ -170,7 +170,7 @@ struct IPCParams {
 // Models an entity that can process an IPC message or it can route to another
 // one that could handle it. When an IPC arrives the IPC implementation will:
 // 1) call OnMessageReady() with the tag of the pending IPC. If the dispatcher
-//    returns NULL it means that it cannot handle this IPC but if it returns
+//    returns nullptr it means that it cannot handle this IPC but if it returns
 //    non-null, it must be the pointer to a dispatcher that can handle it.
 // 2) When the  IPC finally obtains a valid Dispatcher the IPC
 //    implementation creates a CrossCallParamsEx from the raw IPC buffer.
@@ -233,7 +233,7 @@ class Dispatcher {
                                         void* p9);
 
   // Called from the  IPC implementation when an  IPC message is ready override
-  // on a derived class to handle a set of  IPC messages. Return NULL if your
+  // on a derived class to handle a set of  IPC messages. Return nullptr if your
   // subclass does not handle the message or return the pointer to the subclass
   // that can handle it.
   virtual Dispatcher* OnMessageReady(IPCParams* ipc, CallbackGeneric* callback);

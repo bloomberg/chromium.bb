@@ -35,7 +35,7 @@ TEST(AppContainerTest, DenyOpenEventForLowBox) {
   event_name += L"\\test";
 
   base::win::ScopedHandle event(
-      ::CreateEvent(NULL, FALSE, FALSE, event_name.c_str()));
+      ::CreateEvent(nullptr, false, false, event_name.c_str()));
   ASSERT_TRUE(event.IsValid());
 
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"Event_Open f test"));

@@ -70,21 +70,21 @@ bool ConvertToAbsolutePath(const base::string16& child_current_directory,
                            bool use_env_path,
                            base::string16* path) {
   wchar_t file_buffer[MAX_PATH];
-  wchar_t* file_part = NULL;
+  wchar_t* file_part = nullptr;
 
   // Here we should start by looking at the path where the child application was
   // started. We don't have this information yet.
   DWORD result = 0;
   if (use_env_path) {
     // Try with the complete path
-    result = ::SearchPath(NULL, path->c_str(), NULL, MAX_PATH, file_buffer,
-                          &file_part);
+    result = ::SearchPath(nullptr, path->c_str(), nullptr, MAX_PATH,
+                          file_buffer, &file_part);
   }
 
   if (0 == result) {
     // Try with the current directory of the child
-    result = ::SearchPath(child_current_directory.c_str(), path->c_str(), NULL,
-                          MAX_PATH, file_buffer, &file_part);
+    result = ::SearchPath(child_current_directory.c_str(), path->c_str(),
+                          nullptr, MAX_PATH, file_buffer, &file_part);
   }
 
   if (0 == result || result >= MAX_PATH)
@@ -263,9 +263,9 @@ bool ThreadProcessDispatcher::CreateThread(IPCInfo* ipc,
   }
 
   HANDLE handle;
-  DWORD ret = ProcessPolicy::CreateThreadAction(*ipc->client_info, stack_size,
-                                                start_address, parameter,
-                                                creation_flags, NULL, &handle);
+  DWORD ret = ProcessPolicy::CreateThreadAction(
+      *ipc->client_info, stack_size, start_address, parameter, creation_flags,
+      nullptr, &handle);
 
   ipc->return_info.nt_status = ret;
   ipc->return_info.handle = handle;

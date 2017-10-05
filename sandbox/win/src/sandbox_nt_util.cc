@@ -44,7 +44,7 @@ void* AllocateNearTo(void* source, size_t size) {
   const size_t kMaxSize = 0x80000000ULL;
   // We don't support null as a base as this would just pick an arbitrary
   // address when passed to NtAllocateVirtualMemory.
-  if (source == nullptr)
+  if (!source)
     return nullptr;
   // Ignore an allocation which is larger than the maximum.
   if (size > kMaxSize)
@@ -52,7 +52,7 @@ void* AllocateNearTo(void* source, size_t size) {
 
   // Ensure base address is aligned to the allocation granularity boundary.
   char* base = AlignToBoundary(source, 0);
-  if (base == nullptr)
+  if (!base)
     return nullptr;
   // Set top address to be base + 2GiB.
   const char* top_address = base + kMaxSize;
@@ -80,7 +80,7 @@ void* AllocateNearTo(void* source, size_t size) {
 
     // Update base past current allocation region.
     base = AlignToBoundary(mem_info.BaseAddress, mem_info.RegionSize);
-    if (base == nullptr)
+    if (!base)
       break;
   }
   return nullptr;
@@ -96,19 +96,19 @@ void* AllocateNearTo(void* source, size_t size) {
   SIZE_T actual_size;
   void* base;
   do {
-    base = NULL;
+    base = nullptr;
     actual_size = 64 * 1024;
     ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base, 0, &actual_size,
                                      MEM_RESERVE, PAGE_NOACCESS);
     if (!NT_SUCCESS(ret))
-      return NULL;
+      return nullptr;
   } while (base < kMinAddress);
 
   actual_size = size;
   ret = g_nt.AllocateVirtualMemory(NtCurrentProcess, &base, 0, &actual_size,
                                    MEM_COMMIT, PAGE_READWRITE);
   if (!NT_SUCCESS(ret))
-    return NULL;
+    return nullptr;
   return base;
 }
 #endif  // defined(_WIN64).
@@ -118,33 +118,33 @@ void* AllocateNearTo(void* source, size_t size) {
 namespace sandbox {
 
 // Handle for our private heap.
-void* g_heap = NULL;
+void* g_heap = nullptr;
 
 SANDBOX_INTERCEPT HANDLE g_shared_section;
 SANDBOX_INTERCEPT size_t g_shared_IPC_size = 0;
 SANDBOX_INTERCEPT size_t g_shared_policy_size = 0;
 
-void* volatile g_shared_policy_memory = NULL;
-void* volatile g_shared_IPC_memory = NULL;
+void* volatile g_shared_policy_memory = nullptr;
+void* volatile g_shared_IPC_memory = nullptr;
 
 // Both the IPC and the policy share a single region of memory in which the IPC
 // memory is first and the policy memory is last.
 bool MapGlobalMemory() {
-  if (NULL == g_shared_IPC_memory) {
-    void* memory = NULL;
+  if (!g_shared_IPC_memory) {
+    void* memory = nullptr;
     SIZE_T size = 0;
     // Map the entire shared section from the start.
     NTSTATUS ret =
         g_nt.MapViewOfSection(g_shared_section, NtCurrentProcess, &memory, 0, 0,
-                              NULL, &size, ViewUnmap, 0, PAGE_READWRITE);
+                              nullptr, &size, ViewUnmap, 0, PAGE_READWRITE);
 
-    if (!NT_SUCCESS(ret) || NULL == memory) {
+    if (!NT_SUCCESS(ret) || !memory) {
       NOTREACHED_NT();
       return false;
     }
 
-    if (NULL != _InterlockedCompareExchangePointer(&g_shared_IPC_memory, memory,
-                                                   NULL)) {
+    if (_InterlockedCompareExchangePointer(&g_shared_IPC_memory, memory,
+                                           nullptr)) {
       // Somebody beat us to the memory setup.
       VERIFY_SUCCESS(g_nt.UnmapViewOfSection(NtCurrentProcess, memory));
     }
@@ -159,29 +159,30 @@ bool MapGlobalMemory() {
 
 void* GetGlobalIPCMemory() {
   if (!MapGlobalMemory())
-    return NULL;
+    return nullptr;
   return g_shared_IPC_memory;
 }
 
 void* GetGlobalPolicyMemory() {
   if (!MapGlobalMemory())
-    return NULL;
+    return nullptr;
   return g_shared_policy_memory;
 }
 
 bool InitHeap() {
   if (!g_heap) {
     // Create a new heap using default values for everything.
-    void* heap = g_nt.RtlCreateHeap(HEAP_GROWABLE, NULL, 0, 0, NULL, NULL);
+    void* heap =
+        g_nt.RtlCreateHeap(HEAP_GROWABLE, nullptr, 0, 0, nullptr, nullptr);
     if (!heap)
       return false;
 
-    if (NULL != _InterlockedCompareExchangePointer(&g_heap, heap, NULL)) {
+    if (_InterlockedCompareExchangePointer(&g_heap, heap, nullptr)) {
       // Somebody beat us to the memory setup.
       g_nt.RtlDestroyHeap(heap);
     }
   }
-  return (g_heap != NULL);
+  return !!g_heap;
 }
 
 // Physically reads or writes from memory to verify that (at this time), it is
@@ -233,18 +234,18 @@ NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
 
   DCHECK_NT(full_path);
   DCHECK_NT(path);
-  *full_path = NULL;
-  OBJECT_NAME_INFORMATION* handle_name = NULL;
+  *full_path = nullptr;
+  OBJECT_NAME_INFORMATION* handle_name = nullptr;
   NTSTATUS ret = STATUS_UNSUCCESSFUL;
   __try {
     do {
-      static NtQueryObjectFunction NtQueryObject = NULL;
+      static NtQueryObjectFunction NtQueryObject = nullptr;
       if (!NtQueryObject)
         ResolveNTFunctionPtr("NtQueryObject", &NtQueryObject);
 
       ULONG size = 0;
       // Query the name information a first time to get the size of the name.
-      ret = NtQueryObject(root, ObjectNameInformation, NULL, 0, &size);
+      ret = NtQueryObject(root, ObjectNameInformation, nullptr, 0, &size);
 
       if (size) {
         handle_name = reinterpret_cast<OBJECT_NAME_INFORMATION*>(
@@ -263,7 +264,7 @@ NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
       size_t name_length =
           handle_name->ObjectName.Length + (wcslen(path) + 2) * sizeof(wchar_t);
       *full_path = new (NT_ALLOC) wchar_t[name_length / sizeof(wchar_t)];
-      if (NULL == *full_path)
+      if (!*full_path)
         break;
       wchar_t* off = *full_path;
       ret = CopyData(off, handle_name->ObjectName.Buffer,
@@ -286,11 +287,11 @@ NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
   if (!NT_SUCCESS(ret)) {
     if (*full_path) {
       operator delete(*full_path, NT_ALLOC);
-      *full_path = NULL;
+      *full_path = nullptr;
     }
     if (handle_name) {
       operator delete(handle_name, NT_ALLOC);
-      handle_name = NULL;
+      handle_name = nullptr;
     }
   }
 
@@ -306,20 +307,20 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
     return STATUS_NO_MEMORY;
 
   DCHECK_NT(out_name);
-  *out_name = NULL;
+  *out_name = nullptr;
   NTSTATUS ret = STATUS_UNSUCCESSFUL;
   __try {
     do {
       if (in_object->RootDirectory != static_cast<HANDLE>(0) && !root)
         break;
-      if (NULL == in_object->ObjectName)
+      if (!in_object->ObjectName)
         break;
-      if (NULL == in_object->ObjectName->Buffer)
+      if (!in_object->ObjectName->Buffer)
         break;
 
       size_t size = in_object->ObjectName->Length + sizeof(wchar_t);
       *out_name = new (NT_ALLOC) wchar_t[size / sizeof(wchar_t)];
-      if (NULL == *out_name)
+      if (!*out_name)
         break;
 
       ret = CopyData(*out_name, in_object->ObjectName->Buffer,
@@ -342,7 +343,7 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
 
   if (!NT_SUCCESS(ret) && *out_name) {
     operator delete(*out_name, NT_ALLOC);
-    *out_name = NULL;
+    *out_name = nullptr;
   }
 
   return ret;
@@ -420,7 +421,7 @@ UNICODE_STRING* AnsiToUnicode(const char* string) {
   ansi_string.Buffer = const_cast<char*>(string);
 
   if (ansi_string.Length > ansi_string.MaximumLength)
-    return NULL;
+    return nullptr;
 
   size_t name_bytes =
       ansi_string.MaximumLength * sizeof(wchar_t) + sizeof(UNICODE_STRING);
@@ -428,18 +429,18 @@ UNICODE_STRING* AnsiToUnicode(const char* string) {
   UNICODE_STRING* out_string =
       reinterpret_cast<UNICODE_STRING*>(new (NT_ALLOC) char[name_bytes]);
   if (!out_string)
-    return NULL;
+    return nullptr;
 
   out_string->MaximumLength = ansi_string.MaximumLength * sizeof(wchar_t);
   out_string->Buffer = reinterpret_cast<wchar_t*>(&out_string[1]);
 
-  BOOLEAN alloc_destination = FALSE;
+  BOOLEAN alloc_destination = false;
   NTSTATUS ret = g_nt.RtlAnsiStringToUnicodeString(out_string, &ansi_string,
                                                    alloc_destination);
   DCHECK_NT(STATUS_BUFFER_OVERFLOW != ret);
   if (!NT_SUCCESS(ret)) {
     operator delete(out_string, NT_ALLOC);
-    return NULL;
+    return nullptr;
   }
 
   return out_string;
@@ -449,7 +450,7 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags) {
 // PEImage's dtor won't be run during SEH unwinding, but that's OK.
 #pragma warning(push)
 #pragma warning(disable : 4509)
-  UNICODE_STRING* out_name = NULL;
+  UNICODE_STRING* out_name = nullptr;
   __try {
     do {
       *flags = 0;
@@ -489,7 +490,7 @@ UNICODE_STRING* GetBackingFilePath(PVOID address) {
         new (NT_ALLOC) char[buffer_bytes]);
 
     if (!section_name)
-      return NULL;
+      return nullptr;
 
     SIZE_T returned_bytes;
     NTSTATUS ret =
@@ -499,13 +500,13 @@ UNICODE_STRING* GetBackingFilePath(PVOID address) {
     if (STATUS_BUFFER_OVERFLOW == ret) {
       // Retry the call with the given buffer size.
       operator delete(section_name, NT_ALLOC);
-      section_name = NULL;
+      section_name = nullptr;
       buffer_bytes = returned_bytes;
       continue;
     }
     if (!NT_SUCCESS(ret)) {
       operator delete(section_name, NT_ALLOC);
-      return NULL;
+      return nullptr;
     }
 
     return reinterpret_cast<UNICODE_STRING*>(section_name);
@@ -514,9 +515,9 @@ UNICODE_STRING* GetBackingFilePath(PVOID address) {
 
 UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
   if ((!module_path) || (!module_path->Buffer))
-    return NULL;
+    return nullptr;
 
-  wchar_t* sep = NULL;
+  wchar_t* sep = nullptr;
   int start_pos = module_path->Length / sizeof(wchar_t) - 1;
   int ix = start_pos;
 
@@ -529,7 +530,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
 
   // Ends with path separator. Not a valid module name.
   if ((ix == start_pos) && sep)
-    return NULL;
+    return nullptr;
 
   // No path separator found. Use the entire name.
   if (!sep) {
@@ -544,7 +545,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
   DCHECK_NT(UINT16_MAX > size_bytes);
   char* str_buffer = new (NT_ALLOC) char[size_bytes + sizeof(UNICODE_STRING)];
   if (!str_buffer)
-    return NULL;
+    return nullptr;
 
   UNICODE_STRING* out_string = reinterpret_cast<UNICODE_STRING*>(str_buffer);
   out_string->Buffer = reinterpret_cast<wchar_t*>(&out_string[1]);
@@ -554,7 +555,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
   NTSTATUS ret = CopyData(out_string->Buffer, &sep[1], out_string->Length);
   if (!NT_SUCCESS(ret)) {
     operator delete(out_string, NT_ALLOC);
-    return NULL;
+    return nullptr;
   }
 
   out_string->Buffer[out_string->Length / sizeof(wchar_t)] = L'\0';
@@ -590,7 +591,7 @@ NTSTATUS AutoProtectMemory::RevertProtection() {
   DCHECK_NT(NT_SUCCESS(ret));
 
   changed_ = false;
-  address_ = NULL;
+  address_ = nullptr;
   bytes_ = 0;
   old_protect_ = 0;
 
@@ -634,7 +635,7 @@ bool IsSupportedRenameCall(FILE_RENAME_INFORMATION* file_info,
 }  // namespace sandbox
 
 void* operator new(size_t size, sandbox::AllocationType type, void* near_to) {
-  void* result = NULL;
+  void* result = nullptr;
   if (type == sandbox::NT_ALLOC) {
     if (sandbox::InitHeap()) {
       // Use default flags for the allocation.
@@ -646,9 +647,9 @@ void* operator new(size_t size, sandbox::AllocationType type, void* near_to) {
     NOTREACHED_NT();
   }
 
-  // TODO: Returning NULL from operator new has undefined behavior, but
-  // the Allocate() functions called above can return NULL. Consider checking
-  // for NULL here and crashing or throwing.
+  // TODO: Returning nullptr from operator new has undefined behavior, but
+  // the Allocate() functions called above can return nullptr. Consider checking
+  // for nullptr here and crashing or throwing.
 
   return result;
 }

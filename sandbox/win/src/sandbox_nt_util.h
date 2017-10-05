@@ -16,7 +16,7 @@
 // Placement new and delete to be used from ntdll interception code.
 void* __cdecl operator new(size_t size,
                            sandbox::AllocationType type,
-                           void* near_to = NULL);
+                           void* near_to = nullptr);
 void __cdecl operator delete(void* memory, sandbox::AllocationType type);
 // Add operator delete that matches the placement form of the operator new
 // above. This is required by compiler to generate code to call operator delete
@@ -145,13 +145,13 @@ enum MappedModuleFlags {
 UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags);
 
 // Returns the full path and filename for a given dll.
-// May return NULL if the provided address is not backed by a named section, or
-// if the current OS version doesn't support the call. The returned buffer must
-// be freed with a placement delete (see GetImageNameFromModule example).
+// May return nullptr if the provided address is not backed by a named section,
+// or if the current OS version doesn't support the call. The returned buffer
+// must be freed with a placement delete (see GetImageNameFromModule example).
 UNICODE_STRING* GetBackingFilePath(PVOID address);
 
 // Returns the last component of a path that contains the module name.
-// It will return NULL if the path ends with the path separator. The returned
+// It will return nullptr if the path ends with the path separator. The returned
 // buffer must be freed with a placement delete (see GetImageNameFromModule
 // example).
 UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path);
@@ -169,7 +169,7 @@ UNICODE_STRING* AnsiToUnicode(const char* string);
 class AutoProtectMemory {
  public:
   AutoProtectMemory()
-      : changed_(false), address_(NULL), bytes_(0), old_protect_(0) {}
+      : changed_(false), address_(nullptr), bytes_(0), old_protect_(0) {}
 
   ~AutoProtectMemory() { RevertProtection(); }
 

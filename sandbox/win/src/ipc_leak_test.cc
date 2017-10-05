@@ -264,7 +264,7 @@ SBOX_TESTS_COMMAND int IPC_Leak(int argc, wchar_t** argv) {
   CopyPolicyToTarget(policy, policy->data_size + sizeof(PolicyGlobal),
                      current_policy);
 
-  int test = wcstol(argv[0], NULL, 10);
+  int test = wcstol(argv[0], nullptr, 10);
 
   static_assert(TESTIPC_NTOPENFILE == 0,
                 "TESTIPC_NTOPENFILE must be first in enum.");

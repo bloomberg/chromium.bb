@@ -27,8 +27,8 @@ bool IsKeyOpenForRead(HKEY handle) {
   BINDNTDLL(NtQueryObject);
 
   OBJECT_BASIC_INFORMATION info = {0};
-  NTSTATUS status =
-      NtQueryObject(handle, ObjectBasicInformation, &info, sizeof(info), NULL);
+  NTSTATUS status = NtQueryObject(handle, ObjectBasicInformation, &info,
+                                  sizeof(info), nullptr);
 
   if (!NT_SUCCESS(status))
     return false;
@@ -64,8 +64,8 @@ SBOX_TESTS_COMMAND int Reg_OpenKey(int argc, wchar_t** argv) {
   LRESULT result = 0;
 
   if (wcscmp(argv[0], L"create") == 0)
-    result = ::RegCreateKeyEx(root, argv[3], 0, NULL, options, desired_access,
-                              NULL, &key, NULL);
+    result = ::RegCreateKeyEx(root, argv[3], 0, nullptr, options,
+                              desired_access, nullptr, &key, nullptr);
   else
     result = ::RegOpenKeyEx(root, argv[3], 0, desired_access, &key);
 
@@ -258,7 +258,7 @@ TEST(RegistryPolicyTest, TestKeyCreateLink) {
 
   // In case our code fails, and the call works, we need to delete the new
   // link. There is no api for this, so we need to use the NT call.
-  HKEY key = NULL;
+  HKEY key = nullptr;
   LRESULT result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,
                                   L"software\\Policies\\google_unit_tests",
                                   REG_OPTION_OPEN_LINK, MAXIMUM_ALLOWED, &key);

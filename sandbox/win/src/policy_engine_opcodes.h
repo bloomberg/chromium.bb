@@ -18,7 +18,7 @@
 // comparison against one single input parameter. For example, an opcode can
 // encode just one of the following comparison:
 //
-// - Is input parameter 3 not equal to NULL?
+// - Is input parameter 3 not equal to nullptr?
 // - Does input parameter 2 start with L"c:\\"?
 // - Is input parameter 5, bit 3 is equal 1?
 //
@@ -267,7 +267,7 @@ struct PolicyBuffer {
 // Note that this class does not keep track of the number of opcodes made and
 // it is designed to be a building block for low-level policy.
 //
-// Note that any of the MakeOpXXXXX member functions below can return NULL on
+// Note that any of the MakeOpXXXXX member functions below can return nullptr on
 // failure. When that happens opcode sequence creation must be aborted.
 class OpcodeFactory {
  public:

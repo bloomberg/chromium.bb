@@ -187,7 +187,7 @@ NTSTATUS ServiceResolverThunk::Setup(const void* target_module,
 
   ret = PerformPatch(thunk, thunk_storage);
 
-  if (NULL != storage_used)
+  if (storage_used)
     *storage_used = thunk_bytes;
 
   return ret;
@@ -217,7 +217,7 @@ NTSTATUS ServiceResolverThunk::CopyThunk(const void* target_module,
     return STATUS_OBJECT_NAME_COLLISION;
   }
 
-  if (NULL != storage_used)
+  if (storage_used)
     *storage_used = thunk_bytes;
 
   return ret;
@@ -262,7 +262,7 @@ bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
       return false;
     }
 
-    if (NULL != ntdll_base_) {
+    if (ntdll_base_) {
       // This path is only taken when running the unit tests. We want to be
       // able to patch a buffer in memory, so target_ is not inside ntdll.
       module_2 = ntdll_base_;
@@ -326,7 +326,7 @@ NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
     return STATUS_UNSUCCESSFUL;
 
   // and now change the function to intercept, on the child
-  if (NULL != ntdll_base_) {
+  if (ntdll_base_) {
     // running a unit test
     if (!::WriteProcessMemory(process_, target_, &intercepted_code,
                               bytes_to_write, &written))

@@ -21,8 +21,7 @@ bool InitStringUnicode(const wchar_t* source,
   }
   ustring->Buffer = const_cast<wchar_t*>(source);
   ustring->Length = static_cast<USHORT>(length) * sizeof(wchar_t);
-  ustring->MaximumLength =
-      (NULL != source) ? ustring->Length + sizeof(wchar_t) : 0;
+  ustring->MaximumLength = source ? ustring->Length + sizeof(wchar_t) : 0;
   return true;
 }
 
@@ -85,8 +84,8 @@ EvalResult OpcodeEval<OP_ALWAYS_TRUE>(PolicyOpcode* opcode,
 
 PolicyOpcode* OpcodeFactory::MakeOpAction(EvalResult action, uint32_t options) {
   PolicyOpcode* opcode = MakeBase(OP_ACTION, options, 0);
-  if (NULL == opcode)
-    return NULL;
+  if (!opcode)
+    return nullptr;
   opcode->SetArgument(0, action);
   return opcode;
 }
@@ -110,8 +109,8 @@ PolicyOpcode* OpcodeFactory::MakeOpNumberMatch(int16_t selected_param,
                                                uint32_t match,
                                                uint32_t options) {
   PolicyOpcode* opcode = MakeBase(OP_NUMBER_MATCH, options, selected_param);
-  if (NULL == opcode)
-    return NULL;
+  if (!opcode)
+    return nullptr;
   opcode->SetArgument(0, match);
   opcode->SetArgument(1, UINT32_TYPE);
   return opcode;
@@ -121,8 +120,8 @@ PolicyOpcode* OpcodeFactory::MakeOpVoidPtrMatch(int16_t selected_param,
                                                 const void* match,
                                                 uint32_t options) {
   PolicyOpcode* opcode = MakeBase(OP_NUMBER_MATCH, options, selected_param);
-  if (NULL == opcode)
-    return NULL;
+  if (!opcode)
+    return nullptr;
   opcode->SetArgument(0, match);
   opcode->SetArgument(1, VOIDPTR_TYPE);
   return opcode;
@@ -138,9 +137,9 @@ EvalResult OpcodeEval<OP_NUMBER_MATCH>(PolicyOpcode* opcode,
     opcode->GetArgument(0, &match_uint32);
     return (match_uint32 != value_uint32) ? EVAL_FALSE : EVAL_TRUE;
   } else {
-    const void* value_ptr = NULL;
+    const void* value_ptr = nullptr;
     if (param->Get(&value_ptr)) {
-      const void* match_ptr = NULL;
+      const void* match_ptr = nullptr;
       opcode->GetArgument(0, &match_ptr);
       return (match_ptr != value_ptr) ? EVAL_FALSE : EVAL_TRUE;
     }
@@ -159,12 +158,12 @@ PolicyOpcode* OpcodeFactory::MakeOpNumberMatchRange(int16_t selected_param,
                                                     uint32_t upper_bound,
                                                     uint32_t options) {
   if (lower_bound > upper_bound) {
-    return NULL;
+    return nullptr;
   }
   PolicyOpcode* opcode =
       MakeBase(OP_NUMBER_MATCH_RANGE, options, selected_param);
-  if (NULL == opcode)
-    return NULL;
+  if (!opcode)
+    return nullptr;
   opcode->SetArgument(0, lower_bound);
   opcode->SetArgument(1, upper_bound);
   return opcode;
@@ -195,8 +194,8 @@ PolicyOpcode* OpcodeFactory::MakeOpNumberAndMatch(int16_t selected_param,
                                                   uint32_t match,
                                                   uint32_t options) {
   PolicyOpcode* opcode = MakeBase(OP_NUMBER_AND_MATCH, options, selected_param);
-  if (NULL == opcode)
-    return NULL;
+  if (!opcode)
+    return nullptr;
   opcode->SetArgument(0, match);
   return opcode;
 }
@@ -228,23 +227,19 @@ PolicyOpcode* OpcodeFactory::MakeOpWStringMatch(int16_t selected_param,
                                                 int start_position,
                                                 StringMatchOptions match_opts,
                                                 uint32_t options) {
-  if (NULL == match_str) {
-    return NULL;
-  }
-  if ('\0' == match_str[0]) {
-    return NULL;
-  }
+  if (!match_str)
+    return nullptr;
+  if ('\0' == match_str[0])
+    return nullptr;
 
   int lenght = lstrlenW(match_str);
 
   PolicyOpcode* opcode = MakeBase(OP_WSTRING_MATCH, options, selected_param);
-  if (NULL == opcode) {
-    return NULL;
-  }
+  if (!opcode)
+    return nullptr;
   ptrdiff_t delta_str = AllocRelative(opcode, match_str, wcslen(match_str) + 1);
-  if (0 == delta_str) {
-    return NULL;
-  }
+  if (0 == delta_str)
+    return nullptr;
   opcode->SetArgument(0, delta_str);
   opcode->SetArgument(1, lenght);
   opcode->SetArgument(2, start_position);
@@ -256,10 +251,10 @@ template <>
 EvalResult OpcodeEval<OP_WSTRING_MATCH>(PolicyOpcode* opcode,
                                         const ParameterSet* param,
                                         MatchContext* context) {
-  if (NULL == context) {
+  if (!context) {
     return EVAL_ERROR;
   }
-  const wchar_t* source_str = NULL;
+  const wchar_t* source_str = nullptr;
   if (!param->Get(&source_str))
     return EVAL_ERROR;
 
@@ -354,9 +349,8 @@ EvalResult OpcodeEval<OP_WSTRING_MATCH>(PolicyOpcode* opcode,
 PolicyOpcode* OpcodeFactory::MakeBase(OpcodeID opcode_id,
                                       uint32_t options,
                                       int16_t selected_param) {
-  if (memory_size() < sizeof(PolicyOpcode)) {
-    return NULL;
-  }
+  if (memory_size() < sizeof(PolicyOpcode))
+    return nullptr;
 
   // Create opcode using placement-new on the buffer memory.
   PolicyOpcode* opcode = new (memory_top_) PolicyOpcode();
@@ -373,9 +367,8 @@ ptrdiff_t OpcodeFactory::AllocRelative(void* start,
                                        const wchar_t* str,
                                        size_t lenght) {
   size_t bytes = lenght * sizeof(wchar_t);
-  if (memory_size() < bytes) {
+  if (memory_size() < bytes)
     return 0;
-  }
   memory_bottom_ -= bytes;
   if (reinterpret_cast<UINT_PTR>(memory_bottom_) & 1) {
     // TODO(cpu) replace this for something better.
@@ -399,10 +392,9 @@ ptrdiff_t OpcodeFactory::AllocRelative(void* start,
 EvalResult PolicyOpcode::Evaluate(const ParameterSet* call_params,
                                   size_t param_count,
                                   MatchContext* match) {
-  if (NULL == call_params) {
+  if (!call_params)
     return EVAL_ERROR;
-  }
-  const ParameterSet* selected_param = NULL;
+  const ParameterSet* selected_param = nullptr;
   if (parameter_ >= 0) {
     if (static_cast<size_t>(parameter_) >= param_count) {
       return EVAL_ERROR;
@@ -425,13 +417,11 @@ EvalResult PolicyOpcode::Evaluate(const ParameterSet* call_params,
       result = EVAL_ERROR;
     }
   }
-  if (NULL != match) {
-    if (options_ & kPolClearContext) {
+  if (match) {
+    if (options_ & kPolClearContext)
       match->Clear();
-    }
-    if (options_ & kPolUseOREval) {
+    if (options_ & kPolUseOREval)
       match->options = kPolUseOREval;
-    }
   }
   return result;
 }

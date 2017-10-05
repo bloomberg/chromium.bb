@@ -92,7 +92,8 @@ size_t HandleCloser::GetBufferSize() {
 }
 
 bool HandleCloser::InitializeTargetHandles(TargetProcess* target) {
-  // Do nothing on an empty list (global pointer already initialized to NULL).
+  // Do nothing on an empty list (global pointer already initialized to
+  // nullptr).
   if (handles_to_close_.empty())
     return true;
 
@@ -106,14 +107,14 @@ bool HandleCloser::InitializeTargetHandles(TargetProcess* target) {
   HANDLE child = target->Process();
 
   // Allocate memory in the target process without specifying the address
-  void* remote_data =
-      ::VirtualAllocEx(child, NULL, bytes_needed, MEM_COMMIT, PAGE_READWRITE);
-  if (NULL == remote_data)
+  void* remote_data = ::VirtualAllocEx(child, nullptr, bytes_needed, MEM_COMMIT,
+                                       PAGE_READWRITE);
+  if (!remote_data)
     return false;
 
   // Copy the handle buffer over.
   SIZE_T bytes_written;
-  BOOL result = ::WriteProcessMemory(child, remote_data, local_buffer.get(),
+  bool result = ::WriteProcessMemory(child, remote_data, local_buffer.get(),
                                      bytes_needed, &bytes_written);
   if (!result || bytes_written != bytes_needed) {
     ::VirtualFreeEx(child, remote_data, 0, MEM_RELEASE);
@@ -170,7 +171,7 @@ bool HandleCloser::SetupHandleList(void* buffer, size_t buffer_bytes) {
 }
 
 bool GetHandleName(HANDLE handle, base::string16* handle_name) {
-  static NtQueryObject QueryObject = NULL;
+  static NtQueryObject QueryObject = nullptr;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 

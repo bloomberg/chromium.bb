@@ -225,7 +225,7 @@ namespace sandbox {
 // - Arg1: "true" or "false", if the DLL path should be in system32.
 // - Arg2: the full path to the test shim DLL to load.
 SBOX_TESTS_COMMAND int TestImageLoadHijack(int argc, wchar_t** argv) {
-  if (argc < 2 || argv[0] == nullptr || argv[1] == nullptr)
+  if (argc < 2 || !argv[0] || !argv[1])
     return SBOX_TEST_INVALID_PARAMETER;
 
   bool expect_system = false;
@@ -235,7 +235,7 @@ SBOX_TESTS_COMMAND int TestImageLoadHijack(int argc, wchar_t** argv) {
   // Ensure implicitely linked, secondary hijack DLL is not already
   // loaded in process.
   HMODULE check = ::GetModuleHandleW(g_hijack_dll_file);
-  if (check != NULL)
+  if (check)
     return SBOX_TEST_FAILED;
 
   // Load the shim DLL for this test.
@@ -247,7 +247,7 @@ SBOX_TESTS_COMMAND int TestImageLoadHijack(int argc, wchar_t** argv) {
       reinterpret_cast<CheckHijackResultFunction>(
           shim_dll.GetFunctionPointer(g_hijack_shim_func));
 
-  if (check_hijack_result == nullptr)
+  if (!check_hijack_result)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
 
   return check_hijack_result(expect_system);
@@ -418,8 +418,8 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Baseline) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_hijack_dlls_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -439,8 +439,8 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Success) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_hijack_dlls_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 
@@ -459,8 +459,8 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Failure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
 
-  HANDLE mutex = ::CreateMutexW(NULL, FALSE, g_hijack_dlls_mutex);
-  EXPECT_TRUE(mutex != NULL);
+  HANDLE mutex = ::CreateMutexW(nullptr, false, g_hijack_dlls_mutex);
+  EXPECT_TRUE(mutex);
   EXPECT_EQ(WAIT_OBJECT_0,
             ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
 

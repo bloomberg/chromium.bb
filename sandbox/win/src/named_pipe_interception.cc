@@ -43,7 +43,7 @@ TargetCreateNamedPipeW(CreateNamedPipeWFunction orig_CreateNamedPipeW,
 
   do {
     void* memory = GetGlobalIPCMemory();
-    if (NULL == memory)
+    if (!memory)
       break;
 
     CountedParameterSet<NameBased> params;

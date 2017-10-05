@@ -46,8 +46,8 @@ template <typename Derived>
 class SingletonBase {
  public:
   static Derived* GetInstance() {
-    static Derived* instance = NULL;
-    if (NULL == instance) {
+    static Derived* instance = nullptr;
+    if (!instance) {
       instance = new Derived();
       // Microsoft CRT extension. In an exe this this called after
       // winmain returns, in a dll is called in DLL_PROCESS_DETACH
@@ -93,7 +93,7 @@ bool GetNtPathFromWin32Path(const base::string16& path,
 
 // Translates a reserved key name to its handle.
 // For example "HKEY_LOCAL_MACHINE" returns HKEY_LOCAL_MACHINE.
-// Returns NULL if the name does not represent any reserved key name.
+// Returns nullptr if the name does not represent any reserved key name.
 HKEY GetReservedKeyFromName(const base::string16& name);
 
 // Resolves a user-readable registry path to a system-readable registry path.

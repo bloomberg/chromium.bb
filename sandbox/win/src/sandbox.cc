@@ -19,9 +19,8 @@ static bool s_is_broker = false;
 // that is created by the broker and opened by the target.
 BrokerServices* SandboxFactory::GetBrokerServices() {
   // Can't be the broker if the shared section is open.
-  if (NULL != g_shared_section) {
-    return NULL;
-  }
+  if (g_shared_section)
+    return nullptr;
   // If the shared section does not exist we are the broker, then create
   // the broker object.
   s_is_broker = true;
@@ -32,9 +31,8 @@ BrokerServices* SandboxFactory::GetBrokerServices() {
 // GetBrokerServices, but in this case the logic is the opposite.
 TargetServices* SandboxFactory::GetTargetServices() {
   // Can't be the target if the section handle is not valid.
-  if (NULL == g_shared_section) {
-    return NULL;
-  }
+  if (!g_shared_section)
+    return nullptr;
   // We are the target
   s_is_broker = false;
   // Creates and returns the target services implementation.
@@ -45,5 +43,5 @@ TargetServices* SandboxFactory::GetTargetServices() {
 
 // Allows querying for whether the current process has been sandboxed.
 extern "C" bool __declspec(dllexport) IsSandboxedProcess() {
-  return sandbox::g_shared_section != NULL;
+  return !!sandbox::g_shared_section;
 }

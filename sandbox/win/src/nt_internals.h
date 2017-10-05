@@ -80,7 +80,7 @@ typedef OBJECT_ATTRIBUTES* POBJECT_ATTRIBUTES;
     (p)->Attributes = a;                          \
     (p)->ObjectName = n;                          \
     (p)->SecurityDescriptor = s;                  \
-    (p)->SecurityQualityOfService = NULL;         \
+    (p)->SecurityQualityOfService = nullptr;      \
   }
 
 typedef struct _IO_STATUS_BLOCK {

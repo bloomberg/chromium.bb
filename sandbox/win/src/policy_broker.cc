@@ -31,13 +31,13 @@ SANDBOX_INTERCEPT NtExports g_nt;
 #define INIT_GLOBAL_NT(member)                          \
   g_nt.member = reinterpret_cast<Nt##member##Function>( \
       ntdll_image.GetProcAddress("Nt" #member));        \
-  if (NULL == g_nt.member)                              \
+  if (!g_nt.member)                                     \
   return false
 
 #define INIT_GLOBAL_RTL(member)                                                \
   g_nt.member =                                                                \
       reinterpret_cast<member##Function>(ntdll_image.GetProcAddress(#member)); \
-  if (NULL == g_nt.member)                                                     \
+  if (!g_nt.member)                                                            \
   return false
 
 bool InitGlobalNt() {

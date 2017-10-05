@@ -36,9 +36,9 @@ BOOL CALLBACK MonitorEnumCallback(HMONITOR monitor,
 
   if (!::GetMonitorInfoW(monitor,
                          reinterpret_cast<MONITORINFO*>(&monitor_info)))
-    return FALSE;
+    return false;
   monitors[monitor] = monitor_info.szDevice;
-  return TRUE;
+  return true;
 }
 
 std::map<HMONITOR, base::string16> EnumerateMonitors() {
@@ -248,26 +248,26 @@ NTSTATUS WINAPI SetOPMSigningKeyAndSequenceNumbersTest(
   return STATUS_SUCCESS;
 }
 
-BOOL WINAPI EnumDisplayMonitorsTest(HDC hdc,
+bool WINAPI EnumDisplayMonitorsTest(HDC hdc,
                                     LPCRECT clip_rect,
                                     MONITORENUMPROC enum_function,
                                     LPARAM data) {
   RECT rc = {};
   for (const auto& monitor : GetTestMonitors()) {
     if (!enum_function(monitor.first, hdc, &rc, data))
-      return FALSE;
+      return false;
   }
-  return TRUE;
+  return true;
 }
 
-BOOL WINAPI GetMonitorInfoWTest(HMONITOR monitor, LPMONITORINFO monitor_info) {
+bool WINAPI GetMonitorInfoWTest(HMONITOR monitor, LPMONITORINFO monitor_info) {
   std::map<HMONITOR, base::string16> monitors = GetTestMonitors();
   if (monitor_info->cbSize != sizeof(MONITORINFO) &&
       monitor_info->cbSize != sizeof(MONITORINFOEXW))
-    return FALSE;
+    return false;
   auto it = monitors.find(monitor);
   if (it == monitors.end())
-    return FALSE;
+    return false;
   if (monitor_info->cbSize == sizeof(MONITORINFOEXW)) {
     MONITORINFOEXW* monitor_info_ex =
         reinterpret_cast<MONITORINFOEXW*>(monitor_info);
@@ -277,7 +277,7 @@ BOOL WINAPI GetMonitorInfoWTest(HMONITOR monitor, LPMONITORINFO monitor_info) {
     memset(monitor_info_ex->szDevice, 0, sizeof(monitor_info_ex->szDevice));
     memcpy(monitor_info_ex->szDevice, it->second.c_str(), copy_size);
   }
-  return TRUE;
+  return true;
 }
 
 #define RETURN_TEST_FUNC(n)    \
@@ -648,7 +648,7 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownSuccess) {
   EXPECT_EQ(policy->SetProcessMitigations(MITIGATION_WIN32K_DISABLE),
             SBOX_ALL_OK);
   EXPECT_EQ(policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
-                            sandbox::TargetPolicy::FAKE_USER_GDI_INIT, NULL),
+                            sandbox::TargetPolicy::FAKE_USER_GDI_INIT, nullptr),
             sandbox::SBOX_ALL_OK);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_policy_command.c_str()));
   EXPECT_NE(SBOX_TEST_SUCCEEDED,
@@ -674,7 +674,7 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8Redirection) {
   EXPECT_EQ(policy->SetProcessMitigations(MITIGATION_WIN32K_DISABLE),
             SBOX_ALL_OK);
   EXPECT_EQ(policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
-                            sandbox::TargetPolicy::IMPLEMENT_OPM_APIS, NULL),
+                            sandbox::TargetPolicy::IMPLEMENT_OPM_APIS, nullptr),
             sandbox::SBOX_ALL_OK);
   policy->SetEnableOPMRedirection();
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_policy_command.c_str()));

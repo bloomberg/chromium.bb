@@ -28,7 +28,7 @@ TEST(SandboxNtUtil, IsSameProcessNonPseudoHandle) {
   InitGlobalNt();
 
   base::win::ScopedHandle current_process(
-      OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, GetCurrentProcessId()));
+      OpenProcess(PROCESS_QUERY_INFORMATION, false, GetCurrentProcessId()));
   ASSERT_TRUE(current_process.IsValid());
   EXPECT_TRUE(IsSameProcess(current_process.Get()));
 }
@@ -39,7 +39,7 @@ TEST(SandboxNtUtil, IsSameProcessDifferentProcess) {
   STARTUPINFO si = {sizeof(si)};
   PROCESS_INFORMATION pi = {};
   wchar_t notepad[] = L"notepad";
-  ASSERT_TRUE(CreateProcessW(nullptr, notepad, nullptr, nullptr, FALSE, 0,
+  ASSERT_TRUE(CreateProcessW(nullptr, notepad, nullptr, nullptr, false, 0,
                              nullptr, nullptr, &si, &pi));
   base::win::ScopedProcessInformation process_info(pi);
 

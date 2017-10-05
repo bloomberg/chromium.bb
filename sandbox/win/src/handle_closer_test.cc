@@ -27,29 +27,29 @@ HANDLE GetMarkerFile(const wchar_t* extension) {
   marker_path += L"\\sbox_marker_";
 
   // Generate a unique value from the exe's size and timestamp.
-  CHECK(::GetModuleFileName(NULL, path_buffer, MAX_PATH));
+  CHECK(::GetModuleFileName(nullptr, path_buffer, MAX_PATH));
   base::win::ScopedHandle module(
-      ::CreateFile(path_buffer, FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL,
-                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+      ::CreateFile(path_buffer, FILE_READ_ATTRIBUTES, FILE_SHARE_READ, nullptr,
+                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
   CHECK(module.IsValid());
   FILETIME timestamp;
-  CHECK(::GetFileTime(module.Get(), &timestamp, NULL, NULL));
+  CHECK(::GetFileTime(module.Get(), &timestamp, nullptr, nullptr));
   marker_path +=
-      base::StringPrintf(L"%08x%08x%08x", ::GetFileSize(module.Get(), NULL),
+      base::StringPrintf(L"%08x%08x%08x", ::GetFileSize(module.Get(), nullptr),
                          timestamp.dwLowDateTime, timestamp.dwHighDateTime);
   marker_path += extension;
 
   // Make the file delete-on-close so cleanup is automatic.
   return CreateFile(marker_path.c_str(), FILE_ALL_ACCESS,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    NULL, OPEN_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
+                    nullptr, OPEN_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, nullptr);
 }
 
 // Returns type infomation for an NT object. This routine is expected to be
 // called for invalid handles so it catches STATUS_INVALID_HANDLE exceptions
 // that can be generated when handle tracing is enabled.
 NTSTATUS QueryObjectTypeInformation(HANDLE handle, void* buffer, ULONG* size) {
-  static NtQueryObject QueryObject = NULL;
+  static NtQueryObject QueryObject = nullptr;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
@@ -96,7 +96,7 @@ SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t** argv) {
       DWORD handle_count = UINT_MAX;
       const int kInvalidHandleThreshold = 100;
       const size_t kHandleOffset = 4;  // Handles are always a multiple of 4.
-      HANDLE handle = NULL;
+      HANDLE handle = nullptr;
       int invalid_count = 0;
       base::string16 handle_name;
 
@@ -179,7 +179,7 @@ SBOX_TESTS_COMMAND int CheckForEventHandles(int argc, wchar_t** argv) {
         CHECK_EQ(WaitForSingleObject(handle, INFINITE), WAIT_FAILED);
 
         // Should be able to close.
-        CHECK_EQ(TRUE, CloseHandle(handle));
+        CHECK(::CloseHandle(handle));
       }
       return SBOX_TEST_SUCCEEDED;
 
@@ -260,13 +260,13 @@ void WINAPI ThreadPoolTask(void* event, BOOLEAN timeout) {
 // Run a thread pool inside a sandbox without a CSRSS connection.
 SBOX_TESTS_COMMAND int RunThreadPool(int argc, wchar_t** argv) {
   HANDLE wait_list[20];
-  finish_event = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+  finish_event = ::CreateEvent(nullptr, true, false, nullptr);
   CHECK(finish_event);
 
   // Set up a bunch of waiters.
-  HANDLE pool = NULL;
+  HANDLE pool = nullptr;
   for (int i = 0; i < kWaitCount; ++i) {
-    HANDLE event = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+    HANDLE event = ::CreateEvent(nullptr, true, false, nullptr);
     CHECK(event);
     CHECK(::RegisterWaitForSingleObject(&pool, event, ThreadPoolTask, event,
                                         INFINITE, WT_EXECUTEONLYONCE));

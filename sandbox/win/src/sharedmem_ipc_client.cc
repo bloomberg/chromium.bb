@@ -20,9 +20,8 @@ namespace sandbox {
 void* SharedMemIPCClient::GetBuffer() {
   bool failure = false;
   size_t ix = LockFreeChannel(&failure);
-  if (failure) {
-    return NULL;
-  }
+  if (failure)
+    return nullptr;
   return reinterpret_cast<char*>(control_) +
          control_->channels[ix].channel_base;
 }
@@ -71,7 +70,7 @@ ResultCode SharedMemIPCClient::DoCall(CrossCallParams* params,
   // is nice because we save a trip to kernel.
   DWORD wait =
       ::SignalObjectAndWait(channel[num].ping_event, channel[num].pong_event,
-                            kIPCWaitTimeOut1, FALSE);
+                            kIPCWaitTimeOut1, false);
   if (WAIT_TIMEOUT == wait) {
     // The server is taking too long. Enter a loop were we check if the
     // server_alive mutex has been abandoned which would signal a server crash

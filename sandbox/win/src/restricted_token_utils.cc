@@ -25,7 +25,7 @@ DWORD CreateRestrictedToken(TokenLevel security_level,
                             bool lockdown_default_dacl,
                             base::win::ScopedHandle* token) {
   RestrictedToken restricted_token;
-  restricted_token.Init(NULL);  // Initialized with the current process token
+  restricted_token.Init(nullptr);  // Initialized with the current process token
   if (lockdown_default_dacl)
     restricted_token.SetLockdownDefaultDacl();
 
@@ -150,18 +150,18 @@ DWORD SetObjectIntegrityLabel(HANDLE handle,
   sddl += L")";
 
   DWORD error = ERROR_SUCCESS;
-  PSECURITY_DESCRIPTOR sec_desc = NULL;
+  PSECURITY_DESCRIPTOR sec_desc = nullptr;
 
-  PACL sacl = NULL;
-  BOOL sacl_present = FALSE;
-  BOOL sacl_defaulted = FALSE;
+  PACL sacl = nullptr;
+  BOOL sacl_present = false;
+  BOOL sacl_defaulted = false;
 
   if (::ConvertStringSecurityDescriptorToSecurityDescriptorW(
-          sddl.c_str(), SDDL_REVISION, &sec_desc, NULL)) {
+          sddl.c_str(), SDDL_REVISION, &sec_desc, nullptr)) {
     if (::GetSecurityDescriptorSacl(sec_desc, &sacl_present, &sacl,
                                     &sacl_defaulted)) {
-      error = ::SetSecurityInfo(handle, type, LABEL_SECURITY_INFORMATION, NULL,
-                                NULL, NULL, sacl);
+      error = ::SetSecurityInfo(handle, type, LABEL_SECURITY_INFORMATION,
+                                nullptr, nullptr, nullptr, sacl);
     } else {
       error = ::GetLastError();
     }
@@ -191,11 +191,11 @@ const wchar_t* GetIntegrityLevelString(IntegrityLevel integrity_level) {
     case INTEGRITY_LEVEL_UNTRUSTED:
       return L"S-1-16-0";
     case INTEGRITY_LEVEL_LAST:
-      return NULL;
+      return nullptr;
   }
 
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
   const wchar_t* integrity_level_str = GetIntegrityLevelString(integrity_level);
@@ -204,7 +204,7 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
     return ERROR_SUCCESS;
   }
 
-  PSID integrity_sid = NULL;
+  PSID integrity_sid = nullptr;
   if (!::ConvertStringSidToSid(integrity_level_str, &integrity_sid))
     return ::GetLastError();
 
@@ -213,7 +213,7 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
   label.Label.Sid = integrity_sid;
 
   DWORD size = sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(integrity_sid);
-  BOOL result = ::SetTokenInformation(token, TokenIntegrityLevel, &label, size);
+  bool result = ::SetTokenInformation(token, TokenIntegrityLevel, &label, size);
   auto last_error = ::GetLastError();
   ::LocalFree(integrity_sid);
 
@@ -242,7 +242,7 @@ DWORD HardenTokenIntegrityLevelPolicy(HANDLE token) {
   DWORD last_error = 0;
   DWORD length_needed = 0;
 
-  ::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION, NULL, 0,
+  ::GetKernelObjectSecurity(token, LABEL_SECURITY_INFORMATION, nullptr, 0,
                             &length_needed);
 
   last_error = ::GetLastError();
@@ -257,9 +257,9 @@ DWORD HardenTokenIntegrityLevelPolicy(HANDLE token) {
                                  security_desc, length_needed, &length_needed))
     return ::GetLastError();
 
-  PACL sacl = NULL;
-  BOOL sacl_present = FALSE;
-  BOOL sacl_defaulted = FALSE;
+  PACL sacl = nullptr;
+  BOOL sacl_present = false;
+  BOOL sacl_defaulted = false;
 
   if (!::GetSecurityDescriptorSacl(security_desc, &sacl_present, &sacl,
                                    &sacl_defaulted))

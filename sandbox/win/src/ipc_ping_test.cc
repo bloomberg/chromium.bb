@@ -17,7 +17,7 @@ SBOX_TESTS_COMMAND int IPC_Ping(int argc, wchar_t** argv) {
     return SBOX_TEST_FAILED;
 
   TargetServices* ts = SandboxFactory::GetTargetServices();
-  if (NULL == ts)
+  if (!ts)
     return SBOX_TEST_FAILED;
 
   // Downcast because we have internal knowledge of the object returned.

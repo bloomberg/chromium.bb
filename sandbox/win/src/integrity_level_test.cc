@@ -30,11 +30,11 @@ SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t** argv) {
   TOKEN_MANDATORY_LABEL* label =
       reinterpret_cast<TOKEN_MANDATORY_LABEL*>(buffer);
 
-  PSID sid_low = NULL;
+  PSID sid_low = nullptr;
   if (!::ConvertStringSidToSid(L"S-1-16-4096", &sid_low))
     return SBOX_TEST_FAILED;
 
-  BOOL is_low_sid = ::EqualSid(label->Label.Sid, sid_low);
+  bool is_low_sid = ::EqualSid(label->Label.Sid, sid_low);
 
   ::LocalFree(sid_low);
 

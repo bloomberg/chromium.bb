@@ -20,31 +20,22 @@ struct EnumMonitorsResult {
   HMONITOR monitors[kMaxEnumMonitors];
 };
 
-extern "C" {
-
 typedef BOOL(WINAPI* GdiDllInitializeFunction)(HANDLE dll,
                                                DWORD reason,
                                                LPVOID reserved);
 
-typedef HGDIOBJ(WINAPI* GetStockObjectFunction)(int object);
+using GetStockObjectFunction = decltype(&::GetStockObject);
 
-typedef ATOM(WINAPI* RegisterClassWFunction)(const WNDCLASS* wnd_class);
+using RegisterClassWFunction = decltype(&::RegisterClassW);
 
-typedef BOOL(WINAPI* EnumDisplayMonitorsFunction)(HDC hdc,
-                                                  LPCRECT clip_rect,
-                                                  MONITORENUMPROC enum_function,
-                                                  LPARAM data);
+using EnumDisplayMonitorsFunction = decltype(&::EnumDisplayMonitors);
 
-typedef BOOL(WINAPI* EnumDisplayDevicesAFunction)(
-    LPCSTR device,
-    DWORD device_number,
-    PDISPLAY_DEVICEA display_device,
-    DWORD flags);
+using EnumDisplayDevicesAFunction = decltype(&::EnumDisplayDevicesA);
 
-typedef BOOL(WINAPI* GetMonitorInfoWFunction)(HMONITOR monitor,
-                                              MONITORINFO* monitor_info);
-typedef BOOL(WINAPI* GetMonitorInfoAFunction)(HMONITOR monitor,
-                                              MONITORINFO* monitor_info);
+using GetMonitorInfoWFunction = decltype(&::GetMonitorInfoW);
+using GetMonitorInfoAFunction = decltype(&::GetMonitorInfoA);
+
+extern "C" {
 
 // Interceptor for the  GdiDllInitialize function.
 SANDBOX_INTERCEPT BOOL WINAPI

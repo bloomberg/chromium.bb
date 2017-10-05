@@ -94,11 +94,11 @@ NTSTATUS PatchNtdllWithResolver(const char* function,
                                 bool relaxed,
                                 sandbox::ServiceResolverThunk* resolver) {
   HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
-  EXPECT_TRUE(NULL != ntdll_base);
+  EXPECT_TRUE(ntdll_base);
 
   void* target = ::GetProcAddress(ntdll_base, function);
-  EXPECT_TRUE(NULL != target);
-  if (NULL == target)
+  EXPECT_TRUE(target);
+  if (!target)
     return STATUS_UNSUCCESSFUL;
 
   BYTE service[50];
@@ -115,7 +115,7 @@ NTSTATUS PatchNtdllWithResolver(const char* function,
   resolver->AllowLocalPatches();
 
   NTSTATUS ret =
-      resolver->Setup(ntdll_base, NULL, function, NULL, function_entry,
+      resolver->Setup(ntdll_base, nullptr, function, nullptr, function_entry,
                       thunk.get(), thunk_size, &used);
   if (NT_SUCCESS(ret)) {
     EXPECT_EQ(thunk_size, used);
@@ -125,8 +125,8 @@ NTSTATUS PatchNtdllWithResolver(const char* function,
     if (relaxed) {
       // It's already patched, let's patch again, and simulate a direct patch.
       service[0] = kJump32;
-      ret = resolver->Setup(ntdll_base, NULL, function, NULL, function_entry,
-                            thunk.get(), thunk_size, &used);
+      ret = resolver->Setup(ntdll_base, nullptr, function, nullptr,
+                            function_entry, thunk.get(), thunk_size, &used);
       CheckJump(service, thunk.get());
     }
   }
@@ -233,12 +233,12 @@ TEST(ServiceResolverTest, LocalPatchesAllowed) {
   sandbox::ServiceResolverThunk* resolver = GetTestResolver(true);
 
   HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
-  ASSERT_TRUE(NULL != ntdll_base);
+  ASSERT_TRUE(ntdll_base);
 
   const char kFunctionName[] = "NtClose";
 
   void* target = ::GetProcAddress(ntdll_base, kFunctionName);
-  ASSERT_TRUE(NULL != target);
+  ASSERT_TRUE(target);
 
   BYTE service[50];
   memcpy(service, target, sizeof(service));
@@ -253,14 +253,14 @@ TEST(ServiceResolverTest, LocalPatchesAllowed) {
   NTSTATUS ret = STATUS_UNSUCCESSFUL;
 
   // First try patching without having allowed local patches.
-  ret = resolver->Setup(ntdll_base, NULL, kFunctionName, NULL, function_entry,
-                        thunk.get(), thunk_size, &used);
+  ret = resolver->Setup(ntdll_base, nullptr, kFunctionName, nullptr,
+                        function_entry, thunk.get(), thunk_size, &used);
   EXPECT_FALSE(NT_SUCCESS(ret));
 
   // Now allow local patches and check that things work.
   resolver->AllowLocalPatches();
-  ret = resolver->Setup(ntdll_base, NULL, kFunctionName, NULL, function_entry,
-                        thunk.get(), thunk_size, &used);
+  ret = resolver->Setup(ntdll_base, nullptr, kFunctionName, nullptr,
+                        function_entry, thunk.get(), thunk_size, &used);
   EXPECT_EQ(STATUS_SUCCESS, ret);
 }
 

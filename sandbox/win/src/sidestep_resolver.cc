@@ -108,8 +108,8 @@ NTSTATUS SmartSidestepResolverThunk::Setup(const void* target_module,
   // to our internal smart interceptor.
   size_t standard_bytes = storage_bytes - offsetof(SmartThunk, sidestep);
   ret = SidestepResolverThunk::Setup(target_module, interceptor_module,
-                                     target_name, NULL, &SmartStub,
-                                     &thunk->sidestep, standard_bytes, NULL);
+                                     target_name, nullptr, &SmartStub,
+                                     &thunk->sidestep, standard_bytes, nullptr);
   if (!NT_SUCCESS(ret))
     return ret;
 

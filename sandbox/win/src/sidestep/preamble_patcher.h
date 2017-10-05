@@ -68,7 +68,7 @@ class PreamblePatcher {
                              size_t stub_size) {
     return RawPatchWithStub(target_function, replacement_function,
                             reinterpret_cast<unsigned char*>(preamble_stub),
-                            stub_size, NULL);
+                            stub_size, nullptr);
   }
 
  private:
@@ -96,7 +96,7 @@ class PreamblePatcher {
   // preamble_stub
   //
   // bytes_needed: Pointer to a variable that receives the minimum
-  // number of bytes required for the stub.  Can be set to NULL if you're
+  // number of bytes required for the stub.  Can be set to nullptr if you're
   // not interested.
   //
   // Returns An error code indicating the result of patching.

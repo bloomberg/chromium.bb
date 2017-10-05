@@ -168,7 +168,7 @@ HKEY GetReservedKeyFromName(const base::string16& name) {
       return kKnownKey[i].key;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 bool ResolveRegistryName(base::string16 name, base::string16* resolved_name) {
@@ -176,8 +176,8 @@ bool ResolveRegistryName(base::string16 name, base::string16* resolved_name) {
     if (name.find(kKnownKey[i].name) == 0) {
       HKEY key;
       DWORD disposition;
-      if (ERROR_SUCCESS != ::RegCreateKeyEx(kKnownKey[i].key, L"", 0, NULL, 0,
-                                            MAXIMUM_ALLOWED, NULL, &key,
+      if (ERROR_SUCCESS != ::RegCreateKeyEx(kKnownKey[i].key, L"", 0, nullptr,
+                                            0, MAXIMUM_ALLOWED, nullptr, &key,
                                             &disposition))
         return false;
 
@@ -410,7 +410,7 @@ bool ConvertToLongPath(base::string16* native_path,
 }
 
 bool GetPathFromHandle(HANDLE handle, base::string16* path) {
-  NtQueryObjectFunction NtQueryObject = NULL;
+  NtQueryObjectFunction NtQueryObject = nullptr;
   ResolveNTFunctionPtr("NtQueryObject", &NtQueryObject);
 
   OBJECT_NAME_INFORMATION initial_buffer;
@@ -443,7 +443,7 @@ bool GetNtPathFromWin32Path(const base::string16& path,
                             base::string16* nt_path) {
   HANDLE file = ::CreateFileW(
       path.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   if (file == INVALID_HANDLE_VALUE)
     return false;
   bool rv = GetPathFromHandle(file, nt_path);
@@ -483,7 +483,7 @@ DWORD GetLastErrorFromNtStatus(NTSTATUS status) {
 // This function uses the undocumented PEB ImageBaseAddress field to extract
 // the base address of the new process.
 void* GetProcessBaseAddress(HANDLE process) {
-  NtQueryInformationProcessFunction query_information_process = NULL;
+  NtQueryInformationProcessFunction query_information_process = nullptr;
   ResolveNTFunctionPtr("NtQueryInformationProcess", &query_information_process);
   if (!query_information_process)
     return nullptr;
@@ -519,7 +519,7 @@ void* GetProcessBaseAddress(HANDLE process) {
 };  // namespace sandbox
 
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
-  static volatile HMODULE ntdll = NULL;
+  static volatile HMODULE ntdll = nullptr;
 
   if (!ntdll) {
     HMODULE ntdll_local = ::GetModuleHandle(sandbox::kNtdllName);
@@ -528,7 +528,7 @@ void ResolveNTFunctionPtr(const char* name, void* ptr) {
     CHECK_NT(ntdll_peimage.VerifyMagic());
     // Race-safe way to set static ntdll.
     ::InterlockedCompareExchangePointer(
-        reinterpret_cast<PVOID volatile*>(&ntdll), ntdll_local, NULL);
+        reinterpret_cast<PVOID volatile*>(&ntdll), ntdll_local, nullptr);
   }
 
   CHECK_NT(ntdll);

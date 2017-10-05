@@ -98,7 +98,7 @@ TEST(PolicyEngineTest, SimpleIfNotStrMatch) {
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
-  const wchar_t* filename = NULL;
+  const wchar_t* filename = nullptr;
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)  // Argument 0
   POLPARAMS_END;
@@ -136,7 +136,7 @@ TEST(PolicyEngineTest, SimpleIfNotStrMatchWild1) {
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
-  const wchar_t* filename = NULL;
+  const wchar_t* filename = nullptr;
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)  // Argument 0
   POLPARAMS_END;
@@ -169,7 +169,7 @@ TEST(PolicyEngineTest, SimpleIfNotStrMatchWild2) {
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
-  const wchar_t* filename = NULL;
+  const wchar_t* filename = nullptr;
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)  // Argument 0
   POLPARAMS_END;
@@ -208,7 +208,7 @@ TEST(PolicyEngineTest, IfNotStrMatchTwoRulesWild1) {
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
-  const wchar_t* filename = NULL;
+  const wchar_t* filename = nullptr;
   uint32_t access = 0;
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)  // Argument 0
@@ -257,7 +257,7 @@ TEST(PolicyEngineTest, IfNotStrMatchTwoRulesWild2) {
   EXPECT_TRUE(policyGen.AddRule(kFakeService, &pr));
   EXPECT_TRUE(policyGen.Done());
 
-  const wchar_t* filename = NULL;
+  const wchar_t* filename = nullptr;
   uint32_t access = 0;
   uint32_t sharing = 66;
 
@@ -333,7 +333,7 @@ TEST(PolicyEngineTest, OneRuleTest) {
   const wchar_t* filename = L"c:\\Documents and Settings\\Microsoft\\BLAH.txt";
   uint32_t creation_mode = OPEN_EXISTING;
   uint32_t flags = FILE_ATTRIBUTE_NORMAL;
-  void* security_descriptor = NULL;
+  void* security_descriptor = nullptr;
 
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(filename)       // Argument 0
@@ -447,14 +447,14 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   EXPECT_TRUE(policyGen.Done());
 
   // Inspect the policy structure manually.
-  EXPECT_TRUE(NULL == policy->entry[0]);
-  EXPECT_TRUE(NULL == policy->entry[1]);
-  EXPECT_TRUE(NULL == policy->entry[2]);
-  EXPECT_TRUE(NULL == policy->entry[3]);
-  EXPECT_TRUE(NULL != policy->entry[4]);  // kNtFakeNone.
-  EXPECT_TRUE(NULL != policy->entry[5]);  // kNtFakeCreateFile.
-  EXPECT_TRUE(NULL != policy->entry[6]);  // kNtFakeOpenFile.
-  EXPECT_TRUE(NULL == policy->entry[7]);
+  EXPECT_FALSE(policy->entry[0]);
+  EXPECT_FALSE(policy->entry[1]);
+  EXPECT_FALSE(policy->entry[2]);
+  EXPECT_FALSE(policy->entry[3]);
+  EXPECT_TRUE(policy->entry[4]);  // kNtFakeNone.
+  EXPECT_TRUE(policy->entry[5]);  // kNtFakeCreateFile.
+  EXPECT_TRUE(policy->entry[6]);  // kNtFakeOpenFile.
+  EXPECT_FALSE(policy->entry[7]);
 
   // The total per service opcode counts now must take in account one
   // extra opcode (action opcode) per rule.
@@ -491,7 +491,7 @@ TEST(PolicyEngineTest, ThreeRulesTest) {
   const wchar_t* filename = L"";
   uint32_t creation_mode = OPEN_EXISTING;
   uint32_t flags = FILE_ATTRIBUTE_NORMAL;
-  void* security_descriptor = NULL;
+  void* security_descriptor = nullptr;
 
   POLPARAMS_BEGIN(params)
     POLPARAM(filename)       // Argument 0
@@ -592,7 +592,7 @@ TEST(PolicyEngineTest, PolicyRuleCopyConstructorTwoStrings) {
   EXPECT_TRUE(policyGen.AddRule(2, &pr_copy));
   EXPECT_TRUE(policyGen.Done());
 
-  const wchar_t* name = NULL;
+  const wchar_t* name = nullptr;
   POLPARAMS_BEGIN(eval_params)
     POLPARAM(name)
   POLPARAMS_END;

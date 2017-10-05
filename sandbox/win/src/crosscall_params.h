@@ -119,7 +119,7 @@ class CrossCallParams {
   // Returns a pointer to the CrossCallReturn structure.
   CrossCallReturn* GetCallReturn() { return &call_return; }
 
-  // Returns TRUE if this call contains InOut parameters.
+  // Returns true if this call contains InOut parameters.
   bool IsInOut() const { return (1 == is_in_out_); }
 
   // Tells the CrossCall object if it contains InOut parameters.

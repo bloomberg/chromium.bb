@@ -86,7 +86,7 @@ bool RegistryDispatcher::NtCreateKey(IPCInfo* ipc,
   // it valid in this process.
   if (root) {
     if (!::DuplicateHandle(ipc->client_info->process, root,
-                           ::GetCurrentProcess(), &root, 0, FALSE,
+                           ::GetCurrentProcess(), &root, 0, false,
                            DUPLICATE_SAME_ACCESS))
       return false;
 
@@ -133,7 +133,7 @@ bool RegistryDispatcher::NtOpenKey(IPCInfo* ipc,
   // it valid in this process.
   if (root) {
     if (!::DuplicateHandle(ipc->client_info->process, root,
-                           ::GetCurrentProcess(), &root, 0, FALSE,
+                           ::GetCurrentProcess(), &root, 0, false,
                            DUPLICATE_SAME_ACCESS))
       return false;
     root_handle.Set(root);

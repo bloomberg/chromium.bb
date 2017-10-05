@@ -17,7 +17,7 @@ namespace {
 // called for invalid handles so it catches STATUS_INVALID_HANDLE exceptions
 // that can be generated when handle tracing is enabled.
 NTSTATUS QueryObjectTypeInformation(HANDLE handle, void* buffer, ULONG* size) {
-  static NtQueryObject QueryObject = NULL;
+  static NtQueryObject QueryObject = nullptr;
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
@@ -37,14 +37,14 @@ NTSTATUS QueryObjectTypeInformation(HANDLE handle, void* buffer, ULONG* size) {
 namespace sandbox {
 
 // Memory buffer mapped from the parent, with the list of handles.
-SANDBOX_INTERCEPT HandleCloserInfo* g_handles_to_close = NULL;
+SANDBOX_INTERCEPT HandleCloserInfo* g_handles_to_close = nullptr;
 
 bool HandleCloserAgent::NeedsHandlesClosed() {
-  return g_handles_to_close != NULL;
+  return !!g_handles_to_close;
 }
 
 HandleCloserAgent::HandleCloserAgent()
-    : dummy_handle_(::CreateEvent(NULL, FALSE, FALSE, NULL)) {}
+    : dummy_handle_(::CreateEvent(nullptr, false, false, nullptr)) {}
 
 HandleCloserAgent::~HandleCloserAgent() {}
 
@@ -66,12 +66,12 @@ bool HandleCloserAgent::AttemptToStuffHandleSlot(HANDLE closed_handle,
   DCHECK(dummy_handle_.Get() != closed_handle);
 
   std::vector<HANDLE> to_close;
-  HANDLE dup_dummy = NULL;
+  HANDLE dup_dummy = nullptr;
   size_t count = 16;
 
   do {
     if (!::DuplicateHandle(::GetCurrentProcess(), dummy_handle_.Get(),
-                           ::GetCurrentProcess(), &dup_dummy, 0, FALSE, 0))
+                           ::GetCurrentProcess(), &dup_dummy, 0, false, 0))
       break;
     if (dup_dummy != closed_handle)
       to_close.push_back(dup_dummy);
@@ -88,7 +88,7 @@ bool HandleCloserAgent::AttemptToStuffHandleSlot(HANDLE closed_handle,
 
 // Reads g_handles_to_close and creates the lookup map.
 void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
-  CHECK(g_handles_to_close != NULL);
+  CHECK(g_handles_to_close);
 
   // Default to connected state
   *is_csrss_connected = true;
@@ -123,7 +123,7 @@ void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
 
   // Clean up the memory we copied over.
   ::VirtualFree(g_handles_to_close, 0, MEM_RELEASE);
-  g_handles_to_close = NULL;
+  g_handles_to_close = nullptr;
 }
 
 bool HandleCloserAgent::CloseHandles() {
@@ -140,7 +140,7 @@ bool HandleCloserAgent::CloseHandles() {
   OBJECT_TYPE_INFORMATION* type_info =
       reinterpret_cast<OBJECT_TYPE_INFORMATION*>(&(type_info_buffer[0]));
   base::string16 handle_name;
-  HANDLE handle = NULL;
+  HANDLE handle = nullptr;
   int invalid_count = 0;
 
   // Keep incrementing until we hit the number of handles reported by
