@@ -67,16 +67,6 @@ class ArcSessionRunner : public ArcSession::Observer,
   // when this function is called, MessageLoop is no longer exists.
   void OnShutdown();
 
-  // Returns whether currently ARC instance is running, stopped, or stopping
-  // respectively.  Note that, all three can return false at same time when,
-  // e.g., starting the ARC instance.
-  bool IsRunning() const;
-  bool IsStopped() const;
-  bool IsStopping() const;
-
-  // Returns whether LoginScreen instance is starting.
-  bool IsLoginScreenInstanceStarting() const;
-
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
 
