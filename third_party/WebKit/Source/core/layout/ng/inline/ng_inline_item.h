@@ -35,6 +35,7 @@ class CORE_EXPORT NGInlineItem {
     kCloseTag,
     kFloating,
     kOutOfFlowPositioned,
+    kListMarker,
     kBidiControl
     // When adding new values, make sure the bit size of |type_| is large
     // enough to store.
@@ -101,7 +102,7 @@ class CORE_EXPORT NGInlineItem {
   RefPtr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
-  unsigned type_ : 3;
+  unsigned type_ : 4;
   unsigned bidi_level_ : 8;  // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
 

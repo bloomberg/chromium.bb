@@ -24,6 +24,7 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/layout_ng_list_item.h"
 #include "core/layout/ng/legacy_layout_tree_walking.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
@@ -82,7 +83,8 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
                           physical_fragment.EndOffset() - text_offset,
                           item.BidiLevel(), LineLayoutItem(layout_object));
         layout_object->ClearNeedsLayout();
-      } else if (item.Type() == NGInlineItem::kAtomicInline) {
+      } else if (item.Type() == NGInlineItem::kAtomicInline ||
+                 item.Type() == NGInlineItem::kListMarker) {
         // An atomic inline produces two fragments; one marker text fragment to
         // store item index, and one box fragment.
         LayoutObject* layout_object = item.GetLayoutObject();
@@ -312,10 +314,18 @@ LayoutBox* CollectInlinesInternal(
       builder->AppendOpaque(NGInlineItem::kOutOfFlowPositioned, nullptr, node);
 
     } else if (node->IsAtomicInlineLevel()) {
-      // For atomic inlines add a unicode "object replacement character" to
-      // signal the presence of a non-text object to the unicode bidi algorithm.
-      builder->Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter,
-                      node->Style(), node);
+      if (LayoutNGListItem::IsListMarker(node)) {
+        // LayoutNGListItem produces the 'outside' list marker as an inline
+        // block. This is an out-of-flow item whose position is computed
+        // automatically.
+        builder->AppendOpaque(NGInlineItem::kListMarker, node->Style(), node);
+      } else {
+        // For atomic inlines add a unicode "object replacement character" to
+        // signal the presence of a non-text object to the unicode bidi
+        // algorithm.
+        builder->Append(NGInlineItem::kAtomicInline,
+                        kObjectReplacementCharacter, node->Style(), node);
+      }
 
     } else if (!node->IsInline()) {
       // A block box found. End inline and transit to block layout.
