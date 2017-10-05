@@ -26,6 +26,7 @@
 #include "extensions/common/extension_urls.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/a11y_util.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -310,6 +311,9 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   }
 
   [iconView_ setImage:prompt_->icon().ToNSImage()];
+  // The icon does not add any additional information for VoiceOver beyond what
+  // the title already gives. Ignore the icon in VoiceOver.
+  ui::a11y_util::HideImageFromAccessibilityOrder(iconView_);
 
   // The dialog is laid out in the NIB exactly how we want it assuming that
   // each label fits on one line. However, for each label, we want to allow
