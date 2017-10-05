@@ -554,9 +554,9 @@ void ChromeContentClient::AddContentDecryptionModules(
       // same directory as the installed adapter.
       const base::Version version(WIDEVINE_CDM_VERSION_STRING);
       DCHECK(version.IsValid());
-      cdms->push_back(content::CdmInfo(kWidevineCdmType, kWidevineCdmGuid,
-                                       version, cdm_path, codecs_supported,
-                                       kWidevineKeySystem, false));
+      cdms->push_back(content::CdmInfo(
+          kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_path,
+          codecs_supported, kWidevineKeySystem, false));
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE_NOT_COMPONENT)
 
@@ -579,15 +579,15 @@ void ChromeContentClient::AddContentDecryptionModules(
       // kExternalClearKeyKeySystem. See MultipleCdmTypes test in
       // ECKEncryptedMediaTest.
       cdms->push_back(content::CdmInfo(
-          media::kClearKeyCdmType, media::kClearKeyCdmDifferentGuid,
+          media::kClearKeyCdmDisplayName, media::kClearKeyCdmDifferentGuid,
           base::Version("0.1.0.0"), clear_key_cdm_path, {},
           kExternalClearKeyDifferentGuidTestKeySystem, false));
 
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
-      cdms->push_back(
-          content::CdmInfo(media::kClearKeyCdmType, media::kClearKeyCdmGuid,
-                           base::Version("0.1.0.0"), clear_key_cdm_path, {},
-                           kExternalClearKeyKeySystem, true));
+      cdms->push_back(content::CdmInfo(
+          media::kClearKeyCdmDisplayName, media::kClearKeyCdmGuid,
+          base::Version("0.1.0.0"), clear_key_cdm_path, {},
+          kExternalClearKeyKeySystem, true));
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }

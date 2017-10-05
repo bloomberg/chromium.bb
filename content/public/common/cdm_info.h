@@ -16,7 +16,7 @@ namespace content {
 
 // Represents a Content Decryption Module implementation and its capabilities.
 struct CONTENT_EXPORT CdmInfo {
-  CdmInfo(const std::string& type,
+  CdmInfo(const std::string& name,
           const std::string& guid,
           const base::Version& version,
           const base::FilePath& path,
@@ -26,8 +26,8 @@ struct CONTENT_EXPORT CdmInfo {
   CdmInfo(const CdmInfo& other);
   ~CdmInfo();
 
-  // Type of the CDM (e.g. Widevine).
-  std::string type;
+  // Display name of the CDM (e.g. Widevine Content Decryption Module).
+  std::string name;
 
   // A version 4 GUID to uniquely identify this type of CDM.
   std::string guid;

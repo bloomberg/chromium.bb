@@ -349,7 +349,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     // When mojo CDM is used, make sure the Clear Key CDM is properly registered
     // in CdmRegistry.
     if (IsUsingMojoCdm())
-      EXPECT_TRUE(IsLibraryCdmRegistered(media::kClearKeyCdmType));
+      EXPECT_TRUE(IsLibraryCdmRegistered(media::kClearKeyCdmGuid));
 
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.

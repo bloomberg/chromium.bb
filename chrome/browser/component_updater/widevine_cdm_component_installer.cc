@@ -241,7 +241,7 @@ void RegisterWidevineCdmWithChrome(
       codecs, std::string(1, kCdmSupportedCodecsValueDelimiter),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   CdmRegistry::GetInstance()->RegisterCdm(
-      content::CdmInfo(kWidevineCdmType, kWidevineCdmGuid, cdm_version,
+      content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, cdm_version,
                        cdm_path, supported_codecs, kWidevineKeySystem, false));
 }
 
