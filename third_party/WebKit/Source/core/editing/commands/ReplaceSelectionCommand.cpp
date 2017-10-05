@@ -730,12 +730,13 @@ void ReplaceSelectionCommand::MoveElementOutOfAncestor(
     Element* element,
     Element* ancestor,
     EditingState* editing_state) {
+  DCHECK(element);
   if (!HasEditableStyle(*ancestor->parentNode()))
     return;
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   VisiblePosition position_at_end_of_node =
-      CreateVisiblePosition(LastPositionInOrAfterNodeDeprecated(element));
+      CreateVisiblePosition(LastPositionInOrAfterNode(*element));
   VisiblePosition last_position_in_paragraph =
       VisiblePosition::LastPositionInNode(*ancestor);
   if (position_at_end_of_node.DeepEquivalent() ==
@@ -774,12 +775,10 @@ void ReplaceSelectionCommand::RemoveUnrenderedTextNodesAtEnds(
   Node* last_leaf_inserted = inserted_nodes.LastLeafInserted();
   if (last_leaf_inserted && last_leaf_inserted->IsTextNode() &&
       !NodeHasVisibleLayoutText(ToText(*last_leaf_inserted)) &&
-      !EnclosingElementWithTag(
-          FirstPositionInOrBeforeNodeDeprecated(last_leaf_inserted),
-          selectTag) &&
-      !EnclosingElementWithTag(
-          FirstPositionInOrBeforeNodeDeprecated(last_leaf_inserted),
-          scriptTag)) {
+      !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*last_leaf_inserted),
+                               selectTag) &&
+      !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*last_leaf_inserted),
+                               scriptTag)) {
     inserted_nodes.WillRemoveNode(*last_leaf_inserted);
     // Removing a Text node won't dispatch synchronous events.
     RemoveNode(last_leaf_inserted, ASSERT_NO_EDITING_ABORT);
@@ -807,8 +806,7 @@ VisiblePosition ReplaceSelectionCommand::PositionAtEndOfInsertedContent()
   HTMLSelectElement* enclosing_select = ToHTMLSelectElement(
       EnclosingElementWithTag(end_of_inserted_content_, selectTag));
   if (enclosing_select) {
-    return CreateVisiblePosition(
-        LastPositionInOrAfterNodeDeprecated(enclosing_select));
+    return CreateVisiblePosition(LastPositionInOrAfterNode(*enclosing_select));
   }
   if (end_of_inserted_content_.IsOrphan())
     return VisiblePosition();
@@ -1969,10 +1967,10 @@ void ReplaceSelectionCommand::UpdateNodesInserted(Node* node) {
     return;
 
   if (start_of_inserted_content_.IsNull())
-    start_of_inserted_content_ = FirstPositionInOrBeforeNodeDeprecated(node);
+    start_of_inserted_content_ = FirstPositionInOrBeforeNode(*node);
 
-  end_of_inserted_content_ = LastPositionInOrAfterNodeDeprecated(
-      &NodeTraversal::LastWithinOrSelf(*node));
+  end_of_inserted_content_ =
+      LastPositionInOrAfterNode(NodeTraversal::LastWithinOrSelf(*node));
 }
 
 // During simple pastes, where we're just pasting a text node into a run of

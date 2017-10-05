@@ -203,7 +203,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   if (!start_node->IsDescendantOf(top_blockquote)) {
     SetEndingSelection(SelectionForUndoStep::From(
         SelectionInDOMTree::Builder()
-            .Collapse(FirstPositionInOrBeforeNodeDeprecated(start_node))
+            .Collapse(FirstPositionInOrBeforeNode(*start_node))
             .SetIsDirectional(EndingSelection().IsDirectional())
             .Build()));
     return;

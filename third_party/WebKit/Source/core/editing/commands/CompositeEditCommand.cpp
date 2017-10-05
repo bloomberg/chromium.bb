@@ -1910,7 +1910,7 @@ Node* CompositeEditCommand::SplitTreeToNode(Node* start,
     VisiblePosition position_in_parent =
         VisiblePosition::FirstPositionInNode(*parent_element);
     VisiblePosition position_in_node =
-        CreateVisiblePosition(FirstPositionInOrBeforeNodeDeprecated(node));
+        CreateVisiblePosition(FirstPositionInOrBeforeNode(*node));
     if (position_in_parent.DeepEquivalent() !=
         position_in_node.DeepEquivalent())
       SplitElement(parent_element, node);

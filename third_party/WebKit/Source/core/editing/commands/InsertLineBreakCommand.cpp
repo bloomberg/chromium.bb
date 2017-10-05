@@ -209,14 +209,14 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
       GetDocument().GetFrame()->GetEditor().TypingStyle();
 
   if (typing_style && !typing_style->IsEmpty()) {
+    DCHECK(node_to_insert);
     // Apply the typing style to the inserted line break, so that if the
     // selection leaves and then comes back, new input will have the right
     // style.
     // FIXME: We shouldn't always apply the typing style to the line break here,
     // see <rdar://problem/5794462>.
-    ApplyStyle(
-        typing_style, FirstPositionInOrBeforeNodeDeprecated(node_to_insert),
-        LastPositionInOrAfterNodeDeprecated(node_to_insert), editing_state);
+    ApplyStyle(typing_style, FirstPositionInOrBeforeNode(*node_to_insert),
+               LastPositionInOrAfterNode(*node_to_insert), editing_state);
     if (editing_state->IsAborted())
       return;
     // Even though this applyStyle operates on a Range, it still sets an
