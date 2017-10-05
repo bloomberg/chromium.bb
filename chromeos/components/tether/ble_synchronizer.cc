@@ -5,6 +5,7 @@
 #include "chromeos/components/tether/ble_synchronizer.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -137,6 +138,8 @@ void BleSynchronizer::SetTestDoubles(
 
 void BleSynchronizer::OnAdvertisementRegistered(
     scoped_refptr<device::BluetoothAdvertisement> advertisement) {
+  RecordBluetoothAdvertisementRegistrationResult(
+      BluetoothAdvertisementResult::SUCCESS);
   ScheduleCommandCompletion();
   RegisterArgs* register_args = current_command_->register_args.get();
   DCHECK(register_args);
@@ -145,6 +148,8 @@ void BleSynchronizer::OnAdvertisementRegistered(
 
 void BleSynchronizer::OnErrorRegisteringAdvertisement(
     device::BluetoothAdvertisement::ErrorCode error_code) {
+  RecordBluetoothAdvertisementRegistrationResult(
+      BluetoothAdvertisementErrorCodeToResult(error_code));
   ScheduleCommandCompletion();
   RegisterArgs* register_args = current_command_->register_args.get();
   DCHECK(register_args);
@@ -152,6 +157,8 @@ void BleSynchronizer::OnErrorRegisteringAdvertisement(
 }
 
 void BleSynchronizer::OnAdvertisementUnregistered() {
+  RecordBluetoothAdvertisementUnregistrationResult(
+      BluetoothAdvertisementResult::SUCCESS);
   ScheduleCommandCompletion();
   UnregisterArgs* unregister_args = current_command_->unregister_args.get();
   DCHECK(unregister_args);
@@ -160,6 +167,8 @@ void BleSynchronizer::OnAdvertisementUnregistered() {
 
 void BleSynchronizer::OnErrorUnregisteringAdvertisement(
     device::BluetoothAdvertisement::ErrorCode error_code) {
+  RecordBluetoothAdvertisementUnregistrationResult(
+      BluetoothAdvertisementErrorCodeToResult(error_code));
   ScheduleCommandCompletion();
   UnregisterArgs* unregister_args = current_command_->unregister_args.get();
   DCHECK(unregister_args);
@@ -168,6 +177,7 @@ void BleSynchronizer::OnErrorUnregisteringAdvertisement(
 
 void BleSynchronizer::OnDiscoverySessionStarted(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
+  RecordDiscoverySessionStarted(true);
   ScheduleCommandCompletion();
   StartDiscoveryArgs* start_discovery_args =
       current_command_->start_discovery_args.get();
@@ -176,6 +186,7 @@ void BleSynchronizer::OnDiscoverySessionStarted(
 }
 
 void BleSynchronizer::OnErrorStartingDiscoverySession() {
+  RecordDiscoverySessionStarted(false);
   ScheduleCommandCompletion();
   StartDiscoveryArgs* start_discovery_args =
       current_command_->start_discovery_args.get();
@@ -215,6 +226,55 @@ void BleSynchronizer::CompleteCurrentCommand() {
   current_command_.reset();
   last_command_end_timestamp_ = clock_->Now();
   ProcessQueue();
+}
+
+void BleSynchronizer::RecordBluetoothAdvertisementRegistrationResult(
+    BluetoothAdvertisementResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "InstantTethering.BluetoothAdvertisementRegistrationResult", result,
+      BluetoothAdvertisementResult::BLUETOOTH_ADVERTISEMENT_RESULT_MAX);
+}
+
+void BleSynchronizer::RecordBluetoothAdvertisementUnregistrationResult(
+    BluetoothAdvertisementResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "InstantTethering.BluetoothAdvertisementUnregistrationResult", result,
+      BluetoothAdvertisementResult::BLUETOOTH_ADVERTISEMENT_RESULT_MAX);
+}
+
+BleSynchronizer::BluetoothAdvertisementResult
+BleSynchronizer::BluetoothAdvertisementErrorCodeToResult(
+    device::BluetoothAdvertisement::ErrorCode error_code) {
+  switch (error_code) {
+    case device::BluetoothAdvertisement::ErrorCode::ERROR_UNSUPPORTED_PLATFORM:
+      return BluetoothAdvertisementResult::ERROR_UNSUPPORTED_PLATFORM;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_ALREADY_EXISTS:
+      return BluetoothAdvertisementResult::ERROR_ADVERTISEMENT_ALREADY_EXISTS;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_DOES_NOT_EXIST:
+      return BluetoothAdvertisementResult::ERROR_ADVERTISEMENT_DOES_NOT_EXIST;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_INVALID_LENGTH:
+      return BluetoothAdvertisementResult::ERROR_ADVERTISEMENT_INVALID_LENGTH;
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_INVALID_ADVERTISEMENT_INTERVAL:
+      return BluetoothAdvertisementResult::ERROR_INVALID_ADVERTISEMENT_INTERVAL;
+    case device::BluetoothAdvertisement::ErrorCode::ERROR_RESET_ADVERTISING:
+      return BluetoothAdvertisementResult::ERROR_RESET_ADVERTISING;
+    case device::BluetoothAdvertisement::ErrorCode::
+        INVALID_ADVERTISEMENT_ERROR_CODE:
+      return BluetoothAdvertisementResult::INVALID_ADVERTISEMENT_ERROR_CODE;
+    default:
+      break;
+  }
+
+  return BluetoothAdvertisementResult::BLUETOOTH_ADVERTISEMENT_RESULT_MAX;
+}
+
+void BleSynchronizer::RecordDiscoverySessionStarted(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("InstantTethering.BluetoothDiscoverySessionStarted",
+                        success);
 }
 
 }  // namespace tether

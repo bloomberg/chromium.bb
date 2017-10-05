@@ -28630,6 +28630,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.BluetoothAdvertisementRegistrationResult"
+    enum="InstantTethering_BluetoothAdvertisementResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of how many times each possible Bluetooth advertisement
+    registration result occurs.
+  </summary>
+</histogram>
+
+<histogram name="InstantTethering.BluetoothAdvertisementUnregistrationResult"
+    enum="InstantTethering_BluetoothAdvertisementResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of how many times each possible Bluetooth advertisement
+    unregistration result occurs.
+  </summary>
+</histogram>
+
+<histogram name="InstantTethering.BluetoothDiscoverySessionStarted"
+    enum="BooleanSuccess">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides the success rate of starting a Bluetooth discovery session.
+  </summary>
+</histogram>
+
 <histogram name="InstantTethering.ConnectionToHostResult.Failure"
     enum="InstantTethering_ConnectionToHostResult_Failure">
   <owner>hansberry@chromium.com</owner>
@@ -64325,6 +64351,41 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     When the startup settings are changed outside of Chrome, which is detected
     by the Protector, this histogram reports the new setting.
+  </summary>
+</histogram>
+
+<histogram name="ProximityAuth.BluetoothGattConnectionResult"
+    enum="ProximityAuth_BluetoothGattConnectionResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of how many times each possible Bluetooth GATT
+    connection result occurs.
+  </summary>
+</histogram>
+
+<histogram name="ProximityAuth.BluetoothGattNotifySessionResult"
+    enum="ProximityAuth_BluetoothGattServiceOperationResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of how many times each possible Bluetooth GATT
+    &quot;notify session&quot; attempt result occurs.
+  </summary>
+</histogram>
+
+<histogram name="ProximityAuth.BluetoothGattWriteCharacteristicResult"
+    enum="ProximityAuth_BluetoothGattServiceOperationResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of how many times each possible Bluetooth GATT
+    &quot;write characteristic&quot; attempt result occurs.
+  </summary>
+</histogram>
+
+<histogram name="ProximityAuth.BluetoothSetSubStatus" enum="BooleanTimedOut">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides the success rate of setting connection &quot;sub status&quot;.
+    Timeout indicates a Bluetooth failure.
   </summary>
 </histogram>
 

@@ -21288,6 +21288,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="identical"/>
 </enum>
 
+<enum name="InstantTethering_BluetoothAdvertisementResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error: Unsupported platform"/>
+  <int value="2" label="Error: Advertisement already exists"/>
+  <int value="3" label="Error: Advertisement does not exist"/>
+  <int value="4" label="Error: Advertisement invalid length"/>
+  <int value="5" label="Error: Invalid advertisement interval"/>
+  <int value="6" label="Error: Reset advertising"/>
+  <int value="7" label="Invalid advertisement error code"/>
+</enum>
+
 <enum name="InstantTethering_ConnectionToHostResult_Failure">
   <int value="0" label="Unknown error"/>
   <int value="1" label="Tethering timed out"/>
@@ -32319,6 +32330,30 @@ from previous Chrome versions.
   <int value="5" label="INVALID_FORM"/>
   <int value="6" label="SYNC_CREDENTIALS"/>
   <int value="7" label="SAVING_ON_HTTP_AFTER_HTTPS"/>
+</enum>
+
+<enum name="ProximityAuth_BluetoothGattConnectionResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error: Auth canceled"/>
+  <int value="2" label="Error: Auth failed"/>
+  <int value="3" label="Error: Auth rejected"/>
+  <int value="4" label="Error: Auth timeout"/>
+  <int value="5" label="Error: Failed"/>
+  <int value="6" label="Error: In progress"/>
+  <int value="7" label="Error: Unknown"/>
+  <int value="8" label="Error: Unsupported device"/>
+</enum>
+
+<enum name="ProximityAuth_BluetoothGattServiceOperationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error: Unknown"/>
+  <int value="2" label="Error: Failed"/>
+  <int value="3" label="Error: In progress"/>
+  <int value="4" label="Error: Invalid length"/>
+  <int value="5" label="Error: Not permitted"/>
+  <int value="6" label="Error: Not authorized"/>
+  <int value="7" label="Error: Not paired"/>
+  <int value="8" label="Error: Not supported"/>
 </enum>
 
 <enum name="ProxyStatus">
