@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mock_lorgnette_manager_client.h"
+#include "chromeos/dbus/mock_lorgnette_manager_client.h"
 
 namespace chromeos {
 
@@ -13,4 +13,3 @@ MockLorgnetteManagerClient::~MockLorgnetteManagerClient() {
 }
 
 }  // namespace chromeos
-

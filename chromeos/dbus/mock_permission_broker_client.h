@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "chromeos/dbus/permission_broker_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

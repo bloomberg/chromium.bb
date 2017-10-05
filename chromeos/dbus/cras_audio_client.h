@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

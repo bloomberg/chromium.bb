@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"

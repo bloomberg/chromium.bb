@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -172,12 +173,12 @@ void ExpectUint64AndBoolArguments(uint64_t expected_uint64,
   EXPECT_FALSE(reader->HasMoreData());
 }
 
-void WriteNodesToResponse(dbus::MessageWriter& writer,
-                          const AudioNodeList& node_list) {
+void WriteNodesToResponse(const AudioNodeList& node_list,
+                          dbus::MessageWriter* writer) {
   dbus::MessageWriter sub_writer(nullptr);
   dbus::MessageWriter entry_writer(nullptr);
   for (size_t i = 0; i < node_list.size(); ++i) {
-    writer.OpenArray("{sv}", &sub_writer);
+    writer->OpenArray("{sv}", &sub_writer);
     sub_writer.OpenDictEntry(&entry_writer);
     entry_writer.AppendString(cras::kIsInputProperty);
     entry_writer.AppendVariantOfBool(node_list[i].is_input);
@@ -218,7 +219,7 @@ void WriteNodesToResponse(dbus::MessageWriter& writer,
       entry_writer.AppendVariantOfUint64(node_list[i].stable_device_id_v2);
     }
     sub_writer.CloseContainer(&entry_writer);
-    writer.CloseContainer(&sub_writer);
+    writer->CloseContainer(&sub_writer);
   }
 }
 
@@ -776,7 +777,7 @@ TEST_F(CrasAudioClientTest, GetNodes) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
-  WriteNodesToResponse(writer, expected_node_list);
+  WriteNodesToResponse(expected_node_list, &writer);
 
   // Set expectations.
   PrepareForMethodCall(cras::kGetNodes,
@@ -801,7 +802,7 @@ TEST_F(CrasAudioClientTest, GetNodesV2) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
-  WriteNodesToResponse(writer, expected_node_list);
+  WriteNodesToResponse(expected_node_list, &writer);
 
   // Set expectations.
   PrepareForMethodCall(cras::kGetNodes, base::Bind(&ExpectNoArgument),

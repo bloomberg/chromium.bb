@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_SERVICES_CROS_DBUS_SERVICE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"

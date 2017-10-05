@@ -5,7 +5,9 @@
 #include "chromeos/dbus/power_manager_client.h"
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"

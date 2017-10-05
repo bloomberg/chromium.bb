@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/dbus/permission_broker_client.h"

@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/upstart_client.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"

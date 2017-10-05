@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_ARC_MIDIS_CLIENT_H_
 #define CHROMEOS_DBUS_ARC_MIDIS_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"

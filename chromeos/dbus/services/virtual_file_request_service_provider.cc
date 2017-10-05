@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/services/virtual_file_request_service_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_FAKE_AUTH_POLICY_CLIENT_H_
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/time/time.h"

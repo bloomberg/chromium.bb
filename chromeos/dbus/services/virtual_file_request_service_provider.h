@@ -6,6 +6,8 @@
 #define CHROMEOS_DBUS_SERVICES_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"

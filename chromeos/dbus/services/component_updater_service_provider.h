@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_SERVICES_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
 #define CHROMEOS_DBUS_SERVICES_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"

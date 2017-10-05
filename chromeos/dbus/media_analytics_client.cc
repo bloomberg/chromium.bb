@@ -5,6 +5,7 @@
 #include "chromeos/dbus/media_analytics_client.h"
 
 #include <cstdint>
+#include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -50,11 +51,9 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
 
     dbus::MethodCall method_call(media_perception::kMediaPerceptionServiceName,
                                  media_perception::kStateFunction);
-    int length = state.ByteSize();
-    uint8_t bytes[length];
-    state.SerializeToArray(bytes, length);
+
     dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfBytes(bytes, length);
+    writer.AppendProtoAsArrayOfBytes(state);
 
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,

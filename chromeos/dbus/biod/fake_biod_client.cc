@@ -5,6 +5,7 @@
 #include "chromeos/dbus/biod/fake_biod_client.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"

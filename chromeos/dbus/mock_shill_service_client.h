@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_DBUS_MOCK_SHILL_SERVICE_CLIENT_H_
 #define CHROMEOS_DBUS_MOCK_SHILL_SERVICE_CLIENT_H_
 
+#include <string>
+#include <vector>
+
 #include "base/values.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"

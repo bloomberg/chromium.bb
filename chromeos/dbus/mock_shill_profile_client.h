@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_MOCK_SHILL_PROFILE_CLIENT_H_
 #define CHROMEOS_DBUS_MOCK_SHILL_PROFILE_CLIENT_H_
 
+#include <string>
+
 #include "base/values.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"

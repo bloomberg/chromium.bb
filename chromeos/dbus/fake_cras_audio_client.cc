@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_cras_audio_client.h"
 
+#include <utility>
+
 namespace chromeos {
 
 FakeCrasAudioClient::FakeCrasAudioClient()

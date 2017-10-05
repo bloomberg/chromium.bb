@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_SHILL_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_SHILL_MANAGER_CLIENT_H_
 
+#include <map>
 #include <memory>
 #include <string>
 

@@ -31,4 +31,4 @@ bool FakeSystemClockClient::CanSetTime() {
   return true;
 }
 
-} // namespace chromeos
+}  // namespace chromeos

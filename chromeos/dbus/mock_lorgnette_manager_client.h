@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_DBUS_MOCK_LORGNETTE_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_MOCK_LORGNETTE_MANAGER_CLIENT_H_
 
-#include "lorgnette_manager_client.h"
+#include <string>
 
-#include <gmock/gmock.h>
+#include "chromeos/dbus/lorgnette_manager_client.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 

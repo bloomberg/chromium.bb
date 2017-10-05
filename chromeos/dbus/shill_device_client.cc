@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/shill_device_client.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
