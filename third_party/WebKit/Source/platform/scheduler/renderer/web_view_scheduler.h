@@ -82,14 +82,9 @@ class PLATFORM_EXPORT WebViewScheduler {
    public:
     virtual ~VirtualTimeObserver() {}
 
-    // Called when virtual time advances. |virtual_time_offset| is the offset
-    // between the current virtual time and the initial virtual time when
-    // EnableVirtualTime() was called.
-    virtual void OnVirtualTimeAdvanced(base::TimeDelta virtual_time_offset) = 0;
-
-    // Called when virtual time pauses for any reason. |virtual_time_offset| is
-    // the offset between the current virtual time and the initial virtual time
-    // when EnableVirtualTime() was called.
+    // Called the next microtask after virtual time pauses for any reason.
+    // |virtual_time_offset| is the offset between the current virtual time and
+    // the initial virtual time when EnableVirtualTime() was called.
     virtual void OnVirtualTimePaused(base::TimeDelta virtual_time_offset) = 0;
   };
 
