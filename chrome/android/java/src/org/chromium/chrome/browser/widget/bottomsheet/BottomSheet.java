@@ -13,6 +13,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -893,6 +895,9 @@ public class BottomSheet
             return TabLoadStatus.PAGE_LOAD_FAILED;
         }
 
+        // Load chrome://bookmarks, downloads, and history in the bottom sheet.
+        if (handleNativePageUrl(params.getUrl())) return TabLoadStatus.PAGE_LOAD_FAILED;
+
         boolean isShowingNtp = isShowingNewTab();
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
 
@@ -918,6 +923,37 @@ public class BottomSheet
         setSheetState(SHEET_STATE_PEEK, true, StateChangeReason.NAVIGATION);
 
         return tabLoadStatus;
+    }
+
+    /**
+     * If the URL scheme is "chrome", we try to load bookmarks, downloads, and history in the
+     * bottom sheet.
+     *
+     * @param url The URL to be loaded.
+     * @return Whether or not the URL was loaded in the sheet.
+     */
+    private boolean handleNativePageUrl(String url) {
+        if (url == null) return false;
+
+        Uri uri = Uri.parse(url);
+        if (!UrlConstants.CHROME_SCHEME.equals(uri.getScheme())
+                && !UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
+            return false;
+        }
+
+        if (UrlConstants.BOOKMARKS_HOST.equals(uri.getHost())) {
+            mActivity.getBottomSheetContentController().showContentAndOpenSheet(
+                    R.id.action_bookmarks);
+        } else if (UrlConstants.DOWNLOADS_HOST.equals(uri.getHost())) {
+            mActivity.getBottomSheetContentController().showContentAndOpenSheet(
+                    R.id.action_downloads);
+        } else if (UrlConstants.HISTORY_HOST.equals(uri.getHost())) {
+            mActivity.getBottomSheetContentController().showContentAndOpenSheet(
+                    R.id.action_history);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     /**
