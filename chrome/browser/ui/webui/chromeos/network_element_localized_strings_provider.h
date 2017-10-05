@@ -26,7 +26,10 @@ void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder);
 // Adds ONC strings used by the details dialog used in Settings and WebUI.
 void AddOncLocalizedStrings(content::WebUIDataSource* html_source);
 
-// Adds configuration strings used by the details dialog used in Settings and
+// Adds strings used by the details dialog used in Settings and WebUI.
+void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source);
+
+// Adds strings used by the configuration dialog used in Settings and
 // WebUI.
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source);
 

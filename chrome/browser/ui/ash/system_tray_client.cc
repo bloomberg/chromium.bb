@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -29,14 +30,17 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/tether_constants.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -365,13 +369,25 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
       chromeos::NetworkHandler::Get()
           ->network_state_handler()
           ->GetNetworkStateFromGuid(network_id);
-  if (network_state && network_state->type() == chromeos::kTypeTether &&
+  if (!network_state) {
+    LOG(ERROR) << "Network not found: " << network_id;
+    return;
+  }
+  if (network_state->type() == chromeos::kTypeTether &&
       !network_state->tether_has_connected_to_host()) {
     ShowNetworkSettingsHelper(network_id, true /* show_configure */);
     return;
   }
 
-  chromeos::NetworkConfigView::ShowForNetworkId(network_id);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kNetworkSettingsConfig)) {
+    chromeos::InternetConfigDialog::ShowDialogForNetworkState(
+        ProfileManager::GetActiveUserProfile(), GetDialogParentContainerId(),
+        network_state);
+
+  } else {
+    chromeos::NetworkConfigView::ShowForNetworkId(network_id);
+  }
 }
 
 void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
@@ -384,7 +400,18 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
     ShowNetworkSettingsHelper(network_id, false /* show_configure */);
     return;
   }
-  chromeos::NetworkConfigView::ShowForType(type);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kNetworkSettingsConfig)) {
+    // TODO(stevenjb): Pass ONC type to ShowNetworkCreate once NetworkConfigView
+    // is deprecated.
+    std::string onc_type =
+        chromeos::network_util::TranslateShillTypeToONC(type);
+    chromeos::InternetConfigDialog::ShowDialogForNetworkType(
+        ProfileManager::GetActiveUserProfile(), GetDialogParentContainerId(),
+        onc_type);
+  } else {
+    chromeos::NetworkConfigView::ShowForType(type);
+  }
 }
 
 void SystemTrayClient::ShowThirdPartyVpnCreate(

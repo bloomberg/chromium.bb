@@ -340,6 +340,7 @@
     "matches": [
       "chrome://network/*",
       "chrome://oobe/*",
+      "chrome://internet-config-dialog/*",
       "chrome://internet-detail-dialog/*",
       "chrome://settings/*"
     ]
