@@ -90,7 +90,8 @@ void ContentsView::Init(AppListModel* model) {
   }
 
   search_result_tile_item_list_view_ = new SearchResultTileItemListView(
-      GetSearchBoxView()->search_box(), view_delegate);
+      search_results_page_view_, GetSearchBoxView()->search_box(),
+      view_delegate);
   search_results_page_view_->AddSearchResultContainerView(
       results, search_result_tile_item_list_view_);
 

@@ -186,6 +186,11 @@ void SearchResultView::SetSelected(bool selected) {
   if (selected_ == selected)
     return;
   selected_ = selected;
+
+  if (features::IsAppListFocusEnabled() && selected_) {
+    ScrollRectToVisible(GetLocalBounds());
+    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+  }
   SchedulePaint();
 }
 

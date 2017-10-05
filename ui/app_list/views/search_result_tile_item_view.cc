@@ -234,6 +234,8 @@ void SearchResultTileItemView::OnFocus() {
       view_delegate_->GetModel()->state() == AppListModel::STATE_APPS) {
     // Go back to first page when app in suggestions container is focused.
     pagination_model_->SelectPage(0, false);
+  } else if (!is_recommendation()) {
+    ScrollRectToVisible(GetLocalBounds());
   }
   TileItemView::OnFocus();
 }

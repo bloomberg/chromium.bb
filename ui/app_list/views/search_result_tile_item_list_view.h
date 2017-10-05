@@ -18,14 +18,16 @@ class Separator;
 namespace app_list {
 
 class AppListViewDelegate;
+class SearchResultPageView;
 class SearchResultTileItemView;
 
 // Displays a list of SearchResultTileItemView.
 class APP_LIST_EXPORT SearchResultTileItemListView
     : public SearchResultContainerView {
  public:
-  explicit SearchResultTileItemListView(views::Textfield* search_box,
-                                        AppListViewDelegate* view_delegate);
+  SearchResultTileItemListView(SearchResultPageView* search_result_page_view,
+                               views::Textfield* search_box,
+                               AppListViewDelegate* view_delegate);
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
@@ -52,7 +54,9 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   std::vector<views::Separator*> separator_views_;
 
-  views::Textfield* search_box_;  // Owned by the views hierarchy.
+  // Owned by the views hierarchy.
+  SearchResultPageView* const search_result_page_view_;
+  views::Textfield* search_box_;
 
   const bool is_play_store_app_search_enabled_;
 

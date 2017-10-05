@@ -23,6 +23,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/shadow_border.h"
@@ -75,6 +76,15 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
 
   // OverlayScrollBar overrides:
   int GetThickness() const override { return 0; }
+
+  bool OnKeyPressed(const ui::KeyEvent& event) override {
+    if (!features::IsAppListFocusEnabled())
+      return OverlayScrollBar::OnKeyPressed(event);
+
+    // Arrow keys should be handled by FocusManager to move focus. When a search
+    // result is focued, it will be set visible in scroll view.
+    return false;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ZeroWidthVerticalScrollBar);
@@ -215,7 +225,28 @@ void SearchResultPageView::AddSearchResultContainerView(
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (is_app_list_focus_enabled_) {
-    // TODO(weidongg/766810) Add handling of arrow up and down here.
+    views::View* next_focusable_view = nullptr;
+    if (event.key_code() == ui::VKEY_UP) {
+      next_focusable_view = GetFocusManager()->GetNextFocusableView(
+          GetFocusManager()->GetFocusedView(), GetWidget(), true, false);
+    } else if (event.key_code() == ui::VKEY_DOWN) {
+      next_focusable_view = GetFocusManager()->GetNextFocusableView(
+          GetFocusManager()->GetFocusedView(), GetWidget(), false, false);
+    }
+
+    if (next_focusable_view && !Contains(next_focusable_view)) {
+      // Hitting up key when focus is on first search result or hitting down
+      // key when focus is on last search result should move focus onto search
+      // box.
+      AppListPage::contents_view()
+          ->GetSearchBoxView()
+          ->search_box()
+          ->RequestFocus();
+      return true;
+    }
+
+    // Return false to let FocusManager to handle default focus move by key
+    // events.
     return false;
   }
   // TODO(weidongg/766807) Remove everything below when the flag is enabled by
