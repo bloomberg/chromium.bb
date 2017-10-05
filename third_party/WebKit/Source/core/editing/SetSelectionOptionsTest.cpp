@@ -22,6 +22,7 @@ TEST_F(SetSelectionOptionsTest, DefaultValues) {
   EXPECT_FALSE(options.ShouldClearTypingStyle());
   EXPECT_FALSE(options.ShouldCloseTyping());
   EXPECT_FALSE(options.ShouldShowHandle());
+  EXPECT_FALSE(options.ShouldShrinkNextTap());
 }
 
 TEST_F(SetSelectionOptionsTest, Setter) {
@@ -34,7 +35,8 @@ TEST_F(SetSelectionOptionsTest, Setter) {
       .SetSetSelectionBy(SetSelectionBy::kUser)
       .SetShouldClearTypingStyle(true)
       .SetShouldCloseTyping(true)
-      .SetShouldShowHandle(true);
+      .SetShouldShowHandle(true)
+      .SetShouldShrinkNextTap(true);
 
   SetSelectionOptions options = builder.Build();
 
@@ -46,6 +48,7 @@ TEST_F(SetSelectionOptionsTest, Setter) {
   EXPECT_TRUE(options.ShouldClearTypingStyle());
   EXPECT_TRUE(options.ShouldCloseTyping());
   EXPECT_TRUE(options.ShouldShowHandle());
+  EXPECT_TRUE(options.ShouldShrinkNextTap());
 }
 
 }  // namespace blink
