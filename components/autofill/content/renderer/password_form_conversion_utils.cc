@@ -376,7 +376,6 @@ bool GetPasswordForm(
   std::map<blink::WebInputElement, blink::WebInputElement>
       last_text_input_before_password;
   std::vector<WebInputElement> all_possible_usernames;
-  std::vector<base::string16> other_possible_passwords;
 
   std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
   if (form_predictions) {
@@ -517,12 +516,13 @@ bool GetPasswordForm(
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordSelection)) {
     // Add non-empty unique possible passwords to the vector.
+    std::vector<base::string16> all_possible_passwords;
     for (const WebInputElement& password_element : passwords) {
       base::string16 element = password_element.Value().Utf16();
       if (!element.empty() &&
-          find(other_possible_passwords.begin(), other_possible_passwords.end(),
-               element) == other_possible_passwords.end()) {
-        other_possible_passwords.push_back(std::move(element));
+          find(all_possible_passwords.begin(), all_possible_passwords.end(),
+               element) == all_possible_passwords.end()) {
+        all_possible_passwords.push_back(std::move(element));
       }
     }
 
@@ -530,9 +530,8 @@ bool GetPasswordForm(
     base::string16 password_to_save =
         (new_password.IsNull() ? password : new_password).Value().Utf16();
 
-    if (!other_possible_passwords.empty()) {
-      password_form->other_possible_passwords =
-          std::move(other_possible_passwords);
+    if (!all_possible_passwords.empty()) {
+      password_form->all_possible_passwords = std::move(all_possible_passwords);
     }
   }
 

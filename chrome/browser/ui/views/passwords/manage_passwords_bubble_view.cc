@@ -243,25 +243,25 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
 std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
     const autofill::PasswordForm& form,
     bool visible) {
-  DCHECK(!form.other_possible_passwords.empty());
+  DCHECK(!form.all_possible_passwords.empty());
   std::vector<base::string16> passwords;
   if (visible) {
-    passwords = form.other_possible_passwords;
+    passwords = form.all_possible_passwords;
   } else {
     for (const base::string16& possible_password :
-         form.other_possible_passwords) {
+         form.all_possible_passwords) {
       passwords.push_back(base::string16(possible_password.length(), '*'));
     }
   }
   std::unique_ptr<views::Combobox> combobox = std::make_unique<views::Combobox>(
       std::make_unique<ui::SimpleComboboxModel>(passwords));
   size_t index = std::distance(
-      form.other_possible_passwords.begin(),
-      find(form.other_possible_passwords.begin(),
-           form.other_possible_passwords.end(), form.password_value));
+      form.all_possible_passwords.begin(),
+      find(form.all_possible_passwords.begin(),
+           form.all_possible_passwords.end(), form.password_value));
   // Unlikely, but if we don't find the password in possible passwords,
   // we will set the default to first element.
-  if (index == form.other_possible_passwords.size()) {
+  if (index == form.all_possible_passwords.size()) {
     combobox->SetSelectedIndex(0);
   } else {
     combobox->SetSelectedIndex(index);
@@ -535,7 +535,7 @@ void ManagePasswordsBubbleView::PendingView::CreatePasswordField() {
   const autofill::PasswordForm& password_form =
       parent_->model()->pending_password();
   if (enable_password_selection &&
-      password_form.other_possible_passwords.size() > 1) {
+      password_form.all_possible_passwords.size() > 1) {
     password_field_ =
         CreatePasswordDropdownView(password_form, password_visible_);
   } else {
@@ -571,10 +571,9 @@ void ManagePasswordsBubbleView::PendingView::
     new_username = static_cast<views::Textfield*>(username_field_)->text();
   }
   if (password_editable &&
-      parent_->model()->pending_password().other_possible_passwords.size() >
-          1) {
+      parent_->model()->pending_password().all_possible_passwords.size() > 1) {
     new_password =
-        parent_->model()->pending_password().other_possible_passwords.at(
+        parent_->model()->pending_password().all_possible_passwords.at(
             static_cast<views::Combobox*>(password_field_.get())
                 ->selected_index());
   }

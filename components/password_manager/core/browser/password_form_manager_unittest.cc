@@ -1603,18 +1603,18 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
               UnorderedElementsAre(kUsernameDuplicate, kUsernameRandom));
 }
 
-TEST_F(PasswordFormManagerTest, TestOtherPossiblePasswords) {
+TEST_F(PasswordFormManagerTest, TestAllPossiblePasswords) {
   fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
 
   PasswordForm credentials(*observed_form());
-  credentials.other_possible_passwords.push_back(ASCIIToUTF16("pass1"));
-  credentials.other_possible_passwords.push_back(ASCIIToUTF16("pass2"));
-  credentials.other_possible_passwords.push_back(ASCIIToUTF16("pass3"));
+  credentials.all_possible_passwords.push_back(ASCIIToUTF16("pass1"));
+  credentials.all_possible_passwords.push_back(ASCIIToUTF16("pass2"));
+  credentials.all_possible_passwords.push_back(ASCIIToUTF16("pass3"));
 
   form_manager()->ProvisionallySave(
       credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
 
-  EXPECT_THAT(form_manager()->pending_credentials().other_possible_passwords,
+  EXPECT_THAT(form_manager()->pending_credentials().all_possible_passwords,
               UnorderedElementsAre(ASCIIToUTF16("pass1"), ASCIIToUTF16("pass2"),
                                    ASCIIToUTF16("pass3")));
 }

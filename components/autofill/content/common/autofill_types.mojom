@@ -172,7 +172,7 @@ struct PasswordForm {
   bool username_marked_by_site;
   string username_value;
   array<PossibleUsernamePair> other_possible_usernames;
-  array<string> other_possible_passwords;
+  array<string> all_possible_passwords;
   string password_element;
   string password_value;
   bool password_value_is_default;
