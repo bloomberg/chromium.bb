@@ -13,6 +13,16 @@ namespace blink {
 class TransformationMatrix;
 
 template <typename T>
+static std::unique_ptr<JSONArray> RectAsJSONArray(const T& rect) {
+  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  array->PushDouble(rect.X());
+  array->PushDouble(rect.Y());
+  array->PushDouble(rect.Width());
+  array->PushDouble(rect.Height());
+  return array;
+}
+
+template <typename T>
 std::unique_ptr<JSONArray> PointAsJSONArray(const T& point) {
   std::unique_ptr<JSONArray> array = JSONArray::Create();
   array->PushDouble(point.X());

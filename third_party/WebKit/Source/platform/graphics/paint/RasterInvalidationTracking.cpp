@@ -5,6 +5,7 @@
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 
 #include "SkImageFilter.h"
+#include "platform/geometry/GeometryAsJSON.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/PaintCanvas.h"
@@ -31,16 +32,6 @@ static bool CompareRasterInvalidationInfo(const RasterInvalidationInfo& a,
     return name_compare_result < 0;
 
   return a.reason < b.reason;
-}
-
-template <typename T>
-static std::unique_ptr<JSONArray> RectAsJSONArray(const T& rect) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
-  array->PushDouble(rect.X());
-  array->PushDouble(rect.Y());
-  array->PushDouble(rect.Width());
-  array->PushDouble(rect.Height());
-  return array;
 }
 
 void RasterInvalidationTracking::AsJSON(JSONObject* json) {
