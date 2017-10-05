@@ -10,7 +10,11 @@ async_test(function(t) {
     var newWindow = window.open("resources/dice.png");
     newWindow.onload =  t.step_func_done(function() {
         newWindow.addEventListener("resize", function () {;});
-        newWindow.removeEventListener("resize", 2);
+        try {
+            newWindow.removeEventListener("resize", 2);
+        } catch (e) {
+            assert_equals(e.message, "Failed to execute 'removeEventListener' on 'EventTarget': The callback provided as parameter 2 is not a function.");
+        }
     });
 });
 </script>

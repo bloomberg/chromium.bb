@@ -19,7 +19,7 @@ test.step(function() {
     if (!window.testRunner)
         return;
     var cell = document.getElementById('cell');
-    cell.addEventListener(handleBlur, 'DOMBlurEvent');
+    cell.addEventListener('DOMBlurEvent', handleBlur);
     var div = document.getElementById('div');
     div.focus();
     document.execCommand('SelectAll');
