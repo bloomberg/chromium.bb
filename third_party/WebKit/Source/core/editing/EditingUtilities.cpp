@@ -1559,12 +1559,14 @@ HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
 }
 
 bool IsTabHTMLSpanElement(const Node* node) {
-  if (!IsHTMLSpanElement(node) || !node->firstChild())
+  if (!IsHTMLSpanElement(node))
     return false;
-  if (node->firstChild()->IsCharacterDataNode() &&
-      ToCharacterData(node->firstChild())->data().Contains('\t'))
-    return true;
-  return false;
+  const Node* const first_child = NodeTraversal::FirstChild(*node);
+  if (!first_child || !first_child->IsTextNode())
+    return false;
+  if (!ToText(first_child)->data().Contains('\t'))
+    return false;
+  return node->GetComputedStyle()->WhiteSpace() == EWhiteSpace::kPre;
 }
 
 bool IsTabHTMLSpanElementTextNode(const Node* node) {
