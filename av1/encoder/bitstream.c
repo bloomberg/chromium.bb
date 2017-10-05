@@ -2926,7 +2926,6 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   MB_MODE_INFO *mbmi;
   const int pack_token = !supertx_enabled;
   TX_SIZE supertx_size;
-  int plane;
 #endif
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
@@ -3120,7 +3119,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
     if (!skip) {
       assert(*tok < tok_end);
-      for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+      for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
         TX_TYPE tx_type = av1_get_tx_type(plane ? PLANE_TYPE_UV : PLANE_TYPE_Y,
                                           xd, blk_row, blk_col, block, tx_size);
