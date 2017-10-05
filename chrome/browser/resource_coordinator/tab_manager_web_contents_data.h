@@ -11,6 +11,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace base {
 class TickClock;
@@ -59,6 +60,7 @@ class TabManager::WebContentsData
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WasShown() override;
   void WebContentsDestroyed() override;
 
   // Tab signal received from GRC.
@@ -193,6 +195,8 @@ class TabManager::WebContentsData
   // for more details.
   base::TimeTicks NowTicks() const;
 
+  void ReportUKMWhenBackgroundTabIsClosedOrForegrounded(bool is_foregrounded);
+
   // Contains all the needed data for the tab.
   Data tab_data_;
 
@@ -205,6 +209,8 @@ class TabManager::WebContentsData
 
   // True if the tab has been purged.
   bool is_purged_;
+
+  ukm::SourceId ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
