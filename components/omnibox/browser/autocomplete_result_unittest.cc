@@ -94,12 +94,8 @@ class AutocompleteResultTest : public testing::Test {
     bool allowed_to_be_default_match;
 
     // Duplicate matches.
-    ACMatches duplicate_matches;
+    std::vector<AutocompleteMatch> duplicate_matches;
   };
-
-  static AutocompleteMatch* match_at(ACMatches* matches, size_t i) {
-    return &(*std::next(matches->begin(), i));
-  }
 
   AutocompleteResultTest() {
     // Destroy the existing FieldTrialList before creating a new one to avoid
@@ -187,17 +183,17 @@ void AutocompleteResultTest::AssertResultMatches(
     const TestData* expected,
     size_t expected_count) {
   ASSERT_EQ(expected_count, result.size());
-  EXPECT_TRUE(std::equal(result.begin(), result.end(), &expected[0],
-                         [this](auto match, auto testcase) {
-                           AutocompleteMatch expected_match;
-                           PopulateAutocompleteMatch(testcase, &expected_match);
-                           return expected_match.provider == match.provider &&
-                                  expected_match.relevance == match.relevance &&
-                                  expected_match.allowed_to_be_default_match ==
-                                      match.allowed_to_be_default_match &&
-                                  expected_match.destination_url.spec() ==
-                                      match.destination_url.spec();
-                         }));
+  for (size_t i = 0; i < expected_count; ++i) {
+    AutocompleteMatch expected_match;
+    PopulateAutocompleteMatch(expected[i], &expected_match);
+    const AutocompleteMatch& match = *(result.begin() + i);
+    EXPECT_EQ(expected_match.provider, match.provider) << i;
+    EXPECT_EQ(expected_match.relevance, match.relevance) << i;
+    EXPECT_EQ(expected_match.allowed_to_be_default_match,
+              match.allowed_to_be_default_match) << i;
+    EXPECT_EQ(expected_match.destination_url.spec(),
+              match.destination_url.spec()) << i;
+  }
 }
 
 void AutocompleteResultTest::RunCopyOldMatchesTest(
@@ -373,9 +369,9 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
 
   ACMatches matches;
   PopulateAutocompleteMatches(data, arraysize(data), &matches);
-  match_at(&matches, 1)->destination_url = GURL();
-  match_at(&matches, 3)->destination_url = GURL();
-  match_at(&matches, 4)->destination_url = GURL();
+  matches[1].destination_url = GURL();
+  matches[3].destination_url = GURL();
+  matches[4].destination_url = GURL();
 
   AutocompleteInput input(base::ASCIIToUTF16("a"),
                           metrics::OmniboxEventProto::OTHER,
@@ -416,13 +412,11 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 
   ACMatches matches;
   PopulateAutocompleteMatches(data, arraysize(data), &matches);
-  match_at(&matches, 0)->destination_url = GURL("http://www.foo.com/s?q=foo");
-  match_at(&matches, 1)->destination_url = GURL("http://www.foo.com/s?q=foo2");
-  match_at(&matches, 2)->destination_url =
-      GURL("http://www.foo.com/s?q=foo&oq=f");
-  match_at(&matches, 3)->destination_url =
-      GURL("http://www.foo.com/s?q=foo&aqs=0");
-  match_at(&matches, 4)->destination_url = GURL("http://www.foo.com/");
+  matches[0].destination_url = GURL("http://www.foo.com/s?q=foo");
+  matches[1].destination_url = GURL("http://www.foo.com/s?q=foo2");
+  matches[2].destination_url = GURL("http://www.foo.com/s?q=foo&oq=f");
+  matches[3].destination_url = GURL("http://www.foo.com/s?q=foo&aqs=0");
+  matches[4].destination_url = GURL("http://www.foo.com/");
 
   AutocompleteInput input(base::ASCIIToUTF16("a"),
                           metrics::OmniboxEventProto::OTHER,
@@ -454,7 +448,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
 
   AutocompleteMatch dup_match;
   dup_match.destination_url = GURL("http://www.foo.com/s?q=foo&oq=dup");
-  ACMatches dups;
+  std::vector<AutocompleteMatch> dups;
   dups.push_back(dup_match);
 
   TestData data[] = {
@@ -468,15 +462,12 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
 
   ACMatches matches;
   PopulateAutocompleteMatches(data, arraysize(data), &matches);
-  match_at(&matches, 0)->destination_url = GURL("http://www.foo.com/s?q=foo");
-  match_at(&matches, 1)->destination_url = GURL("http://www.foo.com/s?q=foo2");
-  match_at(&matches, 2)->destination_url =
-      GURL("http://www.foo.com/s?q=foo&oq=f");
-  match_at(&matches, 3)->destination_url =
-      GURL("http://www.foo.com/s?q=foo&aqs=0");
-  match_at(&matches, 4)->destination_url = GURL("http://www.foo.com/");
-  match_at(&matches, 5)->destination_url =
-      GURL("http://www.foo.com/s?q=foo2&oq=f");
+  matches[0].destination_url = GURL("http://www.foo.com/s?q=foo");
+  matches[1].destination_url = GURL("http://www.foo.com/s?q=foo2");
+  matches[2].destination_url = GURL("http://www.foo.com/s?q=foo&oq=f");
+  matches[3].destination_url = GURL("http://www.foo.com/s?q=foo&aqs=0");
+  matches[4].destination_url = GURL("http://www.foo.com/");
+  matches[5].destination_url = GURL("http://www.foo.com/s?q=foo2&oq=f");
 
   AutocompleteInput input(base::ASCIIToUTF16("a"),
                           metrics::OmniboxEventProto::OTHER,
@@ -491,18 +482,18 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   // Check that 3rd and 4th result got added to the first result as dups
   // and also duplicates of the 4th match got copied.
   ASSERT_EQ(4U, result.match_at(0)->duplicate_matches.size());
-  auto& duplicates = result.match_at(0)->duplicate_matches;
-  EXPECT_EQ(match_at(&matches, 2)->destination_url,
-            match_at(&duplicates, 1)->destination_url);
+  const AutocompleteMatch* first_match = result.match_at(0);
+  EXPECT_EQ(matches[2].destination_url,
+            first_match->duplicate_matches.at(1).destination_url);
   EXPECT_EQ(dup_match.destination_url,
-            match_at(&duplicates, 2)->destination_url);
-  EXPECT_EQ(match_at(&matches, 3)->destination_url,
-            match_at(&duplicates, 3)->destination_url);
+            first_match->duplicate_matches.at(2).destination_url);
+  EXPECT_EQ(matches[3].destination_url,
+            first_match->duplicate_matches.at(3).destination_url);
 
   // Check that 6th result started a new list of dups for the second result.
   ASSERT_EQ(1U, result.match_at(1)->duplicate_matches.size());
-  EXPECT_EQ(match_at(&matches, 5)->destination_url,
-            result.match_at(1)->duplicate_matches.front().destination_url);
+  EXPECT_EQ(matches[5].destination_url,
+            result.match_at(1)->duplicate_matches.at(0).destination_url);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
@@ -626,8 +617,8 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     // Check that reorder swaps up a result appropriately.
     ACMatches matches;
     PopulateAutocompleteMatches(data, arraysize(data), &matches);
-    match_at(&matches, 0)->allowed_to_be_default_match = false;
-    match_at(&matches, 1)->allowed_to_be_default_match = false;
+    matches[0].allowed_to_be_default_match = false;
+    matches[1].allowed_to_be_default_match = false;
     AutocompleteInput input(base::ASCIIToUTF16("a"),
                             metrics::OmniboxEventProto::HOME_PAGE,
                             test_scheme_classifier);
@@ -728,9 +719,8 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
     matches.push_back(match);
   }
   // Tail suggestion needs one-off initialization.
-  AutocompleteMatch* tail_match = match_at(&matches, 1);
-  tail_match->RecordAdditionalInfo(kACMatchPropertyContentsStartIndex, "5");
-  tail_match->RecordAdditionalInfo(kACMatchPropertySuggestionText, "superstar");
+  matches[1].RecordAdditionalInfo(kACMatchPropertyContentsStartIndex, "5");
+  matches[1].RecordAdditionalInfo(kACMatchPropertySuggestionText, "superstar");
   AutocompleteResult result;
   result.AppendMatches(AutocompleteInput(), matches);
   result.InlineTailPrefixes();

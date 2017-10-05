@@ -376,12 +376,10 @@ void HistoryQuickProviderTest::RunTestWithCursor(
     best_score = actual->relevance;
   }
 
-  EXPECT_EQ(can_inline_top_result,
-            ac_matches_.front().allowed_to_be_default_match);
+  EXPECT_EQ(can_inline_top_result, ac_matches_[0].allowed_to_be_default_match);
   if (can_inline_top_result)
-    EXPECT_EQ(expected_autocompletion,
-              ac_matches_.front().inline_autocompletion);
-  EXPECT_EQ(expected_fill_into_edit, ac_matches_.front().fill_into_edit);
+    EXPECT_EQ(expected_autocompletion, ac_matches_[0].inline_autocompletion);
+  EXPECT_EQ(expected_fill_into_edit, ac_matches_[0].fill_into_edit);
 }
 
 bool HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
@@ -490,11 +488,11 @@ TEST_F(HistoryQuickProviderTest, ContentsClass) {
                             "93.E5.88.B6"),
           base::string16());
 #ifndef NDEBUG
-  ac_matches().front().Validate();
+  ac_matches()[0].Validate();
 #endif
   // Verify that contents_class divides the string in the right places.
   // [22, 24) is the "第二".  All the other pairs are the "e3".
-  ACMatchClassifications contents_class(ac_matches().front().contents_class);
+  ACMatchClassifications contents_class(ac_matches()[0].contents_class);
   size_t expected_offsets[] = { 0, 22, 24, 31, 33, 40, 42, 49, 51, 58, 60, 67,
                                 69, 76, 78 };
   // ScoredHistoryMatch may not highlight all the occurrences of these terms
@@ -555,13 +553,13 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
           ASCIIToUTF16("cda.com/Dogs Cats Gorillas Sea Slugs and Mice"),
           base::string16());
   // Verify that the matches' ACMatchClassifications offsets are in range.
-  ACMatchClassifications content(ac_matches().front().contents_class);
+  ACMatchClassifications content(ac_matches()[0].contents_class);
   // The max offset accounts for 6 occurrences of '%20' plus the 'http://'.
   const size_t max_offset = url.length() - ((6 * 2) + 7);
   for (ACMatchClassifications::const_iterator citer = content.begin();
        citer != content.end(); ++citer)
     EXPECT_LT(citer->offset, max_offset);
-  ACMatchClassifications description(ac_matches().front().description_class);
+  ACMatchClassifications description(ac_matches()[0].description_class);
   std::string page_title("Dogs & Cats & Mice & Other Animals");
   for (ACMatchClassifications::const_iterator diter = description.begin();
        diter != description.end(); ++diter)
@@ -629,7 +627,7 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
                   ASCIIToUTF16(".org/favorite_page.html"));
   EXPECT_EQ(1U, ac_matches().size());
   EXPECT_TRUE(GetURLProxy(test_url));
-  provider().DeleteMatch(ac_matches().front());
+  provider().DeleteMatch(ac_matches()[0]);
 
   // Check that the underlying URL is deleted from the history DB (this implies
   // that all visits are gone as well). Also verify that a deletion notification
@@ -658,7 +656,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   // URL-what-you-typed match.
   RunTest(ASCIIToUTF16("popularsitewithroot.com"), false, expected_urls, true,
           ASCIIToUTF16("popularsitewithroot.com"), base::string16());
-  EXPECT_LT(ac_matches().front().relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForBestInlineableResult);
 
   // Check that if the user didn't quite enter the full hostname, this
@@ -666,7 +664,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithroot.c"), false, expected_urls, true,
           ASCIIToUTF16("popularsitewithroot.com"),
                                ASCIIToUTF16("om"));
-  EXPECT_GE(ac_matches().front().relevance,
+  EXPECT_GE(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   expected_urls.clear();
@@ -679,7 +677,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
           true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                      ASCIIToUTF16("/moo"));
-  EXPECT_LT(ac_matches().front().relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForUnvisitedIntranetResult);
 
   // Verify the same thing happens if the user adds a / to end of the
@@ -687,7 +685,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com/"), false, expected_urls,
           true, ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                             ASCIIToUTF16("moo"));
-  EXPECT_LT(ac_matches().front().relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForUnvisitedIntranetResult);
 
   // Check that if the user didn't quite enter the full hostname, this
@@ -695,7 +693,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.co"), false, expected_urls,
           true, ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                           ASCIIToUTF16("m/moo"));
-  EXPECT_GE(ac_matches().front().relevance,
+  EXPECT_GE(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   // If the user enters a hostname + path that they have not visited
@@ -705,7 +703,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
           true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"),
                                         ASCIIToUTF16("o"));
-  EXPECT_GE(ac_matches().front().relevance,
+  EXPECT_GE(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   // If the user enters a hostname + path that they have visited
@@ -715,7 +713,7 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com/moo"), false,
           expected_urls, true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"), base::string16());
-  EXPECT_LT(ac_matches().front().relevance,
+  EXPECT_LT(ac_matches()[0].relevance,
             HistoryURLProvider::kScoreForBestInlineableResult);
 }
 

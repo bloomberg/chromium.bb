@@ -108,13 +108,9 @@ class BuiltinProviderTest : public testing::Test {
       matches = provider_->matches();
       EXPECT_EQ(cases[i].num_results, matches.size());
       if (matches.size() == cases[i].num_results) {
-        size_t j = 0;
-        for (const auto& match : matches) {
-          EXPECT_EQ(cases[i].output[j], match.destination_url);
-          EXPECT_FALSE(match.allowed_to_be_default_match);
-          ++j;
-          if (j == cases[i].num_results)
-            break;
+        for (size_t j = 0; j < cases[i].num_results; ++j) {
+          EXPECT_EQ(cases[i].output[j], matches[j].destination_url);
+          EXPECT_FALSE(matches[j].allowed_to_be_default_match);
         }
       }
     }
@@ -393,13 +389,13 @@ TEST_F(BuiltinProviderTest, Inlining) {
     if (cases[i].expected_inline_autocompletion.empty()) {
       // If we're not expecting an inline autocompletion, make sure that no
       // matches are allowed_to_be_default.
-      for (const auto& match : matches)
-        EXPECT_FALSE(match.allowed_to_be_default_match);
+      for (size_t j = 0; j < matches.size(); ++j)
+        EXPECT_FALSE(matches[j].allowed_to_be_default_match);
     } else {
       ASSERT_FALSE(matches.empty());
-      EXPECT_TRUE(matches.front().allowed_to_be_default_match);
+      EXPECT_TRUE(matches[0].allowed_to_be_default_match);
       EXPECT_EQ(cases[i].expected_inline_autocompletion,
-                matches.front().inline_autocompletion);
+                matches[0].inline_autocompletion);
     }
   }
 }

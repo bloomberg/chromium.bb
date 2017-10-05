@@ -386,13 +386,9 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
   // Expect that matches get populated synchronously out of the cache.
   ASSERT_EQ(4U, provider_->matches().size());
-  auto i = provider_->matches().begin();
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search1"), i->contents);
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search2"), i->contents);
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search3"), i->contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[1].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
 
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
@@ -407,13 +403,9 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
   // Expect the same 4 results after the response has been handled.
   ASSERT_EQ(4U, provider_->matches().size());
-  i = provider_->matches().begin();
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search1"), i->contents);
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search2"), i->contents);
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search3"), i->contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[1].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
 
   // Expect the new results have been stored.
   EXPECT_EQ(json_response2,
@@ -441,13 +433,9 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
 
   // Expect that matches get populated synchronously out of the cache.
   ASSERT_EQ(4U, provider_->matches().size());
-  auto i = provider_->matches().begin();
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search1"), i->contents);
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search2"), i->contents);
-  ++i;
-  EXPECT_EQ(base::ASCIIToUTF16("search3"), i->contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[1].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
 
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);

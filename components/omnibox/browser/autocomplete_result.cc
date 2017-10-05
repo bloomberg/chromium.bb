@@ -5,7 +5,6 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 
 #include <algorithm>
-#include <iostream>
 #include <iterator>
 
 #include "base/command_line.h"
@@ -34,6 +33,9 @@ size_t AutocompleteResult::GetMaxMatches() {
 }
 
 AutocompleteResult::AutocompleteResult() {
+  // Reserve space for the max number of matches we'll show.
+  matches_.reserve(GetMaxMatches());
+
   // It's probably safe to do this in the initializer list, but there's little
   // penalty to doing it here and it ensures our object is fully constructed
   // before calling member functions.
@@ -134,33 +136,32 @@ void AutocompleteResult::SortAndCull(
   size_t max_num_matches = std::min(GetMaxMatches(), matches_.size());
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
-  matches_.sort(comparing_object);
+  std::sort(matches_.begin(), matches_.end(), comparing_object);
   // Top match is not allowed to be the default match.  Find the most
   // relevant legal match and shift it to the front.
   ACMatches::iterator it = FindTopMatch(&matches_);
   if (it != matches_.end())
-    matches_.splice(matches_.begin(), matches_, it);
+    std::rotate(matches_.begin(), it, it + 1);
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
   size_t num_matches;
-  ACMatches::iterator i = matches_.begin();
   for (num_matches = 0u; (num_matches < max_num_matches) &&
-                         (comparing_object.GetDemotedRelevance(*i) > 0);
-       ++num_matches) {
-    ++i;
-  }
-  matches_.erase(i, matches_.end());
+       (comparing_object.GetDemotedRelevance(*match_at(num_matches)) > 0);
+       ++num_matches) {}
+  matches_.resize(num_matches);
 
   default_match_ = matches_.begin();
 
   if (default_match_ != matches_.end()) {
     const base::string16 debug_info =
         base::ASCIIToUTF16("fill_into_edit=") +
-        matches_.front().fill_into_edit + base::ASCIIToUTF16(", provider=") +
-        ((matches_.front().provider != NULL)
-             ? base::ASCIIToUTF16(matches_.front().provider->GetName())
-             : base::string16()) +
-        base::ASCIIToUTF16(", input=") + input.text();
+        default_match_->fill_into_edit +
+        base::ASCIIToUTF16(", provider=") +
+        ((default_match_->provider != NULL)
+            ? base::ASCIIToUTF16(default_match_->provider->GetName())
+            : base::string16()) +
+        base::ASCIIToUTF16(", input=") +
+        input.text();
 
     // We should only get here with an empty omnibox for automatic suggestions
     // on focus on the NTP; in these cases hitting enter should do nothing, so
@@ -231,25 +232,24 @@ AutocompleteResult::iterator AutocompleteResult::end() {
 }
 
 // Returns the match at the given index.
-// NOTE: O(N). Minimize use, if possible.
 const AutocompleteMatch& AutocompleteResult::match_at(size_t index) const {
   DCHECK_LT(index, matches_.size());
-  return *std::next(matches_.begin(), index);
+  return matches_[index];
 }
 
 AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
   DCHECK_LT(index, matches_.size());
-  return &(*std::next(matches_.begin(), index));
+  return &matches_[index];
 }
 
 bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
-  if (empty() || !begin()->IsVerbatimType())
+  if (empty() || !match_at(0).IsVerbatimType())
     return false;
 
   // Skip any copied matches, under the assumption that they'll be expired and
   // disappear.  We don't want this disappearance to cause the visibility of the
   // top match to change.
-  for (const_iterator i = std::next(begin()); i != end(); ++i) {
+  for (const_iterator i(begin() + 1); i != end(); ++i) {
     if (!i->from_previous)
       return !i->IsVerbatimType();
   }
@@ -279,14 +279,12 @@ void AutocompleteResult::Reset() {
 }
 
 void AutocompleteResult::Swap(AutocompleteResult* other) {
-  bool this_was_end = default_match_ == end();
-  bool other_was_end = other->default_match_ == other->end();
+  const size_t default_match_offset = default_match_ - begin();
+  const size_t other_default_match_offset =
+      other->default_match_ - other->begin();
   matches_.swap(other->matches_);
-  if (this_was_end)
-    default_match_ = other->end();
-  if (other_was_end)
-    other->default_match_ = end();
-  swap(default_match_, other->default_match_);
+  default_match_ = begin() + other_default_match_offset;
+  other->default_match_ = other->begin() + default_match_offset;
   alternate_nav_url_.Swap(&(other->alternate_nav_url_));
 }
 
@@ -314,15 +312,16 @@ void AutocompleteResult::SortAndDedupMatches(
     metrics::OmniboxEventProto::PageClassification page_classification,
     ACMatches* matches) {
   // Sort matches such that duplicate matches are consecutive.
-  matches->sort(DestinationSort<AutocompleteMatch>(page_classification));
+  std::sort(matches->begin(), matches->end(),
+            DestinationSort<AutocompleteMatch>(page_classification));
 
   // Set duplicate_matches for the first match before erasing duplicate
   // matches.
   for (ACMatches::iterator i(matches->begin()); i != matches->end(); ++i) {
-    for (auto j = std::next(i);
-         j != matches->end() && AutocompleteMatch::DestinationsEqual(*i, *j);
+    for (int j = 1; (i + j != matches->end()) &&
+                    AutocompleteMatch::DestinationsEqual(*i, *(i + j));
          ++j) {
-      AutocompleteMatch& dup_match(*j);
+      AutocompleteMatch& dup_match(*(i + j));
       i->duplicate_matches.insert(i->duplicate_matches.end(),
                                   dup_match.duplicate_matches.begin(),
                                   dup_match.duplicate_matches.end());
@@ -332,7 +331,9 @@ void AutocompleteResult::SortAndDedupMatches(
   }
 
   // Erase duplicate matches.
-  matches->unique(AutocompleteMatch::DestinationsEqual);
+  matches->erase(std::unique(matches->begin(), matches->end(),
+                             &AutocompleteMatch::DestinationsEqual),
+                 matches->end());
 }
 
 void AutocompleteResult::InlineTailPrefixes() {
@@ -363,10 +364,8 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   matches_ = rhs.matches_;
   // Careful!  You can't just copy iterators from another container, you have to
   // reconstruct them.
-  default_match_ =
-      (rhs.default_match_ == rhs.end())
-          ? end()
-          : std::next(begin(), std::distance(rhs.begin(), rhs.default_match_));
+  default_match_ = (rhs.default_match_ == rhs.end()) ?
+      end() : (begin() + (rhs.default_match_ - rhs.begin()));
 
   alternate_nav_url_ = rhs.alternate_nav_url_;
 }

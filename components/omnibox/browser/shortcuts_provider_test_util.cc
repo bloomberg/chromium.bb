@@ -98,9 +98,10 @@ void RunShortcutsProviderTest(
 
   // See if we got the expected top scorer.
   if (!ac_matches.empty()) {
-    ac_matches.sort(AutocompleteMatch::MoreRelevant);
-    EXPECT_EQ(expected_top_result, ac_matches.front().destination_url.spec());
+    std::partial_sort(ac_matches.begin(), ac_matches.begin() + 1,
+                      ac_matches.end(), AutocompleteMatch::MoreRelevant);
+    EXPECT_EQ(expected_top_result, ac_matches[0].destination_url.spec());
     EXPECT_EQ(top_result_inline_autocompletion,
-              ac_matches.front().inline_autocompletion);
+              ac_matches[0].inline_autocompletion);
   }
 }

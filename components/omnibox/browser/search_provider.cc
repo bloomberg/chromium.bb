@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <utility>
 
 #include "base/base64.h"
@@ -1051,15 +1050,15 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // We will always return any verbatim matches, no matter how we obtained their
   // scores, unless we have already accepted AutocompleteResult::GetMaxMatches()
   // higher-scoring matches under the conditions above.
-  matches.sort(&AutocompleteMatch::MoreRelevant);
+  std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
 
   // Guarantee that if there's a legal default match anywhere in the result
-  // set that it'll get returned.  The splice() call does this by moving the
+  // set that it'll get returned.  The rotate() call does this by moving the
   // default match to the front of the list.
   ACMatches::iterator default_match =
       AutocompleteResult::FindTopMatch(&matches);
   if (default_match != matches.end())
-    matches.splice(matches.begin(), matches, default_match);
+    std::rotate(matches.begin(), default_match, default_match + 1);
 
   // It's possible to get a copy of an answer from previous matches and get the
   // same or a different answer to another server-provided suggestion.  In the
@@ -1545,11 +1544,11 @@ AnswersQueryData SearchProvider::FindAnswersPrefetchData() {
   ACMatches matches;
   for (MatchMap::const_iterator i(map.begin()); i != map.end(); ++i)
     matches.push_back(i->second);
-  matches.sort(AutocompleteMatch::MoreRelevant);
+  std::sort(matches.begin(), matches.end(), &AutocompleteMatch::MoreRelevant);
 
   // If there is a top scoring entry, find the corresponding answer.
   if (!matches.empty())
-    return answers_cache_.GetTopAnswerEntry(matches.front().contents);
+    return answers_cache_.GetTopAnswerEntry(matches[0].contents);
 
   return AnswersQueryData();
 }

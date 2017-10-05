@@ -352,18 +352,17 @@ void HistoryURLProviderTest::RunTest(
     }
     AutocompleteResult::SortAndDedupMatches(input.current_page_classification(),
                                             &matches_);
-    matches_.sort(AutocompleteMatch::MoreRelevant);
+    std::sort(matches_.begin(), matches_.end(),
+              &AutocompleteMatch::MoreRelevant);
   }
   SCOPED_TRACE(base::ASCIIToUTF16("input = ") + text);
   ASSERT_EQ(num_results, matches_.size()) << "Input text: " << text
                                           << "\nTLD: \"" << desired_tld << "\"";
-  EXPECT_TRUE(std::equal(matches_.begin(), matches_.end(), &expected_urls[0],
-                         [](auto match, auto testcase) {
-                           return testcase.url ==
-                                      match.destination_url.spec() &&
-                                  testcase.allowed_to_be_default_match ==
-                                      match.allowed_to_be_default_match;
-                         }));
+  for (size_t i = 0; i < num_results; ++i) {
+    EXPECT_EQ(expected_urls[i].url, matches_[i].destination_url.spec());
+    EXPECT_EQ(expected_urls[i].allowed_to_be_default_match,
+              matches_[i].allowed_to_be_default_match);
+  }
 }
 
 void HistoryURLProviderTest::ExpectFormattedFullMatch(
@@ -723,16 +722,16 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
   // We should get back an entry for pandora.
   matches_ = autocomplete_->matches();
   ASSERT_GT(matches_.size(), 0u);
-  EXPECT_EQ(GURL("http://pandora.com/"), matches_.front().destination_url);
-  int pandora_relevance = matches_.front().relevance;
+  EXPECT_EQ(GURL("http://pandora.com/"), matches_[0].destination_url);
+  int pandora_relevance = matches_[0].relevance;
 
   // Run the message loop. When |autocomplete_| finishes the loop is quit.
   base::RunLoop().Run();
   EXPECT_TRUE(autocomplete_->done());
   matches_ = autocomplete_->matches();
   ASSERT_GT(matches_.size(), 0u);
-  EXPECT_EQ(GURL("http://pandora.com/"), matches_.front().destination_url);
-  EXPECT_EQ(pandora_relevance, matches_.front().relevance);
+  EXPECT_EQ(GURL("http://pandora.com/"), matches_[0].destination_url);
+  EXPECT_EQ(pandora_relevance, matches_[0].relevance);
 }
 
 TEST_F(HistoryURLProviderTestNoDB, NavigateWithoutDB) {
@@ -762,9 +761,10 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
     base::RunLoop().Run();
 
   // None of the matches should attempt to autocomplete.
-  for (const auto& match : autocomplete_->matches()) {
-    EXPECT_TRUE(match.inline_autocompletion.empty());
-    EXPECT_FALSE(match.allowed_to_be_default_match);
+  matches_ = autocomplete_->matches();
+  for (size_t i = 0; i < matches_.size(); ++i) {
+    EXPECT_TRUE(matches_[i].inline_autocompletion.empty());
+    EXPECT_FALSE(matches_[i].allowed_to_be_default_match);
   }
 }
 
@@ -777,8 +777,8 @@ TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("user@foo.com"), std::string(),
                                   false, expected, arraysize(expected)));
-  EXPECT_LE(1200, matches_.front().relevance);
-  EXPECT_LT(matches_.front().relevance, 1210);
+  EXPECT_LE(1200, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1210);
 }
 
 TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
@@ -808,8 +808,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
                               std::string(), false, output, arraysize(output)));
       // Actual relevance should be at least what test_cases expects and
       // and no more than 10 more.
-      EXPECT_LE(test_cases[i].relevance, matches_.front().relevance);
-      EXPECT_LT(matches_.front().relevance, test_cases[i].relevance + 10);
+      EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
+      EXPECT_LT(matches_[0].relevance, test_cases[i].relevance + 10);
     }
   }
 }
@@ -825,12 +825,10 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/t"), std::string(), false,
                                   expected1, arraysize(expected1)));
-  EXPECT_LE(1410, matches_.front().relevance);
-  EXPECT_LT(matches_.front().relevance, 1420);
+  EXPECT_LE(1410, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1420);
   // It uses the default scoring.
-  auto second_best = matches_.begin();
-  ++second_best;
-  EXPECT_EQ(second_best->relevance, 1203);
+  EXPECT_EQ(matches_[1].relevance, 1203);
 
   const UrlAndLegalDefault expected2[] = {
     { "http://moo/b", true },
@@ -840,8 +838,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
                                   expected2, arraysize(expected2)));
   // The url what you typed match should be around 1400, otherwise the
   // search what you typed match is going to be first.
-  EXPECT_LE(1400, matches_.front().relevance);
-  EXPECT_LT(matches_.front().relevance, 1410);
+  EXPECT_LE(1400, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1410);
 
   const UrlAndLegalDefault expected3[] = {
     { "http://intra/one", true },
@@ -864,16 +862,16 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/o"), std::string(), false,
                                   expected5, arraysize(expected5)));
-  EXPECT_LE(1410, matches_.front().relevance);
-  EXPECT_LT(matches_.front().relevance, 1420);
+  EXPECT_LE(1410, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1420);
 
   const UrlAndLegalDefault expected6[] = {
     { "http://intra/x", true }
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/x"), std::string(), false,
                                   expected6, arraysize(expected6)));
-  EXPECT_LE(1400, matches_.front().relevance);
-  EXPECT_LT(matches_.front().relevance, 1410);
+  EXPECT_LE(1400, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1410);
 
   const UrlAndLegalDefault expected7[] = {
     { "http://typedhost/untypedpath", true }
@@ -881,8 +879,8 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("typedhost/untypedpath"),
                                   std::string(), false, expected7,
                                   arraysize(expected7)));
-  EXPECT_LE(1400, matches_.front().relevance);
-  EXPECT_LT(matches_.front().relevance, 1410);
+  EXPECT_LE(1400, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1410);
 }
 
 TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
@@ -1177,12 +1175,10 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     // Test the experimental scoring params.
     ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
                                     std::string(), false, output, max_matches));
-    ASSERT_LE(matches_.size(), arraysize(test_cases[i].matches));
-    EXPECT_TRUE(
-        std::equal(matches_.begin(), matches_.end(), &test_cases[i].matches[0],
-                   [](auto match, auto testcase) {
-                     return testcase.experiment_relevance == match.relevance;
-                   }));
+    for (int j = 0; j < max_matches; ++j) {
+      EXPECT_EQ(test_cases[i].matches[j].experiment_relevance,
+                matches_[j].relevance);
+    }
   }
 }
 
