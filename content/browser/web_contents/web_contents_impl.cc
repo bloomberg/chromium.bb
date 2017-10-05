@@ -4592,18 +4592,21 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
                  render_frame_host->GetProcess()->GetID(),
                  render_frame_host->GetRoutingID(), reply_msg);
 
-  // Suppress JavaScript dialogs when requested. Also suppress messages when
-  // showing an interstitial as it's shown over the previous page and we don't
-  // want the hidden page's dialogs to interfere with the interstitial.
-  bool suppress_this_message = ShowingInterstitialPage() || !delegate_ ||
-                               delegate_->ShouldSuppressDialogs(this);
-  if (delegate_)
-    dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
-
   std::vector<protocol::PageHandler*> page_handlers =
       protocol::PageHandler::EnabledForWebContents(this);
 
-  if (suppress_this_message || (!dialog_manager_ && !page_handlers.size())) {
+  if (delegate_)
+    dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
+
+  // Suppress JavaScript dialogs when requested. Also suppress messages when
+  // showing an interstitial as it's shown over the previous page and we don't
+  // want the hidden page's dialogs to interfere with the interstitial.
+  bool should_suppress = ShowingInterstitialPage() ||
+                         (delegate_ && delegate_->ShouldSuppressDialogs(this));
+  bool has_handlers = page_handlers.size() || (delegate_ && dialog_manager_);
+  bool suppress_this_message = should_suppress || !has_handlers;
+
+  if (suppress_this_message) {
     callback.Run(true, false, base::string16());
     return;
   }
@@ -4651,16 +4654,16 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
                  render_frame_host->GetProcess()->GetID(),
                  render_frame_host->GetRoutingID(), reply_msg);
 
-  bool suppress_this_message = !rfhi->is_active() ||
-                               ShowingInterstitialPage() || !delegate_ ||
-                               delegate_->ShouldSuppressDialogs(this);
-  if (delegate_)
-    dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
-
   std::vector<protocol::PageHandler*> page_handlers =
       protocol::PageHandler::EnabledForWebContents(this);
 
-  if (suppress_this_message || (!dialog_manager_ && !page_handlers.size())) {
+  if (delegate_)
+    dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
+
+  bool should_suppress = ShowingInterstitialPage() || !rfhi->is_active() ||
+                         (delegate_ && delegate_->ShouldSuppressDialogs(this));
+  bool has_handlers = page_handlers.size() || (delegate_ && dialog_manager_);
+  if (should_suppress || !has_handlers) {
     callback.Run(false, true, base::string16());
     return;
   }

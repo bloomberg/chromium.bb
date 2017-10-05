@@ -266,9 +266,19 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
-  if (!pending_dialog_.is_null())
-    pending_dialog_.Run(false, base::string16());
-  pending_dialog_.Reset();
+
+  if (!pending_dialog_.is_null()) {
+    WebContentsImpl* web_contents = GetWebContents();
+    // Leave dialog hanging if there is a manager that can take care of it,
+    // cancel and send ack otherwise.
+    bool has_dialog_manager =
+        web_contents && web_contents->GetDelegate() &&
+        web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
+    if (!has_dialog_manager)
+      pending_dialog_.Run(false, base::string16());
+    pending_dialog_.Reset();
+  }
+
   download_manager_delegate_ = nullptr;
   return Response::FallThrough();
 }
@@ -594,12 +604,14 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   pending_dialog_.Run(accept, prompt_override);
 
   // Clean up the dialog UI if any.
-  JavaScriptDialogManager* manager =
-      web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
-  if (manager) {
-    manager->HandleJavaScriptDialog(
-        web_contents, accept,
-        prompt_text.isJust() ? &prompt_override : nullptr);
+  if (web_contents->GetDelegate()) {
+    JavaScriptDialogManager* manager =
+        web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
+    if (manager) {
+      manager->HandleJavaScriptDialog(
+          web_contents, accept,
+          prompt_text.isJust() ? &prompt_override : nullptr);
+    }
   }
 
   return Response::OK();
@@ -607,7 +619,7 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
 
 Response PageHandler::RequestAppBanner() {
   WebContentsImpl* web_contents = GetWebContents();
-  if (!web_contents)
+  if (!web_contents || !web_contents->GetDelegate())
     return Response::InternalError();
   web_contents->GetDelegate()->RequestAppBannerFromDevTools(web_contents);
   return Response::OK();
