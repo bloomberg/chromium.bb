@@ -438,6 +438,13 @@ public class ChromePreferenceManager {
         return mSharedPreferences.contains(CHROME_HOME_USER_ENABLED_KEY);
     }
 
+    /**
+     * Remove the Chrome Home user preference.
+     */
+    public void clearChromeHomeUserPreference() {
+        mSharedPreferences.edit().remove(CHROME_HOME_USER_ENABLED_KEY).apply();
+    }
+
     /** Marks that the content suggestions surface has been shown. */
     public void setSuggestionsSurfaceShown() {
         writeBoolean(CONTENT_SUGGESTIONS_SHOWN_KEY, true);
