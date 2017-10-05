@@ -53,6 +53,7 @@ void HoverHighlightView::AddRightView(views::View* view,
   right_view_ = view;
   right_view_->SetEnabled(enabled());
   tri_view_->AddView(TriView::Container::END, right_view_);
+  tri_view_->SetContainerVisible(TriView::Container::END, true);
 }
 
 void HoverHighlightView::SetRightViewVisible(bool visible) {
@@ -60,7 +61,6 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
   if (!right_view_)
     return;
 
-  tri_view_->SetContainerVisible(TriView::Container::END, visible);
   right_view_->SetVisible(visible);
   Layout();
 }
