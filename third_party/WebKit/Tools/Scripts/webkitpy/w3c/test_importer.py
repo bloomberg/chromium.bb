@@ -117,6 +117,10 @@ class TestImporter(object):
             _log.info('Done: no changes to import.')
             return 0
 
+        if self._only_wpt_manifest_changed():
+            _log.info('Only WPT_BASE_MANIFEST.json was updated; skipping the import.')
+            return 0
+
         self._commit_changes(commit_message)
         _log.info('Changes imported and committed.')
 
@@ -334,6 +338,13 @@ class TestImporter(object):
     def _has_changes(self):
         return_code, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
         return return_code == 1
+
+    def _only_wpt_manifest_changed(self):
+        changed_files = self.host.git().changed_files()
+        wpt_base_manifest = self.fs.relpath(
+            self.fs.join(self.dest_path, '..', 'WPT_BASE_MANIFEST.json'),
+            self.finder.chromium_base())
+        return changed_files == [wpt_base_manifest]
 
     def _commit_message(self, chromium_commit_sha, import_commit_sha,
                         locally_applied_commits=None):
