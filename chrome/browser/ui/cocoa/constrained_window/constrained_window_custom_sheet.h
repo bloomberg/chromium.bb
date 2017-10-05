@@ -20,7 +20,8 @@
 
 - (id)initWithCustomWindow:(NSWindow*)customWindow;
 
-// Defaults to NO.
+// Defaults to NO, unless hardware that has problems with the standard
+// animations is detected.
 // The standard animation uses private CGS APIs, which can crash the window
 // server. https://crbug.com/515627#c75
 - (void)setUseSimpleAnimations:(BOOL)simpleAnimations;
