@@ -824,7 +824,8 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBListChanged) {
+// Flaky: crbug.com/772067
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   const int64_t kDBVersion1 = 1;
   const int64_t kDBVersion2 = 2;
   const int64_t kDBVersion3 = 3;
