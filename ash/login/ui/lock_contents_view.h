@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/login/lock_screen_apps_focus_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/system/system_tray_focus_observer.h"
@@ -41,6 +42,7 @@ enum class TrayActionState;
 // but it is always shown on the primary display. There is only one instance
 // at a time.
 class ASH_EXPORT LockContentsView : public NonAccessibleView,
+                                    public LockScreenAppsFocusObserver,
                                     public LoginDataDispatcher::Observer,
                                     public SystemTrayFocusObserver,
                                     public display::DisplayObserver {
@@ -70,10 +72,14 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
+  // LockScreenAppsFocusObserver:
+  void OnFocusLeavingLockScreenApps(bool reverse) override;
+
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
+  void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -177,6 +183,10 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
 
   std::unique_ptr<LoginBubble> error_bubble_;
   int unlock_attempt_ = 0;
+
+  // Whether a lock screen app is currently active (i.e. lock screen note action
+  // state is reported as kActive by the data dispatcher).
+  bool lock_screen_apps_active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };

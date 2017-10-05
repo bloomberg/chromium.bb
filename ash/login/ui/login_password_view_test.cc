@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -28,7 +29,7 @@ class LoginPasswordViewTest : public LoginTestBase {
                            base::Unretained(this)),
                 base::Bind(&LoginPasswordViewTest::OnPasswordTextChanged,
                            base::Unretained(this)));
-    ShowWidgetWithContent(view_);
+    SetWidget(CreateWidgetWithContent(view_));
   }
 
   // Called when a password is submitted.

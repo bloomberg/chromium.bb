@@ -6,6 +6,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -30,7 +31,7 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     container_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical));
     container_->AddChildView(view_);
-    ShowWidgetWithContent(container_);
+    SetWidget(CreateWidgetWithContent(container_));
   }
 
   mojom::LoginUserInfoPtr user_;

@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -51,7 +52,7 @@ class LoginBubbleTest : public LoginTestBase {
 
     container_->AddChildView(bubble_opener_);
     container_->AddChildView(other_view_);
-    ShowWidgetWithContent(container_);
+    SetWidget(CreateWidgetWithContent(container_));
 
     bubble_ = base::MakeUnique<LoginBubble>();
   }
