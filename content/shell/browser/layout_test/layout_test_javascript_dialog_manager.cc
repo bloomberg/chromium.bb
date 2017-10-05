@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,18 +28,16 @@ void LayoutTestJavaScriptDialogManager::RunJavaScriptDialog(
     JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const DialogClosedCallback& callback,
+    DialogClosedCallback callback,
     bool* did_suppress_message) {
-  callback.Run(true, base::string16());
-  return;
+  std::move(callback).Run(true, base::string16());
 }
 
 void LayoutTestJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
     bool is_reload,
-    const DialogClosedCallback& callback) {
-  callback.Run(true, base::string16());
-  return;
+    DialogClosedCallback callback) {
+  std::move(callback).Run(true, base::string16());
 }
 
 }  // namespace content

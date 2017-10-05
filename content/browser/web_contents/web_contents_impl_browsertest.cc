@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -1117,7 +1119,7 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                            JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
-                           const DialogClosedCallback& callback,
+                           DialogClosedCallback callback,
                            bool* did_suppress_message) override {
     last_message_ = base::UTF16ToUTF8(message_text);
     *did_suppress_message = true;
@@ -1127,8 +1129,8 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override {
-    callback.Run(true, base::string16());
+                             DialogClosedCallback callback) override {
+    std::move(callback).Run(true, base::string16());
     message_loop_runner_->Quit();
   }
 

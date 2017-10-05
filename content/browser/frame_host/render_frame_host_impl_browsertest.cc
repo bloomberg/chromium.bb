@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -203,13 +205,13 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                            JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
-                           const DialogClosedCallback& callback,
+                           DialogClosedCallback callback,
                            bool* did_suppress_message) override {}
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override {
-    callback_ = callback;
+                             DialogClosedCallback callback) override {
+    callback_ = std::move(callback);
     message_loop_runner_->Quit();
   }
 
@@ -287,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   main_frame->GetProcess()->AddFilter(filter.get());
 
   // Answer the dialog.
-  dialog_manager.callback().Run(true, base::string16());
+  std::move(dialog_manager.callback()).Run(true, base::string16());
 
   // There will be no beforeunload ACK, so if the beforeunload ACK timer isn't
   // functioning then the navigation will hang forever and this test will time
@@ -326,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   dialog_manager.Wait();
 
   // Answer the dialog.
-  dialog_manager.callback().Run(true, base::string16());
+  std::move(dialog_manager.callback()).Run(true, base::string16());
   EXPECT_TRUE(WaitForLoadStop(wc));
 
   // The reload should have cleared the user gesture bit, so upon leaving again

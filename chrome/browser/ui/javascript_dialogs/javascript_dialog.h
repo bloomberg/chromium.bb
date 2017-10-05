@@ -23,8 +23,7 @@ class JavaScriptDialog {
       content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback&
-          dialog_callback);
+      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback);
 
   // Closes the dialog without sending a callback. This is useful when the
   // JavaScriptDialogTabHelper needs to make this dialog go away so that it can

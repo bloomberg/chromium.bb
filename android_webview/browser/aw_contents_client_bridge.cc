@@ -286,19 +286,19 @@ void AwContentsClientBridge::RunJavaScriptDialog(
     const GURL& origin_url,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const content::JavaScriptDialogManager::DialogClosedCallback& callback) {
+    content::JavaScriptDialogManager::DialogClosedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null()) {
-    callback.Run(false, base::string16());
+    std::move(callback).Run(false, base::string16());
     return;
   }
 
   int callback_id = pending_js_dialog_callbacks_.Add(
       base::MakeUnique<content::JavaScriptDialogManager::DialogClosedCallback>(
-          callback));
+          std::move(callback)));
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, origin_url.spec()));
   ScopedJavaLocalRef<jstring> jmessage(
@@ -332,13 +332,13 @@ void AwContentsClientBridge::RunJavaScriptDialog(
 
 void AwContentsClientBridge::RunBeforeUnloadDialog(
     const GURL& origin_url,
-    const content::JavaScriptDialogManager::DialogClosedCallback& callback) {
+    content::JavaScriptDialogManager::DialogClosedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null()) {
-    callback.Run(false, base::string16());
+    std::move(callback).Run(false, base::string16());
     return;
   }
 
@@ -347,7 +347,7 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
 
   int callback_id = pending_js_dialog_callbacks_.Add(
       base::MakeUnique<content::JavaScriptDialogManager::DialogClosedCallback>(
-          callback));
+          std::move(callback)));
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, origin_url.spec()));
   ScopedJavaLocalRef<jstring> jmessage(
@@ -536,7 +536,7 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
   if (!prompt.is_null()) {
     prompt_text = ConvertJavaStringToUTF16(env, prompt);
   }
-  callback->Run(true, prompt_text);
+  std::move(*callback).Run(true, prompt_text);
   pending_js_dialog_callbacks_.Remove(id);
 }
 
@@ -567,7 +567,7 @@ void AwContentsClientBridge::CancelJsResult(JNIEnv*,
     LOG(WARNING) << "Unexpected JS dialog cancel. " << id;
     return;
   }
-  callback->Run(false, base::string16());
+  std::move(*callback).Run(false, base::string16());
   pending_js_dialog_callbacks_.Remove(id);
 }
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_dialog_type.h"
@@ -22,9 +22,9 @@ class WebContents;
 // JavaScript dialogs.
 class CONTENT_EXPORT JavaScriptDialogManager {
  public:
-  typedef base::Callback<void(bool /* success */,
-                              const base::string16& /* user_input */)>
-                                  DialogClosedCallback;
+  using DialogClosedCallback =
+      base::OnceCallback<void(bool /* success */,
+                              const base::string16& /* user_input */)>;
 
   // Displays a JavaScript dialog. |did_suppress_message| will not be nil; if
   // |true| is returned in it, the caller will handle faking the reply.
@@ -33,13 +33,13 @@ class CONTENT_EXPORT JavaScriptDialogManager {
                                    JavaScriptDialogType dialog_type,
                                    const base::string16& message_text,
                                    const base::string16& default_prompt_text,
-                                   const DialogClosedCallback& callback,
+                                   DialogClosedCallback callback,
                                    bool* did_suppress_message) = 0;
 
   // Displays a dialog asking the user if they want to leave a page.
   virtual void RunBeforeUnloadDialog(WebContents* web_contents,
                                      bool is_reload,
-                                     const DialogClosedCallback& callback) = 0;
+                                     DialogClosedCallback callback) = 0;
 
   // Accepts or dismisses the active JavaScript dialog, which must be owned
   // by the given |web_contents|. If |prompt_override| is not null, the prompt

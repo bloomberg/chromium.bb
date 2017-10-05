@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_H_
 #define CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -23,13 +24,12 @@ class ShellJavaScriptDialogManager;
 
 class ShellJavaScriptDialog {
  public:
-  ShellJavaScriptDialog(
-      ShellJavaScriptDialogManager* manager,
-      gfx::NativeWindow parent_window,
-      JavaScriptDialogType dialog_type,
-      const base::string16& message_text,
-      const base::string16& default_prompt_text,
-      const JavaScriptDialogManager::DialogClosedCallback& callback);
+  ShellJavaScriptDialog(ShellJavaScriptDialogManager* manager,
+                        gfx::NativeWindow parent_window,
+                        JavaScriptDialogType dialog_type,
+                        const base::string16& message_text,
+                        const base::string16& default_prompt_text,
+                        JavaScriptDialogManager::DialogClosedCallback callback);
   ~ShellJavaScriptDialog();
 
   // Called to cancel a dialog mid-flight.

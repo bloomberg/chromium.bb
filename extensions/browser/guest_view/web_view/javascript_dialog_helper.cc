@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/guest_view/common/guest_view_constants.h"
@@ -46,7 +48,7 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const DialogClosedCallback& callback,
+    DialogClosedCallback callback,
     bool* did_suppress_message) {
   base::DictionaryValue request_info;
   request_info.SetString(webview::kDefaultPromptText,
@@ -59,21 +61,19 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromWebContents(web_contents);
   web_view_permission_helper->RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG,
-      request_info,
-      base::Bind(&JavaScriptDialogHelper::OnPermissionResponse,
-                 base::Unretained(this),
-                 callback),
+      WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG, request_info,
+      base::BindOnce(&JavaScriptDialogHelper::OnPermissionResponse,
+                     base::Unretained(this), std::move(callback)),
       false /* allowed_by_default */);
 }
 
 void JavaScriptDialogHelper::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
     bool is_reload,
-    const DialogClosedCallback& callback) {
+    DialogClosedCallback callback) {
   // This is called if the guest has a beforeunload event handler.
   // This callback allows navigation to proceed.
-  callback.Run(true, base::string16());
+  std::move(callback).Run(true, base::string16());
 }
 
 bool JavaScriptDialogHelper::HandleJavaScriptDialog(
@@ -87,11 +87,11 @@ void JavaScriptDialogHelper::CancelDialogs(content::WebContents* web_contents,
                                            bool reset_state) {}
 
 void JavaScriptDialogHelper::OnPermissionResponse(
-    const DialogClosedCallback& callback,
+    DialogClosedCallback callback,
     bool allow,
     const std::string& user_input) {
-  callback.Run(allow && web_view_guest_->attached(),
-               base::UTF8ToUTF16(user_input));
+  std::move(callback).Run(allow && web_view_guest_->attached(),
+                          base::UTF8ToUTF16(user_input));
 }
 
 }  // namespace extensions

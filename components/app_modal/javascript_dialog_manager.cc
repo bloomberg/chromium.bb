@@ -131,7 +131,7 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const DialogClosedCallback& callback,
+    DialogClosedCallback callback,
     bool* did_suppress_message) {
   *did_suppress_message = false;
 
@@ -188,21 +188,22 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
       ShouldDisplaySuppressCheckbox(extra_data),
       false,  // is_before_unload_dialog
       false,  // is_reload
-      base::Bind(&JavaScriptDialogManager::OnDialogClosed,
-                 base::Unretained(this), web_contents, callback)));
+      base::BindOnce(&JavaScriptDialogManager::OnDialogClosed,
+                     base::Unretained(this), web_contents,
+                     std::move(callback))));
 }
 
 void JavaScriptDialogManager::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
     bool is_reload,
-    const DialogClosedCallback& callback) {
+    DialogClosedCallback callback) {
   ChromeJavaScriptDialogExtraData* extra_data =
       &javascript_dialog_extra_data_[web_contents];
 
   if (extra_data->suppress_javascript_messages_) {
     // If a site harassed the user enough for them to put it on mute, then it
     // lost its privilege to deny unloading.
-    callback.Run(true, base::string16());
+    std::move(callback).Run(true, base::string16());
     return;
   }
 
@@ -234,8 +235,9 @@ void JavaScriptDialogManager::RunBeforeUnloadDialog(
       ShouldDisplaySuppressCheckbox(extra_data),
       true,  // is_before_unload_dialog
       is_reload,
-      base::Bind(&JavaScriptDialogManager::OnBeforeUnloadDialogClosed,
-                 base::Unretained(this), web_contents, callback)));
+      base::BindOnce(&JavaScriptDialogManager::OnBeforeUnloadDialogClosed,
+                     base::Unretained(this), web_contents,
+                     std::move(callback))));
 }
 
 bool JavaScriptDialogManager::HandleJavaScriptDialog(
@@ -302,7 +304,7 @@ void JavaScriptDialogManager::OnBeforeUnloadDialogClosed(
       static_cast<int>(success ? StayVsLeave::LEAVE : StayVsLeave::STAY),
       static_cast<int>(StayVsLeave::MAX));
 
-  OnDialogClosed(web_contents, callback, success, user_input);
+  OnDialogClosed(web_contents, std::move(callback), success, user_input);
 }
 
 void JavaScriptDialogManager::OnDialogClosed(
@@ -317,7 +319,7 @@ void JavaScriptDialogManager::OnDialogClosed(
 
   last_close_time_ = base::TimeTicks::Now();
 
-  callback.Run(success, user_input);
+  std::move(callback).Run(success, user_input);
 }
 
 }  // namespace app_modal

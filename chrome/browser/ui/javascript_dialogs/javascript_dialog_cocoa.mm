@@ -27,8 +27,7 @@ class JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl
       content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback&
-          dialog_callback);
+      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback);
   virtual ~JavaScriptDialogCocoaImpl() = default;
 
   // Callbacks from the bridge when buttons are clicked.
@@ -85,9 +84,8 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::JavaScriptDialogCocoaImpl(
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const content::JavaScriptDialogManager::DialogClosedCallback&
-        dialog_callback)
-    : dialog_callback_(dialog_callback), parent_(parent) {
+    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback)
+    : dialog_callback_(std::move(dialog_callback)), parent_(parent) {
   bridge_.reset([[JavaScriptDialogCocoaBridge alloc] initWithDialogImpl:this]);
 
   alert_.reset([[ConstrainedWindowAlert alloc] init]);
@@ -122,15 +120,14 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::JavaScriptDialogCocoaImpl(
 void JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::
     OnConstrainedWindowClosed(ConstrainedWindowMac* window) {
   if (dialog_callback_)
-    dialog_callback_.Run(false, base::string16());
+    std::move(dialog_callback_).Run(false, base::string16());
   delete parent_;
   // parent_ owns this object, so return immediately.
 }
 
 void JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::Cancel() {
   if (dialog_callback_) {
-    dialog_callback_.Run(false, base::string16());
-    dialog_callback_.Reset();
+    std::move(dialog_callback_).Run(false, base::string16());
   }
   window_->CloseWebContentsModalDialog();
 }
@@ -140,8 +137,7 @@ void JavaScriptDialogCocoa::JavaScriptDialogCocoaImpl::Accept() {
     base::string16 input;
     if (textField_)
       input = base::SysNSStringToUTF16([textField_ stringValue]);
-    dialog_callback_.Run(true, input);
-    dialog_callback_.Reset();
+    std::move(dialog_callback_).Run(true, input);
   }
   window_->CloseWebContentsModalDialog();
 }
@@ -156,11 +152,10 @@ base::WeakPtr<JavaScriptDialogCocoa> JavaScriptDialogCocoa::Create(
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const content::JavaScriptDialogManager::DialogClosedCallback&
-        dialog_callback) {
-  return (new JavaScriptDialogCocoa(parent_web_contents, alerting_web_contents,
-                                    title, dialog_type, message_text,
-                                    default_prompt_text, dialog_callback))
+    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback) {
+  return (new JavaScriptDialogCocoa(
+              parent_web_contents, alerting_web_contents, title, dialog_type,
+              message_text, default_prompt_text, std::move(dialog_callback)))
       ->weak_factory_.GetWeakPtr();
 }
 
@@ -183,15 +178,15 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoa(
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const content::JavaScriptDialogManager::DialogClosedCallback&
-        dialog_callback)
+    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback)
     : JavaScriptDialog(parent_web_contents),
-      impl_(base::MakeUnique<JavaScriptDialogCocoaImpl>(this,
-                                                        parent_web_contents,
-                                                        alerting_web_contents,
-                                                        title,
-                                                        dialog_type,
-                                                        message_text,
-                                                        default_prompt_text,
-                                                        dialog_callback)),
+      impl_(base::MakeUnique<JavaScriptDialogCocoaImpl>(
+          this,
+          parent_web_contents,
+          alerting_web_contents,
+          title,
+          dialog_type,
+          message_text,
+          default_prompt_text,
+          std::move(dialog_callback))),
       weak_factory_(this) {}

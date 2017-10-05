@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 #include "content/public/browser/web_contents.h"
@@ -23,9 +25,8 @@ base::WeakPtr<JavaScriptDialog> JavaScriptDialog::Create(
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const content::JavaScriptDialogManager::DialogClosedCallback&
-        dialog_callback) {
+    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback) {
   return JavaScriptDialogViews::Create(
       parent_web_contents, alerting_web_contents, title, dialog_type,
-      message_text, default_prompt_text, dialog_callback);
+      message_text, default_prompt_text, std::move(dialog_callback));
 }

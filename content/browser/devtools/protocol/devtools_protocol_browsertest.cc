@@ -124,8 +124,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   void Handle() {
     if (!callback_.is_null()) {
-      callback_.Run(true, base::string16());
-      callback_.Reset();
+      std::move(callback_).Run(true, base::string16());
     } else {
       handle_ = true;
     }
@@ -143,19 +142,19 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                            JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
-                           const DialogClosedCallback& callback,
+                           DialogClosedCallback callback,
                            bool* did_suppress_message) override {
     if (handle_) {
       handle_ = false;
-      callback.Run(true, base::string16());
+      std::move(callback).Run(true, base::string16());
     } else {
-      callback_ = callback;
+      callback_ = std::move(callback);
     }
   };
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override {}
+                             DialogClosedCallback callback) override {}
 
   bool HandleJavaScriptDialog(WebContents* web_contents,
                               bool accept,

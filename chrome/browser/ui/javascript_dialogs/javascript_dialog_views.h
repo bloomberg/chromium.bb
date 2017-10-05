@@ -31,8 +31,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback&
-          dialog_callback);
+      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback);
 
   // JavaScriptDialog:
   void CloseDialogWithoutCallback() override;
@@ -62,8 +61,7 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      const content::JavaScriptDialogManager::DialogClosedCallback&
-          dialog_callback);
+      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback);
 
   base::string16 title_;
   content::JavaScriptDialogType dialog_type_;

@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/shell_javascript_dialog.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "content/shell/app/resource.h"
 #include "content/shell/browser/shell.h"
@@ -34,7 +36,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
           GetWindowLongPtr(dialog, DWLP_USER));
       if (owner->dialog_win_) {
         owner->dialog_win_ = 0;
-        owner->callback_.Run(false, base::string16());
+        std::move(owner->callback_).Run(false, base::string16());
         owner->manager_->DialogClosed(owner);
       }
       break;
@@ -63,7 +65,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
       }
       if (finish) {
         owner->dialog_win_ = 0;
-        owner->callback_.Run(result, user_input);
+        std::move(owner->callback_).Run(result, user_input);
         DestroyWindow(dialog);
         owner->manager_->DialogClosed(owner);
       }
@@ -81,8 +83,8 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const JavaScriptDialogManager::DialogClosedCallback& callback)
-    : callback_(callback),
+    JavaScriptDialogManager::DialogClosedCallback callback)
+    : callback_(std::move(callback)),
       manager_(manager),
       dialog_type_(dialog_type),
       message_text_(message_text),

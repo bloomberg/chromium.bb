@@ -282,24 +282,25 @@ FrameTreeNode* FindOpener(const WebContents::CreateParams& params) {
 class CloseDialogCallbackWrapper
     : public base::RefCountedThreadSafe<CloseDialogCallbackWrapper> {
  public:
-  CloseDialogCallbackWrapper(
-      const base::Callback<void(bool, bool, const base::string16&)> callback)
-      : callback_(callback) {}
+  using CloseCallback =
+      base::OnceCallback<void(bool, bool, const base::string16&)>;
+
+  explicit CloseDialogCallbackWrapper(CloseCallback callback)
+      : callback_(std::move(callback)) {}
 
   void Run(bool dialog_was_suppressed,
            bool success,
            const base::string16& user_input) {
-    if (already_fired_)
+    if (callback_.is_null())
       return;
-    already_fired_ = true;
-    callback_.Run(dialog_was_suppressed, success, user_input);
+    std::move(callback_).Run(dialog_was_suppressed, success, user_input);
   }
 
  private:
   friend class base::RefCountedThreadSafe<CloseDialogCallbackWrapper>;
   ~CloseDialogCallbackWrapper() {}
-  bool already_fired_ = false;
-  base::Callback<void(bool, bool, const base::string16&)> callback_;
+
+  CloseCallback callback_;
 };
 
 }  // namespace
@@ -4587,10 +4588,10 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   if (IsFullscreenForCurrentTab())
     ExitFullscreen(true);
 
-  base::Callback<void(bool, bool, const base::string16&)> callback =
-      base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
-                 render_frame_host->GetProcess()->GetID(),
-                 render_frame_host->GetRoutingID(), reply_msg);
+  auto callback =
+      base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
+                     render_frame_host->GetProcess()->GetID(),
+                     render_frame_host->GetRoutingID(), reply_msg);
 
   std::vector<protocol::PageHandler*> page_handlers =
       protocol::PageHandler::EnabledForWebContents(this);
@@ -4607,31 +4608,32 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   bool suppress_this_message = should_suppress || !has_handlers;
 
   if (suppress_this_message) {
-    callback.Run(true, false, base::string16());
+    std::move(callback).Run(true, false, base::string16());
     return;
   }
 
   scoped_refptr<CloseDialogCallbackWrapper> wrapper =
-      new CloseDialogCallbackWrapper(callback);
-  callback = base::Bind(&CloseDialogCallbackWrapper::Run, wrapper);
+      new CloseDialogCallbackWrapper(std::move(callback));
 
   is_showing_javascript_dialog_ = true;
 
   for (auto* handler : page_handlers) {
-    handler->DidRunJavaScriptDialog(frame_url, message, default_prompt,
-                                    dialog_type, base::Bind(callback, false));
+    handler->DidRunJavaScriptDialog(
+        frame_url, message, default_prompt, dialog_type,
+        base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 
   if (dialog_manager_) {
     dialog_manager_->RunJavaScriptDialog(
         this, frame_url, dialog_type, message, default_prompt,
-        base::Bind(callback, false), &suppress_this_message);
+        base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false),
+        &suppress_this_message);
   }
 
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel", passing true to |dialog_was_suppressed|.
-    callback.Run(true, false, base::string16());
+    wrapper->Run(true, false, base::string16());
   }
 }
 
@@ -4649,10 +4651,10 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   if (delegate_)
     delegate_->WillRunBeforeUnloadConfirm();
 
-  base::Callback<void(bool, bool, const base::string16&)> callback =
-      base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
-                 render_frame_host->GetProcess()->GetID(),
-                 render_frame_host->GetRoutingID(), reply_msg);
+  auto callback =
+      base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
+                     render_frame_host->GetProcess()->GetID(),
+                     render_frame_host->GetRoutingID(), reply_msg);
 
   std::vector<protocol::PageHandler*> page_handlers =
       protocol::PageHandler::EnabledForWebContents(this);
@@ -4664,24 +4666,26 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
                          (delegate_ && delegate_->ShouldSuppressDialogs(this));
   bool has_handlers = page_handlers.size() || (delegate_ && dialog_manager_);
   if (should_suppress || !has_handlers) {
-    callback.Run(false, true, base::string16());
+    std::move(callback).Run(false, true, base::string16());
     return;
   }
 
   is_showing_before_unload_dialog_ = true;
 
   scoped_refptr<CloseDialogCallbackWrapper> wrapper =
-      new CloseDialogCallbackWrapper(callback);
-  callback = base::Bind(&CloseDialogCallbackWrapper::Run, wrapper);
+      new CloseDialogCallbackWrapper(std::move(callback));
 
   GURL frame_url = rfhi->GetLastCommittedURL();
   for (auto* handler : page_handlers) {
-    handler->DidRunBeforeUnloadConfirm(frame_url, base::Bind(callback, false));
+    handler->DidRunBeforeUnloadConfirm(
+        frame_url,
+        base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 
   if (dialog_manager_) {
-    dialog_manager_->RunBeforeUnloadDialog(this, is_reload,
-                                           base::Bind(callback, false));
+    dialog_manager_->RunBeforeUnloadDialog(
+        this, is_reload,
+        base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 }
 

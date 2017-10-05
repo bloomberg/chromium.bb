@@ -39,7 +39,7 @@
   andCallback:(content::JavaScriptDialogManager::DialogClosedCallback)callback {
   if (self = [super init]) {
     manager_ = manager;
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
 
   return self;
@@ -73,7 +73,7 @@
 
   content::ShellJavaScriptDialog* native_dialog =
       reinterpret_cast<content::ShellJavaScriptDialog*>(contextInfo);
-  callback_.Run(success, input);
+  std::move(callback_).Run(success, input);
   manager_->DialogClosed(native_dialog);
 }
 
@@ -92,14 +92,14 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
-    const JavaScriptDialogManager::DialogClosedCallback& callback)
-    : callback_(callback) {
+    JavaScriptDialogManager::DialogClosedCallback callback)
+    : callback_(std::move(callback)) {
   bool text_field = dialog_type == JAVASCRIPT_DIALOG_TYPE_PROMPT;
   bool one_button = dialog_type == JAVASCRIPT_DIALOG_TYPE_ALERT;
 
-  helper_ =
-      [[ShellJavaScriptDialogHelper alloc] initHelperWithManager:manager
-                                                     andCallback:callback];
+  helper_ = [[ShellJavaScriptDialogHelper alloc]
+      initHelperWithManager:manager
+                andCallback:std::move(callback)];
 
   // Show the modal dialog.
   NSAlert* alert = [helper_ alert];

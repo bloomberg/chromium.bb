@@ -217,16 +217,15 @@ void PageHandler::DidDetachInterstitialPage() {
   frontend_->InterstitialHidden();
 }
 
-void PageHandler::DidRunJavaScriptDialog(
-    const GURL& url,
-    const base::string16& message,
-    const base::string16& default_prompt,
-    JavaScriptDialogType dialog_type,
-    const JavaScriptDialogCallback& callback) {
+void PageHandler::DidRunJavaScriptDialog(const GURL& url,
+                                         const base::string16& message,
+                                         const base::string16& default_prompt,
+                                         JavaScriptDialogType dialog_type,
+                                         JavaScriptDialogCallback callback) {
   if (!enabled_)
     return;
   DCHECK(pending_dialog_.is_null());
-  pending_dialog_ = callback;
+  pending_dialog_ = std::move(callback);
   std::string type = Page::DialogTypeEnum::Alert;
   if (dialog_type == JAVASCRIPT_DIALOG_TYPE_CONFIRM)
     type = Page::DialogTypeEnum::Confirm;
@@ -236,13 +235,12 @@ void PageHandler::DidRunJavaScriptDialog(
                                      type, base::UTF16ToUTF8(default_prompt));
 }
 
-void PageHandler::DidRunBeforeUnloadConfirm(
-    const GURL& url,
-    const JavaScriptDialogCallback& callback) {
+void PageHandler::DidRunBeforeUnloadConfirm(const GURL& url,
+                                            JavaScriptDialogCallback callback) {
   if (!enabled_)
     return;
   DCHECK(pending_dialog_.is_null());
-  pending_dialog_ = callback;
+  pending_dialog_ = std::move(callback);
   frontend_->JavascriptDialogOpening(url.spec(), std::string(),
                                      Page::DialogTypeEnum::Beforeunload,
                                      std::string());
@@ -275,7 +273,7 @@ Response PageHandler::Disable() {
         web_contents && web_contents->GetDelegate() &&
         web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
     if (!has_dialog_manager)
-      pending_dialog_.Run(false, base::string16());
+      std::move(pending_dialog_).Run(false, base::string16());
     pending_dialog_.Reset();
   }
 
@@ -601,7 +599,7 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   base::string16 prompt_override;
   if (prompt_text.isJust())
     prompt_override = base::UTF8ToUTF16(prompt_text.fromJust());
-  pending_dialog_.Run(accept, prompt_override);
+  std::move(pending_dialog_).Run(accept, prompt_override);
 
   // Clean up the dialog UI if any.
   if (web_contents->GetDelegate()) {

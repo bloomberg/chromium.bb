@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -28,12 +28,12 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
                            JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,
-                           const DialogClosedCallback& callback,
+                           DialogClosedCallback callback,
                            bool* did_suppress_message) override;
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override;
+                             DialogClosedCallback callback) override;
 
   void CancelDialogs(WebContents* web_contents,
                      bool reset_state) override;
