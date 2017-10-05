@@ -17,11 +17,9 @@
 
 namespace blink {
 
-using PaintControllerPaintTestForSlimmingPaintV1AndV2 =
-    PaintControllerPaintTest;
 INSTANTIATE_TEST_CASE_P(All,
-                        PaintControllerPaintTestForSlimmingPaintV1AndV2,
-                        ::testing::Values(0, kSlimmingPaintV2));
+                        PaintControllerPaintTest,
+                        ::testing::ValuesIn(kDefaultPaintTestConfigurations));
 
 using PaintControllerPaintTestForSlimmingPaintV2 = PaintControllerPaintTest;
 INSTANTIATE_TEST_CASE_P(
@@ -29,8 +27,7 @@ INSTANTIATE_TEST_CASE_P(
     PaintControllerPaintTestForSlimmingPaintV2,
     ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
-       FullDocumentPaintingWithCaret) {
+TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   SetBodyInnerHTML(
       "<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
   GetDocument().GetPage()->GetFocusController().SetActive(true);
@@ -39,39 +36,33 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
   InlineTextBox& text_inline_box =
       *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 2,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(text_inline_box, kForegroundType));
+  DisplayItemClient* background_client = nullptr;
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With SPv1 and RLS, the document background uses the scrolling contents
+    // layer as its DisplayItemClient.
+    background_client = GetLayoutView().Layer()->GraphicsLayerBacking();
   } else {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 2,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(text_inline_box, kForegroundType));
+    background_client = &GetLayoutView();
   }
+
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(text_inline_box, kForegroundType));
 
   div.focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 3,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(text_inline_box, kForegroundType),
-        TestDisplayItem(CaretDisplayItemClientForTesting(),
-                        DisplayItem::kCaret));  // New!
-  } else {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 3,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(text_inline_box, kForegroundType),
-        TestDisplayItem(CaretDisplayItemClientForTesting(),
-                        DisplayItem::kCaret));  // New!
-  }
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(text_inline_box, kForegroundType),
+      TestDisplayItem(CaretDisplayItemClientForTesting(),
+                      DisplayItem::kCaret));  // New!
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
+TEST_P(PaintControllerPaintTest, InlineRelayout) {
   SetBodyInnerHTML(
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "
       "BBBBBBBBBB</div>");
@@ -81,17 +72,20 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   InlineTextBox& first_text_box = *text.FirstTextBox();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 2,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(first_text_box, kForegroundType));
+  DisplayItemClient* background_client = nullptr;
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With SPv1 and RLS, the document background uses the scrolling contents
+    // layer as its DisplayItemClient.
+    background_client = GetLayoutView().Layer()->GraphicsLayerBacking();
   } else {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 2,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(first_text_box, kForegroundType));
+    background_client = &GetLayoutView();
   }
+
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(first_text_box, kForegroundType));
 
   div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -100,19 +94,11 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
   InlineTextBox& second_text_box = *new_text.FirstTextBox()->NextTextBox();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 3,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(new_first_text_box, kForegroundType),
-        TestDisplayItem(second_text_box, kForegroundType));
-  } else {
-    EXPECT_DISPLAY_LIST(
-        RootPaintController().GetDisplayItemList(), 3,
-        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-        TestDisplayItem(new_first_text_box, kForegroundType),
-        TestDisplayItem(second_text_box, kForegroundType));
-  }
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(*background_client, kDocumentBackgroundType),
+      TestDisplayItem(new_first_text_box, kForegroundType),
+      TestDisplayItem(second_text_box, kForegroundType));
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
