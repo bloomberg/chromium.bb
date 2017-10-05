@@ -281,11 +281,6 @@ const char kDisableSharedWorkers[]          = "disable-shared-workers";
 // useful for forcing a baseline code path for e.g. layout tests.
 const char kDisableSkiaRuntimeOpts[]        = "disable-skia-runtime-opts";
 
-// Disable paint invalidation based on slimming paint.
-// See kEnableSlimmingPaintInvalidation.
-const char kDisableSlimmingPaintInvalidation[] =
-    "disable-slimming-paint-invalidation";
-
 // Disable smooth scrolling for testing.
 const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 
@@ -461,13 +456,12 @@ const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
+// Enables slimming paint phase 1.75:
+// http://www.chromium.org/blink/slimming-paint
+const char kEnableSlimmingPaintV175[] = "enable-slimming-paint-v175";
+
 // Enables slimming paint phase 2: http://www.chromium.org/blink/slimming-paint
 const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
-
-// Enables paint invalidation based on slimming paint but without
-// the full slimming paint v2 compositing code. See: https://goo.gl/eQczQW
-const char kEnableSlimmingPaintInvalidation[] =
-    "enable-slimming-paint-invalidation";
 
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";

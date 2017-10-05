@@ -24417,6 +24417,7 @@ from previous Chrome versions.
   <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
   <int value="1397069250" label="NetworkService:disabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
+  <int value="1406046556" label="enable-slimming-paint-v175"/>
   <int value="1406354320" label="MacViewsWebUIDialogs:enabled"/>
   <int value="1407625309"
       label="disable-minimize-on-second-launcher-item-click"/>
