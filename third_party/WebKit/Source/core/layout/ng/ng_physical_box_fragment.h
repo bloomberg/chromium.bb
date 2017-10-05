@@ -18,14 +18,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGPhysicalBoxFragment(LayoutObject* layout_object,
                         const ComputedStyle& style,
                         NGPhysicalSize size,
-                        NGPhysicalSize overflow,
                         Vector<RefPtr<NGPhysicalFragment>>& children,
                         Vector<NGBaseline>& baselines,
                         unsigned,  // NGBorderEdges::Physical
                         RefPtr<NGBreakToken> break_token = nullptr);
-
-  // Returns the total size, including the contents outside of the border-box.
-  NGPhysicalSize OverflowSize() const { return overflow_; }
 
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 
@@ -34,7 +30,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   RefPtr<NGPhysicalFragment> CloneWithoutOffset() const;
 
  private:
-  NGPhysicalSize overflow_;
   Vector<NGBaseline> baselines_;
 };
 

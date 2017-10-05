@@ -168,14 +168,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                    const NGPhysicalFragment*,
                    LayoutUnit child_offset);
 
-  void UpdateContentSize(const NGBoxStrut& margins,
-                         const NGLogicalOffset& logical_offset,
-                         bool is_empty_block,
-                         const NGFragment&);
-
-  // Calculates logical offset for the current fragment using either
-  // {@code content_size_} when the fragment doesn't know it's offset
-  // or {@code known_fragment_offset} if the fragment knows it's offset
+  // Calculates logical offset for the current fragment using either {@code
+  // intrinsic_block_size_} when the fragment doesn't know it's offset or
+  // {@code known_fragment_offset} if the fragment knows it's offset
   // @return Fragment's offset relative to the fragment's parent.
   NGLogicalOffset CalculateLogicalOffset(
       const NGFragment&,
@@ -186,8 +181,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGLogicalSize child_percentage_size_;
 
   NGBoxStrut border_scrollbar_padding_;
-  LayoutUnit content_size_;
-  LayoutUnit max_inline_size_;
+  LayoutUnit intrinsic_block_size_;
 
   bool abort_when_bfc_resolved_;
 

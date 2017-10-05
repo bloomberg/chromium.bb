@@ -41,7 +41,7 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   NGWritingMode writing_mode = ConstraintSpace().WritingMode();
   RefPtr<NGBlockBreakToken> break_token = BreakToken();
-  NGLogicalSize overflow;
+  LayoutUnit intrinsic_block_size;
   LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
   LayoutUnit column_block_offset(border_scrollbar_padding.block_start);
   LayoutUnit column_inline_progression =
@@ -58,20 +58,15 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
     container_builder_.AddChild(column, logical_offset);
 
-    NGLogicalSize size = NGBoxFragment(writing_mode, *column).Size();
-    NGLogicalOffset end_offset =
-        logical_offset + NGLogicalOffset(size.inline_size, size.block_size);
-
-    overflow.inline_size =
-        std::max(overflow.inline_size, end_offset.inline_offset);
-    overflow.block_size =
-        std::max(overflow.block_size, end_offset.block_offset);
+    intrinsic_block_size = std::max(
+        intrinsic_block_size,
+        column_block_offset + NGBoxFragment(writing_mode, *column).BlockSize());
 
     column_inline_offset += column_inline_progression;
     break_token = ToNGBlockBreakToken(column->BreakToken());
   } while (break_token && !break_token->IsFinished());
 
-  container_builder_.SetOverflowSize(overflow);
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(), &container_builder_)
       .Run();

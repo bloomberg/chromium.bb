@@ -12,11 +12,6 @@
 
 namespace blink {
 
-NGLogicalSize NGBoxFragment::OverflowSize() const {
-  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
-  return physical_fragment.OverflowSize().ConvertToLogical(WritingMode());
-}
-
 NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
     const NGBaselineRequest& request,
     const NGConstraintSpace& constraint_space) const {

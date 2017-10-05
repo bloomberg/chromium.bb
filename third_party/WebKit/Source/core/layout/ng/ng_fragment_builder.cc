@@ -43,14 +43,9 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockSize(LayoutUnit size) {
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::SetOverflowSize(
-    const NGLogicalSize& size) {
-  overflow_ = size;
-  return *this;
-}
-
-NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
-  overflow_.block_size = size;
+NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
+    LayoutUnit intrinsic_block_size) {
+  intrinsic_block_size_ = intrinsic_block_size;
   return *this;
 }
 
@@ -262,22 +257,21 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   RefPtr<NGPhysicalBoxFragment> fragment =
       WTF::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), physical_size,
-          overflow_.ConvertToPhysical(WritingMode()), children_, baselines_,
+          layout_object_, Style(), physical_size, children_, baselines_,
           border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
   fragment->UpdateVisualRect();
 
   return WTF::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,
       std::move(exclusion_space_), bfc_offset_, end_margin_strut_,
-      NGLayoutResult::kSuccess));
+      intrinsic_block_size_, NGLayoutResult::kSuccess));
 }
 
 RefPtr<NGLayoutResult> NGFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   return WTF::AdoptRef(new NGLayoutResult(
       nullptr, Vector<NGOutOfFlowPositionedDescendant>(), unpositioned_floats_,
-      nullptr, bfc_offset_, end_margin_strut_, status));
+      nullptr, bfc_offset_, end_margin_strut_, LayoutUnit(), status));
 }
 
 }  // namespace blink

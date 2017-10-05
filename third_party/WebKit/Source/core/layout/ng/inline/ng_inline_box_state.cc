@@ -258,8 +258,6 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     // supported today.
     box.SetBorderEdges(placeholder.border_edges);
     box.SetSize(placeholder.size);
-    // TODO(kojii): Overflow size should be computed from children.
-    box.SetOverflowSize(placeholder.size);
     RefPtr<NGLayoutResult> layout_result = box.ToBoxFragment();
     DCHECK(!children[placeholder.fragment_end]);
     children[placeholder.fragment_end] =
