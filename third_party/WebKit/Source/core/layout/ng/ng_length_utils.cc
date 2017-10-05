@@ -534,6 +534,11 @@ NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBlockNode node) {
+  // If we are producing an anonymous fragment (e.g. a column), it has no
+  // borders, padding or scrollbars. Using the ones from the container can only
+  // cause trouble.
+  if (constraint_space.IsAnonymous())
+    return NGBoxStrut();
   return ComputeBorders(constraint_space, style) +
          ComputePadding(constraint_space, style) + node.GetScrollbarSizes();
 }
