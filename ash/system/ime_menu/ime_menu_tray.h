@@ -101,9 +101,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool force_show_keyboard_;
   bool keyboard_suppressed_;
   bool show_bubble_after_keyboard_hidden_;
-  bool emoji_enabled_;
-  bool handwriting_enabled_;
-  bool voice_enabled_;
+  bool is_emoji_enabled_;
+  bool is_handwriting_enabled_;
+  bool is_voice_enabled_;
 
   base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_;
 

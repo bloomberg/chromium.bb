@@ -172,6 +172,15 @@ class TestImeController : ash::mojom::ImeController {
   void SetCapsLockState(bool enabled) override {
     is_caps_lock_enabled_ = enabled;
   }
+  void SetExtraInputOptionsEnabledState(bool is_extra_input_options_enabled,
+                                        bool is_emoji_enabled,
+                                        bool is_handwriting_enabled,
+                                        bool is_voice_enabled) override {
+    is_extra_input_options_enabled_ = is_extra_input_options_enabled;
+    is_emoji_enabled_ = is_emoji_enabled;
+    is_handwriting_enabled_ = is_handwriting_enabled;
+    is_voice_enabled_ = is_voice_enabled;
+  }
 
   // The most recent values received via mojo.
   std::string current_ime_id_;
@@ -180,6 +189,10 @@ class TestImeController : ash::mojom::ImeController {
   bool managed_by_policy_ = false;
   bool show_ime_menu_on_shelf_ = false;
   bool is_caps_lock_enabled_ = false;
+  bool is_extra_input_options_enabled_ = false;
+  bool is_emoji_enabled_ = false;
+  bool is_handwriting_enabled_ = false;
+  bool is_voice_enabled_ = false;
 
  private:
   mojo::Binding<ash::mojom::ImeController> binding_;
@@ -239,6 +252,32 @@ TEST_F(ImeControllerClientTest, CapsLock) {
   client.OnCapsLockChanged(false);
   client.FlushMojoForTesting();
   EXPECT_FALSE(ime_controller_.is_caps_lock_enabled_);
+}
+
+TEST_F(ImeControllerClientTest, ExtraInputEnabledStateChange) {
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+
+  client.OnExtraInputEnabledStateChange(true, true, false, false);
+  client.FlushMojoForTesting();
+  EXPECT_TRUE(ime_controller_.is_extra_input_options_enabled_);
+  EXPECT_TRUE(ime_controller_.is_emoji_enabled_);
+  EXPECT_FALSE(ime_controller_.is_handwriting_enabled_);
+  EXPECT_FALSE(ime_controller_.is_voice_enabled_);
+
+  client.OnExtraInputEnabledStateChange(true, false, true, true);
+  client.FlushMojoForTesting();
+  EXPECT_TRUE(ime_controller_.is_extra_input_options_enabled_);
+  EXPECT_FALSE(ime_controller_.is_emoji_enabled_);
+  EXPECT_TRUE(ime_controller_.is_handwriting_enabled_);
+  EXPECT_TRUE(ime_controller_.is_voice_enabled_);
+
+  client.OnExtraInputEnabledStateChange(false, false, false, false);
+  client.FlushMojoForTesting();
+  EXPECT_FALSE(ime_controller_.is_extra_input_options_enabled_);
+  EXPECT_FALSE(ime_controller_.is_emoji_enabled_);
+  EXPECT_FALSE(ime_controller_.is_handwriting_enabled_);
+  EXPECT_FALSE(ime_controller_.is_voice_enabled_);
 }
 
 TEST_F(ImeControllerClientTest, ShowImeMenuOnShelf) {

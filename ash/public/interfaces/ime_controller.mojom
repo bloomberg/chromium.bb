@@ -30,6 +30,15 @@ interface ImeController {
   // Report caps lock state changes from chrome (which is the source of truth)
   // to the tray.
   SetCapsLockState(bool enabled);
+
+  // Report the enabled state of the various extra input options (currently
+  // emoji, handwriting, and voice input). |is_extra_input_options_enabled| set
+  // to false will disable all extra input option UI regardless of the enabled
+  // state of the individual options (which will be ingored).
+  SetExtraInputOptionsEnabledState(bool is_extra_input_options_enabled,
+                                   bool is_emoji_enabled,
+                                   bool is_handwriting_enabled,
+                                   bool is_voice_enabled);
 };
 
 // Interface for ash to send input method requests to its client (e.g. Chrome).

@@ -79,13 +79,13 @@ class ImeMenuTrayTest : public AshTestBase {
   bool IsBubbleShown() { return GetTray()->GetBubbleView() != nullptr; }
 
   // Returns true if emoji palatte is enabled for the current keyboard.
-  bool IsEmojiEnabled() { return GetTray()->emoji_enabled_; }
+  bool IsEmojiEnabled() { return GetTray()->is_emoji_enabled_; }
 
   // Returns true if handwirting input is enabled for the current keyboard.
-  bool IsHandwritingEnabled() { return GetTray()->handwriting_enabled_; }
+  bool IsHandwritingEnabled() { return GetTray()->is_handwriting_enabled_; }
 
   // Returns true if voice input is enabled for the current keyboard.
-  bool IsVoiceEnabled() { return GetTray()->voice_enabled_; }
+  bool IsVoiceEnabled() { return GetTray()->is_voice_enabled_; }
 
   views::Button* GetEmojiButton() const {
     return static_cast<views::Button*>(
@@ -332,6 +332,9 @@ TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
 // Tests that tapping the emoji button does not crash. http://crbug.com/739630
 TEST_F(ImeMenuTrayTest, TapEmojiButton) {
   Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+  Shell::Get()->ime_controller()->SetExtraInputOptionsEnabledState(
+      true /* ui enabled */, true /* emoji input enabled */,
+      true /* hanwriting input enabled */, true /* voice input enabled */);
 
   // Open the menu.
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
@@ -348,15 +351,9 @@ TEST_F(ImeMenuTrayTest, TapEmojiButton) {
 }
 
 TEST_F(ImeMenuTrayTest, ShouldShowBottomButtons) {
-  InputMethodManager* input_method_manager = InputMethodManager::Get();
-  EXPECT_TRUE(input_method_manager &&
-              input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
-  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_EMOJI));
-  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_HANDWRITING));
-  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_VOICE));
+  Shell::Get()->ime_controller()->SetExtraInputOptionsEnabledState(
+      true /* ui enabled */, true /* emoji input enabled */,
+      true /* hanwriting input enabled */, true /* voice input enabled */);
 
   FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_TRUE(GetTray()->ShouldShowBottomButtons());
@@ -373,33 +370,22 @@ TEST_F(ImeMenuTrayTest, ShouldShowBottomButtons) {
 
 TEST_F(ImeMenuTrayTest, ShouldShowBottomButtonsSeperate) {
   FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
-  InputMethodManager* input_method_manager = InputMethodManager::Get();
-  EXPECT_TRUE(input_method_manager &&
-              input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
 
   // Sets emoji disabled.
-  input_method_manager->SetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_EMOJI, false);
-  EXPECT_FALSE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_EMOJI));
+  Shell::Get()->ime_controller()->SetExtraInputOptionsEnabledState(
+      true /* ui enabled */, false /* emoji input disabled */,
+      true /* hanwriting input enabled */, true /* voice input enabled */);
+
   EXPECT_TRUE(GetTray()->ShouldShowBottomButtons());
   EXPECT_FALSE(IsEmojiEnabled());
   EXPECT_TRUE(IsHandwritingEnabled());
   EXPECT_TRUE(IsVoiceEnabled());
 
   // Sets emoji enabled, but voice and handwriting disabled.
-  input_method_manager->SetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_EMOJI, true);
-  input_method_manager->SetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_VOICE, false);
-  input_method_manager->SetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_HANDWRITING, false);
-  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_EMOJI));
-  EXPECT_FALSE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_VOICE));
-  EXPECT_FALSE(input_method_manager->GetImeMenuFeatureEnabled(
-      InputMethodManager::FEATURE_HANDWRITING));
+  Shell::Get()->ime_controller()->SetExtraInputOptionsEnabledState(
+      true /* ui enabled */, true /* emoji input enabled */,
+      false /* hanwriting input disabled */, false /* voice input disabled */);
+
   EXPECT_TRUE(GetTray()->ShouldShowBottomButtons());
   EXPECT_TRUE(IsEmojiEnabled());
   EXPECT_FALSE(IsHandwritingEnabled());

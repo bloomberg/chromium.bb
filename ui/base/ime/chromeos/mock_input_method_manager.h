@@ -107,6 +107,7 @@ class UI_BASE_IME_EXPORT MockInputMethodManager : public InputMethodManager {
   bool IsEmojiHandwritingVoiceOnImeMenuEnabled() override;
   void SetImeMenuFeatureEnabled(ImeMenuFeature feature, bool enabled) override;
   bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const override;
+  void NotifyObserversImeExtraInputStateChange() override;
 
  private:
   uint32_t features_enabled_state_;

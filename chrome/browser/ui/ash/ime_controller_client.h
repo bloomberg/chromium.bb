@@ -64,6 +64,12 @@ class ImeControllerClient
   void OnCapsLockChanged(bool enabled) override;
   void OnLayoutChanging(const std::string& layout_name) override;
 
+  // chromeos::input_method::InputMethodManager::Observer
+  void OnExtraInputEnabledStateChange(bool is_extra_input_options_enabled,
+                                      bool is_emoji_enabled,
+                                      bool is_handwriting_enabled,
+                                      bool is_voice_enabled) override;
+
   void FlushMojoForTesting();
 
  private:
