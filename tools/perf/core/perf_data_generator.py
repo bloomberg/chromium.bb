@@ -126,8 +126,6 @@ def get_fyi_waterfall_config():
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
     'Android Compile': ['microdump_stackwalk'],
     'Android arm64 Compile': ['microdump_stackwalk'],
-    # crbug.com/758630. Test builder, will be removed.
-    'Linux Builder': ['telemetry_perf_tests_new'],
 }
 
 
