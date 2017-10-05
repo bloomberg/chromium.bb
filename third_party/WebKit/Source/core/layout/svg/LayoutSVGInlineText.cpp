@@ -27,7 +27,6 @@
 #include "core/css/FontSize.h"
 #include "core/css/StyleEngine.h"
 #include "core/editing/TextAffinity.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -203,9 +202,10 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   int offset = closest_distance_box->OffsetForPositionInFragment(
       *closest_distance_fragment,
       LayoutUnit(absolute_point.X() - closest_distance_position), true);
-  return CreatePositionWithAffinity(
-      offset + closest_distance_box->Start(),
-      offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::kDownstream);
+  return CreatePositionWithAffinity(offset + closest_distance_box->Start(),
+                                    offset > 0
+                                        ? TextAffinity::kUpstreamIfPossible
+                                        : TextAffinity::kDownstream);
 }
 
 namespace {

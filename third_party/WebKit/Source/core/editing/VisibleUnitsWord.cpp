@@ -155,7 +155,7 @@ Position EndOfWordPosition(const VisiblePosition& position, EWordSide side) {
 
 VisiblePosition EndOfWord(const VisiblePosition& position, EWordSide side) {
   return CreateVisiblePosition(EndOfWordPosition(position, side),
-                               VP_UPSTREAM_IF_POSSIBLE);
+                               TextAffinity::kUpstreamIfPossible);
 }
 
 PositionInFlatTree EndOfWordPosition(const VisiblePositionInFlatTree& position,
@@ -166,13 +166,14 @@ PositionInFlatTree EndOfWordPosition(const VisiblePositionInFlatTree& position,
 VisiblePositionInFlatTree EndOfWord(const VisiblePositionInFlatTree& position,
                                     EWordSide side) {
   return CreateVisiblePosition(EndOfWordPosition(position, side),
-                               VP_UPSTREAM_IF_POSSIBLE);
+                               TextAffinity::kUpstreamIfPossible);
 }
 
 VisiblePosition NextWordPosition(const VisiblePosition& c) {
   DCHECK(c.IsValid()) << c;
-  VisiblePosition next = CreateVisiblePosition(
-      NextBoundary(c, NextWordPositionBoundary), VP_UPSTREAM_IF_POSSIBLE);
+  VisiblePosition next =
+      CreateVisiblePosition(NextBoundary(c, NextWordPositionBoundary),
+                            TextAffinity::kUpstreamIfPossible);
   return HonorEditingBoundaryAtOrAfter(next, c.DeepEquivalent());
 }
 
