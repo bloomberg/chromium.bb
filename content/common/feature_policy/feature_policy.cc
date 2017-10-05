@@ -208,7 +208,7 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
                          ({{blink::WebFeaturePolicyFeature::kCamera,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {blink::WebFeaturePolicyFeature::kEme,
+                           {blink::WebFeaturePolicyFeature::kEncryptedMedia,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {blink::WebFeaturePolicyFeature::kFullscreen,
                             FeaturePolicy::FeatureDefault::EnableForSelf},

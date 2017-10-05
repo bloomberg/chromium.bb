@@ -42,7 +42,7 @@ ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                            blink::WebFeaturePolicyFeature::kEme)
+                            blink::WebFeaturePolicyFeature::kEncryptedMedia)
 #if defined(OS_CHROMEOS)
       ,
       weak_factory_(this)
