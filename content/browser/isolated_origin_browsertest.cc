@@ -359,11 +359,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, Cookies) {
 // Check that isolated origins won't be placed into processes for other sites
 // when over the process limit.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
-  // TODO(alexmos): https://crbug.com/765711: the test is flaky with
-  // --site-per-process.
-  if (AreAllSitesIsolatedForTesting())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -426,11 +421,13 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
 
   // Navigate iframe on the first tab to a non-isolated site.  This should swap
   // processes so that it does not reuse the isolated origin's process.
+  RenderFrameDeletedObserver deleted_observer(child->current_frame_host());
   NavigateIframeToURL(
       web_contents(), "test_iframe",
       embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
   EXPECT_EQ(foo_process, child->current_frame_host()->GetProcess());
   EXPECT_NE(isolated_foo_process, child->current_frame_host()->GetProcess());
+  deleted_observer.WaitUntilDeleted();
 
   // Navigate iframe back to isolated origin.  See that it reuses the
   // |new_shell| process.
