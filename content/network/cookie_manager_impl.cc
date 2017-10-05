@@ -36,10 +36,10 @@ class PredicateWrapper {
     // Ignore begin/end times; they're handled by method args.
     bool result = true;
     if (use_excluding_domains_)
-      result &= (excluding_domains_.count(cookie.Domain()) != 0);
+      result &= (excluding_domains_.count(cookie.Domain()) == 0);
 
     if (use_including_domains_)
-      result &= (including_domains_.count(cookie.Domain()) == 0);
+      result &= (including_domains_.count(cookie.Domain()) != 0);
 
     if (session_control_ !=
         mojom::CookieDeletionSessionControl::IGNORE_CONTROL) {

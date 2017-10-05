@@ -631,13 +631,11 @@ TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
 
   filter.excluding_domains = std::vector<std::string>();
   filter.excluding_domains->push_back("foo_host2");
-  EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
+  EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
-  ASSERT_EQ(2u, cookies.size());
-  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
-  EXPECT_EQ("A1", cookies[0].Name());
-  EXPECT_EQ("A3", cookies[1].Name());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ("A2", cookies[0].Name());
 }
 
 TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
@@ -669,13 +667,11 @@ TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
   filter.including_domains = std::vector<std::string>();
   filter.including_domains->push_back("foo_host1");
   filter.including_domains->push_back("foo_host3");
-  EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
+  EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
-  ASSERT_EQ(2u, cookies.size());
-  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
-  EXPECT_EQ("A1", cookies[0].Name());
-  EXPECT_EQ("A3", cookies[1].Name());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ("A2", cookies[0].Name());
 }
 
 TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
@@ -736,12 +732,12 @@ TEST_F(CookieManagerImplTest, DeleteByAll) {
 
   filter.created_after_time = now - base::TimeDelta::FromDays(4);
   filter.created_before_time = now - base::TimeDelta::FromDays(2);
-  filter.excluding_domains = std::vector<std::string>();
-  filter.excluding_domains->push_back("no.com");
-  filter.excluding_domains->push_back("nope.com");
   filter.including_domains = std::vector<std::string>();
   filter.including_domains->push_back("no.com");
-  filter.including_domains->push_back("yes.com");
+  filter.including_domains->push_back("nope.com");
+  filter.excluding_domains = std::vector<std::string>();
+  filter.excluding_domains->push_back("no.com");
+  filter.excluding_domains->push_back("yes.com");
   filter.session_control =
       mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
 
@@ -931,8 +927,8 @@ TEST_F(CookieManagerImplTest, Notification) {
   // a notification will be generated, and one for which a notification
   // will not be generated.
   mojom::CookieDeletionFilter filter;
-  filter.excluding_domains = std::vector<std::string>();
-  filter.excluding_domains->push_back(notification_url.host());
+  filter.including_domains = std::vector<std::string>();
+  filter.including_domains->push_back(notification_url.host());
   EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
 
   // The notification may already have arrived, or it may arrive in the future.
