@@ -6,6 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -512,12 +513,20 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 // Test to load a page that contains a redirect window, then does multiple back
 // and forth navigations.
 - (void)testRedirectWindow {
+  // TODO(crbug.com/772128): This test is very flaky on iOS 11 iPads.
+  if (IsIPadIdiom() && base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 iPad.");
+  }
   [self verifyBackAndForwardAfterRedirect:"redirectWindow"];
 }
 
 // Test to load a page that contains a redirect refresh, then does multiple back
 // and forth navigations.
 - (void)testRedirectRefresh {
+  // TODO(crbug.com/772128): This test is very flaky on iOS 11 iPads.
+  if (IsIPadIdiom() && base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 iPad.");
+  }
   [self verifyBackAndForwardAfterRedirect:"redirectRefresh"];
 }
 
