@@ -8,8 +8,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "components/arc/arc_prefs.h"
-#include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_client.h"
@@ -26,14 +24,15 @@ ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
                                            syncer::GROUP_UI,
                                            base::ThreadTaskRunnerHandle::Get()),
       profile_(profile) {
-  pref_registrar_.Init(profile_->GetPrefs());
-  pref_registrar_.Add(
-      arc::prefs::kArcEnabled,
-      base::Bind(&ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged,
-                 base::Unretained(this)));
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (arc_session_manager)
+    arc_session_manager->AddObserver(this);
 }
 
 ArcPackageSyncDataTypeController::~ArcPackageSyncDataTypeController() {
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (arc_session_manager)
+    arc_session_manager->RemoveObserver(this);
 }
 
 bool ArcPackageSyncDataTypeController::ReadyForStart() const {
@@ -72,21 +71,25 @@ void ArcPackageSyncDataTypeController::OnPackageListInitialRefreshed() {
   OnModelLoaded();
 }
 
-void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {
+void ArcPackageSyncDataTypeController::OnArcPlayStoreEnabledChanged(
+    bool enabled) {
   DCHECK(CalledOnValidThread());
 
-  if (!ReadyForStart()) {
-    // If enable ARC in settings is turned off then generate an unrecoverable
-    // error.
-    if (state() != NOT_RUNNING && state() != STOPPING) {
-      syncer::SyncError error(
-          FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-          "ARC package sync is now disabled because user disables ARC.",
-          type());
-      CreateErrorHandler()->OnUnrecoverableError(error);
-    }
+  // Delay enabling DTC until ARC successfully signed in.
+  if (ReadyForStart())
     return;
+
+  // If enable ARC in settings is turned off then generate an unrecoverable
+  // error.
+  if (state() != NOT_RUNNING && state() != STOPPING) {
+    syncer::SyncError error(
+        FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
+        "ARC package sync is now disabled because user disables ARC.", type());
+    CreateErrorHandler()->OnUnrecoverableError(error);
   }
+}
+
+void ArcPackageSyncDataTypeController::OnArcInitialStart() {
   EnableDataType();
 }
 
