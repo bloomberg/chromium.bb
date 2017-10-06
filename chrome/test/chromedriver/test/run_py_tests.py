@@ -10,6 +10,7 @@ import json
 import math
 import optparse
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -2102,11 +2103,13 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertEqual(360, driver.ExecuteScript('return window.screen.width'))
     self.assertEqual(640, driver.ExecuteScript('return window.screen.height'))
     body_tag = driver.FindElement('tag name', 'body')
-    self.assertEqual(
-        'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Mobile '
-        'Safari/537.36',
-        body_tag.GetText())
+    self.assertRegexpMatches(
+        body_tag.GetText(),
+        '^' +
+        re.escape('Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) '
+                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/') +
+        r'\d+\.\d+\.\d+\.\d+' +
+        re.escape(' Mobile Safari/537.36') + '$')
 
   def testSendKeysToElement(self):
     driver = self.CreateDriver(
