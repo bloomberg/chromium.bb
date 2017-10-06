@@ -5,17 +5,15 @@
 #ifndef CallbackFunctionBase_h
 #define CallbackFunctionBase_h
 
+#include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class ScriptState;
-
-// |CallbackFunctionBase| is a base class for generated callback function
-// classes (e.g |V8FrameRequestCallback|) and has a reference to a V8 callback
-// function.
+// |CallbackFunctionBase| is a base class for callback function classes (e.g
+// |V8FrameRequestCallback|) and has a reference to a V8 callback function.
 class PLATFORM_EXPORT CallbackFunctionBase
     : public GarbageCollectedFinalized<CallbackFunctionBase>,
       public TraceWrapperBase {
@@ -28,6 +26,8 @@ class PLATFORM_EXPORT CallbackFunctionBase
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return callback_.NewLocal(isolate);
   }
+
+  v8::Isolate* GetIsolate() const { return script_state_->GetIsolate(); }
 
  protected:
   CallbackFunctionBase(ScriptState*, v8::Local<v8::Function>);

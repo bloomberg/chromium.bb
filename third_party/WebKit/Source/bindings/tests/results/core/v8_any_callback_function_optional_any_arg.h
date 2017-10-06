@@ -22,8 +22,6 @@
 
 namespace blink {
 
-class ScriptState;
-
 class CORE_EXPORT V8AnyCallbackFunctionOptionalAnyArg final : public CallbackFunctionBase {
  public:
   static V8AnyCallbackFunctionOptionalAnyArg* Create(ScriptState*, v8::Local<v8::Value> callback);

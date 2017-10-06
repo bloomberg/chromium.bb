@@ -22,7 +22,6 @@
 
 namespace blink {
 
-class ScriptState;
 class TestInterfaceImplementation;
 
 class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public CallbackFunctionBase {

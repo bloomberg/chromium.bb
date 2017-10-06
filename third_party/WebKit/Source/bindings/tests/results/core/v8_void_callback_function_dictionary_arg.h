@@ -22,7 +22,6 @@
 
 namespace blink {
 
-class ScriptState;
 class TestDictionary;
 
 class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public CallbackFunctionBase {
