@@ -60,13 +60,12 @@ class ArcImeService : public KeyedService,
     virtual bool IsArcWindow(const aura::Window* window) const = 0;
     virtual void RegisterFocusObserver() = 0;
     virtual void UnregisterFocusObserver() = 0;
+    virtual ui::InputMethod* GetInputMethodForWindow(
+        aura::Window* window) const = 0;
   };
 
   // Injects the custom IPC bridge object for testing purpose only.
   void SetImeBridgeForTesting(std::unique_ptr<ArcImeBridge> test_ime_bridge);
-
-  // Injects the custom IME for testing purpose only.
-  void SetInputMethodForTesting(ui::InputMethod* test_input_method);
 
   // Injects the custom delegate for ARC windows, for testing purpose only.
   void SetArcWindowDelegateForTesting(
@@ -137,6 +136,12 @@ class ArcImeService : public KeyedService,
  private:
   ui::InputMethod* GetInputMethod();
 
+  // Detaches from the IME associated with the |old_window|, and attaches to the
+  // IME associated with |new_window|. Called when the focus status of ARC
+  // windows has changed, or when an ARC window moved to a different display.
+  // Do nothing if both windows are associated with the same IME.
+  void ReattachInputMethod(aura::Window* old_window, aura::Window* new_window);
+
   void InvalidateSurroundingTextAndSelectionRange();
 
   std::unique_ptr<ArcImeBridge> ime_bridge_;
@@ -152,7 +157,6 @@ class ArcImeService : public KeyedService,
 
   keyboard::KeyboardController* keyboard_controller_;
 
-  ui::InputMethod* test_input_method_;
   bool is_focus_observer_installed_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcImeService);
