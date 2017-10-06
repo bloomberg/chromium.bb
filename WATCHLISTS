@@ -1290,6 +1290,9 @@
                   'tools/polymer|'\
                   'ui/webui/resources/polymer_resources.grdp',
     },
+    'popup_blocker': {
+      'filepath': 'chrome/browser/ui/blocked_content'
+    },
     'precache': {
       'filepath': '[pP]recache'
     },
@@ -2164,6 +2167,7 @@
                     'timloh+watch@chromium.org'],
     'plugin': ['jam@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
+    'popup_blocker': ['csharrison+watch-popups@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org',
