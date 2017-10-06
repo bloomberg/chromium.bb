@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 
+#include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -48,8 +49,13 @@ void WarmupURLFetcher::FetchWarmupURL() {
               "is enabled by installing the Data Saver extension."
             policy_exception_justification: "Not implemented."
           })");
-  fetcher_ = net::URLFetcher::Create(
-      params::GetWarmupURL(), net::URLFetcher::GET, this, traffic_annotation);
+
+  GURL warmup_url_with_query_params;
+  GetWarmupURLWithQueryParam(&warmup_url_with_query_params);
+
+  fetcher_ =
+      net::URLFetcher::Create(warmup_url_with_query_params,
+                              net::URLFetcher::GET, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(),
       data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
@@ -64,6 +70,21 @@ void WarmupURLFetcher::FetchWarmupURL() {
   fetcher_->SetAutomaticallyRetryOn5xx(false);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
   fetcher_->Start();
+}
+
+void WarmupURLFetcher::GetWarmupURLWithQueryParam(
+    GURL* warmup_url_with_query_params) const {
+  // Set the query param to a random string to prevent intermediate middleboxes
+  // from returning cached content.
+  const std::string query = "q=" + base::GenerateGUID();
+  GURL::Replacements replacements;
+  replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+
+  *warmup_url_with_query_params =
+      params::GetWarmupURL().ReplaceComponents(replacements);
+
+  DCHECK(warmup_url_with_query_params->is_valid() &&
+         warmup_url_with_query_params->has_query());
 }
 
 void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
