@@ -16474,6 +16474,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2162" label="AnimationSetPlaybackRateCompensatorySeek"/>
   <int value="2163" label="DeepCombinatorInStaticProfile"/>
   <int value="2164" label="PseudoShadowInStaticProfile"/>
+  <int value="2165" label="SchemeBypassesCSP"/>
+  <int value="2166" label="InnerSchemeBypassesCSP"/>
 </enum>
 
 <enum name="FeedbackSource">
