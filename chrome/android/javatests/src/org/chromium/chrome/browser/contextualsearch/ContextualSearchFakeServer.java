@@ -355,8 +355,9 @@ class ContextualSearchFakeServer
      */
     public class OverlayPanelContentWrapper extends OverlayPanelContent {
         OverlayPanelContentWrapper(OverlayContentDelegate contentDelegate,
-                OverlayContentProgressObserver progressObserver, ChromeActivity activity) {
-            super(contentDelegate, progressObserver, activity);
+                OverlayContentProgressObserver progressObserver, ChromeActivity activity,
+                float barHeight) {
+            super(contentDelegate, progressObserver, activity, barHeight);
         }
 
         @Override
@@ -466,7 +467,8 @@ class ContextualSearchFakeServer
 
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
-        return new OverlayPanelContentWrapper(mContentDelegate, mProgressObserver, mActivity);
+        return new OverlayPanelContentWrapper(mContentDelegate, mProgressObserver, mActivity,
+                mManagerTest.getPanel().getBarHeight());
     }
 
     /**
