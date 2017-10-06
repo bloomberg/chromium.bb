@@ -28,7 +28,7 @@ bool MessageInfoToCastMessage(const api::cast_channel::MessageInfo& message,
   // Determine the type of the base::Value and set the message payload
   // appropriately.
   std::string data;
-  switch (message.data->GetType()) {
+  switch (message.data->type()) {
     // JS string
     case base::Value::Type::STRING:
       if (message.data->GetAsString(&data)) {

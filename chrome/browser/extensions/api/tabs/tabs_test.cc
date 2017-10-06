@@ -1189,7 +1189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
   int duplicate_tab_window_id = GetTabWindowId(duplicate_result.get());
   int duplicate_tab_index =
       api_test_utils::GetInteger(duplicate_result.get(), "index");
-  EXPECT_EQ(base::Value::Type::DICTIONARY, duplicate_result->GetType());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, duplicate_result->type());
   // Duplicate tab id should be different from the original tab id.
   EXPECT_NE(tab_id, duplicate_tab_id);
   EXPECT_EQ(window_id, duplicate_tab_window_id);
@@ -1226,7 +1226,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   int duplicate_tab_window_id = GetTabWindowId(duplicate_result.get());
   int duplicate_tab_index =
       api_test_utils::GetInteger(duplicate_result.get(), "index");
-  EXPECT_EQ(base::Value::Type::DICTIONARY, duplicate_result->GetType());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, duplicate_result->type());
   // Duplicate tab id should be different from the original tab id.
   EXPECT_NE(tab_id, duplicate_tab_id);
   EXPECT_EQ(window_id, duplicate_tab_window_id);

@@ -197,7 +197,7 @@ bool ExecuteScriptWithUserGestureControl(RenderFrameHost* frame,
     return false;
   }
 
-  DCHECK_EQ(base::Value::Type::STRING, value->GetType());
+  DCHECK_EQ(base::Value::Type::STRING, value->type());
   std::string actual_response;
   if (value->GetAsString(&actual_response))
     DCHECK_EQ(expected_response, actual_response);

@@ -225,7 +225,7 @@ base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
     return nullptr;
   }
 
-  if (value->GetType() != base::Value::Type::DICTIONARY) {
+  if (value->type() != base::Value::Type::DICTIONARY) {
     // JSONReader::JSON_PARSE_ERROR_COUNT is used for the case where the JSON
     // value has the wrong type.
     RecordBuiltInPluginListError(PluginListError::SCHEMA_ERROR);

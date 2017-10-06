@@ -148,7 +148,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
   if (!args_->Get(0, &input))
     return BadMessage();
 
-  switch (input->GetType()) {
+  switch (input->type()) {
     case base::Value::Type::NONE:
       return UseReadResult(storage->Get());
 
@@ -192,7 +192,7 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
 
   size_t bytes_in_use = 0;
 
-  switch (input->GetType()) {
+  switch (input->type()) {
     case base::Value::Type::NONE:
       bytes_in_use = storage->GetBytesInUse();
       break;
@@ -239,7 +239,7 @@ StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
   if (!args_->Get(0, &input))
     return BadMessage();
 
-  switch (input->GetType()) {
+  switch (input->type()) {
     case base::Value::Type::STRING: {
       std::string as_string;
       input->GetAsString(&as_string);

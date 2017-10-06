@@ -264,7 +264,7 @@ DictionaryValue* TraceEventTestFixture::FindMatchingTraceEntry(
   for (size_t i = 0; i < trace_parsed_count; i++) {
     Value* value = NULL;
     trace_parsed_.Get(i, &value);
-    if (!value || value->GetType() != Value::Type::DICTIONARY)
+    if (!value || value->type() != Value::Type::DICTIONARY)
       continue;
     DictionaryValue* dict = static_cast<DictionaryValue*>(value);
 
@@ -282,7 +282,7 @@ void TraceEventTestFixture::DropTracedMetadataRecords() {
   for (size_t i = 0; i < old_trace_parsed_size; i++) {
     Value* value = nullptr;
     old_trace_parsed->Get(i, &value);
-    if (!value || value->GetType() != Value::Type::DICTIONARY) {
+    if (!value || value->type() != Value::Type::DICTIONARY) {
       trace_parsed_.Append(value->CreateDeepCopy());
       continue;
     }
@@ -371,7 +371,7 @@ const DictionaryValue* FindTraceEntry(
          match_after_this_item = NULL;
       continue;
     }
-    if (!value || value->GetType() != Value::Type::DICTIONARY)
+    if (!value || value->type() != Value::Type::DICTIONARY)
       continue;
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
 
@@ -389,7 +389,7 @@ std::vector<const DictionaryValue*> FindTraceEntries(
   for (size_t i = 0; i < trace_parsed_count; i++) {
     const Value* value = NULL;
     trace_parsed.Get(i, &value);
-    if (!value || value->GetType() != Value::Type::DICTIONARY)
+    if (!value || value->type() != Value::Type::DICTIONARY)
       continue;
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
 
@@ -1139,7 +1139,7 @@ void ValidateInstantEventPresentOnEveryThread(const ListValue& trace_parsed,
   for (size_t i = 0; i < trace_parsed_count; i++) {
     const Value* value = NULL;
     trace_parsed.Get(i, &value);
-    if (!value || value->GetType() != Value::Type::DICTIONARY)
+    if (!value || value->type() != Value::Type::DICTIONARY)
       continue;
     const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
     std::string name;

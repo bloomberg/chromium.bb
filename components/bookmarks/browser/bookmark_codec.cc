@@ -177,7 +177,7 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
 
   const base::Value* checksum_value;
   if (d_value->Get(kChecksumKey, &checksum_value)) {
-    if (checksum_value->GetType() != base::Value::Type::STRING)
+    if (checksum_value->type() != base::Value::Type::STRING)
       return false;
     if (!checksum_value->GetAsString(&stored_checksum_))
       return false;
@@ -333,7 +333,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
     if (!value.Get(kChildrenKey, &child_values))
       return false;
 
-    if (child_values->GetType() != base::Value::Type::LIST)
+    if (child_values->type() != base::Value::Type::LIST)
       return false;
 
     if (!node) {

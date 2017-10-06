@@ -60,7 +60,7 @@ void OopJsonSanitizer::OnParseSuccess(std::unique_ptr<base::Value> value) {
 
   // A valid JSON document may only have a dictionary or list as its top-level
   // type, but the JSON parser also accepts other types, so we filter them out.
-  base::Value::Type type = value->GetType();
+  base::Value::Type type = value->type();
   if (type != base::Value::Type::DICTIONARY &&
       type != base::Value::Type::LIST) {
     error_callback_.Run("Invalid top-level type");

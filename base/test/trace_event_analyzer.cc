@@ -34,7 +34,7 @@ TraceEvent::~TraceEvent() {
 TraceEvent& TraceEvent::operator=(TraceEvent&& rhs) = default;
 
 bool TraceEvent::SetFromJSON(const base::Value* event_value) {
-  if (event_value->GetType() != base::Value::Type::DICTIONARY) {
+  if (event_value->type() != base::Value::Type::DICTIONARY) {
     LOG(ERROR) << "Value must be Type::DICTIONARY";
     return false;
   }

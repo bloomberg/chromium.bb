@@ -28,7 +28,7 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   ASSERT_TRUE(pref);
   const base::Value* value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(base::Value::Type::BOOLEAN, value->GetType());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, value->type());
   bool actual_bool_value = true;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_FALSE(actual_bool_value);
@@ -43,7 +43,7 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   ASSERT_TRUE(pref);
   value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(base::Value::Type::BOOLEAN, value->GetType());
+  EXPECT_EQ(base::Value::Type::BOOLEAN, value->type());
   actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_TRUE(actual_bool_value);

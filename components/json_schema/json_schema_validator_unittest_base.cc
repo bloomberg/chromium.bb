@@ -50,7 +50,7 @@ base::Value* LoadValue(const std::string& filename, base::Value::Type type) {
   if (!result.get())
     return NULL;
   if (!result->IsType(type)) {
-    ADD_FAILURE() << "Expected type " << type << ", got: " << result->GetType();
+    ADD_FAILURE() << "Expected type " << type << ", got: " << result->type();
     return NULL;
   }
   return result.release();

@@ -505,7 +505,7 @@ ModelType ModelTypeFromValue(const base::Value& value) {
     CHECK(value.GetAsInteger(&result));
     return ModelTypeFromInt(result);
   } else {
-    NOTREACHED() << "Unsupported value type: " << value.GetType();
+    NOTREACHED() << "Unsupported value type: " << value.type();
     return UNSPECIFIED;
   }
 }

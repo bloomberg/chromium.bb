@@ -411,7 +411,7 @@ class WebstoreInlineInstallerRedirectTest
     if (request.content.find("redirect_chain") != std::string::npos) {
       std::unique_ptr<base::Value> contents =
           base::JSONReader::Read(request.content);
-      ASSERT_EQ(base::Value::Type::DICTIONARY, contents->GetType());
+      ASSERT_EQ(base::Value::Type::DICTIONARY, contents->type());
       cws_request_json_data_ = base::DictionaryValue::From(std::move(contents));
     }
   }

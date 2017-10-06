@@ -239,7 +239,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     std::unique_ptr<base::Value> value_requests =
         base::JSONReader::Read(json_requests);
 
-    EXPECT_EQ(base::Value::Type::LIST, value_requests->GetType());
+    EXPECT_EQ(base::Value::Type::LIST, value_requests->type());
 
     base::ListValue* list_request =
         static_cast<base::ListValue*>(value_requests.get());
@@ -439,7 +439,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                                int update_number,
                                int stats_number) {
     EXPECT_NE((base::Value*)NULL, dump);
-    EXPECT_EQ(base::Value::Type::DICTIONARY, dump->GetType());
+    EXPECT_EQ(base::Value::Type::DICTIONARY, dump->type());
 
     base::DictionaryValue* dict_dump =
         static_cast<base::DictionaryValue*>(dump);
@@ -449,7 +449,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     for (; !it.IsAtEnd(); it.Advance()) {
       base::Value* value = NULL;
       dict_dump->Get(it.key(), &value);
-      EXPECT_EQ(base::Value::Type::DICTIONARY, value->GetType());
+      EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
       base::DictionaryValue* pc_dump =
           static_cast<base::DictionaryValue*>(value);
       EXPECT_TRUE(pc_dump->HasKey("updateLog"));
@@ -457,13 +457,13 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
 
       // Verifies the number of updates.
       pc_dump->Get("updateLog", &value);
-      EXPECT_EQ(base::Value::Type::LIST, value->GetType());
+      EXPECT_EQ(base::Value::Type::LIST, value->type());
       base::ListValue* list = static_cast<base::ListValue*>(value);
       EXPECT_EQ((size_t) update_number, list->GetSize());
 
       // Verifies the number of stats tables.
       pc_dump->Get("stats", &value);
-      EXPECT_EQ(base::Value::Type::DICTIONARY, value->GetType());
+      EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
       base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(value);
       EXPECT_EQ((size_t) stats_number, dict->size());
     }
@@ -477,7 +477,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                        const string& report_id,
                        const StatsUnit& stats) {
     EXPECT_NE((base::Value*)NULL, dump);
-    EXPECT_EQ(base::Value::Type::DICTIONARY, dump->GetType());
+    EXPECT_EQ(base::Value::Type::DICTIONARY, dump->type());
 
     base::DictionaryValue* dict_dump =
         static_cast<base::DictionaryValue*>(dump);
@@ -488,7 +488,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     // Verifies there is one data series per stats name.
     value = NULL;
     pc_dump->Get("stats", &value);
-    EXPECT_EQ(base::Value::Type::DICTIONARY, value->GetType());
+    EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
 
     base::DictionaryValue* dataSeries =
         static_cast<base::DictionaryValue*>(value);

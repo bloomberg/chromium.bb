@@ -123,7 +123,7 @@ TEST_F(TraceEventAnalyzerTest, TraceEvent) {
 
   std::unique_ptr<base::Value> arg;
   EXPECT_TRUE(event.GetArgAsValue("dict", &arg));
-  EXPECT_EQ(base::Value::Type::DICTIONARY, arg->GetType());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, arg->type());
 }
 
 TEST_F(TraceEventAnalyzerTest, QueryEventMember) {

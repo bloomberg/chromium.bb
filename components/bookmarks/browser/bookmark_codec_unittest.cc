@@ -114,33 +114,33 @@ class BookmarkCodecTest : public testing::Test {
   void GetBookmarksBarChildValue(base::Value* value,
                                  size_t index,
                                  base::DictionaryValue** result_value) {
-    ASSERT_EQ(base::Value::Type::DICTIONARY, value->GetType());
+    ASSERT_EQ(base::Value::Type::DICTIONARY, value->type());
 
     base::DictionaryValue* d_value = nullptr;
     value->GetAsDictionary(&d_value);
     base::Value* roots;
     ASSERT_TRUE(d_value->Get(BookmarkCodec::kRootsKey, &roots));
-    ASSERT_EQ(base::Value::Type::DICTIONARY, roots->GetType());
+    ASSERT_EQ(base::Value::Type::DICTIONARY, roots->type());
 
     base::DictionaryValue* roots_d_value = nullptr;
     roots->GetAsDictionary(&roots_d_value);
     base::Value* bb_value;
     ASSERT_TRUE(
         roots_d_value->Get(BookmarkCodec::kRootFolderNameKey, &bb_value));
-    ASSERT_EQ(base::Value::Type::DICTIONARY, bb_value->GetType());
+    ASSERT_EQ(base::Value::Type::DICTIONARY, bb_value->type());
 
     base::DictionaryValue* bb_d_value = nullptr;
     bb_value->GetAsDictionary(&bb_d_value);
     base::Value* bb_children_value;
     ASSERT_TRUE(
         bb_d_value->Get(BookmarkCodec::kChildrenKey, &bb_children_value));
-    ASSERT_EQ(base::Value::Type::LIST, bb_children_value->GetType());
+    ASSERT_EQ(base::Value::Type::LIST, bb_children_value->type());
 
     base::ListValue* bb_children_l_value = nullptr;
     bb_children_value->GetAsList(&bb_children_l_value);
     base::Value* child_value;
     ASSERT_TRUE(bb_children_l_value->Get(index, &child_value));
-    ASSERT_EQ(base::Value::Type::DICTIONARY, child_value->GetType());
+    ASSERT_EQ(base::Value::Type::DICTIONARY, child_value->type());
 
     child_value->GetAsDictionary(result_value);
   }

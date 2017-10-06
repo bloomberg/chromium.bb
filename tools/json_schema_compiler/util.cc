@@ -20,7 +20,7 @@ bool ReportError(const base::Value& from,
     error->append(base::ASCIIToUTF16("; "));
   error->append(base::ASCIIToUTF16(base::StringPrintf(
       "expected %s, got %s", base::Value::GetTypeName(expected),
-      base::Value::GetTypeName(from.GetType()))));
+      base::Value::GetTypeName(from.type()))));
   return false;  // Always false on purpose.
 }
 

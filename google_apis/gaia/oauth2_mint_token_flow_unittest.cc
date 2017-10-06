@@ -180,7 +180,7 @@ class OAuth2MintTokenFlowTest : public testing::Test {
   static base::DictionaryValue* ParseJson(const std::string& str) {
     std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
     EXPECT_TRUE(value.get());
-    EXPECT_EQ(base::Value::Type::DICTIONARY, value->GetType());
+    EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
     return static_cast<base::DictionaryValue*>(value.release());
   }
 

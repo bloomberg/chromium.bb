@@ -386,7 +386,7 @@ bool ParseServerResponse(const std::string& response_body,
 
   if (!response_value->IsType(base::Value::Type::DICTIONARY)) {
     VLOG(1) << "ParseServerResponse() : Unexpected response type "
-            << response_value->GetType();
+            << response_value->type();
     return false;
   }
   const base::DictionaryValue* response_object =
@@ -405,7 +405,7 @@ bool ParseServerResponse(const std::string& response_body,
   if (!location_value->IsType(base::Value::Type::DICTIONARY)) {
     if (!location_value->IsType(base::Value::Type::NONE)) {
       VLOG(1) << "ParseServerResponse() : Unexpected location type "
-              << location_value->GetType();
+              << location_value->type();
       // If the network provider was unable to provide a position fix, it should
       // return a HTTP 200, with "location" : null. Otherwise it's an error.
       return false;

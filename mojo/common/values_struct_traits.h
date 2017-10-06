@@ -128,7 +128,7 @@ struct StructTraits<common::mojom::NullValueDataView, void*> {
 template <>
 struct UnionTraits<common::mojom::ValueDataView, base::Value> {
   static common::mojom::ValueDataView::Tag GetTag(const base::Value& data) {
-    switch (data.GetType()) {
+    switch (data.type()) {
       case base::Value::Type::NONE:
         return common::mojom::ValueDataView::Tag::NULL_VALUE;
       case base::Value::Type::BOOLEAN:

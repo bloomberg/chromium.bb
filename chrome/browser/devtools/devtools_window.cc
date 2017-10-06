@@ -1283,7 +1283,7 @@ void DevToolsWindow::RenderProcessGone(bool crashed) {
 
 void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(cert_chain);
-  if (!value || value->GetType() != base::Value::Type::LIST) {
+  if (!value || value->type() != base::Value::Type::LIST) {
     NOTREACHED();
     return;
   }
@@ -1293,7 +1293,7 @@ void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
   std::vector<std::string> decoded;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::Value* item;
-    if (!list->Get(i, &item) || item->GetType() != base::Value::Type::STRING) {
+    if (!list->Get(i, &item) || item->type() != base::Value::Type::STRING) {
       NOTREACHED();
       return;
     }

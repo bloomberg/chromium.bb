@@ -126,7 +126,7 @@ bool BackgroundInfo::LoadBackgroundScripts(const Extension* extension,
     return true;
 
   CHECK(background_scripts_value);
-  if (background_scripts_value->GetType() != base::Value::Type::LIST) {
+  if (background_scripts_value->type() != base::Value::Type::LIST) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundScripts);
     return false;
   }

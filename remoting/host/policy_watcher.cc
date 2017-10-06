@@ -62,7 +62,7 @@ std::unique_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
       continue;
     }
 
-    CHECK(value->IsType(i.value().GetType()));
+    CHECK(value->IsType(i.value().type()));
     to->Set(i.key(), value->CreateDeepCopy());
   }
 

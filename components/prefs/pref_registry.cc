@@ -46,7 +46,7 @@ void PrefRegistry::SetDefaultPrefValue(const std::string& pref_name,
   const base::Value* current_value = NULL;
   DCHECK(defaults_->GetValue(pref_name, &current_value))
       << "Setting default for unregistered pref: " << pref_name;
-  DCHECK(value->IsType(current_value->GetType()))
+  DCHECK(value->IsType(current_value->type()))
       << "Wrong type for new default: " << pref_name;
 
   defaults_->ReplaceDefaultValue(pref_name, base::WrapUnique(value));
@@ -65,7 +65,7 @@ void PrefRegistry::RegisterPreference(
     const std::string& path,
     std::unique_ptr<base::Value> default_value,
     uint32_t flags) {
-  base::Value::Type orig_type = default_value->GetType();
+  base::Value::Type orig_type = default_value->type();
   DCHECK(orig_type != base::Value::Type::NONE &&
          orig_type != base::Value::Type::BINARY) <<
          "invalid preference type: " << orig_type;

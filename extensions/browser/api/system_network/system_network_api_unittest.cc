@@ -30,7 +30,7 @@ TEST_F(SystemNetworkApiUnitTest, GetNetworkInterfaces) {
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       socket_function.get(), "[]", browser_context()));
-  ASSERT_EQ(base::Value::Type::LIST, result->GetType());
+  ASSERT_EQ(base::Value::Type::LIST, result->type());
 
   // All we can confirm is that we have at least one address, but not what it
   // is.
