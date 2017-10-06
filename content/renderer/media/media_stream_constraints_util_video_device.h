@@ -106,7 +106,10 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
 // documentation.
 VideoCaptureSettings CONTENT_EXPORT SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const blink::WebMediaConstraints& constraints);
+    const blink::WebMediaConstraints& constraints,
+    int default_width,
+    int default_height,
+    double default_frame_rate);
 
 }  // namespace content
 

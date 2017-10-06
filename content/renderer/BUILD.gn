@@ -578,6 +578,8 @@ target(link_target_type, "renderer") {
       "image_capture/image_capture_frame_grabber.h",
       "media/aec_dump_message_filter.cc",
       "media/aec_dump_message_filter.h",
+      "media/apply_constraints_processor.cc",
+      "media/apply_constraints_processor.h",
       "media/audio_repetition_detector.cc",
       "media/audio_repetition_detector.h",
       "media/external_media_stream_audio_source.cc",

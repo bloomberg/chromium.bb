@@ -15,7 +15,9 @@
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/media/apply_constraints_processor.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -84,6 +86,9 @@ UserMediaClientImpl::UserMediaClientImpl(
     std::unique_ptr<UserMediaProcessor> user_media_processor)
     : RenderFrameObserver(render_frame),
       user_media_processor_(std::move(user_media_processor)),
+      apply_constraints_processor_(new ApplyConstraintsProcessor(
+          base::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
+                              base::Unretained(this)))),
       weak_factory_(this) {}
 
 // base::Unretained(this) is safe here because |this| owns
@@ -187,11 +192,10 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
                        base::Unretained(this)));
   } else {
     DCHECK(current_request.IsApplyConstraints());
-    blink::WebApplyConstraintsRequest request =
-        current_request.apply_constraints_request();
-    request.RequestFailed(
-        blink::WebString(),
-        "applyConstraints not supported for this type of track");
+    apply_constraints_processor_->ProcessRequest(
+        current_request.apply_constraints_request(),
+        base::BindOnce(&UserMediaClientImpl::CurrentRequestCompleted,
+                       base::Unretained(this)));
   }
 }
 

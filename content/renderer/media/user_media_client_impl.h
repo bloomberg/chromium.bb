@@ -32,6 +32,7 @@ class TaskRunner;
 
 namespace content {
 
+class ApplyConstraintsProcessor;
 class MediaStreamDispatcher;
 class PeerConnectionDependencyFactory;
 
@@ -134,6 +135,9 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
 
   // |user_media_processor_| is a unique_ptr for testing purposes.
   std::unique_ptr<UserMediaProcessor> user_media_processor_;
+  // |user_media_processor_| is a unique_ptr in order to avoid compilation
+  // problems in builds that do not include WebRTC.
+  std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;
 
   ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 

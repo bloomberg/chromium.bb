@@ -491,7 +491,10 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
   base::PostTaskAndReplyWithResult(
       worker_task_runner_.get(), FROM_HERE,
       base::Bind(&SelectSettingsVideoDeviceCapture, std::move(capabilities),
-                 web_request.VideoConstraints()),
+                 web_request.VideoConstraints(),
+                 MediaStreamVideoSource::kDefaultWidth,
+                 MediaStreamVideoSource::kDefaultHeight,
+                 MediaStreamVideoSource::kDefaultFrameRate),
       base::Bind(&UserMediaProcessor::FinalizeSelectVideoDeviceSettings,
                  weak_factory_.GetWeakPtr(), web_request));
 }

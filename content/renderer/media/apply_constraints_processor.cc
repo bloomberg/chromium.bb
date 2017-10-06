@@ -1,0 +1,344 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/renderer/media/apply_constraints_processor.h"
+
+#include <utility>
+
+#include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/location.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "content/renderer/media/media_stream_constraints_util_video_device.h"
+#include "content/renderer/media/media_stream_source.h"
+#include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/media_stream_video_track.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+
+namespace content {
+namespace {
+
+::mojom::FacingMode GetMojoFacingMode(
+    const blink::WebMediaStreamTrack::FacingMode facing_mode) {
+  switch (facing_mode) {
+    case blink::WebMediaStreamTrack::FacingMode::kUser:
+      return ::mojom::FacingMode::USER;
+    case blink::WebMediaStreamTrack::FacingMode::kEnvironment:
+      return ::mojom::FacingMode::ENVIRONMENT;
+    case blink::WebMediaStreamTrack::FacingMode::kLeft:
+      return ::mojom::FacingMode::LEFT;
+    case blink::WebMediaStreamTrack::FacingMode::kRight:
+      return ::mojom::FacingMode::RIGHT;
+    case blink::WebMediaStreamTrack::FacingMode::kNone:
+      return ::mojom::FacingMode::NONE;
+  }
+  NOTREACHED();
+  return ::mojom::FacingMode::NONE;
+}
+
+void RequestFailed(blink::WebApplyConstraintsRequest request,
+                   const blink::WebString& constraint,
+                   const blink::WebString& message) {
+  request.RequestFailed(constraint, message);
+}
+
+void RequestSucceeded(blink::WebApplyConstraintsRequest request) {
+  request.RequestSucceeded();
+}
+
+}  // namespace
+
+ApplyConstraintsProcessor::ApplyConstraintsProcessor(
+    MediaDevicesDispatcherCallback media_devices_dispatcher_cb)
+    : media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
+      weak_factory_(this) {}
+
+ApplyConstraintsProcessor::~ApplyConstraintsProcessor() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void ApplyConstraintsProcessor::ProcessRequest(
+    const blink::WebApplyConstraintsRequest& request,
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!request_completed_cb_);
+  DCHECK(current_request_.IsNull());
+  DCHECK(!request.Track().IsNull());
+  if (request.Track().Source().IsNull()) {
+    CannotApplyConstraints(
+        "Track has no source. ApplyConstraints not possible.");
+    return;
+  }
+  request_completed_cb_ = std::move(callback);
+  current_request_ = request;
+  if (current_request_.Track().Source().GetType() ==
+      blink::WebMediaStreamSource::kTypeVideo) {
+    ProcessVideoRequest();
+  } else {
+    DCHECK_EQ(current_request_.Track().Source().GetType(),
+              blink::WebMediaStreamSource::kTypeAudio);
+    // TODO(guidou): Implement applyConstraints() for audio tracks.
+    // http://crbug.com/763320
+    CannotApplyConstraints("applyConstraints not supported for audio tracks");
+  }
+}
+
+void ApplyConstraintsProcessor::ProcessVideoRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!current_request_.IsNull());
+  DCHECK_EQ(current_request_.Track().Source().GetType(),
+            blink::WebMediaStreamSource::kTypeVideo);
+  DCHECK(request_completed_cb_);
+  video_source_ = GetCurrentVideoSource();
+  if (!video_source_) {
+    CannotApplyConstraints("The track is not connected to any source");
+    return;
+  }
+
+  const MediaStreamDevice& device_info = video_source_->device();
+  if (device_info.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+    ProcessVideoDeviceRequest();
+  } else {
+    // TODO(guidou): Add support for nondevice tracks. http://crbug.com/767064
+    CannotApplyConstraints(
+        "applyConstraints() not supported for this type of track");
+    return;
+  }
+}
+
+void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (AbortIfVideoRequestStateInvalid())
+    return;
+
+  // TODO(guidou): Support restarting the source even if there is more than
+  // one track in the source. http://crbug.com/768205
+  if (video_source_->NumTracks() > 1U) {
+    FinalizeVideoDeviceRequest();
+    return;
+  }
+
+  // It might be necessary to restart the video source. Before doing that,
+  // check if the current format is the best format to satisfy the new
+  // constraints. If this is the case, then the source does not need to be
+  // restarted. To determine if the current format is the best, it is necessary
+  // to know all the formats potentially supported by the source.
+  GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
+      video_source_->device().id,
+      base::BindOnce(&ApplyConstraintsProcessor::MaybeStopSourceForRestart,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
+    const media::VideoCaptureFormats& formats) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (AbortIfVideoRequestStateInvalid())
+    return;
+
+  VideoCaptureSettings settings = SelectVideoDeviceSettings(formats);
+  if (!settings.HasValue()) {
+    ApplyConstraintsFailed(settings.failed_constraint_name());
+    return;
+  }
+
+  if (video_source_->GetCurrentFormat() == settings.Format()) {
+    video_source_->ReconfigureTrack(GetCurrentVideoTrack(),
+                                    settings.track_adapter_settings());
+    ApplyConstraintsSucceeded();
+  } else {
+    video_source_->StopForRestart(
+        base::BindOnce(&ApplyConstraintsProcessor::MaybeSourceStoppedForRestart,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
+    MediaStreamVideoSource::RestartResult result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (AbortIfVideoRequestStateInvalid())
+    return;
+
+  if (result == MediaStreamVideoSource::RestartResult::IS_RUNNING) {
+    FinalizeVideoDeviceRequest();
+    return;
+  }
+
+  DCHECK_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
+  GetMediaDevicesDispatcher()->GetAvailableVideoInputDeviceFormats(
+      video_source_->device().id,
+      base::BindOnce(&ApplyConstraintsProcessor::FindNewFormatAndRestart,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ApplyConstraintsProcessor::FindNewFormatAndRestart(
+    const media::VideoCaptureFormats& formats) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (AbortIfVideoRequestStateInvalid())
+    return;
+
+  VideoCaptureSettings settings = SelectVideoDeviceSettings(formats);
+  DCHECK(video_source_->GetCurrentFormat());
+  // |settings| should have a value. If it does not due to some unexpected
+  // reason (perhaps a race with another renderer process), restart the source
+  // with the old format.
+  video_source_->Restart(
+      settings.HasValue() ? settings.Format()
+                          : *video_source_->GetCurrentFormat(),
+      base::BindOnce(&ApplyConstraintsProcessor::MaybeSourceRestarted,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void ApplyConstraintsProcessor::MaybeSourceRestarted(
+    MediaStreamVideoSource::RestartResult result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (AbortIfVideoRequestStateInvalid())
+    return;
+
+  if (result == MediaStreamVideoSource::RestartResult::IS_RUNNING) {
+    FinalizeVideoDeviceRequest();
+  } else {
+    DCHECK_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
+    CannotApplyConstraints("Source failed to restart");
+    video_source_->StopSource();
+  }
+}
+
+void ApplyConstraintsProcessor::FinalizeVideoDeviceRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (AbortIfVideoRequestStateInvalid())
+    return;
+
+  DCHECK(video_source_->GetCurrentFormat());
+  VideoCaptureSettings settings =
+      SelectVideoDeviceSettings({*video_source_->GetCurrentFormat()});
+  if (settings.HasValue()) {
+    video_source_->ReconfigureTrack(GetCurrentVideoTrack(),
+                                    settings.track_adapter_settings());
+    ApplyConstraintsSucceeded();
+  } else {
+    ApplyConstraintsFailed(settings.failed_constraint_name());
+  }
+}
+
+VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoDeviceSettings(
+    media::VideoCaptureFormats formats) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!current_request_.IsNull());
+  DCHECK_EQ(current_request_.Track().Source().GetType(),
+            blink::WebMediaStreamSource::kTypeVideo);
+  DCHECK(request_completed_cb_);
+  DCHECK_GT(formats.size(), 0U);
+
+  ::mojom::VideoInputDeviceCapabilitiesPtr device_capabilities =
+      ::mojom::VideoInputDeviceCapabilities::New();
+  device_capabilities->device_id = video_source_->device().id;
+  device_capabilities->facing_mode =
+      GetMojoFacingMode(GetCurrentVideoTrack()->FacingMode());
+  device_capabilities->formats = std::move(formats);
+
+  DCHECK(video_source_->GetCurrentCaptureParams());
+  VideoDeviceCaptureCapabilities video_capabilities;
+  video_capabilities.power_line_capabilities.push_back(
+      video_source_->GetCurrentCaptureParams()->power_line_frequency);
+  video_capabilities.noise_reduction_capabilities.push_back(
+      GetCurrentVideoTrack()->noise_reduction());
+  video_capabilities.device_capabilities.push_back(
+      std::move(device_capabilities));
+
+  // Run SelectSettings using the track's current settings as the default
+  // values. However, initialize |settings| with the default values as a
+  // fallback in case GetSettings returns nothing and leaves |settings|
+  // unmodified.
+  blink::WebMediaStreamTrack::Settings settings;
+  settings.width = MediaStreamVideoSource::kDefaultWidth;
+  settings.height = MediaStreamVideoSource::kDefaultHeight;
+  settings.frame_rate = MediaStreamVideoSource::kDefaultFrameRate;
+  GetCurrentVideoTrack()->GetSettings(settings);
+
+  return SelectSettingsVideoDeviceCapture(
+      video_capabilities, current_request_.Constraints(), settings.width,
+      settings.height, settings.frame_rate);
+}
+
+MediaStreamVideoTrack* ApplyConstraintsProcessor::GetCurrentVideoTrack() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  MediaStreamVideoTrack* track =
+      MediaStreamVideoTrack::GetVideoTrack(current_request_.Track());
+  DCHECK(track);
+  return track;
+}
+
+MediaStreamVideoSource* ApplyConstraintsProcessor::GetCurrentVideoSource() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetCurrentVideoTrack()->source();
+}
+
+bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!current_request_.IsNull());
+  DCHECK_EQ(current_request_.Track().Source().GetType(),
+            blink::WebMediaStreamSource::kTypeVideo);
+  DCHECK(request_completed_cb_);
+  if (GetCurrentVideoSource() != video_source_) {
+    CannotApplyConstraints(
+        "Track stopped or source changed. ApplyConstraints not possible.");
+    return true;
+  }
+  return false;
+}
+
+void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ApplyConstraintsProcessor::CleanupRequest,
+                     weak_factory_.GetWeakPtr(),
+                     base::BindOnce(&RequestSucceeded, current_request_)));
+}
+
+void ApplyConstraintsProcessor::ApplyConstraintsFailed(
+    const char* failed_constraint_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ApplyConstraintsProcessor::CleanupRequest,
+          weak_factory_.GetWeakPtr(),
+          base::BindOnce(
+              &RequestFailed, current_request_,
+              blink::WebString::FromASCII(failed_constraint_name),
+              blink::WebString::FromASCII("Cannot satisfy constraints"))));
+}
+
+void ApplyConstraintsProcessor::CannotApplyConstraints(
+    const blink::WebString& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ApplyConstraintsProcessor::CleanupRequest,
+                                weak_factory_.GetWeakPtr(),
+                                base::BindOnce(&RequestFailed, current_request_,
+                                               blink::WebString(), message)));
+}
+
+void ApplyConstraintsProcessor::CleanupRequest(
+    base::OnceClosure web_request_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!current_request_.IsNull());
+  DCHECK(request_completed_cb_);
+  base::ResetAndReturn(&request_completed_cb_).Run();
+  std::move(web_request_callback).Run();
+  current_request_.Reset();
+  video_source_ = nullptr;
+}
+
+const ::mojom::MediaDevicesDispatcherHostPtr&
+ApplyConstraintsProcessor::GetMediaDevicesDispatcher() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return media_devices_dispatcher_cb_.Run();
+}
+
+}  // namespace content

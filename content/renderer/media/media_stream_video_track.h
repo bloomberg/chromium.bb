@@ -17,6 +17,7 @@
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/secure_display_link_tracker.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace content {
 
@@ -91,6 +92,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   const VideoTrackAdapterSettings& adapter_settings() const {
     return *adapter_settings_;
   }
+  blink::WebMediaStreamTrack::FacingMode FacingMode() const;
 
   // Setting information about the track size.
   // Called from MediaStreamVideoSource at track initialization.
@@ -99,6 +101,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
     height_ = height;
     frame_rate_ = frame_rate;
   }
+
+  MediaStreamVideoSource* source() const { return source_.get(); }
 
  private:
   // MediaStreamVideoSink is a friend to allow it to call AddSink() and
