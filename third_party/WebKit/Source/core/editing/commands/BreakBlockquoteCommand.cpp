@@ -108,18 +108,17 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   if (EndingSelection().IsNone())
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  VisiblePosition visible_pos = EndingVisibleSelection().VisibleStart();
+  const VisibleSelection& visible_selection = EndingVisibleSelection();
+  VisiblePosition visible_pos = visible_selection.VisibleStart();
 
   // pos is a position equivalent to the caret.  We use downstream() so that pos
   // will be in the first node that we need to move (there are a few exceptions
   // to this, see below).
-  Position pos = MostForwardCaretPosition(EndingVisibleSelection().Start());
+  Position pos = MostForwardCaretPosition(visible_selection.Start());
 
   // Find the top-most blockquote from the start.
   HTMLQuoteElement* const top_blockquote =
-      TopBlockquoteOf(EndingVisibleSelection().Start());
+      TopBlockquoteOf(visible_selection.Start());
   if (!top_blockquote || !top_blockquote->parentNode())
     return;
 

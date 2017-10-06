@@ -137,14 +137,15 @@ void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
   const Element* element = RootEditableElementOf(EndingSelection().Base());
   DCHECK(element);
 
-  const EphemeralRange selection_range(EndingVisibleSelection().Start(),
-                                       EndingVisibleSelection().End());
+  const VisibleSelection& visible_selection = EndingVisibleSelection();
+  const EphemeralRange selection_range(visible_selection.Start(),
+                                       visible_selection.End());
   const String old_text = PlainText(
       selection_range,
       TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
   const String& new_text = text_;
 
-  const Position& selection_start = EndingVisibleSelection().Start();
+  const Position& selection_start = visible_selection.Start();
   const size_t new_text_length = new_text.length();
   const size_t old_text_length = old_text.length();
   const size_t common_prefix_length = ComputeCommonGraphemeClusterPrefixLength(
