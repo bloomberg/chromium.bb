@@ -7,8 +7,13 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
+#include "core/geometry/DOMRect.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -210,10 +215,6 @@ TEST_F(ImageDocumentTest, ImageCenteredAtDeviceScaleFactor) {
   SetWindowToViewportScalingFactor(1.5f);
   LoadImage();
 
-  // In case of android, this is a no-op.
-  if (!GetDocument().GetFrame()->GetSettings()->GetViewportEnabled())
-    return;
-
   EXPECT_TRUE(GetDocument().ShouldShrinkToFit());
   GetDocument().ImageClicked(15, 27);
   ScrollOffset offset = GetDocument()
@@ -234,6 +235,73 @@ TEST_F(ImageDocumentTest, ImageCenteredAtDeviceScaleFactor) {
                ->GetScrollOffset();
   EXPECT_EQ(11, offset.Width());
   EXPECT_EQ(22, offset.Height());
+}
+
+class ImageDocumentViewportTest : public SimTest {
+ public:
+  ImageDocumentViewportTest() {}
+  ~ImageDocumentViewportTest() override {}
+
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetSettings()->SetViewportEnabled(true);
+    WebView().GetSettings()->SetViewportMetaEnabled(true);
+    WebView().GetSettings()->SetShrinksViewportContentToFit(true);
+    WebView().GetSettings()->SetMainFrameResizesAreOrientationChanges(true);
+  }
+
+  VisualViewport& GetVisualViewport() {
+    return WebView().GetPage()->GetVisualViewport();
+  }
+
+  ImageDocument& GetDocument() {
+    Document* document =
+        ToLocalFrame(WebView().GetPage()->MainFrame())->DomWindow()->document();
+    ImageDocument* image_document = static_cast<ImageDocument*>(document);
+    return *image_document;
+  }
+};
+
+// Tests that hiding the URL bar doesn't cause a "jump" when viewing an image
+// much wider than the viewport.
+TEST_F(ImageDocumentViewportTest, HidingURLBarDoesntChangeImageLocation) {
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+
+  // Initialize with the URL bar showing. Make the viewport very thin so that
+  // we load an image much wider than the viewport but fits vertically. The
+  // page will load zoomed out so the image will be vertically centered.
+  WebView().ResizeWithBrowserControls(IntSize(5, 40), 10, 0, true);
+  SimRequest request("https://example.com/test.jpg", "image/jpeg");
+  LoadURL("https://example.com/test.jpg");
+
+  Vector<unsigned char> jpeg = JpegImage();
+  Vector<char> data = Vector<char>();
+  data.Append(jpeg.data(), jpeg.size());
+  request.Complete(data);
+
+  Compositor().BeginFrame();
+
+  HTMLImageElement* img = GetDocument().ImageElement();
+  DOMRect* rect = img->getBoundingClientRect();
+
+  // Some initial sanity checking. We'll use the BoundingClientRect for the
+  // image location since that's relative to the layout viewport and the layout
+  // viewport is unscrollable in this test. Since the image is 10X wider than
+  // the viewport, we'll zoom out to 0.1. This means the layout viewport is 400
+  // pixels high so the image will be centered in that.
+  ASSERT_EQ(50u, img->width());
+  ASSERT_EQ(50u, img->height());
+  ASSERT_EQ(0.1f, GetVisualViewport().Scale());
+  ASSERT_EQ(0, rect->x());
+  ASSERT_EQ(175, rect->y());
+
+  // Hide the URL bar. This will make the viewport taller but won't change the
+  // layout size so the image location shouldn't change.
+  WebView().ResizeWithBrowserControls(IntSize(5, 50), 10, 0, false);
+  Compositor().BeginFrame();
+  rect = img->getBoundingClientRect();
+  EXPECT_EQ(0, rect->x());
+  EXPECT_EQ(175, rect->y());
 }
 
 }  // namespace blink

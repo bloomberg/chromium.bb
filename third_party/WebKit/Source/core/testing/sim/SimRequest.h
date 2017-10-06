@@ -5,6 +5,7 @@
 #ifndef SimRequest_h
 #define SimRequest_h
 
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLResponse.h"
@@ -29,12 +30,14 @@ class SimRequest final {
 
   // Write a chunk of the response body.
   void Write(const String& data);
+  void Write(const Vector<char>& data);
 
   // Finish the response, this is as if the server closed the connection.
   void Finish();
 
   // Shorthand to complete a request (start/write/finish) sequence in order.
   void Complete(const String& data = String());
+  void Complete(const Vector<char>& data);
 
   const String& Url() const { return url_; }
   const WebURLError& GetError() const { return error_; }

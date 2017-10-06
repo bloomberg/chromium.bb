@@ -541,12 +541,15 @@ void ImageDocument::WindowSizeChanged() {
 
     // Explicitly set the height of the <div> containing the <img> so that it
     // can display the full image without shrinking it, allowing a full-width
-    // reading mode for normal-width-huge-height images.
-    float viewport_aspect_ratio =
-        GetFrame()->GetPage()->GetVisualViewport().Size().AspectRatio();
-    int div_height =
-        std::max(image_size.Height().ToInt(),
-                 static_cast<int>(div_width / viewport_aspect_ratio));
+    // reading mode for normal-width-huge-height images. Use the LayoutSize
+    // for height rather than viewport since that doesn't change based on the
+    // URL bar coming in and out - thus preventing the image from jumping
+    // around. i.e. The div should fill the viewport when minimally zoomed and
+    // the URL bar is showing, but won't fill the new space when the URL bar
+    // hides.
+    float aspect_ratio = View()->GetLayoutSize().AspectRatio();
+    int div_height = std::max(image_size.Height().ToInt(),
+                              static_cast<int>(div_width / aspect_ratio));
     div_element_->SetInlineStyleProperty(CSSPropertyHeight, div_height,
                                          CSSPrimitiveValue::UnitType::kPixels);
     return;
