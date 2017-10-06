@@ -164,6 +164,8 @@ void VolumeControlAndroid::InitializeOnThread() {
 
   for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
                     AudioContentType::kCommunication}) {
+    Java_VolumeMap_dumpVolumeTables(base::android::AttachCurrentThread(),
+                                    static_cast<int>(type));
     volumes_[type] =
         Java_VolumeControl_getVolume(base::android::AttachCurrentThread(),
                                      j_volume_control_, static_cast<int>(type));
