@@ -348,10 +348,11 @@ RefPtr<Image> Image::ImageForDefaultFrame() {
   return image;
 }
 
-void Image::InitPaintImageBuilder(PaintImageBuilder& builder) {
+PaintImageBuilder Image::CreatePaintImageBuilder() {
   auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
                                         : PaintImage::AnimationType::STATIC;
-  builder.set_id(stable_image_id_)
+  return PaintImageBuilder::WithDefault()
+      .set_id(stable_image_id_)
       .set_animation_type(animation_type)
       .set_is_multipart(is_multipart_);
 }

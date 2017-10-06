@@ -140,17 +140,17 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
   frames_[index].frame_bytes_ =
       decoder_->Size().Area() * sizeof(ImageFrame::PixelData);
 
-  auto builder = PaintImageBuilder::WithDefault();
-  InitPaintImageBuilder(builder);
   auto completion_state = all_data_received_
                               ? PaintImage::CompletionState::DONE
                               : PaintImage::CompletionState::PARTIALLY_DONE;
-  builder.set_paint_image_generator(std::move(generator))
-      .set_frame_index(index)
-      .set_repetition_count(GetRepetitionCountWithPolicyOverride(
-          repetition_count_, animation_policy_))
-      .set_completion_state(completion_state)
-      .set_reset_animation_sequence_id(reset_animation_sequence_id_);
+  auto builder =
+      CreatePaintImageBuilder()
+          .set_paint_image_generator(std::move(generator))
+          .set_frame_index(index)
+          .set_repetition_count(GetRepetitionCountWithPolicyOverride(
+              repetition_count_, animation_policy_))
+          .set_completion_state(completion_state)
+          .set_reset_animation_sequence_id(reset_animation_sequence_id_);
 
   // We are caching frame snapshots.  This is OK even for partially decoded
   // frames, as they are cleared by dataChanged() when new data arrives.

@@ -172,16 +172,14 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   // TODO(ccameron): This function should not ignore |colorBehavior|.
   // https://crbug.com/672306
   CheckThread();
-  if (!IsValid()) {
+  if (!IsValid())
     return PaintImage();
-  }
   CreateImageFromMailboxIfNeeded();
 
-  auto builder = PaintImageBuilder::WithDefault();
-  InitPaintImageBuilder(builder);
-  builder.set_image(texture_holder_->GetSkImage())
-      .set_completion_state(PaintImage::CompletionState::DONE);
-  return builder.TakePaintImage();
+  return CreatePaintImageBuilder()
+      .set_image(texture_holder_->GetSkImage())
+      .set_completion_state(PaintImage::CompletionState::DONE)
+      .TakePaintImage();
 }
 
 void AcceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
