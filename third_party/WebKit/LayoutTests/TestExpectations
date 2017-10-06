@@ -3616,9 +3616,6 @@ crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
 crbug.com/760546 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
 
-# Tests flakely timing out on WebKit Linux Trusty dbg builder
-crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
-
 # This test has a fixed number of time which can depend on performance.
 
 crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
