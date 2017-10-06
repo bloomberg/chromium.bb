@@ -1093,12 +1093,12 @@ action("make_core_generated_html_element_lookup_trie") {
   input_file = "html/HTMLTagNames.json5"
   inputs = make_trie_helpers_files + [
              input_file,
-             "../build/scripts/templates/ElementLookupTrie.cpp.tmpl",
-             "../build/scripts/templates/ElementLookupTrie.h.tmpl",
+             "../build/scripts/templates/element_lookup_trie.cc.tmpl",
+             "../build/scripts/templates/element_lookup_trie.h.tmpl",
            ]
   outputs = [
-    "$blink_core_output_dir/HTMLElementLookupTrie.cpp",
-    "$blink_core_output_dir/HTMLElementLookupTrie.h",
+    "$blink_core_output_dir/html_element_lookup_trie.cc",
+    "$blink_core_output_dir/html_element_lookup_trie.h",
   ]
 
   args = [

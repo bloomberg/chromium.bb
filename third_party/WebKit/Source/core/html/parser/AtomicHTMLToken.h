@@ -27,10 +27,10 @@
 #define AtomicHTMLToken_h
 
 #include <memory>
-#include "core/HTMLElementLookupTrie.h"
 #include "core/dom/Attribute.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
+#include "core/html_element_lookup_trie.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
 
