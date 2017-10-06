@@ -18,6 +18,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
+#include "core/origin_trials/origin_trials.h"
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
 #include "modules/permissions/PermissionUtils.h"
@@ -96,13 +97,13 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   // stable.
   if (name == "ambient-light-sensor" || name == "accelerometer" ||
       name == "gyroscope" || name == "magnetometer") {
-    if (!RuntimeEnabledFeatures::SensorEnabled()) {
+    if (!OriginTrials::sensorEnabled(ExecutionContext::From(script_state))) {
       exception_state.ThrowTypeError("GenericSensor flag is not enabled.");
       return nullptr;
     }
 
     // Magnetometer and ALS require an extra flag.
-    if (name == "magnetometer" || name == "ambient-light-sensor") {
+    if (name == "ambient-light-sensor") {
       if (!RuntimeEnabledFeatures::SensorExtraClassesEnabled()) {
         exception_state.ThrowTypeError(
             "GenericSensorExtraClasses flag is not enabled.");
