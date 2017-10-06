@@ -68,6 +68,9 @@ bool MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
       case kFreePacketType:
         status = ParseFree();
         break;
+      case kBarrierPacketType:
+        status = ParseBarrier();
+        break;
       default:
         // Invalid message type.
         status = READ_ERROR;
@@ -207,6 +210,15 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseFree() {
     return READ_NO_DATA;
 
   receiver_->OnFree(free_packet);
+  return READ_OK;
+}
+
+MemlogStreamParser::ReadStatus MemlogStreamParser::ParseBarrier() {
+  BarrierPacket barrier_packet;
+  if (!ReadBytes(sizeof(BarrierPacket), &barrier_packet))
+    return READ_NO_DATA;
+
+  receiver_->OnBarrier(barrier_packet);
   return READ_OK;
 }
 

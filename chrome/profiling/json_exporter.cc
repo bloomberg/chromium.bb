@@ -432,7 +432,7 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   // Start dictionary.
   out << "{\n";
 
-  WriteMemoryMaps(*params.maps, out);
+  WriteMemoryMaps(params.maps, out);
   out << ",\n";
 
   // Write level of detail.
@@ -487,7 +487,7 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   // mapping from allocation context_id to string ID.
   std::map<int, size_t> context_to_string_map;
   for (uint32_t i = 0; i < kAllocatorCount; i++) {
-    FillContextStrings(filtered_allocations[i], *params.context_map,
+    FillContextStrings(filtered_allocations[i], params.context_map,
                        &string_table, &context_to_string_map);
   }
 
