@@ -20,13 +20,6 @@ namespace ash {
 
 namespace {
 
-// Returns true if device is a convertible/tablet device, otherwise false.
-bool IsTabletModeSupported() {
-  TabletModeController* tablet_mode_controller =
-      Shell::Get()->tablet_mode_controller();
-  return tablet_mode_controller && tablet_mode_controller->CanEnterTabletMode();
-}
-
 // Returns true if device is currently in tablet/tablet mode, otherwise false.
 bool IsTabletModeActive() {
   TabletModeController* tablet_mode_controller =
@@ -121,7 +114,7 @@ void PowerButtonDisplayController::OnKeyEvent(ui::KeyEvent* event) {
   if (event->key_code() == ui::VKEY_POWER)
     return;
 
-  if (!IsTabletModeActive() && backlights_forced_off_)
+  if (!IsTabletModeActive())
     SetDisplayForcedOff(false);
 }
 
@@ -129,15 +122,13 @@ void PowerButtonDisplayController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->flags() & ui::EF_IS_SYNTHESIZED)
     return;
 
-  if (!IsTabletModeActive() && backlights_forced_off_)
+  if (!IsTabletModeActive())
     SetDisplayForcedOff(false);
 }
 
 void PowerButtonDisplayController::OnStylusStateChanged(ui::StylusState state) {
-  if (IsTabletModeSupported() && state == ui::StylusState::REMOVED &&
-      backlights_forced_off_) {
+  if (state == ui::StylusState::REMOVED)
     SetDisplayForcedOff(false);
-  }
 }
 
 void PowerButtonDisplayController::GetInitialBacklightsForcedOff() {
