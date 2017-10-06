@@ -280,6 +280,9 @@ if (!is_android && !is_mac) {
             "//build/config/linux:xext",
           ]
         }
+        if (enable_package_mash_services) {
+          deps += [ "//mash/common" ]
+        }
       }
 
       # These files are used by the installer so we need a public dep.
