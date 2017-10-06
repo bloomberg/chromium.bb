@@ -52,6 +52,11 @@
 
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
+
+        <!-- Download service -->
+        <service android:name="org.chromium.chrome.browser.download.MockDownloadNotificationService"
+            android:exported="false">
+        </service>
     </application>
 
     <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
