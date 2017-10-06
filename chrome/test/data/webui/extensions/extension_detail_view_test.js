@@ -27,13 +27,16 @@ cr.define('extension_detail_view_tests', function() {
     /** @type {extension_test_util.MockItemDelegate} */
     var mockDelegate;
 
-    suiteSetup(function() {
-      return PolymerTest.importHtml('chrome://extensions/item.html');
-    });
-
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
+      loadTimeData.data = {
+        itemDependentEntry: '',
+        itemOff: '',
+        itemOn: '',
+        itemSourcePolicy: '',
+        itemSourceWebstore: '',
+      };
       extensionData = extension_test_util.createExtensionInfo({
         incognitoAccess: {isEnabled: true, isActive: false},
         fileAccess: {isEnabled: true, isActive: false},

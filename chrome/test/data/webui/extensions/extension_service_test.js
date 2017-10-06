@@ -89,10 +89,6 @@ cr.define('extension_service_tests', function() {
       return manager.extensions.find(elMatches) || manager.apps.find(elMatches);
     };
 
-    suiteSetup(function() {
-      return PolymerTest.importHtml('chrome://extensions/service.html');
-    });
-
     // Initialize an extension item before each test.
     setup(function() {
       service = extensions.Service.getInstance();
