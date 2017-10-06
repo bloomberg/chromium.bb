@@ -97,6 +97,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
+import org.chromium.chrome.browser.survey.ChromeHomeSurveyController;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -1625,6 +1626,8 @@ public class ChromeTabbedActivity
             AutocompleteController.nativePrefetchZeroSuggestResults();
 
             LauncherShortcutActivity.updateIncognitoShortcut(ChromeTabbedActivity.this);
+
+            ChromeHomeSurveyController.initialize(this, mTabModelSelectorImpl);
         });
     }
 

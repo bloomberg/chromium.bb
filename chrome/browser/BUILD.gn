@@ -4119,6 +4119,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/infobar/ReaderModeInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SearchGeolocationDisclosureInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java",
+      "../android/java/src/org/chromium/chrome/browser/infobar/SurveyInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/TranslateCompactInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",

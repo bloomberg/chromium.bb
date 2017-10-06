@@ -20740,6 +20740,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="75" label="READER_MODE_INFOBAR_ANDROID"/>
   <int value="76" label="VR_FEEDBACK_INFOBAR_ANDROID"/>
   <int value="77" label="FRAMEBUST_BLOCK_INFOBAR_ANDROID"/>
+  <int value="78" label="SURVEY_INFOBAR_ANDROID"/>
 </enum>
 
 <enum name="InfoBarResponse">

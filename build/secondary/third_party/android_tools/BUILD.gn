@@ -50,6 +50,8 @@ support_lib_alias("android_support_multidex_java") {
 }
 support_lib_alias("android_support_annotations_java") {
 }
+support_lib_alias("android_support_cardview_java") {
+}
 support_lib_alias("android_support_compat_java") {
 }
 support_lib_alias("android_support_core_ui_java") {

@@ -145,6 +145,7 @@ class InfoBarDelegate {
     READER_MODE_INFOBAR_ANDROID = 75,
     VR_FEEDBACK_INFOBAR_ANDROID = 76,
     FRAMEBUST_BLOCK_INFOBAR_ANDROID = 77,
+    SURVEY_INFOBAR_ANDROID = 78,
   };
 
   // Describes navigation events, used to decide whether infobars should be
