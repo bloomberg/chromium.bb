@@ -33,6 +33,7 @@ const char kTranslateMaxNumberOfAutoAlways[] =
     "translate_max_number_of_auto_always";
 const char kTranslateMaxNumberOfAutoNever[] =
     "translate_max_number_of_auto_never";
+const char kTranslateTabDefaultTextColor[] = "translate_tab_default_text_color";
 
 // TranslateInfoBar -----------------------------------------------------------
 
@@ -72,7 +73,7 @@ ScopedJavaLocalRef<jobject> TranslateCompactInfoBar::CreateRenderInfoBar(
       env, delegate->translate_step(), source_language_code,
       target_language_code, delegate->ShouldAlwaysTranslate(),
       delegate->triggered_from_menu(), java_languages, java_codes,
-      java_hash_codes);
+      java_hash_codes, TabDefaultTextColor());
 }
 
 void TranslateCompactInfoBar::ProcessButton(int action) {
@@ -227,6 +228,10 @@ int TranslateCompactInfoBar::MaxNumberOfAutoAlways() {
 
 int TranslateCompactInfoBar::MaxNumberOfAutoNever() {
   return GetParam(kTranslateMaxNumberOfAutoNever, kDefaultMaxNumberOfAutoNever);
+}
+
+int TranslateCompactInfoBar::TabDefaultTextColor() {
+  return GetParam(kTranslateTabDefaultTextColor, 0);
 }
 
 translate::TranslateInfoBarDelegate* TranslateCompactInfoBar::GetDelegate() {

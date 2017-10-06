@@ -82,6 +82,10 @@ class TranslateCompactInfoBar
   // This is the maximum number of times to trigger "Never Translate"
   // automatically.
   int MaxNumberOfAutoNever();
+  // Get the value of the finch parameter: translate_tab_default_text_color.
+  // Default value is 0, which means using TabLayout default color.
+  // If it's not 0, we will set the text color manually based on the value.
+  int TabDefaultTextColor();
 
   translate::TranslateInfoBarDelegate* GetDelegate();
 
