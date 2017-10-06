@@ -41,7 +41,7 @@ class MockBuildBot(BuildBot):
     def set_results(self, build, results):
         self._canned_results[build] = results
 
-    def fetch_results(self, build):
+    def fetch_results(self, build, full=False):
         self.fetched_builds.append(build)
         return self._canned_results.get(build)
 
