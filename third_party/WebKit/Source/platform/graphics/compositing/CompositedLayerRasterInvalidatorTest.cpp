@@ -53,8 +53,8 @@ class CompositedLayerRasterInvalidatorTest
 
   static const Vector<RasterInvalidationInfo> TrackedRasterInvalidations(
       CompositedLayerRasterInvalidator& invalidator) {
-    DCHECK(invalidator.GetRasterInvalidationTracking());
-    return invalidator.GetRasterInvalidationTracking()->invalidations;
+    DCHECK(invalidator.GetTracking());
+    return invalidator.GetTracking()->Invalidations();
   }
 
   static IntRect ChunkRectToLayer(const FloatRect& rect,

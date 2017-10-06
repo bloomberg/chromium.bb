@@ -684,7 +684,7 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
 
 void PaintController::AppendDebugDrawingAfterCommit(
     const DisplayItemClient& display_item_client,
-    sk_sp<PaintRecord> record,
+    sk_sp<const PaintRecord> record,
     const FloatRect& record_bounds) {
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(new_display_item_list_.IsEmpty());

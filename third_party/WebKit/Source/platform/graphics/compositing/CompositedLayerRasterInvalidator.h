@@ -24,11 +24,11 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
         layer_state_(nullptr, nullptr, nullptr) {}
 
   void SetTracksRasterInvalidations(bool);
-  RasterInvalidationTracking* GetRasterInvalidationTracking() const {
-    return raster_invalidation_tracking_info_
-               ? &raster_invalidation_tracking_info_->tracking
-               : nullptr;
+  RasterInvalidationTracking* GetTracking() const {
+    return tracking_info_ ? &tracking_info_->tracking : nullptr;
   }
+
+  RasterInvalidationTracking& EnsureTracking();
 
   void Generate(const gfx::Rect& layer_bounds,
                 const Vector<const PaintChunk*>&,
@@ -60,8 +60,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     PaintChunkProperties properties;
   };
 
-  IntRect MapRasterInvalidationRectFromChunkToLayer(const FloatRect&,
-                                                    const PaintChunk&) const;
+  IntRect MapRectFromChunkToLayer(const FloatRect&, const PaintChunk&) const;
 
   void GenerateRasterInvalidations(
       const Vector<const PaintChunk*>& new_chunks,
@@ -85,8 +84,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     ClientDebugNamesMap old_client_debug_names;
     RasterInvalidationTracking tracking;
   };
-  std::unique_ptr<RasterInvalidationTrackingInfo>
-      raster_invalidation_tracking_info_;
+  std::unique_ptr<RasterInvalidationTrackingInfo> tracking_info_;
 };
 
 }  // namespace blink

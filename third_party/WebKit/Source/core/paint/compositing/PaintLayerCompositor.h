@@ -176,7 +176,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
 
-  void SetTracksRasterInvalidations(bool);
+  void UpdateTrackingRasterInvalidations();
 
   String DebugName(const GraphicsLayer*) const override;
   DocumentLifecycle& Lifecycle() const;
@@ -274,7 +274,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // m_compositingDirty.
   bool root_should_always_composite_dirty_;
   bool needs_update_fixed_background_;
-  bool is_tracking_raster_invalidations_;  // Used for testing.
   bool in_overlay_fullscreen_video_;
 
   enum RootLayerAttachment {

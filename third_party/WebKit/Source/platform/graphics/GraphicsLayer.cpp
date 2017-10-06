@@ -45,6 +45,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
+#include "platform/graphics/compositing/CompositedLayerRasterInvalidator.h"
 #include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -76,14 +77,6 @@
 
 namespace blink {
 
-template class RasterInvalidationTrackingMap<const GraphicsLayer>;
-static RasterInvalidationTrackingMap<const GraphicsLayer>&
-GetRasterInvalidationTrackingMap() {
-  DEFINE_STATIC_LOCAL(RasterInvalidationTrackingMap<const GraphicsLayer>, map,
-                      ());
-  return map;
-}
-
 std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
     GraphicsLayerClient* client) {
   return WTF::WrapUnique(new GraphicsLayer(client));
@@ -105,8 +98,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       has_scroll_parent_(false),
       has_clip_parent_(false),
       painted_(false),
-      is_tracking_raster_invalidations_(
-          client && client->IsTrackingRasterInvalidations()),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(0),
       mask_layer_(0),
@@ -123,6 +114,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
   layer_ = Platform::Current()->CompositorSupport()->CreateContentLayer(this);
   layer_->Layer()->SetDrawsContent(draws_content_ && contents_visible_);
   layer_->Layer()->SetLayerClient(this);
+
+  UpdateTrackingRasterInvalidations();
 }
 
 GraphicsLayer::~GraphicsLayer() {
@@ -137,8 +130,6 @@ GraphicsLayer::~GraphicsLayer() {
 
   RemoveAllChildren();
   RemoveFromParent();
-
-  GetRasterInvalidationTrackingMap().Remove(this);
   DCHECK(!parent_);
 }
 
@@ -294,12 +285,12 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
     GetPaintController().CommitNewDisplayItems();
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
         DrawsContent()) {
-      auto& tracking = GetRasterInvalidationTrackingMap().Add(this);
+      auto& tracking = EnsureRasterInvalidator().EnsureTracking();
       tracking.CheckUnderInvalidations(DebugName(), CaptureRecord(),
                                        InterestRect());
-      if (tracking.under_invalidation_record) {
+      if (auto record = tracking.UnderInvalidationRecord()) {
         GetPaintController().AppendDebugDrawingAfterCommit(
-            *this, tracking.under_invalidation_record, InterestRect());
+            *this, std::move(record), InterestRect());
       }
     }
   }
@@ -480,61 +471,48 @@ WebLayer* GraphicsLayer::ContentsLayerIfRegistered() {
   return contents_layer_;
 }
 
-void GraphicsLayer::SetTracksRasterInvalidations(
-    bool tracks_raster_invalidations) {
-  ResetTrackedRasterInvalidations();
-  is_tracking_raster_invalidations_ = tracks_raster_invalidations;
+CompositedLayerRasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
+  if (!raster_invalidator_) {
+    raster_invalidator_ = WTF::MakeUnique<CompositedLayerRasterInvalidator>(
+        // TODO(wangxianzhu): Hook up raster invalidation for SPv175.
+        [](const IntRect&) {});
+    raster_invalidator_->SetTracksRasterInvalidations(
+        client_->IsTrackingRasterInvalidations());
+  }
+  return *raster_invalidator_;
+}
+
+void GraphicsLayer::UpdateTrackingRasterInvalidations() {
+  if (client_->IsTrackingRasterInvalidations())
+    EnsureRasterInvalidator().SetTracksRasterInvalidations(true);
+  else if (raster_invalidator_)
+    raster_invalidator_->SetTracksRasterInvalidations(false);
 }
 
 void GraphicsLayer::ResetTrackedRasterInvalidations() {
-  RasterInvalidationTracking* tracking =
-      GetRasterInvalidationTrackingMap().Find(this);
-  if (!tracking)
-    return;
-
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
-    tracking->invalidations.clear();
-  else
-    GetRasterInvalidationTrackingMap().Remove(this);
+  if (auto* tracking = GetRasterInvalidationTracking())
+    tracking->ClearInvalidations();
 }
 
 bool GraphicsLayer::HasTrackedRasterInvalidations() const {
   if (auto* tracking = GetRasterInvalidationTracking())
-    return !tracking->invalidations.IsEmpty();
+    return tracking->HasInvalidations();
   return false;
 }
 
-const RasterInvalidationTracking* GraphicsLayer::GetRasterInvalidationTracking()
+RasterInvalidationTracking* GraphicsLayer::GetRasterInvalidationTracking()
     const {
-  return GetRasterInvalidationTrackingMap().Find(this);
+  return raster_invalidator_ ? raster_invalidator_->GetTracking() : nullptr;
 }
 
 void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
                                             const IntRect& rect,
                                             PaintInvalidationReason reason) {
-  if (!IsTrackingOrCheckingRasterInvalidations() || rect.IsEmpty())
-    return;
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+    EnsureRasterInvalidator().EnsureTracking();
 
-  RasterInvalidationTracking& tracking =
-      GetRasterInvalidationTrackingMap().Add(this);
-
-  if (is_tracking_raster_invalidations_) {
-    RasterInvalidationInfo info;
-    info.client = &client;
-    info.client_debug_name = client.DebugName();
-    info.rect = rect;
-    info.reason = reason;
-    tracking.invalidations.push_back(info);
-  }
-
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      !ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_) {
-    // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
-    // invalidation rect.
-    IntRect r = rect;
-    r.Inflate(1);
-    tracking.invalidation_region_since_last_paint.Unite(r);
-  }
+  if (auto* tracking = GetRasterInvalidationTracking())
+    tracking->AddInvalidation(&client, client.DebugName(), rect, reason);
 }
 
 static String PointerAsString(const void* ptr) {
@@ -724,8 +702,9 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     }
   }
 
-  if (flags & kLayerTreeIncludesPaintInvalidations)
-    GetRasterInvalidationTrackingMap().AsJSON(this, json.get());
+  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
+      client_->IsTrackingRasterInvalidations())
+    GetRasterInvalidationTracking()->AsJSON(json.get());
 
   if ((flags & kLayerTreeIncludesPaintingPhases) && painting_phase_) {
     std::unique_ptr<JSONArray> painting_phases_json = JSONArray::Create();

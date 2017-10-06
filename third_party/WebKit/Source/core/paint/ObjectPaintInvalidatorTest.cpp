@@ -295,7 +295,7 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
                                          .Layer()
                                          ->GraphicsLayerBacking()
                                          ->GetRasterInvalidationTracking()
-                                         ->invalidations;
+                                         ->Invalidations();
   ASSERT_EQ(1u, raster_invalidations.size());
   EXPECT_EQ(IntRect(18, 18, 80, 80), raster_invalidations[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kRectangle,

@@ -11,22 +11,21 @@ namespace blink {
 void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
     bool should_track) {
   if (should_track) {
-    raster_invalidation_tracking_info_ =
-        std::make_unique<RasterInvalidationTrackingInfo>();
-
+    if (!tracking_info_)
+      tracking_info_ = std::make_unique<RasterInvalidationTrackingInfo>();
+    tracking_info_->tracking.ClearInvalidations();
     for (const auto& info : paint_chunks_info_) {
-      raster_invalidation_tracking_info_->old_client_debug_names.Set(
-          &info.id.client, info.id.client.DebugName());
+      tracking_info_->old_client_debug_names.Set(&info.id.client,
+                                                 info.id.client.DebugName());
     }
   } else if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    raster_invalidation_tracking_info_ = nullptr;
-  } else if (raster_invalidation_tracking_info_) {
-    raster_invalidation_tracking_info_->tracking.invalidations.clear();
+    tracking_info_ = nullptr;
+  } else if (tracking_info_) {
+    tracking_info_->tracking.ClearInvalidations();
   }
 }
 
-IntRect
-CompositedLayerRasterInvalidator::MapRasterInvalidationRectFromChunkToLayer(
+IntRect CompositedLayerRasterInvalidator::MapRectFromChunkToLayer(
     const FloatRect& r,
     const PaintChunk& chunk) const {
   FloatClipRect rect(r);
@@ -138,15 +137,15 @@ void CompositedLayerRasterInvalidator::AddDisplayItemRasterInvalidations(
              chunk.raster_invalidation_tracking.size());
 
   for (size_t i = 0; i < chunk.raster_invalidation_rects.size(); ++i) {
-    auto rect = MapRasterInvalidationRectFromChunkToLayer(
-        chunk.raster_invalidation_rects[i], chunk);
+    auto rect =
+        MapRectFromChunkToLayer(chunk.raster_invalidation_rects[i], chunk);
     if (rect.IsEmpty())
       continue;
     raster_invalidation_function_(rect);
 
     if (!chunk.raster_invalidation_tracking.IsEmpty()) {
       const auto& info = chunk.raster_invalidation_tracking[i];
-      raster_invalidation_tracking_info_->tracking.AddInvalidation(
+      tracking_info_->tracking.AddInvalidation(
           info.client, info.client_debug_name, rect, info.reason);
     }
   }
@@ -157,10 +156,10 @@ void CompositedLayerRasterInvalidator::InvalidateRasterForNewChunk(
     PaintInvalidationReason reason) {
   raster_invalidation_function_(info.bounds_in_layer);
 
-  if (raster_invalidation_tracking_info_) {
-    raster_invalidation_tracking_info_->tracking.AddInvalidation(
-        &info.id.client, info.id.client.DebugName(), info.bounds_in_layer,
-        reason);
+  if (tracking_info_) {
+    tracking_info_->tracking.AddInvalidation(&info.id.client,
+                                             info.id.client.DebugName(),
+                                             info.bounds_in_layer, reason);
   }
 }
 
@@ -169,11 +168,10 @@ void CompositedLayerRasterInvalidator::InvalidateRasterForOldChunk(
     PaintInvalidationReason reason) {
   raster_invalidation_function_(info.bounds_in_layer);
 
-  if (raster_invalidation_tracking_info_) {
-    raster_invalidation_tracking_info_->tracking.AddInvalidation(
+  if (tracking_info_) {
+    tracking_info_->tracking.AddInvalidation(
         &info.id.client,
-        raster_invalidation_tracking_info_->old_client_debug_names.at(
-            &info.id.client),
+        tracking_info_->old_client_debug_names.at(&info.id.client),
         info.bounds_in_layer, reason);
   }
 }
@@ -182,23 +180,26 @@ void CompositedLayerRasterInvalidator::InvalidateRasterForWholeLayer() {
   IntRect rect(0, 0, layer_bounds_.width(), layer_bounds_.height());
   raster_invalidation_function_(rect);
 
-  if (raster_invalidation_tracking_info_) {
-    raster_invalidation_tracking_info_->tracking.AddInvalidation(
+  if (tracking_info_) {
+    tracking_info_->tracking.AddInvalidation(
         &paint_chunks_info_[0].id.client,
         paint_chunks_info_[0].id.client.DebugName(), rect,
         PaintInvalidationReason::kFullLayer);
   }
 }
 
+RasterInvalidationTracking& CompositedLayerRasterInvalidator::EnsureTracking() {
+  if (!tracking_info_)
+    tracking_info_ = WTF::MakeUnique<RasterInvalidationTrackingInfo>();
+  return tracking_info_->tracking;
+}
+
 void CompositedLayerRasterInvalidator::Generate(
     const gfx::Rect& layer_bounds,
     const Vector<const PaintChunk*>& paint_chunks,
     const PropertyTreeState& layer_state) {
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      !raster_invalidation_tracking_info_) {
-    raster_invalidation_tracking_info_ =
-        std::make_unique<RasterInvalidationTrackingInfo>();
-  }
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+    EnsureTracking();
 
   bool layer_bounds_was_empty = layer_bounds_.IsEmpty();
   bool layer_origin_changed = layer_bounds_.origin() != layer_bounds.origin();
@@ -209,11 +210,10 @@ void CompositedLayerRasterInvalidator::Generate(
   Vector<PaintChunkInfo> new_chunks_info;
   new_chunks_info.ReserveCapacity(paint_chunks.size());
   for (const auto* chunk : paint_chunks) {
-    new_chunks_info.push_back(PaintChunkInfo(
-        MapRasterInvalidationRectFromChunkToLayer(chunk->bounds, *chunk),
-        *chunk));
-    if (raster_invalidation_tracking_info_) {
-      raster_invalidation_tracking_info_->new_client_debug_names.insert(
+    new_chunks_info.push_back(
+        PaintChunkInfo(MapRectFromChunkToLayer(chunk->bounds, *chunk), *chunk));
+    if (tracking_info_) {
+      tracking_info_->new_client_debug_names.insert(
           &chunk->id.client, chunk->id.client.DebugName());
     }
   }
@@ -227,10 +227,10 @@ void CompositedLayerRasterInvalidator::Generate(
 
   paint_chunks_info_.clear();
   std::swap(paint_chunks_info_, new_chunks_info);
-  if (raster_invalidation_tracking_info_) {
-    raster_invalidation_tracking_info_->old_client_debug_names.clear();
-    std::swap(raster_invalidation_tracking_info_->old_client_debug_names,
-              raster_invalidation_tracking_info_->new_client_debug_names);
+  if (tracking_info_) {
+    tracking_info_->old_client_debug_names.clear();
+    std::swap(tracking_info_->old_client_debug_names,
+              tracking_info_->new_client_debug_names);
   }
 }
 

@@ -96,7 +96,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(block->Location(), caret_visual_rect.Location());
 
   const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->invalidations;
+      &GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(1u, raster_invalidations->size());
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
             (*raster_invalidations)[0].rect);
@@ -124,7 +124,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
   EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
-  raster_invalidations = &GetRasterInvalidationTracking()->invalidations;
+  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
             (*raster_invalidations)[0].rect);
@@ -150,7 +150,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_FALSE(block->ShouldPaintCursorCaret());
   EXPECT_EQ(LayoutRect(), GetCaretDisplayItemClient().VisualRect());
 
-  raster_invalidations = &GetRasterInvalidationTracking()->invalidations;
+  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(1u, raster_invalidations->size());
   EXPECT_EQ(EnclosingIntRect(old_caret_visual_rect),
             (*raster_invalidations)[0].rect);
@@ -197,7 +197,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_TRUE(block2->ShouldPaintCursorCaret());
 
   const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->invalidations;
+      &GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
             (*raster_invalidations)[0].rect);
@@ -224,7 +224,7 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_TRUE(block1->ShouldPaintCursorCaret());
   EXPECT_FALSE(block2->ShouldPaintCursorCaret());
 
-  raster_invalidations = &GetRasterInvalidationTracking()->invalidations;
+  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(2u, raster_invalidations->size());
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
             (*raster_invalidations)[0].rect);
@@ -329,7 +329,7 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
   const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->invalidations;
+      GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(2u, raster_invalidations.size());
   EXPECT_EQ(EnclosingIntRect(caret_visual_rect), raster_invalidations[0].rect);
   EXPECT_EQ(block, raster_invalidations[0].client);

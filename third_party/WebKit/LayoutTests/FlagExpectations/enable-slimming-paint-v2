@@ -971,6 +971,11 @@ Bug(none) paint/invalidation/window-resize-percent-html.html [ Failure ]
 # Different invalidation rect or corrupted rendering for filter and reflection.
 Bug(none) paint/invalidation/filter-invalidation-positioned-child.html [ Failure ]
 Bug(none) paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Failure ]
+Bug(none) paint/invalidation/filters/effect-reference-repaint-composite-1.html [ Failure ]
+Bug(none) paint/invalidation/filters/effect-reference-repaint-composite-2.html [ Failure ]
+Bug(none) paint/invalidation/filters/effect-reference-repaint-composite-5.html [ Failure ]
+Bug(none) paint/invalidation/filters/effect-reference-repaint-lighting.html [ Failure ]
+Bug(none) paint/invalidation/reflection-invalidation-after-display.html [ Failure ]
 Bug(none) paint/invalidation/reflection-invalidation-positioned-child.html [ Failure ]
 Bug(none) paint/invalidation/reflection-redraw.html [ Failure ]
 Bug(none) paint/invalidation/scroll-fixed-layer-with-reflection.html [ Failure ]
@@ -1247,7 +1252,9 @@ crbug.com/768102 compositing/overflow/reflected-overlay-scrollbars-should-appear
 crbug.com/768102 compositing/overflow/reflected-overlay-scrollbars-should-respect-ancestor-clip.html [ Crash ]
 crbug.com/768102 compositing/overflow/reparented-overlay-scrollbars-should-respect-ancestor-clip.html [ Crash ]
 
-crbug.com/644358 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ Failure ]
+crbug.com/644358 paint/invalidation/selection-after-delete.html [ Failure ]
+crbug.com/644358 paint/invalidation/selection-after-remove.html [ Failure ]
+crbug.com/644358 paint/invalidation/window-resize-background-image-fixed-centered-composited.html [ Failure ]
 
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position-if-overflow-hidden.html [ Failure ]
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position.html [ Failure ]

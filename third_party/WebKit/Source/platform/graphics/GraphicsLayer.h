@@ -57,11 +57,12 @@
 namespace blink {
 
 class CompositorFilterOperations;
+class CompositedLayerRasterInvalidator;
 class Image;
 class JSONObject;
 class LinkHighlight;
 class PaintController;
-struct RasterInvalidationTracking;
+class RasterInvalidationTracking;
 class ScrollableArea;
 class WebLayer;
 
@@ -226,15 +227,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
 
-  void SetTracksRasterInvalidations(bool);
-  bool IsTrackingOrCheckingRasterInvalidations() const {
-    return RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
-           is_tracking_raster_invalidations_;
-  }
-
+  void UpdateTrackingRasterInvalidations();
   void ResetTrackedRasterInvalidations();
   bool HasTrackedRasterInvalidations() const;
-  const RasterInvalidationTracking* GetRasterInvalidationTracking() const;
+  RasterInvalidationTracking* GetRasterInvalidationTracking() const;
   void TrackRasterInvalidation(const DisplayItemClient&,
                                const IntRect&,
                                PaintInvalidationReason);
@@ -340,6 +336,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   sk_sp<PaintRecord> CaptureRecord();
 
+  CompositedLayerRasterInvalidator& EnsureRasterInvalidator();
+
   GraphicsLayerClient* client_;
 
   // Offset from the owning layoutObject
@@ -370,8 +368,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool has_clip_parent_ : 1;
 
   bool painted_ : 1;
-
-  bool is_tracking_raster_invalidations_ : 1;
 
   GraphicsLayerPaintingPhase painting_phase_;
 
@@ -411,6 +407,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     IntPoint offset;
   };
   std::unique_ptr<LayerState> layer_state_;
+
+  std::unique_ptr<CompositedLayerRasterInvalidator> raster_invalidator_;
 };
 
 // ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses

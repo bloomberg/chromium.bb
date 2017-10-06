@@ -20,10 +20,6 @@
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 200],
           "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "reason": "paint property change"
         }
       ]
     }

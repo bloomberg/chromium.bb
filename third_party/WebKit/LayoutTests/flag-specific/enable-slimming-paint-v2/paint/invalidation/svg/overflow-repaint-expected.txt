@@ -10,10 +10,6 @@
           "object": "LayoutSVGRoot svg id='svg'",
           "rect": [8, 108, 100, 100],
           "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGRoot svg id='svg'",
-          "reason": "paint property change"
         }
       ]
     }

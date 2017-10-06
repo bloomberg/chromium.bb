@@ -184,7 +184,7 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(nullptr, GetRasterInvalidationTracking());
+  EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   EXPECT_EQ(PaintInvalidationReason::kDelayedFull,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
@@ -195,7 +195,7 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
   GetDocument().domWindow()->scrollTo(0, 4000);
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->invalidations;
+      GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(1u, raster_invalidations.size());
   EXPECT_EQ(PaintInvalidationReason::kNone,
             target->FullPaintInvalidationReason());
@@ -235,7 +235,7 @@ TEST_P(PaintInvalidationTest, SVGHiddenContainer) {
 
   // Should invalidate raster for real_rect only.
   const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->invalidations;
+      GetRasterInvalidationTracking()->Invalidations();
   ASSERT_EQ(1u, raster_invalidations.size());
   EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);

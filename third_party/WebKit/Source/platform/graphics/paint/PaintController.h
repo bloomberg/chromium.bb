@@ -181,7 +181,7 @@ class PLATFORM_EXPORT PaintController {
   DisplayItemList& NewDisplayItemList() { return new_display_item_list_; }
 
   void AppendDebugDrawingAfterCommit(const DisplayItemClient&,
-                                     sk_sp<PaintRecord>,
+                                     sk_sp<const PaintRecord>,
                                      const FloatRect& record_bounds);
 
   void ShowDebugData() const;

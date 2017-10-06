@@ -11125,13 +11125,13 @@ TEST_P(ParameterizedWebFrameTest, RootLayerMinimumHeight) {
           ->MainGraphicsLayer()
           ->GetRasterInvalidationTracking();
   ASSERT_TRUE(invalidation_tracking);
-  const auto* raster_invalidations = &invalidation_tracking->invalidations;
+  const auto& raster_invalidations = invalidation_tracking->Invalidations();
 
   // The newly revealed content at the bottom of the screen should have been
   // invalidated. There are additional invalidations for the position: fixed
   // element.
-  EXPECT_GT(raster_invalidations->size(), 0u);
-  EXPECT_TRUE((*raster_invalidations)[0].rect.Contains(
+  EXPECT_GT(raster_invalidations.size(), 0u);
+  EXPECT_TRUE(raster_invalidations[0].rect.Contains(
       IntRect(0, kViewportHeight - kBrowserControlsHeight, kViewportWidth,
               kBrowserControlsHeight)));
 

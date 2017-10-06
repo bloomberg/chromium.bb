@@ -13,6 +13,28 @@
 
 namespace blink {
 
+void RasterInvalidationTracking::AddInvalidation(
+    const DisplayItemClient* client,
+    const String& debug_name,
+    const IntRect& rect,
+    PaintInvalidationReason reason) {
+  if (rect.IsEmpty())
+    return;
+
+  RasterInvalidationInfo info;
+  info.client = client;
+  info.client_debug_name = debug_name;
+  info.rect = rect;
+  info.reason = reason;
+  invalidations_.push_back(info);
+
+  // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
+  // invalidation rect.
+  IntRect r = rect;
+  r.Inflate(1);
+  invalidation_region_since_last_paint_.Unite(r);
+}
+
 static bool CompareRasterInvalidationInfo(const RasterInvalidationInfo& a,
                                           const RasterInvalidationInfo& b) {
   // Sort by rect first, bigger rects before smaller ones.
@@ -35,11 +57,11 @@ static bool CompareRasterInvalidationInfo(const RasterInvalidationInfo& a,
 }
 
 void RasterInvalidationTracking::AsJSON(JSONObject* json) {
-  if (!invalidations.IsEmpty()) {
-    std::sort(invalidations.begin(), invalidations.end(),
+  if (!invalidations_.IsEmpty()) {
+    std::sort(invalidations_.begin(), invalidations_.end(),
               &CompareRasterInvalidationInfo);
     std::unique_ptr<JSONArray> paint_invalidations_json = JSONArray::Create();
-    for (auto& info : invalidations) {
+    for (auto& info : invalidations_) {
       std::unique_ptr<JSONObject> info_json = JSONObject::Create();
       info_json->SetString("object", info.client_debug_name);
       if (!info.rect.IsEmpty()) {
@@ -55,10 +77,10 @@ void RasterInvalidationTracking::AsJSON(JSONObject* json) {
     json->SetArray("paintInvalidations", std::move(paint_invalidations_json));
   }
 
-  if (!under_invalidations.IsEmpty()) {
+  if (!under_invalidations_.IsEmpty()) {
     std::unique_ptr<JSONArray> under_paint_invalidations_json =
         JSONArray::Create();
-    for (auto& under_paint_invalidation : under_invalidations) {
+    for (auto& under_paint_invalidation : under_invalidations_) {
       std::unique_ptr<JSONObject> under_paint_invalidation_json =
           JSONObject::Create();
       under_paint_invalidation_json->SetDouble("x", under_paint_invalidation.x);
@@ -96,13 +118,13 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
     const String& layer_debug_name,
     sk_sp<PaintRecord> new_record,
     const IntRect& new_interest_rect) {
-  auto old_interest_rect = last_interest_rect;
-  auto invalidation_region = invalidation_region_since_last_paint;
-  auto old_record = std::move(last_painted_record);
+  auto old_interest_rect = last_interest_rect_;
+  auto invalidation_region = invalidation_region_since_last_paint_;
+  auto old_record = std::move(last_painted_record_);
 
-  last_painted_record = new_record;
-  last_interest_rect = new_interest_rect;
-  invalidation_region_since_last_paint = Region();
+  last_painted_record_ = new_record;
+  last_interest_rect_ = new_interest_rect;
+  invalidation_region_since_last_paint_ = Region();
 
   if (!old_record)
     return;
@@ -146,7 +168,7 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
         if (mismatching_pixels < kMaxMismatchesToReport) {
           RasterUnderInvalidation under_invalidation = {layer_x, layer_y,
                                                         old_pixel, new_pixel};
-          under_invalidations.push_back(under_invalidation);
+          under_invalidations_.push_back(under_invalidation);
           LOG(ERROR) << layer_debug_name
                      << " Uninvalidated old/new pixels mismatch at " << layer_x
                      << "," << layer_y << " old:" << std::hex << old_pixel
@@ -169,10 +191,10 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
   PaintRecorder recorder;
   recorder.beginRecording(rect);
   auto* canvas = recorder.getRecordingCanvas();
-  if (under_invalidation_record)
-    canvas->drawPicture(std::move(under_invalidation_record));
+  if (under_invalidation_record_)
+    canvas->drawPicture(std::move(under_invalidation_record_));
   canvas->drawBitmap(new_bitmap, rect.X(), rect.Y());
-  under_invalidation_record = recorder.finishRecordingAsPicture();
+  under_invalidation_record_ = recorder.finishRecordingAsPicture();
 }
 
 }  // namespace blink
