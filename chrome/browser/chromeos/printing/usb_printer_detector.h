@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/printing/printer_detector.h"
+#include "device/usb/usb_service.h"
 
 namespace chromeos {
 
@@ -20,6 +21,8 @@ class UsbPrinterDetector : public PrinterDetector {
  public:
   // Factory function for the CUPS implementation.
   static std::unique_ptr<UsbPrinterDetector> Create();
+  static std::unique_ptr<UsbPrinterDetector> CreateForTesting(
+      device::UsbService*);
   ~UsbPrinterDetector() override = default;
 
  protected:

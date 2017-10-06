@@ -87,6 +87,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
                           PrinterEventTracker* event_tracker)
       : synced_printers_manager_(synced_printers_manager),
         synced_printers_manager_observer_(this),
+        started_observing_(false),
         usb_detector_(std::move(usb_detector)),
         zeroconf_detector_(std::move(zeroconf_detector)),
         ppd_provider_(std::move(ppd_provider)),
@@ -158,6 +159,15 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     observer_list_.RemoveObserver(observer);
+  }
+
+  // Used to initiate the callbacks after the observers have been constructed.
+  void Start() override {
+    if (!started_observing_) {
+      usb_detector_->StartObservers();
+      zeroconf_detector_->StartObservers();
+      started_observing_ = true;
+    }
   }
 
   // Public API function.
@@ -440,6 +450,12 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   SyncedPrintersManager* synced_printers_manager_;
   ScopedObserver<SyncedPrintersManager, SyncedPrintersManager::Observer>
       synced_printers_manager_observer_;
+
+  // Represents whether or not the Start() method has been called and
+  // CupsPrintersManager has started to observe the usb and zeroconf printer
+  // detectors. If this is true than subsequent calls to Start() will have no
+  // effect.
+  bool started_observing_;
 
   std::unique_ptr<PrinterDetector> usb_detector_;
   std::unique_ptr<PrinterDetectorObserverProxy> usb_detector_observer_proxy_;

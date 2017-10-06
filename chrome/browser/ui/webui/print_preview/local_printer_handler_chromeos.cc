@@ -75,6 +75,8 @@ LocalPrinterHandlerChromeos::LocalPrinterHandlerChromeos(Profile* profile)
     : printers_manager_(CupsPrintersManager::Create(profile)),
       printer_configurer_(chromeos::PrinterConfigurer::Create(profile)),
       weak_factory_(this) {
+  printers_manager_->Start();
+
   // Construct the CupsPrintJobManager to listen for printing events.
   chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
 }
