@@ -269,9 +269,9 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
 }
 
 LayoutRect LayoutInline::LocalCaretRect(
-    InlineBox* inline_box,
+    const InlineBox* inline_box,
     int,
-    LayoutUnit* extra_width_to_end_of_line) {
+    LayoutUnit* extra_width_to_end_of_line) const {
   if (FirstChild()) {
     // This condition is possible if the LayoutInline is at an editing boundary,
     // i.e. the VisiblePosition is:

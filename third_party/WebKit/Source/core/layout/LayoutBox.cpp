@@ -4763,9 +4763,10 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
                                     container_logical_height);
 }
 
-LayoutRect LayoutBox::LocalCaretRect(InlineBox* box,
-                                     int caret_offset,
-                                     LayoutUnit* extra_width_to_end_of_line) {
+LayoutRect LayoutBox::LocalCaretRect(
+    const InlineBox* box,
+    int caret_offset,
+    LayoutUnit* extra_width_to_end_of_line) const {
   // VisiblePositions at offsets inside containers either a) refer to the
   // positions before/after those containers (tables and select elements) or
   // b) refer to the position inside an empty block.
@@ -4781,7 +4782,7 @@ LayoutRect LayoutBox::LocalCaretRect(InlineBox* box,
     rect.Move(LayoutSize(Size().Width() - caret_width, LayoutUnit()));
 
   if (box) {
-    RootInlineBox& root_box = box->Root();
+    const RootInlineBox& root_box = box->Root();
     LayoutUnit top = root_box.LineTop();
     rect.SetY(top);
     rect.SetHeight(root_box.LineBottom() - top);

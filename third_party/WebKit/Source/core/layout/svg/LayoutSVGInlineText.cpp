@@ -95,13 +95,13 @@ InlineTextBox* LayoutSVGInlineText::CreateTextBox(int start,
   return box;
 }
 
-LayoutRect LayoutSVGInlineText::LocalCaretRect(InlineBox* box,
+LayoutRect LayoutSVGInlineText::LocalCaretRect(const InlineBox* box,
                                                int caret_offset,
-                                               LayoutUnit*) {
+                                               LayoutUnit*) const {
   if (!box || !box->IsInlineTextBox())
     return LayoutRect();
 
-  InlineTextBox* text_box = ToInlineTextBox(box);
+  const InlineTextBox* text_box = ToInlineTextBox(box);
   if (static_cast<unsigned>(caret_offset) < text_box->Start() ||
       static_cast<unsigned>(caret_offset) > text_box->Start() + text_box->Len())
     return LayoutRect();

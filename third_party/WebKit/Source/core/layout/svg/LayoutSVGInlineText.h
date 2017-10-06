@@ -72,9 +72,9 @@ class LayoutSVGInlineText final : public LayoutText {
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
   LayoutRect LocalCaretRect(
-      InlineBox*,
+      const InlineBox*,
       int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr) override;
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
   LayoutRect LinesBoundingBox() const override;
   InlineTextBox* CreateTextBox(int start, unsigned short length) override;
 

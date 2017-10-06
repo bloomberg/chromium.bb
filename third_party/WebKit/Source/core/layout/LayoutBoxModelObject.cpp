@@ -1193,7 +1193,7 @@ void LayoutBoxModelObject::ComputeLayerHitTestRects(
 
 LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
     LayoutUnit width,
-    LayoutUnit text_indent_offset) {
+    LayoutUnit text_indent_offset) const {
   DCHECK(!SlowFirstChild() || SlowFirstChild()->IsPseudoElement());
 
   // FIXME: This does not take into account either :first-line or :first-letter

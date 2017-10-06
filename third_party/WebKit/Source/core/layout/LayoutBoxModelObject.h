@@ -470,7 +470,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   }
 
   LayoutRect LocalCaretRectForEmptyElement(LayoutUnit width,
-                                           LayoutUnit text_indent_offset);
+                                           LayoutUnit text_indent_offset) const;
 
   bool HasAutoHeightOrContainingBlockWithAutoHeight() const;
   LayoutBlock* ContainingBlockForAutoHeightDetection(

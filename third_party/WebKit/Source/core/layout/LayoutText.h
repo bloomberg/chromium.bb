@@ -190,9 +190,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void SetSelectionState(SelectionState) final;
   LayoutRect LocalSelectionRect() const final;
   LayoutRect LocalCaretRect(
-      InlineBox*,
+      const InlineBox*,
       int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr) override;
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
 
   InlineTextBox* FirstTextBox() const { return first_text_box_; }
   InlineTextBox* LastTextBox() const { return last_text_box_; }
