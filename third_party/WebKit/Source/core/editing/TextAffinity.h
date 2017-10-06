@@ -35,6 +35,11 @@ enum class TextAffinity {
   kUpstream,
   kDownstream,
 
+  // PositionWithAffiity default affinity is downstream because the callers do
+  // not really care (they just want the deep position without regard to line
+  // position), and this is cheaper than kUpstream.
+  kDefault = kDownstream,
+
   // Callers who do not know where on the line the position is, but would like
   // kUpstream if at a line break or kDownstream otherwise, need a clear way to
   // specify that. The constructors auto-correct kUpstream to kDownstream if the

@@ -34,12 +34,6 @@
 
 namespace blink {
 
-// VisiblePosition default affinity is downstream because
-// the callers do not really care (they just want the
-// deep position without regard to line position), and this
-// is cheaper than UPSTREAM
-#define VP_DEFAULT_AFFINITY TextAffinity::kDownstream
-
 // |VisiblePosition| is an immutable object representing "canonical position"
 // with affinity.
 //
@@ -134,11 +128,11 @@ using VisiblePositionInFlatTree =
     VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
 CORE_EXPORT VisiblePosition
-CreateVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+CreateVisiblePosition(const Position&, TextAffinity = TextAffinity::kDefault);
 CORE_EXPORT VisiblePosition CreateVisiblePosition(const PositionWithAffinity&);
 CORE_EXPORT VisiblePositionInFlatTree
 CreateVisiblePosition(const PositionInFlatTree&,
-                      TextAffinity = VP_DEFAULT_AFFINITY);
+                      TextAffinity = TextAffinity::kDefault);
 CORE_EXPORT VisiblePositionInFlatTree
 CreateVisiblePosition(const PositionInFlatTreeWithAffinity&);
 
