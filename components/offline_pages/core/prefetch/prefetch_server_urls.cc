@@ -12,6 +12,7 @@
 namespace offline_pages {
 
 const char kPrefetchServer[] = "https://offlinepages-pa.googleapis.com/";
+const char kPrefetchExperimentHeaderName[] = "X-Offline-Prefetch-Experiment";
 
 namespace {
 
@@ -72,6 +73,13 @@ GURL PrefetchDownloadURL(const std::string& download_location,
                                          kAltKeyValueForDownload);
 
   return AppendApiKeyToURL(server_url, channel);
+}
+
+std::string PrefetchExperimentHeader() {
+  std::string tag = GetPrefetchingOfflinePagesExperimentTag();
+  if (tag.empty())
+    return std::string();
+  return std::string(kPrefetchExperimentHeaderName) + ": " + tag;
 }
 
 }  // namespace offline_pages

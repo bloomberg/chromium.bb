@@ -24,6 +24,10 @@ extern const base::Feature kOfflinePagesRenovationsFeature;
 extern const base::Feature kOfflinePagesResourceBasedSnapshotFeature;
 extern const base::Feature kOfflinePagesPrefetchingUIFeature;
 
+// The parameter name used to find the experiment tag for prefetching offline
+// pages.
+extern const char kPrefetchingOfflinePagesExperimentsOption[];
+
 // Returns true if saving bookmarked pages for offline viewing is enabled.
 bool IsOfflineBookmarksEnabled();
 
@@ -70,6 +74,12 @@ bool ShouldUseTestingSnapshotDelay();
 
 // Returns true if we should record request origin as part of custom tabs V2.
 bool IsOfflinePagesCTV2Enabled();
+
+// Returns an experiment tag provided by the field trial. This experiment tag
+// will be included in a custom header in all requests sent to Offline Prefetch
+// Server. The server will use this this optional tag to decide how to process
+// the request.
+std::string GetPrefetchingOfflinePagesExperimentTag();
 
 }  // namespace offline_pages
 

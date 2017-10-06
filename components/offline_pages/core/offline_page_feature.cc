@@ -8,16 +8,16 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
-namespace switches {
-
+namespace {
 // This flag significantly shortens the delay between WebContentsObserver events
 // and SnapshotController's StartSnapshot calls. The purpose is to speed up
 // integration tests.
 const char kOfflinePagesUseTestingSnapshotDelay[] =
     "short-offline-page-snapshot-delay-for-test";
 
-}  // namespace switches
+}  // namespace
 
 namespace offline_pages {
 
@@ -59,6 +59,8 @@ const base::Feature kOfflinePagesCTV2Feature{"OfflinePagesCTV2",
 
 const base::Feature kOfflinePagesPrefetchingUIFeature{
     "OfflinePagesPrefetchingUI", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
 
 bool IsOfflineBookmarksEnabled() {
   return base::FeatureList::IsEnabled(kOfflineBookmarksFeature);
@@ -113,11 +115,17 @@ bool IsOfflinePagesResourceBasedSnapshotEnabled() {
 
 bool ShouldUseTestingSnapshotDelay() {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  return cl->HasSwitch(switches::kOfflinePagesUseTestingSnapshotDelay);
+  return cl->HasSwitch(kOfflinePagesUseTestingSnapshotDelay);
 }
 
 bool IsOfflinePagesCTV2Enabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesCTV2Feature);
+}
+
+std::string GetPrefetchingOfflinePagesExperimentTag() {
+  return base::GetFieldTrialParamValueByFeature(
+      kPrefetchingOfflinePagesFeature,
+      kPrefetchingOfflinePagesExperimentsOption);
 }
 
 }  // namespace offline_pages

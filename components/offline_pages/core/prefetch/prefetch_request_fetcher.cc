@@ -80,11 +80,14 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
   url_fetcher_->SetRequestContext(request_context_getter_.get());
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
+  std::string experiment_header = PrefetchExperimentHeader();
+  if (!experiment_header.empty())
+    url_fetcher_->AddExtraRequestHeader(experiment_header);
   if (message.empty()) {
-    std::string extra_header(net::HttpRequestHeaders::kContentType);
-    extra_header += ": ";
-    extra_header += kRequestContentType;
-    url_fetcher_->AddExtraRequestHeader(extra_header);
+    std::string content_type_header(net::HttpRequestHeaders::kContentType);
+    content_type_header += ": ";
+    content_type_header += kRequestContentType;
+    url_fetcher_->AddExtraRequestHeader(content_type_header);
   } else {
     url_fetcher_->SetUploadData(kRequestContentType, message);
   }

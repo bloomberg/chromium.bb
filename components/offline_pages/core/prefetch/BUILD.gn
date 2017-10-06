@@ -140,6 +140,7 @@ static_library("test_support") {
     "//components/gcm_driver/instance_id",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
+    "//components/offline_pages/core:switches",
     "//components/prefs:test_support",
     "//components/version_info:channel",
     "//net:test_support",
