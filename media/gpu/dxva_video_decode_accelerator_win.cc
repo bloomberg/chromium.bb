@@ -635,7 +635,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Unfortunately, the profile is currently unreliable for
   // VP9 (crbug.com/592074) so also try to use fp16 if HDR is on.
-  if (config_.target_color_space.IsHDR()) {
+  if (config.target_color_space.IsHDR()) {
     use_fp16_ = true;
   }
 
