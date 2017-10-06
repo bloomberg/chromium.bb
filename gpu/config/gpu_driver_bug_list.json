@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.31",
+  "version": "10.32",
   "entries": [
     {
       "id": 1,
@@ -1706,7 +1706,7 @@
     },
     {
       "id": 172,
-      "description": "Limited enabling of Chromium GL_INTEL_framebuffer_CMAA",
+      "description": "Use GL_INTEL_framebuffer_CMAA on ChromeOS",
       "cr_bugs": [535198],
       "exceptions" : [
         {
@@ -1716,7 +1716,6 @@
           "vendor_id": "0x8086",
           "driver_vendor": "Mesa",
           "gl_vendor": "Intel.*",
-          "gl_renderer": ".*Intel.*(Braswell|Broadwell|Skylake).*",
           "gl_type": "gles",
           "gl_version": {
             "op": ">=",
