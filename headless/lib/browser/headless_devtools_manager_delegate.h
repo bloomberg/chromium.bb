@@ -73,6 +73,13 @@ class HeadlessDevToolsManagerDelegate
   std::unique_ptr<base::DictionaryValue> SetWindowBounds(
       int command_id,
       const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> EmulateNetworkConditions(
+      int command_id,
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> NetworkDisable(
+      int command_id,
+      const base::DictionaryValue* params);
+
   void PrintToPDF(content::DevToolsAgentHost* agent_host,
                   int command_id,
                   const base::DictionaryValue* params,
@@ -91,6 +98,9 @@ class HeadlessDevToolsManagerDelegate
                           const CommandCallback& callback)>;
   std::map<std::string, CommandMemberCallback> command_map_;
   std::map<std::string, AsyncCommandMemberCallback> async_command_map_;
+
+  // These commands are passed on for devtools to handle.
+  std::map<std::string, CommandMemberCallback> unhandled_command_map_;
 };
 
 }  // namespace headless
