@@ -2881,7 +2881,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressOneCreditCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   ASSERT_TRUE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -2960,7 +2960,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
   bool imported_credit_card_matches_masked_server_credit_card;
   // Still returns true because the credit card import was successful.
   EXPECT_TRUE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   ASSERT_TRUE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -2978,6 +2978,61 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
   const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected_card.Compare(*results[0]));
+}
+
+TEST_F(PersonalDataManagerTest, ImportFormData_OneAddressCreditCardDisabled) {
+  FormData form;
+  FormFieldData field;
+  // Address section.
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // Credit card section.
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  bool imported_credit_card_matches_masked_server_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(
+      form_structure, false, false, &imported_credit_card,
+      &imported_credit_card_matches_masked_server_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+
+  WaitForOnPersonalDataChanged();
+
+  // Test that the address has been saved.
+  AutofillProfile expected_address(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&expected_address, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+                       "San Francisco", "California", "94102", NULL, NULL);
+  const std::vector<AutofillProfile*>& results_addr =
+      personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results_addr.size());
+  EXPECT_EQ(0, expected_address.Compare(*results_addr[0]));
+
+  // Test that the credit card was not saved.
+  const std::vector<CreditCard*>& results_cards =
+      personal_data_->GetCreditCards();
+  ASSERT_EQ(0U, results_cards.size());
 }
 
 // Ensure that verified profiles can be saved via SaveImportedProfile,
@@ -3797,6 +3852,48 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[4].value);
 }
 
+// Test that local and server cards are not shown if
+// |kAutofillCreditCardEnabled| is set to |false|.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_CreditCardAutofillDisabled) {
+  EnableWalletCardImport();
+  SetUpReferenceLocalCreditCards();
+
+  // Add some server cards.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
+                          "2999", "1");
+  server_cards.back().set_use_count(2);
+  server_cards.back().set_use_date(AutofillClock::Now() -
+                                   base::TimeDelta::FromDays(1));
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b460"));
+  test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
+                          "2999", "1");
+  server_cards.back().set_use_count(6);
+  server_cards.back().set_use_date(AutofillClock::Now() -
+                                   base::TimeDelta::FromDays(1));
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  // Disable Credit card autofill.
+  personal_data_->pref_service_->SetBoolean(prefs::kAutofillCreditCardEnabled,
+                                            false);
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+
+  // Expect no autofilled values or suggestions.
+  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME_FULL),
+          /* field_contents= */ base::string16());
+  ASSERT_EQ(0U, suggestions.size());
+}
+
 // Test that expired cards are ordered by frecency and are always suggested
 // after non expired cards even if they have a higher frecency score.
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
@@ -4584,7 +4681,7 @@ TEST_F(PersonalDataManagerTest, AllowDuplicateMaskedServerCardIfFlagEnabled) {
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   ASSERT_TRUE(imported_credit_card);
   EXPECT_TRUE(imported_credit_card_matches_masked_server_credit_card);
@@ -4644,7 +4741,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateMaskedServerCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   ASSERT_FALSE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -4692,7 +4789,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateFullServerCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   EXPECT_FALSE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -4735,7 +4832,7 @@ TEST_F(PersonalDataManagerTest,
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   EXPECT_FALSE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -4782,7 +4879,7 @@ TEST_F(PersonalDataManagerTest,
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   EXPECT_FALSE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -4829,7 +4926,7 @@ TEST_F(PersonalDataManagerTest,
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   EXPECT_FALSE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);
@@ -4877,7 +4974,7 @@ TEST_F(PersonalDataManagerTest,
   std::unique_ptr<CreditCard> imported_credit_card;
   bool imported_credit_card_matches_masked_server_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(
-      form_structure, false, &imported_credit_card,
+      form_structure, true, false, &imported_credit_card,
       &imported_credit_card_matches_masked_server_credit_card));
   EXPECT_FALSE(imported_credit_card);
   EXPECT_FALSE(imported_credit_card_matches_masked_server_credit_card);

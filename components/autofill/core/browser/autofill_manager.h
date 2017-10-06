@@ -202,6 +202,10 @@ class AutofillManager : public AutofillHandler,
   // are satisfied.
   virtual bool IsCreditCardUploadEnabled();
 
+  // Returns true if the value of the AutofillCreditCardEnabled pref is true and
+  // the client supports Autofill.
+  virtual bool IsCreditCardAutofillEnabled();
+
   // Shared code to determine if |form| should be uploaded to the Autofill
   // server. It verifies that uploading is allowed and |form| meets conditions
   // to be uploadable. Exposed for testing.

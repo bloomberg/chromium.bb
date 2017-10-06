@@ -36,6 +36,7 @@
 #include "components/network_time/network_time_pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/policy/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -881,6 +882,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
         kSimplePolicyMap[i].value_type));
   }
 
+  handlers->AddHandler(base::MakeUnique<AutofillCreditCardPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<AutofillPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<DefaultSearchPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<ForceSafeSearchPolicyHandler>());

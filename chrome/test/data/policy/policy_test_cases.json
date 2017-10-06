@@ -446,6 +446,19 @@
     ]
   },
 
+  "AutofillCreditCardEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "test_policy": { "AutofillCreditCardEnabled": false },
+    "pref_mappings": [
+      { "pref": "autofill.credit_card_enabled",
+        "indicator_tests": [
+          { "policy": { "AutofillCreditCardEnabled": false } }
+        ]
+      }
+    ]
+  },
+
   "DisabledPlugins.0": {
     "note": "This policy is deprecated. This test tests its migration path.",
     "os": ["win", "linux", "mac", "chromeos"],

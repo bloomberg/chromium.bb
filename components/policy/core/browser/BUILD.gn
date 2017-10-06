@@ -21,6 +21,8 @@ group("browser") {
 source_set("internal") {
   visibility = [ "//components/policy/*" ]
   sources = [
+    "autofill_credit_card_policy_handler.cc",
+    "autofill_credit_card_policy_handler.h",
     "autofill_policy_handler.cc",
     "autofill_policy_handler.h",
     "browser_policy_connector.cc",
@@ -112,6 +114,7 @@ source_set("unit_tests") {
   sources = [
     "android/android_combined_policy_provider_unittest.cc",
     "android/policy_converter_unittest.cc",
+    "autofill_credit_card_policy_handler_unittest.cc",
     "autofill_policy_handler_unittest.cc",
     "browser_policy_connector_unittest.cc",
     "configuration_policy_handler_unittest.cc",
