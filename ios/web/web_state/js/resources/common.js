@@ -507,16 +507,8 @@ __gCrWeb['common'] = __gCrWeb.common;
    * @return {string} Web page URL with query and reference removed.
    */
   __gCrWeb.common.removeQueryAndReferenceFromURL = function(url) {
-    var queryIndex = url.indexOf('?');
-    if (queryIndex != -1) {
-      return url.substring(0, queryIndex);
-    }
-
-    var hashIndex = url.indexOf('#');
-    if (hashIndex != -1) {
-      return url.substring(0, hashIndex);
-    }
-    return url;
+    var parsed = new URL(url);
+    return parsed.origin + parsed.pathname;
   };
 
   /**
