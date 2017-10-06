@@ -177,6 +177,11 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionMessageBubbleFactory::set_override_for_tests(
       ExtensionMessageBubbleFactory::OVERRIDE_DISABLED);
 
+  if (!ShouldEnableContentVerification()) {
+    ignore_content_verification_.reset(
+        new extensions::ScopedIgnoreContentVerifierForTest());
+  }
+
 #if defined(OS_CHROMEOS)
   if (set_chromeos_user_) {
     // This makes sure that we create the Default profile first, with no
@@ -195,11 +200,6 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
   if (extension_service()->updater()) {
     extension_service()->updater()->SetExtensionCacheForTesting(
         test_extension_cache_.get());
-  }
-
-  if (!ShouldEnableContentVerification()) {
-    ignore_content_verification_.reset(
-        new extensions::ScopedIgnoreContentVerifierForTest());
   }
 
   // We don't use test_data_dir_ here because we want this to point to
