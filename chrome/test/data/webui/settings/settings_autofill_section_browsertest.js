@@ -102,13 +102,6 @@ SettingsAutofillSectionBrowserTest.prototype = {
     'ensure_lazy_loaded.js',
   ]),
 
-  /**
-   * TODO(hcarmona): Increases speed, but disables A11y checks. Enable checks
-   * when we "accessibilityIssuesAreErrors: true" for all tests.
-   * @override
-   */
-  runAccessibilityChecks: false,
-
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);

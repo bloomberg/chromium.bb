@@ -31,6 +31,13 @@ PolymerTest.prototype = {
   isAsync: true,
 
   /**
+   * Old style a11y checks are obsolete. See ../a11y/accessibility_test.js for
+   * the new suggested way.
+   * @override
+   */
+  runAccessibilityChecks: false,
+
+  /**
    * Files that need not be compiled. Should be overridden to use correct
    * relative paths with PolymerTest.getLibraries.
    * @override

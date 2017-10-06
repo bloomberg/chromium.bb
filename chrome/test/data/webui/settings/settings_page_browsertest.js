@@ -29,9 +29,6 @@ SettingsPageBrowserTest.prototype = {
     'fake_settings_private.js',
   ]),
 
-  /** @override */
-  runAccessibilityChecks: false,
-
   /** @type {?SettingsBasicPageElement} */
   basicPage: null,
 
