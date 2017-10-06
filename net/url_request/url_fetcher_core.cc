@@ -318,6 +318,10 @@ HostPortPair URLFetcherCore::GetSocketAddress() const {
   return socket_address_;
 }
 
+const ProxyServer& URLFetcherCore::ProxyServerUsed() const {
+  return proxy_server_;
+}
+
 bool URLFetcherCore::WasFetchedViaProxy() const {
   return was_fetched_via_proxy_;
 }
@@ -406,6 +410,7 @@ void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
     stopped_on_redirect_ = true;
     url_ = redirect_info.new_url;
     response_code_ = request_->GetResponseCode();
+    proxy_server_ = request_->proxy_server();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
     was_cached_ = request_->was_cached();
     total_received_bytes_ += request_->GetTotalReceivedBytes();
@@ -423,6 +428,7 @@ void URLFetcherCore::OnResponseStarted(URLRequest* request, int net_error) {
     response_code_ = request_->GetResponseCode();
     response_headers_ = request_->response_headers();
     socket_address_ = request_->GetSocketAddress();
+    proxy_server_ = request_->proxy_server();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
     was_cached_ = request_->was_cached();
     total_response_bytes_ = request_->GetExpectedContentSize();

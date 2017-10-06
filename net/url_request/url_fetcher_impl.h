@@ -83,6 +83,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
       std::unique_ptr<URLFetcherResponseWriter> response_writer) override;
   HttpResponseHeaders* GetResponseHeaders() const override;
   HostPortPair GetSocketAddress() const override;
+  const ProxyServer& ProxyServerUsed() const override;
   bool WasFetchedViaProxy() const override;
   bool WasCached() const override;
   int64_t GetReceivedResponseContentLength() const override;

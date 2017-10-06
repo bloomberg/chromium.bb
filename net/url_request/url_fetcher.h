@@ -314,6 +314,11 @@ class NET_EXPORT URLFetcher {
   // the request has not failed.
   virtual HostPortPair GetSocketAddress() const = 0;
 
+  // Returns the proxy server that proxied the request. Must only be called
+  // after the OnURLFetchComplete callback has run and the request has not
+  // failed.
+  virtual const ProxyServer& ProxyServerUsed() const = 0;
+
   // Returns true if the request was delivered through a proxy.  Must only
   // be called after the OnURLFetchComplete callback has run and the request
   // has not failed.

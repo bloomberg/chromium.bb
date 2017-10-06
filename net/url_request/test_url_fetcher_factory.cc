@@ -212,6 +212,10 @@ HostPortPair TestURLFetcher::GetSocketAddress() const {
   return HostPortPair();
 }
 
+const ProxyServer& TestURLFetcher::ProxyServerUsed() const {
+  return fake_proxy_server_;
+}
+
 bool TestURLFetcher::WasFetchedViaProxy() const {
   return fake_was_fetched_via_proxy_;
 }

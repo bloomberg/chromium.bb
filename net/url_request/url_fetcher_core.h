@@ -20,6 +20,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_request_headers.h"
+#include "net/proxy/proxy_server.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -115,6 +116,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
       std::unique_ptr<URLFetcherResponseWriter> response_writer);
   HttpResponseHeaders* GetResponseHeaders() const;
   HostPortPair GetSocketAddress() const;
+  const ProxyServer& ProxyServerUsed() const;
   bool WasFetchedViaProxy() const;
   bool WasCached() const;
   const GURL& GetOriginalURL() const;
@@ -255,6 +257,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   URLFetcher::CreateDataCallback url_request_create_data_callback_;
   HttpRequestHeaders extra_request_headers_;
   scoped_refptr<HttpResponseHeaders> response_headers_;
+  ProxyServer proxy_server_;
   bool was_fetched_via_proxy_;
   bool was_cached_;
   int64_t received_response_content_length_;

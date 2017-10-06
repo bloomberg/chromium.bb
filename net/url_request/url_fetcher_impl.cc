@@ -154,6 +154,10 @@ HostPortPair URLFetcherImpl::GetSocketAddress() const {
   return core_->GetSocketAddress();
 }
 
+const ProxyServer& URLFetcherImpl::ProxyServerUsed() const {
+  return core_->ProxyServerUsed();
+}
+
 bool URLFetcherImpl::WasFetchedViaProxy() const {
   return core_->WasFetchedViaProxy();
 }
