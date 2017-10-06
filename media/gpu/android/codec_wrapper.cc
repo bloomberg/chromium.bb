@@ -38,7 +38,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
   bool SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle);
-  AVDASurfaceBundle* SurfaceBundle();
+  scoped_refptr<AVDASurfaceBundle> SurfaceBundle();
   QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
                                const EncryptionScheme& encryption_scheme);
   DequeueStatus DequeueOutputBuffer(
@@ -338,9 +338,9 @@ bool CodecWrapperImpl::SetSurface(
   return true;
 }
 
-AVDASurfaceBundle* CodecWrapperImpl::SurfaceBundle() {
+scoped_refptr<AVDASurfaceBundle> CodecWrapperImpl::SurfaceBundle() {
   base::AutoLock l(lock_);
-  return surface_bundle_.get();
+  return surface_bundle_;
 }
 
 bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
@@ -431,7 +431,7 @@ bool CodecWrapper::SetSurface(scoped_refptr<AVDASurfaceBundle> surface_bundle) {
   return impl_->SetSurface(std::move(surface_bundle));
 }
 
-AVDASurfaceBundle* CodecWrapper::SurfaceBundle() {
+scoped_refptr<AVDASurfaceBundle> CodecWrapper::SurfaceBundle() {
   return impl_->SurfaceBundle();
 }
 

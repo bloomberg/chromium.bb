@@ -177,6 +177,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Creates an overlay factory cb based on the value of overlay_info_.
   AndroidOverlayFactoryCB CreateOverlayFactoryCb();
 
+  // Create a callback that will handle promotion hints, and set the overlay
+  // position if required.
+  PromotionHintAggregator::NotifyPromotionHintCB CreatePromotionHintCB() const;
+
   State state_ = State::kInitializing;
 
   // Whether initialization still needs to be done on the first decode call.

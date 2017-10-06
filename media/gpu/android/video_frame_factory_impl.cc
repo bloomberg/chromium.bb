@@ -62,14 +62,16 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     scoped_refptr<SurfaceTextureGLOwner> surface_texture,
     base::TimeDelta timestamp,
     gfx::Size natural_size,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     OutputWithReleaseMailboxCB output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   gpu_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuVideoFrameFactory::CreateVideoFrame,
-                            base::Unretained(gpu_video_frame_factory_.get()),
-                            base::Passed(&output_buffer), surface_texture,
-                            timestamp, natural_size, std::move(output_cb),
-                            base::ThreadTaskRunnerHandle::Get()));
+      FROM_HERE,
+      base::Bind(&GpuVideoFrameFactory::CreateVideoFrame,
+                 base::Unretained(gpu_video_frame_factory_.get()),
+                 base::Passed(&output_buffer), surface_texture, timestamp,
+                 natural_size, std::move(promotion_hint_cb),
+                 std::move(output_cb), base::ThreadTaskRunnerHandle::Get()));
 }
 
 void VideoFrameFactoryImpl::RunAfterPendingVideoFrames(
@@ -107,13 +109,15 @@ void GpuVideoFrameFactory::CreateVideoFrame(
     scoped_refptr<SurfaceTextureGLOwner> surface_texture,
     base::TimeDelta timestamp,
     gfx::Size natural_size,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<VideoFrame> frame;
   scoped_refptr<gpu::gles2::TextureRef> texture_ref;
   CreateVideoFrameInternal(std::move(output_buffer), std::move(surface_texture),
-                           timestamp, natural_size, &frame, &texture_ref);
+                           timestamp, natural_size,
+                           std::move(promotion_hint_cb), &frame, &texture_ref);
   if (!frame || !texture_ref)
     return;
 
@@ -145,6 +149,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
     scoped_refptr<SurfaceTextureGLOwner> surface_texture,
     base::TimeDelta timestamp,
     gfx::Size natural_size,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     scoped_refptr<VideoFrame>* video_frame_out,
     scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -177,7 +182,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
                                      size.width(), size.height(), GL_RGBA,
                                      GL_UNSIGNED_BYTE);
   auto image = base::MakeRefCounted<CodecImage>(
-      std::move(output_buffer), surface_texture,
+      std::move(output_buffer), surface_texture, std::move(promotion_hint_cb),
       base::Bind(&GpuVideoFrameFactory::OnImageDestructed,
                  weak_factory_.GetWeakPtr()));
   images_.push_back(image.get());
@@ -212,6 +217,9 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   // (http://crbug.com/582170).
   if (stub_->GetGpuPreferences().enable_threaded_texture_mailboxes)
     frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
+
+  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
+                                !surface_texture);
 
   *video_frame_out = std::move(frame);
   *texture_ref_out = std::move(texture_ref);

@@ -40,8 +40,7 @@ class PromotionHintAggregatorImplTest : public testing::Test {
   // previous frame.  Returns whether the video is promotable.
   bool SendFrame(bool is_promotable, TimeDelta elapsed = FrameTime) {
     tick_clock_.Advance(elapsed);
-    PromotionHintAggregator::Hint hint;
-    hint.is_promotable = is_promotable;
+    PromotionHintAggregator::Hint hint(gfx::Rect(), is_promotable);
     impl_->NotifyPromotionHint(hint);
     return impl_->IsSafeToPromote();
   }

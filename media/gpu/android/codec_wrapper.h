@@ -103,7 +103,7 @@ class MEDIA_GPU_EXPORT CodecWrapper {
 
   // Returns the surface bundle that the codec is currently configured with.
   // Returns null after TakeCodecSurfacePair() is called.
-  AVDASurfaceBundle* SurfaceBundle();
+  scoped_refptr<AVDASurfaceBundle> SurfaceBundle();
 
   // Queues |buffer| if the codec has an available input buffer.
   enum class QueueStatus { kOk, kError, kTryAgainLater, kNoKey };

@@ -266,6 +266,8 @@ void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   // If SetOutputSurface() is not supported we only ever observe destruction of
   // a single overlay so this must be the one we're using. In this case it's
   // the responsibility of our consumer to destroy us for surface transitions.
+  // TODO(liberato): This might not be true for L1 / L3, since our caller has
+  // no idea that this has happened.  We should unback the frames here.
   if (!device_info_->IsSetOutputSurfaceSupported()) {
     EnterTerminalState(State::kSurfaceDestroyed);
     return;
@@ -534,8 +536,12 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
     return true;
 
   video_frame_factory_->CreateVideoFrame(
-      std::move(output_buffer), surface_texture_bundle_->surface_texture,
+      std::move(output_buffer),
+      codec_->SurfaceBundle()->overlay
+          ? nullptr
+          : surface_texture_bundle_->surface_texture,
       presentation_time, decoder_config_.natural_size(),
+      CreatePromotionHintCB(),
       base::Bind(&MediaCodecVideoDecoder::ForwardVideoFrame,
                  weak_factory_.GetWeakPtr(), reset_generation_));
   return true;
@@ -698,6 +704,30 @@ int MediaCodecVideoDecoder::GetMaxDecodeRequests() const {
   // MediaCodec so the number of parallel decode requests just sets the upper
   // limit of the size of our pending decode queue.
   return 2;
+}
+
+PromotionHintAggregator::NotifyPromotionHintCB
+MediaCodecVideoDecoder::CreatePromotionHintCB() const {
+  // Right now, we don't request promotion hints.  This is only used by SOP.
+  // While we could simplify it a bit, this is the general form that we'll use
+  // when handling promotion hints.
+
+  // TODO(liberato): Keeping the surface bundle around as long as the images
+  // doesn't work so well if the surface is destroyed.  In that case, the right
+  // thing to do is (a) wait for any codec to quit using the surface, and (b)
+  // clear |overlay| out of the surface bundle.
+  // Having the surface bundle register for destruction callbacks, instead of
+  // us, makes sense.
+  return BindToCurrentLoop(base::BindRepeating(
+      [](scoped_refptr<AVDASurfaceBundle> surface_bundle,
+         PromotionHintAggregator::Hint hint) {
+        // If we're promotable, and we have a surface bundle, then also
+        // position the overlay.  We could do this even if the overlay is
+        // not promotable, but it wouldn't have any visible effect.
+        if (hint.is_promotable && surface_bundle)
+          surface_bundle->overlay->ScheduleLayout(hint.screen_rect);
+      },
+      codec_->SurfaceBundle()));
 }
 
 }  // namespace media

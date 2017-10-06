@@ -77,9 +77,11 @@ class CodecImageTest : public testing::Test {
       CodecImage::DestructionCb destruction_cb = kNoop) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
-    return new CodecImage(std::move(buffer),
-                          kind == kSurfaceTexture ? surface_texture_ : nullptr,
-                          std::move(destruction_cb));
+    return new CodecImage(
+        std::move(buffer), kind == kSurfaceTexture ? surface_texture_ : nullptr,
+        base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
+                            base::Unretained(&promotion_hint_receiver_)),
+        std::move(destruction_cb));
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -89,6 +91,13 @@ class CodecImageTest : public testing::Test {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLSurface> surface_;
+
+  class PromotionHintReceiver {
+   public:
+    MOCK_METHOD1(OnPromotionHint, void(PromotionHintAggregator::Hint));
+  };
+
+  PromotionHintReceiver promotion_hint_receiver_;
 };
 
 TEST_F(CodecImageTest, DestructionCbRuns) {
@@ -169,8 +178,12 @@ TEST_F(CodecImageTest, GetTextureMatrixReturnsIdentityForOverlayImages) {
 TEST_F(CodecImageTest, ScheduleOverlayPlaneTriggersFrontBufferRendering) {
   auto i = NewImage(kOverlay);
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
+  // Also verify that it sends the appropriate promotion hint so that the
+  // overlay is positioned properly.
+  PromotionHintAggregator::Hint hint(gfx::Rect(1, 2, 3, 4), true);
+  EXPECT_CALL(promotion_hint_receiver_, OnPromotionHint(hint));
   i->ScheduleOverlayPlane(gfx::AcceleratedWidget(), 0, gfx::OverlayTransform(),
-                          gfx::Rect(), gfx::RectF());
+                          hint.screen_rect, gfx::RectF());
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
 

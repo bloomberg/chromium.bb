@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "media/gpu/android/codec_wrapper.h"
+#include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
@@ -27,6 +28,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
 
   CodecImage(std::unique_ptr<CodecOutputBuffer> output_buffer,
              scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+             PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
              DestructionCb destruction_cb);
 
   // gl::GLImage implementation
@@ -108,6 +110,9 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
 
   // The bounds last sent to the overlay.
   gfx::Rect most_recent_bounds_;
+
+  // Callback to notify about promotion hints and overlay position.
+  PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
   DestructionCb destruction_cb_;
 
