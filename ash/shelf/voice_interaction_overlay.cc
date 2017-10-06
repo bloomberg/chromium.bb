@@ -665,11 +665,13 @@ void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
   const int icon_x_offset = is_tablet_mode ? 0 : kIconOffsetDip;
+  const int icon_y_offset =
+      is_tablet_mode ? -kRippleCircleRadiusDip : -kIconOffsetDip;
   // Setup icon animation.
   scale_factor = kIconSizeDip / kIconInitSizeDip;
   transform.MakeIdentity();
   transform.Translate(center.x() - kIconSizeDip / 2 + icon_x_offset,
-                      center.y() - kIconSizeDip / 2 - kIconOffsetDip);
+                      center.y() - kIconSizeDip / 2 + icon_y_offset);
   transform.Scale(scale_factor, scale_factor);
 
   {
@@ -697,7 +699,7 @@ void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
   scale_factor = kBackgroundSizeDip / kBackgroundInitSizeDip;
   transform.MakeIdentity();
   transform.Translate(center.x() - kBackgroundSizeDip / 2 + icon_x_offset,
-                      center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip);
+                      center.y() - kBackgroundSizeDip / 2 + icon_y_offset);
   transform.Scale(scale_factor, scale_factor);
 
   {
@@ -778,8 +780,10 @@ void VoiceInteractionOverlay::BurstAnimation() {
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
   const int icon_x_offset = is_tablet_mode ? 0 : kIconOffsetDip;
+  const int icon_y_offset =
+      is_tablet_mode ? -kRippleCircleRadiusDip : -kIconOffsetDip;
   float x_offset = center.x() - kBackgroundSizeDip / 2 + icon_x_offset;
-  float y_offset = center.y() - kBackgroundSizeDip / 2 - kIconOffsetDip;
+  float y_offset = center.y() - kBackgroundSizeDip / 2 + icon_y_offset;
 
   background_layer_->AnimateToLarge(
       gfx::PointF(
