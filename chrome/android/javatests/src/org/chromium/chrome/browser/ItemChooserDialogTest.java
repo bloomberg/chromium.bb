@@ -490,8 +490,10 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertFalse(button.isEnabled());
         Assert.assertEquals(View.GONE, items.getVisibility());
 
-        mChooserDialog.addOrUpdateItem("key1", "desc1");
-        mChooserDialog.addOrUpdateItem("key2", "desc2");
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mChooserDialog.addOrUpdateItem("key1", "desc1");
+            mChooserDialog.addOrUpdateItem("key2", "desc2");
+        });
 
         // Two items showing, the empty view should be no more and the button
         // should now be enabled.
@@ -500,7 +502,8 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertEquals("statusActive", statusView.getText().toString());
         Assert.assertFalse(button.isEnabled());
 
-        mChooserDialog.setIdleState();
+        ThreadUtils.runOnUiThreadBlocking(() -> { mChooserDialog.setIdleState(); });
+
         // After discovery stops the list should be visible with two items,
         // it should not show the empty view and the button should not be enabled.
         // The chooser should show the status idle text.
@@ -533,7 +536,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertFalse(button.isEnabled());
         Assert.assertEquals(View.GONE, items.getVisibility());
 
-        mChooserDialog.setIdleState();
+        ThreadUtils.runOnUiThreadBlocking(() -> { mChooserDialog.setIdleState(); });
 
         // Listview should now be showing empty, with an empty view visible to
         // drive home the point and a status message at the bottom.
@@ -551,8 +554,10 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Dialog dialog = mChooserDialog.getDialogForTesting();
         Assert.assertTrue(dialog.isShowing());
 
-        mChooserDialog.addOrUpdateItem("key1", "desc1");
-        mChooserDialog.addOrUpdateItem("key2", "desc2");
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mChooserDialog.addOrUpdateItem("key1", "desc1");
+            mChooserDialog.addOrUpdateItem("key2", "desc2");
+        });
 
         // Disable one item and try to select it.
         mChooserDialog.setEnabled("key1", false);
