@@ -123,8 +123,7 @@ void APIRequestHandler::CompleteRequest(int request_id,
   if (iter == pending_requests_.end())
     return;
 
-  PendingRequest pending_request = std::move(iter->second);
-  pending_requests_.erase(iter);
+  PendingRequest& pending_request = iter->second;
 
   v8::Isolate* isolate = pending_request.isolate;
   v8::HandleScope handle_scope(isolate);
@@ -132,13 +131,40 @@ void APIRequestHandler::CompleteRequest(int request_id,
   v8::Context::Scope context_scope(context);
   std::unique_ptr<content::V8ValueConverter> converter =
       content::V8ValueConverter::Create();
+  std::vector<v8::Local<v8::Value>> v8_args;
+  v8_args.reserve(response_args.GetSize());
+  for (const auto& arg : response_args)
+    v8_args.push_back(converter->ToV8Value(&arg, context));
+
+  // NOTE(devlin): This results in a double lookup of the pending request and an
+  // extra Handle/Context-Scope, but that should be pretty cheap.
+  CompleteRequest(request_id, v8_args, error);
+}
+
+void APIRequestHandler::CompleteRequest(
+    int request_id,
+    const std::vector<v8::Local<v8::Value>>& response_args,
+    const std::string& error) {
+  auto iter = pending_requests_.find(request_id);
+  // The request may have been removed if the context was invalidated before a
+  // response is ready.
+  if (iter == pending_requests_.end())
+    return;
+
+  PendingRequest pending_request = std::move(iter->second);
+  pending_requests_.erase(iter);
+
+  v8::Isolate* isolate = pending_request.isolate;
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = pending_request.context.Get(isolate);
+  v8::Context::Scope context_scope(context);
   std::vector<v8::Local<v8::Value>> args;
-  args.reserve(response_args.GetSize() +
+  args.reserve(response_args.size() +
                pending_request.callback_arguments.size());
   for (const auto& arg : pending_request.callback_arguments)
     args.push_back(arg.Get(isolate));
   for (const auto& arg : response_args)
-    args.push_back(converter->ToV8Value(&arg, context));
+    args.push_back(arg);
 
   blink::WebScopedUserGesture user_gesture(pending_request.user_gesture_token);
   if (!error.empty())

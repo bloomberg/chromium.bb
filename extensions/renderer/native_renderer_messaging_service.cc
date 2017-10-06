@@ -72,7 +72,8 @@ bool ScriptContextIsValid(ScriptContext* script_context) {
 NativeRendererMessagingService::NativeRendererMessagingService(
     NativeExtensionBindingsSystem* bindings_system)
     : RendererMessagingService(bindings_system),
-      bindings_system_(bindings_system) {}
+      bindings_system_(bindings_system),
+      one_time_message_handler_(bindings_system) {}
 NativeRendererMessagingService::~NativeRendererMessagingService() {}
 
 gin::Handle<GinPort> NativeRendererMessagingService::Connect(
@@ -97,6 +98,27 @@ gin::Handle<GinPort> NativeRendererMessagingService::Connect(
       script_context, port->port_id(), target_id, channel_name,
       include_tls_channel_id);
   return port;
+}
+
+void NativeRendererMessagingService::SendOneTimeMessage(
+    ScriptContext* script_context,
+    const std::string& target_id,
+    const std::string& method_name,
+    bool include_tls_channel_id,
+    const Message& message,
+    v8::Local<v8::Function> response_callback) {
+  if (!ScriptContextIsValid(script_context))
+    return;
+
+  MessagingPerContextData* data =
+      GetPerContextData(script_context->v8_context(), true);
+
+  bool is_opener = true;
+  PortId port_id(script_context->context_id(), data->next_port_id++, is_opener);
+
+  one_time_message_handler_.SendMessage(script_context, port_id, target_id,
+                                        method_name, include_tls_channel_id,
+                                        message, response_callback);
 }
 
 void NativeRendererMessagingService::PostMessageToPort(
@@ -159,6 +181,8 @@ bool NativeRendererMessagingService::HasPortForTesting(
 bool NativeRendererMessagingService::ContextHasMessagePort(
     ScriptContext* script_context,
     const PortId& port_id) {
+  if (one_time_message_handler_.HasPort(script_context, port_id))
+    return true;
   MessagingPerContextData* data =
       GetPerContextData(script_context->v8_context(), false);
   return data && base::ContainsKey(data->ports, port_id);
@@ -176,12 +200,6 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = script_context->v8_context();
-
-  if (channel_name == "chrome.extension.sendRequest" ||
-      channel_name == "chrome.runtime.sendMessage") {
-    // TODO(devlin): Handle sendMessage/sendRequest.
-    return;
-  }
 
   gin::DataObjectBuilder sender_builder(isolate);
   if (!info.source_id.empty())
@@ -212,7 +230,19 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
     }
   }
 
-  v8::Local<v8::Value> sender = sender_builder.Build();
+  v8::Local<v8::Object> sender = sender_builder.Build();
+
+  if (channel_name == "chrome.extension.sendRequest" ||
+      channel_name == "chrome.runtime.sendMessage") {
+    OneTimeMessageHandler::Event event =
+        channel_name == "chrome.extension.sendRequest"
+            ? OneTimeMessageHandler::Event::ON_REQUEST
+            : OneTimeMessageHandler::Event::ON_MESSAGE;
+    one_time_message_handler_.AddReceiver(script_context, target_port_id,
+                                          sender, event);
+    return;
+  }
+
   gin::Handle<GinPort> port =
       CreatePort(script_context, channel_name, target_port_id);
   port->SetSender(v8_context, sender);
@@ -228,8 +258,11 @@ void NativeRendererMessagingService::DispatchOnMessageToListeners(
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  // TODO(devlin): Handle special casing for the sendMessage/sendRequest
-  // versions.
+  if (one_time_message_handler_.DeliverMessage(script_context, message,
+                                               target_port_id)) {
+    return;
+  }
+
   gin::Handle<GinPort> port = GetPort(script_context, target_port_id);
   DCHECK(!port.IsEmpty());
 
@@ -243,8 +276,11 @@ void NativeRendererMessagingService::DispatchOnDisconnectToListeners(
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  // TODO(devlin): Handle special casing for the sendMessage/sendRequest
-  // versions.
+  if (one_time_message_handler_.Disconnect(script_context, port_id,
+                                           error_message)) {
+    return;
+  }
+
   v8::Local<v8::Context> context = script_context->v8_context();
   gin::Handle<GinPort> port = GetPort(script_context, port_id);
   DCHECK(!port.IsEmpty());

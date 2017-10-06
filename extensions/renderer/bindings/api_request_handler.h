@@ -82,6 +82,9 @@ class APIRequestHandler {
   void CompleteRequest(int request_id,
                        const base::ListValue& response,
                        const std::string& error);
+  void CompleteRequest(int request_id,
+                       const std::vector<v8::Local<v8::Value>>& response,
+                       const std::string& error);
 
   // Invalidates any requests that are associated with |context|.
   void InvalidateContext(v8::Local<v8::Context> context);

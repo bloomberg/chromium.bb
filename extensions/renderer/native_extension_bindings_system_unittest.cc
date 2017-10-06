@@ -42,6 +42,12 @@ bool PropertyExists(v8::Local<v8::Context> context,
 
 TestIPCMessageSender::TestIPCMessageSender() {}
 TestIPCMessageSender::~TestIPCMessageSender() {}
+void TestIPCMessageSender::SendRequestIPC(
+    ScriptContext* context,
+    std::unique_ptr<ExtensionHostMsg_Request_Params> params,
+    binding::RequestThread thread) {
+  last_params_ = std::move(params);
+}
 
 NativeExtensionBindingsSystemUnittest::NativeExtensionBindingsSystemUnittest() {
 }
