@@ -81,6 +81,7 @@ class InstallableManager
   friend class TestInstallableManager;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManagerBeginsInEmptyState);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest, ManagerInIncognito);
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest, CheckWebapp);
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerPassesWhenWaiting);
@@ -88,6 +89,11 @@ class InstallableManager
                            CheckLazyServiceWorkerNoFetchHandlerFails);
 
   using IconPurpose = content::Manifest::Icon::IconPurpose;
+
+  struct EligiblityProperty {
+    InstallableStatusCode error = NO_ERROR_DETECTED;
+    bool fetched = false;
+  };
 
   struct ManifestProperty {
     InstallableStatusCode error = NO_ERROR_DETECTED;
@@ -137,6 +143,7 @@ class InstallableManager
   InstallableStatusCode GetErrorCode(const InstallableParams& params);
 
   // Gets/sets parts of particular properties. Exposed for testing.
+  InstallableStatusCode eligibility_error() const;
   InstallableStatusCode manifest_error() const;
   InstallableStatusCode valid_manifest_error() const;
   void set_valid_manifest_error(InstallableStatusCode error_code);
@@ -168,6 +175,7 @@ class InstallableManager
   void WorkOnTask();
 
   // Data retrieval methods.
+  void CheckEligiblity();
   void FetchManifest();
   void OnDidGetManifest(const GURL& manifest_url,
                         const content::Manifest& manifest);
@@ -199,6 +207,7 @@ class InstallableManager
   std::unique_ptr<InstallableMetrics> metrics_;
 
   // Installable properties cached on this object.
+  std::unique_ptr<EligiblityProperty> eligibility_;
   std::unique_ptr<ManifestProperty> manifest_;
   std::unique_ptr<ValidManifestProperty> valid_manifest_;
   std::unique_ptr<ServiceWorkerProperty> worker_;
