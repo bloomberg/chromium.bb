@@ -286,16 +286,18 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
           widget->non_client_view()->frame_view());
 
   const gfx::Rect initial = frame_view->caption_button_container_->bounds();
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      true);
+  ash::TabletModeController* tablet_mode_controller =
+      ash::Shell::Get()->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->FlushForTesting();
   ash::FrameCaptionButtonContainerView::TestApi test(frame_view->
                                                      caption_button_container_);
   test.EndAnimations();
   const gfx::Rect during_maximize = frame_view->caption_button_container_->
       bounds();
   EXPECT_GT(initial.width(), during_maximize.width());
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      false);
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->FlushForTesting();
   test.EndAnimations();
   const gfx::Rect after_restore = frame_view->caption_button_container_->
       bounds();
