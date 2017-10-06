@@ -441,8 +441,9 @@ class CDM_CLASS_API FileIO {
   // - When the file is opened by a CDM instance, it will be classified as "in
   //   use". In this case other CDM instances in the same domain may receive
   //   kInUse status when trying to open it.
-  // - |file_name| must not contain forward slash ('/') or backslash ('\'), and
-  //   must not start with an underscore ('_').
+  // - |file_name| must only contain letters (A-Za-z), digits(0-9), or "._-".
+  //   It must not start with an underscore ('_'), and must be at least 1
+  //   character and no more than 256 characters long.
   virtual void Open(const char* file_name, uint32_t file_name_size) = 0;
 
   // Reads the contents of the file. FileIOClient::OnReadComplete() will be
