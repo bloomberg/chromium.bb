@@ -35,16 +35,6 @@ function gotStream2(s) {
     shouldNotBe('track.id', 'cloned_track.id');
     stream.addTrack(cloned_track);
     shouldBe('stream.getAudioTracks().length', '2');
-
-    stream2.getAudioTracks()[0].stop();
-    stream2.getVideoTracks()[0].stop();
-    stream3 = stream2.clone();
-    shouldBe('stream3.getAudioTracks().length', '1');
-    shouldBe('stream3.getVideoTracks().length', '1');
-    shouldBe('stream3.getAudioTracks()[0].readyState', '"ended"');
-    shouldBe('stream3.getVideoTracks()[0].readyState', '"ended"');
-    shouldBe('stream3.active', 'false');
-
     finishJSTest();
 }
 

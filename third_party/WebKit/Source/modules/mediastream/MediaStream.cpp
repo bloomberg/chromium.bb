@@ -49,6 +49,9 @@ static bool ContainsSource(MediaStreamTrackVector& track_vector,
 
 static void ProcessTrack(MediaStreamTrack* track,
                          MediaStreamTrackVector& track_vector) {
+  if (track->Ended())
+    return;
+
   MediaStreamSource* source = track->Component()->Source();
   if (!ContainsSource(track_vector, source))
     track_vector.push_back(track);
