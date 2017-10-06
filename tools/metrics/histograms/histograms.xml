@@ -28796,15 +28796,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="InstantTethering.FinalFeatureState"
+<histogram name="InstantTethering.FeatureState"
     enum="InstantTethering_FeatureState">
   <owner>hansberry@chromium.com</owner>
   <summary>
-    Breaks down the state of Instant Tethering, at the end of each user session.
-    All states, except for 'Enabled', indicate that the feature was not active.
-    This histogram is emitted to at the end of each user session and should
-    roughly reflect if Instant Tethering was enabled during that session (and if
-    not, why).
+    Breaks down the state of Instant Tethering during user sessions. All states,
+    except for 'Enabled', indicate that the feature was not active. This
+    histogram is emitted to each time a condition affecting Instant Tethering's
+    state, e.g. the user enabling or disabling the feature, or Bluetooth
+    becoming enabled or disabled.
   </summary>
 </histogram>
 
