@@ -159,7 +159,9 @@ static EphemeralRangeInFlatTree CalcSelectionInFlatTree(
   return {};
 }
 
-struct PaintInvalidationSet {
+// LayoutObjects each has SelectionState of kStart, kEnd, kStartAndEnd, or
+// kInside
+struct SelectedLayoutObjects {
   STACK_ALLOCATED();
   // Objects each have a single selection rect to invalidate.
   HashSet<LayoutObject*> layout_objects;
@@ -170,23 +172,23 @@ struct PaintInvalidationSet {
   // remain the same even when changes have occurred.
   HashSet<LayoutBlock*> layout_blocks;
 
-  PaintInvalidationSet() = default;
-  PaintInvalidationSet(PaintInvalidationSet&& other) {
+  SelectedLayoutObjects() = default;
+  SelectedLayoutObjects(SelectedLayoutObjects&& other) {
     layout_objects = std::move(other.layout_objects);
     layout_blocks = std::move(other.layout_blocks);
   }
-  PaintInvalidationSet& operator=(PaintInvalidationSet&& other) {
+  SelectedLayoutObjects& operator=(SelectedLayoutObjects&& other) {
     layout_objects = std::move(other.layout_objects);
     layout_blocks = std::move(other.layout_blocks);
     return *this;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaintInvalidationSet);
+  DISALLOW_COPY_AND_ASSIGN(SelectedLayoutObjects);
 };
 
 #ifndef NDEBUG
-void PrintPaintInvalidationSet(const PaintInvalidationSet& invalidation_set) {
+void PrintPaintInvalidationSet(const SelectedLayoutObjects& invalidation_set) {
   std::stringstream stream;
   stream << std::endl << "layout_objects:" << std::endl;
   for (LayoutObject* layout_object : invalidation_set.layout_objects) {
@@ -203,7 +205,7 @@ void PrintPaintInvalidationSet(const PaintInvalidationSet& invalidation_set) {
 #endif
 
 static void InsertLayoutObjectAndAncestorBlocks(
-    PaintInvalidationSet* invalidation_set,
+    SelectedLayoutObjects* invalidation_set,
     LayoutObject* layout_object) {
   invalidation_set->layout_objects.insert(layout_object);
   for (LayoutBlock* containing_block = layout_object->ContainingBlock();
@@ -216,54 +218,56 @@ static void InsertLayoutObjectAndAncestorBlocks(
   }
 }
 
-static PaintInvalidationSet CollectInvalidationSet(
+static SelectedLayoutObjects CollectInvalidationSet(
     const SelectionPaintRange& range) {
   if (range.IsNull())
-    return PaintInvalidationSet();
+    return SelectedLayoutObjects();
 
-  PaintInvalidationSet invalidation_set;
+  SelectedLayoutObjects invalidation_set;
   for (LayoutObject* runner : range)
     InsertLayoutObjectAndAncestorBlocks(&invalidation_set, runner);
   return invalidation_set;
 }
 
-// This class represents a selection range in layout tree for marking
-// SelectionState
-class SelectionMarkingRange {
+// This class represents a selection range in layout tree and each LayoutObject
+// is SelectionState-marked.
+class NewPaintRangeAndSelectedLayoutObjects {
   STACK_ALLOCATED();
 
  public:
-  SelectionMarkingRange() = default;
-  SelectionMarkingRange(SelectionPaintRange paint_range,
-                        PaintInvalidationSet invalidation_set)
+  NewPaintRangeAndSelectedLayoutObjects() = default;
+  NewPaintRangeAndSelectedLayoutObjects(SelectionPaintRange paint_range,
+                                        SelectedLayoutObjects invalidation_set)
       : paint_range_(paint_range),
-        invalidation_set_(std::move(invalidation_set)) {}
-  SelectionMarkingRange(SelectionMarkingRange&& other) {
+        selected_objects_(std::move(invalidation_set)) {}
+  NewPaintRangeAndSelectedLayoutObjects(
+      NewPaintRangeAndSelectedLayoutObjects&& other) {
     paint_range_ = other.paint_range_;
-    invalidation_set_ = std::move(other.invalidation_set_);
+    selected_objects_ = std::move(other.selected_objects_);
   }
 
   SelectionPaintRange PaintRange() const { return paint_range_; }
 
-  const PaintInvalidationSet& InvalidationSet() const {
-    return invalidation_set_;
+  const SelectedLayoutObjects& LayoutObjects() const {
+    return selected_objects_;
   }
 
  private:
   SelectionPaintRange paint_range_;
-  PaintInvalidationSet invalidation_set_;
+  SelectedLayoutObjects selected_objects_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SelectionMarkingRange);
+  DISALLOW_COPY_AND_ASSIGN(NewPaintRangeAndSelectedLayoutObjects);
 };
 
 // Set ShouldInvalidateSelection flag of LayoutObjects
 // comparing them in |new_range| and |old_range|.
-static void SetShouldInvalidateSelection(const SelectionMarkingRange& new_range,
-                                         const SelectionPaintRange& old_range) {
-  const PaintInvalidationSet& new_invalidation_set =
-      new_range.InvalidationSet();
-  PaintInvalidationSet old_invalidation_set = CollectInvalidationSet(old_range);
+static void SetShouldInvalidateSelection(
+    const NewPaintRangeAndSelectedLayoutObjects& new_range,
+    const SelectionPaintRange& old_range) {
+  const SelectedLayoutObjects& new_invalidation_set = new_range.LayoutObjects();
+  SelectedLayoutObjects old_invalidation_set =
+      CollectInvalidationSet(old_range);
 
   // We invalidate each LayoutObject which is
   // - included in new selection range and has valid SelectionState(!= kNone).
@@ -364,14 +368,14 @@ static LayoutTextFragment* FirstLetterPartFor(LayoutObject* layout_object) {
       AssociatedLayoutObjectOf(*layout_object->GetNode(), 0)));
 }
 
-static void MarkSelected(PaintInvalidationSet* invalidation_set,
+static void MarkSelected(SelectedLayoutObjects* invalidation_set,
                          LayoutObject* layout_object,
                          SelectionState state) {
   layout_object->SetSelectionStateIfNeeded(state);
   InsertLayoutObjectAndAncestorBlocks(invalidation_set, layout_object);
 }
 
-static void MarkSelectedInside(PaintInvalidationSet* invalidation_set,
+static void MarkSelectedInside(SelectedLayoutObjects* invalidation_set,
                                LayoutObject* layout_object) {
   MarkSelected(invalidation_set, layout_object, SelectionState::kInside);
   LayoutTextFragment* const first_letter_part =
@@ -381,8 +385,8 @@ static void MarkSelectedInside(PaintInvalidationSet* invalidation_set,
   MarkSelected(invalidation_set, first_letter_part, SelectionState::kInside);
 }
 
-static SelectionMarkingRange MarkStartAndEndInOneNode(
-    PaintInvalidationSet invalidation_set,
+static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInOneNode(
+    SelectedLayoutObjects invalidation_set,
     LayoutObject* layout_object,
     int start_offset,
     int end_offset) {
@@ -436,8 +440,8 @@ static SelectionMarkingRange MarkStartAndEndInOneNode(
           std::move(invalidation_set)};
 }
 
-static SelectionMarkingRange MarkStartAndEndInTwoNodes(
-    PaintInvalidationSet invalidation_set,
+static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInTwoNodes(
+    SelectedLayoutObjects invalidation_set,
     LayoutObject* start_layout_object,
     int start_offset,
     LayoutObject* end_layout_object,
@@ -564,8 +568,8 @@ static SelectionMarkingRange MarkStartAndEndInTwoNodes(
           std::move(invalidation_set)};
 }
 
-static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
-    const FrameSelection& frame_selection) {
+static NewPaintRangeAndSelectedLayoutObjects
+CalcSelectionRangeAndSetSelectionState(const FrameSelection& frame_selection) {
   const SelectionInDOMTree& selection_in_dom =
       frame_selection.GetSelectionInDOMTree();
   if (selection_in_dom.IsNone())
@@ -580,7 +584,7 @@ static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
   // marking SelectionState and collecting invalidation candidate LayoutObjects.
   LayoutObject* start_layout_object = nullptr;
   LayoutObject* end_layout_object = nullptr;
-  PaintInvalidationSet invalidation_set;
+  SelectedLayoutObjects selected_objects;
   for (const Node& node : selection.Nodes()) {
     LayoutObject* const layout_object = node.GetLayoutObject();
     if (!layout_object || !layout_object->CanBeSelectionLeaf() ||
@@ -597,7 +601,7 @@ static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
     // LayoutObject and if it is not start and we find next, we mark the
     // current one as kInside.
     if (end_layout_object != start_layout_object)
-      MarkSelectedInside(&invalidation_set, end_layout_object);
+      MarkSelectedInside(&selected_objects, end_layout_object);
     end_layout_object = layout_object;
   }
 
@@ -615,11 +619,11 @@ static SelectionMarkingRange CalcSelectionRangeAndSetSelectionState(
       *end_layout_object, selection.EndPosition().ToOffsetInAnchor());
 
   if (start_layout_object == end_layout_object) {
-    return MarkStartAndEndInOneNode(std::move(invalidation_set),
+    return MarkStartAndEndInOneNode(std::move(selected_objects),
                                     start_layout_object, start_offset,
                                     end_offset);
   }
-  return MarkStartAndEndInTwoNodes(std::move(invalidation_set),
+  return MarkStartAndEndInTwoNodes(std::move(selected_objects),
                                    start_layout_object, start_offset,
                                    end_layout_object, end_offset);
 }
@@ -638,7 +642,7 @@ void LayoutSelection::Commit() {
             DocumentLifecycle::kLayoutClean);
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       frame_selection_->GetDocument().Lifecycle());
-  const SelectionMarkingRange& new_range =
+  const NewPaintRangeAndSelectedLayoutObjects& new_range =
       CalcSelectionRangeAndSetSelectionState(*frame_selection_);
   const SelectionPaintRange& new_paint_range = new_range.PaintRange();
   if (new_paint_range.IsNull()) {
@@ -709,7 +713,7 @@ IntRect LayoutSelection::SelectionBounds() {
 
   // Create a single bounding box rect that encloses the whole selection.
   LayoutRect selected_rect;
-  const PaintInvalidationSet& current_map =
+  const SelectedLayoutObjects& current_map =
       CollectInvalidationSet(paint_range_);
   for (auto layout_object : current_map.layout_objects)
     selected_rect.Unite(SelectionRectForLayoutObject(layout_object));
