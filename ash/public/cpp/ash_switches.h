@@ -29,6 +29,7 @@ ASH_PUBLIC_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableScaleSettingsTray[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableTabletSplitView[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableTabletMode[];
+ASH_PUBLIC_EXPORT extern const char kAshEnableWaylandServer[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableMirroredScreen[];
 ASH_PUBLIC_EXPORT extern const char kAshEstimatedPresentationDelay[];
 ASH_PUBLIC_EXPORT extern const char kAshForceEnableStylusTools[];

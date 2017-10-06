@@ -23,7 +23,7 @@ WMHelperAsh::WMHelperAsh() {
   ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
   ash::Shell::Get()->activation_client()->AddObserver(this);
   // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
-  if (ash::Shell::GetAshConfig() != ash::Config::MUS)
+  if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
     ash::Shell::Get()->cursor_manager()->AddObserver(this);
   ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
   aura::Window* primary_root = ash::Shell::GetPrimaryRootWindow();
