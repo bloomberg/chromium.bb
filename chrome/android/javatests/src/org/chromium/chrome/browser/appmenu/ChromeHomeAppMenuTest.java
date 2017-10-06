@@ -16,7 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.BottomSheetTestRule;
@@ -45,7 +45,7 @@ public class ChromeHomeAppMenuTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "see crbug.com/772000")
+    @DisabledTest(message = "see crbug.com/772000")
     public void testPageMenu() throws IllegalArgumentException, InterruptedException {
         mBottomSheetTestRule.loadUrl(TEST_URL);
 
