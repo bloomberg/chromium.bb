@@ -740,13 +740,16 @@ _base_layout_boards = _lakitu_boards | _termina_boards
 _no_unittest_boards = frozenset((
 ))
 
-_cheets_vmtest_boards = frozenset([
-    'betty',
-    'betty-arc64',
-    'newbie',
-    'novato',
-    'novato-arc64',
-])
+_vmtest_boards = frozenset([
+    # Full VMTest support on ChromeOS is currently limited to devices derived
+    # from betty & co.
+    'amd64-generic', # Has kernel 4.4, used with public Chromium.
+    'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
+    'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
+    'newbie',        # AOSP variant of betty.
+    'novato',        # Like betty but with GMSCore but not the Play Store
+    'novato-arc64',  # 64 bit x86_64 ARC++ ABI
+]) | _lakitu_boards  # All lakitu boards have VM support.
 
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
@@ -760,8 +763,8 @@ _waterfall_config_map = {
         'oak-full',
         'lakitu-full',
 
-        # ASAN
-        'amd64-generic-asan',
+        # ASAN.
+        'betty-asan',
     ]),
 
     waterfall.WATERFALL_INTERNAL: frozenset([
@@ -831,16 +834,17 @@ def GetBoardTypeToBoardsDict(ge_build_config):
       arm_full_boards |
       x86_full_boards
   )
+  all_boards = x86_boards | arm_boards
   boards_dict['all_boards'] = (
-      x86_boards |
-      arm_boards
+      all_boards
   )
 
   boards_dict['internal_boards'] = boards_dict['all_release_boards']
 
+  # This set controls the final vmtest override. It allows us to specify
+  # vm_tests for each class of builders, but only execute on _vmtest_boards.
   boards_dict['no_vmtest_boards'] = (
-      arm_boards | _brillo_boards |
-      _cheets_x86_boards - _cheets_vmtest_boards
+      all_boards - _vmtest_boards
   )
 
   return boards_dict
@@ -1020,6 +1024,7 @@ def GeneralTemplates(site_config, ge_build_config):
       unittests=False,
   )
 
+  # Notice all builders except for _vmtest_boards should not run vmtest.
   site_config.AddTemplate(
       'no_vmtest_builder',
       vm_tests=[],
@@ -1073,7 +1078,7 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk=True,
       chrome_sdk_build_chrome=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
-
+      # This only applies to vmtest enabled boards like betty and novato.
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
@@ -1120,8 +1125,6 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk=False,
       afdo_use=False,
       dev_installer_prebuilts=False,
-      # TODO(gauravsh): crbug.com/356414 Start running tests on Brillo configs.
-      vm_tests=[],
   )
 
   site_config.AddTemplate(
@@ -1135,12 +1138,11 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'termina',
+      site_config.templates.no_vmtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
       dev_installer_prebuilts=False,
-      vm_tests=[],
-      vm_tests_override=None,
       hw_tests=[],
       signer_tests=False,
       sign_types=None,
@@ -1156,12 +1158,11 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'loonix',
+      site_config.templates.no_vmtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
       dev_installer_prebuilts=False,
-      vm_tests=[],
-      vm_tests_override=None,
       # TODO(harshmodi): Re-enable this when we start using vboot
       signer_tests=False,
       hw_tests=[],
@@ -1206,9 +1207,8 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'moblab',
+      site_config.templates.no_vmtest_builder,
       image_test=False,
-      vm_tests=[],
-      vm_tests_override=None,
   )
 
   site_config.AddTemplate(
@@ -1418,11 +1418,11 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'test_ap',
       site_config.templates.internal,
+      site_config.templates.no_vmtest_builder,
       site_config.templates.default_hw_tests_override,
       build_type=constants.INCREMENTAL_TYPE,
       description='WiFi AP images used in testing',
       profile='testbed-ap',
-      vm_tests=[],
   )
 
   # Create tryjob build configs to help with stress testing.
@@ -2085,6 +2085,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   # Generic template shared by all Android versions.
   site_config.AddTemplate(
       'generic_android_pfq',
+      site_config.templates.no_vmtest_builder,
       site_config.templates.default_hw_tests_override,
       build_type=constants.ANDROID_PFQ_TYPE,
       important=True,
@@ -2093,8 +2094,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
-      vm_tests=[],
-      vm_tests_override=None,
   )
 
   # Template for Android MNC.
@@ -2611,7 +2610,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       )
   )
 
-  # These are not built. Can they be removed?
+  # TODO(ihf): remove this as obsolete.
   site_config.Add(
       'x86-generic-asan-paladin',
       site_config.templates.paladin,
@@ -2622,10 +2621,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'amd64-generic-asan-paladin',
+      'betty-asan-paladin',
       site_config.templates.paladin,
       site_config.templates.no_hwtest_builder,
-      board_configs['amd64-generic'],
+      board_configs['betty'],
       site_config.templates.asan,
       description='Paladin build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
@@ -2668,18 +2667,19 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'amd64-generic-incremental',
       site_config.templates.incremental,
-      board_configs['amd64-generic'],
       # This builder runs on a VM, so it can't run VM tests.
-      vm_tests=[],
+      site_config.templates.no_vmtest_builder,
+      board_configs['amd64-generic'],
       active_waterfall=waterfall.WATERFALL_EXTERNAL,
   )
 
+  # TODO(ihf): Delete this builder.
   site_config.Add(
       'x32-generic-incremental',
       site_config.templates.incremental,
-      board_configs['x32-generic'],
       # This builder runs on a VM, so it can't run VM tests.
-      vm_tests=[],
+      site_config.templates.no_vmtest_builder,
+      board_configs['x32-generic'],
   )
 
   site_config.Add(
@@ -2846,6 +2846,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.chrome_pfq_informational,
       important=False)
 
+  # TODO(ihf): Remove as obsolete.
   site_config.Add(
       'x86-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
@@ -2853,11 +2854,11 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'amd64-generic-asan',
+      'betty-asan',
       site_config.templates.asan,
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
-      boards=['amd64-generic'],
+      boards=['betty'],
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
@@ -2865,12 +2866,12 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'amd64-generic-tot-asan-informational',
+      'betty-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       site_config.templates.no_hwtest_builder,
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      boards=['amd64-generic'],
+      boards=['betty'],
   )
 
   _chrome_perf_boards = frozenset([
@@ -2910,7 +2911,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   _telemetry_boards = frozenset([
       'amd64-generic',
       'arm-generic',
-      'x86-generic',
+      'betty',
   ])
 
   site_config.AddForBoards(

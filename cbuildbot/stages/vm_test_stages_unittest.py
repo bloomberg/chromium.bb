@@ -28,7 +28,7 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
                        cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the GCETest stage."""
 
-  BOT_ID = 'amd64-generic-full'
+  BOT_ID = 'betty-full'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -84,7 +84,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests for the VMTest stage."""
 
-  BOT_ID = 'amd64-generic-full'
+  BOT_ID = 'betty-full'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -159,7 +159,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test RunTestSuite functionality."""
 
-  TEST_BOARD = 'amd64-generic'
+  TEST_BOARD = 'betty'
   BUILD_ROOT = '/fake/root'
 
   def _RunTestSuite(self, test_type):

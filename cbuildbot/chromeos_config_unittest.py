@@ -894,7 +894,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testInternalPrebuilts(self):
     for build_name, config in self.site_config.iteritems():
       if (config['internal'] and
-          config['build_type'] != constants.CHROME_PFQ_TYPE):
+          config['build_type'] not in [constants.CHROME_PFQ_TYPE,
+                                       constants.PALADIN_TYPE]):
         msg = 'Config %s is internal but has public prebuilts.' % build_name
         self.assertNotEqual(config['prebuilts'], constants.PUBLIC, msg)
 
@@ -1099,7 +1100,7 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
   def testVmTestOverride(self):
     """Verify that vm_tests override for trybots pay heed to original config."""
     mock_options = mock.Mock()
-    old = self.site_config['x86-mario-paladin']
+    old = self.site_config['betty-paladin']
     new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], [
         config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
