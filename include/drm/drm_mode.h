@@ -119,6 +119,53 @@ extern "C" {
 #define DRM_MODE_LINK_STATUS_GOOD	0
 #define DRM_MODE_LINK_STATUS_BAD	1
 
+/*
+ * DRM_MODE_ROTATE_<degrees>
+ *
+ * Signals that a drm plane is been rotated <degrees> degrees in counter
+ * clockwise direction.
+ *
+ * This define is provided as a convenience, looking up the property id
+ * using the name->prop id lookup is the preferred method.
+ */
+#define DRM_MODE_ROTATE_0       (1<<0)
+#define DRM_MODE_ROTATE_90      (1<<1)
+#define DRM_MODE_ROTATE_180     (1<<2)
+#define DRM_MODE_ROTATE_270     (1<<3)
+
+/*
+ * DRM_MODE_ROTATE_MASK
+ *
+ * Bitmask used to look for drm plane rotations.
+ */
+#define DRM_MODE_ROTATE_MASK (\
+		DRM_MODE_ROTATE_0  | \
+		DRM_MODE_ROTATE_90  | \
+		DRM_MODE_ROTATE_180 | \
+		DRM_MODE_ROTATE_270)
+
+/*
+ * DRM_MODE_REFLECT_<axis>
+ *
+ * Signals that the contents of a drm plane is reflected in the <axis> axis,
+ * in the same way as mirroring.
+ *
+ * This define is provided as a convenience, looking up the property id
+ * using the name->prop id lookup is the preferred method.
+ */
+#define DRM_MODE_REFLECT_X      (1<<4)
+#define DRM_MODE_REFLECT_Y      (1<<5)
+
+/*
+ * DRM_MODE_REFLECT_MASK
+ *
+ * Bitmask used to look for drm plane reflections.
+ */
+#define DRM_MODE_REFLECT_MASK (\
+		DRM_MODE_REFLECT_X | \
+		DRM_MODE_REFLECT_Y)
+
+
 struct drm_mode_modeinfo {
 	__u32 clock;
 	__u16 hdisplay;
