@@ -575,6 +575,7 @@ void PersonalDataManager::RemoveObserver(
 
 bool PersonalDataManager::ImportFormData(
     const FormStructure& form,
+    bool credit_card_enabled,
     bool should_return_local_card,
     std::unique_ptr<CreditCard>* imported_credit_card,
     bool* imported_credit_card_matches_masked_server_credit_card) {
@@ -583,9 +584,12 @@ bool PersonalDataManager::ImportFormData(
   //   |imported_credit_card| with an extracted card. See .h for details of
   //   |should_return_local_card| and
   //   |imported_credit_card_matches_masked_server_credit_card|.
-  bool cc_import =
-      ImportCreditCard(form, should_return_local_card, imported_credit_card,
-                       imported_credit_card_matches_masked_server_credit_card);
+  bool cc_import = false;
+  if (credit_card_enabled) {
+    cc_import = ImportCreditCard(
+        form, should_return_local_card, imported_credit_card,
+        imported_credit_card_matches_masked_server_credit_card);
+  }
   // - ImportAddressProfiles may eventually save or update one or more address
   //   profiles.
   bool address_import = ImportAddressProfiles(form);
@@ -952,11 +956,13 @@ std::vector<CreditCard*> PersonalDataManager::GetLocalCreditCards() const {
 std::vector<CreditCard*> PersonalDataManager::GetCreditCards() const {
   std::vector<CreditCard*> result;
   result.reserve(local_credit_cards_.size() + server_credit_cards_.size());
-  for (const auto& card : local_credit_cards_)
-    result.push_back(card.get());
-  if (pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
-    for (const auto& card : server_credit_cards_)
+  if (pref_service_->GetBoolean(prefs::kAutofillCreditCardEnabled)) {
+    for (const auto& card : local_credit_cards_)
       result.push_back(card.get());
+    if (pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+      for (const auto& card : server_credit_cards_)
+        result.push_back(card.get());
+    }
   }
   return result;
 }
@@ -1187,9 +1193,13 @@ std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
 void PersonalDataManager::SetPrefService(PrefService* pref_service) {
   enabled_pref_.reset(new BooleanPrefMember);
   wallet_enabled_pref_.reset(new BooleanPrefMember);
+  credit_card_enabled_pref_.reset(new BooleanPrefMember);
   pref_service_ = pref_service;
   // |pref_service_| can be nullptr in tests.
   if (pref_service_) {
+    credit_card_enabled_pref_->Init(
+        prefs::kAutofillCreditCardEnabled, pref_service_,
+        base::Bind(&PersonalDataManager::Refresh, base::Unretained(this)));
     enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
                         base::Bind(&PersonalDataManager::EnabledPrefChanged,
                                    base::Unretained(this)));

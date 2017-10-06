@@ -48,5 +48,9 @@ const char kAutofillWalletImportStorageCheckboxState[] =
 const char kAutofillAcceptSaveCreditCardPromptState[] =
     "autofill.accept_save_credit_card_prompt_state";
 
+// Boolean that is true if Autofill is enabled and allowed to save credit card
+// data.
+const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
+
 }  // namespace prefs
 }  // namespace autofill
