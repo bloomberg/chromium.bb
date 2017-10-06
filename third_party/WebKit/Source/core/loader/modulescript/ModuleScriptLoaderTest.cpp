@@ -207,7 +207,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_FALSE(client->GetModuleScript()->IsErrored());
+  EXPECT_FALSE(client->GetModuleScript()->HasEmptyRecord());
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
@@ -221,7 +221,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 
   EXPECT_TRUE(client1->WasNotifyFinished());
   ASSERT_TRUE(client1->GetModuleScript());
-  EXPECT_FALSE(client1->GetModuleScript()->IsErrored());
+  EXPECT_FALSE(client1->GetModuleScript()->HasEmptyRecord());
 
   // Try to fetch the same URL again in order to verify the case where
   // WorkletModuleResponsesMap serves a cache.
@@ -234,7 +234,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 
   EXPECT_TRUE(client2->WasNotifyFinished());
   ASSERT_TRUE(client2->GetModuleScript());
-  EXPECT_FALSE(client2->GetModuleScript()->IsErrored());
+  EXPECT_FALSE(client2->GetModuleScript()->HasEmptyRecord());
 }
 
 void ModuleScriptLoaderTest::TestInvalidSpecifier(
@@ -257,7 +257,7 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_TRUE(client->GetModuleScript()->IsErrored());
+  EXPECT_TRUE(client->GetModuleScript()->HasEmptyRecord());
 }
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
@@ -271,7 +271,7 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_TRUE(client->GetModuleScript()->IsErrored());
+  EXPECT_TRUE(client->GetModuleScript()->HasEmptyRecord());
 }
 
 void ModuleScriptLoaderTest::TestFetchInvalidURL(
