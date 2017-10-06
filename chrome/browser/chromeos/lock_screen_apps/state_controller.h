@@ -15,7 +15,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -24,6 +23,7 @@
 #include "ui/events/devices/input_device_event_observer.h"
 
 class PrefRegistrySimple;
+class Profile;
 
 namespace base {
 class TickClock;
@@ -55,6 +55,7 @@ namespace lock_screen_apps {
 
 class AppWindowMetricsTracker;
 class FocusCyclerDelegate;
+class LockScreenProfileCreator;
 class StateObserver;
 
 // Manages state of lock screen action handler apps, and notifies
@@ -93,6 +94,10 @@ class StateController : public ash::mojom::TrayActionClient,
   // Sets test AppManager implementation. Should be called before
   // |SetPrimaryProfile|
   void SetAppManagerForTesting(std::unique_ptr<AppManager> app_manager);
+  // Sets test LockScreenProfileCreator implementation. Should be called before
+  // |SetPrimaryProfile|
+  void SetLockScreenLockScreenProfileCreatorForTesting(
+      std::unique_ptr<LockScreenProfileCreator> profile_creator);
 
   // Initializes mojo bindings for the StateController - it creates binding to
   // ash's tray action interface and sets this object as the interface's client.
@@ -160,14 +165,6 @@ class StateController : public ash::mojom::TrayActionClient,
   bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
 
  private:
-  // Called when profiles needed to run lock screen apps are ready - i.e. when
-  // primary user profile was set using |SetPrimaryProfile| and the profile in
-  // which app lock screen windows will be run creation is done.
-  // |status| - The lock screen profile creation status.
-  void OnProfilesReady(Profile* primary_profile,
-                       Profile* lock_screen_profile,
-                       Profile::CreateStatus status);
-
   // Gets the encryption key that should be used to encrypt user data created on
   // the lock screen. If a key hadn't previously been created and saved to
   // user prefs, a new key is created and saved.
@@ -216,7 +213,7 @@ class StateController : public ash::mojom::TrayActionClient,
   mojo::Binding<ash::mojom::TrayActionClient> binding_;
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
-  Profile* lock_screen_profile_ = nullptr;
+  std::unique_ptr<LockScreenProfileCreator> lock_screen_profile_creator_;
 
   // Whether lock screen apps initialization was stopped due to stylus input
   // missing (or stylus not being otherwise enabled). If stylus availability
