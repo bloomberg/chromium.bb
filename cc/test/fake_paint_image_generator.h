@@ -12,9 +12,10 @@ namespace cc {
 
 class FakePaintImageGenerator : public PaintImageGenerator {
  public:
-  explicit FakePaintImageGenerator(const SkImageInfo& info,
-                                   std::vector<FrameMetadata> frames = {
-                                       FrameMetadata()});
+  explicit FakePaintImageGenerator(
+      const SkImageInfo& info,
+      std::vector<FrameMetadata> frames = {FrameMetadata()},
+      bool allocate_discardable_memory = true);
   ~FakePaintImageGenerator() override;
 
   sk_sp<SkData> GetEncodedData() const override;
