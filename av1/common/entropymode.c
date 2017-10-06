@@ -6160,6 +6160,28 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_LPF_SB
 
+#if CONFIG_EXT_INTRA_MOD
+const aom_cdf_prob default_angle_delta_cdf[DIRECTIONAL_MODES][CDF_SIZE(
+    2 * MAX_ANGLE_DELTA + 1)] = {
+  { AOM_ICDF(2340), AOM_ICDF(5327), AOM_ICDF(7611), AOM_ICDF(23102),
+    AOM_ICDF(27196), AOM_ICDF(30546), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(3267), AOM_ICDF(8071), AOM_ICDF(11970), AOM_ICDF(21822),
+    AOM_ICDF(25619), AOM_ICDF(30034), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(3417), AOM_ICDF(9937), AOM_ICDF(12286), AOM_ICDF(16420),
+    AOM_ICDF(19941), AOM_ICDF(30669), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(5167), AOM_ICDF(11735), AOM_ICDF(15254), AOM_ICDF(16662),
+    AOM_ICDF(20697), AOM_ICDF(28276), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(1728), AOM_ICDF(10973), AOM_ICDF(14103), AOM_ICDF(18547),
+    AOM_ICDF(22684), AOM_ICDF(27007), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(2764), AOM_ICDF(10700), AOM_ICDF(12517), AOM_ICDF(16957),
+    AOM_ICDF(20590), AOM_ICDF(30390), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(2407), AOM_ICDF(12749), AOM_ICDF(16527), AOM_ICDF(20823),
+    AOM_ICDF(22781), AOM_ICDF(29642), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(3068), AOM_ICDF(10132), AOM_ICDF(12079), AOM_ICDF(16542),
+    AOM_ICDF(19943), AOM_ICDF(30448), AOM_ICDF(32768), 0 }
+};
+#endif  // CONFIG_EXT_INTRA_MOD
+
 static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->partition_prob, default_partition_probs);
   av1_copy(fc->intra_inter_prob, default_intra_inter_p);
@@ -6169,6 +6191,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->palette_y_color_index_cdf, default_palette_y_color_index_cdf);
   av1_copy(fc->palette_uv_color_index_cdf, default_palette_uv_color_index_cdf);
   av1_copy(fc->kf_y_cdf, default_kf_y_mode_cdf);
+#if CONFIG_EXT_INTRA_MOD
+  av1_copy(fc->angle_delta_cdf, default_angle_delta_cdf);
+#endif  // CONFIG_EXT_INTRA_MOD
 #if CONFIG_MRC_TX
   av1_copy(fc->mrc_mask_inter_cdf, default_mrc_mask_inter_cdf);
   av1_copy(fc->mrc_mask_intra_cdf, default_mrc_mask_intra_cdf);

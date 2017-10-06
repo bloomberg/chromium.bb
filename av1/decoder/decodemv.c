@@ -883,21 +883,42 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
+#if CONFIG_EXT_INTRA_MOD
+static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
+  const int sym = aom_read_symbol(r, cdf, 2 * MAX_ANGLE_DELTA + 1, ACCT_STR);
+  return sym - MAX_ANGLE_DELTA;
+}
+#endif  // CONFIG_EXT_INTRA_MOD
+
 static void read_intra_angle_info(MACROBLOCKD *const xd, aom_reader *r) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_EXT_INTRA_MOD
+  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
+#endif  // CONFIG_EXT_INTRA_MOD
+
   mbmi->angle_delta[0] = 0;
   mbmi->angle_delta[1] = 0;
   if (!av1_use_angle_delta(bsize)) return;
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
+#if CONFIG_EXT_INTRA_MOD
+    mbmi->angle_delta[0] =
+        read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED]);
+#else
     mbmi->angle_delta[0] =
         av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1) - MAX_ANGLE_DELTA;
+#endif  // CONFIG_EXT_INTRA_MOD
   }
 
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
+#if CONFIG_EXT_INTRA_MOD
+    mbmi->angle_delta[1] =
+        read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED]);
+#else
     mbmi->angle_delta[1] =
         av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1) - MAX_ANGLE_DELTA;
+#endif  // CONFIG_EXT_INTRA_MOD
   }
 }
 #endif  // CONFIG_EXT_INTRA

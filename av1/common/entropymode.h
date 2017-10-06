@@ -338,6 +338,12 @@ typedef struct frame_contexts {
 #else
   aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)];
 #endif
+
+#if CONFIG_EXT_INTRA_MOD
+  aom_cdf_prob angle_delta_cdf[DIRECTIONAL_MODES]
+                              [CDF_SIZE(2 * MAX_ANGLE_DELTA + 1)];
+#endif  // CONFIG_EXT_INTRA_MOD
+
   aom_cdf_prob tx_size_cdf[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
@@ -383,6 +389,7 @@ typedef struct FRAME_COUNTS {
 // aggregates built solely from 'unsigned int' fields/elements
 #if CONFIG_ENTROPY_STATS
   unsigned int kf_y_mode[INTRA_MODES][INTRA_MODES][INTRA_MODES];
+  unsigned int angle_delta[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
   unsigned int uv_mode[INTRA_MODES][UV_INTRA_MODES];
 #endif  // CONFIG_ENTROPY_STATS

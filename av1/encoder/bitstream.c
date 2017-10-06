@@ -1049,19 +1049,33 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
-static void write_intra_angle_info(const MACROBLOCKD *xd, aom_writer *w) {
+static void write_intra_angle_info(const MACROBLOCKD *xd,
+                                   FRAME_CONTEXT *const ec_ctx, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   if (!av1_use_angle_delta(bsize)) return;
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
+#if CONFIG_EXT_INTRA_MOD
+    aom_write_symbol(w, mbmi->angle_delta[0] + MAX_ANGLE_DELTA,
+                     ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED],
+                     2 * MAX_ANGLE_DELTA + 1);
+#else
+    (void)ec_ctx;
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
                   MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
+#endif  // CONFIG_EXT_INTRA_MOD
   }
 
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
+#if CONFIG_EXT_INTRA_MOD
+    aom_write_symbol(w, mbmi->angle_delta[1] + MAX_ANGLE_DELTA,
+                     ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED],
+                     2 * MAX_ANGLE_DELTA + 1);
+#else
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
                   MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
+#endif
   }
 }
 #endif  // CONFIG_EXT_INTRA
@@ -1594,7 +1608,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
 
 #if CONFIG_EXT_INTRA
-    write_intra_angle_info(xd, w);
+    write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, w);
@@ -1933,7 +1947,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
 #if CONFIG_EXT_INTRA
-  write_intra_angle_info(xd, w);
+  write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, w);

@@ -1146,8 +1146,6 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
 }
 
 #if CONFIG_EXT_INTRA
-#define MAX_ANGLE_DELTA 3
-#define ANGLE_STEP 3
 extern const int16_t dr_intra_derivative[90];
 static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 111, 157, 203, 67, 0, 0,

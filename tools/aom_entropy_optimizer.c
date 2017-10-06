@@ -338,6 +338,13 @@ int main(int argc, const char **argv) {
       "const aom_cdf_prob\n"
       "default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)]");
 
+  cts_each_dim[0] = DIRECTIONAL_MODES;
+  cts_each_dim[1] = 2 * MAX_ANGLE_DELTA + 1;
+  optimize_cdf_table(&fc.angle_delta[0][0], probsfile, 2, cts_each_dim,
+                     "const aom_cdf_prob\n"
+                     "default_angle_delta_cdf"
+                     "[DIRECTIONAL_MODES][CDF_SIZE(2 * MAX_ANGLE_DELTA + 1)]");
+
   /* Intra mode (non-keyframe luma) */
   cts_each_dim[0] = BLOCK_SIZE_GROUPS;
   cts_each_dim[1] = INTRA_MODES;

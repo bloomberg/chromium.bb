@@ -261,6 +261,7 @@ EXPERIMENT_LIST="
     ext_intra
     filter_intra
     intra_edge
+    ext_intra_mod
     intrabc
     interintra
     wedge
@@ -554,6 +555,7 @@ post_process_cmdline() {
     enabled ctx1d && soft_enable lv_map
     enabled ctx1d && soft_enable ext_tx
     enabled compound_round && soft_enable convolve_round
+    enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
