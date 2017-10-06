@@ -71,6 +71,13 @@ using testing::IsEmpty;
 
 namespace {
 
+const char kCachedB64[] = "\161\247\041\171\337\276";  // b64decode("cached++")
+const char kFreshB64[] = "\176\267\254\207\357\276";   // b64decode("fresh+++")
+
+scoped_refptr<base::RefCountedString> MakeRefPtr(std::string content) {
+  return base::RefCountedString::TakeString(&content);
+}
+
 content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -757,6 +764,22 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
     return base::nullopt;
   }
 
+  // Gets $(id)[property]. Coerces to string.
+  base::Optional<std::string> GetElementProperty(content::WebContents* tab,
+                                                 const std::string& id,
+                                                 const std::string& property) {
+    std::string value;
+    if (instant_test_utils::GetStringFromJS(
+            tab,
+            base::StringPrintf("document.getElementById(%s)[%s] + ''",
+                               base::GetQuotedJSONString(id).c_str(),
+                               base::GetQuotedJSONString(property).c_str()),
+            &value)) {
+      return value;
+    }
+    return base::nullopt;
+  }
+
   void WaitForFadeIn(content::WebContents* tab, const std::string& id) {
     content::ConsoleObserverDelegate console_observer(tab, "WaitForFadeIn");
     tab->SetDelegate(&console_observer);
@@ -768,13 +791,15 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
                 R"js(
                   (function(id, message) {
                     var element = document.getElementById(id);
-                    if (window.getComputedStyle(element).opacity == 1.0) {
-                      console.log(message);
-                    } else {
-                      element.addEventListener('transitionend', function() {
+                    var fn = function() {
+                      if ((element.style.opacity == 1.0) &&
+                          (window.getComputedStyle(element).opacity == 1.0)) {
                         console.log(message);
-                      });
-                    }
+                      } else {
+                        element.addEventListener('transitionend', fn);
+                      }
+                    };
+                    fn();
                     return true;
                   })(%s, 'WaitForFadeIn')
                 )js",
@@ -859,10 +884,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenCached) {
   EncodedLogo cached_logo;
-  std::string encoded_image = "data:image/svg+xml,<svg/>";
-  cached_logo.encoded_image =
-      base::RefCountedString::TakeString(&encoded_image);
-  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org");
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
   cached_logo.metadata.alt_text = "Chromium";
 
   EXPECT_CALL(*logo_service(), GetLogoPtr(_))
@@ -878,14 +902,44 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenCached) {
 
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
+              Eq<std::string>("Chromium"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-link", "href"),
+              Eq<std::string>("https://www.chromium.org/"));
   EXPECT_THAT(console_observer.message(), IsEmpty());
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldFadeToDoodleWhenFetched) {
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldFadeDoodleToDefaultWhenFetched) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillOnce(
+          DoAll(ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+                ReturnFreshLogo(LogoCallbackReason::DETERMINED, base::nullopt)))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, base::nullopt),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  WaitForFadeIn(active_tab, "logo-default");
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(1.0));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(0.0));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldFadeDefaultToDoodleWhenFetched) {
   EncodedLogo fresh_logo;
-  std::string encoded_image = "data:image/svg+xml,<svg/>";
-  fresh_logo.encoded_image = base::RefCountedString::TakeString(&encoded_image);
-  fresh_logo.metadata.on_click_url = GURL("https://www.chromium.org");
+  fresh_logo.encoded_image = MakeRefPtr(kFreshB64);
+  fresh_logo.metadata.mime_type = "image/png";
+  fresh_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
   fresh_logo.metadata.alt_text = "Chromium";
 
   EXPECT_CALL(*logo_service(), GetLogoPtr(_))
@@ -903,4 +957,121 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldFadeToDoodleWhenFetched) {
   WaitForFadeIn(active_tab, "logo-doodle");
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
+              Eq<std::string>("Chromium"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-link", "href"),
+              Eq<std::string>("https://www.chromium.org/"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldFadeDoodleToDoodleWhenFetched) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/cached");
+  cached_logo.metadata.alt_text = "cached alt text";
+
+  EncodedLogo fresh_logo;
+  fresh_logo.encoded_image = MakeRefPtr(kFreshB64);
+  fresh_logo.metadata.mime_type = "image/png";
+  fresh_logo.metadata.on_click_url = GURL("https://www.chromium.org/fresh");
+  fresh_logo.metadata.alt_text = "fresh alt text";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillOnce(
+          DoAll(ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+                ReturnFreshLogo(LogoCallbackReason::DETERMINED, fresh_logo)))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  WaitForFadeIn(active_tab, "logo-doodle");
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "src"),
+              Eq<std::string>("data:image/png;base64,fresh+++"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
+              Eq<std::string>("fresh alt text"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-link", "href"),
+              Eq<std::string>("https://www.chromium.org/fresh"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldUpdateMetadataWhenChanged) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/cached");
+  cached_logo.metadata.alt_text = "cached alt text";
+
+  EncodedLogo fresh_logo;
+  fresh_logo.encoded_image = cached_logo.encoded_image;
+  fresh_logo.metadata.mime_type = cached_logo.metadata.mime_type;
+  fresh_logo.metadata.on_click_url = GURL("https://www.chromium.org/fresh");
+  fresh_logo.metadata.alt_text = "fresh alt text";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillOnce(
+          DoAll(ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+                ReturnFreshLogo(LogoCallbackReason::DETERMINED, fresh_logo)))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
+              Eq<std::string>("fresh alt text"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-link", "href"),
+              Eq<std::string>("https://www.chromium.org/fresh"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.animated_url =
+      GURL("https://www.chromium.org/animated.gif");
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "alt text";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillOnce(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "src"),
+              Eq<std::string>("data:image/png;base64,cached++"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
+              Eq<std::string>("alt text"));
+
+  ASSERT_THAT(GetElementProperty(active_tab, "logo-doodle-link", "href"),
+              Eq<std::string>(""));  // No href, just onclick handler.
+
+  // Click image, swapping out for animated URL.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('logo-doodle-link').click();"));
+
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "src"),
+              Eq(cached_logo.metadata.animated_url.spec()));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-link", "href"),
+              Eq<std::string>("https://www.chromium.org/"));
 }
