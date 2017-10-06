@@ -744,6 +744,14 @@ const char kLcdTextDescription[] =
     "If disabled, text is rendered with grayscale antialiasing instead of LCD "
     "(subpixel) when doing accelerated compositing.";
 
+const char kLeftToRightUrlsName[] =
+    "Render bidirectional URLs from left to right";
+const char kLeftToRightUrlsDescription[] =
+    "An experimental Bidi URL rendering algorithm where the URL components are "
+    "always shown in order from left to right, regardless of any RTL "
+    "characters. (The contents of each component are still rendered with the "
+    "normal Bidi algorithm.)";
+
 const char kLoadMediaRouterComponentExtensionName[] =
     "Load Media Router Component Extension";
 const char kLoadMediaRouterComponentExtensionDescription[] =

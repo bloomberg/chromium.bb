@@ -10,6 +10,7 @@
 #include <climits>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -1254,6 +1255,27 @@ base::i18n::TextDirection RenderText::GetTextDirection(
         break;
       case DIRECTIONALITY_FORCE_RTL:
         text_direction_ = base::i18n::RIGHT_TO_LEFT;
+        break;
+      case DIRECTIONALITY_AS_URL:
+        // Rendering as a URL implies left-to-right paragraph direction.
+        // URL Standard specifies that a URL "should be rendered as if it were
+        // in a left-to-right embedding".
+        // https://url.spec.whatwg.org/#url-rendering
+        //
+        // Consider logical string for domain "ABC.com/hello" (where ABC are
+        // Hebrew (RTL) characters). The normal Bidi algorithm renders this as
+        // "com/hello.CBA"; by forcing LTR, it is rendered as "CBA.com/hello".
+        //
+        // Note that this only applies a LTR embedding at the top level; it
+        // doesn't change the Bidi algorithm, so there are still some URLs that
+        // will render in a confusing order. Consider the logical string
+        // "abc.COM/HELLO/world", which will render as "abc.OLLEH/MOC/world".
+        // See https://crbug.com/351639.
+        //
+        // Note that the LeftToRightUrls feature flag enables additional
+        // behaviour for DIRECTIONALITY_AS_URL, but the left-to-right embedding
+        // behaviour is always enabled, regardless of the flag.
+        text_direction_ = base::i18n::LEFT_TO_RIGHT;
         break;
       default:
         NOTREACHED();
