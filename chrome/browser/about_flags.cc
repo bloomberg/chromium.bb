@@ -1709,11 +1709,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSuggestionsWithSubStringMatchDescription, kOsAll,
      SINGLE_VALUE_TYPE(
          autofill::switches::kEnableSuggestionsWithSubstringMatch)},
-    {"enable-supervised-user-managed-bookmarks-folder",
-     flag_descriptions::kSupervisedUserManagedBookmarksFolderName,
-     flag_descriptions::kSupervisedUserManagedBookmarksFolderDescription,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableSupervisedUserManagedBookmarksFolder)},
 #if BUILDFLAG(ENABLE_APP_LIST)
     {"enable-sync-app-list", flag_descriptions::kSyncAppListName,
      flag_descriptions::kSyncAppListDescription, kOsDesktop,

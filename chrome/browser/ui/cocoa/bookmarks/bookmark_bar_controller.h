@@ -137,11 +137,10 @@ enum BookmarkBarVisibleElementsMask {
   kVisibleElementsMaskNone = 0,
   kVisibleElementsMaskAppsButton = 1 << 0,
   kVisibleElementsMaskManagedBookmarksButton = 1 << 1,
-  kVisibleElementsMaskSupervisedBookmarksButton = 1 << 2,
-  kVisibleElementsMaskOffTheSideButton = 1 << 3,
-  kVisibleElementsMaskOtherBookmarksButton = 1 << 4,
-  kVisibleElementsMaskNoItemTextField = 1 << 5,
-  kVisibleElementsMaskImportBookmarksButton = 1 << 6,
+  kVisibleElementsMaskOffTheSideButton = 1 << 2,
+  kVisibleElementsMaskOtherBookmarksButton = 1 << 3,
+  kVisibleElementsMaskNoItemTextField = 1 << 4,
+  kVisibleElementsMaskImportBookmarksButton = 1 << 5,
 };
 
 // Specifies the location and visibility of the various sub-elements
@@ -162,9 +161,6 @@ struct BookmarkBarLayout {
   bool IsManagedBookmarksButtonVisible() const {
     return visible_elements & kVisibleElementsMaskManagedBookmarksButton;
   }
-  bool IsSupervisedBookmarksButtonVisible() const {
-    return visible_elements & kVisibleElementsMaskSupervisedBookmarksButton;
-  }
   bool IsOffTheSideButtonVisible() const {
     return visible_elements & kVisibleElementsMaskOffTheSideButton;
   }
@@ -182,7 +178,6 @@ struct BookmarkBarLayout {
   unsigned int visible_elements;
   CGFloat apps_button_offset;
   CGFloat managed_bookmarks_button_offset;
-  CGFloat supervised_bookmarks_button_offset;
   CGFloat off_the_side_button_offset;
   CGFloat other_bookmarks_button_offset;
   CGFloat no_item_textfield_offset;
@@ -293,9 +288,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // "Managed bookmarks" button on the left side, next to the apps button.
   base::scoped_nsobject<BookmarkButton> managedBookmarksButton_;
 
-  // "Supervised bookmarks" button on the left side, next to the apps button.
-  base::scoped_nsobject<BookmarkButton> supervisedBookmarksButton_;
-
   // "Other bookmarks" button on the right side.
   base::scoped_nsobject<BookmarkButton> otherBookmarksButton_;
 
@@ -386,8 +378,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)updateVisibility;
 
 // Update the visible state of the extra buttons on the bookmark bar: the
-// apps shortcut, the managed bookmarks folder, and the supervised bookmarks
-// folder.
+// apps shortcut and the managed bookmarks folder.
 - (void)updateExtraButtonsVisibility;
 
 // Hides or shows the bookmark bar depending on the current state.
@@ -486,7 +477,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (NSMutableArray*)buttons;
 - (BookmarkButton*)otherBookmarksButton;
 - (BookmarkButton*)managedBookmarksButton;
-- (BookmarkButton*)supervisedBookmarksButton;
 - (BookmarkButton*)otherBookmarksButton;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;

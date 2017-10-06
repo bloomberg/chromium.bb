@@ -171,7 +171,6 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
                                  bool* added_separator);
 
   void BuildMenuForManagedNode(views::MenuItemView* menu);
-  void BuildMenuForSupervisedNode(views::MenuItemView* menu);
 
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.

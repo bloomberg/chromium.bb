@@ -1297,11 +1297,6 @@ const char kSuggestionsWithSubStringMatchDescription[] =
     "Match Autofill suggestions based on substrings (token prefixes) rather "
     "than just prefixes.";
 
-const char kSupervisedUserManagedBookmarksFolderName[] =
-    "Managed bookmarks for supervised users";
-const char kSupervisedUserManagedBookmarksFolderDescription[] =
-    "Enable the managed bookmarks folder for supervised users.";
-
 const char kSyncAppListName[] = "App Launcher sync";
 const char kSyncAppListDescription[] =
     "Enable App Launcher sync. This also enables Folders where available (non "

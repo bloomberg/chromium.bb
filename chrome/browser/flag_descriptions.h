@@ -802,9 +802,6 @@ extern const char kTLS13VariantExperiment3[];
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
 
-extern const char kSupervisedUserManagedBookmarksFolderName[];
-extern const char kSupervisedUserManagedBookmarksFolderDescription[];
-
 extern const char kSyncAppListName[];
 extern const char kSyncAppListDescription[];
 

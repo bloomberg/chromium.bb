@@ -17,7 +17,6 @@ extern const char kManagedBookmarksFolderName[];
 extern const char kShowAppsShortcutInBookmarkBar[];
 extern const char kShowManagedBookmarksInBookmarkBar[];
 extern const char kShowBookmarkBar[];
-extern const char kSupervisedBookmarks[];
 
 }  // namespace prefs
 }  // namespace bookmarks

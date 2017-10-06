@@ -303,15 +303,6 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
 #endif
 }
 
-gfx::ImageSkia GetBookmarkSupervisedFolderIcon(SkColor text_color) {
-#if defined(OS_WIN)
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_BOOKMARK_BAR_FOLDER_SUPERVISED);
-#else
-  return GetFolderIcon(kFolderSupervisedIcon, text_color);
-#endif
-}
-
 gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
 #if defined(OS_WIN)
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

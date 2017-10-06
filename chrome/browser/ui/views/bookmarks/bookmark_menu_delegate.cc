@@ -91,18 +91,14 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
                                node == model->bookmark_bar_node();
     bool show_managed =
         show_forced_folders && !managed->managed_node()->empty();
-    bool show_supervised =
-        show_forced_folders && !managed->supervised_node()->empty();
-    bool has_children = (start_child_index < node->child_count()) ||
-                        show_managed || show_supervised;
+    bool has_children =
+        (start_child_index < node->child_count()) || show_managed;
     int initial_count = parent->GetSubmenu() ?
         parent->GetSubmenu()->GetMenuItemCount() : 0;
     if (has_children && initial_count > 0)
       parent->AppendSeparator();
     if (show_managed)
       BuildMenuForManagedNode(parent);
-    if (show_supervised)
-      BuildMenuForSupervisedNode(parent);
     BuildMenu(node, start_child_index, parent);
     if (show_options == SHOW_PERMANENT_FOLDERS)
       BuildMenusForPermanentNodes(parent);
@@ -467,10 +463,8 @@ MenuItemView* BookmarkMenuDelegate::CreateMenu(const BookmarkNode* parent,
   AddMenuToMaps(menu, parent);
   menu->set_has_icons(true);
   bool show_permanent = show_options == SHOW_PERMANENT_FOLDERS;
-  if (show_permanent && parent == GetBookmarkModel()->bookmark_bar_node()) {
+  if (show_permanent && parent == GetBookmarkModel()->bookmark_bar_node())
     BuildMenuForManagedNode(menu);
-    BuildMenuForSupervisedNode(menu);
-  }
   BuildMenu(parent, start_child_index, menu);
   if (show_permanent)
     BuildMenusForPermanentNodes(menu);
@@ -513,15 +507,6 @@ void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
   BuildMenuForPermanentNode(
       node, chrome::GetBookmarkManagedFolderIcon(TextColorForMenu(menu)), menu,
       &added_separator);
-}
-
-void BookmarkMenuDelegate::BuildMenuForSupervisedNode(MenuItemView* menu) {
-  // Don't add a separator for this menu.
-  bool added_separator = true;
-  const BookmarkNode* node = GetManagedBookmarkService()->supervised_node();
-  BuildMenuForPermanentNode(
-      node, chrome::GetBookmarkSupervisedFolderIcon(TextColorForMenu(menu)),
-      menu, &added_separator);
 }
 
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,

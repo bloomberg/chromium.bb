@@ -301,9 +301,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // Creates the button showing the "Managed Bookmarks" folder.
   views::MenuButton* CreateManagedBookmarksButton();
 
-  // Creates the button showing the supervised bookmarks items.
-  views::MenuButton* CreateSupervisedBookmarksButton();
-
   // Creates the button used when not all bookmark buttons fit.
   views::MenuButton* CreateOverflowButton();
 
@@ -370,9 +367,8 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // bookmarks bar.
   void UpdateAppearanceForTheme();
 
-  // Updates the visibility of |other_bookmarks_button_|,
-  // |managed_bookmarks_button_|, and |supervised_bookmarks_button_|. Also
-  // shows or hides the separator if required.
+  // Updates the visibility of |other_bookmarks_button_| and
+  // |managed_bookmarks_button_|. Also shows or hides the separator if required.
   // Returns true if something changed and a LayoutAndPaint() is needed.
   bool UpdateOtherAndManagedButtonsVisibility();
 
@@ -422,9 +418,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Shows the managed bookmarks entries.
   views::MenuButton* managed_bookmarks_button_;
-
-  // Shows the supervised bookmarks entries.
-  views::MenuButton* supervised_bookmarks_button_;
 
   // Shows the Apps page shortcut.
   views::LabelButton* apps_page_shortcut_;
