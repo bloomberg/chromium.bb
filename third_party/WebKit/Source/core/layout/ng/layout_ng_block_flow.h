@@ -30,6 +30,7 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
   NGInlineNodeData* GetNGInlineNodeData() const;
   void ResetNGInlineNodeData();
   bool HasNGInlineNodeData() const { return ng_inline_node_data_.get(); }
+  virtual void WillCollectInlines();
 
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;

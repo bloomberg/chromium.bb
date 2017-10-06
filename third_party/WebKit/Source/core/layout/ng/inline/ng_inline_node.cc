@@ -433,9 +433,11 @@ const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
 void NGInlineNode::CollectInlines() {
   DCHECK(Data().text_content_.IsNull());
   DCHECK(Data().items_.IsEmpty());
+  LayoutNGBlockFlow* block = GetLayoutBlockFlow();
+  block->WillCollectInlines();
   NGInlineNodeData* data = MutableData();
   NGInlineItemsBuilder builder(&data->items_);
-  data->next_sibling_ = CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
+  data->next_sibling_ = CollectInlinesInternal(block, &builder);
   data->text_content_ = builder.ToString();
   data->is_bidi_enabled_ =
       !Data().text_content_.IsEmpty() &&
