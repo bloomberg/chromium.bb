@@ -54,9 +54,14 @@ public class MainPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        updatePreferences();
+    public void onDestroy() {
+        super.onDestroy();
+        mSignInPreference.onPreferenceFragmentDestroyed();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         if (SigninManager.get(getActivity()).isSigninSupported()) {
             SigninManager.get(getActivity()).addSignInStateObserver(this);
             mSignInPreference.registerForUpdates();
@@ -64,12 +69,18 @@ public class MainPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
         if (SigninManager.get(getActivity()).isSigninSupported()) {
             SigninManager.get(getActivity()).removeSignInStateObserver(this);
             mSignInPreference.unregisterForUpdates();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updatePreferences();
     }
 
     private void createPreferences() {
@@ -258,11 +269,5 @@ public class MainPreferences extends PreferenceFragment
                 return super.isPreferenceClickDisabledByPolicy(preference);
             }
         };
-    }
-
-    @Override
-    public void onDestroy() {
-        mSignInPreference.onPreferenceFragmentDestroyed();
-        super.onDestroy();
     }
 }
