@@ -23935,6 +23935,7 @@ from previous Chrome versions.
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
+  <int value="-174319545" label="BulkPrinters:enabled"/>
   <int value="-170986053" label="EnableManualFallbacksFilling:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
@@ -24691,6 +24692,7 @@ from previous Chrome versions.
   <int value="2077917024"
       label="enable-supervised-user-managed-bookmarks-folder"/>
   <int value="2079672348" label="ExperimentalKeyboardLockUI:disabled"/>
+  <int value="2085186092" label="BulkPrinters:disabled"/>
   <int value="2085438501" label="ChromeHome:enabled"/>
   <int value="2089897928" label="enable-audio-focus"/>
   <int value="2093235103" label="default-tile-width"/>

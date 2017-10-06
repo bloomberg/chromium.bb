@@ -244,6 +244,8 @@ extern const base::Feature kQuickUnlockFingerprint;
 
 extern const base::Feature kEHVInputOnImeMenu;
 
+extern const base::Feature kBulkPrinters;
+
 extern const base::Feature kCrosCompUpdates;
 
 extern const base::Feature kCrOSComponent;
