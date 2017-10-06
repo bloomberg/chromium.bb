@@ -62,23 +62,27 @@ class MockServiceContextRef : public service_manager::ServiceContextRef {
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
   MOCK_METHOD1(Initialize, void(InitCb init_cb));
-  MOCK_METHOD5(MockCreateVideoFrame,
-               void(CodecOutputBuffer* raw_output_buffer,
-                    scoped_refptr<SurfaceTextureGLOwner> surface_texture,
-                    base::TimeDelta timestamp,
-                    gfx::Size natural_size,
-                    OutputWithReleaseMailboxCB output_cb));
+  MOCK_METHOD6(
+      MockCreateVideoFrame,
+      void(CodecOutputBuffer* raw_output_buffer,
+           scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+           base::TimeDelta timestamp,
+           gfx::Size natural_size,
+           PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
+           OutputWithReleaseMailboxCB output_cb));
   MOCK_METHOD1(MockRunAfterPendingVideoFrames,
                void(base::OnceClosure* closure));
   MOCK_METHOD0(CancelPendingCallbacks, void());
 
-  void CreateVideoFrame(std::unique_ptr<CodecOutputBuffer> output_buffer,
-                        scoped_refptr<SurfaceTextureGLOwner> surface_texture,
-                        base::TimeDelta timestamp,
-                        gfx::Size natural_size,
-                        OutputWithReleaseMailboxCB output_cb) override {
+  void CreateVideoFrame(
+      std::unique_ptr<CodecOutputBuffer> output_buffer,
+      scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+      base::TimeDelta timestamp,
+      gfx::Size natural_size,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
+      OutputWithReleaseMailboxCB output_cb) override {
     MockCreateVideoFrame(output_buffer.get(), surface_texture, timestamp,
-                         natural_size, output_cb);
+                         natural_size, promotion_hint_cb, output_cb);
     last_output_buffer_ = std::move(output_buffer);
   }
 

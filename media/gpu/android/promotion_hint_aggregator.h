@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
@@ -20,14 +21,19 @@ namespace media {
 class MEDIA_GPU_EXPORT PromotionHintAggregator {
  public:
   struct Hint {
-    int x = 0;
-    int y = 0;
-    int width = 0;
-    int height = 0;
+    Hint(const gfx::Rect& _screen_rect, bool _is_promotable)
+        : screen_rect(_screen_rect), is_promotable(_is_promotable) {}
+    gfx::Rect screen_rect;
     bool is_promotable = false;
+
+    bool operator==(const Hint& other) const {
+      return other.screen_rect == screen_rect &&
+             other.is_promotable == is_promotable;
+    }
   };
 
-  using NotifyPromotionHintCB = base::Callback<void(const Hint& hint)>;
+  // Pass the hint by value to permit thread-hopping callbacks.
+  using NotifyPromotionHintCB = base::Callback<void(Hint hint)>;
 
   virtual ~PromotionHintAggregator() = default;
 

@@ -35,11 +35,13 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   ~VideoFrameFactoryImpl() override;
 
   void Initialize(InitCb init_cb) override;
-  void CreateVideoFrame(std::unique_ptr<CodecOutputBuffer> output_buffer,
-                        scoped_refptr<SurfaceTextureGLOwner> surface_texture,
-                        base::TimeDelta timestamp,
-                        gfx::Size natural_size,
-                        OutputWithReleaseMailboxCB output_cb) override;
+  void CreateVideoFrame(
+      std::unique_ptr<CodecOutputBuffer> output_buffer,
+      scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+      base::TimeDelta timestamp,
+      gfx::Size natural_size,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
+      OutputWithReleaseMailboxCB output_cb) override;
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override;
 
  private:
@@ -69,6 +71,7 @@ class GpuVideoFrameFactory
       scoped_refptr<SurfaceTextureGLOwner> surface_texture,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -79,6 +82,7 @@ class GpuVideoFrameFactory
       scoped_refptr<SurfaceTextureGLOwner> surface_texture,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       scoped_refptr<VideoFrame>* video_frame_out,
       scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out);
 

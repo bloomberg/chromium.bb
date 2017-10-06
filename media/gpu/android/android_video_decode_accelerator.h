@@ -258,7 +258,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void ReleaseCodecAndBundle();
 
   // Send a |hint| to |promotion_hint_aggregator_|.
-  void NotifyPromotionHint(const PromotionHintAggregator::Hint& hint);
+  void NotifyPromotionHint(PromotionHintAggregator::Hint hint);
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;

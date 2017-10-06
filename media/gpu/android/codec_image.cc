@@ -32,12 +32,15 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 
 }  // namespace
 
-CodecImage::CodecImage(std::unique_ptr<CodecOutputBuffer> output_buffer,
-                       scoped_refptr<SurfaceTextureGLOwner> surface_texture,
-                       DestructionCb destruction_cb)
+CodecImage::CodecImage(
+    std::unique_ptr<CodecOutputBuffer> output_buffer,
+    scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
+    DestructionCb destruction_cb)
     : phase_(Phase::kInCodec),
       output_buffer_(std::move(output_buffer)),
       surface_texture_(std::move(surface_texture)),
+      promotion_hint_cb_(std::move(promotion_hint_cb)),
       destruction_cb_(std::move(destruction_cb)) {}
 
 CodecImage::~CodecImage() {
@@ -92,8 +95,10 @@ bool CodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   // Move the overlay if needed.
   if (most_recent_bounds_ != bounds_rect) {
     most_recent_bounds_ = bounds_rect;
-    // TODO(watk): Implement overlay layout scheduling. Either post the call
-    // or create a threadsafe wrapper.
+    // TODO(liberato): When we start getting promotion hints, then we should
+    // not send a hint from NotifyPromotionHint() if it's promotable and we
+    // don't have a surface texture.  We'll handle it here.
+    promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds_rect, true));
   }
 
   RenderToOverlay();

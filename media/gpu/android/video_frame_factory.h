@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -52,6 +53,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
       scoped_refptr<SurfaceTextureGLOwner> surface_texture,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       OutputWithReleaseMailboxCB output_cb) = 0;
 
   // Runs |closure| on the calling sequence after all previous
