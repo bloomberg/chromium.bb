@@ -22,7 +22,7 @@ cr.define('print_preview.ticket_items', function() {
     wouldValueBeValid(value) {
       var result = pageRangeTextToPageRanges(
           value, this.getDocumentInfoInternal().pageCount);
-      return result instanceof Array;
+      return Array.isArray(result);
     }
 
     /**
@@ -64,7 +64,7 @@ cr.define('print_preview.ticket_items', function() {
      */
     getPageRanges() {
       var pageRanges = pageRangeTextToPageRanges(this.getValueAsString_());
-      return pageRanges instanceof Array ? pageRanges : [];
+      return Array.isArray(pageRanges) ? pageRanges : [];
     }
 
     /**
@@ -76,7 +76,7 @@ cr.define('print_preview.ticket_items', function() {
     getDocumentPageRanges() {
       var pageRanges = pageRangeTextToPageRanges(
           this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
-      return pageRanges instanceof Array ? pageRanges : [];
+      return Array.isArray(pageRanges) ? pageRanges : [];
     }
 
     /**
@@ -92,8 +92,7 @@ cr.define('print_preview.ticket_items', function() {
     checkValidity() {
       var pageRanges = pageRangeTextToPageRanges(
           this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
-      return pageRanges instanceof Array ? PageRangeStatus.NO_ERROR :
-                                           pageRanges;
+      return Array.isArray(pageRanges) ? PageRangeStatus.NO_ERROR : pageRanges;
     }
   }
 
