@@ -297,6 +297,8 @@ def ParseFileContents(filename, content):
 
 
 GS_RE = re.compile(r'gs://')
+
+
 def ParseURL(url):
   """Parse the files specified by a URL or filename.
 
@@ -312,10 +314,17 @@ def ParseURL(url):
   logs = []
   if GS_RE.match(url):
     ctx = gs.GSContext()
-    files = ctx.LS(url)
+    try:
+      files = ctx.LS(url)
+    except gs.GSNoSuchKey:
+      files = []
     for filename in files:
-      content = ctx.Cat(filename)
-      logs.extend(ParseFileContents(filename, content))
+      try:
+        content = ctx.Cat(filename)
+        logs.extend(ParseFileContents(filename, content))
+      except gs.GSNoSuchKey:
+        logging.warning("Couldn't find file %s for url %s.", filename, url)
+
   else:
     with open(url) as f:
       content = f.read()
@@ -373,7 +382,8 @@ def main(argv):
   files = options.files
   if options.filelist:
     with open(options.filelist) as f:
-      files.extend([l.strip() for l in f.readlines()])
+      found = [l.strip() for l in f.readlines()]
+    files.extend(filter(bool, found))
   if options.base:
     files = [os.path.join(options.base, f) for f in files]
 
