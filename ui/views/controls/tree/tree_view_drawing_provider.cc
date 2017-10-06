@@ -28,7 +28,8 @@ SkColor TreeViewDrawingProvider::GetTextColorForNode(TreeView* tree_view,
   if (tree_view->GetSelectedNode() == node) {
     if (tree_view->HasFocus())
       color_id = ui::NativeTheme::kColorId_TreeSelectedText;
-    color_id = ui::NativeTheme::kColorId_TreeSelectedTextUnfocused;
+    else
+      color_id = ui::NativeTheme::kColorId_TreeSelectedTextUnfocused;
   }
   return tree_view->GetNativeTheme()->GetSystemColor(color_id);
 }
