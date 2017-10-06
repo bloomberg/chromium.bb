@@ -77,7 +77,7 @@ typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
 typedef HWND    EGLNativeWindowType;
 
-#elif defined(__APPLE__) || defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */
+#elif defined(__WINSCW__) || defined(__SYMBIAN32__)
 
 typedef int   EGLNativeDisplayType;
 typedef void *EGLNativeWindowType;
@@ -108,6 +108,19 @@ typedef intptr_t EGLNativePixmapType;
 typedef Display *EGLNativeDisplayType;
 typedef Pixmap   EGLNativePixmapType;
 typedef Window   EGLNativeWindowType;
+
+#elif defined(__APPLE__)
+
+/* Chromium-specific __APPLE__ EGLNative* definition */
+typedef void          *EGLNativeDisplayType;
+typedef int            EGLNativePixmapType;
+#ifdef __OBJC__
+@class NSView;
+typedef NSView *EGLNativeWindowType;
+#else
+struct NSView;
+typedef struct NSView *EGLNativeWindowType;
+#endif  // __OBJC__
 
 #else
 #error "Platform not recognized"
