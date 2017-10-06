@@ -317,6 +317,20 @@ if (!is_android && !is_mac) {
       sources += [ "app/chrome_exe_main_aura.cc" ]
     }
   }
+
+  # TODO(jonross): remove this once telemetry can differentiate between linux
+  # and linux chromiumos.
+  if (enable_package_mash_services) {
+    chrome_binary("chrome_test") {
+      # Note that the output name needs to end with "chrome", because that's
+      # what telemetry test-runner expects.
+      output_name = "test_chrome"
+      sources = []
+      if (!is_win && use_aura) {
+        sources += [ "app/chrome_exe_main_aura.cc" ]
+      }
+    }
+  }
 }  # !is_android && !is_mac
 
 if (is_win) {
