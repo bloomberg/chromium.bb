@@ -350,9 +350,13 @@ SelectToSpeak.prototype = {
    * Stop speech. If speech was in-progress, the interruption
    * event will be caught and clearFocusRingAndNode_ will be
    * called, stopping visual feedback as well.
+   * If speech was not in progress, i.e. if the user was drawing
+   * a focus ring on the screen, this still clears the visual
+   * focus ring.
    */
   stopAll_: function() {
     chrome.tts.stop();
+    this.clearFocusRing_();
   },
 
   /**
