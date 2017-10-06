@@ -24,6 +24,11 @@ Polymer({
 
     /** A11y text descriptor for this control. */
     alt: String,
+
+    tabIndex: {
+      type: Number,
+      value: 0,
+    },
   },
 
   /** @private */

@@ -7,12 +7,22 @@
 <dom-module id="extensions-code-section">
   <template>
     <style include="cr-hidden-style">
-      #main {
+      :host {
+        display: block;
+      }
+
+      #scroll-container {
         border: 1px solid var(--paper-grey-500);
+        height: 100%;
+        overflow: auto;
+        position: relative;
+      }
+
+      #main {
         color: var(--paper-grey-800);
         display: flex;
         font-family: monospace;
-        overflow: auto;
+        min-height: 100%;
         white-space: pre;
       }
 
@@ -30,7 +40,7 @@
         flex-direction: column;
       }
 
-      .highlight {
+      #highlight {
         background: var(--paper-red-100);
       }
 
@@ -39,15 +49,17 @@
         text-align: center;
       }
     </style>
-    <div id="main" hidden$="[[isEmpty(code)]]">
-      <div id="line-numbers">
-        <span>[[computeLineNumbersContent_(code.*)]]</span>
-      </div>
-      <div id="source">
-        <span>[[code.beforeHighlight]]<!-- No whitespace allowed
-       --><span class="highlight" title="[[code.message]]"><!--
-         -->[[code.highlight]]<!--
-     --></span>[[code.afterHighlight]]</span>
+    <div id="scroll-container" hidden$="[[isEmpty(code)]]">
+      <div id="main">
+        <div id="line-numbers">
+          <span>[[computeLineNumbersContent_(code.*)]]</span>
+        </div>
+        <div id="source">
+          <span>[[code.beforeHighlight]]<!-- No whitespace allowed
+         --><span id="highlight" title="[[code.message]]"><!--
+           -->[[code.highlight]]<!--
+       --></span>[[code.afterHighlight]]</span>
+        </div>
       </div>
     </div>
     <div id="no-code" hidden$="[[!isEmpty(code)]]">[[couldNotDisplayCode]]</div>
