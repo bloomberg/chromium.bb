@@ -34,10 +34,6 @@ void AllocatorShimLogAlloc(AllocatorType type,
 
 void AllocatorShimLogFree(void* address);
 
-// Ensures all send buffers are flushed. The given barrier ID is sent to the
-// logging process so it knows when this operation is complete.
-void AllocatorShimFlushPipe(uint32_t barrier_id);
-
 // Sets the functions that can be called to hook GC heap allocations. These
 // must be set externally since GC heap only exists in renderer processes. If
 // set, these functions functions will be called to enable logging of the GC

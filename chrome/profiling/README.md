@@ -5,8 +5,6 @@ tracks memory allocations in other processes. See [design doc] for more details.
 
 [design doc]: https://docs.google.com/document/d/1eRAgOFgHwYEPge8G1_5UEvu8TJs5VkYCxd6aFU8AIKY
 
-There is some additional information in //chrome/common/profiling/README.md
-
 How To Enable Out of Process Heap Profiling
 -------------------------------------------
 Navigate to `chrome://flags/#memlog` and set the flag to

@@ -25,24 +25,6 @@ namespace profiling {
 // This class is threadsafe.
 class BacktraceStorage {
  public:
-  // Instantiating this lock will prevent backtraces from being deleted from
-  // the strorage for as long as it's alive. This class is moveable but not
-  // copyable.
-  class Lock {
-   public:
-    Lock();                                    // Doesn't take the lock.
-    explicit Lock(BacktraceStorage* storage);  // Takes the lock.
-    Lock(const Lock&) = delete;
-    Lock(Lock&&);
-    ~Lock();
-
-    Lock& operator=(Lock&& other);
-    Lock& operator=(const Lock&) = delete;
-
-   private:
-    BacktraceStorage* storage_;  // May be null if moved from.
-  };
-
   BacktraceStorage();
   ~BacktraceStorage();
 
@@ -59,31 +41,12 @@ class BacktraceStorage {
   void Free(const std::vector<const Backtrace*>& bts);
 
  private:
-  friend Lock;
   using Container = std::unordered_set<Backtrace>;
-
-  // Called by the BacktraceStorage::Lock class.
-  void LockStorage();
-  void UnlockStorage();
-
-  // Releases all backtraces in the vector assuming the lock_ is already held
-  // and storage is not locked.
-  void ReleaseBacktracesLocked(const std::vector<const Backtrace*>& bts);
 
   mutable base::Lock lock_;
 
-  // Protected by the lock_. This indicates the number of consumers that have
-  // raw backtrace pointers owned by backtraces_. As long as this count is
-  // non-zero, Backtraces owned by backtraces_ cannot be modified or destroyed.
-  int storage_lock_count_ = 0;
-
   // List of live backtraces for de-duping. Protected by the lock_.
   Container backtraces_;
-
-  // When the backtrace storage is locked, no backtraces will be deleted from
-  // the storage. Instead, they are accumulated here for releasing after the
-  // lock is released.
-  std::vector<const Backtrace*> release_after_lock_;
 };
 
 }  // namespace profiling

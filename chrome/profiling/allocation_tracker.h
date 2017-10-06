@@ -9,8 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/sequenced_task_runner.h"
-#include "base/synchronization/lock.h"
 #include "chrome/profiling/allocation_event.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "chrome/profiling/memlog_receiver.h"
@@ -19,18 +17,10 @@ namespace profiling {
 
 // Tracks live allocations in one process. This is an analogue to memory-infra
 // allocation register and needs to be merged/deduped.
-//
-// This class is not threadsafe except as noted.
 class AllocationTracker : public MemlogReceiver {
  public:
   using CompleteCallback = base::OnceClosure;
   using ContextMap = std::map<std::string, int>;
-
-  // Callback for taking an asynchronous snapshot. The first parameter is a
-  // success parameter. This class will always set it to true, but this is
-  // useful for calling code that must handle failure.
-  using SnapshotCallback =
-      base::OnceCallback<void(bool, AllocationCountMap, ContextMap)>;
 
   AllocationTracker(CompleteCallback complete_cb,
                     BacktraceStorage* backtrace_storage);
@@ -41,28 +31,16 @@ class AllocationTracker : public MemlogReceiver {
                std::vector<Address>&& bt,
                std::string&& context) override;
   void OnFree(const FreePacket& free_packet) override;
-  void OnBarrier(const BarrierPacket& barrier_packet) override;
   void OnComplete() override;
 
-  // Registers the given snapshot closure to be executed when the given barrier
-  // ID is received from the process. This will only trigger for a barrier
-  // received after registration.
-  //
-  // This function is threadsafe. The callback will be executed on the given
-  // task runner.
-  void SnapshotOnBarrier(
-      uint32_t barrier_id,
-      scoped_refptr<base::SequencedTaskRunner> callback_runner,
-      SnapshotCallback callback);
+  const AllocationEventSet& live_allocs() const { return live_allocs_; }
+  const ContextMap& context() const { return context_; }
+
+  // Returns the aggregated allocation counts currently live.
+  AllocationCountMap GetCounts() const;
 
  private:
   CompleteCallback complete_callback_;
-
-  // The snapshot callbacks are threadsafe and are protected by the lock.
-  base::Lock snapshot_lock_;
-  using RunnerSnapshotCallbackPair =
-      std::pair<scoped_refptr<base::SequencedTaskRunner>, SnapshotCallback>;
-  std::map<uint32_t, RunnerSnapshotCallbackPair> registered_snapshot_callbacks_;
 
   BacktraceStorage* backtrace_storage_;
 

@@ -165,9 +165,13 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 
 TEST(ProfilingJsonExporterTest, TraceHeader) {
   BacktraceStorage backtrace_storage;
+  MemoryMap memory_map;
+  std::map<std::string, int> context_map;
   std::ostringstream stream;
 
   ExportParams params;
+  params.context_map = &context_map;
+  params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
@@ -224,10 +228,14 @@ TEST(ProfilingJsonExporterTest, TraceHeader) {
 TEST(ProfilingJsonExporterTest, DumpsHeader) {
   BacktraceStorage backtrace_storage;
   AllocationEventSet events;
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
   std::ostringstream stream;
 
   ExportParams params;
   params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
@@ -293,9 +301,13 @@ TEST(ProfilingJsonExporterTest, Simple) {
       AllocationEvent(AllocatorType::kMalloc, Address(0x5), 12, bt2, 0));
 
   std::ostringstream stream;
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
 
   ExportParams params;
   params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
@@ -467,9 +479,13 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
 
   // Validate filtering by size and count.
   std::ostringstream stream;
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
 
   ExportParams params;
   params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_map;
   params.min_size_threshold = kSizeThreshold;
   params.min_count_threshold = kCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
@@ -534,14 +550,18 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
 
 TEST(ProfilingJsonExporterTest, MemoryMaps) {
   AllocationEventSet events;
-  ExportParams params;
-  params.maps = memory_instrumentation::OSMetrics::GetProcessMemoryMaps(
-      base::Process::Current().Pid());
-  ASSERT_GT(params.maps.size(), 2u);
+  std::vector<memory_instrumentation::mojom::VmRegionPtr> memory_maps =
+      memory_instrumentation::OSMetrics::GetProcessMemoryMaps(
+          base::Process::Current().Pid());
+  ASSERT_GT(memory_maps.size(), 2u);
 
   std::ostringstream stream;
+  std::map<std::string, int> context_map;
 
+  ExportParams params;
   params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_maps;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
@@ -591,9 +611,13 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   base::Value metadata_dict_copy = metadata_dict->Clone();
 
   std::ostringstream stream;
+  std::map<std::string, int> context_map;
+  MemoryMap memory_map;
 
   ExportParams params;
   params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, std::move(metadata_dict),
@@ -616,7 +640,7 @@ TEST(ProfilingJsonExporterTest, Metadata) {
 
 TEST(ProfilingJsonExporterTest, Context) {
   BacktraceStorage backtrace_storage;
-  ExportParams params;
+  std::map<std::string, int> context_map;
 
   std::vector<Address> stack;
   stack.push_back(Address(0x1234));
@@ -624,10 +648,10 @@ TEST(ProfilingJsonExporterTest, Context) {
 
   std::string context_str1("Context 1");
   int context_id1 = 1;
-  params.context_map[context_str1] = context_id1;
+  context_map[context_str1] = context_id1;
   std::string context_str2("Context 2");
   int context_id2 = 2;
-  params.context_map[context_str2] = context_id2;
+  context_map[context_str2] = context_id2;
 
   // Make 4 events, all with identical metadata except context. Two share the
   // same context so should get folded, one has unique context, and one has no
@@ -643,8 +667,12 @@ TEST(ProfilingJsonExporterTest, Context) {
                                 16, bt, context_id1));
 
   std::ostringstream stream;
+  MemoryMap memory_map;
 
+  ExportParams params;
   params.allocs = AllocationEventSetToCountMap(events);
+  params.context_map = &context_map;
+  params.maps = &memory_map;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);

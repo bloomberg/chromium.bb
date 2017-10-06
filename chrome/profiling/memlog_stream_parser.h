@@ -5,7 +5,6 @@
 #ifndef CHROME_PROFILING_MEMLOG_STREAM_PARSER_H_
 #define CHROME_PROFILING_MEMLOG_STREAM_PARSER_H_
 
-#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
@@ -63,7 +62,6 @@ class MemlogStreamParser : public MemlogStreamReceiver {
   ReadStatus ParseHeader();
   ReadStatus ParseAlloc();
   ReadStatus ParseFree();
-  ReadStatus ParseBarrier();
 
   void SetErrorState();
 
