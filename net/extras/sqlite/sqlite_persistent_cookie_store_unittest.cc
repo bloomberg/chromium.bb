@@ -22,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -151,9 +152,10 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     EXPECT_EQ(0U, cookies.size());
   }
 
-  // We have to create this method to wrap WaitableEvent::Wait, since we cannot
-  // bind a non-void returning method as a Closure.
-  void WaitOnDBEvent() { db_thread_event_.Wait(); }
+  void WaitOnDBEvent() {
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
+    db_thread_event_.Wait();
+  }
 
   // Adds a persistent cookie to store_.
   void AddCookie(const std::string& name,
@@ -193,8 +195,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
  protected:
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives()});
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
   base::WaitableEvent loaded_event_;
