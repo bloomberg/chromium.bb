@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 from json_comment_eater import Nom
+import os
 import unittest
 
 class JsonCommentEaterTest(unittest.TestCase):
@@ -13,7 +14,8 @@ class JsonCommentEaterTest(unittest.TestCase):
     contents as a tuple in that order.
     '''
     def read(file_name):
-      with open(file_name, 'r') as f:
+      file_path = os.path.join(os.path.dirname(__file__), file_name)
+      with open(file_path, 'r') as f:
         return f.read()
     return [read(pattern % test_name)
             for pattern in ('%s.json', '%s_expected.json')]

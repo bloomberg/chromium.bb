@@ -208,20 +208,22 @@ class FieldTrialToStruct(unittest.TestCase):
     self.assertEqual(expected, result)
 
   def test_FieldTrialToStructMain(self):
-    schema = ('../../components/variations/field_trial_config/'
-                  'field_trial_testing_config_schema.json')
+    schema = (os.path.dirname(__file__) +
+              '/../../components/variations/field_trial_config/'
+              'field_trial_testing_config_schema.json')
+    unittest_data_dir = os.path.dirname(__file__) + '/unittest_data/'
     test_output_filename = 'test_output'
     fieldtrial_to_struct.main([
       '--schema=' + schema,
       '--output=' + test_output_filename,
       '--platform=win',
       '--year=2015',
-      'unittest_data/test_config.json'
+      unittest_data_dir + 'test_config.json'
     ])
     header_filename = test_output_filename + '.h'
     with open(header_filename, 'r') as header:
       test_header = header.read()
-      with open('unittest_data/expected_output.h', 'r') as expected:
+      with open(unittest_data_dir + 'expected_output.h', 'r') as expected:
         expected_header = expected.read()
         self.assertEqual(expected_header, test_header)
     os.unlink(header_filename)
@@ -229,7 +231,7 @@ class FieldTrialToStruct(unittest.TestCase):
     cc_filename = test_output_filename + '.cc'
     with open(cc_filename, 'r') as cc:
       test_cc = cc.read()
-      with open('unittest_data/expected_output.cc', 'r') as expected:
+      with open(unittest_data_dir + 'expected_output.cc', 'r') as expected:
         expected_cc = expected.read()
         self.assertEqual(expected_cc, test_cc)
     os.unlink(cc_filename)

@@ -34,9 +34,6 @@ from xml.dom import minidom
 import action_utils
 import print_style
 
-sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
-from google import path_utils
-
 # Import the metrics/common module for pretty print xml.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import presubmit_util
@@ -158,7 +155,7 @@ INPUT_METHOD_IDS = (
 )
 
 # The path to the root of the repository.
-REPOSITORY_ROOT = os.path.join(path_utils.ScriptDir(), '..', '..', '..')
+REPOSITORY_ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 number_of_files_total = 0
 
