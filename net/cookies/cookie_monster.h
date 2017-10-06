@@ -528,17 +528,23 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
   // |source_secure| indicates if the source may override existing secure
   // cookies.
+  //
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The
   // return value will be true if |skip_httponly| skipped an httponly cookie or
   // the cookie to delete was Secure and the scheme of |ecc| is insecure.  |key|
   // is the key to find the cookie in cookies_; see the comment before the
   // CookieMap typedef for details.
+  //
+  // If a cookie is deleted, and its value matches |ecc|'s value, then
+  // |creation_date_to_inherit| will be set to that cookie's creation date.
+  //
   // NOTE: There should never be more than a single matching equivalent cookie.
   bool DeleteAnyEquivalentCookie(const std::string& key,
                                  const CanonicalCookie& ecc,
                                  bool source_secure,
                                  bool skip_httponly,
-                                 bool already_expired);
+                                 bool already_expired,
+                                 base::Time* creation_date_to_inherit);
 
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.

@@ -1322,11 +1322,13 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
   }
 }
 
-bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
-                                              const CanonicalCookie& ecc,
-                                              bool source_secure,
-                                              bool skip_httponly,
-                                              bool already_expired) {
+bool CookieMonster::DeleteAnyEquivalentCookie(
+    const std::string& key,
+    const CanonicalCookie& ecc,
+    bool source_secure,
+    bool skip_httponly,
+    bool already_expired,
+    base::Time* creation_date_to_inherit) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool found_equivalent_cookie = false;
@@ -1376,6 +1378,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
         histogram_cookie_delete_equivalent_->Add(
             COOKIE_DELETE_EQUIVALENT_FOUND);
         if (cc->Value() == ecc.Value()) {
+          *creation_date_to_inherit = cc->CreationDate();
           histogram_cookie_delete_equivalent_->Add(
               COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE);
         }
@@ -1469,8 +1472,9 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   }
   bool already_expired = cc->IsExpired(creation_date);
 
+  base::Time creation_date_to_inherit;
   if (DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
-                                already_expired)) {
+                                already_expired, &creation_date_to_inherit)) {
     std::string error;
     error =
         "SetCookie() not clobbering httponly cookie or secure cookie for "
@@ -1507,6 +1511,13 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                     ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
                     : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME));
     histogram_cookie_source_scheme_->Add(cookie_source_sample);
+
+    if (!creation_date_to_inherit.is_null()) {
+      cc->SetCreationDate(creation_date_to_inherit);
+      // |last_time_seen_| is intentionally not updated, as moving it into the
+      // past might cause duplicate cookie creation dates. See
+      // `CookieMonster::CurrentTime()` for details.
+    }
 
     InternalInsertCookie(key, std::move(cc), true);
   } else {

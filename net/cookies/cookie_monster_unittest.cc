@@ -154,20 +154,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
-  bool SetCanonicalCookie(std::unique_ptr<CookieMonster> cm,
-                          std::unique_ptr<CanonicalCookie> cookie,
-                          bool secure_source,
-                          bool modify_http_only) {
-    DCHECK(cm);
-    ResultSavingCookieCallback<bool> callback;
-    cm->SetCanonicalCookieAsync(
-        std::move(cookie), secure_source, modify_http_only,
-        base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                   base::Unretained(&callback)));
-    callback.WaitUntilDone();
-    return callback.result();
-  }
-
   bool SetCookieWithCreationTime(CookieMonster* cm,
                                  const GURL& url,
                                  const std::string& cookie_line,
@@ -1720,21 +1706,48 @@ TEST_F(CookieMonsterTest, CookieSorting) {
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A2; path=/foo"));
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A3; path=/foo/bar"));
 
-  // Re-set cookie which should not change sort order.
+  // Re-set cookie which should not change sort order, as the creation date
+  // will be retained, as per RFC 6265 5.3.11.3.
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B3; path=/foo/bar"));
 
   CookieList cookies = GetAllCookies(cm.get());
   ASSERT_EQ(6u, cookies.size());
-  // According to RFC 6265 5.3 (11) re-setting this cookie should retain the
-  // initial creation-time from above, and the sort order should not change.
-  // Chrome's current implementation deviates from the spec so capturing this to
-  // avoid any inadvertent changes to this behavior.
-  EXPECT_EQ("A3", cookies[0].Value());
-  EXPECT_EQ("B3", cookies[1].Value());
+  EXPECT_EQ("B3", cookies[0].Value());
+  EXPECT_EQ("A3", cookies[1].Value());
   EXPECT_EQ("B2", cookies[2].Value());
   EXPECT_EQ("A2", cookies[3].Value());
   EXPECT_EQ("B1", cookies[4].Value());
   EXPECT_EQ("A1", cookies[5].Value());
+}
+
+TEST_F(CookieMonsterTest, InheritCreationDate) {
+  std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr));
+
+  base::Time the_not_so_distant_past(base::Time::Now() -
+                                     base::TimeDelta::FromSeconds(1000));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "Name=Value; path=/",
+                                        the_not_so_distant_past));
+
+  CookieList cookies = GetAllCookies(cm.get());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ(the_not_so_distant_past, cookies[0].CreationDate());
+
+  // Overwrite the cookie with the same value, and verify that the creation date
+  // is inherited.
+  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "Name=Value; path=/"));
+
+  cookies = GetAllCookies(cm.get());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ(the_not_so_distant_past, cookies[0].CreationDate());
+
+  // New value => new creation date.
+  EXPECT_TRUE(
+      SetCookie(cm.get(), http_www_foo_.url(), "Name=NewValue; path=/"));
+
+  cookies = GetAllCookies(cm.get());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_NE(the_not_so_distant_past, cookies[0].CreationDate());
 }
 
 TEST_F(CookieMonsterTest, DeleteCookieByName) {
