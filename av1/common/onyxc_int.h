@@ -534,6 +534,7 @@ typedef struct AV1Common {
 #endif
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   NCOBMC_KERNELS ncobmc_kernels[ADAPT_OVERLAP_BLOCKS][ALL_NCOBMC_MODES];
+  uint8_t *ncobmcaw_buf[4];
 #endif
 #if CONFIG_LV_MAP
   LV_MAP_CTX_TABLE coeff_ctx_table;
