@@ -49,6 +49,7 @@ namespace test {
 class UserSessionManagerTestApi;
 }  // namespace test
 
+class AppTerminatingStackDumper;
 class EasyUnlockKeyManager;
 class InputEventsBlocker;
 class LoginDisplayHost;
@@ -530,6 +531,12 @@ class UserSessionManager
   bool easy_unlock_key_ops_finished_ = true;
 
   std::vector<base::OnceClosure> easy_unlock_key_ops_finished_callbacks_;
+
+  // Helper to dump app terminating stack during the primary user profile
+  // loading. It is instantiated on loading primary user profile and destroyed
+  // after the primary user profile is loaded.
+  // TODO(crbug.com/717585): Remove after the root cause of bug identified.
+  std::unique_ptr<AppTerminatingStackDumper> app_terminating_stack_dumper_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 
