@@ -25,12 +25,9 @@ class ChromeBrowserState;
 // Designated initializer.
 // * |browserState| is the current browser state
 // * |presentingViewController| is the top presented view controller.
-// * |isPresentedOnSettings| indicates whether the settings view controller is
-//   part of the presented view controllers stack
 // * |accessPoint| represents the access point that initiated the sign-in.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
             presentingViewController:(UIViewController*)presentingViewController
-               isPresentedOnSettings:(BOOL)isPresentedOnSettings
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
                           dispatcher:(id<ApplicationCommands>)dispatcher;

@@ -494,7 +494,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _signinInteractionController = [[SigninInteractionController alloc]
           initWithBrowserState:_browserState
       presentingViewController:self.navigationController
-         isPresentedOnSettings:YES
                    accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_SETTINGS
                    promoAction:signin_metrics::PromoAction::

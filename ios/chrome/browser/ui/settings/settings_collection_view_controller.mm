@@ -992,7 +992,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _signinInteractionController = [[SigninInteractionController alloc]
           initWithBrowserState:_browserState
       presentingViewController:self.navigationController
-         isPresentedOnSettings:YES
                    accessPoint:signin_metrics::AccessPoint::
                                    ACCESS_POINT_SETTINGS
                    promoAction:promoAction
