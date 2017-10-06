@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <stddef.h>
 
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -316,10 +316,12 @@ class PrintPreviewHandler::AccessTokenService
   }
 
   void RequestToken(const std::string& type, const std::string& callback_id) {
-    if (requests_.find(type) != requests_.end())
-      return;  // Should never happen, see cloud_print_interface.js
+    if (requests_.find(type) != requests_.end()) {
+      NOTREACHED();  // Should never happen, see cloud_print_interface.js
+      return;
+    }
 
-    OAuth2TokenService* service = NULL;
+    OAuth2TokenService* service = nullptr;
     std::string account_id;
     if (type == "profile") {
       Profile* profile = Profile::FromWebUI(handler_->web_ui());
@@ -340,17 +342,17 @@ class PrintPreviewHandler::AccessTokenService
 #endif
     }
 
-    if (service) {
-      OAuth2TokenService::ScopeSet oauth_scopes;
-      oauth_scopes.insert(cloud_devices::kCloudPrintAuthScope);
-      std::unique_ptr<OAuth2TokenService::Request> request(
-          service->StartRequest(account_id, oauth_scopes, this));
-      requests_[type] = std::move(request);
-      callbacks_[type] = callback_id;
-    } else {
+    if (!service) {
       // Unknown type.
       handler_->SendAccessToken(callback_id, std::string());
+      return;
     }
+
+    OAuth2TokenService::ScopeSet oauth_scopes;
+    oauth_scopes.insert(cloud_devices::kCloudPrintAuthScope);
+    requests_[type].request =
+        service->StartRequest(account_id, oauth_scopes, this);
+    requests_[type].callback_id = callback_id;
   }
 
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -367,23 +369,25 @@ class PrintPreviewHandler::AccessTokenService
  private:
   void OnServiceResponse(const OAuth2TokenService::Request* request,
                          const std::string& access_token) {
-    for (Requests::iterator i = requests_.begin(); i != requests_.end(); ++i) {
-      if (i->second.get() == request) {
-        handler_->SendAccessToken(callbacks_[i->first], access_token);
-        requests_.erase(i);
-        callbacks_.erase(i->first);
+    for (auto it = requests_.begin(); it != requests_.end(); ++it) {
+      auto& entry = it->second;
+      if (entry.request.get() == request) {
+        handler_->SendAccessToken(entry.callback_id, access_token);
+        requests_.erase(it);
         return;
       }
     }
     NOTREACHED();
   }
 
-  using Requests =
-      std::map<std::string, std::unique_ptr<OAuth2TokenService::Request>>;
-  Requests requests_;
-  using Callbacks = std::map<std::string, std::string>;
-  Callbacks callbacks_;
-  PrintPreviewHandler* handler_;
+  struct Request {
+    std::unique_ptr<OAuth2TokenService::Request> request;
+    std::string callback_id;
+  };
+  // Maps types to Requests.
+  base::flat_map<std::string, Request> requests_;
+
+  PrintPreviewHandler* const handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
 };
