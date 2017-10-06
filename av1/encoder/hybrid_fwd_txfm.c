@@ -508,6 +508,9 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
 
 void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
                   TxfmParam *txfm_param) {
+#if CONFIG_EXT_TX
+  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
+#endif  // CONFIG_EXT_TX
   const TX_SIZE tx_size = txfm_param->tx_size;
 #if CONFIG_LGT_FROM_PRED
   if (txfm_param->use_lgt) {
@@ -571,6 +574,9 @@ void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
 
 void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
+#if CONFIG_EXT_TX
+  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
+#endif  // CONFIG_EXT_TX
   const TX_SIZE tx_size = txfm_param->tx_size;
   switch (tx_size) {
 #if CONFIG_TX64X64

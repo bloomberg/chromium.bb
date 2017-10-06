@@ -74,6 +74,9 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                  uint8_t *mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+#if CONFIG_EXT_TX
+                                 int plane,
+#endif  // CONFIG_EXT_TX
                                  TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
                                  int stride, int eob);
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
@@ -88,8 +91,7 @@ void av1_highbd_inv_txfm_add_4x8(const tran_low_t *input, uint8_t *dest,
 void av1_highbd_inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest,
                                  int stride, const TxfmParam *param);
 void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
-                             TxfmParam *txfm_param);
-
+                             TxfmParam *param);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

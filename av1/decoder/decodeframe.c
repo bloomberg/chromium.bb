@@ -248,6 +248,9 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               xd->mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+#if CONFIG_EXT_TX
+                              plane,
+#endif  // CONFIG_EXT_TX
                               tx_type, tx_size, dst, stride, eob);
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
 }

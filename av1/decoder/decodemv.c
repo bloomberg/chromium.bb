@@ -948,7 +948,11 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int inter_block = is_inter_block(mbmi);
 #if !CONFIG_TXK_SEL
-  const TX_SIZE tx_size = inter_block ? mbmi->min_tx_size : mbmi->tx_size;
+  const TX_SIZE sqr_up_tx_size =
+      txsize_sqr_up_map[max_txsize_rect_lookup[xd->mi[0]->mbmi.sb_type]];
+  const TX_SIZE tx_size =
+      inter_block ? AOMMAX(sub_tx_size_map[sqr_up_tx_size], mbmi->min_tx_size)
+                  : mbmi->tx_size;
 #endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
