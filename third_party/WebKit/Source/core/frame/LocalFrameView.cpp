@@ -3801,8 +3801,7 @@ void LocalFrameView::SetTracksPaintInvalidations(
               track_paint_invalidations);
         }
       } else {
-        layout_view.Compositor()->SetTracksRasterInvalidations(
-            track_paint_invalidations);
+        layout_view.Compositor()->UpdateTrackingRasterInvalidations();
       }
     }
   }

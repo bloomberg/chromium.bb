@@ -25,7 +25,7 @@ namespace blink {
 class DisplayItemList;
 struct PaintChunk;
 class PropertyTreeState;
-struct RasterInvalidationTracking;
+class RasterInvalidationTracking;
 
 struct RasterUnderInvalidationCheckingParams {
   RasterUnderInvalidationCheckingParams(RasterInvalidationTracking& tracking,

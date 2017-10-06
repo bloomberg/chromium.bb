@@ -104,8 +104,8 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
 #endif
 
   if ((context.flags & kLayerTreeIncludesPaintInvalidations) &&
-      raster_invalidator_.GetRasterInvalidationTracking())
-    raster_invalidator_.GetRasterInvalidationTracking()->AsJSON(json.get());
+      raster_invalidator_.GetTracking())
+    raster_invalidator_.GetTracking()->AsJSON(json.get());
 
   if (int transform_id = GetTransformId(
           raster_invalidator_.GetLayerState().Transform(), context))
@@ -167,7 +167,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 
   Optional<RasterUnderInvalidationCheckingParams> params;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    params.emplace(*raster_invalidator_.GetRasterInvalidationTracking(),
+    params.emplace(*raster_invalidator_.GetTracking(),
                    IntRect(0, 0, layer_bounds.width(), layer_bounds.height()),
                    debug_name_);
   }

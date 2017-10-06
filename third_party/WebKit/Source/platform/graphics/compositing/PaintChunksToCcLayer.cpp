@@ -412,9 +412,9 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     params.tracking.CheckUnderInvalidations(params.debug_name,
                                             recorder.finishRecordingAsPicture(),
                                             params.interest_rect);
-    if (auto record = params.tracking.under_invalidation_record) {
+    if (auto record = params.tracking.UnderInvalidationRecord()) {
       cc_list->StartPaint();
-      cc_list->push<cc::DrawRecordOp>(record);
+      cc_list->push<cc::DrawRecordOp>(std::move(record));
       cc_list->EndPaintOfUnpaired(g_large_rect);
     }
   }
