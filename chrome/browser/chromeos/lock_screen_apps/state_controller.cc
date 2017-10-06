@@ -21,15 +21,16 @@
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager_impl.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_window_metrics_tracker.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
-#include "chrome/browser/chromeos/lock_screen_apps/lock_screen_profile_creator_impl.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/web_contents.h"
@@ -125,12 +126,6 @@ void StateController::SetAppManagerForTesting(
   app_manager_ = std::move(app_manager);
 }
 
-void StateController::SetLockScreenLockScreenProfileCreatorForTesting(
-    std::unique_ptr<LockScreenProfileCreator> profile_creator) {
-  DCHECK(!lock_screen_profile_creator_);
-  lock_screen_profile_creator_ = std::move(profile_creator);
-}
-
 void StateController::Initialize() {
   tick_clock_ = base::MakeUnique<base::DefaultTickClock>();
 
@@ -155,13 +150,12 @@ void StateController::SetPrimaryProfile(Profile* profile) {
     return;
   }
 
-  std::string key;
-  if (!GetUserCryptoKey(profile, &key)) {
-    LOG(ERROR) << "Failed to get crypto key for user lock screen apps.";
-    return;
-  }
-
-  InitializeWithCryptoKey(profile, key);
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      chromeos::ProfileHelper::GetLockScreenAppProfilePath(),
+      base::Bind(&StateController::OnProfilesReady,
+                 weak_ptr_factory_.GetWeakPtr(), profile),
+      base::string16() /* name */, "" /* icon_url*/,
+      "" /* supervised_user_id */);
 }
 
 void StateController::Shutdown() {
@@ -173,12 +167,48 @@ void StateController::Shutdown() {
         true /*close_window*/, CloseLockScreenNoteReason::kShutdown);
     app_manager_.reset();
   }
-  lock_screen_profile_creator_.reset();
   focus_cycler_delegate_ = nullptr;
   power_manager_client_observer_.RemoveAll();
   input_devices_observer_.RemoveAll();
   binding_.Close();
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void StateController::OnProfilesReady(Profile* primary_profile,
+                                      Profile* lock_screen_profile,
+                                      Profile::CreateStatus status) {
+  // Ignore CREATED status - wait for profile to be initialized before
+  // continuing.
+  if (status == Profile::CREATE_STATUS_CREATED) {
+    // Disable safe browsing for the profile to avoid activating
+    // SafeBrowsingService when the user has safe browsing disabled (reasoning
+    // similar to http://crbug.com/461493).
+    // TODO(tbarzic): Revisit this if webviews get enabled for lock screen apps.
+    lock_screen_profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                                false);
+    return;
+  }
+
+  // On error, bail out - this will cause the lock screen apps to remain
+  // unavailable on the device.
+  if (status != Profile::CREATE_STATUS_INITIALIZED) {
+    LOG(ERROR) << "Failed to create profile for lock screen apps.";
+    return;
+  }
+
+  DCHECK(!lock_screen_profile_);
+
+  lock_screen_profile_ = lock_screen_profile;
+  lock_screen_profile_->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
+                                               true);
+
+  std::string key;
+  if (!GetUserCryptoKey(primary_profile, &key)) {
+    LOG(ERROR) << "Failed to get crypto key for user lock screen apps.";
+    return;
+  }
+
+  InitializeWithCryptoKey(primary_profile, key);
 }
 
 bool StateController::GetUserCryptoKey(Profile* profile, std::string* key) {
@@ -215,18 +245,10 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
       profile);
 
-  // Lock screen profile creator might have been set by a test.
-  if (!lock_screen_profile_creator_) {
-    lock_screen_profile_creator_ =
-        base::MakeUnique<LockScreenProfileCreatorImpl>(profile,
-                                                       tick_clock_.get());
-  }
-  lock_screen_profile_creator_->Initialize();
-
   // App manager might have been set previously by a test.
   if (!app_manager_)
     app_manager_ = base::MakeUnique<AppManagerImpl>(tick_clock_.get());
-  app_manager_->Initialize(profile, lock_screen_profile_creator_.get());
+  app_manager_->Initialize(profile, lock_screen_profile_->GetOriginalProfile());
 
   input_devices_observer_.Add(ui::InputDeviceManager::GetInstance());
 
@@ -379,15 +401,7 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
   if (lock_screen_note_state_ != TrayActionState::kLaunching)
     return nullptr;
 
-  // StateController should not be able to get into kLaunching state if the
-  // lock screen profile has not been loaded, and |lock_screen_profile_creator_|
-  // has |lock_screen_profile| set to null - if the lock screen profile is not
-  // loaded, |app_manager_| should not report that note taking app is available,
-  // so state controller should not allow note launch attempt.
-  // Thus, it should be safe to assume lock screen profile is set at this point.
-  DCHECK(lock_screen_profile_creator_->lock_screen_profile());
-
-  if (!lock_screen_profile_creator_->lock_screen_profile()->IsSameProfile(
+  if (!lock_screen_profile_->IsSameProfile(
           Profile::FromBrowserContext(context))) {
     return nullptr;
   }
@@ -398,8 +412,8 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
   // The ownership of the window is passed to the caller of this method.
   note_app_window_ =
       new extensions::AppWindow(context, app_delegate.release(), extension);
-  app_window_observer_.Add(extensions::AppWindowRegistry::Get(
-      lock_screen_profile_creator_->lock_screen_profile()));
+  app_window_observer_.Add(
+      extensions::AppWindowRegistry::Get(lock_screen_profile_));
   UpdateLockScreenNoteState(TrayActionState::kActive);
   if (focus_cycler_delegate_) {
     focus_cycler_delegate_->RegisterLockScreenAppFocusHandler(base::Bind(
