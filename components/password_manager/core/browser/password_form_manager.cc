@@ -785,20 +785,21 @@ bool PasswordFormManager::FindUsernameInOtherPossibleUsernames(
   return false;
 }
 
-void PasswordFormManager::FindCorrectedUsernameElement(
+bool PasswordFormManager::FindCorrectedUsernameElement(
     const base::string16& username,
     const base::string16& password) {
   for (const auto& key_value : best_matches_) {
     const PasswordForm* match = key_value.second;
     if ((match->password_value == password) &&
         FindUsernameInOtherPossibleUsernames(*match, username))
-      return;
+      return true;
   }
   for (const autofill::PasswordForm* match : not_best_matches_) {
     if ((match->password_value == password) &&
         FindUsernameInOtherPossibleUsernames(*match, username))
-      return;
+      return true;
   }
+  return false;
 }
 
 void PasswordFormManager::SendVoteOnCredentialsReuse(
@@ -1118,8 +1119,15 @@ void PasswordFormManager::CreatePendingCredentials() {
     // save new credentials.
     CreatePendingCredentialsForNewCredentials();
     // Generate username correction votes.
-    FindCorrectedUsernameElement(submitted_form_->username_value,
-                                 submitted_form_->password_value);
+    bool username_correction_found = FindCorrectedUsernameElement(
+        submitted_form_->username_value, submitted_form_->password_value);
+    UMA_HISTOGRAM_BOOLEAN("PasswordManager.UsernameCorrectionFound",
+                          username_correction_found);
+    if (username_correction_found) {
+      metrics_recorder_->RecordDetailedUserAction(
+          password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+              kCorrectedUsernameInForm);
+    }
   }
 
   if (!IsValidAndroidFacetURI(pending_credentials_.signon_realm)) {

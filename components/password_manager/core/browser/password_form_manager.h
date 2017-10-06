@@ -368,18 +368,19 @@ class PasswordFormManager : public FormFetcher::Consumer {
   bool UpdatePendingCredentialsIfOtherPossibleUsername(
       const base::string16& username);
 
-  // Searches for |username| in |other_possible_usernames| of |best_matches_|
-  // and |not_best_matches_|. If the username value is found in
-  // |other_possible_usernames| and the password value of the match is equal to
-  // |password|, the match is saved to |username_correction_vote_|.
-  void FindCorrectedUsernameElement(const base::string16& username,
-                                    const base::string16& password);
-
   // Searches for |username| in |other_possible_usernames| of |match|. If the
   // username value is found, the match is saved to |username_correction_vote_|
   // and the function returns true.
   bool FindUsernameInOtherPossibleUsernames(const autofill::PasswordForm& match,
                                             const base::string16& username);
+
+  // Searches for |username| in |other_possible_usernames| of |best_matches_|
+  // and |not_best_matches_|. If the username value is found in
+  // |other_possible_usernames| and the password value of the match is equal to
+  // |password|, the match is saved to |username_correction_vote_| and the
+  // method returns true.
+  bool FindCorrectedUsernameElement(const base::string16& username,
+                                    const base::string16& password);
 
   // Returns true if |form| is a username update of a credential already in
   // |best_matches_|. Sets |pending_credentials_| to the appropriate

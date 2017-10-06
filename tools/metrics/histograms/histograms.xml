@@ -56837,6 +56837,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.UsernameCorrectionFound"
+    enum="BooleanUsernameCorrectionVote">
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Chrome saves locally all fields a user typed on a sign-up form. If Chrome
+    saved an incorrect username and the user changes the username on a sign-in
+    form to a value of another field from the sign-up form, then Chrome uploads
+    a username correction vote which points to the correct username field. This
+    histogram measures how many correction votes are uploaded.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.UserStoredPasswordWithInvalidSSLCert"
     enum="Boolean">
   <obsolete>

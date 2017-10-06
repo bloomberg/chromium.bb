@@ -3235,8 +3235,6 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
               false /* expect_generation_vote */, expected_username_vote_type),
           false, expected_available_field_types, std::string(), true));
 
-  form_manager.ProvisionallySave(
-      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
 }
 
@@ -3387,9 +3385,12 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
         std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
     form_manager.Init(nullptr);
 
+    base::HistogramTester histogram_tester;
     fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
     form_manager.ProvisionallySave(
         new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.UsernameCorrectionFound", 1, 1);
     // No match found (because usernames are different).
     EXPECT_TRUE(form_manager.IsNewLogin());
 
@@ -3449,6 +3450,28 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
                     expected_login_signature, true));
     form_manager.Save();
   }
+}
+
+TEST_F(PasswordFormManagerTest, NoUsernameCorrectionVote) {
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  PasswordForm new_login = *observed_form();
+  // The username is from |saved_match_.other_possible_usernames|, but the
+  // password is different. So, no username correction found.
+  new_login.username_value = ASCIIToUTF16("test2@gmail.com");
+  new_login.password_value = ASCIIToUTF16("newpass");
+
+  base::HistogramTester histogram_tester;
+  form_manager()->ProvisionallySave(
+      new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  histogram_tester.ExpectUniqueSample("PasswordManager.UsernameCorrectionFound",
+                                      0, 1);
+
+  // Don't expect any vote uploads.
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, _, _, _, _))
+      .Times(0);
+
+  form_manager()->Save();
 }
 
 // Test that ResetStoredMatches removes references to previously fetched store
