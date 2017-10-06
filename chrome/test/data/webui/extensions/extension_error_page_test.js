@@ -30,6 +30,10 @@ cr.define('extension_error_page_tests', function() {
       this.requestFileSourceResolver = new PromiseResolver();
       return this.requestFileSourceResolver.promise;
     },
+
+    openDevTools: function(args) {
+      this.openDevToolsArgs = args;
+    },
   };
 
   suite('ExtensionErrorPageTest', function() {
@@ -153,14 +157,24 @@ cr.define('extension_error_page_tests', function() {
             message: 'Other error',
             id: 2,
             severity: chrome.developerPrivate.ErrorLevel.ERROR,
+            renderProcessId: 111,
+            renderViewId: 222,
+            canInspect: true,
+            stackTrace: [{
+              url: 'url',
+              lineNumber: 123,
+              columnNumber: 321
+            }],
           },
           runtimeErrorBase);
       // Add a new runtime error to the end.
       errorPage.push('data.runtimeErrors', nextRuntimeError);
       Polymer.dom.flush();
 
-      var errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
+      var errorElements = errorPage.querySelectorAll('* /deep/ .error-item .start');
+      var ironCollapses = errorPage.querySelectorAll('* /deep/ iron-collapse');
       expectEquals(2, errorElements.length);
+      expectEquals(2, ironCollapses.length);
 
       // The first error should be focused by default, and we should have
       // requested the source for it.
@@ -168,6 +182,8 @@ cr.define('extension_error_page_tests', function() {
       expectTrue(!!mockDelegate.requestFileSourceArgs);
       var args = mockDelegate.requestFileSourceArgs;
       expectEquals('source.html', args.pathSuffix);
+      expectTrue(ironCollapses[0].opened);
+      expectFalse(ironCollapses[1].opened);
       mockDelegate.requestFileSourceResolver.resolve(null);
 
       mockDelegate.requestFileSourceResolver = new PromiseResolver();
@@ -180,6 +196,19 @@ cr.define('extension_error_page_tests', function() {
       expectTrue(!!mockDelegate.requestFileSourceArgs);
       args = mockDelegate.requestFileSourceArgs
       expectEquals('other_source.html', args.pathSuffix);
+      expectTrue(ironCollapses[1].opened);
+      expectFalse(ironCollapses[0].opened);
+
+      // Tapping the button sends the right parameter to open dev tool.
+      expectTrue(ironCollapses[1].querySelector('li').classList.contains('selected'));
+      MockInteractions.tap(ironCollapses[1].querySelector('paper-button'));
+      expectDeepEquals(mockDelegate.openDevToolsArgs, {
+        renderProcessId: 111,
+        renderViewId: 222,
+        url: 'url',
+        lineNumber: 123,
+        columnNumber: 321,
+      });
     });
   });
 

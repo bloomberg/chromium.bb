@@ -28,6 +28,10 @@ cr.define('extensions', function() {
       couldNotDisplayCode: String,
     },
 
+    observers: [
+      'onHighlightChanged_(code.highlight)',
+    ],
+
     /**
      * Returns true if no code could be displayed (e.g. because the file could
      * not be loaded).
@@ -57,6 +61,15 @@ cr.define('extensions', function() {
       for (let i = 1; i <= lineCount; ++i)
         textContent += i + '\n';
       return textContent;
+    },
+
+    /** @private */
+    onHighlightChanged_: function() {
+      // Smooth scroll the highlight to roughly the middle.
+      this.$['scroll-container'].scrollTo({
+        top: this.$.highlight.offsetTop - this.clientHeight * 0.5,
+        behavior: 'smooth',
+      });
     },
   });
 

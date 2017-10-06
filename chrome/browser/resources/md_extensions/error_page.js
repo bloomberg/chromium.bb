@@ -63,26 +63,6 @@ cr.define('extensions', function() {
           return null;
         },
       },
-
-      /** @private */
-      isRuntimeError_: {
-        type: Boolean,
-        computed: 'computeIsRuntimeError_(selectedError_)',
-      },
-
-      shownStackTrace_: {
-        type: Array,
-        computed: 'computeShownStackTrace_(selectedError_)',
-        observer: 'onShownStackTraceChanged_'
-      },
-
-      /** @private */
-      stackTraceExpanded_: {
-        type: Boolean,
-        value: function() {
-          return false;
-        },
-      },
     },
 
     observers: [
@@ -106,8 +86,6 @@ cr.define('extensions', function() {
      * @private
      */
     calculateShownItems_: function() {
-      // Render iron-list correctly after data changes.
-      setTimeout(() => this.$['errors-list'].fire('iron-resize'));
       return this.data.manifestErrors.concat(this.data.runtimeErrors);
     },
 
@@ -181,6 +159,9 @@ cr.define('extensions', function() {
           args.lineNumber = error.stackTrace && error.stackTrace[0] ?
               error.stackTrace[0].lineNumber :
               0;
+          this.selectedStackFrame_ = error.stackTrace && error.stackTrace[0] ?
+              error.stackTrace[0] :
+              null;
           break;
       }
       this.delegate.requestFileSource(args).then(code => {
@@ -192,28 +173,8 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
-    computeIsRuntimeError_: function() {
-      return !!this.selectedError_ &&
-          this.selectedError_.type == chrome.developerPrivate.ErrorType.RUNTIME;
-    },
-
-    /**
-     * @return {?Array<!chrome.developerPrivate.StackFrame>}
-     * @private
-     */
-    computeShownStackTrace_: function() {
-      // Stack trace not applicable for non-runtime errors.
-      return this.selectedError_ &&
-              this.selectedError_.type ==
-                  chrome.developerPrivate.ErrorType.RUNTIME ?
-          this.selectedError_.stackTrace :
-          null;
-    },
-
-    /** @private */
-    onShownStackTraceChanged_: function() {
-      this.selectedStackFrame_ =
-          this.shownStackTrace_ ? this.shownStackTrace_[0] : null;
+    computeIsRuntimeError_: function(item) {
+      return item.type == chrome.developerPrivate.ErrorType.RUNTIME;
     },
 
     /**
@@ -302,11 +263,6 @@ cr.define('extensions', function() {
       });
     },
 
-    /** @private */
-    onStackTraceTap_: function() {
-      this.stackTraceExpanded_ = !this.stackTraceExpanded_;
-    },
-
     /**
      * Computes the class name for the error item depending on whether its
      * the currently selected error.
@@ -317,6 +273,16 @@ cr.define('extensions', function() {
      */
     computeErrorClass_: function(selectedError, error) {
       return selectedError == error ? 'selected' : '';
+    },
+
+    /**
+     * @param {!RuntimeError|!ManifestError} selected
+     * @param {!RuntimeError|!ManifestError} current
+     * @return {boolean}
+     * @private
+     */
+    isEqual_: function(selected, current) {
+      return selected == current;
     },
 
     /**
