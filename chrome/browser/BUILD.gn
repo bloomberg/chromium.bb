@@ -3488,7 +3488,7 @@ split_static_library("browser") {
     ]
   }
 
-  if (enable_mojo_media) {
+  if (enable_library_cdms) {
     sources += [
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",

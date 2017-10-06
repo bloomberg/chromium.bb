@@ -123,6 +123,7 @@ source_set("browser_sources") {
     "favicon_status.h",
     "focused_node_details.h",
     "font_list_async.h",
+    "frame_service_base.h",
     "global_request_id.h",
     "gpu_data_manager.h",
     "gpu_data_manager_observer.h",

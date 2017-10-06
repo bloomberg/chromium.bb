@@ -2977,21 +2977,20 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
     service_manager::BinderRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
-// TODO(xhwang): Only register this when ENABLE_MOJO_MEDIA.
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  registry->AddInterface(
+      base::Bind(&OutputProtectionImpl::Create, render_frame_host));
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
       base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
                  render_frame_host));
 #endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA)
-  registry->AddInterface(
-      base::Bind(&OutputProtectionImpl::Create, render_frame_host));
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
   registry->AddInterface(
       base::Bind(&chrome::CreateMediaDrmStorage, render_frame_host));
 #endif
-#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA)
 }
 
 void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(

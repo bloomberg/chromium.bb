@@ -38,15 +38,14 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   PrefService* pref_service = profile->GetPrefs();
   DCHECK(pref_service) << "PrefService not available.";
 
-  url::Origin origin = render_frame_host->GetLastCommittedOrigin();
-  if (origin.unique()) {
+  if (render_frame_host->GetLastCommittedOrigin().unique()) {
     DVLOG(1) << __func__ << ": Unique origin.";
     return;
   }
 
   // The object will be deleted on connection error, or when the frame navigates
-  // away.
-  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service, origin,
+  // away. See FrameServiceBase for details.
+  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
                                std::move(request));
 }
 
