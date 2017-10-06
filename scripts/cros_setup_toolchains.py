@@ -72,7 +72,7 @@ CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
 # Enable llvm's compiler-rt for these targets.
 TARGET_COMPILER_RT_ENABLED = (
     'armv7a-cros-linux-gnueabi',
-    #'armv7a-cros-linux-gnueabihf',
+    'armv7a-cros-linux-gnueabihf',
     'aarch64-cros-linux-gnu',
 )
 CROSSDEV_COMPILER_RT_ARGS = ['--ex-pkg', 'sys-libs/compiler-rt']
