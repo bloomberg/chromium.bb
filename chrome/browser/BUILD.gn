@@ -489,8 +489,6 @@ split_static_library("browser") {
     "google/google_brand_chromeos.cc",
     "google/google_brand_chromeos.h",
     "google/google_update_settings_posix.cc",
-    "google/google_update_win.cc",
-    "google/google_update_win.h",
     "google/google_url_tracker_factory.cc",
     "google/google_url_tracker_factory.h",
     "gpu/gpu_driver_info_manager_android.cc",
@@ -1651,7 +1649,6 @@ split_static_library("browser") {
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:host",
     "//components/startup_metric_utils/browser:lib",
-    "//components/storage_monitor",
     "//components/strings",
     "//components/subresource_filter/content/browser",
     "//components/subresource_filter/core/browser",
@@ -2244,8 +2241,6 @@ split_static_library("browser") {
       "//third_party/smhasher:murmurhash2",
     ]
 
-    deps -= [ "//components/storage_monitor" ]
-
     # Android does in-process PAC, so must link against V8 directly. Other
     # platforms use OOP Mojo resolution.
     deps += [
@@ -2253,15 +2248,6 @@ split_static_library("browser") {
       "//net:net_with_v8",
       "//v8",
     ]
-
-    if (enable_supervised_users) {
-      sources += [
-        "supervised_user/child_accounts/child_account_feedback_reporter_android.cc",
-        "supervised_user/child_accounts/child_account_feedback_reporter_android.h",
-        "supervised_user/child_accounts/child_account_service_android.cc",
-        "supervised_user/child_accounts/child_account_service_android.h",
-      ]
-    }
   } else {
     sources += [
       "accessibility/invert_bubble_prefs.cc",
@@ -2670,6 +2656,7 @@ split_static_library("browser") {
       "//components/cryptauth/proto",
       "//components/feedback",
       "//components/keep_alive_registry",
+      "//components/storage_monitor",
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
@@ -2777,7 +2764,6 @@ split_static_library("browser") {
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
       "//components/browser_watcher:stability_client",
-      "//google_update",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
@@ -2786,33 +2772,12 @@ split_static_library("browser") {
     ]
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]
-
-    if (enable_native_notifications) {
-      sources += [
-        "notifications/notification_platform_bridge_win.cc",
-        "notifications/notification_platform_bridge_win.h",
-      ]
-    }
-
-    if (!is_chrome_branded) {
-      deps -= [ "//google_update" ]
-      sources -= [
-        "google/google_update_win.cc",
-        "google/google_update_win.h",
-      ]
-    }
   } else {
     # Non-Windows.
     sources += [
       "profile_resetter/triggered_profile_resetter_stub.cc",
       "profiles/profile_shortcut_manager_stub.cc",
     ]
-    if (toolkit_views) {
-      deps += [
-        "//ui/views",
-        "//ui/views/controls/webview",
-      ]
-    }
   }
 
   if (is_mac) {
@@ -2843,19 +2808,6 @@ split_static_library("browser") {
     }
   }
 
-  if (is_linux) {
-    if (use_aura) {
-      deps += [ "//third_party/fontconfig" ]
-      if (use_dbus) {
-        deps += [ "//dbus" ]
-      }
-    }
-    if (use_x11) {
-      configs += [ "//build/config/linux:x11" ]
-      deps += [ "//ui/gfx/x" ]
-    }
-  }
-
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
@@ -2874,13 +2826,6 @@ split_static_library("browser") {
 
     deps += [ "//third_party/speech-dispatcher" ]
 
-    if (enable_native_notifications) {
-      sources += [
-        "notifications/notification_platform_bridge_linux.cc",
-        "notifications/notification_platform_bridge_linux.h",
-      ]
-    }
-
     if (use_x11) {
       sources += [
         "fullscreen_aurax11.cc",
@@ -2894,6 +2839,9 @@ split_static_library("browser") {
         "themes/theme_service_aurax11.cc",
         "themes/theme_service_aurax11.h",
       ]
+
+      configs += [ "//build/config/linux:x11" ]
+      deps += [ "//ui/gfx/x" ]
     }
 
     # libsecret hard depends on GLib.
@@ -3043,6 +2991,9 @@ split_static_library("browser") {
 
   if (toolkit_views) {
     deps += [ "//ui/views" ]
+    if (is_win) {
+      deps += [ "//ui/views/controls/webview" ]
+    }
   }
 
   if (use_aura) {
@@ -3066,10 +3017,14 @@ split_static_library("browser") {
       "//ui/snapshot",
       "//ui/views/mus",
     ]
-  }
 
-  if (use_aura && !use_ozone && is_desktop_linux) {
-    deps += [ "//chrome/browser/ui/libgtkui" ]
+    if (!use_ozone && is_desktop_linux) {
+      deps += [ "//chrome/browser/ui/libgtkui" ]
+    }
+
+    if (is_linux) {
+      deps += [ "//third_party/fontconfig" ]
+    }
   }
 
   if (use_x11) {
@@ -3512,6 +3467,21 @@ split_static_library("browser") {
     deps += [ "//components/nacl/browser" ]
   }
 
+  if (enable_native_notifications) {
+    if (is_desktop_linux) {
+      sources += [
+        "notifications/notification_platform_bridge_linux.cc",
+        "notifications/notification_platform_bridge_linux.h",
+      ]
+    }
+    if (is_win) {
+      sources += [
+        "notifications/notification_platform_bridge_win.cc",
+        "notifications/notification_platform_bridge_win.h",
+      ]
+    }
+  }
+
   if (enable_offline_pages) {
     sources += [
       "offline_pages/background_loader_offliner.cc",
@@ -3866,47 +3836,56 @@ split_static_library("browser") {
       "supervised_user/supervised_user_whitelist_service.h",
       "supervised_user/supervised_users.h",
     ]
-  }
-  if (enable_supervised_users && !is_android) {
-    sources += [
-      # TODO(bauerb): The legacy code should be removed (on desktop) once child
-      # account support has launched (https://crbug.com/505443).
-      "supervised_user/legacy/custodian_profile_downloader_service.cc",
-      "supervised_user/legacy/custodian_profile_downloader_service.h",
-      "supervised_user/legacy/custodian_profile_downloader_service_factory.cc",
-      "supervised_user/legacy/custodian_profile_downloader_service_factory.h",
-      "supervised_user/legacy/permission_request_creator_sync.cc",
-      "supervised_user/legacy/permission_request_creator_sync.h",
-      "supervised_user/legacy/supervised_user_pref_mapping_service.cc",
-      "supervised_user/legacy/supervised_user_pref_mapping_service.h",
-      "supervised_user/legacy/supervised_user_pref_mapping_service_factory.cc",
-      "supervised_user/legacy/supervised_user_pref_mapping_service_factory.h",
-      "supervised_user/legacy/supervised_user_refresh_token_fetcher.cc",
-      "supervised_user/legacy/supervised_user_refresh_token_fetcher.h",
-      "supervised_user/legacy/supervised_user_registration_utility.cc",
-      "supervised_user/legacy/supervised_user_registration_utility.h",
-      "supervised_user/legacy/supervised_user_registration_utility_stub.cc",
-      "supervised_user/legacy/supervised_user_registration_utility_stub.h",
-      "supervised_user/legacy/supervised_user_shared_settings_service.cc",
-      "supervised_user/legacy/supervised_user_shared_settings_service.h",
-      "supervised_user/legacy/supervised_user_shared_settings_service_factory.cc",
-      "supervised_user/legacy/supervised_user_shared_settings_service_factory.h",
-      "supervised_user/legacy/supervised_user_shared_settings_update.cc",
-      "supervised_user/legacy/supervised_user_shared_settings_update.h",
-      "supervised_user/legacy/supervised_user_sync_service.cc",
-      "supervised_user/legacy/supervised_user_sync_service.h",
-      "supervised_user/legacy/supervised_user_sync_service_factory.cc",
-      "supervised_user/legacy/supervised_user_sync_service_factory.h",
-      "supervised_user/legacy/supervised_user_sync_service_observer.h",
-      "supervised_user/supervised_user_theme.cc",
-      "supervised_user/supervised_user_theme.h",
-    ]
-  }
-  if (enable_supervised_users && !is_android && !is_chromeos) {
-    sources += [
-      "supervised_user/supervised_user_creation_policy_handler.cc",
-      "supervised_user/supervised_user_creation_policy_handler.h",
-    ]
+
+    if (is_android) {
+      sources += [
+        "supervised_user/child_accounts/child_account_feedback_reporter_android.cc",
+        "supervised_user/child_accounts/child_account_feedback_reporter_android.h",
+        "supervised_user/child_accounts/child_account_service_android.cc",
+        "supervised_user/child_accounts/child_account_service_android.h",
+      ]
+    } else {
+      sources += [
+        # TODO(bauerb): The legacy code should be removed (on desktop) once child
+        # account support has launched (https://crbug.com/505443).
+        "supervised_user/legacy/custodian_profile_downloader_service.cc",
+        "supervised_user/legacy/custodian_profile_downloader_service.h",
+        "supervised_user/legacy/custodian_profile_downloader_service_factory.cc",
+        "supervised_user/legacy/custodian_profile_downloader_service_factory.h",
+        "supervised_user/legacy/permission_request_creator_sync.cc",
+        "supervised_user/legacy/permission_request_creator_sync.h",
+        "supervised_user/legacy/supervised_user_pref_mapping_service.cc",
+        "supervised_user/legacy/supervised_user_pref_mapping_service.h",
+        "supervised_user/legacy/supervised_user_pref_mapping_service_factory.cc",
+        "supervised_user/legacy/supervised_user_pref_mapping_service_factory.h",
+        "supervised_user/legacy/supervised_user_refresh_token_fetcher.cc",
+        "supervised_user/legacy/supervised_user_refresh_token_fetcher.h",
+        "supervised_user/legacy/supervised_user_registration_utility.cc",
+        "supervised_user/legacy/supervised_user_registration_utility.h",
+        "supervised_user/legacy/supervised_user_registration_utility_stub.cc",
+        "supervised_user/legacy/supervised_user_registration_utility_stub.h",
+        "supervised_user/legacy/supervised_user_shared_settings_service.cc",
+        "supervised_user/legacy/supervised_user_shared_settings_service.h",
+        "supervised_user/legacy/supervised_user_shared_settings_service_factory.cc",
+        "supervised_user/legacy/supervised_user_shared_settings_service_factory.h",
+        "supervised_user/legacy/supervised_user_shared_settings_update.cc",
+        "supervised_user/legacy/supervised_user_shared_settings_update.h",
+        "supervised_user/legacy/supervised_user_sync_service.cc",
+        "supervised_user/legacy/supervised_user_sync_service.h",
+        "supervised_user/legacy/supervised_user_sync_service_factory.cc",
+        "supervised_user/legacy/supervised_user_sync_service_factory.h",
+        "supervised_user/legacy/supervised_user_sync_service_observer.h",
+        "supervised_user/supervised_user_theme.cc",
+        "supervised_user/supervised_user_theme.h",
+      ]
+    }
+
+    if (!is_android && !is_chromeos) {
+      sources += [
+        "supervised_user/supervised_user_creation_policy_handler.cc",
+        "supervised_user/supervised_user_creation_policy_handler.h",
+      ]
+    }
   }
 
   if (enable_vr) {
@@ -3950,7 +3929,13 @@ split_static_library("browser") {
     ]
   }
 
-  if (!is_chrome_branded) {
+  if (is_chrome_branded) {
+    deps += [ "//google_update" ]
+    sources += [
+      "google/google_update_win.cc",
+      "google/google_update_win.h",
+    ]
+  } else {
     sources += [
       "search/local_files_ntp_source.cc",
       "search/local_files_ntp_source.h",
@@ -3959,6 +3944,10 @@ split_static_library("browser") {
 
   if (use_cups) {
     configs += [ "//printing:cups" ]
+  }
+
+  if (use_dbus) {
+    deps += [ "//dbus" ]
   }
 
   if (use_gnome_keyring) {
