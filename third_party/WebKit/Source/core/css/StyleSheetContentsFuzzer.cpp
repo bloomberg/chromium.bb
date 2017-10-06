@@ -10,8 +10,13 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support =
       blink::BlinkFuzzerTestSupport();
-  blink::CSSParserContext* context =
-      blink::CSSParserContext::Create(blink::kHTMLStandardMode);
+
+  const std::string data_string(reinterpret_cast<const char*>(data), size);
+  const size_t data_hash = std::hash<std::string>()(data_string);
+  const int is_strict_mode = (data_hash & std::numeric_limits<int>::max()) % 2;
+
+  blink::CSSParserContext* context = blink::CSSParserContext::Create(
+      is_strict_mode ? blink::kHTMLStandardMode : blink::kHTMLQuirksMode);
   blink::StyleSheetContents* styleSheet =
       blink::StyleSheetContents::Create(context);
 
