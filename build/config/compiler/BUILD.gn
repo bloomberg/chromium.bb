@@ -1876,11 +1876,13 @@ config("symbols") {
     # sections" there.  Maybe just a bug in nacl_switch_32.S.
     if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
         (use_gold || use_lld)) {
-      # This flag enables the GNU-format pubnames and pubtypes sections, which
-      # lld needs in order to generate a correct GDB index.
-      # TODO(pcc): Try to make lld understand non-GNU-format pubnames sections
-      # (llvm.org/PR34820).
-      cflags += [ "-ggnu-pubnames" ]
+      if (is_clang) {
+        # This flag enables the GNU-format pubnames and pubtypes sections,
+        # which lld needs in order to generate a correct GDB index.
+        # TODO(pcc): Try to make lld understand non-GNU-format pubnames
+        # sections (llvm.org/PR34820).
+        cflags += [ "-ggnu-pubnames" ]
+      }
       ldflags += [ "-Wl,--gdb-index" ]
     }
   }
