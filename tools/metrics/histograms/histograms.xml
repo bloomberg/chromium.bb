@@ -87734,6 +87734,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Array buffer sizes for which V8 failed to allocate memory.</summary>
 </histogram>
 
+<histogram name="V8.AsmModuleSizeBytes" units="bytes">
+  <owner>bradnelson@chromium.org</owner>
+  <owner>titzer@chromium.org</owner>
+  <owner>aseemgarg@chromium.org</owner>
+  <summary>Size of asm.js module (in asm.js format).</summary>
+</histogram>
+
 <histogram name="V8.AsmWasmTranslationMicroSeconds" units="microseconds">
   <owner>bradnelson@chromium.org</owner>
   <owner>titzer@chromium.org</owner>
