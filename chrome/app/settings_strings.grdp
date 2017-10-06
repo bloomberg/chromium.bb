@@ -1149,22 +1149,22 @@
       Error adding printer
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_FATAL_ERROR_MESSAGE" desc="The message shown when a fatal error occurs while trying to add a new printer.">
-      Unrecoverable error while adding printer - Reboot required
+      Can't add printer. Restart and try again.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PRINTER_UNREACHABLE_MESSAGE" desc="The message shown when the printer that is to be added is unreachable for configuration.">
-      Could not contact printer for configuration
+      Can't connect printer. Check that the printer is turned on and is connected to your Chromebook by Wi-Fi or USB.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_TOO_LARGE_MESSAGE" desc="The message shown when the PPD provided while trying to add new printer is too large.">
-      Provided PPD is too large
+      Can't load large PPD. Maximum size is 250kB.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_INVALID_PPD_MESSAGE" desc="The message shown when the PPD provided while trying to add a new printer is invalid.">
-      Provided PPD is invalid
+      Provided PPD is invalid.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_NOT_FOUND" desc="The message shown when the PPD provided while trying to add a new printer cannot be found.">
-      Could not locate provided PPD
+      Can't find PPD. Check that your Chromebook is online and try again.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_UNRETRIEVABLE" desc="The message shown when the PPD provided while trying to add a new printer is unretrievable.">
-      Provided PPD could not be retrieved from server
+      Can't find PPD. Check that your Chromebook is online and try again.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_TRY_AGAIN_MESSAGE" desc="The try-again message shown when a new printer is not set up successfully.">
       Try again
