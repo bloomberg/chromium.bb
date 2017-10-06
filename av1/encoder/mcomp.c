@@ -2596,7 +2596,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
         const int count = av1_hash_table_count(ref_frame_hash, hash_value1);
         // for intra, at lest one matching can be found, itself.
-        if (count == (intra ? 1 : 0)) {
+        if (count <= (intra ? 1 : 0)) {
           break;
         }
 
