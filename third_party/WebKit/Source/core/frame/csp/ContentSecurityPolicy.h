@@ -405,6 +405,7 @@ class CORE_EXPORT ContentSecurityPolicy
   static bool ShouldBypassMainWorld(const ExecutionContext*);
   static bool ShouldBypassContentSecurityPolicy(
       const KURL&,
+      ExecutionContext*,
       SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll);
 
   static bool IsNonceableElement(const Element*);

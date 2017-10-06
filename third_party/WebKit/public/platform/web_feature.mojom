@@ -1693,6 +1693,8 @@ enum WebFeature {
   kAnimationSetPlaybackRateCompensatorySeek = 2162,
   kDeepCombinatorInStaticProfile = 2163,
   kPseudoShadowInStaticProfile = 2164,
+  kSchemeBypassesCSP = 2165,
+  kInnerSchemeBypassesCSP = 2166,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
