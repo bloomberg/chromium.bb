@@ -35,6 +35,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/cert/symantec_certs.h"
 #include "net/http/http_response_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -104,6 +105,11 @@ void PopulateResourceResponse(
     response->head.has_major_certificate_errors =
         net::IsCertStatusError(request->ssl_info().cert_status) &&
         !net::IsCertStatusMinorError(request->ssl_info().cert_status);
+    response->head.is_legacy_symantec_cert =
+        !response->head.has_major_certificate_errors &&
+        net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
+    response->head.cert_validity_start =
+        request->ssl_info().cert->valid_start();
     if (info->ShouldReportRawHeaders()) {
       // Only pass these members when the network panel of the DevTools is open,
       // i.e. ShouldReportRawHeaders() is set. These data are used to populate

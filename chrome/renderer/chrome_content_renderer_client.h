@@ -212,6 +212,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
       override;
+  bool OverrideLegacySymantecCertConsoleMessage(
+      const GURL& url,
+      base::Time cert_validity_start,
+      std::string* console_messsage) override;
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   // Sets a new |spellcheck|. Used for testing only.

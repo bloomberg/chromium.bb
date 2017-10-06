@@ -28,7 +28,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/console_message_level.h"
-#include "net/cert/symantec_certs.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -43,37 +42,6 @@ enum SSLGoodCertSeenEvent {
   HAD_PREVIOUS_EXCEPTION = 1,
   SSL_GOOD_CERT_SEEN_EVENT_MAX = 2
 };
-
-// Should be called on navigation commit. Checks if the navigation described by
-// |details| was a different-page navigation that used a legacy Symantec
-// certificate |cert|, and if so, logs a console warning in |web_contents|.
-void MaybeLogLegacySymantecWarning(
-    const LoadCommittedDetails& details,
-    const scoped_refptr<net::X509Certificate>& cert,
-    const net::HashValueVector& public_key_hashes,
-    content::WebContents* web_contents) {
-  // No need to log on same-page navigations, because the message would be
-  // redundant.
-  if (details.is_same_document)
-    return;
-  if (!net::IsLegacySymantecCert(public_key_hashes))
-    return;
-  std::string content_client_message;
-  GURL url = details.entry->GetURL();
-  bool message_overridden =
-      GetContentClient()->browser()->OverrideLegacySymantecCertConsoleMessage(
-          url, cert, &content_client_message);
-  web_contents->GetMainFrame()->AddMessageToConsole(
-      CONSOLE_MESSAGE_LEVEL_WARNING,
-      message_overridden ? content_client_message
-                         : "The certificate used to load " + url.spec() +
-                               " uses an SSL certificate that will be "
-                               "distrusted in the future. "
-                               "Once distrusted, users will be prevented from "
-                               "loading this resource. See "
-                               "https://g.co/chrome/symantecpkicerts for "
-                               "more information.");
-}
 
 void OnAllowCertificateWithRecordDecision(
     bool record_decision,
@@ -226,10 +194,6 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   int add_content_status_flags = 0;
   int remove_content_status_flags = 0;
-
-  MaybeLogLegacySymantecWarning(details, entry->GetSSL().certificate,
-                                entry->GetSSL().public_key_hashes,
-                                controller_->delegate()->GetWebContents());
 
   if (!details.is_main_frame) {
     // If it wasn't a main-frame navigation, then carry over content

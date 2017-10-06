@@ -231,6 +231,14 @@ void WebURLResponse::SetHasMajorCertificateErrors(bool value) {
   resource_response_->SetHasMajorCertificateErrors(value);
 }
 
+void WebURLResponse::SetIsLegacySymantecCert(bool value) {
+  resource_response_->SetIsLegacySymantecCert(value);
+}
+
+void WebURLResponse::SetCertValidityStart(base::Time expiration) {
+  resource_response_->SetCertValidityStart(expiration);
+}
+
 void WebURLResponse::SetSecurityStyle(WebSecurityStyle security_style) {
   resource_response_->SetSecurityStyle(
       static_cast<ResourceResponse::SecurityStyle>(security_style));

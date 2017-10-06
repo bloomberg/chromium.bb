@@ -878,17 +878,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
-  // Called when a main-frame navigation to |url| commits using a legacy
-  // Symantec certificate that will be distrusted in future. Allows the embedder
-  // to override the message that is added to the console to inform developers
-  // that their certificate will be distrusted in future. If the method returns
-  // true, then |*console_message| will be printed to the console; otherwise a
-  // generic mesage will be used.
-  virtual bool OverrideLegacySymantecCertConsoleMessage(
-      const GURL& url,
-      const scoped_refptr<net::X509Certificate>& cert,
-      std::string* console_messsage);
-
 #if defined(OS_ANDROID)
   // Only used by Android WebView.
   virtual bool ShouldOverrideUrlLoading(int frame_tree_node_id,

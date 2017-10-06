@@ -383,6 +383,17 @@ class CONTENT_EXPORT ContentRendererClient {
   // Whether the renderer allows idle media players to be automatically
   // suspended after a period of inactivity.
   virtual bool AllowIdleMediaSuspend();
+
+  // Called when a resource at |url| is loaded using an otherwise-valid legacy
+  // Symantec certificate that will be distrusted in future. Allows the embedder
+  // to override the message that is added to the console to inform developers
+  // that their certificate will be distrusted in future. If the method returns
+  // true, then |*console_message| will be printed to the console; otherwise a
+  // generic mesage will be used.
+  virtual bool OverrideLegacySymantecCertConsoleMessage(
+      const GURL& url,
+      base::Time cert_validity_start,
+      std::string* console_messsage);
 };
 
 }  // namespace content

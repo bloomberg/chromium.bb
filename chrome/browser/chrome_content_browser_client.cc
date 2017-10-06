@@ -3498,24 +3498,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   return result;
 }
 
-bool ChromeContentBrowserClient::OverrideLegacySymantecCertConsoleMessage(
-    const GURL& url,
-    const scoped_refptr<net::X509Certificate>& cert,
-    std::string* console_message) {
-  // Certificates issued before June 1, 2016 will be distrusted in Chrome 66.
-  base::Time chrome_66_not_before = base::Time::FromDoubleT(1464739200);
-  std::string in_future_string = cert->valid_start() <= chrome_66_not_before
-                                     ? "in Chrome 66"
-                                     : "in an upcoming release of Chrome";
-  *console_message =
-      "The certificate used to load " + url.spec() +
-      " uses an SSL certificate that will be distrusted " + in_future_string +
-      ". Once distrusted, users will be prevented from "
-      "loading this resource. See https://g.co/chrome/symantecpkicerts for "
-      "more information.";
-  return true;
-}
-
 // Static; handles rewriting Web UI URLs.
 bool ChromeContentBrowserClient::HandleWebUI(
     GURL* url,

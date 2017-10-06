@@ -136,6 +136,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidDispatchPingLoader(const KURL&) override;
   void DidDisplayContentWithCertificateErrors(const KURL&) override;
   void DidRunContentWithCertificateErrors(const KURL&) override;
+  void ReportLegacySymantecCert(const KURL&, Time) override;
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;

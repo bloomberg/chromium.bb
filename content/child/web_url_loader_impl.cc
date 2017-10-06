@@ -1203,6 +1203,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const WebURL& url,
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
   response->SetHasMajorCertificateErrors(info.has_major_certificate_errors);
+  response->SetIsLegacySymantecCert(info.is_legacy_symantec_cert);
+  response->SetCertValidityStart(info.cert_validity_start);
   response->SetAppCacheID(info.appcache_id);
   response->SetAppCacheManifestURL(info.appcache_manifest_url);
   response->SetWasCached(!info.load_timing.request_start_time.is_null() &&
