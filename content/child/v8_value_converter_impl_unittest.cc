@@ -132,7 +132,7 @@ class V8ValueConverterImplTest : public testing::Test {
       ADD_FAILURE();
       return false;
     }
-    return child->GetType() == base::Value::Type::NONE;
+    return child->type() == base::Value::Type::NONE;
   }
 
   bool IsNull(v8::Local<v8::Object> value, const std::string& key) {
@@ -151,7 +151,7 @@ class V8ValueConverterImplTest : public testing::Test {
       ADD_FAILURE();
       return false;
     }
-    return child->GetType() == base::Value::Type::NONE;
+    return child->type() == base::Value::Type::NONE;
   }
 
   bool IsNull(v8::Local<v8::Array> value, uint32_t index) {
@@ -174,7 +174,7 @@ class V8ValueConverterImplTest : public testing::Test {
     if (expected_value) {
       ASSERT_TRUE(raw.get());
       EXPECT_TRUE(expected_value->Equals(raw.get()));
-      EXPECT_EQ(expected_type, raw->GetType());
+      EXPECT_EQ(expected_type, raw->type());
     } else {
       EXPECT_FALSE(raw.get());
     }
@@ -188,7 +188,7 @@ class V8ValueConverterImplTest : public testing::Test {
     if (expected_value) {
       base::Value* temp = NULL;
       ASSERT_TRUE(dictionary->Get("test", &temp));
-      EXPECT_EQ(expected_type, temp->GetType());
+      EXPECT_EQ(expected_type, temp->type());
       EXPECT_TRUE(expected_value->Equals(temp));
     } else {
       EXPECT_FALSE(dictionary->HasKey("test"));
@@ -202,14 +202,14 @@ class V8ValueConverterImplTest : public testing::Test {
     if (expected_value) {
       base::Value* temp = NULL;
       ASSERT_TRUE(list->Get(0, &temp));
-      EXPECT_EQ(expected_type, temp->GetType());
+      EXPECT_EQ(expected_type, temp->type());
       EXPECT_TRUE(expected_value->Equals(temp));
     } else {
       // Arrays should preserve their length, and convert unconvertible
       // types into null.
       base::Value* temp = NULL;
       ASSERT_TRUE(list->Get(0, &temp));
-      EXPECT_EQ(base::Value::Type::NONE, temp->GetType());
+      EXPECT_EQ(base::Value::Type::NONE, temp->type());
     }
   }
 

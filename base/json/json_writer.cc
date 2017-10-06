@@ -56,7 +56,7 @@ JSONWriter::JSONWriter(int options, std::string* json)
 }
 
 bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
-  switch (node.GetType()) {
+  switch (node.type()) {
     case Value::Type::NONE: {
       json_string_->append("null");
       return true;
@@ -128,7 +128,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       bool result = node.GetAsList(&list);
       DCHECK(result);
       for (const auto& value : *list) {
-        if (omit_binary_values_ && value.GetType() == Value::Type::BINARY)
+        if (omit_binary_values_ && value.type() == Value::Type::BINARY)
           continue;
 
         if (first_value_has_been_output) {
@@ -160,8 +160,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       DCHECK(result);
       for (DictionaryValue::Iterator itr(*dict); !itr.IsAtEnd();
            itr.Advance()) {
-        if (omit_binary_values_ &&
-            itr.value().GetType() == Value::Type::BINARY) {
+        if (omit_binary_values_ && itr.value().type() == Value::Type::BINARY) {
           continue;
         }
 

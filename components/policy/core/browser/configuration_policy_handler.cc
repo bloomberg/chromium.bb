@@ -118,7 +118,7 @@ bool ListPolicyHandler::CheckAndGetList(
     *filtered_list = base::MakeUnique<base::ListValue>();
   for (size_t list_index = 0; list_index < list.size(); ++list_index) {
     const base::Value& entry = list[list_index];
-    if (entry.GetType() != list_entry_type_) {
+    if (entry.type() != list_entry_type_) {
       if (errors) {
         errors->AddError(policy_name(), list_index, IDS_POLICY_TYPE_ERROR,
                          base::Value::GetTypeName(list_entry_type_));

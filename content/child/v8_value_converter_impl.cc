@@ -234,7 +234,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
     v8::Local<v8::Object> creation_context,
     const base::Value* value) const {
   CHECK(value);
-  switch (value->GetType()) {
+  switch (value->type()) {
     case base::Value::Type::NONE:
       return v8::Null(isolate);
 
@@ -277,7 +277,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
       return ToArrayBuffer(isolate, creation_context, value);
 
     default:
-      LOG(ERROR) << "Unexpected value type: " << value->GetType();
+      LOG(ERROR) << "Unexpected value type: " << value->type();
       return v8::Null(isolate);
   }
 }

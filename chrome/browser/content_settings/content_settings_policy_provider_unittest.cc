@@ -273,7 +273,7 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
       &provider, google_url, google_url,
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), false));
 
-  ASSERT_EQ(base::Value::Type::DICTIONARY, cert_filter->GetType());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, cert_filter->type());
   base::DictionaryValue* dict_value =
       static_cast<base::DictionaryValue*>(cert_filter.get());
   std::string actual_common_name;

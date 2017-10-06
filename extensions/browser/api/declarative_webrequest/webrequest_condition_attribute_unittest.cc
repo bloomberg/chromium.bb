@@ -387,7 +387,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
       std::unique_ptr<base::Value> entry_owned;
       if (!dictionary->GetWithoutPathExpansion(*name, &entry))
         return std::unique_ptr<base::DictionaryValue>();
-      switch (entry->GetType()) {
+      switch (entry->type()) {
         case base::Value::Type::STRING: {
           // Replace the present string with a list.
           auto list = std::make_unique<base::ListValue>();

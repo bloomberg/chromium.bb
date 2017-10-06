@@ -17,7 +17,7 @@ TEST(PluginFinderTest, JsonSyntax) {
   ASSERT_TRUE(plugin_list.get());
   std::unique_ptr<base::Value> version;
   ASSERT_TRUE(plugin_list->Remove("x-version", &version));
-  EXPECT_EQ(base::Value::Type::INTEGER, version->GetType());
+  EXPECT_EQ(base::Value::Type::INTEGER, version->type());
 
   for (base::DictionaryValue::Iterator plugin_it(*plugin_list);
        !plugin_it.IsAtEnd(); plugin_it.Advance()) {

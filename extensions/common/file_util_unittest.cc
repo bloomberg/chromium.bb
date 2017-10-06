@@ -63,7 +63,7 @@ scoped_refptr<Extension> LoadExtensionManifest(
   std::unique_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
   if (!result.get())
     return NULL;
-  CHECK_EQ(base::Value::Type::DICTIONARY, result->GetType());
+  CHECK_EQ(base::Value::Type::DICTIONARY, result->type());
   return LoadExtensionManifest(*base::DictionaryValue::From(std::move(result)),
                                manifest_dir, location, extra_flags, error);
 }

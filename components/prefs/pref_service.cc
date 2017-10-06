@@ -231,9 +231,10 @@ const PrefService::Preference* PrefService::FindPreference(
   const base::Value* default_value = NULL;
   if (!pref_registry_->defaults()->GetValue(pref_name, &default_value))
     return NULL;
-  it = prefs_map_.insert(
-      std::make_pair(pref_name, Preference(
-          this, pref_name, default_value->GetType()))).first;
+  it = prefs_map_
+           .insert(std::make_pair(
+               pref_name, Preference(this, pref_name, default_value->type())))
+           .first;
   return &(it->second);
 }
 
@@ -290,7 +291,7 @@ const base::DictionaryValue* PrefService::GetDictionary(
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return NULL;
   }
-  if (value->GetType() != base::Value::Type::DICTIONARY) {
+  if (value->type() != base::Value::Type::DICTIONARY) {
     NOTREACHED();
     return NULL;
   }
@@ -347,7 +348,7 @@ const base::ListValue* PrefService::GetList(const std::string& path) const {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return NULL;
   }
-  if (value->GetType() != base::Value::Type::LIST) {
+  if (value->type() != base::Value::Type::LIST) {
     NOTREACHED();
     return NULL;
   }
@@ -523,10 +524,10 @@ void PrefService::SetUserPrefValue(const std::string& path,
     NOTREACHED() << "Trying to write an unregistered pref: " << path;
     return;
   }
-  if (pref->GetType() != new_value->GetType()) {
-    NOTREACHED() << "Trying to set pref " << path
-                 << " of type " << pref->GetType()
-                 << " to value of type " << new_value->GetType();
+  if (pref->GetType() != new_value->type()) {
+    NOTREACHED() << "Trying to set pref " << path << " of type "
+                 << pref->GetType() << " to value of type "
+                 << new_value->type();
     return;
   }
 
@@ -632,7 +633,7 @@ const base::Value* PrefService::GetPreferenceValue(
   const base::Value* default_value = NULL;
   if (pref_registry_->defaults()->GetValue(path, &default_value)) {
     const base::Value* found_value = NULL;
-    base::Value::Type default_type = default_value->GetType();
+    base::Value::Type default_type = default_value->type();
     if (pref_value_store_->GetValue(path, default_type, &found_value)) {
       DCHECK(found_value->IsType(default_type));
       return found_value;

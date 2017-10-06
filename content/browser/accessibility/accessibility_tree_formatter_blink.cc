@@ -383,7 +383,7 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
     if (!dict.Get(attribute_name, &value))
       continue;
 
-    switch (value->GetType()) {
+    switch (value->type()) {
       case base::Value::Type::STRING: {
         std::string string_value;
         value->GetAsString(&string_value);

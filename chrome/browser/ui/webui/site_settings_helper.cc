@@ -426,7 +426,7 @@ ContentSetting GetContentSettingForOrigin(
         content_type, origin, origin);
   } else {
     DCHECK(value.get());
-    DCHECK_EQ(base::Value::Type::INTEGER, value->GetType());
+    DCHECK_EQ(base::Value::Type::INTEGER, value->type());
     result.content_setting =
         content_settings::ValueToContentSetting(value.get());
   }

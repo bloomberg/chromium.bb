@@ -50,7 +50,7 @@ bool ConvertManifestRule(const linked_ptr<DeclarativeManifestData::Rule>& rule,
           base::DictionaryValue* dictionary = nullptr;
           if (!value->GetAsDictionary(&dictionary)) {
             error_builder->Append("expected dictionary, got %s",
-                                  base::Value::GetTypeName(value->GetType()));
+                                  base::Value::GetTypeName(value->type()));
             return false;
           }
           std::string type;
@@ -123,7 +123,7 @@ std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
   const base::ListValue* list = nullptr;
   if (!value.GetAsList(&list)) {
     error_builder.Append("'event_rules' expected list, got %s",
-                         base::Value::GetTypeName(value.GetType()));
+                         base::Value::GetTypeName(value.type()));
     return std::unique_ptr<DeclarativeManifestData>();
   }
 
@@ -131,7 +131,7 @@ std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
     const base::DictionaryValue* dict = nullptr;
     if (!element.GetAsDictionary(&dict)) {
       error_builder.Append("expected dictionary, got %s",
-                           base::Value::GetTypeName(element.GetType()));
+                           base::Value::GetTypeName(element.type()));
       return std::unique_ptr<DeclarativeManifestData>();
     }
     std::string event;

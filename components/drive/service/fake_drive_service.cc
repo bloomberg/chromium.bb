@@ -268,7 +268,7 @@ bool FakeDriveService::LoadAppListForDriveApi(
 
   // Load JSON data, which must be a dictionary.
   std::unique_ptr<base::Value> value = test_util::LoadJSONFile(relative_path);
-  CHECK_EQ(base::Value::Type::DICTIONARY, value->GetType());
+  CHECK_EQ(base::Value::Type::DICTIONARY, value->type());
   app_info_value_.reset(
       static_cast<base::DictionaryValue*>(value.release()));
   return !!app_info_value_;
@@ -296,7 +296,7 @@ void FakeDriveService::AddApp(const std::string& app_id,
   JSONStringValueDeserializer json(app_json);
   std::string error_message;
   std::unique_ptr<base::Value> value(json.Deserialize(NULL, &error_message));
-  CHECK_EQ(base::Value::Type::DICTIONARY, value->GetType());
+  CHECK_EQ(base::Value::Type::DICTIONARY, value->type());
 
   base::ListValue* item_list;
   CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));

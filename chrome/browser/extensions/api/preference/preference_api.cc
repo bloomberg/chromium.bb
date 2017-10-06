@@ -765,7 +765,7 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
     EXTENSION_FUNCTION_VALIDATE(!bad_message);
     return RespondNow(Error(error));
   }
-  EXTENSION_FUNCTION_VALIDATE(browser_pref_value->GetType() == pref->GetType());
+  EXTENSION_FUNCTION_VALIDATE(browser_pref_value->type() == pref->GetType());
 
   // Validate also that the stored value can be converted back by the
   // transformer.

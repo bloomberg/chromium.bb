@@ -109,7 +109,7 @@ void Referrer::DeleteLeastUseful() {
 }
 
 void Referrer::Deserialize(const base::Value& value) {
-  if (value.GetType() != base::Value::Type::LIST)
+  if (value.type() != base::Value::Type::LIST)
     return;
   const base::ListValue* subresource_list(
       static_cast<const base::ListValue*>(&value));

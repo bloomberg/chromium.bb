@@ -29,7 +29,7 @@ namespace {
 double GetNumberValue(const base::Value* value) {
   double result = 0;
   CHECK(value->GetAsDouble(&result))
-      << "Unexpected value type: " << value->GetType();
+      << "Unexpected value type: " << value->type();
   return result;
 }
 
@@ -107,7 +107,7 @@ bool IsValidSchema(const base::DictionaryValue* dict,
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     // Validate the "type" attribute, which may be a string or a list.
     if (it.key() == schema::kType) {
-      switch (it.value().GetType()) {
+      switch (it.value().type()) {
         case base::Value::Type::STRING:
           it.value().GetAsString(&string_value);
           if (!IsValidType(string_value)) {
@@ -249,7 +249,7 @@ bool IsValidSchema(const base::DictionaryValue* dict,
           *error = "Invalid value in enum attribute";
           return false;
         }
-        switch (value->GetType()) {
+        switch (value->type()) {
           case base::Value::Type::NONE:
           case base::Value::Type::BOOLEAN:
           case base::Value::Type::INTEGER:
@@ -342,7 +342,7 @@ const char JSONSchemaValidator::kInvalidRegex[] =
 
 // static
 std::string JSONSchemaValidator::GetJSONSchemaType(const base::Value* value) {
-  switch (value->GetType()) {
+  switch (value->type()) {
     case base::Value::Type::NONE:
       return schema::kNull;
     case base::Value::Type::BOOLEAN:
@@ -366,7 +366,7 @@ std::string JSONSchemaValidator::GetJSONSchemaType(const base::Value* value) {
     case base::Value::Type::LIST:
       return schema::kArray;
     default:
-      NOTREACHED() << "Unexpected value type: " << value->GetType();
+      NOTREACHED() << "Unexpected value type: " << value->type();
       return std::string();
   }
 }
@@ -553,7 +553,7 @@ void JSONSchemaValidator::ValidateEnum(const base::Value* instance,
     if (!choice) {
       NOTREACHED();
     }
-    switch (choice->GetType()) {
+    switch (choice->type()) {
       case base::Value::Type::NONE:
       case base::Value::Type::BOOLEAN:
       case base::Value::Type::STRING:
@@ -571,7 +571,7 @@ void JSONSchemaValidator::ValidateEnum(const base::Value* instance,
         break;
 
       default:
-       NOTREACHED() << "Unexpected type in enum: " << choice->GetType();
+        NOTREACHED() << "Unexpected type in enum: " << choice->type();
     }
   }
 
@@ -715,7 +715,7 @@ void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
       CHECK(tuple_type->GetDictionary(i, &item_schema));
       const base::Value* item_value = NULL;
       instance->Get(i, &item_value);
-      if (item_value && item_value->GetType() != base::Value::Type::NONE) {
+      if (item_value && item_value->type() != base::Value::Type::NONE) {
         Validate(item_value, item_schema, item_path);
       } else {
         bool is_optional = false;

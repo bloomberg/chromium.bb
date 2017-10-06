@@ -697,7 +697,7 @@ TEST_F(PolicyWatcherTest, PolicySchemaAndPolicyWatcherShouldBeInSync) {
   std::map<std::string, base::Value::Type> expected_schema;
   for (base::DictionaryValue::Iterator i(GetDefaultValues()); !i.IsAtEnd();
        i.Advance()) {
-    expected_schema[i.key()] = i.value().GetType();
+    expected_schema[i.key()] = i.value().type();
   }
 #if defined(OS_WIN)
   // RemoteAccessHostMatchUsername is marked in policy_templates.json as not

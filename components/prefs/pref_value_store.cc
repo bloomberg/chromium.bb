@@ -267,8 +267,8 @@ bool PrefValueStore::GetValueFromStoreWithType(
       return true;
 
     LOG(WARNING) << "Expected type for " << name << " is " << type
-                 << " but got " << (*out_value)->GetType()
-                 << " in store " << store;
+                 << " but got " << (*out_value)->type() << " in store "
+                 << store;
   }
 
   *out_value = NULL;

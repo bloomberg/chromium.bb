@@ -111,13 +111,13 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   list_value->AppendInteger(100);
   list_value->AppendDouble(1.0);
 
-  ASSERT_EQ(base::Value::Type::NONE, null_value->GetType());
-  ASSERT_EQ(base::Value::Type::BOOLEAN, bool_value->GetType());
-  ASSERT_EQ(base::Value::Type::INTEGER, int_value->GetType());
-  ASSERT_EQ(base::Value::Type::DOUBLE, double_value->GetType());
-  ASSERT_EQ(base::Value::Type::STRING, string_value->GetType());
-  ASSERT_EQ(base::Value::Type::DICTIONARY, dict_value->GetType());
-  ASSERT_EQ(base::Value::Type::LIST, list_value->GetType());
+  ASSERT_EQ(base::Value::Type::NONE, null_value->type());
+  ASSERT_EQ(base::Value::Type::BOOLEAN, bool_value->type());
+  ASSERT_EQ(base::Value::Type::INTEGER, int_value->type());
+  ASSERT_EQ(base::Value::Type::DOUBLE, double_value->type());
+  ASSERT_EQ(base::Value::Type::STRING, string_value->type());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, dict_value->type());
+  ASSERT_EQ(base::Value::Type::LIST, list_value->type());
 
   // Test every value type independently. Intentionally omits Type::BINARY which
   // isn't even allowed in JSONWriter's input.

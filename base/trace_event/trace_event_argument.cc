@@ -246,7 +246,7 @@ void TracedValue::SetValue(const char* name,
 void TracedValue::SetBaseValueWithCopiedName(base::StringPiece name,
                                              const base::Value& value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
-  switch (value.GetType()) {
+  switch (value.type()) {
     case base::Value::Type::NONE:
     case base::Value::Type::BINARY:
       NOTREACHED();
@@ -300,7 +300,7 @@ void TracedValue::SetBaseValueWithCopiedName(base::StringPiece name,
 
 void TracedValue::AppendBaseValue(const base::Value& value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeArray);
-  switch (value.GetType()) {
+  switch (value.type()) {
     case base::Value::Type::NONE:
     case base::Value::Type::BINARY:
       NOTREACHED();

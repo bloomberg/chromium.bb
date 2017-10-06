@@ -503,7 +503,7 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
 
     std::vector<std::unique_ptr<const StringMatchTest>>* tests =
         is_name ? &name_match : &value_match;
-    switch (content->GetType()) {
+    switch (content->type()) {
       case base::Value::Type::LIST: {
         const base::ListValue* list = NULL;
         CHECK(content->GetAsList(&list));

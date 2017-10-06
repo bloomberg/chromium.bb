@@ -40,7 +40,7 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
     return PP_MakeNull();
   }
 
-  switch (value->GetType()) {
+  switch (value->type()) {
     case base::Value::Type::NONE:
       return PP_MakeNull();
     case base::Value::Type::BOOLEAN: {

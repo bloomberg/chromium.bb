@@ -93,7 +93,7 @@ void TraceEventMemoryOverhead::AddRefCountedString(
 }
 
 void TraceEventMemoryOverhead::AddValue(const Value& value) {
-  switch (value.GetType()) {
+  switch (value.type()) {
     case Value::Type::NONE:
     case Value::Type::BOOLEAN:
     case Value::Type::INTEGER:

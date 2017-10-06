@@ -151,7 +151,7 @@ std::unique_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
   std::string data;
   source->GetResponseAsString(&data);
   std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
-  if (!value.get() || value->GetType() != base::Value::Type::DICTIONARY)
+  if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
     value.reset();
 
   return std::unique_ptr<base::DictionaryValue>(
