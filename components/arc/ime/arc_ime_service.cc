@@ -52,6 +52,13 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
     exo::WMHelper::GetInstance()->RemoveFocusObserver(ime_service_);
   }
 
+  ui::InputMethod* GetInputMethodForWindow(
+      aura::Window* window) const override {
+    if (!window || !window->GetHost())
+      return nullptr;
+    return window->GetHost()->GetInputMethod();
+  }
+
  private:
   ArcImeService* const ime_service_;
 
@@ -95,7 +102,6 @@ ArcImeService::ArcImeService(content::BrowserContext* context,
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
       keyboard_controller_(nullptr),
-      test_input_method_(nullptr),
       is_focus_observer_installed_(false) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
@@ -127,25 +133,28 @@ void ArcImeService::SetImeBridgeForTesting(
   ime_bridge_ = std::move(test_ime_bridge);
 }
 
-void ArcImeService::SetInputMethodForTesting(
-    ui::InputMethod* test_input_method) {
-  test_input_method_ = test_input_method;
-}
-
 void ArcImeService::SetArcWindowDelegateForTesting(
     std::unique_ptr<ArcWindowDelegate> delegate) {
   arc_window_delegate_ = std::move(delegate);
 }
 
 ui::InputMethod* ArcImeService::GetInputMethod() {
-  if (!focused_arc_window_)
-    return nullptr;
+  return arc_window_delegate_->GetInputMethodForWindow(focused_arc_window_);
+}
 
-  if (test_input_method_)
-    return test_input_method_;
+void ArcImeService::ReattachInputMethod(aura::Window* old_window,
+                                        aura::Window* new_window) {
+  ui::InputMethod* const old_ime =
+      arc_window_delegate_->GetInputMethodForWindow(old_window);
+  ui::InputMethod* const new_ime =
+      arc_window_delegate_->GetInputMethodForWindow(new_window);
 
-  DCHECK(focused_arc_window_->GetHost());
-  return focused_arc_window_->GetHost()->GetInputMethod();
+  if (old_ime != new_ime) {
+    if (old_ime)
+      old_ime->DetachTextInputClient(this);
+    if (new_ime)
+      new_ime->SetFocusedTextInputClient(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +190,8 @@ void ArcImeService::OnWindowDestroying(aura::Window* window) {
 void ArcImeService::OnWindowRemovingFromRootWindow(aura::Window* window,
                                                    aura::Window* new_root) {
   DCHECK_EQ(window, focused_arc_window_);
-  OnWindowFocused(nullptr, focused_arc_window_);
+  // IMEs are associated with root windows, hence we may need to detach/attach.
+  ReattachInputMethod(focused_arc_window_, new_root);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -196,15 +206,6 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
   const bool attach =
       (gained_focus && arc_window_delegate_->IsArcWindow(gained_focus));
 
-  // TODO(kinaba): Implicit dependency in GetInputMethod as described below is
-  // confusing. Consider getting InputMethod directly from lost_ or gained_focus
-  // variables. For that, we need to change how to inject testing InputMethod.
-  //
-  // GetInputMethod() retrieves the input method associated to
-  // |forcused_arc_window_|. Hence, to get the object we are detaching from, we
-  // must call the method before updating the forcused ARC window.
-  ui::InputMethod* const detaching_ime = detach ? GetInputMethod() : nullptr;
-
   if (detach) {
     focused_arc_window_->RemoveObserver(this);
     focused_arc_window_ = nullptr;
@@ -215,17 +216,7 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
     focused_arc_window_->AddObserver(this);
   }
 
-  ui::InputMethod* const attaching_ime = attach ? GetInputMethod() : nullptr;
-
-  // Notify to the input method, either when this service is detached or
-  // attached. Do nothing when the focus is moving between ARC windows,
-  // to avoid unpexpected context reset in ARC.
-  if (detaching_ime != attaching_ime) {
-    if (detaching_ime)
-      detaching_ime->DetachTextInputClient(this);
-    if (attaching_ime)
-      attaching_ime->SetFocusedTextInputClient(this);
-  }
+  ReattachInputMethod(detach ? lost_focus : nullptr, focused_arc_window_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
