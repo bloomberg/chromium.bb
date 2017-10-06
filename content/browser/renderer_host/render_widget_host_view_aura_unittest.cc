@@ -1999,6 +1999,8 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_end_event->phase);
   EXPECT_EQ(0U, wheel_end_event->delta_x);
   EXPECT_EQ(0U, wheel_end_event->delta_y);
+  EXPECT_EQ(0U, wheel_end_event->wheel_ticks_x);
+  EXPECT_EQ(0U, wheel_end_event->wheel_ticks_y);
   EXPECT_GT(ui::EventTimeStampFromSeconds(wheel_end_event->TimeStampSeconds()),
             wheel_event_timestamp);
   SendInputEventACK(blink::WebInputEvent::kMouseWheel,
