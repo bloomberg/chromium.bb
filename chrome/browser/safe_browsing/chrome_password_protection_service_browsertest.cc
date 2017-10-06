@@ -80,6 +80,10 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
     helper->GetSecurityInfo(out_security_info);
   }
 
+  void SetDefaultProfileEmail(ChromePasswordProtectionService* service) {
+    service->account_info_->email = "foo@bar.com";
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histograms_;
@@ -88,6 +92,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        SuccessfullyChangePassword) {
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  SetDefaultProfileEmail(service);
   Profile* profile = browser()->profile();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

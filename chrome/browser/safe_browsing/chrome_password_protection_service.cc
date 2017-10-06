@@ -122,6 +122,7 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       password_manager::prefs::kSyncPasswordHash,
       base::Bind(&ChromePasswordProtectionService::OnGaiaPasswordChanged,
                  base::Unretained(this)));
+  InitializeAccountInfo();
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
@@ -408,14 +409,14 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
 
 PasswordProtectionService::SyncAccountType
 ChromePasswordProtectionService::GetSyncAccountType() {
-  const AccountInfo account_info = GetAccountInfo();
-  if (account_info.account_id.empty() || account_info.hosted_domain.empty()) {
+  if (!account_info_ || account_info_->account_id.empty() ||
+      account_info_->hosted_domain.empty()) {
     return LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
   }
 
   // For gmail or googlemail account, the hosted_domain will always be
   // kNoHostedDomainFound.
-  return account_info.hosted_domain ==
+  return account_info_->hosted_domain ==
                  std::string(AccountTrackerService::kNoHostedDomainFound)
              ? LoginReputationClientRequest::PasswordReuseEvent::GMAIL
              : LoginReputationClientRequest::PasswordReuseEvent::GSUITE;
@@ -598,16 +599,19 @@ bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
          current_threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
 }
 
-AccountInfo ChromePasswordProtectionService::GetAccountInfo() {
+void ChromePasswordProtectionService::InitializeAccountInfo() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile_);
-  DCHECK(signin_manager);
-  return signin_manager->GetAuthenticatedAccountInfo();
+
+  if (signin_manager) {
+    account_info_ = base::MakeUnique<AccountInfo>(
+        signin_manager->GetAuthenticatedAccountInfo());
+  }
 }
 
 GURL ChromePasswordProtectionService::GetChangePasswordURL() {
-  const AccountInfo account_info = GetAccountInfo();
-  std::string account_email = account_info.email;
+  DCHECK(!account_info_->email.empty());
+  std::string account_email = account_info_->email;
   // This page will prompt for re-auth and then will prompt for a new password.
   std::string account_url =
       "https://myaccount.google.com/signinoptions/"
@@ -641,6 +645,7 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       ui_manager_(ui_manager),
       trigger_manager_(nullptr),
       profile_(profile) {
+  InitializeAccountInfo();
 }
 
 }  // namespace safe_browsing
