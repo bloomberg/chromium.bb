@@ -152,7 +152,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);
   var pageList = [];
-  if (pageRanges instanceof Array) {
+  if (Array.isArray(pageRanges)) {
     for (var i = 0; i < pageRanges.length; ++i) {
       for (var j = pageRanges[i].from;
            j <= Math.min(pageRanges[i].to, totalPageCount); ++j) {
