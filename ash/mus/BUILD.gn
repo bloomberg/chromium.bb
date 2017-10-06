@@ -86,6 +86,7 @@ source_set("lib") {
   public_deps = [
     "//ash",
     "//ash/public/cpp:ash_public_cpp",
+    "//ash/wayland",
     "//base",
     "//base:i18n",
     "//mash/public/interfaces",
@@ -111,6 +112,11 @@ source_set("lib") {
 
   data_deps = [
     "//ash/touch_hud/mus:touch_hud",
+  ]
+
+  assert_no_deps = [
+    "//content/public/browser",
+    "//content/public/common",
   ]
 }
 

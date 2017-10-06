@@ -1850,8 +1850,10 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     copy_switches = true;
   }
 #if defined(OS_CHROMEOS)
-  if (identity.name() == ash::mojom::kServiceName)
+  if (identity.name() == ash::mojom::kServiceName) {
+    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     copy_switches = true;
+  }
 #endif
   // TODO(sky): move to a whitelist, but currently the set of flags is rather
   // sprawling.
