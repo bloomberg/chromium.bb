@@ -27,6 +27,7 @@
 #include "components/cronet/ios/version.h"
 #include "components/prefs/pref_filter.h"
 #include "ios/net/cookies/cookie_store_ios.h"
+#include "ios/net/cookies/cookie_store_ios_client.h"
 #include "ios/web/public/global_state/ios_global_state.h"
 #include "ios/web/public/global_state/ios_global_state_configuration.h"
 #include "ios/web/public/user_agent.h"
@@ -82,6 +83,25 @@ class CronetURLRequestContextGetter : public net::URLRequestContextGetter {
   cronet::CronetEnvironment* environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextGetter);
+};
+
+// Cronet implementation of net::CookieStoreIOSClient.
+// Used to provide Cronet Network IO TaskRunner.
+class CronetCookieStoreIOSClient : public net::CookieStoreIOSClient {
+ public:
+  CronetCookieStoreIOSClient(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+      : task_runner_(task_runner) {}
+
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override {
+    return task_runner_;
+  }
+
+ private:
+  ~CronetCookieStoreIOSClient() override {}
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  DISALLOW_COPY_AND_ASSIGN(CronetCookieStoreIOSClient);
 };
 
 void SignalEvent(base::WaitableEvent* event) {
@@ -249,6 +269,9 @@ void CronetEnvironment::Start() {
     network_io_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   }
+
+  net::SetCookieStoreIOSClient(new CronetCookieStoreIOSClient(
+      CronetEnvironment::GetNetworkThreadTaskRunner()));
 
   main_context_getter_ = new CronetURLRequestContextGetter(
       this, CronetEnvironment::GetNetworkThreadTaskRunner());
