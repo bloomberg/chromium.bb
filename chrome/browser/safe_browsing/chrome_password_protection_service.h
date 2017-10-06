@@ -157,8 +157,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void UpdateSecurityState(SBThreatType threat_type,
                            content::WebContents* web_contents) override;
 
-  // Sets |account_info_| based on |profile_|.
-  void InitializeAccountInfo();
+  // Gets |account_info_| based on |profile_|.
+  AccountInfo GetAccountInfo();
 
   // Gets change password URl based on |account_info_|.
   GURL GetChangePasswordURL();
@@ -216,8 +216,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   TriggerManager* trigger_manager_;
   // Profile associated with this instance.
   Profile* profile_;
-  // AccountInfo associated with this |profile_|.
-  std::unique_ptr<AccountInfo> account_info_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
   base::ObserverList<Observer> observer_list_;
