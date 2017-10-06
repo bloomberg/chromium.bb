@@ -13,6 +13,7 @@
 #include <set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -271,10 +272,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
     size_t erase(const GURL& url);
     iterator erase(const_iterator it);
-    iterator insert(const_iterator position,
-                    const GURL& url,
-                    SpdyStreamId stream_id,
-                    const base::TimeTicks& creation_time);
+
+    // Return true if there was not already an entry with |url|,
+    // in which case the insertion was successful.
+    bool insert(const GURL& url,
+                SpdyStreamId stream_id,
+                const base::TimeTicks& creation_time) WARN_UNUSED_RESULT;
 
     size_t EstimateMemoryUsage() const;
 

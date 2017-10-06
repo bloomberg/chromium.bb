@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -646,9 +645,7 @@ SpdySession::UnclaimedPushedStreamContainer::erase(const_iterator it) {
   return streams_.erase(it);
 }
 
-SpdySession::UnclaimedPushedStreamContainer::iterator
-SpdySession::UnclaimedPushedStreamContainer::insert(
-    const_iterator position,
+bool SpdySession::UnclaimedPushedStreamContainer::insert(
     const GURL& url,
     SpdyStreamId stream_id,
     const base::TimeTicks& creation_time) {
@@ -658,11 +655,10 @@ SpdySession::UnclaimedPushedStreamContainer::insert(
     spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
         url, spdy_session_->GetWeakPtr());
   }
-  return streams_.insert(
-      position,
-      std::make_pair(
-          url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
-                   stream_id, creation_time)));
+  auto result = streams_.insert(std::make_pair(
+      url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
+               stream_id, creation_time)));
+  return result.second;
 }
 
 size_t SpdySession::UnclaimedPushedStreamContainer::EstimateMemoryUsage()
@@ -1619,17 +1615,6 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     }
   }
 
-  // There should not be an existing pushed stream with the same path.
-  UnclaimedPushedStreamContainer::const_iterator pushed_it =
-      unclaimed_pushed_streams_.lower_bound(gurl);
-  if (pushed_it != unclaimed_pushed_streams_.end() &&
-      pushed_it->first == gurl) {
-    EnqueueResetStreamFrame(
-        stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,
-        "Received duplicate pushed stream with url: " + gurl.spec());
-    return;
-  }
-
   // "Promised requests MUST be cacheable and MUST be safe [...]" (RFC7540
   // Section 8.2).  Only cacheable safe request methods are GET and HEAD.
   SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
@@ -1640,6 +1625,14 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
         SpdyStringPrintf(
             "Rejected push stream %d due to inadequate request method",
             associated_stream_id));
+    return;
+  }
+
+  // Insertion fails if there already is a pushed stream with the same path.
+  if (!unclaimed_pushed_streams_.insert(gurl, stream_id, time_func_())) {
+    EnqueueResetStreamFrame(
+        stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,
+        "Received duplicate pushed stream with url: " + gurl.spec());
     return;
   }
 
@@ -1662,10 +1655,6 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   associated_it->second->AddRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
-  UnclaimedPushedStreamContainer::const_iterator inserted_pushed_it =
-      unclaimed_pushed_streams_.insert(pushed_it, gurl, stream_id,
-                                       time_func_());
-  DCHECK(inserted_pushed_it != pushed_it);
   DeleteExpiredPushedStreams();
 
   InsertActivatedStream(std::move(stream));
