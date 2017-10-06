@@ -22,7 +22,6 @@
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -33,9 +32,6 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerErrorType,
                           blink::mojom::ServiceWorkerErrorType::kLast)
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
-                          blink::kWebServiceWorkerEventResultLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerState,
                           blink::mojom::ServiceWorkerState::kLast)

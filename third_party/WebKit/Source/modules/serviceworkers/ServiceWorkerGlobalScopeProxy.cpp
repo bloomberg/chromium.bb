@@ -82,8 +82,8 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "public/platform/modules/serviceworker/service_worker_event_status.mojom-blink.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 
@@ -377,7 +377,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(
         ->RespondToFetchEventWithNoResponse(fetch_event_id, WTF::CurrentTime());
     ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
         ->DidHandleFetchEvent(fetch_event_id,
-                              kWebServiceWorkerEventResultCompleted,
+                              mojom::ServiceWorkerEventStatus::COMPLETED,
                               WTF::CurrentTime());
     return;
   }
