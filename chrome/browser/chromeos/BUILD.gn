@@ -1003,6 +1003,8 @@ source_set("chromeos") {
     "login/screens/wrong_hwid_screen.cc",
     "login/screens/wrong_hwid_screen.h",
     "login/screens/wrong_hwid_screen_view.h",
+    "login/session/app_terminating_stack_dumper.cc",
+    "login/session/app_terminating_stack_dumper.h",
     "login/session/chrome_session_manager.cc",
     "login/session/chrome_session_manager.h",
     "login/session/user_session_manager.cc",

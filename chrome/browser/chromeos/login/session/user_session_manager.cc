@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
+#include "chrome/browser/chromeos/login/session/app_terminating_stack_dumper.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_fetcher.h"
@@ -490,6 +491,11 @@ void UserSessionManager::StartSession(
 
   delegate_ = delegate;
   start_session_type_ = start_session_type;
+
+  if (start_session_type == UserSessionManager::PRIMARY_USER_SESSION) {
+    app_terminating_stack_dumper_ =
+        std::make_unique<AppTerminatingStackDumper>();
+  }
 
   VLOG(1) << "Starting user session.";
   PreStartSession();
@@ -1000,14 +1006,17 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
                                           bool is_incognito_profile,
                                           Profile* profile,
                                           Profile::CreateStatus status) {
-  CHECK(profile);
+  // No longer interesting in the app terminating calls.
+  app_terminating_stack_dumper_.reset();
 
   switch (status) {
     case Profile::CREATE_STATUS_CREATED:
+      CHECK(profile);
       // Profile created but before initializing extensions and promo resources.
       InitProfilePreferences(profile, user_context);
       break;
     case Profile::CREATE_STATUS_INITIALIZED:
+      CHECK(profile);
       // Profile is created, extensions and promo resources are initialized.
       // At this point all other Chrome OS services will be notified that it is
       // safe to use this profile.
