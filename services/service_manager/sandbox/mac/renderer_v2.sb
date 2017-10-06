@@ -71,13 +71,18 @@
 
 ; File reads.
 ; Reads from the home directory.
-(allow file-read-data (path (user-homedir-path "/.CFUserTextEncoding")))
+(allow file-read-data
+  (path (user-homedir-path "/.CFUserTextEncoding"))
+  (path (user-homedir-path "/Library/Preferences/com.apple.universalaccess.plist"))
+  (path (user-homedir-path "/Library/Preferences/.GlobalPreferences.plist"))
+  (regex (user-homedir-path #"/Library/Preferences/ByHost/.GlobalPreferences.*")))
 
 ; Reads of /dev devices.
 (allow file-read-data
   (path "/dev/autofs_nowait")
   (path "/dev/fd")
   (path "/dev/null")
+  (path "/dev/random")
   (path "/dev/urandom"))
 
 (allow file-write-data (path "/dev/null"))
@@ -93,10 +98,13 @@
   (allow file-read-data (subpath "/usr/share/zoneinfo")))
 
 ; Reads from /Library.
-(allow file-read-data (subpath "/Library/Fonts"))
+(allow file-read-data
+  (subpath "/Library/Fonts")
+  (path "/Library/Preferences/.GlobalPreferences.plist"))
 
 ; Reads from /System.
 (allow file-read-data
+  (path "/System/Library/CoreServices/checkfixlist")
   (path "/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/AppExceptions.bundle/Exceptions.plist")
   (path "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/Exceptions.plist")
   (path "/System/Library/CoreServices/SystemVersion.plist")
