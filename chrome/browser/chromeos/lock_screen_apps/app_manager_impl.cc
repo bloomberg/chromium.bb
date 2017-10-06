@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
-#include "chrome/browser/chromeos/lock_screen_apps/lock_screen_profile_creator.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
@@ -53,7 +52,6 @@ enum class ActionAvailability {
   kAppNotSupportingLockScreen = 2,
   kActionNotEnabledOnLockScreen = 3,
   kDisallowedByPolicy = 4,
-  kLockScreenProfileNotCreated = 5,
   kCount,
 };
 
@@ -157,44 +155,28 @@ AppManagerImpl::AppManagerImpl(base::TickClock* tick_clock)
 
 AppManagerImpl::~AppManagerImpl() = default;
 
-void AppManagerImpl::Initialize(
-    Profile* primary_profile,
-    LockScreenProfileCreator* lock_screen_profile_creator) {
+void AppManagerImpl::Initialize(Profile* primary_profile,
+                                Profile* lock_screen_profile) {
   DCHECK_EQ(State::kNotInitialized, state_);
   DCHECK(primary_profile);
-
-  primary_profile_ = primary_profile;
-  lock_screen_profile_creator_ = lock_screen_profile_creator;
-
-  state_ = State::kInactive;
-
-  note_taking_helper_observer_.Add(chromeos::NoteTakingHelper::Get());
-
-  lock_screen_profile_creator_->AddCreateProfileCallback(
-      base::Bind(&AppManagerImpl::OnLockScreenProfileLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AppManagerImpl::OnLockScreenProfileLoaded() {
-  if (!lock_screen_profile_creator_->lock_screen_profile())
-    return;
-
-  DCHECK_NE(primary_profile_,
-            lock_screen_profile_creator_->lock_screen_profile());
-
+  DCHECK(lock_screen_profile);
+  DCHECK_NE(primary_profile, lock_screen_profile);
   // Do not use OTR profile for lock screen apps. This is important for
   // profile usage in |LaunchNoteTaking| - lock screen app background page runs
   // in original, non off the record profile, so the launch event has to be
   // dispatched to that profile. For other |lock_screen_profile_|, it makes no
   // difference - the profile is used to get browser context keyed services, all
   // of which redirect OTR profile to the original one.
-  lock_screen_profile_ =
-      lock_screen_profile_creator_->lock_screen_profile()->GetOriginalProfile();
+  DCHECK(!lock_screen_profile->IsOffTheRecord());
 
-  CHECK(!chromeos::ProfileHelper::Get()->GetUserByProfile(lock_screen_profile_))
+  CHECK(!chromeos::ProfileHelper::Get()->GetUserByProfile(lock_screen_profile))
       << "Lock screen profile should not be associated with any users.";
 
-  OnNoteTakingExtensionChanged();
+  primary_profile_ = primary_profile;
+  lock_screen_profile_ = lock_screen_profile;
+  state_ = State::kInactive;
+
+  note_taking_helper_observer_.Add(chromeos::NoteTakingHelper::Get());
 }
 
 void AppManagerImpl::Start(const base::Closure& note_taking_changed_callback) {
@@ -319,17 +301,6 @@ std::string AppManagerImpl::FindLockScreenNoteTakingApp() const {
           primary_profile_);
   ActionAvailability availability =
       GetLockScreenNoteTakingAvailability(note_taking_app.get());
-
-  // |lock_screen_profile_| is created only if a note taking app is available
-  // on the lock screen. If an app is not available, the profile is expected to
-  // be nullptr.
-  // If the app is available and the lock_screen_profile is not set, the profile
-  // might still be loading, and |FindLockScreenNoteTakingApp| will be called
-  // again when the profile is loaded - until then, report to UMA that lock
-  // screen profile was not created at this point, and otherwise ignore the
-  // available app.
-  if (!lock_screen_profile_ && availability == ActionAvailability::kAvailable)
-    availability = ActionAvailability::kLockScreenProfileNotCreated;
 
   UMA_HISTOGRAM_ENUMERATION(
       "Apps.LockScreen.NoteTakingApp.AvailabilityOnScreenLock", availability,

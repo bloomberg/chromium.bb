@@ -13,8 +13,6 @@ class Profile;
 
 namespace lock_screen_apps {
 
-class LockScreenProfileCreator;
-
 // Interface for managing lock screen enabled action handler apps in the lock
 // screen enabled profile. Initially, it will be used primarily to manage lock
 // screen note taking apps.
@@ -27,15 +25,11 @@ class AppManager {
   //     action handler app (if one is set). This is the profile whose
   //     settings are used to determine whether and for which app lock screen
   //     action is enabled, and it should be associated with the primary user.
-  // |lock_screen_profile_creator| - the object responsible for creating profile
-  //     in which lock screen apps should be launched. It will detect when a
-  //     note taking app is enabled on lock screen and create the profile.
-  //     |AppManager| implementation can observe this class to detect when the
-  //     profile is created and thus note taking app becomes available on lock
-  //     screen.
-  virtual void Initialize(
-      Profile* primary_profile,
-      LockScreenProfileCreator* lock_screen_profile_creator) = 0;
+  // |lock_screen_profile| - the profile in which lock screen apps should be
+  //     installed and launched. This profile should be annonymous - i.e. not
+  //     associated with any user.
+  virtual void Initialize(Profile* primary_profile,
+                          Profile* lock_screen_profile) = 0;
 
   // Activates the manager - this should ensure that lock screen enabled note
   // taking app, if available, is loaded and enabled in the lock screen profile.

@@ -29,8 +29,6 @@ class ExtensionRegistry;
 
 namespace lock_screen_apps {
 
-class LockScreenProfileCreator;
-
 // The default implementation of lock_screen_apps::AppManager.
 class AppManagerImpl : public AppManager,
                        public chromeos::NoteTakingHelper::Observer,
@@ -41,7 +39,7 @@ class AppManagerImpl : public AppManager,
 
   // AppManager implementation:
   void Initialize(Profile* primary_profile,
-                  LockScreenProfileCreator* profile_creator) override;
+                  Profile* lock_screen_profile) override;
   void Start(const base::Closure& note_taking_changed_callback) override;
   void Stop() override;
   bool LaunchNoteTaking() override;
@@ -77,10 +75,6 @@ class AppManagerImpl : public AppManager,
     kAppUnavailable,
   };
 
-  // Called when lock screen apps profile is ready to be used. Calling this will
-  // cause app availability re-calculation.
-  void OnLockScreenProfileLoaded();
-
   // Called on UI thread when the lock screen app profile is initialized with
   // lock screen app assets. It completes the app installation to the lock
   // screen app profile.
@@ -114,7 +108,6 @@ class AppManagerImpl : public AppManager,
 
   Profile* primary_profile_ = nullptr;
   Profile* lock_screen_profile_ = nullptr;
-  LockScreenProfileCreator* lock_screen_profile_creator_ = nullptr;
 
   State state_ = State::kNotInitialized;
   std::string lock_screen_app_id_;
