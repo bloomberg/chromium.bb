@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/log/net_log_with_source.h"
 #include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 
 namespace net {
 class URLRequest;
@@ -100,7 +101,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       ServiceWorkerVersion* version,
       int event_finish_id,
       scoped_refptr<URLLoaderAssets> url_loader_assets,
-      ServiceWorkerStatusCode status,
+      blink::mojom::ServiceWorkerEventStatus status,
       base::Time dispatch_event_time);
 
   ServiceWorkerMetrics::EventType GetEventType() const;

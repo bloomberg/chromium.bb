@@ -42,6 +42,7 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -77,7 +78,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   using LegacyStatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
   using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
   using SimpleEventCallback =
-      base::Callback<void(ServiceWorkerStatusCode, base::Time)>;
+      base::Callback<void(blink::mojom::ServiceWorkerEventStatus, base::Time)>;
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
@@ -625,7 +626,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // mojom::ServiceWorkerEventDispatcher. Use CreateSimpleEventCallback() to
   // create a callback for a given |request_id|.
   void OnSimpleEventFinished(int request_id,
-                             ServiceWorkerStatusCode status,
+                             blink::mojom::ServiceWorkerEventStatus status,
                              base::Time dispatch_event_time);
 
   void OnGetClientFinished(int request_id,

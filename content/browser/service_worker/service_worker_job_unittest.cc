@@ -38,6 +38,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 using net::IOBuffer;
@@ -158,18 +159,6 @@ ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
     bool* called) {
   *called = false;
   return base::Bind(&SaveUnregistrationCallback, expected_status, called);
-}
-
-ServiceWorkerStatusCode EventResultToStatus(
-    blink::WebServiceWorkerEventResult result) {
-  switch (result) {
-    case blink::kWebServiceWorkerEventResultCompleted:
-      return SERVICE_WORKER_OK;
-    case blink::kWebServiceWorkerEventResultRejected:
-      return SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-  }
-  NOTREACHED() << "Got invalid result: " << result;
-  return SERVICE_WORKER_ERROR_FAILED;
 }
 
 // This is for the test of mojom::ServiceWorkerInstallEventMethods.
@@ -377,8 +366,8 @@ class RegisterForeignFetchTestHelper : public EmbeddedWorkerTestHelper {
           callback) override {
     RegisterForeignFetchScopes(std::move(client));
     dispatched_events()->push_back(Event::Install);
-    std::move(callback).Run(SERVICE_WORKER_OK, true /* has_fetch_handler */,
-                            base::Time::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                            true /* has_fetch_handler */, base::Time::Now());
   }
 };
 
@@ -1623,8 +1612,10 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
  public:
   EventCallbackHelper()
       : EmbeddedWorkerTestHelper(base::FilePath()),
-        install_event_result_(blink::kWebServiceWorkerEventResultCompleted),
-        activate_event_result_(blink::kWebServiceWorkerEventResultCompleted) {}
+        install_event_result_(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED),
+        activate_event_result_(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED) {}
 
   void OnInstallEvent(
       mojom::ServiceWorkerInstallEventMethodsAssociatedPtrInfo client,
@@ -1632,24 +1623,24 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
           callback) override {
     if (!install_callback_.is_null())
       install_callback_.Run();
-    std::move(callback).Run(EventResultToStatus(install_event_result_),
-                            has_fetch_handler_, base::Time::Now());
+    std::move(callback).Run(install_event_result_, has_fetch_handler_,
+                            base::Time::Now());
   }
 
   void OnActivateEvent(
       mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback) override {
-    std::move(callback).Run(EventResultToStatus(activate_event_result_),
-                            base::Time::Now());
+    std::move(callback).Run(activate_event_result_, base::Time::Now());
   }
 
   void set_install_callback(const base::Closure& callback) {
     install_callback_ = callback;
   }
-  void set_install_event_result(blink::WebServiceWorkerEventResult result) {
+  void set_install_event_result(blink::mojom::ServiceWorkerEventStatus result) {
     install_event_result_ = result;
   }
-  void set_activate_event_result(blink::WebServiceWorkerEventResult result) {
+  void set_activate_event_result(
+      blink::mojom::ServiceWorkerEventStatus result) {
     activate_event_result_ = result;
   }
   void set_has_fetch_handler(bool has_fetch_handler) {
@@ -1658,8 +1649,8 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
 
  private:
   base::Closure install_callback_;
-  blink::WebServiceWorkerEventResult install_event_result_;
-  blink::WebServiceWorkerEventResult activate_event_result_;
+  blink::mojom::ServiceWorkerEventStatus install_event_result_;
+  blink::mojom::ServiceWorkerEventStatus activate_event_result_;
   bool has_fetch_handler_ = true;
 };
 
@@ -1726,7 +1717,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
   helper->set_install_callback(
       base::Bind(&ServiceWorkerVersion::RemoveControllee,
                  old_version, host.get()));
-  helper->set_install_event_result(blink::kWebServiceWorkerEventResultRejected);
+  helper->set_install_event_result(
+      blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
 
   // Verify the registration was uninstalled.
@@ -1763,7 +1755,7 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
       base::Bind(&ServiceWorkerVersion::RemoveControllee,
                  old_version, host.get()));
   helper->set_activate_event_result(
-      blink::kWebServiceWorkerEventResultRejected);
+      blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
 
   // Verify the registration remains.

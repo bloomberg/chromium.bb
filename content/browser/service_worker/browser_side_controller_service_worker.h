@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 
 namespace content {
 
@@ -53,10 +54,10 @@ class BrowserSideControllerServiceWorker
                               ServiceWorkerStatusCode status);
   void DidDispatchFetchEvent(int internal_fetch_event_id,
                              int event_finish_id,
-                             ServiceWorkerStatusCode status,
+                             blink::mojom::ServiceWorkerEventStatus status,
                              base::Time dispatch_event_time);
   void CompleteDispatchFetchEvent(int internal_fetch_event_id,
-                                  ServiceWorkerStatusCode status,
+                                  blink::mojom::ServiceWorkerEventStatus status,
                                   base::Time dispatch_event_time);
 
   // Connected by the controllees.

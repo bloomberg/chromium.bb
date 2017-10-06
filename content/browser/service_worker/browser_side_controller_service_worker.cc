@@ -199,24 +199,27 @@ void BrowserSideControllerServiceWorker::DidFailToDispatchFetch(
     ServiceWorkerStatusCode status) {
   // TODO(kinuko): Should log the failures.
   DCHECK_NE(SERVICE_WORKER_OK, status);
-  CompleteDispatchFetchEvent(internal_fetch_event_id, status, base::Time());
+  CompleteDispatchFetchEvent(internal_fetch_event_id,
+                             blink::mojom::ServiceWorkerEventStatus::ABORTED,
+                             base::Time());
 }
 
 void BrowserSideControllerServiceWorker::DidDispatchFetchEvent(
     int internal_fetch_event_id,
     int event_finish_id,
-    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
-  receiver_version_->FinishRequest(event_finish_id,
-                                   status != SERVICE_WORKER_ERROR_ABORT,
-                                   dispatch_event_time);
+  receiver_version_->FinishRequest(
+      event_finish_id,
+      status != blink::mojom::ServiceWorkerEventStatus::ABORTED,
+      dispatch_event_time);
   CompleteDispatchFetchEvent(internal_fetch_event_id, status,
                              dispatch_event_time);
 }
 
 void BrowserSideControllerServiceWorker::CompleteDispatchFetchEvent(
     int internal_fetch_event_id,
-    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
   DVLOG(1) << "CompleteFetch [" << internal_fetch_event_id
            << "] status:" << status;
