@@ -10,6 +10,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Step that provides a single feature.
 @interface TestStep : NSObject<ApplicationStep>
 @property(nonatomic) BOOL hasRun;

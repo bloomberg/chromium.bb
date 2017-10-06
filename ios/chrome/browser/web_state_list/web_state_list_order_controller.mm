@@ -10,6 +10,10 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 WebStateListOrderController::WebStateListOrderController(
     WebStateList* web_state_list)
     : web_state_list_(web_state_list) {

@@ -5,6 +5,10 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface EmptyFile : NSObject
 @end
 

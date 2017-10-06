@@ -19,6 +19,10 @@
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class DistillerViewerTest : public dom_distiller::DistillerViewerInterface {

@@ -4,6 +4,10 @@
 
 #include "ios/chrome/browser/web/features.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Feature flag to control default value for mailto: URL rewriting feature.
 // Change the default value here to enable or disable this feature.
 const base::Feature kMailtoUrlRewriting{"MailtoUrlRewriting",

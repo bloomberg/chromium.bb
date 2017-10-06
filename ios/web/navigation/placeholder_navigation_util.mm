@@ -10,6 +10,10 @@
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 namespace placeholder_navigation_util {
 

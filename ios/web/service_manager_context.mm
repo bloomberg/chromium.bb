@@ -35,6 +35,10 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/service_manager.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 namespace {

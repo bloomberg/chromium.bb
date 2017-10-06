@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kTabHistoryPopupWillShowNotification =
     @"kTabHistoryPopupWillShowNotification";
 NSString* const kTabHistoryPopupWillHideNotification =

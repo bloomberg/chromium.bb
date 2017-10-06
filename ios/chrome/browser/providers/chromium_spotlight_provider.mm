@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/providers/chromium_spotlight_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 bool ChromiumSpotlightProvider::IsSpotlightEnabled() {
   return true;
 }

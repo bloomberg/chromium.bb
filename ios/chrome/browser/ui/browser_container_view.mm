@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation BrowserContainerView {
   // Weak reference to content view, so old _contentView can be removed from
   // superview when new one is added.

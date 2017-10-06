@@ -6,6 +6,10 @@
 
 #import "ios/clean/chrome/browser/ui/transitions/presenters/menu_presentation_controller.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface ZoomingMenuTransitionController ()
 @property(nonatomic, weak) id<ToolsMenuCommands> dispatcher;
 @end
