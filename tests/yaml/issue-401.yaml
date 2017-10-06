@@ -4,7 +4,7 @@ table: |
   display # 3456
   include tables/latinLetterDef6Dots.uti
   include tables/digits6Dots.uti
-  include tables/litDigits6Dots.uti
+  include tables/litdigits6Dots.uti
   include tables/braille-patterns.cti
   begcapsword        456
   endcapsword        56
