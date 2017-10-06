@@ -41,14 +41,15 @@ int GetUniqueIDInConstructor() {
 
 void RecursivelyGenerateFrameEntries(
     const ExplodedFrameState& state,
-    const std::vector<base::NullableString16>& referenced_files,
+    const std::vector<base::Optional<base::string16>>& referenced_files,
     NavigationEntryImpl::TreeNode* node) {
   node->frame_entry = new FrameNavigationEntry(
-      UTF16ToUTF8(state.target.string()), state.item_sequence_number,
-      state.document_sequence_number, nullptr, nullptr,
-      GURL(state.url_string.string()),
-      Referrer(GURL(state.referrer.string()), state.referrer_policy), "GET",
-      -1);
+      UTF16ToUTF8(state.target.value_or(base::string16())),
+      state.item_sequence_number, state.document_sequence_number, nullptr,
+      nullptr, GURL(state.url_string.value_or(base::string16())),
+      Referrer(GURL(state.referrer.value_or(base::string16())),
+               state.referrer_policy),
+      "GET", -1);
 
   // Set a single-frame PageState on the entry.
   ExplodedPageState page_state;
@@ -70,7 +71,7 @@ void RecursivelyGenerateFrameEntries(
   // Don't pass the file list to subframes, since that would result in multiple
   // copies of it ending up in the combined list in GetPageState (via
   // RecursivelyGenerateFrameState).
-  std::vector<base::NullableString16> empty_file_list;
+  std::vector<base::Optional<base::string16>> empty_file_list;
 
   for (const ExplodedFrameState& child_state : state.children) {
     node->children.push_back(
@@ -83,7 +84,7 @@ void RecursivelyGenerateFrameEntries(
 void RecursivelyGenerateFrameState(
     NavigationEntryImpl::TreeNode* node,
     ExplodedFrameState* state,
-    std::vector<base::NullableString16>* referenced_files) {
+    std::vector<base::Optional<base::string16>>* referenced_files) {
   // The FrameNavigationEntry's PageState contains just the ExplodedFrameState
   // for that particular frame.
   ExplodedPageState exploded_page_state;
@@ -101,7 +102,7 @@ void RecursivelyGenerateFrameState(
   referenced_files->reserve(referenced_files->size() +
                             exploded_page_state.referenced_files.size());
   for (auto& file : exploded_page_state.referenced_files)
-    referenced_files->push_back(file);
+    referenced_files->emplace_back(file);
 
   state->children.resize(node->children.size());
   for (size_t i = 0; i < node->children.size(); ++i) {
@@ -877,7 +878,8 @@ std::map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
       if (DecodePageState(child->frame_entry->page_state().ToEncodedData(),
                           &exploded_page_state)) {
         ExplodedFrameState frame_state = exploded_page_state.top;
-        if (UTF16ToUTF8(frame_state.url_string.string()) == url::kAboutBlankURL)
+        if (UTF16ToUTF8(frame_state.url_string.value_or(base::string16())) ==
+            url::kAboutBlankURL)
           is_about_blank = true;
       }
 

@@ -98,8 +98,7 @@ class TestFrameAdapter : public UniqueNameHelper::FrameAdapter {
   // FrameState children is guaranteed to match the order of TestFrameAdapter
   // children.
   void PopulateLegacyFrameState(ExplodedFrameState* frame_state) const {
-    frame_state->target =
-        base::NullableString16(base::UTF8ToUTF16(GetLegacyName()), false);
+    frame_state->target = base::UTF8ToUTF16(GetLegacyName());
     frame_state->children.resize(children_.size());
     for (size_t i = 0; i < children_.size(); ++i)
       children_[i]->PopulateLegacyFrameState(&frame_state->children[i]);
@@ -108,7 +107,8 @@ class TestFrameAdapter : public UniqueNameHelper::FrameAdapter {
   // Recursively verify that FrameState and its children have matching unique
   // names to this TestFrameAdapter.
   void VerifyUpdatedFrameState(const ExplodedFrameState& frame_state) const {
-    EXPECT_EQ(GetUniqueName(), base::UTF16ToUTF8(frame_state.target.string()));
+    EXPECT_EQ(GetUniqueName(),
+              base::UTF16ToUTF8(frame_state.target.value_or(base::string16())));
 
     ASSERT_EQ(children_.size(), frame_state.children.size());
     for (size_t i = 0; i < children_.size(); ++i) {

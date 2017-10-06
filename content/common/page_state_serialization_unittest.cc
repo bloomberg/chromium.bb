@@ -21,11 +21,6 @@
 namespace content {
 namespace {
 
-base::NullableString16 NS16(const char* s) {
-  return s ? base::NullableString16(base::ASCIIToUTF16(s), false) :
-             base::NullableString16();
-}
-
 //-----------------------------------------------------------------------------
 
 template <typename T>
@@ -99,15 +94,17 @@ class PageStateSerializationTest : public testing::Test {
  public:
   void PopulateFrameState(ExplodedFrameState* frame_state) {
     // Invent some data for the various fields.
-    frame_state->url_string = NS16("http://dev.chromium.org/");
-    frame_state->referrer = NS16("https://www.google.com/search?q=dev.chromium.org");
+    frame_state->url_string = base::UTF8ToUTF16("http://dev.chromium.org/");
+    frame_state->referrer =
+        base::UTF8ToUTF16("https://www.google.com/search?q=dev.chromium.org");
     frame_state->referrer_policy = blink::kWebReferrerPolicyAlways;
-    frame_state->target = NS16("foo");
-    frame_state->state_object = NS16(NULL);
-    frame_state->document_state.push_back(NS16("1"));
-    frame_state->document_state.push_back(NS16("q"));
-    frame_state->document_state.push_back(NS16("text"));
-    frame_state->document_state.push_back(NS16("dev.chromium.org"));
+    frame_state->target = base::UTF8ToUTF16("foo");
+    frame_state->state_object = base::nullopt;
+    frame_state->document_state.push_back(base::UTF8ToUTF16("1"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("q"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("text"));
+    frame_state->document_state.push_back(
+        base::UTF8ToUTF16("dev.chromium.org"));
     frame_state->scroll_restoration_type =
         blink::kWebHistoryScrollRestorationManual;
     frame_state->visual_viewport_scroll_offset = gfx::PointF(10, 15);
@@ -117,12 +114,13 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->page_scale_factor = 2.0;
   }
 
-  void PopulateHttpBody(ExplodedHttpBody* http_body,
-                        std::vector<base::NullableString16>* referenced_files) {
+  void PopulateHttpBody(
+      ExplodedHttpBody* http_body,
+      std::vector<base::Optional<base::string16>>* referenced_files) {
     http_body->request_body = new ResourceRequestBody();
     http_body->request_body->set_identifier(12345);
     http_body->contains_passwords = false;
-    http_body->http_content_type = NS16("text/foo");
+    http_body->http_content_type = base::UTF8ToUTF16("text/foo");
 
     std::string test_body("foo");
     http_body->request_body->AppendBytes(test_body.data(), test_body.size());
@@ -131,18 +129,17 @@ class PageStateSerializationTest : public testing::Test {
     http_body->request_body->AppendFileRange(base::FilePath(path), 100, 1024,
                                              base::Time::FromDoubleT(9999.0));
 
-    referenced_files->push_back(
-        base::NullableString16(path.AsUTF16Unsafe(), false));
+    referenced_files->emplace_back(path.AsUTF16Unsafe());
   }
 
   void PopulateFrameStateForBackwardsCompatTest(
       ExplodedFrameState* frame_state,
       bool is_child) {
-    frame_state->url_string = NS16("http://chromium.org/");
-    frame_state->referrer = NS16("http://google.com/");
+    frame_state->url_string = base::UTF8ToUTF16("http://chromium.org/");
+    frame_state->referrer = base::UTF8ToUTF16("http://google.com/");
     frame_state->referrer_policy = blink::kWebReferrerPolicyDefault;
     if (!is_child)
-      frame_state->target = NS16("target");
+      frame_state->target = base::UTF8ToUTF16("target");
     frame_state->scroll_restoration_type =
         blink::kWebHistoryScrollRestorationAuto;
     frame_state->visual_viewport_scroll_offset = gfx::PointF(-1, -1);
@@ -151,18 +148,18 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->document_sequence_number = 456;
     frame_state->page_scale_factor = 2.0f;
 
-    frame_state->document_state.push_back(
-        NS16("\n\r?% WebKit serialized form state version 8 \n\r=&"));
-    frame_state->document_state.push_back(NS16("form key"));
-    frame_state->document_state.push_back(NS16("1"));
-    frame_state->document_state.push_back(NS16("foo"));
-    frame_state->document_state.push_back(NS16("file"));
-    frame_state->document_state.push_back(NS16("2"));
-    frame_state->document_state.push_back(NS16("file.txt"));
-    frame_state->document_state.push_back(NS16("displayName"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16(
+        "\n\r?% WebKit serialized form state version 8 \n\r=&"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("form key"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("1"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("foo"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("file"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("2"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("file.txt"));
+    frame_state->document_state.push_back(base::UTF8ToUTF16("displayName"));
 
     if (!is_child) {
-      frame_state->http_body.http_content_type = NS16("foo/bar");
+      frame_state->http_body.http_content_type = base::UTF8ToUTF16("foo/bar");
       frame_state->http_body.request_body = new ResourceRequestBody();
       frame_state->http_body.request_body->set_identifier(789);
 
@@ -185,7 +182,7 @@ class PageStateSerializationTest : public testing::Test {
   }
 
   void PopulatePageStateForBackwardsCompatTest(ExplodedPageState* page_state) {
-    page_state->referenced_files.push_back(NS16("file.txt"));
+    page_state->referenced_files.push_back(base::UTF8ToUTF16("file.txt"));
     PopulateFrameStateForBackwardsCompatTest(&page_state->top, false);
   }
 

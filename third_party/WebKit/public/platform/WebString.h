@@ -31,12 +31,13 @@
 #ifndef WebString_h
 #define WebString_h
 
+#include <string>
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include "base/optional.h"
 #include "base/strings/latin1_string_conversions.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include <string>
 
 #if INSIDE_BLINK
 #include "platform/wtf/Forward.h"
@@ -56,6 +57,7 @@ namespace blink {
 // * WebString::FromUTF8(const std::string& utf8)
 // * WebString::FromUTF16(const base::string16& utf16)
 // * WebString::FromUTF16(const base::NullableString16& utf16)
+// * WebString::FromUTF16(const base::Optional<base::string16>& utf16)
 //
 // Similarly, use either of following methods to convert WebString to
 // ASCII, Latin1, UTF-8 or UTF-16:
@@ -64,7 +66,8 @@ namespace blink {
 // * webstring.Latin1()
 // * webstring.Utf8()
 // * webstring.Utf16()
-// * WebString::toNullableString16(webstring)
+// * WebString::ToNullableString16(webstring)
+// * WebString::ToOptionalString16(webstring)
 //
 // Note that if you need to convert the UTF8 string converted from WebString
 // back to WebString with FromUTF8() you may want to specify Strict
@@ -140,8 +143,15 @@ class WebString {
   BLINK_PLATFORM_EXPORT static WebString FromUTF16(
       const base::NullableString16&);
 
+  BLINK_PLATFORM_EXPORT static WebString FromUTF16(
+      const base::Optional<base::string16>&);
+
   static base::NullableString16 ToNullableString16(const WebString& s) {
-    return base::NullableString16(s.Utf16(), s.IsNull());
+    return base::NullableString16(ToOptionalString16(s));
+  }
+
+  static base::Optional<base::string16> ToOptionalString16(const WebString& s) {
+    return s.IsNull() ? base::nullopt : base::make_optional(s.Utf16());
   }
 
   BLINK_PLATFORM_EXPORT std::string Latin1() const;
