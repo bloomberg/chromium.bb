@@ -100,7 +100,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(mManagementDelegate.getOverlayContentDelegate(),
-                new PanelProgressObserver(), mActivity);
+                new PanelProgressObserver(), mActivity, getBarHeight());
     }
 
     /**

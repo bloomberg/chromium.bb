@@ -410,7 +410,7 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return The height of the Bar.
+     * @return The height of the Bar in dp.
      */
     public float getBarHeight() {
         return mBarHeight;

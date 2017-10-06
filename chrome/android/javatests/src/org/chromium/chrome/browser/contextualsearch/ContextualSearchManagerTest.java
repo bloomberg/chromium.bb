@@ -232,6 +232,13 @@ public class ContextualSearchManagerTest {
     }
 
     /**
+     * @return The {@link ContextualSearchPanel}.
+     */
+    ContextualSearchPanel getPanel() {
+        return mPanel;
+    }
+
+    /**
      * Sets the online status and reloads the current Tab with our test URL.
      * @param isOnline Whether to go online.
      * @throws InterruptedException
