@@ -5,19 +5,19 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_RESAMPLER_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_RESAMPLER_H_
 
-#include <map>
-
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_debug_recording_helper.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager.h"
-#include "media/audio/audio_output_dispatcher_impl.h"
+#include "media/audio/audio_output_dispatcher.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
 
+class AudioManager;
+class AudioOutputDispatcherImpl;
 class OnMoreDataConverter;
 
 // AudioOutputResampler is a browser-side resampling and buffering solution
@@ -57,22 +57,22 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
 
  private:
   using CallbackMap =
-      std::map<AudioOutputProxy*, std::unique_ptr<OnMoreDataConverter>>;
+      base::flat_map<AudioOutputProxy*, std::unique_ptr<OnMoreDataConverter>>;
 
-  // Converts low latency based output parameters into high latency
-  // appropriate output parameters in error situations.
-  void SetupFallbackParams();
-
-  // Used to reinitialize |dispatcher_|.
+  // Used to reinitialize |dispatcher_| upon timeout if there are no open
+  // streams.
   void Reinitialize();
 
   // Used to initialize |dispatcher_|.
-  void Initialize();
+  std::unique_ptr<AudioOutputDispatcherImpl> MakeDispatcher(
+      const std::string& output_device_id,
+      const AudioParameters& params);
 
   // Stops the stream corresponding to the |item| in |callbacks_|.
   void StopStreamInternal(const CallbackMap::value_type& item);
 
   // Dispatcher to proxy all AudioOutputDispatcher calls too.
+  // Lazily initialized on a first stream open request.
   std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_;
 
   // Map of outstanding OnMoreDataConverter objects.  A new object is created
@@ -80,7 +80,10 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   CallbackMap callbacks_;
 
   // Used by AudioOutputDispatcherImpl; kept so we can reinitialize on the fly.
-  base::TimeDelta close_delay_;
+  const base::TimeDelta close_delay_;
+
+  // Source AudioParameters.
+  const AudioParameters input_params_;
 
   // AudioParameters used to setup the output stream; changed upon fallback.
   AudioParameters output_params_;
@@ -88,9 +91,8 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   // The original AudioParameters we were constructed with.
   const AudioParameters original_output_params_;
 
-  // Whether any streams have been opened through |dispatcher_|, if so we can't
-  // fallback on future OpenStream() failures.
-  bool streams_opened_;
+  // Output device id.
+  const std::string device_id_;
 
   // The reinitialization timer provides a way to recover from temporary failure
   // states by clearing the dispatcher if all proxies have been closed and none

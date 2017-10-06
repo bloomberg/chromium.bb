@@ -15,22 +15,19 @@
 
 #include <stddef.h>
 
-#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_logging.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
-
-class AudioOutputProxy;
+class AudioLog;
 
 class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
  public:
@@ -39,7 +36,7 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   AudioOutputDispatcherImpl(AudioManager* audio_manager,
                             const AudioParameters& params,
                             const std::string& output_device_id,
-                            const base::TimeDelta& close_delay);
+                            base::TimeDelta close_delay);
   ~AudioOutputDispatcherImpl() override;
 
   // AudioOutputDispatcher implementation.
@@ -68,6 +65,12 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
 
   void StopPhysicalStream(AudioOutputStream* stream);
 
+  // Output parameters.
+  const AudioParameters params_;
+
+  // Output device id.
+  const std::string device_id_;
+
   size_t idle_proxies_;
   std::vector<AudioOutputStream*> idle_streams_;
 
@@ -76,11 +79,11 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // CloseIdleStreams().
   base::DelayTimer close_timer_;
 
-  typedef std::map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
+  typedef base::flat_map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   AudioStreamMap proxy_to_physical_map_;
 
   std::unique_ptr<AudioLog> audio_log_;
-  typedef std::map<AudioOutputStream*, int> AudioStreamIDMap;
+  typedef base::flat_map<AudioOutputStream*, int> AudioStreamIDMap;
   AudioStreamIDMap audio_stream_ids_;
   int audio_stream_id_;
 
