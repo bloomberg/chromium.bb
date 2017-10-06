@@ -167,8 +167,8 @@ void Context::SetGpuControlClient(gpu::GpuControlClient*) {
   // The client is not currently called, so don't store it.
 }
 
-gpu::Capabilities Context::GetCapabilities() {
-  return decoder_->GetCapabilities();
+const gpu::Capabilities& Context::GetCapabilities() const {
+  return capabilities_;
 }
 
 int32_t Context::CreateImage(ClientBuffer buffer,
@@ -315,6 +315,9 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
     decoder->Destroy(true);
     return false;
   }
+  // Client side Capabilities queries return reference, service side return
+  // value. Here two sides are joined together.
+  capabilities_ = decoder->GetCapabilities();
 
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer(
       new gpu::TransferBuffer(gles2_cmd_helper.get()));

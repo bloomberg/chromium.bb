@@ -49,7 +49,7 @@ class InProcessContextProvider : public viz::ContextProvider {
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
-  gpu::Capabilities ContextCapabilities() override;
+  const gpu::Capabilities& ContextCapabilities() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;

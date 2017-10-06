@@ -27,6 +27,7 @@
 namespace gpu {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
+struct GpuFeatureInfo;
 class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
@@ -74,13 +75,16 @@ class ContextProviderCommandBuffer
   viz::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
-  gpu::Capabilities ContextCapabilities() override;
+  const gpu::Capabilities& ContextCapabilities() const override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
+
+  // TODO(zmo): Declare it in parent class ContextProvider if needs arise.
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const;
 
   // Set the default task runner for command buffers to use for handling IPCs.
   // If not specified, this will be the ThreadTaskRunner for the thread on

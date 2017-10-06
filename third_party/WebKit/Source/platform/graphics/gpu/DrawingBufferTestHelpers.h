@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
@@ -41,7 +42,12 @@ class WebGraphicsContext3DProviderForTests
   // Not used by WebGL code.
   GrContext* GetGrContext() override { return nullptr; }
   bool BindToCurrentThread() override { return false; }
-  gpu::Capabilities GetCapabilities() override { return gpu::Capabilities(); }
+  const gpu::Capabilities& GetCapabilities() const override {
+    return capabilities_;
+  }
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
+    return gpu_feature_info_;
+  }
   void SetLostContextCallback(const base::Closure&) {}
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
@@ -49,6 +55,8 @@ class WebGraphicsContext3DProviderForTests
 
  private:
   std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
+  gpu::Capabilities capabilities_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
 // The target to use when binding a texture to a Chromium image.

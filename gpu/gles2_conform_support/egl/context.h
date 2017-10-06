@@ -59,7 +59,7 @@ class Context : public base::RefCountedThreadSafe<Context>,
 
   // GpuControl implementation.
   void SetGpuControlClient(gpu::GpuControlClient*) override;
-  gpu::Capabilities GetCapabilities() override;
+  const gpu::Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
                       size_t height,
@@ -127,6 +127,8 @@ class Context : public base::RefCountedThreadSafe<Context>,
   scoped_refptr<gl::GLContext> gl_context_;
 
   std::unique_ptr<gpu::gles2::GLES2Interface> client_gl_context_;
+
+  gpu::Capabilities capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

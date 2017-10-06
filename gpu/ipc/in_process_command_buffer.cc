@@ -736,7 +736,7 @@ void InProcessCommandBuffer::SetGpuControlClient(GpuControlClient* client) {
   gpu_control_client_ = client;
 }
 
-Capabilities InProcessCommandBuffer::GetCapabilities() {
+const Capabilities& InProcessCommandBuffer::GetCapabilities() const {
   return capabilities_;
 }
 

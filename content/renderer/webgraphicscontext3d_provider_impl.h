@@ -34,7 +34,8 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   bool BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   GrContext* GetGrContext() override;
-  gpu::Capabilities GetCapabilities() override;
+  const gpu::Capabilities& GetCapabilities() const override;
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   bool IsSoftwareRendering() const override;
   void SetLostContextCallback(const base::Closure&) override;
   void SetErrorMessageCallback(

@@ -119,7 +119,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // GpuControl implementation:
   // NOTE: The GpuControlClient will be called on the client thread.
   void SetGpuControlClient(GpuControlClient*) override;
-  Capabilities GetCapabilities() override;
+  const Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
                       size_t height,

@@ -111,7 +111,7 @@ void InProcessContextProvider::DetachFromThread() {
   context_thread_checker_.DetachFromThread();
 }
 
-gpu::Capabilities InProcessContextProvider::ContextCapabilities() {
+const gpu::Capabilities& InProcessContextProvider::ContextCapabilities() const {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   return context_->GetImplementation()->capabilities();
 }

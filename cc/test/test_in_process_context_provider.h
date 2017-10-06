@@ -46,7 +46,7 @@ class TestInProcessContextProvider : public viz::ContextProvider {
   viz::ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
-  gpu::Capabilities ContextCapabilities() override;
+  const gpu::Capabilities& ContextCapabilities() const override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
   void SetSupportTextureNorm16(bool support) {
@@ -65,6 +65,7 @@ class TestInProcessContextProvider : public viz::ContextProvider {
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
   base::Lock context_lock_;
   bool capabilities_texture_norm16_ = false;
+  gpu::Capabilities capabilities_;
 };
 
 }  // namespace cc

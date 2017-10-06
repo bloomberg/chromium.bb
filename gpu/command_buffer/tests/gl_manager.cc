@@ -374,6 +374,9 @@ void GLManager::InitializeWithWorkaroundsImpl(
                             ::gpu::gles2::DisallowedFeatures(), attribs)) {
     return;
   }
+  // Client side Capabilities queries return reference, service side return
+  // value. Here two sides are joined together.
+  capabilities_ = decoder_->GetCapabilities();
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gles2::GLES2CmdHelper(command_buffer_.get()));
@@ -464,8 +467,8 @@ void GLManager::SetGpuControlClient(GpuControlClient*) {
   // The client is not currently called, so don't store it.
 }
 
-Capabilities GLManager::GetCapabilities() {
-  return decoder_->GetCapabilities();
+const Capabilities& GLManager::GetCapabilities() const {
+  return capabilities_;
 }
 
 int32_t GLManager::CreateImage(ClientBuffer buffer,
