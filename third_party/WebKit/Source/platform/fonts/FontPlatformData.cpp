@@ -43,6 +43,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
       text_size_(0),
       synthetic_bold_(false),
       synthetic_italic_(false),
+      avoid_embedded_bitmaps_(false),
       orientation_(FontOrientation::kHorizontal),
       is_hash_table_deleted_value_(true)
 #if defined(OS_WIN)
@@ -57,6 +58,7 @@ FontPlatformData::FontPlatformData()
       text_size_(0),
       synthetic_bold_(false),
       synthetic_italic_(false),
+      avoid_embedded_bitmaps_(false),
       orientation_(FontOrientation::kHorizontal),
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
@@ -74,6 +76,7 @@ FontPlatformData::FontPlatformData(float size,
       text_size_(size),
       synthetic_bold_(synthetic_bold),
       synthetic_italic_(synthetic_italic),
+      avoid_embedded_bitmaps_(false),
       orientation_(orientation),
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
@@ -91,6 +94,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       text_size_(source.text_size_),
       synthetic_bold_(source.synthetic_bold_),
       synthetic_italic_(source.synthetic_italic_),
+      avoid_embedded_bitmaps_(source.avoid_embedded_bitmaps_),
       orientation_(source.orientation_),
 #if defined(OS_LINUX) || defined(OS_ANDROID)
       style_(source.style_),
@@ -112,6 +116,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
       text_size_(text_size),
       synthetic_bold_(src.synthetic_bold_),
       synthetic_italic_(src.synthetic_italic_),
+      avoid_embedded_bitmaps_(false),
       orientation_(src.orientation_),
 #if defined(OS_LINUX) || defined(OS_ANDROID)
       style_(FontRenderStyle::QuerySystem(family_,
@@ -143,6 +148,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> tf,
       text_size_(text_size),
       synthetic_bold_(synthetic_bold),
       synthetic_italic_(synthetic_italic),
+      avoid_embedded_bitmaps_(false),
       orientation_(orientation),
 #if defined(OS_LINUX) || defined(OS_ANDROID)
       style_(FontRenderStyle::QuerySystem(family_,
@@ -187,6 +193,7 @@ const FontPlatformData& FontPlatformData::operator=(
   text_size_ = other.text_size_;
   synthetic_bold_ = other.synthetic_bold_;
   synthetic_italic_ = other.synthetic_italic_;
+  avoid_embedded_bitmaps_ = other.avoid_embedded_bitmaps_;
   harf_buzz_face_ = nullptr;
   orientation_ = other.orientation_;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -212,7 +219,8 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const {
   return typefaces_equal && text_size_ == a.text_size_ &&
          is_hash_table_deleted_value_ == a.is_hash_table_deleted_value_ &&
          synthetic_bold_ == a.synthetic_bold_ &&
-         synthetic_italic_ == a.synthetic_italic_
+         synthetic_italic_ == a.synthetic_italic_ &&
+         avoid_embedded_bitmaps_ == a.avoid_embedded_bitmaps_
 #if defined(OS_LINUX) || defined(OS_ANDROID)
          && style_ == a.style_
 #endif
