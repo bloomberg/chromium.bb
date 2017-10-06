@@ -175,6 +175,7 @@ template("internal_jumbo_target") {
       deps += [ ":" + merge_action_name ]
       variables_to_not_forward += [ "sources" ]
       assert(jumbo_files != [])
+      set_sources_assignment_filter([])  # Prefiltered.
       sources = jumbo_files + excluded_sources
 
       # Need to keep the headers in sources so that dependency checks
