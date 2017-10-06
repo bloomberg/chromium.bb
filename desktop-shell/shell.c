@@ -2585,6 +2585,19 @@ desktop_surface_committed(struct weston_desktop_surface *desktop_surface,
 }
 
 static void
+get_maximized_size(struct shell_surface *shsurf, int32_t *width, int32_t *height)
+{
+	struct desktop_shell *shell;
+	pixman_rectangle32_t area;
+
+	shell = shell_surface_get_shell(shsurf);
+	get_output_work_area(shell, shsurf->output, &area);
+
+	*width = area.width;
+	*height = area.height;
+}
+
+static void
 set_fullscreen(struct shell_surface *shsurf, bool fullscreen,
 	       struct weston_output *output)
 {
@@ -2689,8 +2702,6 @@ set_maximized(struct shell_surface *shsurf, bool maximized)
 
 	if (maximized) {
 		struct weston_output *output;
-		struct desktop_shell *shell;
-		pixman_rectangle32_t area;
 
 		if (!weston_surface_is_mapped(surface))
 			output = get_focused_output(surface->compositor);
@@ -2699,11 +2710,7 @@ set_maximized(struct shell_surface *shsurf, bool maximized)
 
 		shell_surface_set_output(shsurf, output);
 
-		shell = shell_surface_get_shell(shsurf);
-		get_output_work_area(shell, shsurf->output, &area);
-
-		width = area.width;
-		height = area.height;
+		get_maximized_size(shsurf, &width, &height);
 	}
 	weston_desktop_surface_set_maximized(desktop_surface, maximized);
 	weston_desktop_surface_set_size(desktop_surface, width, height);
