@@ -25,12 +25,13 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
   allocator_dump->AddScalar(MemoryAllocatorDump::kNameSize,
                             MemoryAllocatorDump::kUnitsBytes, 10);
 
-  process_dumps.emplace(0, std::move(pmd));
+  process_dumps.emplace(1, std::move(pmd));
 
   auto global_dump = ComputeMemoryGraph(std::move(process_dumps));
+
   ASSERT_EQ(1u, global_dump->process_dump_graphs().size());
 
-  auto id_to_dump_it = global_dump->process_dump_graphs().begin();
+  auto id_to_dump_it = global_dump->process_dump_graphs().find(1);
   auto* first_child = id_to_dump_it->second->FindNode("test1");
   ASSERT_TRUE(first_child != nullptr);
 
