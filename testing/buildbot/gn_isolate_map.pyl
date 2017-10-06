@@ -939,7 +939,7 @@
     ],
   },
   "telemetry_perf_tests_new": {
-    "label": "//chrome/test:telemetry_perf_tests",
+    "label": "//chrome/test:telemetry_perf_tests_new",
     "type": "script",
     "script": "//testing/scripts/run_multiple_telemetry_benchmarks_as_googletest.py",
     "args": [
