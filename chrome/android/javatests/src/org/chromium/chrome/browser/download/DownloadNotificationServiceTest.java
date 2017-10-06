@@ -13,14 +13,8 @@ import android.os.IBinder;
 import android.support.test.filters.SmallTest;
 import android.test.ServiceTestCase;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -38,7 +32,6 @@ import java.util.UUID;
 /**
  * Tests of {@link DownloadNotificationService}.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
 public class DownloadNotificationServiceTest
         extends ServiceTestCase<MockDownloadNotificationService> {
     private static class MockDownloadManagerService extends DownloadManagerService {
@@ -113,8 +106,7 @@ public class DownloadNotificationServiceTest
     }
 
     @Override
-    @After
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.remove(DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
@@ -157,7 +149,6 @@ public class DownloadNotificationServiceTest
      * Tests that creating the service without launching chrome will do nothing if there is no
      * ongoing download.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testPausingWithoutOngoingDownloads() {
@@ -169,21 +160,19 @@ public class DownloadNotificationServiceTest
                 getService().updateNotificationsForShutdown();
             }
         });
-        Assert.assertTrue(getService().isPaused());
-        Assert.assertTrue(getService().getNotificationIds().isEmpty());
+        assertTrue(getService().isPaused());
+        assertTrue(getService().getNotificationIds().isEmpty());
     }
 
     /**
      * Tests that download resumption task is scheduled when notification service is started
      * without any download action.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testResumptionScheduledWithoutDownloadOperationIntent() throws Exception {
         MockDownloadResumptionScheduler scheduler =
-                new MockDownloadResumptionScheduler(
-                        getSystemContext().getApplicationContext());
+                new MockDownloadResumptionScheduler(getSystemContext().getApplicationContext());
         DownloadResumptionScheduler.setDownloadResumptionScheduler(scheduler);
         setupService();
         Set<String> notifications = new HashSet<>();
@@ -195,14 +184,13 @@ public class DownloadNotificationServiceTest
         editor.apply();
         startNotificationService();
         shutdownService();
-        Assert.assertTrue(scheduler.mScheduled);
+        assertTrue(scheduler.mScheduled);
     }
 
     /**
      * Tests that download resumption task is not scheduled when notification service is started
      * with a download action.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testResumptionNotScheduledWithDownloadOperationIntent() {
@@ -218,14 +206,13 @@ public class DownloadNotificationServiceTest
                 startService(intent);
             }
         });
-        Assert.assertFalse(scheduler.mScheduled);
+        assertFalse(scheduler.mScheduled);
     }
 
     /**
      * Tests that download resumption task is not scheduled when there is no auto resumable
      * download in SharedPreferences.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testResumptionNotScheduledWithoutAutoResumableDownload() throws Exception {
@@ -241,13 +228,12 @@ public class DownloadNotificationServiceTest
                 DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
-        Assert.assertFalse(scheduler.mScheduled);
+        assertFalse(scheduler.mScheduled);
     }
 
     /**
      * Tests that creating the service without launching chrome will pause all ongoing downloads.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testPausingWithOngoingDownloads() {
@@ -269,18 +255,17 @@ public class DownloadNotificationServiceTest
                 getService().updateNotificationsForShutdown();
             }
         });
-        Assert.assertTrue(getService().isPaused());
-        Assert.assertEquals(2, getService().getNotificationIds().size());
-        Assert.assertTrue(getService().getNotificationIds().contains(1));
-        Assert.assertTrue(getService().getNotificationIds().contains(2));
-        Assert.assertTrue(sharedPrefs.contains(
+        assertTrue(getService().isPaused());
+        assertEquals(2, getService().getNotificationIds().size());
+        assertTrue(getService().getNotificationIds().contains(1));
+        assertTrue(getService().getNotificationIds().contains(2));
+        assertTrue(sharedPrefs.contains(
                 DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS));
     }
 
     /**
      * Tests adding and cancelling notifications.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testAddingAndCancelingNotifications() {
@@ -304,52 +289,51 @@ public class DownloadNotificationServiceTest
                 getService().updateNotificationsForShutdown();
             }
         });
-        Assert.assertEquals(2, getService().getNotificationIds().size());
-        Assert.assertTrue(getService().getNotificationIds().contains(3));
-        Assert.assertTrue(getService().getNotificationIds().contains(4));
+        assertEquals(2, getService().getNotificationIds().size());
+        assertTrue(getService().getNotificationIds().contains(3));
+        assertTrue(getService().getNotificationIds().contains(4));
 
         DownloadNotificationService service = bindNotificationService();
         ContentId id3 = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id3, "test",
                 new Progress(1, 100L, OfflineItemProgressUnit.PERCENTAGE), 100L, 1L, 1L, true, true,
                 false, null);
-        Assert.assertEquals(3, getService().getNotificationIds().size());
+        assertEquals(3, getService().getNotificationIds().size());
         int lastNotificationId = getService().getLastAddedNotificationId();
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
-        Assert.assertEquals(3, entries.size());
+        assertEquals(3, entries.size());
 
         ContentId id1 = LegacyHelpers.buildLegacyContentId(false, guid1);
         service.notifyDownloadSuccessful(
                 id1, "/path/to/success", "success", 100L, false, false, true, null, null, null);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
-        Assert.assertEquals(2, entries.size());
+        assertEquals(2, entries.size());
 
         ContentId id2 = LegacyHelpers.buildLegacyContentId(false, guid2);
         service.notifyDownloadFailed(id2, "failed", null);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
-        Assert.assertEquals(1, entries.size());
+        assertEquals(1, entries.size());
 
         service.notifyDownloadCanceled(id3);
-        Assert.assertEquals(2, getService().getNotificationIds().size());
-        Assert.assertFalse(getService().getNotificationIds().contains(lastNotificationId));
+        assertEquals(2, getService().getNotificationIds().size());
+        assertFalse(getService().getNotificationIds().contains(lastNotificationId));
 
         ContentId id4 = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadSuccessful(
                 id4, "/path/to/success", "success", 100L, false, false, true, null, null, null);
-        Assert.assertEquals(3, getService().getNotificationIds().size());
+        assertEquals(3, getService().getNotificationIds().size());
         int nextNotificationId = getService().getLastAddedNotificationId();
         service.cancelNotification(nextNotificationId, id4);
-        Assert.assertEquals(2, getService().getNotificationIds().size());
-        Assert.assertFalse(getService().getNotificationIds().contains(nextNotificationId));
+        assertEquals(2, getService().getNotificationIds().size());
+        assertFalse(getService().getNotificationIds().contains(nextNotificationId));
     }
 
     /**
      * Tests that notification is updated if download success comes without any prior progress.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -360,13 +344,12 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadSuccessful(
                 id, "/path/to/test", "test", 100L, false, false, true, null, null, null);
-        Assert.assertEquals(1, getService().getNotificationIds().size());
+        assertEquals(1, getService().getNotificationIds().size());
     }
 
     /**
      * Tests resume all pending downloads. Only auto resumable downloads can resume.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -402,20 +385,19 @@ public class DownloadNotificationServiceTest
         });
         DownloadManagerService.setIsNetworkMeteredForTest(true);
         resumeAllDownloads(service);
-        Assert.assertEquals(1, manager.mDownloads.size());
-        Assert.assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid2);
+        assertEquals(1, manager.mDownloads.size());
+        assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid2);
 
         manager.mDownloads.clear();
         DownloadManagerService.setIsNetworkMeteredForTest(false);
         resumeAllDownloads(service);
-        Assert.assertEquals(1, manager.mDownloads.size());
-        Assert.assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid1);
+        assertEquals(1, manager.mDownloads.size());
+        assertEquals(manager.mDownloads.get(0).getDownloadInfo().getDownloadGuid(), guid1);
     }
 
     /**
      * Tests incognito download fails when browser gets killed.
      */
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testIncognitoDownloadCanceledOnServiceShutdown() throws Exception {
@@ -439,12 +421,11 @@ public class DownloadNotificationServiceTest
             }
         });
 
-        Assert.assertTrue(getService().isPaused());
-        Assert.assertFalse(sharedPrefs.contains(
+        assertTrue(getService().isPaused());
+        assertFalse(sharedPrefs.contains(
                 DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS));
     }
 
-    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -459,13 +440,12 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadSuccessful(
                 id, "/path/to/test", "test", 100L, false, false, true, null, null, null);
-        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+        assertTrue(service.hideSummaryNotificationIfNecessary(-1));
     }
 
-    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -480,12 +460,11 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadFailed(id, "/path/to/test", null);
-        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+        assertTrue(service.hideSummaryNotificationIfNecessary(-1));
     }
 
-    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -500,12 +479,11 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadCanceled(id);
-        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+        assertTrue(service.hideSummaryNotificationIfNecessary(-1));
     }
 
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testServiceWillNotStopOnInterruptedDownload() throws Exception {
@@ -519,12 +497,11 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadPaused(id, "/path/to/test", true, true, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
     }
 
-    @Test
     @SmallTest
     @Feature({"Download"})
     public void testServiceWillNotStopOnPausedDownload() throws Exception {
@@ -538,12 +515,11 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadPaused(id, "/path/to/test", true, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
     }
 
-    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -562,14 +538,14 @@ public class DownloadNotificationServiceTest
                 10L, 1000L, 10L, false, false, false, null);
         service.notifyDownloadProgress(id2, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadPaused(id1, "/path/to/test", true, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadSuccessful(
                 id1, "/path/to/test", "test", 100L, false, false, true, null, null, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        assertFalse(service.hideSummaryNotificationIfNecessary(-1));
         service.notifyDownloadSuccessful(
                 id2, "/path/to/test", "test", 100L, false, false, true, null, null, null);
-        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+        assertTrue(service.hideSummaryNotificationIfNecessary(-1));
     }
 }
