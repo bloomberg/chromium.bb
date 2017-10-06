@@ -797,13 +797,6 @@ void SingleThreadProxy::ScheduledActionPerformImplSideInvalidation() {
   NotifyReadyToActivate();
 }
 
-void SingleThreadProxy::UpdateBrowserControlsState(
-    BrowserControlsState constraints,
-    BrowserControlsState current,
-    bool animate) {
-  NOTREACHED() << "Browser Controls are used only in threaded mode";
-}
-
 void SingleThreadProxy::DidFinishImplFrame() {
   host_impl_->DidFinishImplFrame();
 #if DCHECK_IS_ON()

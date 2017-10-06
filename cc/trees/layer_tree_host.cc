@@ -857,8 +857,8 @@ void LayerTreeHost::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
     bool animate) {
-  // Browser controls are only used in threaded mode.
-  DCHECK(IsThreaded());
+  // Browser controls are only used in threaded mode but Blink layout tests may
+  // call into this. The single threaded version is a no-op.
   proxy_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
