@@ -31,10 +31,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   explicit ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks);
   ~ChromeMainDelegate() override;
 
-  using ServiceCatalogFactory =
-      base::RepeatingCallback<std::unique_ptr<base::Value>(void)>;
-  static void InstallServiceCatalogFactory(ServiceCatalogFactory factory);
-
  protected:
   // content::ContentMainDelegate implementation:
   bool BasicStartupComplete(int* exit_code) override;

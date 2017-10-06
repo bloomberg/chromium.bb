@@ -18,8 +18,7 @@ source_set("command_ids") {
   ]
 }
 
-# Shared by //chrome/browser and //chrome/app/mash. Not in //chrome/common
-# because it isn't shared with processes like renderer, utility, etc.
+# TODO: put back in chrome/browser if necessary. http://crbug.com/771801.
 source_set("shutdown_signal_handlers") {
   sources = [
     "shutdown_signal_handlers_posix.cc",
@@ -372,17 +371,10 @@ static_library("test_support") {
 
   if (enable_package_mash_services) {
     deps += [
-      "//chrome/app/mash:chrome_mash_catalog",
-      "//chrome/app/mash:chrome_test_catalog",
-      "//chrome/app/mash:embedded_services",
       "//mash/common",
       "//mash/quick_launch/public/interfaces:constants",
       "//services/ui/public/interfaces:constants",
     ]
-
-    if (is_chromeos) {
-      deps += [ "//chrome/app/mash:chrome_mus_catalog" ]
-    }
   }
 }
 
