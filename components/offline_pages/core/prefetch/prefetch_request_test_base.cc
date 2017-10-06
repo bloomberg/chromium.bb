@@ -4,10 +4,18 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace offline_pages {
+
+const char PrefetchRequestTestBase::kExperimentValueSetInFieldTrial[] =
+    "Test Experiment";
 
 PrefetchRequestTestBase::PrefetchRequestTestBase()
     : task_runner_(new base::TestSimpleTaskRunner),
@@ -16,6 +24,31 @@ PrefetchRequestTestBase::PrefetchRequestTestBase()
           base::ThreadTaskRunnerHandle::Get())) {}
 
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
+
+void PrefetchRequestTestBase::SetUp() {
+  field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
+      base::MakeUnique<base::MockEntropyProvider>());
+}
+
+void PrefetchRequestTestBase::SetUpExperimentOption() {
+  const std::string kTrialName = "trial_name";
+  const std::string kGroupName = "group_name";
+
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+  std::map<std::string, std::string> params;
+  params[kPrefetchingOfflinePagesExperimentsOption] =
+      kExperimentValueSetInFieldTrial;
+  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+
+  std::unique_ptr<base::FeatureList> feature_list =
+      base::MakeUnique<base::FeatureList>();
+  feature_list->RegisterFieldTrialOverride(
+      kPrefetchingOfflinePagesFeature.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+  scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+}
 
 void PrefetchRequestTestBase::RespondWithNetError(int net_error) {
   net::TestURLFetcher* url_fetcher = GetRunningFetcher();
@@ -48,7 +81,17 @@ net::TestURLFetcher* PrefetchRequestTestBase::GetRunningFetcher() {
   return url_fetcher_factory_.GetFetcherByID(0);
 }
 
-void PrefetchRequestTestBase::PumpLoop() {
+std::string PrefetchRequestTestBase::GetExperiementHeaderValue(
+    net::TestURLFetcher* fetcher) {
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+
+  std::string experiment_header;
+  headers.GetHeader(kPrefetchExperimentHeaderName, &experiment_header);
+  return experiment_header;
+}
+
+void PrefetchRequestTestBase::RunUntilIdle() {
   task_runner_->RunUntilIdle();
 }
 

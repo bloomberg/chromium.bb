@@ -10,9 +10,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/download/public/test/test_download_service.h"
+#include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
+#include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
-#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_download_client.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "net/base/url_util.h"
@@ -30,11 +31,13 @@ const char kServerPathForDownload[] = "/v1/media/page/1";
 
 namespace offline_pages {
 
-class PrefetchDownloaderImplTest : public TaskTestBase {
+class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
  public:
   PrefetchDownloaderImplTest() = default;
 
   void SetUp() override {
+    PrefetchRequestTestBase::SetUp();
+
     clock_ = new base::SimpleTestClock();
 
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
@@ -56,7 +59,8 @@ class PrefetchDownloaderImplTest : public TaskTestBase {
 
   void TearDown() override {
     prefetch_service_taco_.reset();
-    TaskTestBase::TearDown();
+    PrefetchRequestTestBase::TearDown();
+    RunUntilIdle();
   }
 
   void StartDownload(const std::string& download_id,
@@ -109,9 +113,23 @@ TEST_F(PrefetchDownloaderImplTest, DownloadParams) {
   std::string alt_value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(download_url, "alt", &alt_value));
   EXPECT_EQ("media", alt_value);
+  EXPECT_TRUE(params->request_params.request_headers.IsEmpty());
 
   EXPECT_EQ(base::TimeDelta::FromDays(2),
             params->scheduling_params.cancel_time - epoch);
+  RunUntilIdle();
+}
+
+TEST_F(PrefetchDownloaderImplTest, ExperimentHeaderInDownloadParams) {
+  SetUpExperimentOption();
+
+  StartDownload(kDownloadId, kDownloadLocation);
+  base::Optional<download::DownloadParams> params = GetDownload(kDownloadId);
+  ASSERT_TRUE(params.has_value());
+  std::string header_value;
+  EXPECT_TRUE(params->request_params.request_headers.GetHeader(
+      kPrefetchExperimentHeaderName, &header_value));
+  EXPECT_EQ(kExperimentValueSetInFieldTrial, header_value);
   RunUntilIdle();
 }
 

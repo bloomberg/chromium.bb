@@ -64,6 +64,9 @@ TEST_F(GeneratePageBundleRequestTest, RequestData) {
   EXPECT_FALSE(fetcher->upload_content_type().empty());
   EXPECT_FALSE(fetcher->upload_data().empty());
 
+  // Experiment header should not be set.
+  EXPECT_EQ("", GetExperiementHeaderValue(fetcher));
+
   proto::GeneratePageBundleRequest bundle_data;
   ASSERT_TRUE(bundle_data.ParseFromString(fetcher->upload_data()));
   EXPECT_EQ(kTestUserAgent, bundle_data.user_agent());
@@ -75,6 +78,20 @@ TEST_F(GeneratePageBundleRequestTest, RequestData) {
   EXPECT_EQ(proto::NO_TRANSFORMATION, bundle_data.pages(0).transformation());
   EXPECT_EQ(kTestURL2, bundle_data.pages(1).url());
   EXPECT_EQ(proto::NO_TRANSFORMATION, bundle_data.pages(1).transformation());
+}
+
+TEST_F(GeneratePageBundleRequestTest, ExperimentHeaderInRequestData) {
+  // Add the experiment option in the field trial.
+  SetUpExperimentOption();
+
+  base::MockCallback<PrefetchRequestFinishedCallback> callback;
+  std::unique_ptr<GeneratePageBundleRequest> request(
+      CreateRequest(callback.Get()));
+  net::TestURLFetcher* fetcher = GetRunningFetcher();
+
+  // Experiment header should be set.
+  EXPECT_EQ(kExperimentValueSetInFieldTrial,
+            GetExperiementHeaderValue(fetcher));
 }
 
 TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {

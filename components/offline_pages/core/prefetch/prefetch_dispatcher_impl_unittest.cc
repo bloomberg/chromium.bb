@@ -155,11 +155,11 @@ void PrefetchDispatcherTest::SetUp() {
 void PrefetchDispatcherTest::TearDown() {
   // Ensures that the task is stopped first.
   dispatcher_->StopBackgroundTask();
-  PumpLoop();
+  RunUntilIdle();
 
   // Ensures that the store is properly disposed off.
   taco_.reset();
-  PumpLoop();
+  RunUntilIdle();
 }
 
 void PrefetchDispatcherTest::BeginBackgroundTask() {
@@ -184,7 +184,7 @@ TEST_F(PrefetchDispatcherTest, DispatcherDoesNotCrash) {
 TEST_F(PrefetchDispatcherTest, AddCandidatePrefetchURLsTask) {
   prefetch_dispatcher()->AddCandidatePrefetchURLs(kTestNamespace, test_urls_);
   EXPECT_TRUE(dispatcher_task_queue()->HasPendingTasks());
-  PumpLoop();
+  RunUntilIdle();
   EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
 }
@@ -222,7 +222,7 @@ TEST_F(PrefetchDispatcherTest, DispatcherReleasesBackgroundTask) {
   PrefetchURL prefetch_url(kTestID, kTestURL, base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
-  PumpLoop();
+  RunUntilIdle();
 
   // We start the background task, causing reconcilers and action tasks to be
   // run. We should hold onto the background task until there is no more work to
@@ -230,7 +230,7 @@ TEST_F(PrefetchDispatcherTest, DispatcherReleasesBackgroundTask) {
   ASSERT_EQ(nullptr, GetBackgroundTask());
   BeginBackgroundTask();
   EXPECT_TRUE(dispatcher_task_queue()->HasRunningTask());
-  PumpLoop();
+  RunUntilIdle();
 
   // Still holding onto the background task.
   EXPECT_NE(nullptr, GetBackgroundTask());
@@ -243,7 +243,7 @@ TEST_F(PrefetchDispatcherTest, DispatcherReleasesBackgroundTask) {
   // request.
   RespondWithHttpError(net::HTTP_INTERNAL_SERVER_ERROR);
   EXPECT_NE(nullptr, GetBackgroundTask());
-  PumpLoop();
+  RunUntilIdle();
 
   // Because there is no work remaining, the background task should be released.
   EXPECT_EQ(nullptr, GetBackgroundTask());
@@ -253,20 +253,20 @@ TEST_F(PrefetchDispatcherTest, RetryWithBackoffAfterFailedNetworkRequest) {
   PrefetchURL prefetch_url(kTestID, kTestURL, base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
-  PumpLoop();
+  RunUntilIdle();
 
   BeginBackgroundTask();
-  PumpLoop();
+  RunUntilIdle();
 
   // Trigger another request to make sure we have more work to do.
   PrefetchURL prefetch_url2(kTestID, kTestURL2, base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url2));
-  PumpLoop();
+  RunUntilIdle();
 
   // This should trigger retry with backoff.
   RespondWithHttpError(net::HTTP_INTERNAL_SERVER_ERROR);
-  PumpLoop();
+  RunUntilIdle();
 
   EXPECT_TRUE(reschedule_called());
   EXPECT_EQ(PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITH_BACKOFF,
@@ -285,10 +285,10 @@ TEST_F(PrefetchDispatcherTest, RetryWithoutBackoffAfterFailedNetworkRequest) {
   PrefetchURL prefetch_url(kTestID, kTestURL, base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
-  PumpLoop();
+  RunUntilIdle();
 
   BeginBackgroundTask();
-  PumpLoop();
+  RunUntilIdle();
 
   // Trigger another request to make sure we have more work to do.
   PrefetchURL prefetch_url2(kTestID, kTestURL2, base::string16());
@@ -297,7 +297,7 @@ TEST_F(PrefetchDispatcherTest, RetryWithoutBackoffAfterFailedNetworkRequest) {
 
   // This should trigger retry without backoff.
   RespondWithNetError(net::ERR_CONNECTION_CLOSED);
-  PumpLoop();
+  RunUntilIdle();
 
   EXPECT_TRUE(reschedule_called());
   EXPECT_EQ(PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITHOUT_BACKOFF,
@@ -316,10 +316,10 @@ TEST_F(PrefetchDispatcherTest, SuspendAfterFailedNetworkRequest) {
   PrefetchURL prefetch_url(kTestID, kTestURL, base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
-  PumpLoop();
+  RunUntilIdle();
 
   BeginBackgroundTask();
-  PumpLoop();
+  RunUntilIdle();
 
   // Trigger another request to make sure we have more work to do.
   PrefetchURL prefetch_url2(kTestID, kTestURL2, base::string16());
@@ -330,7 +330,7 @@ TEST_F(PrefetchDispatcherTest, SuspendAfterFailedNetworkRequest) {
 
   // This should trigger suspend.
   RespondWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR);
-  PumpLoop();
+  RunUntilIdle();
 
   EXPECT_TRUE(reschedule_called());
   EXPECT_EQ(PrefetchBackgroundTaskRescheduleType::SUSPEND,
@@ -351,14 +351,14 @@ TEST_F(PrefetchDispatcherTest, SuspendRemovedAfterNewBackgroundTask) {
   PrefetchURL prefetch_url(kTestID, kTestURL, base::string16());
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
       kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
-  PumpLoop();
+  RunUntilIdle();
 
   BeginBackgroundTask();
-  PumpLoop();
+  RunUntilIdle();
 
   // This should trigger suspend.
   RespondWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR);
-  PumpLoop();
+  RunUntilIdle();
 
   EXPECT_TRUE(reschedule_called());
   EXPECT_EQ(PrefetchBackgroundTaskRescheduleType::SUSPEND,

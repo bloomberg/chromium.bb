@@ -62,8 +62,24 @@ TEST_F(GetOperationRequestTest, RequestData) {
                     &content_type_header);
   EXPECT_EQ("application/x-protobuf", content_type_header);
 
+  // Experiment header should not be set.
+  EXPECT_EQ("", GetExperiementHeaderValue(fetcher));
+
   EXPECT_TRUE(fetcher->upload_content_type().empty());
   EXPECT_TRUE(fetcher->upload_data().empty());
+}
+
+TEST_F(GetOperationRequestTest, ExperimentHeaderInRequestData) {
+  // Add the experiment option in the field trial.
+  SetUpExperimentOption();
+
+  base::MockCallback<PrefetchRequestFinishedCallback> callback;
+  std::unique_ptr<GetOperationRequest> request(CreateRequest(callback.Get()));
+  net::TestURLFetcher* fetcher = GetRunningFetcher();
+
+  // Experiment header should be set.
+  EXPECT_EQ(kExperimentValueSetInFieldTrial,
+            GetExperiementHeaderValue(fetcher));
 }
 
 TEST_F(GetOperationRequestTest, EmptyResponse) {
