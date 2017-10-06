@@ -2374,7 +2374,7 @@ TEST_F(CheckerImagingTileManagerTest,
 
   auto generator =
       sk_make_sp<testing::StrictMock<MockImageGenerator>>(gfx::Size(512, 512));
-  PaintImage image = PaintImageBuilder()
+  PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
                          .TakePaintImage();

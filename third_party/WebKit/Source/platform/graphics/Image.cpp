@@ -305,7 +305,9 @@ void Image::DrawPattern(GraphicsContext& context,
   // Fetch this now as subsetting may swap the image.
   auto image_id = image.GetSkImage()->uniqueID();
 
-  image = image.MakeSubset(EnclosingIntRect(norm_src_rect));
+  image = PaintImageBuilder::WithCopy(std::move(image))
+              .make_subset(EnclosingIntRect(norm_src_rect))
+              .TakePaintImage();
   if (!image)
     return;
 

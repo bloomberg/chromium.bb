@@ -121,7 +121,7 @@ PaintImage DragImage::ResizeAndOrientImage(
   canvas->concat(AffineTransformToSkMatrix(transform));
   canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
 
-  return PaintImageBuilder(std::move(image))
+  return PaintImageBuilder::WithProperties(std::move(image))
       .set_image(surface->makeImageSnapshot())
       .TakePaintImage();
 }

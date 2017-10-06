@@ -439,7 +439,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
     sk_sp<SkImage> non_texture_image =
         last_image_.GetSkImage()->makeNonTextureImage();
-    image = cc::PaintImageBuilder(last_image_)
+    image = cc::PaintImageBuilder::WithProperties(last_image_)
                 .set_image(std::move(non_texture_image))
                 .TakePaintImage();
   }
@@ -1024,12 +1024,11 @@ bool SkCanvasVideoRenderer::UpdateLastImage(
       !last_image_.GetSkImage()->getTextureHandle(true)) {
     ResetCache();
 
-    cc::PaintImageBuilder paint_image_builder;
-    paint_image_builder.set_id(renderer_stable_id_);
-    paint_image_builder.set_animation_type(
-        cc::PaintImage::AnimationType::VIDEO);
-    paint_image_builder.set_completion_state(
-        cc::PaintImage::CompletionState::DONE);
+    auto paint_image_builder =
+        cc::PaintImageBuilder::WithDefault()
+            .set_id(renderer_stable_id_)
+            .set_animation_type(cc::PaintImage::AnimationType::VIDEO)
+            .set_completion_state(cc::PaintImage::CompletionState::DONE);
 
     // Generate a new image.
     // Note: Skia will hold onto |video_frame| via |video_generator| only when
@@ -1068,7 +1067,9 @@ void SkCanvasVideoRenderer::CorrectLastImageDimensions(
     return;
   SkIRect bounds = SkIRect::MakeWH(last_image_.width(), last_image_.height());
   if (bounds.size() != visible_rect.size() && bounds.contains(visible_rect)) {
-    last_image_ = last_image_.MakeSubset(gfx::SkIRectToRect(visible_rect));
+    last_image_ = cc::PaintImageBuilder::WithCopy(std::move(last_image_))
+                      .make_subset(gfx::SkIRectToRect(visible_rect))
+                      .TakePaintImage();
   }
 }
 

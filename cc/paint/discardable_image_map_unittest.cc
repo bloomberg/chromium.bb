@@ -576,7 +576,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] =
-            PaintImageBuilder()
+            PaintImageBuilder::WithDefault()
                 .set_id(y * 4 + x)
                 .set_paint_image_generator(
                     CreatePaintImageGenerator(gfx::Size(500, 500)))

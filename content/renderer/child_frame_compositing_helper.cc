@@ -241,7 +241,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
         web_layer_->Bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
-      sad_layer->SetImage(cc::PaintImageBuilder()
+      sad_layer->SetImage(cc::PaintImageBuilder::WithDefault()
                               .set_id(cc::PaintImage::kNonLazyStableId)
                               .set_image(SkImage::MakeFromBitmap(*sad_bitmap))
                               .TakePaintImage());

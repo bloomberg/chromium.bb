@@ -62,7 +62,7 @@ TEST(PlaybackImageProviderTest, SkipsAllImages) {
   SkMatrix matrix = SkMatrix::I();
 
   EXPECT_FALSE(provider.GetDecodedDrawImage(
-      DrawImage(PaintImageBuilder()
+      DrawImage(PaintImageBuilder::WithDefault()
                     .set_id(PaintImage::kNonLazyStableId)
                     .set_image(CreateRasterImage())
                     .TakePaintImage(),

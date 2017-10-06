@@ -140,7 +140,7 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
   frames_[index].frame_bytes_ =
       decoder_->Size().Area() * sizeof(ImageFrame::PixelData);
 
-  PaintImageBuilder builder;
+  auto builder = PaintImageBuilder::WithDefault();
   InitPaintImageBuilder(builder);
   auto completion_state = all_data_received_
                               ? PaintImage::CompletionState::DONE
@@ -405,8 +405,14 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
 RefPtr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
     PaintImage paint_image = FrameAtIndex(PaintImage::kDefaultFrameIndex);
-    if (paint_image.ShouldAnimate())
-      paint_image = paint_image.MakeStatic();
+    if (paint_image.ShouldAnimate()) {
+      // To prevent the compositor from animating this image, we set the
+      // animation count to kAnimationNone. This makes the image essentially
+      // static.
+      paint_image = PaintImageBuilder::WithCopy(std::move(paint_image))
+                        .set_repetition_count(kAnimationNone)
+                        .TakePaintImage();
+    }
     return StaticBitmapImage::Create(std::move(paint_image));
   }
 

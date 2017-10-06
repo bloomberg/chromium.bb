@@ -113,7 +113,7 @@ class CheckerImageTrackerTest : public testing::Test,
     }
 
     auto generator = CreatePaintImageGenerator(gfx::Size(dimension, dimension));
-    return DrawImage(PaintImageBuilder()
+    return DrawImage(PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(std::move(generator))
                          .set_animation_type(animation)
@@ -427,7 +427,7 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
   gfx::Size image_size = gfx::Size(partial_image.paint_image().width(),
                                    partial_image.paint_image().height());
   DrawImage completed_paint_image = DrawImage(
-      PaintImageBuilder()
+      PaintImageBuilder::WithDefault()
           .set_id(partial_image.paint_image().stable_id())
           .set_paint_image_generator(CreatePaintImageGenerator(image_size))
           .TakePaintImage(),
