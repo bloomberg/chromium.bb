@@ -186,7 +186,7 @@ bool ShouldUseViewsTaskManager() {
 - (BOOL)visibilityOfColumnWithId:(int)columnId {
   NSTableColumn* column =
       [tableView_ tableColumnWithIdentifier:ColumnIdentifier(columnId)];
-  return ![column isHidden];
+  return column ? ![column isHidden] : NO;
 }
 
 - (void)setColumnWithId:(int)columnId toVisibility:(BOOL)visibility {
