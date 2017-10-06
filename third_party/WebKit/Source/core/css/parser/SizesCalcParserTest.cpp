@@ -4,11 +4,11 @@
 
 #include "core/css/parser/SizesCalcParser.h"
 
-#include "core/MediaTypeNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSTokenizer.h"
+#include "core/media_type_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

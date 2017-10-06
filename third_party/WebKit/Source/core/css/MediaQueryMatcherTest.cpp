@@ -4,11 +4,11 @@
 
 #include "core/css/MediaQueryMatcher.h"
 
-#include "core/MediaTypeNames.h"
+#include <memory>
 #include "core/css/MediaList.h"
+#include "core/media_type_names.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

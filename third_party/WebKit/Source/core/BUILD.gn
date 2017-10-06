@@ -775,7 +775,7 @@ css_properties("make_core_generated_css_property_names") {
 
 code_generator("make_core_generated_media_features") {
   script = "../build/scripts/core/css/make_media_features.py"
-  json_inputs = [ "css/MediaFeatureNames.json5" ]
+  json_inputs = [ "css/media_feature_names.json5" ]
   templates = [ "../build/scripts/core/css/templates/MediaFeatures.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/css/MediaFeatures.h",
@@ -909,20 +909,20 @@ make_event_factory("make_core_generated_event_factory") {
 
 code_generator("make_core_generated_media_feature_names") {
   script = "../build/scripts/core/css/make_media_feature_names.py"
-  json_inputs = [ "css/MediaFeatureNames.json5" ]
+  json_inputs = [ "css/media_feature_names.json5" ]
   templates = [
     "../build/scripts/templates/MakeNames.cpp.tmpl",
     "../build/scripts/templates/MakeNames.h.tmpl",
   ]
   other_inputs = make_names_files
   outputs = [
-    "$blink_core_output_dir/css/MediaFeatureNames.cc",
-    "$blink_core_output_dir/css/MediaFeatureNames.h",
+    "$blink_core_output_dir/css/media_feature_names.cc",
+    "$blink_core_output_dir/css/media_feature_names.h",
   ]
 }
 
 make_names("make_core_generated_media_type_names") {
-  in_files = [ "css/MediaTypeNames.json5" ]
+  in_files = [ "css/media_type_names.json5" ]
   output_dir = blink_core_output_dir
 }
 

@@ -31,7 +31,6 @@
 #include "core/css/resolver/StyleResolver.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/MediaTypeNames.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/CSSInterpolationEnvironment.h"
 #include "core/animation/CSSInterpolationTypesMap.h"
@@ -88,6 +87,7 @@
 #include "core/html/HTMLSlotElement.h"
 #include "core/html_names.h"
 #include "core/layout/GeneratedChildren.h"
+#include "core/media_type_names.h"
 #include "core/probe/CoreProbes.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/svg/SVGElement.h"

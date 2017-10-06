@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/html/parser/TextResourceDecoderForFuzzing.h"
+#include "core/media_type_names.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/testing/FuzzedDataProvider.h"
 
