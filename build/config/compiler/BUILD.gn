@@ -1852,7 +1852,7 @@ config("symbols") {
       }
       cflags += [ "-g2" ]
     }
-    if (use_debug_fission) {
+    if (use_debug_fission && !is_nacl) {
       cflags += [ "-gsplit-dwarf" ]
     }
     asmflags = cflags
