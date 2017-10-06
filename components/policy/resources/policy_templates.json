@@ -8808,37 +8808,42 @@
       This policy can be used to configure which Android apps are automatically installed on the device:
 
       {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "packageName": {
-              "description": "Android app identifier, e.g. \"com.google.android.gm\" for Gmail",
-              "type": "string"
-            },
-            "installType": {
-              "description": "Specifies how an app is installed. OPTIONAL: The app is not installed automatically, but the user can install it. This is the default if this policy is not specified. PRELOAD: The app is installed automatically, but the user can uninstall it. FORCE_INSTALLED: The app is installed automatically and the user cannot uninstall it. BLOCKED: The app is blocked and cannot be installed. If the app was installed under a previous policy it will be uninstalled.",
-              "type": "string",
-              "enum": [
-                "OPTIONAL"
-                "PRELOAD",
-                "FORCE_INSTALLED",
-                "BLOCKED"
-              ]
-            },
-            "defaultPermissionPolicy": {
-              "description": "Policy for granting permission requests to apps. PERMISSION_POLICY_UNSPECIFIED: Policy not specified. If no policy is specified for a permission at any level, then the `PROMPT` behavior is used by default. PROMPT: Prompt the user to grant a permission. GRANT: Automatically grant a permission. DENY: Automatically deny a permission.",
-              "type": "string",
-              "enum": [
-                "PERMISSION_POLICY_UNSPECIFIED",
-                "PROMPT",
-                "GRANT",
-                "DENY"
-              ]
-            },
-            "managedConfiguration": {
-              "description": "App-specific JSON configuration string. The keys are defined in the app manifest. Typically looks like '{ \"key\" : value }'.",
-              "type": "string"
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageName": {
+                  "description": "Android app identifier, e.g. \"com.google.android.gm\" for Gmail",
+                  "type": "string"
+                },
+                "installType": {
+                  "description": "Specifies how an app is installed. OPTIONAL: The app is not installed automatically, but the user can install it. This is the default if this policy is not specified. PRELOAD: The app is installed automatically, but the user can uninstall it. FORCE_INSTALLED: The app is installed automatically and the user cannot uninstall it. BLOCKED: The app is blocked and cannot be installed. If the app was installed under a previous policy it will be uninstalled.",
+                  "type": "string",
+                  "enum": [
+                    "OPTIONAL",
+                    "PRELOAD",
+                    "FORCE_INSTALLED",
+                    "BLOCKED"
+                  ]
+                },
+                "defaultPermissionPolicy": {
+                  "description": "Policy for granting permission requests to apps. PERMISSION_POLICY_UNSPECIFIED: Policy not specified. If no policy is specified for a permission at any level, then the `PROMPT` behavior is used by default. PROMPT: Prompt the user to grant a permission. GRANT: Automatically grant a permission. DENY: Automatically deny a permission.",
+                  "type": "string",
+                  "enum": [
+                    "PERMISSION_POLICY_UNSPECIFIED",
+                    "PROMPT",
+                    "GRANT",
+                    "DENY"
+                  ]
+                },
+                "managedConfiguration": {
+                  "description": "App-specific JSON configuration object with a set of key-value pairs, e.g. '\"managedConfiguration\": { \"key1\": value1, \"key2\": value2 }'. The keys are defined in the app manifest.",
+                  "type": "object"
+                }
+              }
             }
           }
         }
