@@ -315,7 +315,7 @@ void DeleteSelectionCommand::InitializePositionData(
             .IsNotNull();
     if (!skip_smart_delete)
       skip_smart_delete =
-          LeadingWhitespacePosition(downstream_end_, VP_DEFAULT_AFFINITY,
+          LeadingWhitespacePosition(downstream_end_, TextAffinity::kDefault,
                                     kConsiderNonCollapsibleWhitespace)
               .IsNotNull();
 

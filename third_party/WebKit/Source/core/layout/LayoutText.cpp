@@ -30,7 +30,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/VisiblePosition.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -526,7 +526,7 @@ static PositionWithAffinity CreatePositionWithAffinityForBox(
     const InlineBox* box,
     int offset,
     ShouldAffinityBeDownstream should_affinity_be_downstream) {
-  TextAffinity affinity = VP_DEFAULT_AFFINITY;
+  TextAffinity affinity = TextAffinity::kDefault;
   switch (should_affinity_be_downstream) {
     case kAlwaysDownstream:
       affinity = TextAffinity::kDownstream;
