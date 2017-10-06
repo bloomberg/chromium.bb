@@ -108,6 +108,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1080,6 +1081,7 @@ class DownloadTest : public InProcessBrowserTest {
   base::ScopedTempDir downloads_directory_;
 
   std::unique_ptr<DownloadTestFileActivityObserver> file_activity_observer_;
+  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
 };
 
 namespace {
