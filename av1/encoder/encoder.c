@@ -4447,6 +4447,7 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
 }
 
 #if CONFIG_FRAME_SUPERRES
+
 static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 34567;
@@ -4490,7 +4491,8 @@ static int dimension_is_ok(int orig_dim, int resized_dim, int denom) {
 
 static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
   return dimension_is_ok(owidth, rsz->resize_width, rsz->superres_denom) &&
-         dimension_is_ok(oheight, rsz->resize_height, rsz->superres_denom);
+         (SCALE_HORIZONTAL_ONLY ||
+          dimension_is_ok(oheight, rsz->resize_height, rsz->superres_denom));
 }
 
 #define DIVIDE_AND_ROUND(x, y) (((x) + ((y) >> 1)) / (y))
@@ -4502,10 +4504,15 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
     return 1;
   }
 
-  // Calculate current resize scale.
+// Calculate current resize scale.
+#if SCALE_HORIZONTAL_ONLY
+  int resize_denom =
+      DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width);
+#else
   int resize_denom =
       AOMMAX(DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width),
              DIVIDE_AND_ROUND(oheight * SCALE_NUMERATOR, rsz->resize_height));
+#endif  // SCALE_HORIZONTAL_ONLY
 
   if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
     // Alter superres scale as needed to enforce conformity.

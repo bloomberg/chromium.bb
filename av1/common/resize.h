@@ -85,6 +85,10 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
                                           YV12_BUFFER_CONFIG *scaled);
 
+// If 0: resize and superres scaling happens for both width and height.
+// If 1: resize and superres scaling happens ONLY for width.
+#define SCALE_HORIZONTAL_ONLY 0
+
 // Calculates the scaled size from the given original dimensions and the scale
 // denominator.
 void av1_calculate_scaled_size(int *width, int *height, int denom);
