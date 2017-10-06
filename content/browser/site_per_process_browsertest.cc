@@ -1385,6 +1385,84 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   DCHECK_EQ(filter->last_rect().y(), 0);
 }
 
+// Tests that wheel scroll bubbling gets cancelled when the wheel target view
+// gets destroyed in the middle of a wheel scroll seqeunce. This happens in
+// cases like overscroll navigation from inside an oopif.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CancelWheelScrollBubblingOnWheelTargetDeletion) {
+  ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
+      0);
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* iframe_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, iframe_node->current_url());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      iframe_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  WaitForChildFrameSurfaceReady(iframe_node->current_frame_host());
+
+  std::unique_ptr<InputEventAckWaiter> scroll_begin_observer =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollBegin);
+  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
+      scroll_begin_observer.get());
+
+  std::unique_ptr<InputEventAckWaiter> scroll_end_observer =
+      base::MakeUnique<InputEventAckWaiter>(
+          blink::WebInputEvent::kGestureScrollEnd);
+  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
+      scroll_end_observer.get());
+
+  // Scroll the iframe upward, scroll events get bubbled up to the root.
+  blink::WebMouseWheelEvent scroll_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gfx::Rect bounds = child_rwhv->GetViewBounds();
+  float scale_factor = GetPageScaleFactor(shell());
+  scroll_event.SetPositionInWidget(
+      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x() + 5) *
+                       scale_factor),
+      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 5) *
+                       scale_factor));
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = 5.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  scroll_event.has_precise_scrolling_deltas = true;
+  router->RouteMouseWheelEvent(root_view, &scroll_event, ui::LatencyInfo());
+  scroll_begin_observer->Wait();
+
+  // Now destroy the child_rwhv, scroll bubbling stops and a GSE gets sent to
+  // the root_view.
+  RenderProcessHost* rph =
+      iframe_node->current_frame_host()->GetSiteInstance()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(rph->Shutdown(0, false));
+  crash_observer.Wait();
+  scroll_event.delta_y = 0.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  scroll_event.dispatch_type =
+      blink::WebInputEvent::DispatchType::kEventNonBlocking;
+  router->RouteMouseWheelEvent(root_view, &scroll_event, ui::LatencyInfo());
+
+  scroll_end_observer->Wait();
+}
+
 class ScrollObserver : public RenderWidgetHost::InputEventObserver {
  public:
   ScrollObserver(double delta_x, double delta_y) { Reset(delta_x, delta_y); }
