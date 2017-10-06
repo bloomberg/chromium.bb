@@ -54,8 +54,8 @@ make_element_factory_files =
 make_element_type_helpers_files =
     make_qualified_names_files + [
       "$_scripts_dir/make_element_type_helpers.py",
-      "$_scripts_dir/templates/ElementTypeHelpers.cpp.tmpl",
-      "$_scripts_dir/templates/ElementTypeHelpers.h.tmpl",
+      "$_scripts_dir/templates/element_type_helpers.cc.tmpl",
+      "$_scripts_dir/templates/element_type_helpers.h.tmpl",
     ]
 
 make_trie_helpers_files =

@@ -4,9 +4,6 @@
 
 #include "modules/accessibility/AXEnums.h"
 
-#include "core/HTMLElementTypeHelpers.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/StringHash.h"

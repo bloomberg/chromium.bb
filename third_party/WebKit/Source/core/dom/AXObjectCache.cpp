@@ -29,9 +29,9 @@
 #include "core/dom/AXObjectCache.h"
 
 #include <memory>
-#include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/html_element_type_helpers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
