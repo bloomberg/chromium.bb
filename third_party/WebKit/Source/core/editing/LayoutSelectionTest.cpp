@@ -305,15 +305,8 @@ TEST_F(LayoutSelectionTest, FirstLetter) {
 }
 
 TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
-  SetBodyContent(
-      "<style>div::first-letter { color: red; }</style>"
-      "foo<div>bar</div>baz");
-  Node* foo = GetDocument().body()->firstChild()->nextSibling();
-  // <div>fo^o</div><div>bar</div>b|az
-  Selection().SetSelection(
-      SelectionInDOMTree::Builder()
-          .SetBaseAndExtent({foo, 2}, {foo->nextSibling()->nextSibling(), 1})
-          .Build());
+  InsertStyleElement("div::first-letter { color: red; }");
+  Selection().SetSelection(SetSelectionTextToBody("fo^o<div>bar</div>b|az"));
   Selection().CommitAppearanceIfNeeded();
   TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
   TEST_NEXT(IsLayoutBlock, kStart, ShouldInvalidate);
