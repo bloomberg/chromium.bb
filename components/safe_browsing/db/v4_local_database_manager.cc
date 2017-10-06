@@ -95,7 +95,7 @@ ListInfos GetListInfos() {
 ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
   switch (list_id.threat_type()) {
     case MALWARE_THREAT:
-    case SOCIAL_ENGINEERING_PUBLIC:
+    case SOCIAL_ENGINEERING:
     case MALICIOUS_BINARY:
       return 0;
     case UNWANTED_SOFTWARE:

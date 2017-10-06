@@ -649,7 +649,7 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
         }
       }
     }
-  } else if (match.threat_type() == SOCIAL_ENGINEERING_PUBLIC) {
+  } else if (match.threat_type() == SOCIAL_ENGINEERING) {
     for (const ThreatEntryMetadata::MetadataEntry& m :
          match.threat_entry_metadata().entries()) {
       if (m.key() == kSePatternType) {
