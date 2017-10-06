@@ -35,7 +35,7 @@ struct HidDeviceInfo {
   string device_node;
 };
 
-interface HidManagerClient{
+interface HidManagerClient {
   // Notifies the client that a device is added.
   DeviceAdded(HidDeviceInfo device_info);
 
