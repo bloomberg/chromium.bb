@@ -29,7 +29,7 @@ class NET_EXPORT NetworkQualityProvider {
   // Returns the current effective connection type.  The effective connection
   // type is computed by the network quality estimator at regular intervals and
   // at certain events (e.g., connection change).
-  virtual EffectiveConnectionType GetEffectiveConnectionType() const;
+  virtual EffectiveConnectionType GetEffectiveConnectionType() const = 0;
 
   // Adds |observer| to a list of effective connection type observers.
   // The observer must register and unregister itself on the same thread.
