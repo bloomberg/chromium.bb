@@ -505,7 +505,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
 
     return {
       'action': getCanonicalActionForForm_(formElement),
-      'method': formElement.getAttribute('method'),
       'name': __gCrWeb.common.getFormIdentifier(formElement),
       'origin': origin,
       'fields': fields,
