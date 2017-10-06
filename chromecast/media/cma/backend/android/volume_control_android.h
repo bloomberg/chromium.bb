@@ -45,8 +45,8 @@ class VolumeControlAndroid {
 
  private:
   void InitializeOnThread();
-  void SetVolumeOnThread(AudioContentType type, float level);
-  void SetMutedOnThread(AudioContentType type, bool muted);
+  void SetVolumeOnThread(AudioContentType type, float level, bool from_android);
+  void SetMutedOnThread(AudioContentType type, bool muted, bool from_android);
   void ReportVolumeChangeOnThread(AudioContentType type, float level);
   void ReportMuteChangeOnThread(AudioContentType type, bool muted);
 
