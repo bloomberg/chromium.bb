@@ -166,7 +166,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
 }
 
 bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
-  base::ThreadRestrictions::AssertWaitAllowed();
+  internal::AssertBaseSyncPrimitivesAllowed();
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedEventWaitActivity event_activity(this);
@@ -241,7 +241,7 @@ cmp_fst_addr(const std::pair<WaitableEvent*, unsigned> &a,
 // static
 size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
                                size_t count) {
-  base::ThreadRestrictions::AssertWaitAllowed();
+  internal::AssertBaseSyncPrimitivesAllowed();
   DCHECK(count) << "Cannot wait on no events";
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.

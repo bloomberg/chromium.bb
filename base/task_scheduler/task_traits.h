@@ -85,8 +85,10 @@ enum class TaskShutdownBehavior {
 // WithBaseSyncPrimitives trait.
 struct MayBlock {};
 
-// Tasks with this trait will pass base::AssertWaitAllowed(), i.e. will be
-// allowed on the following methods :
+// DEPRECATED. Use base::ScopedAllowBaseSyncPrimitives(ForTesting) instead.
+//
+// Tasks with this trait will pass base::AssertBaseSyncPrimitivesAllowed(), i.e.
+// will be allowed on the following methods :
 // - base::WaitableEvent::Wait
 // - base::ConditionVariable::Wait
 // - base::PlatformThread::Join

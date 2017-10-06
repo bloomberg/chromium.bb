@@ -865,10 +865,10 @@ class WaitAllowedTestThread : public SimpleThread {
 
     // Waiting is allowed by default. Expect TaskTracker to disallow it before
     // running a task without the WithBaseSyncPrimitives() trait.
-    ThreadRestrictions::AssertWaitAllowed();
+    internal::AssertBaseSyncPrimitivesAllowed();
     auto task_without_sync_primitives = std::make_unique<Task>(
         FROM_HERE, Bind([]() {
-          EXPECT_DCHECK_DEATH({ ThreadRestrictions::AssertWaitAllowed(); });
+          EXPECT_DCHECK_DEATH({ internal::AssertBaseSyncPrimitivesAllowed(); });
         }),
         TaskTraits(), TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(task_without_sync_primitives.get()));
@@ -882,7 +882,7 @@ class WaitAllowedTestThread : public SimpleThread {
     auto task_with_sync_primitives = std::make_unique<Task>(
         FROM_HERE, Bind([]() {
           // Shouldn't fail.
-          ThreadRestrictions::AssertWaitAllowed();
+          internal::AssertBaseSyncPrimitivesAllowed();
         }),
         TaskTraits(WithBaseSyncPrimitives()), TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(task_with_sync_primitives.get()));
