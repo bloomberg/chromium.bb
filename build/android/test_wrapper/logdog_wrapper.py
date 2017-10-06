@@ -38,8 +38,6 @@ def CommandParser():
                       help='The test target to be run.')
   parser.add_argument('--logdog-bin-cmd', required=True,
                       help='The logdog bin cmd.')
-  parser.add_argument('--target-devices-file', required=False,
-                      help='The target devices file.')
   return parser
 
 
@@ -72,8 +70,6 @@ def main():
   test_cmd = [
       os.path.join('bin', 'run_%s' % args.target),
       '-v']
-  if args.target_devices_file:
-    test_cmd += ['--target-devices-file', args.target_devices_file]
 
   test_env = dict(os.environ)
   logdog_cmd = []
