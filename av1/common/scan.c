@@ -8239,7 +8239,7 @@ static void update_scan_count(int16_t *scan, int max_scan,
 void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
                                   TX_SIZE tx_size, TX_TYPE tx_type,
                                   const tran_low_t *dqcoeffs, int max_scan) {
-  if (do_adapt_scan(tx_size, tx_type)) {
+  if (cm->use_adapt_scan && do_adapt_scan(tx_size, tx_type)) {
     int16_t *scan = get_adapt_scan(cm->fc, tx_size, tx_type);
     uint32_t *non_zero_count = get_non_zero_counts(counts, tx_size, tx_type);
     update_scan_count(scan, max_scan, dqcoeffs, non_zero_count);
@@ -8550,25 +8550,27 @@ void av1_init_scan_order(AV1_COMMON *cm) {
 }
 
 void av1_adapt_scan_order(AV1_COMMON *cm) {
-  TX_SIZE tx_size;
+  if (cm->use_adapt_scan) {
+    TX_SIZE tx_size;
 #if CACHE_SCAN_PROB
-  int use_curr_frame = 0;
+    int use_curr_frame = 0;
 #else   // CACHE_SCAN_PROB
-  int use_curr_frame = 1;
+    int use_curr_frame = 1;
 #endif  // CACHE_SCAN_PROB
 
-  for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
+    for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
 #if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
-    if (tx_size > TX_32X16) continue;
+      if (tx_size > TX_32X16) continue;
 #else
-    if (tx_size >= TX_SIZES) continue;
+      if (tx_size >= TX_SIZES) continue;
 #endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
-    TX_TYPE tx_type;
-    for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
-      if (do_adapt_scan(tx_size, tx_type)) {
-        update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE);
-        update_scan_order_facade(cm, tx_size, tx_type, use_curr_frame);
-        update_eob_threshold(cm, tx_size, tx_type);
+      TX_TYPE tx_type;
+      for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
+        if (do_adapt_scan(tx_size, tx_type)) {
+          update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE);
+          update_scan_order_facade(cm, tx_size, tx_type, use_curr_frame);
+          update_eob_threshold(cm, tx_size, tx_type);
+        }
       }
     }
   }

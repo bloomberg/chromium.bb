@@ -4813,6 +4813,10 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
 
+#if CONFIG_ADAPT_SCAN
+  aom_wb_write_bit(wb, cm->use_adapt_scan);
+#endif
+
 #if CONFIG_GLOBAL_MOTION
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 #endif  // CONFIG_GLOBAL_MOTION

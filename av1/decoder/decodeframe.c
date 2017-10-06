@@ -5167,6 +5167,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
 #endif  // CONFIG_EXT_TX
 
+#if CONFIG_ADAPT_SCAN
+  cm->use_adapt_scan = aom_rb_read_bit(rb);
+  // TODO(angiebird): call av1_init_scan_order only when use_adapt_scan
+  // switches from 1 to 0
+  if (cm->use_adapt_scan == 0) av1_init_scan_order(cm);
+#endif  // CONFIG_ADAPT_SCAN
+
 #if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
