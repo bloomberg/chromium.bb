@@ -2,11 +2,9 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   return getHealthThermometerDevice({acceptAllDevices: true})
     .then(({device}) => assert_promise_rejects_with_message(
       device.gatt.getPrimaryServices(),

@@ -2,8 +2,6 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 "use strict";
 const test_desc = 'Two iframes in the same origin should be able to access ' +
@@ -37,7 +35,7 @@ function send_message(iframe, command, arg, assert_func) {
   return promise;
 }
 
-promise_test(() => getHealthThermometerDevice()
+bluetooth_test(() => getHealthThermometerDevice()
   // 1. Add the first iframe.
   .then(() => add_iframe(iframe1))
   // 2. Connect with the first iframe, requesting the health thermometer

@@ -2,11 +2,9 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   let typed_array = Uint8Array.of(1, 2);
   let array_buffer = Uint8Array.of(3, 4).buffer;
   let data_view = new DataView(new ArrayBuffer(2));
