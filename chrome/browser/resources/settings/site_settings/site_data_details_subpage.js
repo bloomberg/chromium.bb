@@ -58,7 +58,7 @@ Polymer({
         settings.routes.SITE_SETTINGS_DATA_DETAILS)
       return;
     var site = settings.getQueryParameters().get('site');
-    if (!site || site == this.site_)
+    if (!site)
       return;
     this.site_ = site;
     this.pageTitle = loadTimeData.getStringF('siteSettingsCookieSubpage', site);
