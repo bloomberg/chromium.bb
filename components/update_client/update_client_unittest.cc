@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -195,6 +196,7 @@ UpdateClientTest::~UpdateClientTest() {
 
 void UpdateClientTest::RunThreads() {
   runloop_.Run();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 base::FilePath UpdateClientTest::TestFilePath(const char* file) {
@@ -1349,29 +1351,38 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 }
 
 // Tests the update scenario for one CRX where the CRX installer returns
-// an error.
+// an error. Tests that the |unpack_path| argument refers to a valid path
+// then |Install| is called, then tests that the |unpack| path is deleted
+// by the |update_client| code before the test ends.
 TEST_F(UpdateClientTest, OneCrxInstallError) {
   class MockInstaller : public CrxInstaller {
    public:
     // gMock does not support mocking functions with parameters which have
     // move semantics. This function is a shim to work around it.
-    Result Install(std::unique_ptr<base::DictionaryValue> manifest,
-                   const base::FilePath& unpack_path) {
-      return Install_(manifest, unpack_path);
+    void Install(std::unique_ptr<base::DictionaryValue> manifest,
+                 const base::FilePath& unpack_path,
+                 const Callback& callback) {
+      return Install_(manifest, unpack_path, callback);
     }
 
     MOCK_METHOD1(OnUpdateError, void(int error));
-    MOCK_METHOD2(Install_,
-                 Result(const std::unique_ptr<base::DictionaryValue>& manifest,
-                        const base::FilePath& unpack_path));
+    MOCK_METHOD3(Install_,
+                 void(const std::unique_ptr<base::DictionaryValue>& manifest,
+                      const base::FilePath& unpack_path,
+                      const Callback& callback));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));
     MOCK_METHOD0(Uninstall, bool());
 
     void OnInstall(const std::unique_ptr<base::DictionaryValue>& manifest,
-                   const base::FilePath& unpack_path) {
+                   const base::FilePath& unpack_path,
+                   const Callback& callback) {
       unpack_path_ = unpack_path;
       EXPECT_TRUE(base::DirectoryExists(unpack_path_));
+      base::PostTaskWithTraits(
+          FROM_HERE, {base::MayBlock()},
+          base::BindOnce(callback,
+                         CrxInstaller::Result(InstallError::GENERIC_ERROR)));
     }
 
    protected:
@@ -1396,10 +1407,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
           base::MakeRefCounted<MockInstaller>();
 
       EXPECT_CALL(*installer, OnUpdateError(_)).Times(0);
-      EXPECT_CALL(*installer, Install_(_, _))
-          .WillOnce(
-              DoAll(Invoke(installer.get(), &MockInstaller::OnInstall),
-                    Return(CrxInstaller::Result(InstallError::GENERIC_ERROR))));
+      EXPECT_CALL(*installer, Install_(_, _, _))
+          .WillOnce(Invoke(installer.get(), &MockInstaller::OnInstall));
       EXPECT_CALL(*installer, GetInstalledFile(_, _)).Times(0);
       EXPECT_CALL(*installer, Uninstall()).Times(0);
 

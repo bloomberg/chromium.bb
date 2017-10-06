@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/update_client/update_client.h"
@@ -266,7 +267,9 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
       extension1->manifest()->value()->DeepCopy());
   new_manifest->SetString("version", "2.0");
 
-  installer->Install(std::move(new_manifest), new_version_dir.GetPath());
+  installer->Install(
+      std::move(new_manifest), new_version_dir.GetPath(),
+      base::Bind([](const update_client::CrxInstaller::Result& result) {}));
 
   scoped_refptr<content::MessageLoopRunner> loop_runner =
       new content::MessageLoopRunner();

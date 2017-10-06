@@ -45,8 +45,9 @@ class UpdateInstallShim : public update_client::CrxInstaller {
 
   // This is called when a new version of an extension is unpacked at
   // |unpack_path| and is ready for install.
-  CrxInstaller::Result Install(std::unique_ptr<base::DictionaryValue> manifest,
-                               const base::FilePath& unpack_path) override;
+  void Install(std::unique_ptr<base::DictionaryValue> manifest,
+               const base::FilePath& unpack_path,
+               const Callback& callback) override;
 
   // This is called by the generic differential update code in the
   // update_client to provide the path to an existing file in the current
