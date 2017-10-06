@@ -4881,12 +4881,20 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         RefBuffer *const ref_frame = &cm->frame_refs[i];
         ref_frame->idx = idx;
         ref_frame->buf = &frame_bufs[idx].buf;
+#if CONFIG_FRAME_SIGN_BIAS
+#if CONFIG_OBU
+        // NOTE: For the scenario of (cm->frame_type != S_FRAME),
+        // ref_frame_sign_bias will be reset based on frame offsets.
+        cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
+#endif  // CONFIG_OBU
+#else   // !CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_OBU
         cm->ref_frame_sign_bias[LAST_FRAME + i] =
             (cm->frame_type == S_FRAME) ? 0 : aom_rb_read_bit(rb);
-#else
+#else   // !CONFIG_OBU
         cm->ref_frame_sign_bias[LAST_FRAME + i] = aom_rb_read_bit(rb);
-#endif
+#endif  // CONFIG_OBU
+#endif  // CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
@@ -4957,7 +4965,29 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   } else {
     cm->frame_offset = cm->current_video_frame;
   }
-#endif
+  av1_setup_frame_buf_refs(cm);
+
+#if CONFIG_FRAME_SIGN_BIAS
+#if CONFIG_OBU
+  if (cm->frame_type != S_FRAME)
+#endif  // CONFIG_OBU
+    av1_setup_frame_sign_bias(cm);
+#define FRAME_SIGN_BIAS_DEBUG 0
+#if FRAME_SIGN_BIAS_DEBUG
+  {
+    printf("\n\nDECODER: Frame=%d, show_frame=%d:", cm->current_video_frame,
+           cm->show_frame);
+    MV_REFERENCE_FRAME ref_frame;
+    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+      printf(" sign_bias[%d]=%d", ref_frame,
+             cm->ref_frame_sign_bias[ref_frame]);
+    }
+    printf("\n");
+  }
+#endif  // FRAME_SIGN_BIAS_DEBUG
+#undef FRAME_SIGN_BIAS_DEBUG
+#endif  // CONFIG_FRAME_SIGN_BIAS
+#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_TEMPMV_SIGNALING
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
@@ -5557,12 +5587,9 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
 
-#if CONFIG_FRAME_MARKER
-  av1_setup_frame_buf_refs(cm);
 #if CONFIG_MFMV
   av1_setup_motion_field(cm);
 #endif  // CONFIG_MFMV
-#endif  // CONFIG_FRAME_MARKER
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING

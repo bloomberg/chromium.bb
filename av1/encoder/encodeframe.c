@@ -5517,25 +5517,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(x->blk_skip_drl);
 #endif
 
-#if CONFIG_FRAME_MARKER
-  if (cm->show_frame == 0) {
-    int arf_offset = AOMMIN(
-        (MAX_GF_INTERVAL - 1),
-        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
-#if CONFIG_EXT_REFS
-    int brf_offset =
-        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
-    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-#endif
-    cm->frame_offset = cm->current_video_frame + arf_offset;
-  } else {
-    cm->frame_offset = cm->current_video_frame;
-  }
-  av1_setup_frame_buf_refs(cm);
 #if CONFIG_MFMV
   av1_setup_motion_field(cm);
 #endif  // CONFIG_MFMV
-#endif  // CONFIG_FRAME_MARKER
 
   {
     struct aom_usec_timer emr_timer;
@@ -5595,6 +5579,26 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
 #endif  // CONFIG_EXT_TX
+
+#if CONFIG_FRAME_MARKER
+  if (cm->show_frame == 0) {
+    int arf_offset = AOMMIN(
+        (MAX_GF_INTERVAL - 1),
+        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
+#if CONFIG_EXT_REFS
+    int brf_offset =
+        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
+    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
+#endif  // CONFIG_EXT_REFS
+    cm->frame_offset = cm->current_video_frame + arf_offset;
+  } else {
+    cm->frame_offset = cm->current_video_frame;
+  }
+  av1_setup_frame_buf_refs(cm);
+#if CONFIG_FRAME_SIGN_BIAS
+  av1_setup_frame_sign_bias(cm);
+#endif  // CONFIG_FRAME_SIGN_BIAS
+#endif  // CONFIG_FRAME_MARKER
 
   // In the longer term the encoder should be generalized to match the
   // decoder such that we allow compound where one of the 3 buffers has a

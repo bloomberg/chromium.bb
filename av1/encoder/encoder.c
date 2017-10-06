@@ -5197,6 +5197,7 @@ static void set_ext_overrides(AV1_COMP *cpi) {
   }
 }
 
+#if !CONFIG_FRAME_SIGN_BIAS
 static void set_arf_sign_bias(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int arf_sign_bias;
@@ -5225,6 +5226,7 @@ static void set_arf_sign_bias(AV1_COMP *cpi) {
       cm->ref_frame_sign_bias[ALTREF_FRAME];
 #endif  // CONFIG_EXT_REFS
 }
+#endif  // !CONFIG_FRAME_SIGN_BIAS
 
 static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
   InterpFilter ifilter;
@@ -5373,8 +5375,11 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   set_ext_overrides(cpi);
   aom_clear_system_state();
 
+#if !CONFIG_FRAME_SIGN_BIAS
   // Set the arf sign bias for this frame.
   set_arf_sign_bias(cpi);
+#endif  // !CONFIG_FRAME_SIGN_BIAS
+
 #if CONFIG_TEMPMV_SIGNALING
   // frame type has been decided outside of this function call
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;

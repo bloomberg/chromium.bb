@@ -1540,15 +1540,15 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_EXT_COMP_REFS
 
 // Normative in decoder (for low delay)
-#if CONFIG_ONE_SIDED_COMPOUND
+#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
       const int idx = 1;
-#else  // !CONFIG_ONE_SIDED_COMPOUND
+#else  // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
 #if CONFIG_EXT_REFS
       const int idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
 #else   // !CONFIG_EXT_REFS
       const int idx = cm->ref_frame_sign_bias[cm->comp_fixed_ref];
 #endif  // CONFIG_EXT_REFS
-#endif  // CONFIG_ONE_SIDED_COMPOUND
+#endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
 
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
 #if CONFIG_VAR_REFS
@@ -2232,7 +2232,7 @@ static void dec_dump_logs(AV1_COMMON *cm, MODE_INFO *const mi, int mi_row,
 
   int8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 #define FRAME_TO_CHECK 1
-  if (cm->current_video_frame == FRAME_TO_CHECK /*&& cm->show_frame == 0*/) {
+  if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {
     printf(
         "=== DECODER ===: "
         "Frame=%d, (mi_row,mi_col)=(%d,%d), mode=%d, bsize=%d, "

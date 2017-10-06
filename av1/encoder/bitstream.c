@@ -2306,7 +2306,7 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   m = xd->mi[0];
   if (is_inter_block(&m->mbmi)) {
 #define FRAME_TO_CHECK 1
-    if (cm->current_video_frame == FRAME_TO_CHECK /* && cm->show_frame == 1*/) {
+    if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {
       const MB_MODE_INFO *const mbmi = &m->mbmi;
       const BLOCK_SIZE bsize = mbmi->sb_type;
 
@@ -4672,7 +4672,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
         aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                              REF_FRAMES_LOG2);
+#if !CONFIG_FRAME_SIGN_BIAS
         aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
+#endif  // !CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int i = get_ref_frame_map_idx(cpi, ref_frame);
@@ -4690,6 +4692,22 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         }
 #endif  // CONFIG_REFERENCE_BUFFER
       }
+
+#if CONFIG_FRAME_SIGN_BIAS
+#define FRAME_SIGN_BIAS_DEBUG 0
+#if FRAME_SIGN_BIAS_DEBUG
+      {
+        printf("\n\nENCODER: Frame=%d, show_frame=%d:", cm->current_video_frame,
+               cm->show_frame);
+        for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+          printf(" sign_bias[%d]=%d", ref_frame,
+                 cm->ref_frame_sign_bias[ref_frame]);
+        }
+        printf("\n");
+      }
+#endif  // FRAME_SIGN_BIAS_DEBUG
+#undef FRAME_SIGN_BIAS_DEBUG
+#endif  // CONFIG_FRAME_SIGN_BIAS
 
 #if CONFIG_FRAME_SIZE
       if (cm->error_resilient_mode == 0) {
@@ -4959,7 +4977,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
       aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                            REF_FRAMES_LOG2);
+#if !CONFIG_FRAME_SIGN_BIAS
       aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
+#endif  // !CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int i = get_ref_frame_map_idx(cpi, ref_frame);

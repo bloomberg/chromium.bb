@@ -390,6 +390,9 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
 
 #if CONFIG_FRAME_MARKER
 void av1_setup_frame_buf_refs(AV1_COMMON *cm);
+#if CONFIG_FRAME_SIGN_BIAS
+void av1_setup_frame_sign_bias(AV1_COMMON *cm);
+#endif  // CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_MFMV
 void av1_setup_motion_field(AV1_COMMON *cm);
 #endif  // CONFIG_MFMV
