@@ -116,7 +116,8 @@ void VolumeControlAndroid::SetVolume(AudioContentType type, float level) {
       MapIntoDifferentVolumeTableDomain(AudioContentType::kMedia, type, level);
   thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VolumeControlAndroid::SetVolumeOnThread,
-                                base::Unretained(this), type, mapped_level));
+                                base::Unretained(this), type, mapped_level,
+                                false /* from_android */));
 }
 
 bool VolumeControlAndroid::IsMuted(AudioContentType type) {
@@ -127,7 +128,8 @@ bool VolumeControlAndroid::IsMuted(AudioContentType type) {
 void VolumeControlAndroid::SetMuted(AudioContentType type, bool muted) {
   thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VolumeControlAndroid::SetMutedOnThread,
-                                base::Unretained(this), type, muted));
+                                base::Unretained(this), type, muted,
+                                false /* from_android */));
 }
 
 void VolumeControlAndroid::SetOutputLimit(AudioContentType type, float limit) {
@@ -183,7 +185,9 @@ void VolumeControlAndroid::InitializeOnThread() {
 }
 
 void VolumeControlAndroid::SetVolumeOnThread(AudioContentType type,
-                                             float level) {
+                                             float level,
+                                             bool from_android) {
+  // Note: |level| is in the |type| volume table domain.
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
   {
     base::AutoLock lock(volume_lock_);
@@ -198,14 +202,29 @@ void VolumeControlAndroid::SetVolumeOnThread(AudioContentType type,
   // Provide the type volume to the sink manager so it can properly calculate
   // the limiter multiplier. The volume is *not* applied by the sink though.
   AudioSinkManager::Get()->SetTypeVolumeDb(type, level_db);
+
   // Set proper volume in Android OS.
-  Java_VolumeControl_setVolume(base::android::AttachCurrentThread(),
-                               j_volume_control_, static_cast<int>(type),
-                               level);
-  ReportVolumeChangeOnThread(type, level);
+  if (!from_android) {
+    Java_VolumeControl_setVolume(base::android::AttachCurrentThread(),
+                                 j_volume_control_, static_cast<int>(type),
+                                 level);
+  }
+
+  // Report new volume level to observers. Note that the reported value needs
+  // to be in the kMedia (MUSIC) volume table domain.
+  float media_level =
+      MapIntoDifferentVolumeTableDomain(type, AudioContentType::kMedia, level);
+  {
+    base::AutoLock lock(observer_lock_);
+    for (VolumeObserver* observer : volume_observers_) {
+      observer->OnVolumeChange(type, media_level);
+    }
+  }
 }
 
-void VolumeControlAndroid::SetMutedOnThread(AudioContentType type, bool muted) {
+void VolumeControlAndroid::SetMutedOnThread(AudioContentType type,
+                                            bool muted,
+                                            bool from_android) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
   {
     base::AutoLock lock(volume_lock_);
@@ -215,31 +234,30 @@ void VolumeControlAndroid::SetMutedOnThread(AudioContentType type, bool muted) {
     muted_[type] = muted;
   }
 
-  Java_VolumeControl_setMuted(base::android::AttachCurrentThread(),
-                              j_volume_control_, static_cast<int>(type), muted);
+  if (!from_android) {
+    Java_VolumeControl_setMuted(base::android::AttachCurrentThread(),
+                                j_volume_control_, static_cast<int>(type),
+                                muted);
+  }
 
-  ReportMuteChangeOnThread(type, muted);
+  {
+    base::AutoLock lock(observer_lock_);
+    for (VolumeObserver* observer : volume_observers_) {
+      observer->OnMuteChange(type, muted);
+    }
+  }
 }
 
 void VolumeControlAndroid::ReportVolumeChangeOnThread(AudioContentType type,
                                                       float level) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-  // The returned value needs to be in the kMedia (MUSIC) volume table domain.
-  float mapped_level =
-      MapIntoDifferentVolumeTableDomain(type, AudioContentType::kMedia, level);
-  base::AutoLock lock(observer_lock_);
-  for (VolumeObserver* observer : volume_observers_) {
-    observer->OnVolumeChange(type, mapped_level);
-  }
+  SetVolumeOnThread(type, level, true /* from android */);
 }
 
 void VolumeControlAndroid::ReportMuteChangeOnThread(AudioContentType type,
                                                     bool muted) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-  base::AutoLock lock(observer_lock_);
-  for (VolumeObserver* observer : volume_observers_) {
-    observer->OnMuteChange(type, muted);
-  }
+  SetMutedOnThread(type, muted, true /* from_android */);
 }
 
 //
