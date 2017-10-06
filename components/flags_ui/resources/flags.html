@@ -2,10 +2,8 @@
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
-<if expr="is_android or is_ios">
-<meta name="viewport" content="width=device-width, user-scalable=no">
-</if>
-<link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 <link rel="stylesheet" href="flags.css">
 
 <if expr="is_ios">
@@ -14,149 +12,134 @@
 </if>
 
 <script src="chrome://resources/js/util.js"></script>
-<script src="chrome://flags/flags.js"></script>
 </head>
 <body>
-<div id="body-container" style="visibility:hidden">
-
-  <div id="header">
-    <div id="title-spacer"><h1>$i18n{flagsLongTitle}</h1></div>
-  </div>
-
-  <div class="blurb-container">
-    <span id="blurb-warning">$i18n{flagsWarningHeader}</span>
-    <span>$i18n{flagsBlurb}</span>
-    <span id="channel-promo-beta" hidden>$i18n{channelPromoBeta}</span>
-    <span id="channel-promo-dev" hidden>$i18n{channelPromoDev}</span>
-  </div>
-
-<if expr="chromeos">
-  <div class="blurb-container" id="owner-warning">
-    <span>$i18n{ownerWarning}</span>
-  </div>
-</if>
-
-  <div id="flagsTemplate">
-    <div id="container" class="vbox-container">
-    <div id="top" class="wbox">
-      <div class="section-header">
-        <table cellpadding="0" cellspacing="0"><tr valign="center">
-          <td>
-            <span class="section-header-title">$i18n{flagsTableTitle}</span>
-            <button id="experiment-reset-all" type="button">
-              $i18n{resetAllButton}
-            </button>
-          </td>
-        </tr></table>
+<div id="header">
+  <div class="flex-container">
+    <div class="flex">
+      <div class="search-container">
+        <input type="text" id="search" placeholder="$i18n{flagsSearchPlaceholder}">
+        <button class="clear-search" title="Clear search"></button>
       </div>
     </div>
-    </div>
-
-    <div class="content">
-      <div class="experiment"
-           jsselect="supportedFeatures"
-           jsvalues="id:internal_name">
-        <table width="100%" cellpadding="2" cellspacing="0">
-        <!-- TODO(mkwst): This doesn't work exactly as expected for multivalue
-                          experiments.  See http://crbug.com/73730 -->
-        <tr jsvalues="class: is_default ? 'experiment-default'
-                                        : 'experiment-switched'">
-        <td valign="top">
-          <div class="experiment-text">
-            <div>
-              <span class="experiment-name"
-                    jscontent="name">NAME</span>
-              <span jscontent="supported_platforms.join(', ')"></span>
-              <div>
-                <span jsvalues=".innerHTML:description"></span>
-                <a class="permalink"
-                   jsvalues="href: '#' + internal_name"
-                   jscontent="'#' + internal_name"></a>
-              </div>
-              <div jsdisplay="options && options.length > 0">
-                <select
-                  class="experiment-select"
-                  jsvalues=".internal_name:internal_name;.disabled:!enabled">
-                  <option jsvalues=".selected:selected"
-                          jsselect="options"
-                          jscontent="description">NAME
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="experiment-actions">
-            <span>
-              <a
-                class="experiment-disable-link"
-                jsvalues=".internal_name:internal_name"
-                jsdisplay="enabled" href="#">$i18n{disable}</a>
-              <a
-                class="experiment-enable-link"
-                jsvalues=".internal_name:internal_name"
-                jsdisplay="!enabled" href="#">$i18n{enable}</a>
-            </span>
-          </div>
-        </td>
-        </tr>
-        </table>
-      </div>
-    </div>
-
-<!-- Unsupported experiments are not shown on iOS -->
-<if expr="not is_ios">
-    <div id="container" class="vbox-container">
-    <div id="top" class="wbox">
-      <div class="section-header">
-        <table cellpadding="0" cellspacing="0"><tr valign="center">
-          <td>
-            <span class="section-header-title">
-              $i18n{flagsUnsupportedTableTitle}
-            </span>
-          </td>
-        </tr></table>
-      </div>
-    </div>
-    </div>
-
-    <div class="content">
-      <div class="experiment"
-           jsselect="unsupportedFeatures"
-           jsvalues="id:internal_name">
-        <table width="100%" cellpadding="2" cellspacing="0">
-        <tr class="experiment-unsupported">
-        <td valign="top">
-          <div class="experiment-text">
-            <div>
-              <span class="experiment-name"
-                    jscontent="name">NAME</span>
-              <span jscontent="supported_platforms.join(', ')"></span>
-              <div>
-                <span jsvalues=".innerHTML:description"></span>
-                <a class="permalink"
-                   jsvalues="href: '#' + internal_name"
-                   jscontent="'#' + internal_name"></a>
-              </div>
-            </div>
-          </div>
-          <div class="experiment-actions">
-            <div>$i18n{flagsNotSupported}</div>
-          </div>
-        </td>
-        </tr>
-        </table>
-      </div>
-    </div>
-</if>
-
-    <div class="needs-restart" jsdisplay="needsRestart">
-      <div>$i18n{flagsRestartNotice}</div>
-      <button class="experiment-restart-button" type="button">
-        $i18n{flagsRestartButton}
-      </button>
+    <div class="flex">
+      <button id="experiment-reset-all" type="button">$i18n{resetAllButton}</button>
     </div>
   </div>
 </div>
+<div id="body-container" style="visibility:hidden">
+  <div id="flagsTemplate">
+    <div class="flex-container">
+      <div class="flex"><h2 class="section-header-title">$i18n{flagsTitle}</h2></div>
+      <span id="version" class="flex">$i18n{version}</span>
+    </div>
+    <div class="blurb-container">
+      <span class="blurb-warning">$i18n{flagsWarningHeader}</span>
+      <span>$i18n{flagsBlurb}</span>
+<if expr="chromeos">
+      <p id="owner-warning">
+        <span>$i18n{ownerWarning}</span>
+      </p>
+</if>
+    </div>
+    <p class="promo">
+      <span id="channel-promo-beta">$i18nRaw{channelPromoBeta}</span>
+      <span id="channel-promo-dev" hidden>$i18nRaw{channelPromoDev}</span>
+    </p>
+    <ul class="tabs" role="tablist">
+      <li class="selected">
+        <a href="#tab-content-available" id="tab-available" class="tab" role="tab"
+            aria-selected="true"
+            aria-controls="panel1"
+            tabindex="0">Available</a>
+        <div id="tab-content-available" class="tab-content"
+            role="tabpanel" aria-labelledby="tab-available" aria-hidden="false">
+          <div class="experiment"
+              jsselect="supportedFeatures"
+              jsvalues="id:internal_name">
+            <div class="experiment-default"
+                jsvalues="class: is_default ? 'experiment-default flex-container'
+                    : 'experiment-switched flex-container'">
+              <div class="flex">
+                <h3 class="experiment-name" jscontent="name"
+                    jsvalues="title: is_default ? '' : 'Experiment enabled'">Name</h3>
+                <p>
+                  <span jsvalues=".innerHTML:description"></span>
+                  <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
+                </p>
+                <a class="permalink" jsvalues="href: '#' + internal_name"
+                    jscontent="'#' + internal_name"></a>
+              </div>
+              <div class="flex experiment-actions">
+                <div jsdisplay="options && options.length > 0">
+                  <select class="experiment-select"
+                      jsvalues=".internal_name:internal_name;.disabled:!enabled">
+                    <option jsvalues=".selected:selected"
+                        jsselect="options"
+                        jscontent="description">NAME
+                    </option>
+                  </select>
+                </div>
+                <span>
+                  <a class="experiment-disable-link"
+                      jsvalues=".internal_name:internal_name"
+                      jsdisplay="enabled" href="#">$i18n{disable}</a>
+                  <a class="experiment-enable-link"
+                      jsvalues=".internal_name:internal_name"
+                      jsdisplay="!enabled" href="#">$i18n{enable}</a>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="no-match hidden">$i18n{flagsNoMatches}</div>
+        </div>
+      </li>
+<!-- Unsupported experiments are not shown on iOS -->
+<if expr="not is_ios">
+      <li>
+        <a href="#tab-content-unavailable" id="tab-unavailable" class="tab" role="tab"
+           aria-selected="false" aria-controls="panel2"
+           tabindex="0">Unavailable</a>
+        <div id="tab-content-unavailable" class="tab-content"
+            role="tabpanel" aria-labelledby="tab-unavailable" aria-hidden="false">
+          <div class="experiment"
+              jsselect="unsupportedFeatures"
+              jsvalues="id:internal_name">
+            <div class="experiment-default flex-container"
+                jsvalues="class: is_default ? 'experiment-default flex-container'
+                    : 'experiment-switched flex-container'">
+              <div class="flex">
+                <h3 class="experiment-name"
+                    jscontent="name">Name</h3>
+                <p>
+                  <span jsvalues=".innerHTML:description"></span>
+                  <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
+                </p>
+                <a class="permalink"
+                    jsvalues="href: '#' + internal_name"
+                    jscontent="'#' + internal_name"></a>
+              </div>
+              <div class="flex experiment-actions">$i18n{flagsNotSupported}</div>
+            </div>
+          </div>
+          <div class="no-match hidden">$i18n{flagsNoMatches}</div>
+        </div>
+      </li>
+</if>
+    </ul>
+    <div id="needs-restart" jsvalues="class:needsRestart ? 'show' : ''">
+      <div class="flex-container">
+        <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
+        <div class="flex">
+          <button class="experiment-restart-button" type="button">
+            $i18n{flagsRestartButton}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="chrome://flags/flags.js"></script>
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>
