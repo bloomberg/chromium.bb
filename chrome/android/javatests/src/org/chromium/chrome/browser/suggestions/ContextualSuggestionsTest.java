@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -19,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -32,10 +34,12 @@ import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for Contextual suggestions.
@@ -43,6 +47,7 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG)
 @CommandLineFlags.Remove(ChromeHome.ENABLE_FLAGS)
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class ContextualSuggestionsTest {
     private static final String ENABLE_CONTEXTUAL_SUGGESTIONS = ChromeHome.ENABLE_FLAGS + ","
             + ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL;
@@ -101,15 +106,15 @@ public class ContextualSuggestionsTest {
         mSuggestionsDeps.getFactory().suggestionsSource = mSuggestionsSource;
 
         mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SHEET_STATE_PEEK);
+
+        Assert.assertTrue(FeatureUtilities.isChromeHomeEnabled());
     }
 
     @Test
-    //@SmallTest
-    @DisabledTest(message = "see crbug.com/758179")
+    @SmallTest
     @Feature({"ContextualSuggestions"})
     @CommandLineFlags.Add(ChromeHome.ENABLE_FLAGS)
-    public void testCarouselIsNotShownWhenFlagIsDisabled() throws IOException {
-        Assert.assertTrue(FeatureUtilities.isChromeHomeEnabled());
+    public void testCarouselIsNotShownWhenFlagIsDisabled() {
         Assert.assertFalse(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL));
 
@@ -129,8 +134,7 @@ public class ContextualSuggestionsTest {
                     + "enabled when this is handled properly.")
     @Feature({"ContextualSuggestions"})
     @CommandLineFlags.Add(ENABLE_CONTEXTUAL_SUGGESTIONS)
-    public void testCarouselIsNotShownWhenFlagsEnabledButNoSuggestions() throws Exception {
-        Assert.assertTrue(FeatureUtilities.isChromeHomeEnabled());
+    public void testCarouselIsNotShownWhenFlagsEnabledButNoSuggestions() {
         Assert.assertTrue(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL));
 
@@ -142,11 +146,11 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
-    //@SmallTest
-    @DisabledTest(message = "see crbug.com/758179")
+    @SmallTest
     @Feature({"ContextualSuggestions"})
     @CommandLineFlags.Add(ENABLE_CONTEXTUAL_SUGGESTIONS)
-    public void testCarouselIsShownWhenItReceivedSuggestions() throws Exception {
+    public void testCarouselIsShownWhenItReceivedSuggestions()
+            throws InterruptedException, TimeoutException {
         mSuggestionsSource.setContextualSuggestions(FAKE_CONTEXTUAL_SUGGESTIONS);
 
         String testUrl = mTestServerRule.getServer().getURL(TEST_PAGE);
@@ -159,17 +163,17 @@ public class ContextualSuggestionsTest {
         View carouselRecyclerView = getCarouselRecyclerView();
         Assert.assertNotNull(carouselRecyclerView);
 
-        RecyclerView.Adapter carouselAdapter = ((RecyclerView) carouselRecyclerView).getAdapter();
+        RecyclerView.Adapter<?> carouselAdapter =
+                ((RecyclerView) carouselRecyclerView).getAdapter();
 
         Assert.assertEquals(FAKE_CONTEXTUAL_SUGGESTIONS.size(), carouselAdapter.getItemCount());
     }
 
     @Test
-    //@MediumTest
-    @DisabledTest(message = "see crbug.com/758179")
+    @MediumTest
     @Feature({"ContextualSuggestions", "RenderTest"})
     @CommandLineFlags.Add(ENABLE_CONTEXTUAL_SUGGESTIONS)
-    public void testCardAppearance() throws Exception {
+    public void testCardAppearance() throws InterruptedException, TimeoutException, IOException {
         mSuggestionsSource.setContextualSuggestions(FAKE_CONTEXTUAL_SUGGESTIONS);
 
         String testUrl = mTestServerRule.getServer().getURL(TEST_PAGE);
@@ -191,8 +195,6 @@ public class ContextualSuggestionsTest {
                 ItemViewType.CAROUSEL);
         if (position == RecyclerView.NO_POSITION) return null;
 
-        View recyclerView = mainRecyclerView.getChildAt(position);
-        Assert.assertTrue(recyclerView instanceof RecyclerView);
-        return (RecyclerView) recyclerView;
+        return (RecyclerView) mainRecyclerView.getChildAt(position);
     }
 }
