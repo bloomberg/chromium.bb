@@ -47,7 +47,6 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/static_geometry_binding.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -293,17 +292,6 @@ class GLRenderer::ScopedUseGrContext {
   DISALLOW_COPY_AND_ASSIGN(ScopedUseGrContext);
 };
 
-struct GLRenderer::PendingAsyncReadPixels {
-  PendingAsyncReadPixels() : buffer(0) {}
-
-  std::unique_ptr<CopyOutputRequest> copy_request;
-  gfx::Rect copy_rect;
-  unsigned buffer;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PendingAsyncReadPixels);
-};
-
 class GLRenderer::SyncQuery {
  public:
   explicit SyncQuery(gpu::gles2::GLES2Interface* gl)
@@ -404,7 +392,7 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
       shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
-      texture_mailbox_deleter_(texture_mailbox_deleter),
+      copier_(output_surface->context_provider(), texture_mailbox_deleter),
       gl_composited_overlay_candidate_quad_border_(
           settings->gl_composited_overlay_candidate_quad_border),
       bound_geometry_(NO_BINDING),
@@ -2591,6 +2579,8 @@ void GLRenderer::FinishDrawingFrame() {
   if (use_swap_with_bounds_)
     swap_content_bounds_ = current_frame()->root_content_bounds;
 
+  copier_.FreeUnusedCachedResources();
+
   current_framebuffer_lock_ = nullptr;
 
   gl_->Disable(GL_BLEND);
@@ -2651,17 +2641,31 @@ void GLRenderer::EnsureScissorTestDisabled() {
 void GLRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
   TRACE_EVENT0("cc", "GLRenderer::CopyDrawnRenderPass");
-  gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
-  gfx::ColorSpace render_pass_color_space =
-      current_frame()->current_render_pass->color_space;
-  if (request->is_scaled()) {
-    // TODO(crbug/760348): Coming soon!
-    return;
+
+  // Finalize the source rect, either as the entire RenderPass's output rect, or
+  // the client-provided area clamped to the output rect.
+  if (request->has_area()) {
+    gfx::Rect clamped_area = request->area();
+    clamped_area.Intersect(current_frame()->current_render_pass->output_rect);
+    request->set_area(clamped_area);
+  } else {
+    request->set_area(current_frame()->current_render_pass->output_rect);
   }
-  if (request->has_area())
-    copy_rect.Intersect(request->area());
-  GetFramebufferPixelsAsync(copy_rect, render_pass_color_space,
-                            std::move(request));
+
+  if (overdraw_feedback_)
+    FlushOverdrawFeedback(request->area());
+
+  const gfx::Rect copy_rect = MoveFromDrawToWindowSpace(request->area());
+  GLuint framebuffer_texture = 0;
+  gfx::Size framebuffer_texture_size;
+  if (current_framebuffer_lock_) {
+    framebuffer_texture = current_framebuffer_lock_->GetTexture();
+    framebuffer_texture_size = current_framebuffer_lock_->size();
+  }
+  copier_.CopyFromTextureOrFramebuffer(
+      std::move(request), copy_rect, GetFramebufferCopyTextureFormat(),
+      framebuffer_texture, framebuffer_texture_size,
+      current_frame()->current_render_pass->color_space);
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
@@ -2843,210 +2847,6 @@ void GLRenderer::DidReceiveTextureInUseResponses(
     }
   }
   color_lut_cache_.Swap();
-}
-
-void GLRenderer::GetFramebufferPixelsAsync(
-    const gfx::Rect& rect,
-    const gfx::ColorSpace& framebuffer_color_space,
-    std::unique_ptr<CopyOutputRequest> request) {
-  if (rect.IsEmpty())
-    return;  // |request| auto-sends empty result on out-of-scope.
-
-  if (overdraw_feedback_)
-    FlushOverdrawFeedback(rect);
-
-  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
-  DCHECK_GE(window_rect.x(), 0);
-  DCHECK_GE(window_rect.y(), 0);
-  DCHECK_LE(window_rect.right(), current_surface_size_.width());
-  DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
-  DCHECK_EQ(window_rect.width(), rect.width());
-  DCHECK_EQ(window_rect.height(), rect.height());
-
-  switch (request->result_format()) {
-    case CopyOutputRequest::ResultFormat::RGBA_TEXTURE: {
-      bool own_mailbox = !request->has_texture_mailbox();
-
-      GLuint texture_id = 0;
-      gpu::Mailbox mailbox;
-      if (own_mailbox) {
-        gl_->GenMailboxCHROMIUM(mailbox.name);
-        gl_->GenTextures(1, &texture_id);
-        gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-      } else {
-        mailbox = request->texture_mailbox().mailbox();
-        DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
-                  request->texture_mailbox().target());
-        DCHECK(!mailbox.IsZero());
-        const gpu::SyncToken& incoming_sync_token =
-            request->texture_mailbox().sync_token();
-        if (incoming_sync_token.HasData())
-          gl_->WaitSyncTokenCHROMIUM(incoming_sync_token.GetConstData());
-
-        texture_id =
-            gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-      }
-      gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-      // Note: This redefines the format of the texture if it was passed in from
-      // the client to be the best match based on the source of the copy.
-      gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GetFramebufferCopyTextureFormat(),
-                          window_rect.x(), window_rect.y(), window_rect.width(),
-                          window_rect.height(), 0);
-      gl_->BindTexture(GL_TEXTURE_2D, 0);
-
-      const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
-      gl_->ShallowFlushCHROMIUM();
-
-      gpu::SyncToken sync_token;
-      gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-      TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
-      texture_mailbox.set_color_space(framebuffer_color_space);
-
-      std::unique_ptr<SingleReleaseCallback> release_callback;
-      if (own_mailbox) {
-        gl_->BindTexture(GL_TEXTURE_2D, 0);
-        release_callback = texture_mailbox_deleter_->GetReleaseCallback(
-            output_surface_->context_provider(), texture_id);
-      } else {
-        gl_->DeleteTextures(1, &texture_id);
-        // Create a no-op release callback, since the client that made the
-        // request owns the texture. This wart is going away soon, per work on
-        // http://crbug.com/754872.
-        release_callback = SingleReleaseCallback::Create(
-            base::Bind([](const gpu::SyncToken&, bool) {}));
-      }
-
-      request->SendResult(std::make_unique<CopyOutputTextureResult>(
-          rect, texture_mailbox, std::move(release_callback)));
-      return;
-    }
-
-    case CopyOutputRequest::ResultFormat::RGBA_BITMAP: {
-      std::unique_ptr<PendingAsyncReadPixels> pending_read(
-          new PendingAsyncReadPixels);
-      pending_read->copy_request = std::move(request);
-      pending_read->copy_rect = rect;
-      pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
-                                        std::move(pending_read));
-
-      GLuint buffer = 0;
-      gl_->GenBuffers(1, &buffer);
-      gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, buffer);
-      gl_->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                      4 * window_rect.size().GetArea(), NULL, GL_STREAM_READ);
-
-      GLuint query = 0;
-      gl_->GenQueriesEXT(1, &query);
-      gl_->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, query);
-
-      gl_->ReadPixels(window_rect.x(), window_rect.y(), window_rect.width(),
-                      window_rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-      gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-
-      // Save the buffer to verify the callbacks happen in the expected order.
-      pending_async_read_pixels_.front()->buffer = buffer;
-
-      gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
-      context_support_->SignalQuery(
-          query, base::Bind(&GLRenderer::FinishedReadback,
-                            weak_ptr_factory_.GetWeakPtr(), buffer, query,
-                            window_rect.size(), framebuffer_color_space));
-      return;
-    }
-  }
-
-  NOTREACHED();
-}
-
-void GLRenderer::FinishedReadback(
-    unsigned source_buffer,
-    unsigned query,
-    const gfx::Size& size,
-    const gfx::ColorSpace& framebuffer_color_space) {
-  DCHECK(!pending_async_read_pixels_.empty());
-
-  if (query != 0) {
-    gl_->DeleteQueriesEXT(1, &query);
-  }
-
-  // Make sure we are servicing the right readback. There is no guarantee that
-  // callbacks to this function are in the same order as we post the copy
-  // requests.
-  // Nevertheless, it is very likely that the order is preserved, and thus
-  // start searching from back to the front.
-  auto iter = pending_async_read_pixels_.rbegin();
-  const auto& reverse_end = pending_async_read_pixels_.rend();
-  while (iter != reverse_end && (*iter)->buffer != source_buffer)
-    ++iter;
-
-  DCHECK(iter != reverse_end);
-  PendingAsyncReadPixels* current_read = iter->get();
-
-  uint8_t* src_pixels = NULL;
-  SkBitmap bitmap;
-
-  if (source_buffer != 0) {
-    gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, source_buffer);
-    src_pixels = static_cast<uint8_t*>(gl_->MapBufferCHROMIUM(
-        GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
-
-    if (src_pixels) {
-      // TODO(miu): Provide color space in this allocN32Pixels() call.
-      // http://crbug.com/758057
-      bitmap.allocN32Pixels(size.width(), size.height());
-
-      // TODO(miu): Replace the logic below with a simple SkBitmap.writePixels()
-      // call (to use Skia's optimized swizzle/conversion implementation).
-      // http://crbug.com/754872
-      uint8_t* dest_pixels = static_cast<uint8_t*>(bitmap.getPixels());
-
-      size_t row_bytes = size.width() * 4;
-      int num_rows = size.height();
-      size_t total_bytes = num_rows * row_bytes;
-      for (size_t dest_y = 0; dest_y < total_bytes; dest_y += row_bytes) {
-        // Flip Y axis.
-        size_t src_y = total_bytes - dest_y - row_bytes;
-        // Swizzle OpenGL -> Skia byte order.
-        for (size_t x = 0; x < row_bytes; x += 4) {
-          dest_pixels[dest_y + x + SK_R32_SHIFT / 8] =
-              src_pixels[src_y + x + 0];
-          dest_pixels[dest_y + x + SK_G32_SHIFT / 8] =
-              src_pixels[src_y + x + 1];
-          dest_pixels[dest_y + x + SK_B32_SHIFT / 8] =
-              src_pixels[src_y + x + 2];
-          dest_pixels[dest_y + x + SK_A32_SHIFT / 8] =
-              src_pixels[src_y + x + 3];
-        }
-      }
-
-      gl_->UnmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
-    }
-    gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-    gl_->DeleteBuffers(1, &source_buffer);
-  }
-
-  if (bitmap.readyToDraw()) {
-    current_read->copy_request->SendResult(
-        std::make_unique<CopyOutputSkBitmapResult>(current_read->copy_rect,
-                                                   bitmap));
-  } else {
-    // The CopyOutputRequest will auto-send an empty result on out-of-scope
-    // (below).
-  }
-
-  // Conversion from reverse iterator to iterator:
-  // Iterator |iter.base() - 1| points to the same element with reverse iterator
-  // |iter|. The difference |-1| is due to the fact of correspondence of end()
-  // with rbegin().
-  pending_async_read_pixels_.erase(iter.base() - 1);
 }
 
 void GLRenderer::BindFramebufferToOutputSurface() {

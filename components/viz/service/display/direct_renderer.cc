@@ -512,8 +512,10 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
 
   bool first_request = true;
   for (auto& copy_request : render_pass->copy_requests) {
-    // Doing a readback is destructive of our state on Mac, so make sure
-    // we restore the state between readbacks. http://crbug.com/99393.
+    // CopyDrawnRenderPass() can change the binding of the framebuffer target as
+    // a part of its usual scaling and readback operations. Therefore, make sure
+    // to restore the correct framebuffer between readbacks. (Even if it did
+    // not, a Mac-specific bug requires this workaround: http://crbug.com/99393)
     if (!first_request)
       UseRenderPass(render_pass);
     CopyDrawnRenderPass(std::move(copy_request));

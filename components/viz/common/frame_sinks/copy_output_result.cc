@@ -76,7 +76,6 @@ const SkBitmap& CopyOutputSkBitmapResult::AsSkBitmap() const {
     replacement.writePixels(src_pixmap);
   }
   *bitmap = replacement;
-  bitmap->setImmutable();
 
   return *bitmap;
 }

@@ -79,9 +79,11 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   const gfx::Vector2d& scale_to() const { return scale_to_; }
   bool is_scaled() const { return scale_from_ != scale_to_; }
 
-  // Optionally specify the source of this copy request. If set when this copy
-  // request is submitted to a layer, a prior uncommitted copy request from the
-  // same source will be aborted.
+  // Optionally specify the source of this copy request. This is used when the
+  // client plans to make many similar copy requests over short periods of time.
+  // It is used to: 1) auto-abort prior uncommitted copy requests to avoid
+  // duplicate copies of the same frame; and 2) hint to the implementation to
+  // cache resources for more-efficient execution of later copy requests.
   void set_source(const base::UnguessableToken& source) { source_ = source; }
   bool has_source() const { return source_.has_value(); }
   const base::UnguessableToken& source() const { return *source_; }

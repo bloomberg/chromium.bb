@@ -21,11 +21,9 @@ viz_test("viz_unittests") {
     "//mojo/edk/system",
   ]
 
-  if (!is_android) {
-    data = [
-      "test/data/",
-    ]
-  }
+  data = [
+    "test/data/",
+  ]
 
   data_deps = [
     "//third_party/mesa:osmesa",
