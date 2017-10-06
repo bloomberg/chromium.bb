@@ -18,12 +18,14 @@
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/MathExtras.h"
@@ -244,6 +246,19 @@ void OffscreenCanvas::DiscardImageBuffer() {
 
 ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
   if (!image_buffer_) {
+    bool is_accelerated_2d_canvas_blacklisted = true;
+    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+        SharedGpuContext::ContextProviderWrapper();
+    if (context_provider_wrapper) {
+      const gpu::GpuFeatureInfo& gpu_feature_info =
+          context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();
+      if (gpu::kGpuFeatureStatusEnabled ==
+          gpu_feature_info
+              .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS]) {
+        is_accelerated_2d_canvas_blacklisted = false;
+      }
+    }
+
     IntSize surface_size(width(), height());
     OpacityMode opacity_mode =
         context_->CreationAttributes().hasAlpha() ? kNonOpaque : kOpaque;
@@ -252,7 +267,8 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
     // Remove the check for canvas color extensions to allow OffscreenCanvas
     // use accelerated code path with color management.
     if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled() &&
-        RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
+        RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
+        !is_accelerated_2d_canvas_blacklisted) {
       surface.reset(
           new AcceleratedImageBufferSurface(surface_size, opacity_mode));
     }
