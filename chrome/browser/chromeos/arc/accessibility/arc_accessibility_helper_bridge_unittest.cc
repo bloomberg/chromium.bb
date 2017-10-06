@@ -13,9 +13,11 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/exo/shell_surface.h"
 #include "components/exo/wm_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 
@@ -56,6 +58,28 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(FakeWMHelper);
   };
 
+  class TestArcAccessibilityHelperBridge : public ArcAccessibilityHelperBridge {
+   public:
+    TestArcAccessibilityHelperBridge(content::BrowserContext* browser_context,
+                                     ArcBridgeService* arc_bridge_service)
+        : ArcAccessibilityHelperBridge(browser_context, arc_bridge_service),
+          window_(new aura::Window(nullptr)) {
+      window_->Init(ui::LAYER_NOT_DRAWN);
+    }
+
+    void SetActiveWindowId(const std::string& id) {
+      exo::ShellSurface::SetApplicationId(window_.get(), id);
+    }
+
+   protected:
+    aura::Window* GetActiveWindow() override { return window_.get(); }
+
+   private:
+    std::unique_ptr<aura::Window> window_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestArcAccessibilityHelperBridge);
+  };
+
   ArcAccessibilityHelperBridgeTest() = default;
 
   void SetUp() override {
@@ -64,8 +88,8 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     testing_profile_ = std::make_unique<TestingProfile>();
     bridge_service_ = std::make_unique<ArcBridgeService>();
     accessibility_helper_bridge_ =
-        std::make_unique<ArcAccessibilityHelperBridge>(testing_profile_.get(),
-                                                       bridge_service_.get());
+        std::make_unique<TestArcAccessibilityHelperBridge>(
+            testing_profile_.get(), bridge_service_.get());
   }
 
   void TearDown() override {
@@ -77,7 +101,7 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     wm_helper_.reset();
   }
 
-  ArcAccessibilityHelperBridge* accessibility_helper_bridge() {
+  TestArcAccessibilityHelperBridge* accessibility_helper_bridge() {
     return accessibility_helper_bridge_.get();
   }
 
@@ -86,105 +110,86 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
   std::unique_ptr<FakeWMHelper> wm_helper_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<ArcBridgeService> bridge_service_;
-  std::unique_ptr<ArcAccessibilityHelperBridge> accessibility_helper_bridge_;
+  std::unique_ptr<TestArcAccessibilityHelperBridge>
+      accessibility_helper_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridgeTest);
 };
 
-TEST_F(ArcAccessibilityHelperBridgeTest, TaskLifecycle) {
-  ArcAccessibilityHelperBridge* helper_bridge = accessibility_helper_bridge();
-  const auto& package_to_tree = helper_bridge->package_name_to_tree_for_test();
-  const auto& package_to_ids =
-      helper_bridge->package_name_to_task_ids_for_test();
-
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(0U, package_to_ids.size());
-
-  helper_bridge->OnTaskCreated(1, "com.android.vending", "launch", "");
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(1U, package_to_ids.size());
-  auto it1 = package_to_ids.find("com.android.vending");
-  ASSERT_NE(package_to_ids.end(), it1);
-  ASSERT_EQ(1U, it1->second.size());
-  ASSERT_EQ(1U, it1->second.count(1));
-
-  helper_bridge->OnTaskCreated(2, "com.android.vending", "app", "");
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(1U, package_to_ids.size());
-  auto it2 = package_to_ids.find("com.android.vending");
-  ASSERT_NE(package_to_ids.end(), it2);
-  ASSERT_EQ(2U, it2->second.size());
-  ASSERT_EQ(1U, it2->second.count(1));
-  ASSERT_EQ(1U, it2->second.count(2));
-
-  helper_bridge->OnTaskCreated(3, "com.android.music", "app", "");
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(2U, package_to_ids.size());
-  auto it3 = package_to_ids.find("com.android.music");
-  ASSERT_NE(package_to_ids.end(), it3);
-  ASSERT_EQ(1U, it3->second.size());
-  ASSERT_EQ(1U, it3->second.count(3));
-
-  helper_bridge->OnTaskDestroyed(1);
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(2U, package_to_ids.size());
-  it1 = package_to_ids.find("com.android.vending");
-  ASSERT_NE(package_to_ids.end(), it1);
-  ASSERT_EQ(1U, it1->second.size());
-  ASSERT_EQ(0U, it1->second.count(1));
-  ASSERT_EQ(1U, it1->second.count(2));
-
-  helper_bridge->OnTaskDestroyed(2);
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(1U, package_to_ids.size());
-  it2 = package_to_ids.find("com.android.vending");
-  ASSERT_EQ(package_to_ids.end(), it2);
-
-  helper_bridge->OnTaskDestroyed(3);
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(0U, package_to_ids.size());
-}
-
-TEST_F(ArcAccessibilityHelperBridgeTest, AXTreeSourceLifetime) {
+TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableChromeVoxArcSupport);
 
-  ArcAccessibilityHelperBridge* helper_bridge = accessibility_helper_bridge();
-  const auto& package_to_tree = helper_bridge->package_name_to_tree_for_test();
-  const auto& package_to_ids =
-      helper_bridge->package_name_to_task_ids_for_test();
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  const auto& task_id_to_tree = helper_bridge->task_id_to_tree_for_test();
+  ASSERT_EQ(0U, task_id_to_tree.size());
 
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(0U, package_to_ids.size());
-
-  helper_bridge->OnTaskCreated(1, "com.android.vending", "launch", "");
-  ASSERT_EQ(0U, package_to_tree.size());
-  ASSERT_EQ(1U, package_to_ids.size());
-  auto it1 = package_to_ids.find("com.android.vending");
-  ASSERT_NE(package_to_ids.end(), it1);
-  ASSERT_EQ(1U, it1->second.size());
-  ASSERT_EQ(1U, it1->second.count(1));
-
-  auto event = arc::mojom::AccessibilityEventData::New();
-  event->source_id = 1;
-  event->event_type = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
-  event->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
-  event->node_data[0]->id = 1;
-  event->node_data[0]->string_properties =
+  auto event1 = arc::mojom::AccessibilityEventData::New();
+  event1->source_id = 1;
+  event1->task_id = 1;
+  event1->event_type = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
+  event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event1->node_data[0]->id = 1;
+  event1->node_data[0]->string_properties =
       std::unordered_map<arc::mojom::AccessibilityStringProperty,
                          std::string>();
-  event->node_data[0]->string_properties.value().insert(
+  event1->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.android.vending"));
 
-  // Task 1 is not current; gets rejected.
-  helper_bridge->OnAccessibilityEvent(event.Clone());
-  ASSERT_EQ(0U, package_to_tree.size());
+  // There's no active window.
+  helper_bridge->OnAccessibilityEvent(event1.Clone());
+  ASSERT_EQ(0U, task_id_to_tree.size());
 
-  // Task 1 is now current.
-  helper_bridge->OnTaskSetActive(1);
-  helper_bridge->OnAccessibilityEvent(event.Clone());
-  ASSERT_EQ(1U, package_to_tree.size());
+  // Let's make task 1 active by activating the window.
+  helper_bridge->SetActiveWindowId(std::string("org.chromium.arc.1"));
+  helper_bridge->OnAccessibilityEvent(event1.Clone());
+  ASSERT_EQ(1U, task_id_to_tree.size());
+
+  // Same package name, different task.
+  auto event2 = arc::mojom::AccessibilityEventData::New();
+  event2->source_id = 2;
+  event2->task_id = 2;
+  event2->event_type = arc::mojom::AccessibilityEventType::VIEW_FOCUSED;
+  event2->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event2->node_data[0]->id = 2;
+  event2->node_data[0]->string_properties =
+      std::unordered_map<arc::mojom::AccessibilityStringProperty,
+                         std::string>();
+  event2->node_data[0]->string_properties.value().insert(
+      std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
+                     "com.android.vending"));
+
+  // Active window is still task 1.
+  helper_bridge->OnAccessibilityEvent(event2.Clone());
+  ASSERT_EQ(1U, task_id_to_tree.size());
+
+  // Now make task 2 active.
+  helper_bridge->SetActiveWindowId(std::string("org.chromium.arc.2"));
+  helper_bridge->OnAccessibilityEvent(event2.Clone());
+  ASSERT_EQ(2U, task_id_to_tree.size());
+
+  // Same task id, different package name.
+  event2->node_data.clear();
+  event2->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event2->node_data[0]->id = 3;
+  event2->node_data[0]->string_properties =
+      std::unordered_map<arc::mojom::AccessibilityStringProperty,
+                         std::string>();
+  event2->node_data[0]->string_properties.value().insert(
+      std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
+                     "com.google.music"));
+
+  // No new tasks tree mappings should have occurred.
+  helper_bridge->OnAccessibilityEvent(event2.Clone());
+  ASSERT_EQ(2U, task_id_to_tree.size());
+
+  helper_bridge->OnTaskDestroyed(1);
+  ASSERT_EQ(1U, task_id_to_tree.size());
+
+  helper_bridge->OnTaskDestroyed(2);
+  ASSERT_EQ(0U, task_id_to_tree.size());
 }
 
 }  // namespace arc

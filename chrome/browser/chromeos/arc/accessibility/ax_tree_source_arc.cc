@@ -381,6 +381,9 @@ void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,
 }
 
 void AXTreeSourceArc::Focus(aura::Window* window) {
+  if (focus_stealer_->HasFocus())
+    return;
+
   views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
   if (!widget || !widget->GetContentsView())
     return;

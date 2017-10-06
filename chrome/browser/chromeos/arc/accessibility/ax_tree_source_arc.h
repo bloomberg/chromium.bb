@@ -50,10 +50,13 @@ class AXTreeSourceArc
   // Notify automation of an accessibility event.
   void NotifyAccessibilityEvent(mojom::AccessibilityEventData* event_data);
 
+  // Notify automation of a result to an action.
   void NotifyActionResult(const ui::AXActionData& data, bool result);
 
+  // Attaches tree to an aura window and gives it system focus.
   void Focus(aura::Window* window);
 
+  // Gets the window id of this tree.
   int32_t window_id() const { return window_id_; }
 
  private:
@@ -101,6 +104,7 @@ class AXTreeSourceArc
   // delegate is valid during the lifetime of this tree.
   const Delegate* const delegate_;
   std::unique_ptr<FocusStealer> focus_stealer_;
+  std::string package_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArc);
 };
