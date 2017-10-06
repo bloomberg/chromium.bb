@@ -4,8 +4,8 @@
 
 #include "modules/background_fetch/BackgroundFetchClickEvent.h"
 
-#include "modules/EventModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchClickEventInit.h"
+#include "modules/event_modules_names.h"
 
 namespace blink {
 

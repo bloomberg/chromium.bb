@@ -11,7 +11,7 @@
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "bindings/modules/v8/v8_idb_observer_callback.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/IndexedDBNames.h"
+#include "modules/indexed_db_names.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBObserverChanges.h"
 #include "modules/indexeddb/IDBObserverInit.h"

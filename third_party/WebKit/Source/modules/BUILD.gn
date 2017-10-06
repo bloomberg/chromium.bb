@@ -35,7 +35,7 @@ config("modules_implementation") {
 }
 
 make_names("module_names") {
-  in_files = [ "indexeddb/IndexedDBNames.json5" ]
+  in_files = [ "indexeddb/indexed_db_names.json5" ]
   output_dir = blink_modules_output_dir
   deps = []  # Don't use default deps (otherwise it will be circular).
 }
