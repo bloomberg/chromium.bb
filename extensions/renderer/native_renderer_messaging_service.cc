@@ -16,6 +16,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/ipc_message_sender.h"
+#include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
@@ -78,7 +79,7 @@ NativeRendererMessagingService::~NativeRendererMessagingService() {}
 
 gin::Handle<GinPort> NativeRendererMessagingService::Connect(
     ScriptContext* script_context,
-    const ExtensionId& target_id,
+    const MessageTarget& target,
     const std::string& channel_name,
     bool include_tls_channel_id) {
   if (!ScriptContextIsValid(script_context))
@@ -94,15 +95,15 @@ gin::Handle<GinPort> NativeRendererMessagingService::Connect(
       script_context, channel_name,
       PortId(script_context->context_id(), data->next_port_id++, is_opener));
 
-  bindings_system_->GetIPCMessageSender()->SendOpenChannelToExtension(
-      script_context, port->port_id(), target_id, channel_name,
+  bindings_system_->GetIPCMessageSender()->SendOpenMessageChannel(
+      script_context, port->port_id(), target, channel_name,
       include_tls_channel_id);
   return port;
 }
 
 void NativeRendererMessagingService::SendOneTimeMessage(
     ScriptContext* script_context,
-    const std::string& target_id,
+    const MessageTarget& target,
     const std::string& method_name,
     bool include_tls_channel_id,
     const Message& message,
@@ -116,7 +117,7 @@ void NativeRendererMessagingService::SendOneTimeMessage(
   bool is_opener = true;
   PortId port_id(script_context->context_id(), data->next_port_id++, is_opener);
 
-  one_time_message_handler_.SendMessage(script_context, port_id, target_id,
+  one_time_message_handler_.SendMessage(script_context, port_id, target,
                                         method_name, include_tls_channel_id,
                                         message, response_callback);
 }

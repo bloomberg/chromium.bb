@@ -13,6 +13,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/message_target.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
 
@@ -109,24 +110,32 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         remove_lazy_listener));
   }
 
-  void SendOpenChannelToExtension(ScriptContext* script_context,
-                                  const PortId& port_id,
-                                  const std::string& target_id,
-                                  const std::string& channel_name,
-                                  bool include_tls_channel_id) override {
+  void SendOpenMessageChannel(ScriptContext* script_context,
+                              const PortId& port_id,
+                              const MessageTarget& target,
+                              const std::string& channel_name,
+                              bool include_tls_channel_id) override {
     content::RenderFrame* render_frame = script_context->GetRenderFrame();
     DCHECK(render_frame);
+    int routing_id = render_frame->GetRoutingID();
 
-    ExtensionMsg_ExternalConnectionInfo info;
-    const Extension* extension = script_context->extension();
-    if (extension && !extension->is_hosted_app())
-      info.source_id = extension->id();
-    info.target_id = target_id;
-    info.source_url = script_context->url();
+    switch (target.type) {
+      case MessageTarget::EXTENSION: {
+        ExtensionMsg_ExternalConnectionInfo info;
+        const Extension* extension = script_context->extension();
+        if (extension && !extension->is_hosted_app())
+          info.source_id = extension->id();
+        info.target_id = *target.extension_id;
+        info.source_url = script_context->url();
 
-    render_thread_->Send(new ExtensionHostMsg_OpenChannelToExtension(
-        render_frame->GetRoutingID(), info, channel_name,
-        include_tls_channel_id, port_id));
+        render_thread_->Send(new ExtensionHostMsg_OpenChannelToExtension(
+            routing_id, info, channel_name, include_tls_channel_id, port_id));
+        break;
+      }
+      case MessageTarget::TAB:
+      case MessageTarget::NATIVE_APP:
+        NOTIMPLEMENTED();
+    }
   }
 
   void SendOpenMessagePort(int routing_id, const PortId& port_id) override {
@@ -265,11 +274,11 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
         remove_lazy_listener));
   }
 
-  void SendOpenChannelToExtension(ScriptContext* script_context,
-                                  const PortId& port_id,
-                                  const std::string& target_id,
-                                  const std::string& channel_name,
-                                  bool include_tls_channel_id) override {
+  void SendOpenMessageChannel(ScriptContext* script_context,
+                              const PortId& port_id,
+                              const MessageTarget& target,
+                              const std::string& channel_name,
+                              bool include_tls_channel_id) override {
     NOTIMPLEMENTED();
   }
 

@@ -20,6 +20,7 @@ struct ExtensionMsg_TabConnectionInfo;
 namespace extensions {
 class NativeExtensionBindingsSystem;
 struct Message;
+struct MessageTarget;
 struct PortId;
 
 // The messaging service to handle dispatching extension messages and connection
@@ -67,13 +68,13 @@ class NativeRendererMessagingService : public RendererMessagingService,
 
   // Creates and opens a new message port in the specified context.
   gin::Handle<GinPort> Connect(ScriptContext* script_context,
-                               const ExtensionId& target_id,
+                               const MessageTarget& target,
                                const std::string& name,
                                bool include_tls_channel_id);
 
   // Sends a one-time message, as is used by runtime.sendMessage.
   void SendOneTimeMessage(ScriptContext* script_context,
-                          const ExtensionId& target_id,
+                          const MessageTarget& target,
                           const std::string& channel_name,
                           bool include_tls_channel_id,
                           const Message& message,

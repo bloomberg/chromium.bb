@@ -19,6 +19,7 @@ namespace extensions {
 class NativeExtensionBindingsSystem;
 class ScriptContext;
 struct Message;
+struct MessageTarget;
 struct PortId;
 
 // A class for handling one-time message communication, including
@@ -70,7 +71,7 @@ class OneTimeMessageHandler {
   // Initiates a flow to send a message from the given |script_context|.
   void SendMessage(ScriptContext* script_context,
                    const PortId& new_port_id,
-                   const std::string& target_id,
+                   const MessageTarget& target_id,
                    const std::string& method_name,
                    bool include_tls_channel_id,
                    const Message& message,

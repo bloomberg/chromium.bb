@@ -12,6 +12,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
+#include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system_unittest.h"
 #include "extensions/renderer/script_context.h"
@@ -315,11 +316,12 @@ TEST_F(NativeRendererMessagingServiceTest, Connect) {
 
   const std::string kChannel = "channel";
   PortId expected_port_id(script_context()->context_id(), 0, true);
+  MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(*ipc_message_sender(),
-              SendOpenChannelToExtension(script_context(), expected_port_id,
-                                         extension()->id(), kChannel, false));
-  gin::Handle<GinPort> new_port = messaging_service()->Connect(
-      script_context(), extension()->id(), "channel", false);
+              SendOpenMessageChannel(script_context(), expected_port_id, target,
+                                     kChannel, false));
+  gin::Handle<GinPort> new_port =
+      messaging_service()->Connect(script_context(), target, "channel", false);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   ASSERT_FALSE(new_port.IsEmpty());
 
@@ -346,15 +348,15 @@ TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessage) {
   // remain open (waiting for the response).
   const Message message("\"hi\"", false);
   bool include_tls_channel_id = false;
-  EXPECT_CALL(
-      *ipc_message_sender(),
-      SendOpenChannelToExtension(script_context(), port_id, extension()->id(),
-                                 kChannel, include_tls_channel_id));
+  MessageTarget target(MessageTarget::ForExtension(extension()->id()));
+  EXPECT_CALL(*ipc_message_sender(),
+              SendOpenMessageChannel(script_context(), port_id, target,
+                                     kChannel, include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
-  messaging_service()->SendOneTimeMessage(script_context(), extension()->id(),
-                                          kChannel, include_tls_channel_id,
-                                          message, response_callback);
+  messaging_service()->SendOneTimeMessage(script_context(), target, kChannel,
+                                          include_tls_channel_id, message,
+                                          response_callback);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
