@@ -459,10 +459,6 @@
       name: "HeapCompaction",
       status: "stable",
     },
-    {
-      name: "HideNonceContentAttribute",
-      status: "stable",
-    },
     // https://crbug.com/523952 for testing disabling the feature.
     {
       name: "HTMLImportsStyleApplication",
