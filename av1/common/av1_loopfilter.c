@@ -2217,7 +2217,7 @@ static void get_filter_level_and_masks_non420(
     const int skip_border_4x4_r =
         ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
 
-    TX_SIZE tx_size_mask = 0;
+    int tx_size_mask = 0;
     const int c_step = (c >> ss_x);
     const int r_step = (r >> ss_y);
     const int col_mask = 1 << c_step;

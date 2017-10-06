@@ -351,8 +351,8 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (block_signals_txsize(bsize)) {
     const TX_SIZE tx_size = mbmi->tx_size;
     const int is_inter = is_inter_block(mbmi);
-    const TX_SIZE tx_size_ctx = get_tx_size_context(xd);
-    const TX_SIZE tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+    const int tx_size_ctx = get_tx_size_context(xd);
+    const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                          : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);

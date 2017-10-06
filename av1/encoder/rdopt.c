@@ -2212,20 +2212,19 @@ void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
 }
 #endif  // CONFIG_SUPERTX
 
-static TX_SIZE tx_size_cost(const AV1_COMP *const cpi,
-                            const MACROBLOCK *const x, BLOCK_SIZE bsize,
-                            TX_SIZE tx_size) {
+static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
+                        BLOCK_SIZE bsize, TX_SIZE tx_size) {
   const AV1_COMMON *const cm = &cpi->common;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type)) {
     const int is_inter = is_inter_block(mbmi);
-    const TX_SIZE tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+    const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                          : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);
-    const TX_SIZE tx_size_ctx = get_tx_size_context(xd);
+    const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
