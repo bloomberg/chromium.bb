@@ -4,8 +4,8 @@
 
 #include "core/css/parser/SizesAttributeParser.h"
 
-#include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
+#include "core/media_type_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

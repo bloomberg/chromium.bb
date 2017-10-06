@@ -5,11 +5,11 @@
 #include "core/css/MediaQueryEvaluator.h"
 
 #include <memory>
-#include "core/MediaTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/MediaValuesInitialViewport.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/media_type_names.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"

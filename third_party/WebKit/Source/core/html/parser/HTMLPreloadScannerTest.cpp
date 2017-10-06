@@ -5,13 +5,13 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 
 #include <memory>
-#include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/frame/Settings.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/PreloadRequest.h"
+#include "core/media_type_names.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"

@@ -25,7 +25,6 @@
 
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/CSSPropertyNames.h"
-#include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/MediaValuesDynamic.h"
 #include "core/css/parser/SizesAttributeParser.h"
@@ -53,6 +52,7 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/api/LayoutImageItem.h"
 #include "core/loader/resource/ImageResourceContent.h"
+#include "core/media_type_names.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/style/ContentData.h"
