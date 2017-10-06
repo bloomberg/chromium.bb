@@ -339,13 +339,11 @@ void DataReductionProxyIOData::UpdateContentLengths(
                  request_type, mime_type));
 }
 
-void DataReductionProxyIOData::SetLoFiModeActiveOnMainFrame(
-    bool lo_fi_mode_active) {
+void DataReductionProxyIOData::SetLoFiUsedThisSession() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DataReductionProxyService::SetLoFiModeActiveOnMainFrame,
-                 service_, lo_fi_mode_active));
+      base::Bind(&DataReductionProxyService::SetLoFiUsedThisSession, service_));
 }
 
 void DataReductionProxyIOData::AddEvent(std::unique_ptr<base::Value> event) {

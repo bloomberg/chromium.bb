@@ -184,11 +184,10 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
   return prefs_;
 }
 
-void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
-    bool lo_fi_mode_active) {
+void DataReductionProxySettings::SetLoFiUsedThisSession() {
   // TODO(ryansturm): Remove this method and prefs::kLoFiWasUsedThisSession when
   // Lo-Fi moves over to using the Previews blacklist completely.
-  if (prefs_ && lo_fi_mode_active)
+  if (prefs_)
     prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, true);
 }
 

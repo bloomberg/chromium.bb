@@ -954,7 +954,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
                                              "Enabled");
     }
-    io_data()->SetLoFiModeActiveOnMainFrame(false);
 
     net::ProxyInfo data_reduction_proxy_info;
     std::string proxy;

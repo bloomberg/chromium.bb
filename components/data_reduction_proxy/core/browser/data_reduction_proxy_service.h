@@ -99,9 +99,9 @@ class DataReductionProxyService
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
 
-  // Sets if Lo-Fi was active on the last main frame load in
+  // Sets that Lo-Fi was active on the last main frame load in
   // DataReductionProxySettings.
-  void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
+  void SetLoFiUsedThisSession();
 
   // Sets Lo-Fi mode off on the IO thread.
   void SetLoFiModeOff();
