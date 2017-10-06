@@ -13372,6 +13372,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-gpu-no-vmtest-pre-cq": {
@@ -13421,10 +13424,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
         "vm_tests_override": null
     },
     "lakitu-gpu-payloads": {
@@ -13456,10 +13455,6 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-gpu-release": {
@@ -13499,8 +13494,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -13550,6 +13544,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-llvm-next-toolchain": {
@@ -13686,10 +13683,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
         "vm_tests_override": null
     },
     "lakitu-nc-payloads": {
@@ -13817,10 +13810,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
         "vm_tests_override": null
     },
     "lakitu-payloads": {
@@ -13852,10 +13841,6 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-release": {
@@ -13895,8 +13880,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -13982,6 +13966,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-st-no-vmtest-pre-cq": {
@@ -14031,10 +14018,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
         "vm_tests_override": null
     },
     "lakitu-st-payloads": {
@@ -14066,10 +14049,6 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-st-release": {
@@ -14108,8 +14087,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -14231,6 +14209,9 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu_next-no-vmtest-pre-cq": {
@@ -14280,10 +14261,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
         "vm_tests_override": null
     },
     "lakitu_next-payloads": {
@@ -14315,10 +14292,6 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu_next-release": {
@@ -14355,8 +14328,7 @@
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
