@@ -40,7 +40,7 @@
 
 // With traditional headers, <sys/user.h> forgot to do this. Unified headers get
 // it right.
-#include <stdint.h>
+#include <sys/types.h>
 
 #include_next <sys/user.h>
 
