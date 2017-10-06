@@ -21,9 +21,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/wm/core/compound_event_filter.h"
 
 namespace ash {
 namespace {
@@ -71,7 +69,7 @@ void PowerButtonController::OnPowerButtonEvent(
                                     ->tablet_mode_controller()
                                     ->IsTabletModeWindowManagerEnabled();
 
-  if (!has_legacy_power_button_ && !should_take_screenshot &&
+  if (button_type_ == ButtonType::NORMAL && !should_take_screenshot &&
       tablet_controller_) {
     tablet_controller_->OnPowerButtonEvent(down, timestamp);
     return;
@@ -109,7 +107,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
   const SessionController* const session_controller =
       Shell::Get()->session_controller();
-  if (has_legacy_power_button_) {
+  if (button_type_ == ButtonType::LEGACY) {
     // If power button releases won't get reported correctly because we're not
     // running on official hardware, just lock the screen or shut down
     // immediately.
@@ -262,7 +260,9 @@ bool PowerButtonController::TriggerDisplayOffTimerForTesting() {
 
 void PowerButtonController::ProcessCommandLine() {
   const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  has_legacy_power_button_ = cl->HasSwitch(switches::kAuraLegacyPowerButton);
+  button_type_ = cl->HasSwitch(switches::kAuraLegacyPowerButton)
+                     ? ButtonType::LEGACY
+                     : ButtonType::NORMAL;
   force_clamshell_power_button_ =
       cl->HasSwitch(switches::kForceClamshellPowerButton);
 }

@@ -35,12 +35,18 @@ class ASH_EXPORT PowerButtonController
       public chromeos::PowerManagerClient::Observer,
       public chromeos::AccelerometerReader::Observer {
  public:
+  enum class ButtonType {
+    // Indicates normal power button type.
+    NORMAL,
+
+    // Indicates legacy power button type. It could be set by command-line
+    // switch telling us that we're running on hardware that misreports power
+    // button releases.
+    LEGACY,
+  };
+
   PowerButtonController();
   ~PowerButtonController() override;
-
-  void set_has_legacy_power_button_for_test(bool legacy) {
-    has_legacy_power_button_ = legacy;
-  }
 
   // Called when the power or lock buttons are pressed or released.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
@@ -75,9 +81,13 @@ class ASH_EXPORT PowerButtonController
     return tablet_controller_.get();
   }
 
+  void set_power_button_type_for_test(ButtonType button_type) {
+    button_type_ = button_type;
+  }
+
  private:
-  // Updates |has_legacy_power_button_| and |force_clamshell_power_button_|
-  // based on the current command line.
+  // Updates |button_type_| and |force_clamshell_power_button_| based on the
+  // current command line.
   void ProcessCommandLine();
 
   // Called by |display_off_timer_| to force backlights off shortly after the
@@ -103,9 +113,8 @@ class ASH_EXPORT PowerButtonController
   // external display is connected).
   bool internal_display_off_and_external_display_on_ = false;
 
-  // Was a command-line switch set telling us that we're running on hardware
-  // that misreports power button releases?
-  bool has_legacy_power_button_ = false;
+  // Saves the button type for this power button.
+  ButtonType button_type_ = ButtonType::NORMAL;
 
   // Was a command-line switch set telling us to use non-tablet-style power
   // button behavior even if we're running on a convertible device?
