@@ -45,6 +45,9 @@ void PolicyToolUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "updateSession", base::Bind(&PolicyToolUIHandler::HandleUpdateSession,
                                   base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "resetSession", base::Bind(&PolicyToolUIHandler::HandleResetSession,
+                                 base::Unretained(this)));
 }
 
 void PolicyToolUIHandler::OnJavascriptDisallowed() {
@@ -144,33 +147,30 @@ void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
   std::unique_ptr<base::DictionaryValue> value =
       base::DictionaryValue::From(base::JSONReader::Read(contents));
 
-  // If contents is not a properly formed JSON string, we alert the user about
-  // it and send an empty dictionary instead. Note that the broken session file
-  // would be overrided when the user edits something, so any manual changes
-  // that made it invalid will be lost.
-  // TODO(urusant): do it in a smarter way, e.g. revert to a previous session or
-  // a new session with a generated name.
+  // If contents is not a properly formed JSON string, disable editing in the
+  // UI to prevent the user from accidentally overriding it.
   if (!value) {
-    value = base::MakeUnique<base::DictionaryValue>();
-    ShowErrorMessageToUser("errorFileCorrupted");
+    CallJavascriptFunction("policy.Page.setPolicyValues",
+                           base::DictionaryValue());
+    CallJavascriptFunction("policy.Page.disableEditing");
   } else {
-    bool logged;
+    bool logged = false;
     if (value->GetBoolean("logged", &logged)) {
       if (!logged) {
         ShowErrorMessageToUser("errorLoggingDisabled");
       }
       value->Remove("logged", nullptr);
     }
+    // TODO(urusant): convert the policy values so that the types are consistent
+    // with actual policy types.
+    CallJavascriptFunction("policy.Page.setPolicyValues", *value);
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&PolicyToolUIHandler::GetSessionsList,
+                       base::Unretained(this)),
+        base::BindOnce(&PolicyToolUIHandler::OnSessionsListReceived,
+                       callback_weak_ptr_factory_.GetWeakPtr()));
   }
-  // TODO(urusant): convert the policy values so that the types are consistent
-  // with actual policy types.
-  CallJavascriptFunction("policy.Page.setPolicyValues", *value);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&PolicyToolUIHandler::GetSessionsList,
-                     base::Unretained(this)),
-      base::BindOnce(&PolicyToolUIHandler::OnSessionsListReceived,
-                     callback_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PolicyToolUIHandler::OnSessionsListReceived(base::ListValue list) {
@@ -233,6 +233,14 @@ void PolicyToolUIHandler::HandleUpdateSession(const base::ListValue* args) {
       base::BindOnce(&PolicyToolUIHandler::DoUpdateSession,
                      callback_weak_ptr_factory_.GetWeakPtr(),
                      converted_values));
+}
+
+void PolicyToolUIHandler::HandleResetSession(const base::ListValue* args) {
+  DCHECK_EQ(0U, args->GetSize());
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&PolicyToolUIHandler::DoUpdateSession,
+                     callback_weak_ptr_factory_.GetWeakPtr(), "{}"));
 }
 
 void PolicyToolUIHandler::ShowErrorMessageToUser(

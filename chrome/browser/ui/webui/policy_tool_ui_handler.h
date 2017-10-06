@@ -30,6 +30,7 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void HandleInitializedAdmin(const base::ListValue* args);
   void HandleLoadSession(const base::ListValue* args);
   void HandleUpdateSession(const base::ListValue* args);
+  void HandleResetSession(const base::ListValue* args);
 
   std::string ReadOrCreateFileCallback();
   void OnFileRead(const std::string& contents);

@@ -50,6 +50,13 @@ class PolicyToolUITest : public InProcessBrowserTest {
 
   void CreateMultipleSessionFiles(int count);
 
+  // Check if the error message that replaces the element is shown correctly.
+  // Returns 1 if error message is shown, -1 if the error message is not shown,
+  // and 0 if the displaying is incorrect (e.g. both error message and the
+  // element are shown).
+  int ElementDisabledState(const std::string& element_id,
+                           const std::string& error_message_id);
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(PolicyToolUITest);
@@ -187,6 +194,24 @@ void PolicyToolUITest::CreateMultipleSessionFiles(int count) {
   }
 }
 
+int PolicyToolUITest::ElementDisabledState(
+    const std::string& element_id,
+    const std::string& error_message_id) {
+  const std::string javascript =
+      "var element = $('" + element_id +
+      "');"
+      "var errorMessage = $('" +
+      error_message_id +
+      "');"
+      "domAutomationController.send((element.offsetWidth == 0) -"
+      "                             (errorMessage.offsetWidth == 0));";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int result = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(contents, javascript, &result));
+  return result;
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, CreatingSessionFiles) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Check that the directory is not created yet.
@@ -297,9 +322,12 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidSessionName) {
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidJson) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  EXPECT_EQ(ElementDisabledState("main-section", "disable-editing-error"), -1);
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::WriteFile(GetSessionPath(FILE_PATH_LITERAL("test_session")), "{", 1);
-  LoadSessionAndWaitForAlert("test_session");
+  base::WriteFile(
+      GetSessionsDir().Append(FILE_PATH_LITERAL("test_session.json")), "{", 1);
+  LoadSession("test_session");
+  EXPECT_EQ(ElementDisabledState("main-section", "disable-editing-error"), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, UnableToCreateDirectoryOrFile) {

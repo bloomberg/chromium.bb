@@ -39,6 +39,7 @@ content::WebUIDataSource* CreatePolicyToolUIHtmlSource() {
                              IDS_POLICY_TOOL_INVALID_SESSION_NAME);
   source->AddLocalizedString("errorFileCorrupted",
                              IDS_POLICY_TOOL_CORRUPTED_FILE);
+  source->AddLocalizedString("enableEditing", IDS_POLICY_TOOL_ENABLE_EDITING);
   // Overwrite the title value added by PolicyUIHandler.
   source->AddLocalizedString("title", IDS_POLICY_TOOL_TITLE);
 
