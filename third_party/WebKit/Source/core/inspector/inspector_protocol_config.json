@@ -91,7 +91,7 @@
                 "domain": "Emulation",
                 "include": ["forceViewport", "resetViewport", "resetPageScaleFactor", "setPageScaleFactor", "setScriptExecutionDisabled", "setTouchEmulationEnabled",
                             "setEmulatedMedia", "setCPUThrottlingRate", "setVirtualTimePolicy", "setNavigatorOverrides", "setDefaultBackgroundColorOverride"],
-                "include_events": ["virtualTimeBudgetExpired", "virtualTimePaused"]
+                "include_events": ["virtualTimeBudgetExpired", "virtualTimeAdvanced", "virtualTimePaused"]
             },
             {
                 "domain": "Network",

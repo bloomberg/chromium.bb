@@ -59,6 +59,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   void Restore() override;
 
   // scheduler::WebViewScheduler::VirtualTimeObserver implementation.
+  void OnVirtualTimeAdvanced(WTF::TimeDelta virtual_time_offset) override;
   void OnVirtualTimePaused(WTF::TimeDelta virtual_time_offset) override;
 
   DECLARE_VIRTUAL_TRACE();
