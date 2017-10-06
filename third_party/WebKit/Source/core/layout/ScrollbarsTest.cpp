@@ -1131,20 +1131,15 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);
 
-  // TODO(bokan): Added a bunch of sanity checks here fish out a flake.
-  // Remove once this bug is closed: crbug.com/769350.
-  {
-    ScrollbarTheme& theme = scrollbar->GetTheme();
-    EXPECT_TRUE(&theme == &ScrollbarTheme::GetTheme());
-    EXPECT_EQ(10000000, scrollbar->TotalSize());
-    EXPECT_EQ(1000, scrollbar->VisibleSize());
-    EXPECT_EQ(9999000, scrollbar->CurrentPos());
-    EXPECT_EQ(1000, theme.TrackLength(*scrollbar));
-    EXPECT_EQ(52, theme.ThumbLength(*scrollbar));
-  }
-
   int maximumThumbPosition =
       WebView().Size().height - StubWebThemeEngine::kMinimumVerticalLength;
+
+  // TODO(bokan): it seems that the scrollbar margin is cached in the static
+  // ScrollbarTheme, so if another test runs first without our mocked
+  // WebThemeEngine this test won't use the mocked margin. For now, just take
+  // the used margins into account. Longer term, this will be solvable when we
+  // stop using Singleton ScrollbarThemes. crbug.com/769350
+  maximumThumbPosition -= scrollbar->GetTheme().ScrollbarMargin() * 2;
 
   EXPECT_EQ(maximumThumbPosition,
             scrollbar->GetTheme().ThumbPosition(*scrollbar));
