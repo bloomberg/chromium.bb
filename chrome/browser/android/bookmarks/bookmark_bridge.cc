@@ -226,10 +226,6 @@ void BookmarkBridge::GetTopLevelFolderIDs(
         managed_bookmark_service_->managed_node()->child_count() > 0) {
       top_level_folders.push_back(managed_bookmark_service_->managed_node());
     }
-    if (managed_bookmark_service_->supervised_node() &&
-        managed_bookmark_service_->supervised_node()->child_count() > 0) {
-      top_level_folders.push_back(managed_bookmark_service_->supervised_node());
-    }
     if (partner_bookmarks_shim_->HasPartnerBookmarks()
         && IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
       top_level_folders.push_back(
@@ -845,10 +841,6 @@ bool BookmarkBridge::IsFolderAvailable(
   // The managed bookmarks folder is not shown if there are no bookmarks
   // configured via policy.
   if (folder == managed_bookmark_service_->managed_node() && folder->empty())
-    return false;
-  // Similarly, the supervised bookmarks folder is not shown if there are no
-  // bookmarks configured by the custodian.
-  if (folder == managed_bookmark_service_->supervised_node() && folder->empty())
     return false;
 
   SigninManager* signin = SigninManagerFactory::GetForProfile(

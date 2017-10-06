@@ -556,16 +556,6 @@ TEST_F(BookmarkBarControllerTest, ApplyLayoutImportBookmarksButton) {
   VerifyViewLayout(button, layout, 30, 40, true);
 }
 
-TEST_F(BookmarkBarControllerTest, ApplyLayoutSupervisedButton) {
-  NSButton* button = [bar_ supervisedBookmarksButton];
-
-  bookmarks::BookmarkBarLayout layout = {};
-  layout.visible_elements |=
-      bookmarks::kVisibleElementsMaskSupervisedBookmarksButton;
-  layout.supervised_bookmarks_button_offset = 40;
-
-  VerifyViewLayout(button, layout, 40, CGFLOAT_MAX, false);
-}
 TEST_F(BookmarkBarControllerTest, ApplyLayoutManagedButton) {
   NSButton* button = [bar_ managedBookmarksButton];
 
@@ -654,7 +644,7 @@ TEST_F(BookmarkBarControllerTest, ApplyLayoutBookmarkButtons) {
 // crbug.com/648554
 
 TEST_F(BookmarkBarControllerTest, LayoutNoBookmarks) {
-  // With no apps button, or managed/supervised buttons:
+  // With no apps button or managed button:
   profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
   bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
@@ -731,29 +721,6 @@ TEST_F(BookmarkBarControllerTest, LayoutManagedBookmarksButton) {
 
   layout = [bar_ layoutFromCurrentState];
   EXPECT_TRUE(layout.IsManagedBookmarksButtonVisible());
-}
-
-TEST_F(BookmarkBarControllerTest, LayoutSupervisedBookmarksButton) {
-  PrefService* prefs = profile()->GetPrefs();
-  // Doesn't show by default.
-  bookmarks::ManagedBookmarkService* managedBookmarkService =
-      ManagedBookmarkServiceFactory::GetForProfile(profile());
-  EXPECT_TRUE(managedBookmarkService->supervised_node()->empty());
-
-  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
-  EXPECT_FALSE(layout.IsSupervisedBookmarksButtonVisible());
-
-  // Add a managed bookmark.
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("name", "Google");
-  dict->SetString("url", "http://google.com");
-  base::ListValue list;
-  list.Append(std::move(dict));
-  prefs->Set(bookmarks::prefs::kSupervisedBookmarks, list);
-  EXPECT_FALSE(managedBookmarkService->supervised_node()->empty());
-
-  layout = [bar_ layoutFromCurrentState];
-  EXPECT_TRUE(layout.IsSupervisedBookmarksButtonVisible());
 }
 
 TEST_F(BookmarkBarControllerTest, LayoutManagedAppsButton) {

@@ -466,7 +466,6 @@ void RegisterManagedBookmarksPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kManagedBookmarks);
   registry->RegisterStringPref(
       prefs::kManagedBookmarksFolderName, std::string());
-  registry->RegisterListPref(prefs::kSupervisedBookmarks);
 }
 
 const BookmarkNode* GetParentForNewNodes(

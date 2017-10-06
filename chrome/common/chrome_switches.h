@@ -121,7 +121,6 @@ extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnablePushApiBackgroundMode[];
 extern const char kEnableSiteSettings[];
-extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];
 extern const char kEnableWebNotificationCustomLayouts[];
 extern const char kEnableWebRtcEventLoggingFromExtension[];

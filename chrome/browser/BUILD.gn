@@ -3831,8 +3831,6 @@ split_static_library("browser") {
       "supervised_user/experimental/supervised_user_filtering_switches.cc",
       "supervised_user/experimental/supervised_user_filtering_switches.h",
       "supervised_user/permission_request_creator.h",
-      "supervised_user/supervised_user_bookmarks_handler.cc",
-      "supervised_user/supervised_user_bookmarks_handler.h",
       "supervised_user/supervised_user_constants.cc",
       "supervised_user/supervised_user_constants.h",
       "supervised_user/supervised_user_content_provider_android.cc",

@@ -87,8 +87,7 @@ void PopulateBookmarkTreeNode(
         new double(floor(node->date_added().ToDoubleT() * 1000)));
   }
 
-  if (bookmarks::IsDescendantOf(node, managed->managed_node()) ||
-      bookmarks::IsDescendantOf(node, managed->supervised_node())) {
+  if (bookmarks::IsDescendantOf(node, managed->managed_node())) {
     out_bookmark_tree_node->unmodifiable =
         api::bookmarks::BOOKMARK_TREE_NODE_UNMODIFIABLE_MANAGED;
   }
@@ -135,8 +134,7 @@ bool RemoveNode(BookmarkModel* model,
     *error = keys::kModifySpecialError;
     return false;
   }
-  if (bookmarks::IsDescendantOf(node, managed->managed_node()) ||
-      bookmarks::IsDescendantOf(node, managed->supervised_node())) {
+  if (bookmarks::IsDescendantOf(node, managed->managed_node())) {
     *error = keys::kModifyManagedError;
     return false;
   }

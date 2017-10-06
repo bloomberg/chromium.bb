@@ -35,9 +35,5 @@ const char kShowManagedBookmarksInBookmarkBar[] =
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 
-// A list of bookmarks to include in a Supervised Bookmarks root node. Behaves
-// like kManagedBookmarks.
-const char kSupervisedBookmarks[] = "bookmarks.supervised_bookmarks";
-
 }  // namespace prefs
 }  // namespace bookmarks

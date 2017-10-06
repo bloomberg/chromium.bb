@@ -13,13 +13,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/supervised_user/supervised_user_bookmarks_handler.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -161,14 +159,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
           prefs::kForceYouTubeRestrict,
           force_safe_search ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
                             : safe_search_util::YOUTUBE_RESTRICT_OFF);
-    }
-
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSupervisedUserManagedBookmarksFolder)) {
-      // Reconstruct bookmarks from split settings.
-      prefs_->SetValue(
-          bookmarks::prefs::kSupervisedBookmarks,
-          SupervisedUserBookmarksHandler::BuildBookmarksTree(*settings));
     }
   }
 

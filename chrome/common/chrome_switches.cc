@@ -379,10 +379,6 @@ const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 // settings UI.
 const char kEnableSiteSettings[] = "enable-site-settings";
 
-// Enables the supervised user managed bookmarks folder.
-const char kEnableSupervisedUserManagedBookmarksFolder[] =
-    "enable-supervised-user-managed-bookmarks-folder";
-
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 

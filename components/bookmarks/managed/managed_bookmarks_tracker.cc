@@ -31,10 +31,8 @@ const char ManagedBookmarksTracker::kFolderName[] = "toplevel_name";
 ManagedBookmarksTracker::ManagedBookmarksTracker(
     BookmarkModel* model,
     PrefService* prefs,
-    bool is_supervised,
     const GetManagementDomainCallback& callback)
     : model_(model),
-      is_supervised_(is_supervised),
       managed_node_(NULL),
       prefs_(prefs),
       get_management_domain_callback_(callback) {
@@ -44,7 +42,7 @@ ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
 std::unique_ptr<base::ListValue>
 ManagedBookmarksTracker::GetInitialManagedBookmarks() {
-  const base::ListValue* list = prefs_->GetList(GetPrefName());
+  const base::ListValue* list = prefs_->GetList(prefs::kManagedBookmarks);
   return base::WrapUnique(list->DeepCopy());
 }
 
@@ -80,48 +78,29 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
 void ManagedBookmarksTracker::Init(BookmarkPermanentNode* managed_node) {
   managed_node_ = managed_node;
   registrar_.Init(prefs_);
-  registrar_.Add(GetPrefName(),
+  registrar_.Add(prefs::kManagedBookmarks,
                  base::Bind(&ManagedBookmarksTracker::ReloadManagedBookmarks,
                             base::Unretained(this)));
   // Reload now just in case something changed since the initial load started.
-  // Note that if we track managed bookmarks rather than supervised bookmarks,
-  // then we must not load them until cloud policy system has been fully
-  // initialized (which will make our preference a managed preference).
-  const bool are_managed_bookmarks_available =
-      is_supervised_ || prefs_->IsManagedPreference(GetPrefName());
-  if (are_managed_bookmarks_available)
+  // Note that  we must not load managed bookmarks until the cloud policy system
+  // has been fully initialized (which will make our preference a managed
+  // preference).
+  if (prefs_->IsManagedPreference(prefs::kManagedBookmarks))
     ReloadManagedBookmarks();
 }
 
-// static
-const char* ManagedBookmarksTracker::GetPrefName(bool is_supervised) {
-  return is_supervised ? prefs::kSupervisedBookmarks
-                       : prefs::kManagedBookmarks;
-}
-
-const char* ManagedBookmarksTracker::GetPrefName() const {
-  return GetPrefName(is_supervised_);
-}
-
 base::string16 ManagedBookmarksTracker::GetBookmarksFolderTitle() const {
-  if (is_supervised_) {
-    return l10n_util::GetStringUTF16(
-        IDS_BOOKMARK_BAR_SUPERVISED_FOLDER_DEFAULT_NAME);
-  } else {
-    std::string name = prefs_->GetString(prefs::kManagedBookmarksFolderName);
-    if (!name.empty())
-      return base::UTF8ToUTF16(name);
+  std::string name = prefs_->GetString(prefs::kManagedBookmarksFolderName);
+  if (!name.empty())
+    return base::UTF8ToUTF16(name);
 
-    const std::string domain = get_management_domain_callback_.Run();
-    if (domain.empty()) {
-      return l10n_util::GetStringUTF16(
-          IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME);
-    } else {
-      return l10n_util::GetStringFUTF16(
-          IDS_BOOKMARK_BAR_MANAGED_FOLDER_DOMAIN_NAME,
-          base::UTF8ToUTF16(domain));
-    }
+  const std::string domain = get_management_domain_callback_.Run();
+  if (domain.empty()) {
+    return l10n_util::GetStringUTF16(
+        IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME);
   }
+  return l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_MANAGED_FOLDER_DOMAIN_NAME,
+                                    base::UTF8ToUTF16(domain));
 }
 
 void ManagedBookmarksTracker::ReloadManagedBookmarks() {
@@ -129,7 +108,7 @@ void ManagedBookmarksTracker::ReloadManagedBookmarks() {
   model_->SetTitle(managed_node_, GetBookmarksFolderTitle());
 
   // Recursively update all the managed bookmarks and folders.
-  const base::ListValue* list = prefs_->GetList(GetPrefName());
+  const base::ListValue* list = prefs_->GetList(prefs::kManagedBookmarks);
   UpdateBookmarks(managed_node_, list);
 
   // The managed bookmarks folder isn't visible when that pref isn't present.

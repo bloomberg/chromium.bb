@@ -23,7 +23,7 @@ class BookmarkModel;
 class ManagedBookmarksTracker;
 
 // ManagedBookmarkService manages the bookmark folder controlled by enterprise
-// policy or custodian of supervised users.
+// policy.
 class ManagedBookmarkService : public KeyedService,
                                public BaseBookmarkModelObserver {
  public:
@@ -56,10 +56,6 @@ class ManagedBookmarkService : public KeyedService,
   // null.
   const BookmarkNode* managed_node() { return managed_node_; }
 
-  // Top-level supervised bookmarks folder, defined by the custodian of a
-  // supervised user; may be null.
-  const BookmarkNode* supervised_node() { return supervised_node_; }
-
  private:
   // KeyedService implementation.
   void Shutdown() override;
@@ -88,11 +84,6 @@ class ManagedBookmarkService : public KeyedService,
   std::unique_ptr<ManagedBookmarksTracker> managed_bookmarks_tracker_;
   GetManagementDomainCallback managed_domain_callback_;
   BookmarkPermanentNode* managed_node_;
-
-  // Supervised bookmarks are defined by the custodian of a supervised user. The
-  // lifetime of the BookmarkPermanentNode is controlled by BookmarkModel.
-  std::unique_ptr<ManagedBookmarksTracker> supervised_bookmarks_tracker_;
-  BookmarkPermanentNode* supervised_node_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarkService);
 };

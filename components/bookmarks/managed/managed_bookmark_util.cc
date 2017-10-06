@@ -26,8 +26,7 @@ bool IsManagedNode(const BookmarkPermanentNode* node,
   if (!managed_bookmark_service)
     return false;
 
-  return node == managed_bookmark_service->managed_node() ||
-         node == managed_bookmark_service->supervised_node();
+  return node == managed_bookmark_service->managed_node();
 }
 
 }  // namespace bookmarks

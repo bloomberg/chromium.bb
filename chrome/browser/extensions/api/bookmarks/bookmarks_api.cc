@@ -216,8 +216,7 @@ bool BookmarksFunction::CanBeModified(const BookmarkNode* node) {
     return false;
   }
   ManagedBookmarkService* managed = GetManagedBookmarkService();
-  if (::bookmarks::IsDescendantOf(node, managed->managed_node()) ||
-      ::bookmarks::IsDescendantOf(node, managed->supervised_node())) {
+  if (::bookmarks::IsDescendantOf(node, managed->managed_node())) {
     error_ = keys::kModifyManagedError;
     return false;
   }

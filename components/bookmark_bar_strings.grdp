@@ -29,9 +29,6 @@
     <message name="IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME" desc="Name shown in the tree for the managed bookmarks folder, when the managed bookmarks don't come from a domain">
       Managed bookmarks
     </message>
-    <message name="IDS_BOOKMARK_BAR_SUPERVISED_FOLDER_DEFAULT_NAME" desc="Name shown in the tree for the managed bookmarks folder for supervised users.">
-      Parent suggestions
-    </message>
   </if>
   <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
@@ -45,9 +42,6 @@
     </message>
     <message name="IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME" desc="In Title Case: Name shown in the tree for the managed bookmarks folder, when the managed bookmarks don't come from a domain">
       Managed Bookmarks
-    </message>
-    <message name="IDS_BOOKMARK_BAR_SUPERVISED_FOLDER_DEFAULT_NAME" desc="In Title Case: Name shown in the tree for the managed bookmarks folder for supervised users.">
-      Parent Suggestions
     </message>
   </if>
 </grit-part>

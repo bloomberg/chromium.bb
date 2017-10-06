@@ -591,7 +591,6 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       bookmark_drop_menu_(nullptr),
       other_bookmarks_button_(nullptr),
       managed_bookmarks_button_(nullptr),
-      supervised_bookmarks_button_(nullptr),
       apps_page_shortcut_(nullptr),
       overflow_button_(nullptr),
       instructions_(nullptr),
@@ -685,12 +684,6 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
     return managed_->managed_node();
   }
 
-  // Then check the supervised button.
-  if (supervised_bookmarks_button_->visible() &&
-      supervised_bookmarks_button_->bounds().Contains(adjusted_loc)) {
-    return managed_->supervised_node();
-  }
-
   // Then check the bookmark buttons.
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     views::View* child = child_at(i);
@@ -720,8 +713,6 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
     const BookmarkNode* node) {
   if (node == managed_->managed_node())
     return managed_bookmarks_button_;
-  if (node == managed_->supervised_node())
-    return supervised_bookmarks_button_;
   if (node == model_->other_node())
     return other_bookmarks_button_;
   if (node == model_->bookmark_bar_node())
@@ -860,8 +851,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   // The minimum width of the bookmark bar should at least contain the overflow
   // button, by which one can access all the Bookmark Bar items, and the "Other
   // Bookmarks" folder, along with appropriate margins and button padding.
-  // It should also contain the Managed and/or Supervised Bookmarks folders,
-  // if they are visible.
+  // It should also contain the Managed Bookmarks folder, if it is visible.
   int width = kHorizontalMargin;
 
   int height = GetPreferredHeight();
@@ -874,10 +864,6 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
 
   if (managed_bookmarks_button_->visible()) {
     gfx::Size size = managed_bookmarks_button_->GetPreferredSize();
-    width += size.width() + kButtonPadding;
-  }
-  if (supervised_bookmarks_button_->visible()) {
-    gfx::Size size = supervised_bookmarks_button_->GetPreferredSize();
     width += size.width() + kButtonPadding;
   }
   if (other_bookmarks_button_->visible()) {
@@ -953,15 +939,6 @@ void BookmarkBarView::Layout() {
     managed_bookmarks_button_->SetBounds(x, y, managed_bookmarks_pref.width(),
                                          height);
     x += managed_bookmarks_pref.width() + kButtonPadding;
-  }
-
-  // Then the supervised bookmarks folder, if visible.
-  if (supervised_bookmarks_button_->visible()) {
-    gfx::Size supervised_bookmarks_pref =
-        supervised_bookmarks_button_->GetPreferredSize();
-    supervised_bookmarks_button_->SetBounds(
-        x, y, supervised_bookmarks_pref.width(), height);
-    x += supervised_bookmarks_pref.width() + kButtonPadding;
   }
 
   const bool show_instructions =
@@ -1307,15 +1284,10 @@ void BookmarkBarView::BookmarkModelLoaded(BookmarkModel* model,
   managed_bookmarks_button_->SetAccessibleName(
       managed_->managed_node()->GetTitle());
   managed_bookmarks_button_->SetText(managed_->managed_node()->GetTitle());
-  supervised_bookmarks_button_->SetAccessibleName(
-      managed_->supervised_node()->GetTitle());
-  supervised_bookmarks_button_->SetText(
-      managed_->supervised_node()->GetTitle());
   UpdateAppearanceForTheme();
   UpdateOtherAndManagedButtonsVisibility();
   other_bookmarks_button_->SetEnabled(true);
   managed_bookmarks_button_->SetEnabled(true);
-  supervised_bookmarks_button_->SetEnabled(true);
   LayoutAndPaint();
 }
 
@@ -1490,8 +1462,6 @@ void BookmarkBarView::OnMenuButtonClicked(views::MenuButton* view,
     node = model_->other_node();
   } else if (view == managed_bookmarks_button_) {
     node = managed_->managed_node();
-  } else if (view == supervised_bookmarks_button_) {
-    node = managed_->supervised_node();
   } else if (view == overflow_button_) {
     node = model_->bookmark_bar_node();
     start_index = GetFirstHiddenNodeIndex();
@@ -1568,9 +1538,6 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
   } else if (source == managed_bookmarks_button_) {
     parent = managed_->managed_node();
     nodes.push_back(parent);
-  } else if (source == supervised_bookmarks_button_) {
-    parent = managed_->supervised_node();
-    nodes.push_back(parent);
   } else if (source != this && source != apps_page_shortcut_) {
     // User clicked on one of the bookmark buttons, find which one they
     // clicked on, except for the apps page shortcut, which must behave as if
@@ -1618,11 +1585,6 @@ void BookmarkBarView::Init() {
   managed_bookmarks_button_->SetEnabled(false);
   AddChildView(managed_bookmarks_button_);
 
-  supervised_bookmarks_button_ = CreateSupervisedBookmarksButton();
-  // Also re-enabled when the model is loaded.
-  supervised_bookmarks_button_->SetEnabled(false);
-  AddChildView(supervised_bookmarks_button_);
-
   apps_page_shortcut_ = CreateAppsPageShortcutButton();
   AddChildView(apps_page_shortcut_);
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
@@ -1660,10 +1622,10 @@ void BookmarkBarView::Init() {
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() const {
-  // We contain seven non-bookmark button views: managed bookmarks, supervised
-  // bookmarks, other bookmarks, bookmarks separator, chevrons (for overflow),
-  // apps page, and the instruction label.
-  return child_count() - 7;
+  // We contain seven non-bookmark button views: managed bookmarks, other
+  // bookmarks, bookmarks separator, chevrons (for overflow), apps page, and the
+  // instruction label.
+  return child_count() - 6;
 }
 
 views::LabelButton* BookmarkBarView::GetBookmarkButton(int index) {
@@ -1698,14 +1660,6 @@ MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
   // Title is set in Loaded.
   MenuButton* button = new BookmarkFolderButton(base::string16(), this, false);
   button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
-  button->set_context_menu_controller(this);
-  return button;
-}
-
-MenuButton* BookmarkBarView::CreateSupervisedBookmarksButton() {
-  // Title is set in Loaded.
-  MenuButton* button = new BookmarkFolderButton(base::string16(), this, false);
-  button->set_id(VIEW_ID_SUPERVISED_BOOKMARKS);
   button->set_context_menu_controller(this);
   return button;
 }
@@ -1839,14 +1793,6 @@ void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
     managed_bookmarks_button_->SetAccessibleName(
         managed_->managed_node()->GetTitle());
     managed_bookmarks_button_->SetText(managed_->managed_node()->GetTitle());
-    return;
-  }
-  if (node == managed_->supervised_node()) {
-    // The supervised node may have its title updated.
-    supervised_bookmarks_button_->SetAccessibleName(
-        managed_->supervised_node()->GetTitle());
-    supervised_bookmarks_button_->SetText(
-        managed_->supervised_node()->GetTitle());
     return;
   }
 
@@ -2045,8 +1991,6 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
     }
   } else if (bookmarks::IsDescendantOf(node, managed_->managed_node())) {
     throbbing_view_ = managed_bookmarks_button_;
-  } else if (bookmarks::IsDescendantOf(node, managed_->supervised_node())) {
-    throbbing_view_ = supervised_bookmarks_button_;
   } else if (!overflow_only) {
     throbbing_view_ = other_bookmarks_button_;
   }
@@ -2079,8 +2023,6 @@ views::Button* BookmarkBarView::DetermineViewToThrobFromRemove(
   }
   if (bookmarks::IsDescendantOf(parent, managed_->managed_node()))
     return managed_bookmarks_button_;
-  if (bookmarks::IsDescendantOf(parent, managed_->supervised_node()))
-    return supervised_bookmarks_button_;
   // Node wasn't on the bookmark bar, use the "Other Bookmarks" button.
   return other_bookmarks_button_;
 }
@@ -2102,10 +2044,6 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
   managed_bookmarks_button_->SetEnabledTextColors(color);
   managed_bookmarks_button_->SetImage(
       views::Button::STATE_NORMAL, chrome::GetBookmarkManagedFolderIcon(color));
-  supervised_bookmarks_button_->SetEnabledTextColors(color);
-  supervised_bookmarks_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      chrome::GetBookmarkSupervisedFolderIcon(color));
   if (apps_page_shortcut_->visible())
     apps_page_shortcut_->SetEnabledTextColors(color);
 
@@ -2134,13 +2072,7 @@ bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
   if (update_managed)
     managed_bookmarks_button_->SetVisible(show_managed);
 
-  bool show_supervised = !managed_->supervised_node()->empty();
-  bool update_supervised =
-      show_supervised != supervised_bookmarks_button_->visible();
-  if (update_supervised)
-    supervised_bookmarks_button_->SetVisible(show_supervised);
-
-  return update_other || update_managed || update_supervised;
+  return update_other || update_managed;
 }
 
 void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {

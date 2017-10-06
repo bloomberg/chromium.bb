@@ -105,7 +105,6 @@ bool IsValidBookmarkDropLocation(Profile* profile,
 // color.
 // TODO(estade): If Mac wants to use these, return gfx::Image instead.
 gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color);
-gfx::ImageSkia GetBookmarkSupervisedFolderIcon(SkColor text_color);
 gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color);
 #endif
 
