@@ -17,9 +17,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "media/audio/audio_manager.h"
+#include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -90,6 +91,8 @@ class OnMoreDataConverter
 
   DISALLOW_COPY_AND_ASSIGN(OnMoreDataConverter);
 };
+
+namespace {
 
 // Record UMA statistics for hardware output configuration.
 static void RecordStats(const AudioParameters& output_params) {
@@ -189,27 +192,31 @@ static void RecordRebufferingStats(const AudioParameters& input_params,
   }
 }
 
-// Converts low latency based |output_params| into high latency appropriate
-// output parameters in error situations.
-void AudioOutputResampler::SetupFallbackParams() {
 // Only Windows has a high latency output driver that is not the same as the low
 // latency path.
 #if defined(OS_WIN)
+// Converts low latency based |output_params| into high latency appropriate
+// output parameters in error situations.
+AudioParameters GetFallbackOutputParams(
+    const AudioParameters& original_output_params) {
+  DCHECK_EQ(original_output_params.format(),
+            AudioParameters::AUDIO_PCM_LOW_LATENCY);
   // Choose AudioParameters appropriate for opening the device in high latency
   // mode.  |kMinLowLatencyFrameSize| is arbitrarily based on Pepper Flash's
   // MAXIMUM frame size for low latency.
   static const int kMinLowLatencyFrameSize = 2048;
-  const int frames_per_buffer =
-      std::max(params_.frames_per_buffer(), kMinLowLatencyFrameSize);
+  const int frames_per_buffer = std::max(
+      original_output_params.frames_per_buffer(), kMinLowLatencyFrameSize);
 
-  output_params_ = AudioParameters(
-      AudioParameters::AUDIO_PCM_LINEAR, params_.channel_layout(),
-      params_.sample_rate(), params_.bits_per_sample(),
-      frames_per_buffer);
-  device_id_ = "";
-  Initialize();
-#endif
+  return AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
+                         original_output_params.channel_layout(),
+                         original_output_params.sample_rate(),
+                         original_output_params.bits_per_sample(),
+                         frames_per_buffer);
 }
+#endif
+
+}  // namespace
 
 AudioOutputResampler::AudioOutputResampler(
     AudioManager* audio_manager,
@@ -219,11 +226,12 @@ AudioOutputResampler::AudioOutputResampler(
     base::TimeDelta close_delay,
     const RegisterDebugRecordingSourceCallback&
         register_debug_recording_source_callback)
-    : AudioOutputDispatcher(audio_manager, input_params, output_device_id),
+    : AudioOutputDispatcher(audio_manager),
       close_delay_(close_delay),
+      input_params_(input_params),
       output_params_(output_params),
       original_output_params_(output_params),
-      streams_opened_(false),
+      device_id_(output_device_id),
       reinitialize_timer_(FROM_HERE,
                           close_delay_,
                           base::Bind(&AudioOutputResampler::Reinitialize,
@@ -232,18 +240,20 @@ AudioOutputResampler::AudioOutputResampler(
       register_debug_recording_source_callback_(
           register_debug_recording_source_callback),
       weak_factory_(this) {
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(input_params.IsValid());
   DCHECK(output_params.IsValid());
-  DCHECK_EQ(output_params_.format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
+  DCHECK(output_params_.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY ||
+         output_params_.format() == AudioParameters::AUDIO_PCM_LINEAR);
   DCHECK(register_debug_recording_source_callback_);
 
   // Record UMA statistics for the hardware configuration.
   RecordStats(output_params);
 
-  Initialize();
 }
 
 AudioOutputResampler::~AudioOutputResampler() {
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
   for (const auto& item : callbacks_) {
     if (item.second->started())
       StopStreamInternal(item);
@@ -251,60 +261,72 @@ AudioOutputResampler::~AudioOutputResampler() {
 }
 
 void AudioOutputResampler::Reinitialize() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(streams_opened_);
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
 
   // We can only reinitialize the dispatcher if it has no active proxies. Check
   // if one has been created since the reinitialization timer was started.
-  if (dispatcher_->HasOutputProxies())
+  if (dispatcher_ && dispatcher_->HasOutputProxies())
     return;
+
+  DCHECK(callbacks_.empty());
 
   // Log a trace event so we can get feedback in the field when this happens.
   TRACE_EVENT0("audio", "AudioOutputResampler::Reinitialize");
 
   output_params_ = original_output_params_;
-  streams_opened_ = false;
-  Initialize();
+  dispatcher_.reset();
 }
 
-void AudioOutputResampler::Initialize() {
-  DCHECK(!streams_opened_);
+std::unique_ptr<AudioOutputDispatcherImpl> AudioOutputResampler::MakeDispatcher(
+    const std::string& output_device_id,
+    const AudioParameters& params) {
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(callbacks_.empty());
-  dispatcher_ = base::MakeUnique<AudioOutputDispatcherImpl>(
-      audio_manager_, output_params_, device_id_, close_delay_);
+  return std::make_unique<AudioOutputDispatcherImpl>(
+      audio_manager(), params, output_device_id, close_delay_);
 }
 
 AudioOutputProxy* AudioOutputResampler::CreateStreamProxy() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
   return new AudioOutputProxy(weak_factory_.GetWeakPtr());
 }
 
 bool AudioOutputResampler::OpenStream() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+
+  bool first_stream = false;
+  if (!dispatcher_) {
+    first_stream = true;
+    // No open streams => no fallback has happened.
+    DCHECK(original_output_params_.Equals(output_params_));
+    DCHECK(callbacks_.empty());
+    dispatcher_ = MakeDispatcher(device_id_, output_params_);
+  }
 
   if (dispatcher_->OpenStream()) {
     // Only record the UMA statistic if we didn't fallback during construction
     // and only for the first stream we open.
-    if (!streams_opened_ &&
-        output_params_.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY) {
+    if (first_stream && original_output_params_.format() ==
+                            AudioParameters::AUDIO_PCM_LOW_LATENCY) {
       UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", false);
     }
-    streams_opened_ = true;
     return true;
   }
 
-  // If we've already tried to open the stream in high latency mode or we've
-  // successfully opened a stream previously, there's nothing more to be done.
-  if (output_params_.format() != AudioParameters::AUDIO_PCM_LOW_LATENCY ||
-      streams_opened_ || !callbacks_.empty()) {
+  // If we have successfully opened a stream previously, there's nothing more to
+  // be done.
+  if (!first_stream)
+    return false;
+
+  // Fallback is available for low latency streams only.
+  if (original_output_params_.format() !=
+      AudioParameters::AUDIO_PCM_LOW_LATENCY) {
     return false;
   }
 
-  DCHECK_EQ(output_params_.format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
-
   // Record UMA statistics about the hardware which triggered the failure so
   // we can debug and triage later.
-  RecordFallbackStats(output_params_);
+  RecordFallbackStats(original_output_params_);
 
   // Only Windows has a high latency output driver that is not the same as the
   // low latency path.
@@ -312,33 +334,33 @@ bool AudioOutputResampler::OpenStream() {
   DLOG(ERROR) << "Unable to open audio device in low latency mode.  Falling "
               << "back to high latency audio output.";
 
-  SetupFallbackParams();
-  if (dispatcher_->OpenStream()) {
-    streams_opened_ = true;
+  output_params_ = GetFallbackOutputParams(original_output_params_);
+  const std::string fallback_device_id = "";
+  dispatcher_ = MakeDispatcher(fallback_device_id, output_params_);
+  if (dispatcher_->OpenStream())
     return true;
-  }
 #endif
 
   DLOG(ERROR) << "Unable to open audio device in high latency mode.  Falling "
               << "back to fake audio output.";
 
   // Finally fall back to a fake audio output device.
-  output_params_ = params_;
+  output_params_ = input_params_;
   output_params_.set_format(AudioParameters::AUDIO_FAKE);
-
-  Initialize();
-  if (dispatcher_->OpenStream()) {
-    streams_opened_ = true;
+  dispatcher_ = MakeDispatcher(device_id_, output_params_);
+  if (dispatcher_->OpenStream())
     return true;
-  }
 
+  // Resetting the malfunctioning dispatcher.
+  dispatcher_.reset();
   return false;
 }
 
 bool AudioOutputResampler::StartStream(
     AudioOutputStream::AudioSourceCallback* callback,
     AudioOutputProxy* stream_proxy) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(dispatcher_);
 
   OnMoreDataConverter* resampler_callback = nullptr;
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
@@ -347,7 +369,7 @@ bool AudioOutputResampler::StartStream(
     // recoder to the converter. Data is fed to same recorder for the lifetime
     // of the converter, which is until the stream is closed.
     resampler_callback = new OnMoreDataConverter(
-        params_, output_params_,
+        input_params_, output_params_,
         register_debug_recording_source_callback_.Run(output_params_));
     callbacks_[stream_proxy] =
         base::WrapUnique<OnMoreDataConverter>(resampler_callback);
@@ -364,12 +386,13 @@ bool AudioOutputResampler::StartStream(
 
 void AudioOutputResampler::StreamVolumeSet(AudioOutputProxy* stream_proxy,
                                            double volume) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(dispatcher_);
   dispatcher_->StreamVolumeSet(stream_proxy, volume);
 }
 
 void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
 
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
   DCHECK(it != callbacks_.end());
@@ -377,7 +400,8 @@ void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
 }
 
 void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(dispatcher_);
 
   dispatcher_->CloseStream(stream_proxy);
 
@@ -396,6 +420,8 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
 
 void AudioOutputResampler::StopStreamInternal(
     const CallbackMap::value_type& item) {
+  DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(dispatcher_);
   AudioOutputProxy* stream_proxy = item.first;
   OnMoreDataConverter* callback = item.second.get();
   DCHECK(callback->started());
@@ -440,6 +466,7 @@ OnMoreDataConverter::~OnMoreDataConverter() {
 void OnMoreDataConverter::Start(
     AudioOutputStream::AudioSourceCallback* callback) {
   CHECK(!source_callback_);
+  CHECK(callback);
   source_callback_ = callback;
 
   // While AudioConverter can handle multiple inputs, we're using it only with
@@ -450,8 +477,8 @@ void OnMoreDataConverter::Start(
 
 void OnMoreDataConverter::Stop() {
   CHECK(source_callback_);
-  source_callback_ = nullptr;
   audio_converter_.RemoveInput(this);
+  source_callback_ = nullptr;
 }
 
 int OnMoreDataConverter::OnMoreData(base::TimeDelta delay,

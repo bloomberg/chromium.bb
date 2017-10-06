@@ -488,8 +488,8 @@ class AudioOutputProxyTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_impl_;
   MockAudioManager manager_;
+  std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_impl_;
   MockAudioSourceCallback callback_;
   AudioParameters params_;
 };

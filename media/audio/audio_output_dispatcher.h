@@ -20,22 +20,15 @@
 
 #include "base/macros.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager.h"
-#include "media/base/audio_parameters.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace media {
-
+class AudioManager;
 class AudioOutputProxy;
 
+// Lives and must be called on AudioManager device thread.
 class MEDIA_EXPORT AudioOutputDispatcher {
  public:
-  AudioOutputDispatcher(AudioManager* audio_manager,
-                        const AudioParameters& params,
-                        const std::string& device_id);
+  AudioOutputDispatcher(AudioManager* audio_manager);
   virtual ~AudioOutputDispatcher();
 
   // Creates an instance of AudioOutputProxy, which uses |this| as dispatcher.
@@ -65,17 +58,14 @@ class MEDIA_EXPORT AudioOutputDispatcher {
   // Called by AudioOutputProxy when the stream is closed.
   virtual void CloseStream(AudioOutputProxy* stream_proxy) = 0;
 
-  const std::string& device_id() const { return device_id_; }
-
  protected:
-  // A no-reference-held pointer (we don't want circular references) back to the
-  // AudioManager that owns this object.
-  AudioManager* audio_manager_;
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  const AudioParameters params_;
-  std::string device_id_;
+  AudioManager* audio_manager() const { return audio_manager_; }
 
  private:
+  // A no-reference-held pointer (we don't want circular references) back to the
+  // AudioManager that owns this object.
+  AudioManager* const audio_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDispatcher);
 };
 
