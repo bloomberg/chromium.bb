@@ -2331,6 +2331,9 @@ const char kBootAnimationName[] = "Boot animation";
 const char kBootAnimationDescription[] =
     "Wallpaper boot animation (except for OOBE case).";
 
+const char kBulkPrintersName[] = "Bulk Printers Policy";
+const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
+
 const char kCaptivePortalBypassProxyName[] =
     "Bypass proxy for Captive Portal Authorization";
 const char kCaptivePortalBypassProxyDescription[] =

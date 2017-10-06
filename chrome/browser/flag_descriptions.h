@@ -1434,6 +1434,9 @@ extern const char kAshEnableUnifiedDesktopDescription[];
 extern const char kBootAnimationName[];
 extern const char kBootAnimationDescription[];
 
+extern const char kBulkPrintersName[];
+extern const char kBulkPrintersDescription[];
+
 extern const char kCaptivePortalBypassProxyName[];
 extern const char kCaptivePortalBypassProxyDescription[];
 
