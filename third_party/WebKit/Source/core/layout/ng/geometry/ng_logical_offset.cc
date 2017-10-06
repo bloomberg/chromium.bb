@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 
+#include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "platform/wtf/text/WTFString.h"
@@ -67,6 +68,10 @@ NGLogicalOffset NGLogicalOffset::operator+(const NGLogicalOffset& other) const {
   return result;
 }
 
+NGLogicalOffset NGLogicalOffset::operator+(const NGLogicalSize& size) const {
+  return {inline_offset + size.inline_size, block_offset + size.block_size};
+}
+
 NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalOffset& other) {
   *this = *this + other;
   return *this;
@@ -92,13 +97,19 @@ bool NGLogicalOffset::operator<=(const NGLogicalOffset& other) const {
          block_offset <= other.block_offset;
 }
 
-NGLogicalOffset NGLogicalOffset::operator-(const NGLogicalOffset& other) const {
-  return NGLogicalOffset{this->inline_offset - other.inline_offset,
-                         this->block_offset - other.block_offset};
+NGLogicalSize NGLogicalOffset::DistanceTo(const NGLogicalOffset& other) const {
+  return {inline_offset - other.inline_offset,
+          block_offset - other.block_offset};
+}
+
+NGLogicalOffset NGLogicalOffset::RelativeTo(
+    const NGLogicalOffset& other) const {
+  return {inline_offset - other.inline_offset,
+          block_offset - other.block_offset};
 }
 
 NGLogicalOffset& NGLogicalOffset::operator-=(const NGLogicalOffset& other) {
-  *this = *this - other;
+  *this = RelativeTo(other);
   return *this;
 }
 

@@ -12,6 +12,7 @@
 
 namespace blink {
 
+struct NGLogicalSize;
 struct NGPhysicalOffset;
 struct NGPhysicalSize;
 
@@ -41,9 +42,14 @@ struct CORE_EXPORT NGLogicalOffset {
   bool operator!=(const NGLogicalOffset& other) const;
 
   NGLogicalOffset operator+(const NGLogicalOffset& other) const;
+  NGLogicalOffset operator+(const NGLogicalSize& size) const;
   NGLogicalOffset& operator+=(const NGLogicalOffset& other);
 
-  NGLogicalOffset operator-(const NGLogicalOffset& other) const;
+  NGLogicalSize DistanceTo(const NGLogicalOffset& other) const;
+  NGLogicalOffset RelativeTo(const NGLogicalOffset& other) const;
+  NGLogicalOffset operator-(const NGLogicalOffset& other) const {
+    return RelativeTo(other);
+  }
   NGLogicalOffset& operator-=(const NGLogicalOffset& other);
 
   bool operator>(const NGLogicalOffset& other) const;
