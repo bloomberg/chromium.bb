@@ -479,10 +479,9 @@ ChromeMetricsServiceClient::CreateUploader(
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
-  return std::unique_ptr<metrics::MetricsLogUploader>(
-      new metrics::NetMetricsLogUploader(
-          g_browser_process->system_request_context(), server_url, mime_type,
-          service_type, on_upload_complete));
+  return base::MakeUnique<metrics::NetMetricsLogUploader>(
+      g_browser_process->system_request_context(), server_url, mime_type,
+      service_type, on_upload_complete);
 }
 
 base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
@@ -541,13 +540,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   // Gets access to persistent metrics shared by sub-processes.
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new SubprocessMetricsProvider()));
+      base::MakeUnique<SubprocessMetricsProvider>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new ExtensionsMetricsProvider(metrics_state_manager_)));
+      base::MakeUnique<ExtensionsMetricsProvider>(metrics_state_manager_));
 #endif
 
   metrics_service_->RegisterMetricsProvider(
@@ -559,20 +556,17 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   // if there is a single incognito session visible. In the future, it may
   // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider(
-          base::Bind(&chrome::IsIncognitoSessionActive))));
+      base::MakeUnique<OmniboxMetricsProvider>(
+          base::Bind(&chrome::IsIncognitoSessionActive)));
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new ChromeStabilityMetricsProvider(local_state)));
+      base::MakeUnique<ChromeStabilityMetricsProvider>(local_state));
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::GPUMetricsProvider));
+      base::MakeUnique<metrics::GPUMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::ScreenInfoMetricsProvider));
+      base::MakeUnique<metrics::ScreenInfoMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
@@ -582,16 +576,13 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
           chrome::FILE_LOCAL_STATE));
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::CallStackProfileMetricsProvider));
+      base::MakeUnique<metrics::CallStackProfileMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::SamplingMetricsProvider));
+      base::MakeUnique<metrics::SamplingMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new translate::TranslateRankerMetricsProvider()));
+      base::MakeUnique<translate::TranslateRankerMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<metrics::ComponentMetricsProvider>(
@@ -599,9 +590,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(new AndroidMetricsProvider()));
+      base::MakeUnique<AndroidMetricsProvider>());
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(new PageLoadMetricsProvider()));
+      base::MakeUnique<PageLoadMetricsProvider>());
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -635,10 +626,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<ChromeOSMetricsProvider>());
 
-  SigninStatusMetricsProviderChromeOS* signin_metrics_provider_cros =
-      new SigninStatusMetricsProviderChromeOS;
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(signin_metrics_provider_cros));
+      base::MakeUnique<SigninStatusMetricsProviderChromeOS>());
 
   // Record default UMA state as opt-out for all Chrome OS users, if not
   // recorded yet.
@@ -655,25 +644,22 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 #if !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
       SigninStatusMetricsProvider::CreateInstance(
-          base::WrapUnique(new ChromeSigninStatusMetricsProviderDelegate)));
+          base::MakeUnique<ChromeSigninStatusMetricsProviderDelegate>()));
 #endif  // !defined(OS_CHROMEOS)
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new syncer::DeviceCountMetricsProvider(base::Bind(
-              &browser_sync::ChromeSyncClient::GetDeviceInfoTrackers))));
+      base::MakeUnique<syncer::DeviceCountMetricsProvider>(
+          base::Bind(&browser_sync::ChromeSyncClient::GetDeviceInfoTrackers)));
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new HttpsEngagementMetricsProvider()));
+      base::MakeUnique<HttpsEngagementMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new CertificateReportingMetricsProvider()));
+      base::MakeUnique<CertificateReportingMetricsProvider>());
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(new UpgradeMetricsProvider()));
+      base::MakeUnique<UpgradeMetricsProvider>());
 #endif  //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 }
 
