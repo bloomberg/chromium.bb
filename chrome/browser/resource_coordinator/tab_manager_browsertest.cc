@@ -555,16 +555,17 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, PurgeBackgroundRenderer) {
   // The time-to-purge initialized at ActiveTabChanged should be in the
   // right default range.
   EXPECT_GE(tab1_contents_data->time_to_purge(),
-            base::TimeDelta::FromMinutes(30));
-  EXPECT_LT(tab1_contents_data->time_to_purge(),
-            base::TimeDelta::FromMinutes(60));
+            base::TimeDelta::FromMinutes(1));
+  EXPECT_LE(tab1_contents_data->time_to_purge(),
+            base::TimeDelta::FromMinutes(4));
   EXPECT_GE(tab2_contents_data->time_to_purge(),
-            base::TimeDelta::FromMinutes(30));
-  EXPECT_LT(tab2_contents_data->time_to_purge(),
-            base::TimeDelta::FromMinutes(60));
+            base::TimeDelta::FromMinutes(1));
+  EXPECT_LE(tab2_contents_data->time_to_purge(),
+            base::TimeDelta::FromMinutes(4));
+
   EXPECT_GE(tab3_contents_data->time_to_purge(),
             base::TimeDelta::FromMinutes(30));
-  EXPECT_LT(tab3_contents_data->time_to_purge(),
+  EXPECT_LE(tab3_contents_data->time_to_purge(),
             base::TimeDelta::FromMinutes(60));
 
   // To make it easy to test, configure time-to-purge here.

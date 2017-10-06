@@ -544,9 +544,9 @@ TEST_F(TabManagerTest, DefaultTimeToPurgeInCorrectRange) {
   TabManager tab_manager;
   base::TimeDelta time_to_purge =
       tab_manager.GetTimeToPurge(TabManager::kDefaultMinTimeToPurge,
-                                 TabManager::kDefaultMinTimeToPurge * 2);
-  EXPECT_GE(time_to_purge, base::TimeDelta::FromMinutes(30));
-  EXPECT_LT(time_to_purge, base::TimeDelta::FromMinutes(60));
+                                 TabManager::kDefaultMinTimeToPurge * 4);
+  EXPECT_GE(time_to_purge, base::TimeDelta::FromMinutes(1));
+  EXPECT_LE(time_to_purge, base::TimeDelta::FromMinutes(4));
 }
 
 TEST_F(TabManagerTest, ShouldPurgeAtDefaultTime) {
