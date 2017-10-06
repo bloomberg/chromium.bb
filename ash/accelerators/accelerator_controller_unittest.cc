@@ -5,7 +5,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/media_controller.h"

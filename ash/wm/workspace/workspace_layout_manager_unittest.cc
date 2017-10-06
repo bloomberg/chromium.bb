@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/test_accessibility_delegate.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
@@ -26,7 +26,6 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_accessibility_delegate.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"

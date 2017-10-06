@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/system/accessibility_observer.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_image_item.h"

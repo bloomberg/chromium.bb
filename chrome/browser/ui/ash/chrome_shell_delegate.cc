@@ -11,7 +11,7 @@
 
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/content/gpu_support_impl.h"
 #include "ash/shell.h"

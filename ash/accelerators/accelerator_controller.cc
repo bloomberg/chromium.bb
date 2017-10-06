@@ -10,7 +10,7 @@
 #include "ash/accelerators/accelerator_controller_delegate.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/focus_cycler.h"

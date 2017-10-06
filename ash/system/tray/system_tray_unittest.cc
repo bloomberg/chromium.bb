@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ash_view_ids.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"

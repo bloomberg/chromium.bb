@@ -4,7 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/message_center/message_center_bubble.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"

@@ -4,7 +4,7 @@
 
 #include "ash/system/tray_caps_lock.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/config.h"

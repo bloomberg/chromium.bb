@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"

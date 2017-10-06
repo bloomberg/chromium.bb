@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/backdrop_controller.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"

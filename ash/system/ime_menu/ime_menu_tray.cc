@@ -4,7 +4,7 @@
 
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/root_window_controller.h"

@@ -4,11 +4,11 @@
 
 #include "ash/test_shell_delegate.h"
 
+#include "ash/accessibility/test_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/palette_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/test/test_accessibility_delegate.h"
 #include "ash/wallpaper/test_wallpaper_delegate.h"
 #include "base/logging.h"
 #include "ui/gfx/image/image.h"

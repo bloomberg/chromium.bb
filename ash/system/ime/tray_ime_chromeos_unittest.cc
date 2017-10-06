@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/config.h"
