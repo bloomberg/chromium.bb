@@ -4173,6 +4173,13 @@
         }
       },
       {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -4822,6 +4829,13 @@
     ],
     "isolated_scripts": [
       {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -5204,6 +5218,13 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",

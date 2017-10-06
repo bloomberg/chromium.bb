@@ -762,6 +762,14 @@
     "label": "//ui/message_center:message_center_unittests",
     "type": "windowed_test_launcher",
   },
+  "metrics_python_tests": {
+    "label": "//tools/metrics:metrics_python_tests",
+    "type": "script",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "args": [
+      "../../tools/metrics/metrics_python_tests.py"
+    ]
+  },
   "mash_unittests": {
     "label": "//mash:mash_unittests",
     "type": "windowed_test_launcher",
