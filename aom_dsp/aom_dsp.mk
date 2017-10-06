@@ -85,6 +85,7 @@ DSP_SRCS-$(HAVE_SSE)  += x86/highbd_intrapred_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/highbd_intrapred_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/highbd_intrapred_sse2.c
 DSP_SRCS-$(HAVE_SSSE3) += x86/highbd_intrapred_ssse3.c
+DSP_SRCS-$(HAVE_SSSE3) += x86/highbd_intrapred_avx2.c
 endif  # CONFIG_HIGHBITDEPTH
 
 DSP_SRCS-$(HAVE_NEON_ASM) += arm/intrapred_neon_asm$(ASM)

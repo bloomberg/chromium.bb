@@ -255,6 +255,17 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_d153_predictor_8x8 ssse3/;
   specialize qw/aom_highbd_d153_predictor_16x16 ssse3/;
   specialize qw/aom_highbd_d153_predictor_32x32 ssse3/;
+
+  specialize qw/aom_highbd_d45e_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_d45e_predictor_4x8 sse2/;
+  specialize qw/aom_highbd_d45e_predictor_8x4 sse2/;
+  specialize qw/aom_highbd_d45e_predictor_8x8 sse2/;
+  specialize qw/aom_highbd_d45e_predictor_8x16 sse2/;
+  specialize qw/aom_highbd_d45e_predictor_16x8 avx2/;
+  specialize qw/aom_highbd_d45e_predictor_16x16 avx2/;
+  specialize qw/aom_highbd_d45e_predictor_16x32 avx2/;
+  specialize qw/aom_highbd_d45e_predictor_32x16 avx2/;
+  specialize qw/aom_highbd_d45e_predictor_32x32 avx2/;
 }  # CONFIG_HIGHBITDEPTH
 
 #

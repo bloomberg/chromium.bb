@@ -246,6 +246,7 @@ if (CONFIG_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_INTRIN_AVX2
       ${AOM_DSP_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c")
 else ()
   set(AOM_DSP_COMMON_INTRIN_DSPR2

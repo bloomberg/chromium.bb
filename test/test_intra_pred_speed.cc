@@ -1145,16 +1145,19 @@ HIGHBD_INTRA_PRED_TEST(
     SSE2_1, TestHighbdIntraPred4, "Hbd Intra4x4",
     aom_highbd_dc_predictor_4x4_sse2, aom_highbd_dc_left_predictor_4x4_sse2,
     aom_highbd_dc_top_predictor_4x4_sse2, aom_highbd_dc_128_predictor_4x4_sse2,
-    aom_highbd_v_predictor_4x4_sse2, aom_highbd_h_predictor_4x4_sse2, NULL,
-    aom_highbd_d135_predictor_4x4_sse2, aom_highbd_d117_predictor_4x4_sse2,
-    aom_highbd_d153_predictor_4x4_sse2, NULL, NULL, NULL, NULL, NULL, NULL)
+    aom_highbd_v_predictor_4x4_sse2, aom_highbd_h_predictor_4x4_sse2,
+    aom_highbd_d45e_predictor_4x4_sse2, aom_highbd_d135_predictor_4x4_sse2,
+    aom_highbd_d117_predictor_4x4_sse2, aom_highbd_d153_predictor_4x4_sse2,
+    NULL, NULL, NULL, NULL, NULL, NULL)
+
 HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred4, "Hbd Intra4x8",
                        aom_highbd_dc_predictor_4x8_sse2,
                        aom_highbd_dc_left_predictor_4x8_sse2,
                        aom_highbd_dc_top_predictor_4x8_sse2,
                        aom_highbd_dc_128_predictor_4x8_sse2,
                        aom_highbd_v_predictor_4x8_sse2,
-                       aom_highbd_h_predictor_4x8_sse2, NULL, NULL, NULL, NULL,
+                       aom_highbd_h_predictor_4x8_sse2,
+                       aom_highbd_d45e_predictor_4x8_sse2, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
@@ -1208,7 +1211,8 @@ HIGHBD_INTRA_PRED_TEST(SSE2_1, TestHighbdIntraPred8, "Hbd Intra8x8",
                        aom_highbd_dc_top_predictor_8x8_sse2,
                        aom_highbd_dc_128_predictor_8x8_sse2,
                        aom_highbd_v_predictor_8x8_sse2,
-                       aom_highbd_h_predictor_8x8_sse2, NULL, NULL, NULL, NULL,
+                       aom_highbd_h_predictor_8x8_sse2,
+                       aom_highbd_d45e_predictor_8x8_sse2, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL)
 HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred8, "Hbd Intra8x4",
                        aom_highbd_dc_predictor_8x4_sse2,
@@ -1216,7 +1220,8 @@ HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred8, "Hbd Intra8x4",
                        aom_highbd_dc_top_predictor_8x4_sse2,
                        aom_highbd_dc_128_predictor_8x4_sse2,
                        aom_highbd_v_predictor_8x4_sse2,
-                       aom_highbd_h_predictor_8x4_sse2, NULL, NULL, NULL, NULL,
+                       aom_highbd_h_predictor_8x4_sse2,
+                       aom_highbd_d45e_predictor_8x4_sse2, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL)
 HIGHBD_INTRA_PRED_TEST(SSE2_3, TestHighbdIntraPred8, "Hbd Intra8x16",
                        aom_highbd_dc_predictor_8x16_sse2,
@@ -1224,7 +1229,8 @@ HIGHBD_INTRA_PRED_TEST(SSE2_3, TestHighbdIntraPred8, "Hbd Intra8x16",
                        aom_highbd_dc_top_predictor_8x16_sse2,
                        aom_highbd_dc_128_predictor_8x16_sse2,
                        aom_highbd_v_predictor_8x16_sse2,
-                       aom_highbd_h_predictor_8x16_sse2, NULL, NULL, NULL, NULL,
+                       aom_highbd_h_predictor_8x16_sse2,
+                       aom_highbd_d45e_predictor_8x16_sse2, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
@@ -1329,12 +1335,29 @@ HIGHBD_INTRA_PRED_TEST(SSE2_3, TestHighbdIntraPred16, "Hbd Intra16x32",
 #endif
 
 #if HAVE_SSSE3
-HIGHBD_INTRA_PRED_TEST(SSSE3, TestHighbdIntraPred16, "Hbd Intra16x16", NULL,
+HIGHBD_INTRA_PRED_TEST(SSSE3_1, TestHighbdIntraPred16, "Hbd Intra16x16", NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL,
                        aom_highbd_d135_predictor_16x16_ssse3,
                        aom_highbd_d117_predictor_16x16_ssse3,
                        aom_highbd_d153_predictor_16x16_ssse3, NULL, NULL, NULL,
                        NULL, NULL, NULL)
+#endif
+
+#if HAVE_AVX2
+HIGHBD_INTRA_PRED_TEST(AVX2_1, TestHighbdIntraPred16, "Hbd Intra16x16", NULL,
+                       NULL, NULL, NULL, NULL, NULL,
+                       aom_highbd_d45e_predictor_16x16_avx2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
+
+HIGHBD_INTRA_PRED_TEST(AVX2_2, TestHighbdIntraPred16, "Hbd Intra16x8", NULL,
+                       NULL, NULL, NULL, NULL, NULL,
+                       aom_highbd_d45e_predictor_16x8_avx2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
+
+HIGHBD_INTRA_PRED_TEST(AVX2_3, TestHighbdIntraPred16, "Hbd Intra16x32", NULL,
+                       NULL, NULL, NULL, NULL, NULL,
+                       aom_highbd_d45e_predictor_16x32_avx2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
 #if CONFIG_SMOOTH_HV
@@ -1422,12 +1445,24 @@ HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred32, "Hbd Intra32x16",
 #endif
 
 #if HAVE_SSSE3
-HIGHBD_INTRA_PRED_TEST(SSSE3, TestHighbdIntraPred32, "Hbd Intra32x32", NULL,
+HIGHBD_INTRA_PRED_TEST(SSSE3_1, TestHighbdIntraPred32, "Hbd Intra32x32", NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL,
                        aom_highbd_d135_predictor_32x32_ssse3,
                        aom_highbd_d117_predictor_32x32_ssse3,
                        aom_highbd_d153_predictor_32x32_ssse3, NULL, NULL, NULL,
                        NULL, NULL, NULL)
+#endif
+
+#if HAVE_AVX2
+HIGHBD_INTRA_PRED_TEST(AVX2_1, TestHighbdIntraPred32, "Hbd Intra32x32", NULL,
+                       NULL, NULL, NULL, NULL, NULL,
+                       aom_highbd_d45e_predictor_32x32_avx2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
+
+HIGHBD_INTRA_PRED_TEST(AVX2_2, TestHighbdIntraPred32, "Hbd Intra32x16", NULL,
+                       NULL, NULL, NULL, NULL, NULL,
+                       aom_highbd_d45e_predictor_32x16_avx2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
 #if CONFIG_SMOOTH_HV
