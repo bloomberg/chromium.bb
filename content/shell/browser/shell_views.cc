@@ -118,15 +118,16 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
-    column_set->AddPaddingColumn(0, 2);
+    if (!shell_->hide_toolbar())
+      column_set->AddPaddingColumn(0, 2);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                           views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, 2);
-
-    layout->AddPaddingRow(0, 2);
+    if (!shell_->hide_toolbar())
+      column_set->AddPaddingColumn(0, 2);
 
     // Add toolbar buttons and URL text field
-    {
+    if (!shell_->hide_toolbar()) {
+      layout->AddPaddingRow(0, 2);
       layout->StartRow(0, 0);
       views::GridLayout* toolbar_layout =
           views::GridLayout::CreateAndInstall(toolbar_view_);
@@ -188,9 +189,9 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       toolbar_layout->AddView(url_entry_);
 
       layout->AddView(toolbar_view_);
-    }
 
-    layout->AddPaddingRow(0, 5);
+      layout->AddPaddingRow(0, 5);
+    }
 
     // Add web contents view as the second row
     {
@@ -198,7 +199,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       layout->AddView(contents_view_);
     }
 
-    layout->AddPaddingRow(0, 5);
+    if (!shell_->hide_toolbar())
+      layout->AddPaddingRow(0, 5);
 
     InitAccelerators();
   }
@@ -364,7 +366,7 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
-  if (headless_)
+  if (headless_ || hide_toolbar_)
     return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
@@ -381,7 +383,7 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
-  if (headless_)
+  if (headless_ || hide_toolbar_)
     return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());

@@ -19,6 +19,7 @@ extern const char kExposeInternalsForTesting[];
 extern const char kIsolateSitesForTesting[];
 extern const char kRegisterFontFiles[];
 extern const char kContentShellHostWindowSize[];
+extern const char kContentShellHideToolbar[];
 
 // Returns list of extra font files to be made accessible to the renderer.
 std::vector<std::string> GetSideloadFontFiles();
