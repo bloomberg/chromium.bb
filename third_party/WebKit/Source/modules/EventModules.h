@@ -6,6 +6,6 @@
 #define EventModules_h
 
 #include "core/dom/events/Event.h"
-#include "modules/EventModulesNames.h"
+#include "modules/event_modules_names.h"
 
 #endif  // EventModules_h

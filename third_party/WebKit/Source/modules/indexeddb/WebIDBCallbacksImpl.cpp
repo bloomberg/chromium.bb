@@ -31,7 +31,7 @@
 #include <memory>
 #include "core/dom/DOMException.h"
 #include "core/probe/CoreProbes.h"
-#include "modules/IndexedDBNames.h"
+#include "modules/indexed_db_names.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBValue.h"

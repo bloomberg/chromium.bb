@@ -64,13 +64,13 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/webmidi/MIDIMessageEvent.idl",
     "//third_party/WebKit/Source/modules/websockets/CloseEvent.idl",
   ]
-  output_file = "EventModulesNames.json5"
+  output_file = "event_modules_names.json5"
   suffix = "Modules"
 }
 
 make_event_factory("event_modules") {
   visibility = [ ":*" ]
-  in_files = [ "$root_gen_dir/blink/EventModulesNames.json5" ]
+  in_files = [ "$root_gen_dir/blink/event_modules_names.json5" ]
   outputs = [
     "$blink_modules_output_dir/event_modules_factory.cc",
   ]
@@ -84,14 +84,14 @@ make_event_factory("event_modules") {
 
 make_names("event_modules_names") {
   visibility = [ ":*" ]
-  in_files = [ "$root_gen_dir/blink/EventModulesNames.json5" ]
+  in_files = [ "$root_gen_dir/blink/event_modules_names.json5" ]
   output_dir = blink_modules_output_dir
   deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
 }
 
 make_names("event_target_modules_names") {
   visibility = [ ":*" ]
-  in_files = [ "../../modules/EventTargetModulesNames.json5" ]
+  in_files = [ "../../modules/event_target_modules_names.json5" ]
   output_dir = blink_modules_output_dir
 }
 

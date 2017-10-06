@@ -5,9 +5,9 @@
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
 #include "core/dom/DOMException.h"
-#include "modules/EventTargetModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
+#include "modules/event_target_modules_names.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/bindings/ScriptState.h"
 

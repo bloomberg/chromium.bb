@@ -25,7 +25,7 @@
 
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
-#include "modules/IndexedDBNames.h"
+#include "modules/indexed_db_names.h"
 
 namespace blink {
 

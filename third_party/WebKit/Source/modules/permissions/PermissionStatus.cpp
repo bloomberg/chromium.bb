@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"
-#include "modules/EventTargetModulesNames.h"
+#include "modules/event_target_modules_names.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"

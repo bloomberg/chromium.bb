@@ -2,7 +2,7 @@ include_rules = [
     "-modules",
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",
-    "+modules/EventTargetModulesNames.h",
     "+modules/ModulesExport.h",
+    "+modules/event_target_modules_names.h",
     "+modules/presentation",
 ]

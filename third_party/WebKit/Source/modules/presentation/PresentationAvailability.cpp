@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
-#include "modules/EventTargetModulesNames.h"
+#include "modules/event_target_modules_names.h"
 #include "modules/presentation/PresentationController.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"

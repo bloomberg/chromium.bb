@@ -27,7 +27,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
-#include "modules/EventTargetModulesNames.h"
+#include "modules/event_target_modules_names.h"
 #include "modules/payments/AndroidPayMethodData.h"
 #include "modules/payments/AndroidPayTokenization.h"
 #include "modules/payments/BasicCardRequest.h"
