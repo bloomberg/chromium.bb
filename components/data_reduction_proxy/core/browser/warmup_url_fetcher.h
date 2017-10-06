@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class GURL;
+
 namespace net {
 
 class URLFetcher;
@@ -30,6 +32,11 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
 
   // Creates and starts a URLFetcher that fetches the warmup URL.
   void FetchWarmupURL();
+
+ protected:
+  // Sets |warmup_url_with_query_params| to the warmup URL. Attaches random
+  // query params to the warmup URL.
+  void GetWarmupURLWithQueryParam(GURL* warmup_url_with_query_params) const;
 
  private:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
