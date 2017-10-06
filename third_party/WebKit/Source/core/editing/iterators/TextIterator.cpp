@@ -28,7 +28,6 @@
 #include "core/editing/iterators/TextIterator.h"
 
 #include <unicode/utf16.h>
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
@@ -43,6 +42,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/TextControlElement.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "platform/fonts/Font.h"

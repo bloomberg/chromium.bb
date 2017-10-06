@@ -21,7 +21,6 @@
 
 #include "core/html/forms/RadioInputType.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/events/KeyboardEvent.h"
@@ -29,6 +28,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/page/SpatialNavigation.h"
 #include "platform/text/PlatformLocale.h"
 

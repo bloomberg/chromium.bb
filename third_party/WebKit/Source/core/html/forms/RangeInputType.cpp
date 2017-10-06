@@ -33,7 +33,6 @@
 
 #include <limits>
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/InputTypeNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ShadowRoot.h"
@@ -51,6 +50,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutSlider.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/NonCopyingSort.h"

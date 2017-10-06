@@ -24,10 +24,10 @@
 
 #include "core/layout/LayoutSearchField.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/input_type_names.h"
 
 namespace blink {
 

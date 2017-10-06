@@ -4,7 +4,6 @@
 
 #include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/events/Event.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -12,6 +11,7 @@
 #include "core/html/forms/HTMLLabelElement.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackList.h"
+#include "core/input_type_names.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/text/PlatformLocale.h"

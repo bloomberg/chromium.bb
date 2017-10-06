@@ -4,7 +4,6 @@
 
 #include "core/inspector/InspectorDOMSnapshotAgent.h"
 
-#include "core/InputTypeNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/AttributeCollection.h"
@@ -22,6 +21,7 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/forms/HTMLOptionElement.h"
+#include "core/input_type_names.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"

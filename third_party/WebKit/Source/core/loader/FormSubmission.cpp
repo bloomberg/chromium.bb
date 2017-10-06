@@ -30,7 +30,6 @@
 
 #include "core/loader/FormSubmission.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
@@ -40,6 +39,7 @@
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/heap/Handle.h"

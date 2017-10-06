@@ -26,7 +26,6 @@
 
 #include "core/editing/spellcheck/SpellChecker.h"
 
-#include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -54,6 +53,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutTextControl.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"

@@ -30,7 +30,6 @@
 
 #include "core/frame/FrameSerializer.h"
 
-#include "core/InputTypeNames.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSImageValue.h"
@@ -55,6 +54,7 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/ImageDocument.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/loader/resource/FontResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleFetchedImage.h"

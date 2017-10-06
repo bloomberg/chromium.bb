@@ -4,9 +4,9 @@
 
 #include "modules/media_controls/elements/MediaControlSliderElement.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/ElementShadow.h"
 #include "core/html/HTMLDivElement.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/resize_observer/ResizeObserver.h"
 #include "core/resize_observer/ResizeObserverEntry.h"

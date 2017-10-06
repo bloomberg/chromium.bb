@@ -25,7 +25,6 @@
 
 #include "core/editing/EditingUtilities.h"
 
-#include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -62,6 +61,7 @@
 #include "core/html/HTMLUListElement.h"
 #include "core/html_element_factory.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTableCell.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"

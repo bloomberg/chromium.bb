@@ -28,7 +28,6 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 
 #include <memory>
-#include "core/InputTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/MediaValuesCached.h"
@@ -45,6 +44,7 @@
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/loader/LinkLoader.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

@@ -30,7 +30,6 @@
 
 #include "public/web/WebInputElement.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
@@ -39,6 +38,7 @@
 #include "core/html/forms/TextControlInnerElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebElementCollection.h"
 #include "public/web/WebOptionElement.h"

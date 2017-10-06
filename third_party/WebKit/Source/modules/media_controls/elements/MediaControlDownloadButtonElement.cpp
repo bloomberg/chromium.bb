@@ -4,13 +4,13 @@
 
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/media/HTMLMediaSource.h"
+#include "core/input_type_names.h"
 #include "core/page/Page.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/MediaDownloadInProductHelpManager.h"

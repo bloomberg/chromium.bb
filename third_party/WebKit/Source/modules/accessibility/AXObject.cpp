@@ -29,7 +29,6 @@
 #include "modules/accessibility/AXObject.h"
 
 #include "SkMatrix44.h"
-#include "core/InputTypeNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/AccessibleNodeList.h"
@@ -46,6 +45,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"

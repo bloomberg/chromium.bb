@@ -25,8 +25,8 @@
 
 #include "core/html/forms/ExternalDateTimeChooser.h"
 
-#include "core/InputTypeNames.h"
 #include "core/html/forms/DateTimeChooserClient.h"
+#include "core/input_type_names.h"
 #include "core/page/ChromeClient.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/text/AtomicString.h"
