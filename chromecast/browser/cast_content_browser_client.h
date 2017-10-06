@@ -183,6 +183,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   }
 
  private:
+  // Create device cert/key
+  virtual scoped_refptr<net::X509Certificate> DeviceCert();
+  virtual scoped_refptr<net::SSLPrivateKey> DeviceKey();
+
   void AddNetworkHintsMessageFilter(int render_process_id,
                                     net::URLRequestContext* context);
 

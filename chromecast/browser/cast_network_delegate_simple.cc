@@ -6,8 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "net/cert/x509_certificate.h"
-#include "net/ssl/ssl_private_key.h"
 #include "url/gurl.h"
 
 namespace chromecast {
@@ -35,16 +33,6 @@ class CastNetworkDelegateSimple : public CastNetworkDelegate {
 // static
 std::unique_ptr<CastNetworkDelegate> CastNetworkDelegate::Create() {
   return base::MakeUnique<CastNetworkDelegateSimple>();
-}
-
-// static
-scoped_refptr<net::X509Certificate> CastNetworkDelegate::DeviceCert() {
-  return nullptr;
-}
-
-// static
-scoped_refptr<net::SSLPrivateKey> CastNetworkDelegate::DeviceKey() {
-  return nullptr;
 }
 
 }  // namespace shell

@@ -8,19 +8,12 @@
 #include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
-namespace net {
-class SSLPrivateKey;
-class X509Certificate;
-}
-
 namespace chromecast {
 namespace shell {
 
 class CastNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   static std::unique_ptr<CastNetworkDelegate> Create();
-  static scoped_refptr<net::X509Certificate> DeviceCert();
-  static scoped_refptr<net::SSLPrivateKey> DeviceKey();
 
   CastNetworkDelegate();
   ~CastNetworkDelegate() override;
