@@ -2007,6 +2007,7 @@ test("base_unittests") {
     "gmock_unittest.cc",
     "guid_unittest.cc",
     "hash_unittest.cc",
+    "i18n/bidi_line_iterator_unittest.cc",
     "i18n/break_iterator_unittest.cc",
     "i18n/case_conversion_unittest.cc",
     "i18n/char_iterator_unittest.cc",

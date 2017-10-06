@@ -3022,6 +3022,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-omnibox-answer-types", flag_descriptions::kNewOmniboxAnswerTypesName,
      flag_descriptions::kNewOmniboxAnswerTypesDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kNewOmniboxAnswerTypes)},
+    {"left-to-right-urls", flag_descriptions::kLeftToRightUrlsName,
+     flag_descriptions::kLeftToRightUrlsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kLeftToRightUrls)},
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
     {"omnibox-entity-suggestions",

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
@@ -33,6 +34,7 @@
 #include "ui/gfx/harfbuzz_font_skia.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
@@ -1371,7 +1373,17 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // text. This is needed because leaving the runs set empty causes some clients
   // to misbehave since they expect non-zero text metrics from a non-empty text.
   base::i18n::BiDiLineIterator bidi_iterator;
-  if (!bidi_iterator.Open(text, GetTextDirection(text))) {
+  base::i18n::BiDiLineIterator::CustomBehavior behavior =
+      base::i18n::BiDiLineIterator::CustomBehavior::NONE;
+
+  // If the feature flag is enabled, use the special URL behaviour on the Bidi
+  // algorithm, if this is a URL.
+  if (base::FeatureList::IsEnabled(features::kLeftToRightUrls) &&
+      directionality_mode() == DIRECTIONALITY_AS_URL) {
+    behavior = base::i18n::BiDiLineIterator::CustomBehavior::AS_URL;
+  }
+
+  if (!bidi_iterator.Open(text, GetTextDirection(text), behavior)) {
     auto run = base::MakeUnique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range = Range(0, text.length());
