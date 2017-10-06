@@ -183,9 +183,6 @@ class PermissionCombobox : public views::Combobox,
   void UpdateSelectedIndex(bool use_default);
 
  private:
-  // views::Combobox:
-  void OnPaintBorder(gfx::Canvas* canvas) override;
-
   // views::ComboboxListener:
   void OnPerformAction(Combobox* combobox) override;
 
@@ -213,14 +210,6 @@ void PermissionCombobox::UpdateSelectedIndex(bool use_default) {
     index = 0;
   }
   SetSelectedIndex(index);
-}
-
-void PermissionCombobox::OnPaintBorder(gfx::Canvas* canvas) {
-  // No border except a focus indicator for MD mode.
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && !HasFocus()) {
-    return;
-  }
-  Combobox::OnPaintBorder(canvas);
 }
 
 void PermissionCombobox::OnPerformAction(Combobox* combobox) {
