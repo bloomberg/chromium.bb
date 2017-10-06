@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/default_accessibility_delegate.h"
+#include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/palette_delegate.h"

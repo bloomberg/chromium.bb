@@ -4,7 +4,7 @@
 
 #include "ash/system/power/power_button_display_controller.h"
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/media_controller.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_devices_controller.h"

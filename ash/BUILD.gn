@@ -46,19 +46,21 @@ component("ash") {
     "accessibility/accessibility_controller.h",
     "accessibility/accessibility_cursor_ring_layer.cc",
     "accessibility/accessibility_cursor_ring_layer.h",
+    "accessibility/accessibility_delegate.h",
     "accessibility/accessibility_focus_ring.cc",
     "accessibility/accessibility_focus_ring.h",
     "accessibility/accessibility_focus_ring_controller.cc",
     "accessibility/accessibility_focus_ring_controller.h",
     "accessibility/accessibility_focus_ring_layer.cc",
     "accessibility/accessibility_focus_ring_layer.h",
+    "accessibility/default_accessibility_delegate.cc",
+    "accessibility/default_accessibility_delegate.h",
     "accessibility/focus_ring_controller.cc",
     "accessibility/focus_ring_controller.h",
     "accessibility/focus_ring_layer.cc",
     "accessibility/focus_ring_layer.h",
 
-    # TODO(jamescook): Move these into accessibility/ after M61 stable.
-    "accessibility_delegate.h",
+    # TODO(jamescook): Move parts of this into //ash/public/cpp
     "accessibility_types.h",
     "animation/animation_change_type.h",
     "app_list/app_list_delegate_impl.cc",
@@ -83,8 +85,6 @@ component("ash") {
     "cast_config_controller.h",
     "debug.cc",
     "debug.h",
-    "default_accessibility_delegate.cc",
-    "default_accessibility_delegate.h",
     "default_wallpaper_delegate.cc",
     "default_wallpaper_delegate.h",
     "display/ash_display_controller.cc",
@@ -1590,6 +1590,8 @@ static_library("test_support_common") {
   testonly = true
   visibility = [ ":*" ]
   sources = [
+    "accessibility/test_accessibility_delegate.cc",
+    "accessibility/test_accessibility_delegate.h",
     "app_list/test_app_list_presenter_impl.cc",
     "app_list/test_app_list_presenter_impl.h",
     "display/display_configuration_controller_test_api.cc",
@@ -1652,10 +1654,6 @@ static_library("test_support_common") {
     # TODO(jamescook): Rename to TestChildModalWindow and move to //ash/wm
     "test/child_modal_window.cc",
     "test/child_modal_window.h",
-
-    # TODO(jamescook): Create //ash/accessibility for this and other code.
-    "test/test_accessibility_delegate.cc",
-    "test/test_accessibility_delegate.h",
     "test/ui_controls_factory_ash.cc",
     "test/ui_controls_factory_ash.h",
     "test_media_client.cc",

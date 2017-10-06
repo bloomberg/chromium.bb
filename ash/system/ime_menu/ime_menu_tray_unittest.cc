@@ -5,7 +5,7 @@
 #include "ash/system/ime_menu/ime_menu_tray.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/shell.h"

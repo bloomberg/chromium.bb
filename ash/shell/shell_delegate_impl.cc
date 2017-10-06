@@ -4,8 +4,7 @@
 
 #include "ash/shell/shell_delegate_impl.h"
 
-#include "ash/accessibility_delegate.h"
-#include "ash/default_accessibility_delegate.h"
+#include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/default_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/keyboard/test_keyboard_ui.h"

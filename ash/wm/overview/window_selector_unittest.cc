@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/drag_drop/drag_drop_controller.h"

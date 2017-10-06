@@ -6,8 +6,8 @@
 
 #include <vector>
 
+#include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
-#include "ash/accessibility_delegate.h"
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/root_window_controller.h"
