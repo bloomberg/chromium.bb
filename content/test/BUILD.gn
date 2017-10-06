@@ -1257,6 +1257,7 @@ test("content_unittests") {
     "../browser/loader/mock_resource_loader.cc",
     "../browser/loader/mock_resource_loader.h",
     "../browser/loader/mojo_async_resource_handler_unittest.cc",
+    "../browser/loader/navigation_url_loader_network_service_unittest.cc",
     "../browser/loader/navigation_url_loader_unittest.cc",
     "../browser/loader/redirect_to_file_resource_handler_unittest.cc",
     "../browser/loader/resource_buffer_unittest.cc",

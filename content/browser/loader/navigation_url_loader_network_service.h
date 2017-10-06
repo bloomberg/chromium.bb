@@ -19,12 +19,15 @@ namespace content {
 
 class ResourceContext;
 class NavigationPostDataHandler;
+class URLLoaderRequestHandler;
 
 // This is an implementation of NavigationURLLoader used when
 // --enable-network-service is used.
-class NavigationURLLoaderNetworkService : public NavigationURLLoader {
+class CONTENT_EXPORT NavigationURLLoaderNetworkService
+    : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
+  // Note |initial_handlers| is there for test purposes only.
   NavigationURLLoaderNetworkService(
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
@@ -32,7 +35,8 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader {
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       ServiceWorkerNavigationHandle* service_worker_handle,
       AppCacheNavigationHandle* appcache_handle,
-      NavigationURLLoaderDelegate* delegate);
+      NavigationURLLoaderDelegate* delegate,
+      std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers);
   ~NavigationURLLoaderNetworkService() override;
 
   // NavigationURLLoader implementation:
