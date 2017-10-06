@@ -80,11 +80,17 @@ Shell::Shell(WebContents* web_contents)
 #if defined(OS_MACOSX)
       url_edit_view_(NULL),
 #endif
-      headless_(false) {
+      headless_(false),
+      hide_toolbar_(false) {
   web_contents_->SetDelegate(this);
 
   if (switches::IsRunLayoutTestSwitchPresent())
     headless_ = true;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kContentShellHideToolbar))
+    hide_toolbar_ = true;
+
   windows_.push_back(this);
 
   if (!shell_created_callback_.is_null()) {

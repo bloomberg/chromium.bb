@@ -39,6 +39,9 @@ const char kRegisterFontFiles[] = "register-font-files";
 // Size for the content_shell's host window (i.e. "800x600").
 const char kContentShellHostWindowSize[] = "content-shell-host-window-size";
 
+// Hides toolbar from content_shell's host window.
+const char kContentShellHideToolbar[] = "content-shell-hide-toolbar";
+
 std::vector<std::string> GetSideloadFontFiles() {
   std::vector<std::string> files;
   const base::CommandLine& command_line =
