@@ -630,8 +630,8 @@ public class OfflinePageBridge {
      * @param timestamp Returned content must be newer than |timestamp|, a date represented as the
      * number of millis since the Java epoch.
      * @param callback Fired when the model check has been finished, with a String parameter that
-     * represents the source of the offline content.  The parameter will be |null| if no fresh
-     * enough content is found.
+     * represents the source of the offline content.  The parameter will be the empty string if no
+     * fresh enough content is found.
      */
     public void checkForNewOfflineContent(long freshnessTimeMillis, Callback<String> callback) {
         nativeCheckForNewOfflineContent(mNativeOfflinePageBridge, freshnessTimeMillis, callback);

@@ -152,6 +152,8 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         mTaskFinishedCallback = callback;
         OfflinePageBridge bridge = getOfflinePageBridge();
+        PrefetchedPagesNotifier.getInstance().recordNotificationAction(
+                PrefetchedPagesNotifier.NOTIFICATION_ACTION_MAY_SHOW);
         bridge.checkForNewOfflineContent(
                 PrefetchPrefs.getNotificationLastShownTime(), (origin) -> doneContentCheck(origin));
     }
@@ -160,7 +162,7 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
         resetPrefs();
         mTaskFinishedCallback.taskFinished(false);
 
-        if (contentHost != null) {
+        if (!contentHost.isEmpty()) {
             PrefetchPrefs.setNotificationLastShownTime(getCurrentTimeMillis());
             PrefetchedPagesNotifier.getInstance().showNotification(contentHost);
         }
@@ -233,8 +235,11 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
     }
 
     private static boolean shouldNotReschedule() {
-        return PrefetchPrefs.getIgnoredNotificationCounter() >= IGNORED_NOTIFICATION_MAX
-                || !PrefetchPrefs.getHasNewPages();
+        boolean noNewPages = !PrefetchPrefs.getHasNewPages();
+        boolean tooManyIgnoredNotifications =
+                PrefetchPrefs.getIgnoredNotificationCounter() >= IGNORED_NOTIFICATION_MAX;
+
+        return noNewPages || tooManyIgnoredNotifications;
     }
 
     private void resetPrefs() {
