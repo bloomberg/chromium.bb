@@ -248,12 +248,6 @@ def AddDeviceOptions(parser):
            'speed up local development and never on bots '
                      '(increases flakiness)')
   parser.add_argument(
-      '--target-devices-file',
-      type=os.path.realpath,
-      help='Path to file with json list of device serials to '
-           'run tests on. When not specified, all available '
-           'devices are used.')
-  parser.add_argument(
       '--tool',
       dest='tool',
       help='Run the test under a tool '
