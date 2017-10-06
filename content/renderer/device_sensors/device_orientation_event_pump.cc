@@ -66,9 +66,11 @@ bool DeviceOrientationEventPumpBase::InitializeReader(
 }
 
 void DeviceOrientationEventPumpBase::SendFakeDataForTesting(void* fake_data) {
+  if (!listener())
+    return;
+
   device::OrientationData data =
       *static_cast<device::OrientationData*>(fake_data);
-
   listener()->DidChangeDeviceOrientation(data);
 }
 

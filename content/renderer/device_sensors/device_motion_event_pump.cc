@@ -117,6 +117,9 @@ void DeviceMotionEventPump::SendStopMessage() {
 }
 
 void DeviceMotionEventPump::SendFakeDataForTesting(void* fake_data) {
+  if (!listener())
+    return;
+
   device::MotionData data = *static_cast<device::MotionData*>(fake_data);
   listener()->DidChangeDeviceMotion(data);
 }
