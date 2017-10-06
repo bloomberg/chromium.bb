@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -38,6 +39,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeRea
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetNewTabController;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+
+import java.util.List;
 
 /**
  * Provides content to be displayed inside of the Home tab of bottom sheet.
@@ -217,6 +220,11 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     @Override
     public View getContentView() {
         return mView;
+    }
+
+    @Override
+    public List<View> getViewsForPadding() {
+        return CollectionUtil.newArrayList(mRecyclerView);
     }
 
     @Override

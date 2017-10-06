@@ -15,6 +15,7 @@ import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.FileUtils;
@@ -172,6 +173,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     private BasicNativePage mNativePage;
     private Activity mActivity;
     private ViewGroup mMainView;
+    private TextView mEmptyView;
     private DownloadManagerToolbar mToolbar;
     private SelectableListLayout<DownloadHistoryItemWrapper> mSelectableListLayout;
     private boolean mIsSeparateActivity;
@@ -201,7 +203,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         mSelectableListLayout = (SelectableListLayout<DownloadHistoryItemWrapper>)
                 mMainView.findViewById(R.id.selectable_list);
 
-        mSelectableListLayout.initializeEmptyView(
+        mEmptyView = mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.downloads_big, mActivity.getTheme()),
                 R.string.download_manager_ui_empty, R.string.download_manager_no_results);
@@ -287,6 +289,20 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
      */
     public ViewGroup getView() {
         return mMainView;
+    }
+
+    /**
+     * @return The {@link RecyclerView} that contains the list of download items.
+     */
+    public RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
+
+    /**
+     * @return The {@link TextView} shown when there are no download items to be shown.
+     */
+    public TextView getEmptyView() {
+        return mEmptyView;
     }
 
     /**

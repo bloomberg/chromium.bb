@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
@@ -57,6 +58,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     private BasicNativePage mNativePage;
     private SelectableListLayout<BookmarkId> mSelectableListLayout;
     private RecyclerView mRecyclerView;
+    private TextView mEmptyView;
     private BookmarkItemsAdapter mAdapter;
     private BookmarkActionBar mToolbar;
     private SelectionDelegate<BookmarkId> mSelectionDelegate;
@@ -139,7 +141,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
         SelectableListLayout<BookmarkId> selectableList =
                 (SelectableListLayout<BookmarkId>) mMainView.findViewById(R.id.selectable_list);
         mSelectableListLayout = selectableList;
-        mSelectableListLayout.initializeEmptyView(
+        mEmptyView = mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.bookmark_big, mActivity.getTheme()),
                 R.string.bookmarks_folder_empty, R.string.bookmark_no_result);
@@ -236,6 +238,20 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
 
     public View getView() {
         return mMainView;
+    }
+
+    /**
+     * @return The {@link RecyclerView} that contains the list of bookmarks.
+     */
+    public RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
+
+    /**
+     * @return The {@link TextView} that's displayed when there are no bookmarks to display.
+     */
+    public TextView getEmptyView() {
+        return mEmptyView;
     }
 
     /**
