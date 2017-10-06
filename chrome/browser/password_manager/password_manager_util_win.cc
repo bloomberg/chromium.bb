@@ -103,7 +103,16 @@ class CredentialBufferValidator {
 };
 
 CredentialBufferValidator::CredentialBufferValidator() {
-  cur_token_info_ = GetTokenInformation(GetCurrentProcessToken());
+  // Windows 7 does not support pseudo tokens with GetTokenInformation(), so
+  // make sure to open a real token.
+  HANDLE token;
+  if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) {
+    DLOG(ERROR) << "Unable to obtain process token " << GetLastError();
+    return;
+  }
+
+  cur_token_info_ = GetTokenInformation(token);
+  CloseHandle(token);
   if (!cur_token_info_) {
     DLOG(ERROR) << "Unable to obtain current token info " << GetLastError();
     return;
