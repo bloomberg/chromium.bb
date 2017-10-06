@@ -716,6 +716,25 @@
             ]
         }
     ],
+    "CompositorImageAnimation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "CompositorImageAnimation",
+                    "enable_features": [
+                        "CompositorImageAnimation"
+                    ]
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [
