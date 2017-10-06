@@ -19,7 +19,7 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2017-9
+# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2017-11
 
 # U.S. English 8 dot Computer braille table
 include en-us-comp8.ctb
@@ -83,6 +83,7 @@ sign \x011B 157-25
 sign \x012B 247-2
 sign \x014D 1357-2
 sign \x016B 1367-2
+sign \x017F 234
 sign \x01CE 17-25
 sign \x01D0 247-25
 sign \x01D2 1357-25
@@ -193,6 +194,7 @@ sign \x2059 46-46-46-46-46
 sign \x205A 46-46
 sign \x205B 46-46-46-46
 sign \x205F 0
+sign \x2060 0
 sign \x2070 457-356
 sign \x2071 457-24
 sign \x2074 457-256
@@ -226,6 +228,14 @@ sign \x2090 56-1
 sign \x2091 56-15
 sign \x2092 56-135
 sign \x2093 56-1346
+sign \x2095 56-125
+sign \x2096 56-13
+sign \x2097 56-123
+sign \x2098 56-134
+sign \x2099 56-1345
+sign \x209A 56-1234
+sign \x209B 56-234
+sign \x209C 56-2345
 sign \x20A0 4-15
 sign \x20A1 156
 sign \x20AC 4-15
@@ -404,9 +414,9 @@ sign \x224C 4-156-123456
 math \x224D 4-126-6-126
 math \x224E 4-126-6-126
 math \x2250 5-46-13-126-16-12456
-math \x2251 5-46-13-126-16-126-16-12456
-math \x2252 5-46-13-126-16-126-16-12456
-math \x2253 5-46-13-126-16-126-16-12456
+math \x2251 5-46-13-146-16-126-16-12456
+math \x2252 5-46-13-146-16-126-16-12456
+math \x2253 5-46-13-146-16-126-16-12456
 math \x2256 46-16-4-46-13-12456
 math \x2257 5-46-13-126-46-16-12456
 math \x2258 5-46-13-126-1246-1-12456
@@ -532,26 +542,26 @@ sign \x2484 12356-2-2356-23456
 sign \x2485 12356-2-236-23456
 sign \x2486 12356-2-35-23456
 sign \x2487 12356-23-356-23456
-sign \x2488 2
-sign \x2489 23
-sign \x248A 25
-sign \x248B 256
-sign \x248C 26
-sign \x248D 235
-sign \x248E 2356
-sign \x248F 236
-sign \x2490 35
-sign \x2491 2-356
-sign \x2492 2-2
-sign \x2493 2-23
-sign \x2494 2-25
-sign \x2495 2-256
-sign \x2496 2-26
-sign \x2497 2-235
-sign \x2498 2-2356
-sign \x2499 2-236
-sign \x249A 2-35
-sign \x249B 23-356
+sign \x2488 2-46
+sign \x2489 23-46
+sign \x248A 25-46
+sign \x248B 256-46
+sign \x248C 26-46
+sign \x248D 235-46
+sign \x248E 2356-46
+sign \x248F 236-46
+sign \x2490 35-46
+sign \x2491 2-356-46
+sign \x2492 2-2-46
+sign \x2493 2-23-46
+sign \x2494 2-25-46
+sign \x2495 2-256-46
+sign \x2496 2-26-46
+sign \x2497 2-235-46
+sign \x2498 2-2356-46
+sign \x2499 2-236-46
+sign \x249A 2-35-46
+sign \x249B 23-356-46
 sign \x249C 12356-1-23456
 sign \x249D 12356-12-23456
 sign \x249E 12356-14-23456
@@ -755,7 +765,7 @@ math \x2A67 5-456-123-126-16-12456
 math \x2A68 1256-1256-4-456-123-12456
 math \x2A69 1256-1256-1256-4-456-123-12456
 math \x2A6A 5-4-156-126-16-12456
-math \x2A6B 5-4-156-126-16-126-16-12456
+math \x2A6B 5-4-156-146-16-126-16-12456
 math \x2A6C 4-156-156-4-156
 math \x2A6D 5-4-156-46-13-126-16-12456
 math \x2A6E 5-46-13-126-4-3456-12456
@@ -766,7 +776,7 @@ math \x2A72 5-46-13-126-346-12456
 math \x2A73 46-13-4-156
 math \x2A75 46-13-5-46-13
 math \x2A76 46-13-5-46-13-5-46-13
-math \x2A77 5-46-13-126-16-16-126-16-16-12456
+math \x2A77 5-46-13-146-16-16-126-16-16-12456
 math \x2A78 5-456-123-126-16-16-16-16-12456
 math \x2A79 5-13-4-46-16-12456
 math \x2A7A 46-2-4-46-16-12456
@@ -7875,7 +7885,7 @@ sign \x5293 16-5
 sign \x5294 13-2345-5
 sign \x5295 1-156-2
 sign \x5296 12-1236-2
-sign \x5297 125-136-3
+sign \x5297 125-12456-3
 sign \x5298 134-126-2
 sign \x5299 14-16-2
 sign \x529A 1-34-2
@@ -21437,7 +21447,7 @@ sign \x878D 1245-12346-2
 sign \x878E 1245-12346-2
 sign \x878F 13-16-2
 sign \x8790 34-3
-sign \x8791 245-234-5
+sign \x8791 15-234-5
 sign \x8792 1235-1236-5
 sign \x8793 245-1456-2
 sign \x8794 16-2
@@ -27606,6 +27616,7 @@ sign \xE18C 12356-17-23456
 sign \xE18D 12356-127-23456
 sign \xE18E 12356-147-23456
 sign \xE18F 12356-1457-23456
+sign \xF0B7 16 Private use for list item sign.
 sign \xF577 1246-135
 sign \xF900 245-16-4
 sign \xF901 13-1356-5
@@ -28074,6 +28085,8 @@ sign \xFB01 124-24
 sign \xFB02 124-123
 sign \xFB03 124-124-24
 sign \xFB04 124-124-123
+sign \xFB05 234-2345
+sign \xFB06 234-2345
 sign \xFE30 25-25
 sign \xFE31 1256-0
 sign \xFE33 456
