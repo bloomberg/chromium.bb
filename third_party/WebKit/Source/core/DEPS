@@ -4,6 +4,7 @@ include_rules = [
     "+build/mac",
     "+build/win",
     "+core",
+    "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
     "+inspector/v8/public",
     "-modules",

@@ -69,6 +69,7 @@
 #include "core/paint/PaintTiming.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/probe/CoreProbes.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "platform/Histogram.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
@@ -911,6 +912,28 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
       return false;
   }
 
+  // Avoid creating |contextProvider| until we're sure we want to try use it,
+  // since it costs us GPU memory.
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  if (!context_provider_wrapper) {
+    CanvasMetrics::CountCanvasContextUsage(
+        CanvasMetrics::kAccelerated2DCanvasGPUContextLost);
+    return false;
+  }
+
+  if (context_provider_wrapper->ContextProvider()->IsSoftwareRendering())
+    return false;  // Don't use accelerated canvas with swiftshader.
+
+  const gpu::GpuFeatureInfo& gpu_feature_info =
+      context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();
+  if (gpu::kGpuFeatureStatusEnabled !=
+      gpu_feature_info
+          .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS]) {
+    // Accelerated 2D canvas is blacklisted.
+    return false;
+  }
+
   return true;
 }
 
@@ -961,19 +984,6 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
     *msaa_sample_count =
         GetDocument().GetSettings()->GetAccelerated2dCanvasMSAASampleCount();
   }
-
-  // Avoid creating |contextProvider| until we're sure we want to try use it,
-  // since it costs us GPU memory.
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
-      SharedGpuContext::ContextProviderWrapper();
-  if (!context_provider_wrapper) {
-    CanvasMetrics::CountCanvasContextUsage(
-        CanvasMetrics::kAccelerated2DCanvasGPUContextLost);
-    return nullptr;
-  }
-
-  if (context_provider_wrapper->ContextProvider()->IsSoftwareRendering())
-    return nullptr;  // Don't use accelerated canvas with swiftshader.
 
   auto surface = WTF::MakeUnique<Canvas2DLayerBridge>(
       Size(), *msaa_sample_count, opacity_mode,
