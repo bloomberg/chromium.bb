@@ -37,7 +37,6 @@ using signin_ui::CompletionCallback;
   signin_metrics::AccessPoint accessPoint_;
   signin_metrics::PromoAction promoAction_;
   UIViewController* presentingViewController_;
-  BOOL isPresentedOnSettings_;
   BOOL isCancelling_;
   BOOL isDismissing_;
   BOOL interactionManagerDismissalIgnored_;
@@ -64,7 +63,6 @@ using signin_ui::CompletionCallback;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
             presentingViewController:(UIViewController*)presentingViewController
-               isPresentedOnSettings:(BOOL)isPresentedOnSettings
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
                           dispatcher:(id<ApplicationCommands>)dispatcher {
@@ -74,7 +72,6 @@ using signin_ui::CompletionCallback;
     DCHECK(presentingViewController);
     browserState_ = browserState;
     presentingViewController_ = presentingViewController;
-    isPresentedOnSettings_ = isPresentedOnSettings;
     accessPoint_ = accessPoint;
     promoAction_ = promoAction;
     dispatcher_ = dispatcher;
@@ -270,7 +267,6 @@ using signin_ui::CompletionCallback;
                                identityAdded:(BOOL)identityAdded {
   signinViewController_ = [[ChromeSigninViewController alloc]
        initWithBrowserState:browserState_
-      isPresentedOnSettings:isPresentedOnSettings_
                 accessPoint:accessPoint_
                 promoAction:promoAction_
              signInIdentity:signInIdentity
