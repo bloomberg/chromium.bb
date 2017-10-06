@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
+import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
@@ -119,6 +120,14 @@ public abstract class AppHooks {
      */
     public CustomTabsConnection createCustomTabsConnection() {
         return new CustomTabsConnection();
+    }
+
+    /**
+     * Creates a new {@link SurveyController}.
+     * @return The created {@link SurveyController}.
+     */
+    public SurveyController createSurveyController() {
+        return new SurveyController();
     }
 
     /**

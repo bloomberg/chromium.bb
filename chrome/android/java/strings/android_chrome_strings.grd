@@ -2671,6 +2671,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_URL_COPIED" desc="Notification telling the user that the url has been copied to clipboard. [CHAR-LIMIT=32]">
         URL copied.
       </message>
+      <message name="IDS_SURVEY_PROMPT" desc="Message shown that invites the user to take a survey about Chrome. 'Help' and 'improve' are imperative verbs. 'Take survey' is a tappable link. When tapped, a survey about Chrome opens.">
+        Help improve Chrome. <ph name="BEGIN_LINK">&lt;LINK&gt;</ph>Take survey.<ph name="END_LINK">&lt;/LINK&gt;</ph>
+      </message>
 
       <!-- Accessibility -->
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_FORWARD" desc="Content description for the forward navigation button.">
