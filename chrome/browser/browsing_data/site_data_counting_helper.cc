@@ -236,7 +236,8 @@ void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(tasks_ > 0);
   for (const GURL& origin : origins) {
-    unique_origins_.insert(origin);
+    if (BrowsingDataHelper::HasWebScheme(origin))
+      unique_origins_.insert(origin);
   }
   if (--tasks_ > 0)
     return;
