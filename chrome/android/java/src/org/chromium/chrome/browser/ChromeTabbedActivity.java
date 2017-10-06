@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.browseractions.BrowserActionsService;
+import org.chromium.chrome.browser.browseractions.BrowserActionsTabModelSelector;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -1058,9 +1059,11 @@ public class ChromeTabbedActivity
                 }
             }
 
+            boolean hasBrowserActionTabs = BrowserActionsTabModelSelector.isInitialized()
+                    && BrowserActionsTabModelSelector.getInstance().getTotalTabCount() != 0;
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
                     || mTabModelSelectorImpl.getRestoredTabCount() > 0 || mIntentWithEffect
-                    || mDelayedInitialTabBehaviorDuringUiInit != null;
+                    || mDelayedInitialTabBehaviorDuringUiInit != null || hasBrowserActionTabs;
 
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
@@ -1069,6 +1072,9 @@ public class ChromeTabbedActivity
 
             mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
+            if (hasBrowserActionTabs) {
+                mergeBrowserActionsTabModel(!mIntentWithEffect);
+            }
             mMainIntentMetrics.setIgnoreEvents(false);
 
             // Only create an initial tab if no tabs were restored and no intent was handled.
@@ -1093,6 +1099,21 @@ public class ChromeTabbedActivity
                     "MobileStartup.ColdStartupIntent", mIntentWithEffect);
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeState");
+        }
+    }
+
+    private void mergeBrowserActionsTabModel(boolean shouldSelectTab) {
+        TabModel browserActionsNormlTabModel =
+                BrowserActionsTabModelSelector.getInstance().getModel(false);
+        TabModel chromeNormalTabModel = getTabModelSelector().getModel(false);
+        while (browserActionsNormlTabModel.getCount() > 0) {
+            Tab tab = browserActionsNormlTabModel.getTabAt(0);
+            browserActionsNormlTabModel.removeTab(tab);
+            tab.attach(this, new TabDelegateFactory());
+            chromeNormalTabModel.addTab(tab, -1, TabLaunchType.FROM_BROWSER_ACTIONS);
+        }
+        if (shouldSelectTab) {
+            TabModelUtils.setIndex(chromeNormalTabModel, chromeNormalTabModel.getCount() - 1);
         }
     }
 
