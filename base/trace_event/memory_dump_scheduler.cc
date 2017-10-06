@@ -73,10 +73,14 @@ void MemoryDumpScheduler::StartInternal(MemoryDumpScheduler::Config config) {
   light_dump_rate_ = light_dump_period_ms / min_period_ms;
   heavy_dump_rate_ = heavy_dump_period_ms / min_period_ms;
 
-  // Trigger the first dump immediately.
-  SequencedTaskRunnerHandle::Get()->PostTask(
+  // Trigger the first dump after 200ms.
+  // TODO(lalitm): this is a tempoarary hack to delay the first scheduled dump
+  // so that the child processes get tracing enabled notification via IPC.
+  // See crbug.com/770151.
+  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      BindOnce(&MemoryDumpScheduler::Tick, Unretained(this), ++generation_));
+      BindOnce(&MemoryDumpScheduler::Tick, Unretained(this), ++generation_),
+      TimeDelta::FromMilliseconds(200));
 }
 
 void MemoryDumpScheduler::StopInternal() {
