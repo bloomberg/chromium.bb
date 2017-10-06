@@ -422,6 +422,7 @@ bool PasswordFormMetricsRecorder::IsRepeatedUserAction(
       return true;
     case DetailedUserAction::kEditedUsernameInBubble:
     case DetailedUserAction::kSelectedDifferentPasswordInBubble:
+    case DetailedUserAction::kCorrectedUsernameInForm:
       return false;
   }
   NOTREACHED();

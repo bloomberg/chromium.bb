@@ -3835,6 +3835,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Used"/>
 </enum>
 
+<enum name="BooleanUsernameCorrectionVote">
+  <int value="0" label="No username correction found"/>
+  <int value="1" label="Username correction found"/>
+</enum>
+
 <enum name="BooleanValid">
   <int value="0" label="Invalid"/>
   <int value="1" label="Valid"/>
