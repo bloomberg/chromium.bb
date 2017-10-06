@@ -115,6 +115,8 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
       audio_device_id_ ==
           ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
     load_type = kLoadTypeCommunication;
+  } else if (audio_device_id_ == kPlatformAudioDeviceId) {
+    load_type = kLoadTypeMediaStream;
   }
 
   std::unique_ptr<MediaPipelineBackend> backend =
