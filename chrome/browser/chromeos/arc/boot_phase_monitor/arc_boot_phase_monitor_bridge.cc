@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -19,7 +20,12 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/one_shot_event.h"
 
 namespace arc {
 namespace {
@@ -65,7 +71,12 @@ class ArcBootPhaseMonitorBridgeFactory
 
  private:
   friend base::DefaultSingletonTraits<ArcBootPhaseMonitorBridgeFactory>;
-  ArcBootPhaseMonitorBridgeFactory() = default;
+
+  ArcBootPhaseMonitorBridgeFactory() {
+    DependsOn(extensions::ExtensionsBrowserClient::Get()
+                  ->GetExtensionSystemFactory());
+  }
+
   ~ArcBootPhaseMonitorBridgeFactory() override = default;
 };
 
@@ -88,17 +99,29 @@ void ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(
 ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
+    : context_(context),
+      arc_bridge_service_(bridge_service),
       account_id_(multi_user_util::GetAccountIdFromProfile(
           Profile::FromBrowserContext(context))),
       binding_(this),
       // Set the default delegate. Unit tests may use a different one.
-      delegate_(std::make_unique<DefaultDelegateImpl>()) {
+      delegate_(std::make_unique<DefaultDelegateImpl>()),
+      weak_ptr_factory_(this) {
   arc_bridge_service_->boot_phase_monitor()->AddObserver(this);
   auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   arc_session_manager->AddObserver(this);
   SessionRestore::AddObserver(this);
+
+  auto* profile = Profile::FromBrowserContext(context);
+  auto* extension_system = extensions::ExtensionSystem::Get(profile);
+  DCHECK(extension_system);
+  extension_system->ready().Post(
+      FROM_HERE, base::Bind(&ArcBootPhaseMonitorBridge::OnExtensionsReady,
+                            weak_ptr_factory_.GetWeakPtr()));
+
+  // Initialize |enabled_by_policy_| now.
+  OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile));
 }
 
 ArcBootPhaseMonitorBridge::~ArcBootPhaseMonitorBridge() {
@@ -160,6 +183,14 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
   }
 }
 
+void ArcBootPhaseMonitorBridge::OnArcPlayStoreEnabledChanged(bool enabled) {
+  auto* profile = Profile::FromBrowserContext(context_);
+  enabled_by_policy_ =
+      enabled && IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
+  if (enabled_by_policy_)
+    MaybeDisableCpuRestriction();
+}
+
 void ArcBootPhaseMonitorBridge::OnArcInitialStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // ARC apps for opt-in finished doing their jobs. Start the throttle.
@@ -202,16 +233,43 @@ void ArcBootPhaseMonitorBridge::OnSessionRestoreFinishedLoadingTabs() {
     delegate_->DisableCpuRestriction();
 }
 
+void ArcBootPhaseMonitorBridge::OnExtensionsReady() {
+  VLOG(2) << "All extensions are loaded";
+  extensions_ready_ = true;
+  MaybeDisableCpuRestriction();
+}
+
+void ArcBootPhaseMonitorBridge::MaybeDisableCpuRestriction() {
+  if (throttle_)
+    return;
+  if (!extensions_ready_ || !enabled_by_policy_)
+    return;
+
+  VLOG(1) << "ARC is enabled by policy. "
+          << "Allowing the instance to use more CPU resources";
+  if (delegate_)
+    delegate_->DisableCpuRestriction();
+}
+
 void ArcBootPhaseMonitorBridge::Reset() {
   throttle_.reset();
   app_launch_time_ = base::TimeTicks();
   first_app_launch_delay_recorded_ = false;
   boot_completed_ = false;
+  enabled_by_policy_ = false;
+
+  // Do not reset |extensions_ready_| here. That variable is not tied to the
+  // instance.
 }
 
 void ArcBootPhaseMonitorBridge::SetDelegateForTesting(
     std::unique_ptr<Delegate> delegate) {
   delegate_ = std::move(delegate);
+}
+
+void ArcBootPhaseMonitorBridge::SetThrottleForTesting(
+    std::unique_ptr<ArcInstanceThrottle> throttle) {
+  throttle_ = std::move(throttle);
 }
 
 }  // namespace arc

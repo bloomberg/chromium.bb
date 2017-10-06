@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -27,8 +28,9 @@ namespace arc {
 class ArcBridgeService;
 class ArcInstanceThrottle;
 
-// Receives boot phase notifications from ARC.
-// TODO(yusukes): Add unit tests for this.
+// Receives events regarding ARC boot phase from both ARC and Chrome, and do
+// either one-time or continuous container priority adjustment / UMA recording
+// in response.
 class ArcBootPhaseMonitorBridge
     : public KeyedService,
       public InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer,
@@ -71,6 +73,7 @@ class ArcBootPhaseMonitorBridge
   void OnBootCompleted() override;
 
   // ArcSessionManager::Observer
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcInitialStart() override;
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
   void OnArcSessionRestarting() override;
@@ -79,22 +82,33 @@ class ArcBootPhaseMonitorBridge
   void OnSessionRestoreFinishedLoadingTabs() override;
 
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
+  void SetThrottleForTesting(std::unique_ptr<ArcInstanceThrottle> throttle);
   void RecordFirstAppLaunchDelayUMAForTesting() {
     RecordFirstAppLaunchDelayUMAInternal();
   }
+  void OnExtensionsReadyForTesting() { OnExtensionsReady(); }
 
   ArcInstanceThrottle* throttle_for_testing() const { return throttle_.get(); }
 
  private:
   void RecordFirstAppLaunchDelayUMAInternal();
   void Reset();
+  void MaybeDisableCpuRestriction();
+
+  // Called when ExtensionsServices finishes loading all extensions for the
+  // profile.
+  void OnExtensionsReady();
 
   THREAD_CHECKER(thread_checker_);
 
+  content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   const AccountId account_id_;
   mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
   std::unique_ptr<Delegate> delegate_;
+
+  // Indicates whether all extensions for the profile have been loaded.
+  bool extensions_ready_ = false;
 
   // The following variables must be reset every time when the instance stops or
   // restarts.
@@ -102,6 +116,10 @@ class ArcBootPhaseMonitorBridge
   base::TimeTicks app_launch_time_;
   bool first_app_launch_delay_recorded_ = false;
   bool boot_completed_ = false;
+  bool enabled_by_policy_ = false;
+
+  // This has to be the last member variable in the class.
+  base::WeakPtrFactory<ArcBootPhaseMonitorBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBootPhaseMonitorBridge);
 };
