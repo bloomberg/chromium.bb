@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLOutputElement.h"
+#include "core/html/forms/HTMLOutputElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/html_names.h"

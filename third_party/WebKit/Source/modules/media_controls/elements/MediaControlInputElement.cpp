@@ -6,8 +6,8 @@
 
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/events/Event.h"
-#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/forms/HTMLLabelElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/Histogram.h"
 #include "platform/runtime_enabled_features.h"

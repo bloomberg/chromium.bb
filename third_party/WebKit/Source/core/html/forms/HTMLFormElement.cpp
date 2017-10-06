@@ -23,7 +23,7 @@
  *
  */
 
-#include "core/html/HTMLFormElement.h"
+#include "core/html/forms/HTMLFormElement.h"
 
 #include <limits>
 #include "bindings/core/v8/ScriptController.h"
@@ -44,12 +44,12 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
-#include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/RadioNodeList.h"
 #include "core/html/forms/FormController.h"
+#include "core/html/forms/HTMLFormControlsCollection.h"
 #include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
@@ -848,9 +848,10 @@ void HTMLFormElement::InvalidateDefaultButtonStyle() const {
   for (const auto& control : ListedElements()) {
     if (!control->IsFormControlElement())
       continue;
-    if (ToHTMLFormControlElement(control)->CanBeSuccessfulSubmitButton())
+    if (ToHTMLFormControlElement(control)->CanBeSuccessfulSubmitButton()) {
       ToHTMLFormControlElement(control)->PseudoStateChanged(
           CSSSelector::kPseudoDefault);
+    }
   }
 }
 

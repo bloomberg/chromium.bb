@@ -22,7 +22,7 @@
  *
  */
 
-#include "core/html/HTMLLabelElement.h"
+#include "core/html/forms/HTMLLabelElement.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -90,10 +90,11 @@ LabelableElement* HTMLLabelElement::control() const {
 }
 
 HTMLFormElement* HTMLLabelElement::form() const {
-  if (LabelableElement* control = this->control())
+  if (LabelableElement* control = this->control()) {
     return control->IsFormControlElement()
                ? ToHTMLFormControlElement(control)->Form()
                : nullptr;
+  }
   return nullptr;
 }
 
@@ -198,9 +199,10 @@ void HTMLLabelElement::DefaultEventHandler(Event* evt) {
       // selection of label, only then focus the control element.
       // In case of double click or triple click, selection will be there,
       // so do not focus the control element.
-      if (!is_label_text_selected)
+      if (!is_label_text_selected) {
         element->focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
                                    kWebFocusTypeMouse, nullptr));
+      }
     }
 
     // Click the corresponding control.
@@ -232,9 +234,10 @@ void HTMLLabelElement::focus(const FocusParams& params) {
     return;
   }
   // To match other browsers, always restore previous selection.
-  if (HTMLElement* element = control())
+  if (HTMLElement* element = control()) {
     element->focus(FocusParams(SelectionBehaviorOnFocus::kRestore, params.type,
                                params.source_capabilities));
+  }
 }
 
 void HTMLLabelElement::AccessKeyAction(bool send_mouse_events) {

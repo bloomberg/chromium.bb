@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLOutputElement.h"
+#include "core/html/forms/HTMLOutputElement.h"
 
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/Document.h"

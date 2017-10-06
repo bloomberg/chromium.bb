@@ -30,8 +30,8 @@
 
 #include "public/web/WebLabelElement.h"
 
-#include "core/html/HTMLLabelElement.h"
-#include "core/html/LabelableElement.h"
+#include "core/html/forms/HTMLLabelElement.h"
+#include "core/html/forms/LabelableElement.h"
 #include "core/html_names.h"
 #include "public/platform/WebString.h"
 
