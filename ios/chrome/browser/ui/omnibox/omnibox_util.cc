@@ -30,7 +30,6 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
     case AutocompleteMatchType::SEARCH_HISTORY:
       return is_incognito ? IDR_IOS_OMNIBOX_HISTORY_INCOGNITO
                           : IDR_IOS_OMNIBOX_HISTORY;
-    case AutocompleteMatchType::CALCULATOR:
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::SEARCH_SUGGEST:
@@ -42,6 +41,11 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
     case AutocompleteMatchType::VOICE_SUGGEST:
       return is_incognito ? IDR_IOS_OMNIBOX_SEARCH_INCOGNITO
                           : IDR_IOS_OMNIBOX_SEARCH;
+    case AutocompleteMatchType::CALCULATOR:
+      // Calculator answers are never shown in incognito mode because input is
+      // never sent to the search provider.
+      DCHECK(!is_incognito);
+      return IDR_IOS_OMNIBOX_CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
