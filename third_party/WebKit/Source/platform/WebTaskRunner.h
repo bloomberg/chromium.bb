@@ -107,6 +107,10 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   WebTaskRunner() = default;
   virtual ~WebTaskRunner();
 
+  virtual bool PostDelayedTask(const base::Location&,
+                               base::OnceClosure,
+                               base::TimeDelta) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTaskRunner);
 };

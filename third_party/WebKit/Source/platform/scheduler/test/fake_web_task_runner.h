@@ -33,6 +33,11 @@ class FakeWebTaskRunner : public WebTaskRunner {
   void AdvanceTimeAndRun(double delta_seconds);
   std::deque<std::pair<base::OnceClosure, double>> TakePendingTasksForTesting();
 
+ protected:
+  bool PostDelayedTask(const base::Location& location,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override;
+
  private:
   ~FakeWebTaskRunner() override;
 

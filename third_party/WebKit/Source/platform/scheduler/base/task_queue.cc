@@ -79,6 +79,13 @@ bool TaskQueue::PostNonNestableDelayedTask(const base::Location& from_here,
       PostedTask(std::move(task), from_here, delay, /* nestable */ false));
 }
 
+bool TaskQueue::PostTaskWithMetadata(PostedTask task) {
+  auto lock = AcquireImplReadLockIfNeeded();
+  if (!impl_)
+    return false;
+  return impl_->PostDelayedTask(std::move(task));
+}
+
 std::unique_ptr<TaskQueue::QueueEnabledVoter>
 TaskQueue::CreateQueueEnabledVoter() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
