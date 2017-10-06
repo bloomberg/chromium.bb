@@ -4088,6 +4088,10 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (workarounds().rewrite_float_unary_minus_operator)
     driver_bug_workarounds |= SH_REWRITE_FLOAT_UNARY_MINUS_OPERATOR;
 
+  // Initialize uninitialized locals by default
+  if (!workarounds().dont_initialize_uninitialized_locals)
+    driver_bug_workarounds |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
+
   resources.WEBGL_debug_shader_precision =
       group_->gpu_preferences().emulate_shader_precision;
 
