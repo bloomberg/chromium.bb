@@ -12,6 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
@@ -406,6 +407,13 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
     // so don't return the initData. However, they still get an event.
     event = CreateEncryptedEvent(WebEncryptedMediaInitDataType::kUnknown,
                                  nullptr, 0);
+    media_element_->GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "Media element must be CORS-same-origin with "
+                               "the embedding page. If cross-origin, you "
+                               "should use the `crossorigin` attribute and "
+                               "make sure CORS headers on the media data "
+                               "response are CORS-same-origin."));
   }
 
   event->SetTarget(media_element_);
