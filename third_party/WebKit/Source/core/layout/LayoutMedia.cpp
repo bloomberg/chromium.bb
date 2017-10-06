@@ -148,10 +148,23 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   if (!main_frame || !page_view)
     return media_rect.Width();
 
+  // If the main frame can have a scrollbar, we'll never be cut off.
+  // TODO(crbug.com/771379): Once we no longer assume that the video is in the
+  // main frame for the visibility calculation below, we will only care about
+  // the video's frame's scrollbar check below.
   if (page_view->HorizontalScrollbarMode() != kScrollbarAlwaysOff)
     return media_rect.Width();
 
-  // TODO(steimel): This code assumes the video is in the main frame.
+  // If the video's frame (can be different from main frame if video is in an
+  // iframe) can have a scrollbar, we'll never be cut off.
+  LocalFrame* media_frame = GetFrame();
+  LocalFrameView* media_page_view = media_frame ? media_frame->View() : nullptr;
+  if (media_page_view &&
+      media_page_view->HorizontalScrollbarMode() != kScrollbarAlwaysOff) {
+    return media_rect.Width();
+  }
+
+  // TODO(crbug.com/771379): This code assumes the video is in the main frame.
   // On desktop, this will include scrollbars when they stay visible.
   const LayoutUnit visible_width(page->GetVisualViewport().VisibleWidth());
   // The bottom left corner of the video.
@@ -171,17 +184,17 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   if (bottom_left_corner_visible && bottom_right_corner_visible)
     return media_rect.Width();
 
-  // TODO(steimel): Should we return zero here?
+  // TODO(crbug.com/771379): Should we return zero here?
   // If neither corner is visible, use the whole length.
   if (!bottom_left_corner_visible && !bottom_right_corner_visible)
     return media_rect.Width();
 
-  // TODO(steimel): Right now, LayoutMedia will assume that the panel will start
-  // at the bottom left corner, so if the bottom right corner is showing, we'll
-  // need to set the panel width to the width of the video. However, in an ideal
-  // world, if the bottom right corner is showing and the bottom left corner is
-  // not, we'd shorten the panel *and* shift it towards the bottom right corner
-  // (this can happen when the video has been rotated).
+  // TODO(crbug.com/771379): Right now, LayoutMedia will assume that the panel
+  // will start at the bottom left corner, so if the bottom right corner is
+  // showing, we'll need to set the panel width to the width of the video.
+  // However, in an ideal world, if the bottom right corner is showing and the
+  // bottom left corner is not, we'd shorten the panel *and* shift it towards
+  // the bottom right corner (this can happen when the video has been rotated).
   if (bottom_right_corner_visible)
     return media_rect.Width();
 
