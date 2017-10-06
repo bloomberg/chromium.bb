@@ -261,8 +261,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                            const FloatRect&,
                            const FloatSize& repeat_spacing);
 
-  // Initializes a PaintImageBuilder with the metadata flags for the PaintImage.
-  void InitPaintImageBuilder(PaintImageBuilder&);
+  // Creates and initializes a PaintImageBuilder with the metadata flags for the
+  // PaintImage.
+  PaintImageBuilder CreatePaintImageBuilder();
 
  private:
   bool image_observer_disabled_;
