@@ -328,6 +328,7 @@ public class AppMenuPropertiesDelegate {
      */
     public void onMenuDismissed() {
         mReloadMenuItem = null;
+        mAppMenuIconRowFooter = null;
     }
 
     // Set enabled to be |enable| for all MenuItems with |id| in |menu|.

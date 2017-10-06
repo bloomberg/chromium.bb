@@ -194,6 +194,12 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
             mHandler.appMenuDismissed();
             mHandler.onMenuVisibilityChanged(false);
+
+            mPopup = null;
+            mAdapter = null;
+            mListView = null;
+            mFooterView = null;
+            mMenuItemEnterAnimator = null;
         });
 
         // Some OEMs don't actually let us change the background... but they still return the
