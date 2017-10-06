@@ -913,8 +913,7 @@ void CompositeEditCommand::DeleteInsignificantTextDownstream(
     const Position& pos) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
   Position end = MostForwardCaretPosition(
-      NextPositionOf(CreateVisiblePosition(pos, VP_DEFAULT_AFFINITY))
-          .DeepEquivalent());
+      NextPositionOf(CreateVisiblePosition(pos)).DeepEquivalent());
   DeleteInsignificantText(pos, end);
 }
 
@@ -1014,7 +1013,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   // It's strange that this function is responsible for verifying that pos has
   // not been invalidated by an earlier call to this function.  The caller,
   // applyBlockStyle, should do this.
-  VisiblePosition visible_pos = CreateVisiblePosition(pos, VP_DEFAULT_AFFINITY);
+  VisiblePosition visible_pos = CreateVisiblePosition(pos);
   VisiblePosition visible_paragraph_start = StartOfParagraph(visible_pos);
   VisiblePosition visible_paragraph_end = EndOfParagraph(visible_pos);
   VisiblePosition next = NextPositionOf(visible_paragraph_end);
@@ -1085,7 +1084,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
     return nullptr;
   }
 
-  visible_pos = CreateVisiblePosition(pos, VP_DEFAULT_AFFINITY);
+  visible_pos = CreateVisiblePosition(pos);
   visible_paragraph_start = StartOfParagraph(visible_pos);
   visible_paragraph_end = EndOfParagraph(visible_pos);
   MoveParagraphs(visible_paragraph_start, visible_paragraph_end, destination,
