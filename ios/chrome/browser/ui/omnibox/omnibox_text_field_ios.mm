@@ -783,6 +783,13 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 // Enumerate url components (host, path) and draw each one in different rect.
 - (void)drawTextInRect:(CGRect)rect {
+  if (base::ios::IsRunningOnOrLater(11, 1, 0)) {
+    // -[UITextField drawTextInRect:] ignores the argument, so we can't do
+    // anything on 11.1 and up.
+    [super drawTextInRect:rect];
+    return;
+  }
+
   // Save and restore the graphics state because rectForDrawTextInRect may
   // apply an image mask to fade out beginning and/or end of the URL.
   gfx::ScopedCGContextSaveGState saver(UIGraphicsGetCurrentContext());
