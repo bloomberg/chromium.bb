@@ -258,6 +258,36 @@ void TestProgressiveDecodingContinuesAfterFullData(
   EXPECT_EQ(hash_full, hash_upfront);
 }
 
+// Modify the frame data bytes for frame |frame_index| so that decoding fails.
+// Parsing should work fine, and is checked with |expected_frame_count|.
+void TestFailureDuringDecode(const char* file,
+                             size_t idat_offset,
+                             size_t frame_index,
+                             size_t expected_frame_count) {
+  RefPtr<SharedBuffer> full_data = ReadFile(file);
+  ASSERT_FALSE(full_data->IsEmpty());
+
+  // This is the offset where the frame data chunk frame |frame_index| starts.
+  RefPtr<SharedBuffer> data =
+      SharedBuffer::Create(full_data->Data(), idat_offset + 8u);
+  // Repeat the first 8 bytes of the frame data. This should result in a
+  // successful parse, since frame data is not analyzed in that step, but
+  // should give an error during decoding.
+  data->Append(full_data->Data() + idat_offset, 8u);
+  data->Append(full_data->Data() + idat_offset + 16u,
+               full_data->size() - idat_offset - 16u);
+
+  auto decoder = CreatePNGDecoder();
+  decoder->SetData(data.get(), true);
+
+  EXPECT_EQ(expected_frame_count, decoder->FrameCount());
+
+  decoder->DecodeFrameBufferAtIndex(frame_index);
+  ASSERT_EQ(true, decoder->Failed());
+
+  EXPECT_EQ(expected_frame_count, decoder->FrameCount());
+}
+
 }  // Anonymous namespace
 
 // Animated PNG Tests
@@ -669,6 +699,23 @@ TEST(AnimatedPNGTests, FailureMissingIendChunk) {
   EXPECT_TRUE(decoder->Failed());
 }
 
+TEST(AnimatedPNGTests, FailureDuringDecodingInvalidatesDecoder) {
+  TestFailureDuringDecode(
+      "/LayoutTests/images/resources/"
+      "png-animated-idat-part-of-animation.png",
+      291u,  // fdat offset for frame index 2, plus 12 to move past sequence
+             // number.
+      2u,    // try to decode frame index 2
+      4u);   // expected frame count before failure
+
+  TestFailureDuringDecode(
+      "/LayoutTests/images/resources/"
+      "png-animated-idat-part-of-animation.png",
+      133u,  // idat offset for frame index 0
+      0u,    // try to decode frame index 0
+      4u);   // expected frame count before failure
+}
+
 // Verify that a malformatted PNG, where the IEND appears before any frame data
 // (IDAT), invalidates the decoder.
 TEST(AnimatedPNGTests, VerifyIENDBeforeIDATInvalidatesDecoder) {
@@ -927,6 +974,13 @@ TEST(StaticPNGTests, ProgressiveDecoding) {
 TEST(StaticPNGTests, ProgressiveDecodingContinuesAfterFullData) {
   TestProgressiveDecodingContinuesAfterFullData(
       "/LayoutTests/images/resources/png-simple.png", 1000u);
+}
+
+TEST(StaticPNGTests, FailureDuringDecodingInvalidatesDecoder) {
+  TestFailureDuringDecode("/LayoutTests/images/resources/png-simple.png",
+                          85u,  // idat offset for frame index 0
+                          0u,   // try to decode frame index 0
+                          1u);  // expected frame count before failure
 }
 
 TEST(PNGTests, VerifyFrameCompleteBehavior) {
