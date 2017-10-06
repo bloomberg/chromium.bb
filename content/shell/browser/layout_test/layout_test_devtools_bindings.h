@@ -32,9 +32,6 @@ class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
   ~LayoutTestDevToolsBindings() override;
 
  private:
-  static GURL MapJSTestURL(const GURL& test_url,
-                           const std::string& entry_filename);
-
   LayoutTestDevToolsBindings(WebContents* devtools_contents,
                              WebContents* inspected_contents);
 

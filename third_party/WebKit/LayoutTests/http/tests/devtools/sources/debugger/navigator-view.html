@@ -9,9 +9,9 @@ async function test() {
   Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
-  var pageMock = new TestRunner.PageMock('mock-url.com/frame.html');
+  var pageMock = new SDKTestRunner.PageMock('mock-url.com/frame.html');
   pageMock.disableDOMCapability();
-  var target2 = TestRunner.connectToPage('mock-target-100', pageMock);
+  var target2 = SDKTestRunner.connectToPage('mock-target-100', pageMock);
   var networkProject2 = Bindings.NetworkProject.forTarget(target2);
   var subframe = TestRunner.mainFrame().childFrames[0];
 

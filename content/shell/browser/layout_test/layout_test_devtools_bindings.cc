@@ -66,23 +66,14 @@ GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
       base::EndsWith(spec, ".js", base::CompareCase::INSENSITIVE_ASCII);
   *is_devtools_js_test =
       spec.find("/devtools/") != std::string::npos && is_js_test;
-  bool is_unit_test = spec.find("/inspector-unit/") != std::string::npos;
-  if (!*is_devtools_js_test && !is_unit_test)
+  if (!*is_devtools_js_test)
     return test_url;
-  return MapJSTestURL(test_url, is_unit_test ? "unit_test_runner.html"
-                                             : "integration_test_runner.html");
-}
-
-// static.
-GURL LayoutTestDevToolsBindings::MapJSTestURL(
-    const GURL& test_url,
-    const std::string& entry_filename) {
   std::string url_string = GetDevToolsPathAsURL(std::string()).spec();
   std::string inspector_file_name = "inspector.html";
   size_t start_position = url_string.find(inspector_file_name);
   url_string.replace(start_position, inspector_file_name.length(),
-                     entry_filename);
-  url_string += "&test=" + test_url.spec();
+                     "integration_test_runner.html");
+  url_string += "&test=" + spec;
   return GURL(url_string);
 }
 

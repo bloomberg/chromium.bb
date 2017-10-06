@@ -756,8 +756,6 @@ class Port(object):
             return True
         if 'devtools' in dirname and extension == '.js':
             return True
-        if 'inspector-unit' in dirname:
-            return extension == '.js'
         return Port._has_supported_extension(
             filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
 

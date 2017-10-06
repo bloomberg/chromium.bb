@@ -1074,6 +1074,7 @@ function runTest(pixelTest, enableWatchDogWhileDebugging)
         self.ProfilerTestRunner = InspectorTest;
         self.SASSTestRunner = InspectorTest;
         self.SecurityTestRunner = InspectorTest;
+        self.SDKTestRunner = InspectorTest;
         self.SourcesTestRunner = InspectorTest;
         self.TestRunner = InspectorTest;
 
