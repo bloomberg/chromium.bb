@@ -72,19 +72,22 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
     return nullptr;
   }
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  DCHECK(context);
   CanvasCaptureMediaStreamTrack* canvas_track;
-  if (given_frame_rate)
+  if (given_frame_rate) {
     canvas_track = CanvasCaptureMediaStreamTrack::Create(
-        track, &element, std::move(handler), frame_rate);
-  else
-    canvas_track = CanvasCaptureMediaStreamTrack::Create(track, &element,
-                                                         std::move(handler));
+        track, &element, context, std::move(handler), frame_rate);
+  } else {
+    canvas_track = CanvasCaptureMediaStreamTrack::Create(
+        track, &element, context, std::move(handler));
+  }
   // We want to capture a frame in the beginning.
   canvas_track->requestFrame();
 
   MediaStreamTrackVector tracks;
   tracks.push_back(canvas_track);
-  return MediaStream::Create(ExecutionContext::From(script_state), tracks);
+  return MediaStream::Create(context, tracks);
 }
 
 }  // namespace blink

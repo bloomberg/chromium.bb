@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class HTMLCanvasElement;
 class WebCanvasCaptureHandler;
 
@@ -22,10 +23,12 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
   static CanvasCaptureMediaStreamTrack* Create(
       MediaStreamComponent*,
       HTMLCanvasElement*,
+      ExecutionContext*,
       std::unique_ptr<WebCanvasCaptureHandler>);
   static CanvasCaptureMediaStreamTrack* Create(
       MediaStreamComponent*,
       HTMLCanvasElement*,
+      ExecutionContext*,
       std::unique_ptr<WebCanvasCaptureHandler>,
       double frame_rate);
 
@@ -41,9 +44,11 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
                                 MediaStreamComponent*);
   CanvasCaptureMediaStreamTrack(MediaStreamComponent*,
                                 HTMLCanvasElement*,
+                                ExecutionContext*,
                                 std::unique_ptr<WebCanvasCaptureHandler>);
   CanvasCaptureMediaStreamTrack(MediaStreamComponent*,
                                 HTMLCanvasElement*,
+                                ExecutionContext*,
                                 std::unique_ptr<WebCanvasCaptureHandler>,
                                 double frame_rate);
 
