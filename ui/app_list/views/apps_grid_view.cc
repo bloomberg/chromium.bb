@@ -115,10 +115,10 @@ constexpr int kFolderItemReparentDelay = 50;
 constexpr int kFolderDroppingCircleRadius = 39;
 
 // Padding between suggested apps tiles and all apps indicator.
-constexpr int kSuggestionsAllAppsIndicatorPadding = 16;
+constexpr int kSuggestionsAllAppsIndicatorPadding = 26;
 
-// Extra padding needed between all apps indicator and all apps tiles.
-constexpr int kAllAppsIndicatorExtraPadding = 6;
+// Padding between all apps indicator and all apps.
+constexpr int kAllAppsIndicatorBottomPadding = 2;
 
 // The height of gradient fade-out zones.
 constexpr int kFadeoutZoneHeight = 24;
@@ -868,46 +868,43 @@ void AppsGridView::Layout() {
     rect.Inset(0, kSearchBoxFullscreenBottomPadding, 0, 0);
   }
 
-  if (!folder_delegate_) {
-    gfx::Rect indicator_rect(rect);
-    gfx::Rect arrow_rect(rect);
-    if (suggestions_container_) {
-      gfx::Rect suggestions_rect(rect);
-      suggestions_rect.set_height(
-          suggestions_container_->GetHeightForWidth(suggestions_rect.width()));
-      suggestions_rect.Offset((suggestions_rect.width() - kGridTileWidth) / 2 -
-                                  (kGridTileWidth + kGridTileSpacing) * 2,
-                              0);
-      suggestions_rect.Offset(CalculateTransitionOffset(0));
-      suggestions_container_->SetBoundsRect(suggestions_rect);
-      indicator_rect.Inset(0,
-                           suggestions_container_->GetPreferredSize().height() +
-                               kSuggestionsAllAppsIndicatorPadding,
-                           0, 0);
-      arrow_rect.Inset(0,
-                       suggestions_container_->GetPreferredSize().height() +
-                           kExpandArrowTopPadding,
-                       0, 0);
-    }
+  gfx::Rect indicator_rect(rect);
+  gfx::Rect arrow_rect(rect);
+  if (suggestions_container_) {
+    gfx::Rect suggestions_rect(rect);
+    suggestions_rect.set_height(
+        suggestions_container_->GetHeightForWidth(suggestions_rect.width()));
+    suggestions_rect.Offset((suggestions_rect.width() - kGridTileWidth) / 2 -
+                                (kGridTileWidth + kGridTileSpacing) * 2,
+                            0);
+    suggestions_rect.Offset(CalculateTransitionOffset(0));
+    suggestions_container_->SetBoundsRect(suggestions_rect);
+    indicator_rect.Inset(0,
+                         suggestions_container_->GetPreferredSize().height() +
+                             kSuggestionsAllAppsIndicatorPadding,
+                         0, 0);
+    arrow_rect.Inset(0,
+                     suggestions_container_->GetPreferredSize().height() +
+                         kExpandArrowTopPadding,
+                     0, 0);
+  }
 
-    if (all_apps_indicator_) {
-      gfx::Size indicator_size;
-      indicator_size = all_apps_indicator_->GetPreferredSize();
-      indicator_rect.Inset(
-          (indicator_rect.width() - indicator_size.width()) / 2, 0);
-      indicator_rect.Offset(CalculateTransitionOffset(0));
-      all_apps_indicator_->SetBoundsRect(indicator_rect);
-    }
+  if (all_apps_indicator_) {
+    gfx::Size indicator_size;
+    indicator_size = all_apps_indicator_->GetPreferredSize();
+    indicator_rect.Inset((indicator_rect.width() - indicator_size.width()) / 2,
+                         0);
+    indicator_rect.Offset(CalculateTransitionOffset(0));
+    all_apps_indicator_->SetBoundsRect(indicator_rect);
+  }
 
-    if (expand_arrow_view_) {
-      int left_right_padding =
-          (arrow_rect.width() -
-           expand_arrow_view_->GetPreferredSize().width()) /
-          2;
-      arrow_rect.Inset(left_right_padding, 0);
-      arrow_rect.set_height(expand_arrow_view_->GetPreferredSize().height());
-      expand_arrow_view_->SetBoundsRect(arrow_rect);
-    }
+  if (expand_arrow_view_) {
+    int left_right_padding =
+        (arrow_rect.width() - expand_arrow_view_->GetPreferredSize().width()) /
+        2;
+    arrow_rect.Inset(left_right_padding, 0);
+    arrow_rect.set_height(expand_arrow_view_->GetPreferredSize().height());
+    expand_arrow_view_->SetBoundsRect(arrow_rect);
   }
 
   CalculateIdealBounds();
@@ -2654,12 +2651,13 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
   if (!is_fullscreen_app_list_enabled_ || folder_delegate_)
     return 0;
 
-  if (page == 0 && suggestions_container_ && all_apps_indicator_) {
+  if (page == 0) {
+    DCHECK(suggestions_container_ && all_apps_indicator_);
     return kSearchBoxFullscreenBottomPadding +
            suggestions_container_->GetPreferredSize().height() +
            kSuggestionsAllAppsIndicatorPadding +
            all_apps_indicator_->GetPreferredSize().height() +
-           kAllAppsIndicatorExtraPadding;
+           kAllAppsIndicatorBottomPadding - kTileVerticalPadding;
   }
   return kSearchBoxFullscreenBottomPadding - kTileVerticalPadding;
 }
