@@ -92799,6 +92799,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.InterframeDelay95PercentileInMs" units="ms">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    The 95th percentile of interframe delay for a received video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.InterframeDelayInMs" units="ms">
   <owner>ilnik@chromium.org</owner>
   <summary>
@@ -93189,6 +93197,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The average input width per frame (for incoming frames to video engine) for
     a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.InterframeDelay95PercentileInMs"
+    units="ms">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    The 95th percentile of interframe delay for a received screenshare stream.
+    Recorded when a stream is removed.
   </summary>
 </histogram>
 
@@ -104723,6 +104740,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="WebRTC.Video.Decoded.Vp8.Qp"/>
   <affected-histogram name="WebRTC.Video.EndToEndDelayInMs"/>
   <affected-histogram name="WebRTC.Video.EndToEndDelayMaxInMs"/>
+  <affected-histogram name="WebRTC.Video.InterframeDelay95PercentileInMs"/>
   <affected-histogram name="WebRTC.Video.InterframeDelayInMs"/>
   <affected-histogram name="WebRTC.Video.InterframeDelayMaxInMs"/>
   <affected-histogram name="WebRTC.Video.KeyFramesReceivedInPermille"/>
@@ -104732,6 +104750,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="WebRTC.Video.Screenshare.Decoded.Vp8.Qp"/>
   <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayInMs"/>
   <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayMaxInMs"/>
+  <affected-histogram
+      name="WebRTC.Video.Screenshare.InterframeDelay95PercentileInMs"/>
   <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayInMs"/>
   <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayMaxInMs"/>
   <affected-histogram
