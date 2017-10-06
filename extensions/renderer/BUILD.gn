@@ -142,6 +142,8 @@ source_set("renderer") {
     "lazy_background_page_native_handler.h",
     "logging_native_handler.cc",
     "logging_native_handler.h",
+    "message_target.cc",
+    "message_target.h",
     "messaging_bindings.cc",
     "messaging_bindings.h",
     "messaging_util.cc",

@@ -13,6 +13,7 @@
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
+#include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system_unittest.h"
 #include "extensions/renderer/script_context.h"
@@ -93,16 +94,17 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndDontExpectReply) {
 
   // We should open a message port, send a message, and then close it
   // immediately.
+  MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(
       *ipc_message_sender(),
-      SendOpenChannelToExtension(script_context(), port_id, extension()->id(),
-                                 kSendMessageChannel, include_tls_channel_id));
+      SendOpenMessageChannel(script_context(), port_id, target,
+                             kSendMessageChannel, include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
 
-  message_handler()->SendMessage(script_context(), port_id, extension()->id(),
+  message_handler()->SendMessage(script_context(), port_id, target,
                                  kSendMessageChannel, include_tls_channel_id,
                                  message, v8::Local<v8::Function>());
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -129,14 +131,15 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectReply) {
 
   // We should open a message port and send a message, and the message port
   // should remain open (to allow for a reply).
+  MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(
       *ipc_message_sender(),
-      SendOpenChannelToExtension(script_context(), port_id, extension()->id(),
-                                 kSendMessageChannel, include_tls_channel_id));
+      SendOpenMessageChannel(script_context(), port_id, target,
+                             kSendMessageChannel, include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
 
-  message_handler()->SendMessage(script_context(), port_id, extension()->id(),
+  message_handler()->SendMessage(script_context(), port_id, target,
                                  kSendMessageChannel, include_tls_channel_id,
                                  message, callback);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -174,13 +177,14 @@ TEST_F(OneTimeMessageHandlerTest, DisconnectOpener) {
   v8::Local<v8::Function> callback =
       FunctionFromString(context, kEchoArgsAndError);
 
+  MessageTarget target(MessageTarget::ForExtension(extension()->id()));
   EXPECT_CALL(
       *ipc_message_sender(),
-      SendOpenChannelToExtension(script_context(), port_id, extension()->id(),
-                                 kSendMessageChannel, include_tls_channel_id));
+      SendOpenMessageChannel(script_context(), port_id, target,
+                             kSendMessageChannel, include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
-  message_handler()->SendMessage(script_context(), port_id, extension()->id(),
+  message_handler()->SendMessage(script_context(), port_id, target,
                                  kSendMessageChannel, include_tls_channel_id,
                                  message, callback);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());

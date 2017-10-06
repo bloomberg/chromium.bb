@@ -130,7 +130,7 @@ bool OneTimeMessageHandler::HasPort(ScriptContext* script_context,
 void OneTimeMessageHandler::SendMessage(
     ScriptContext* script_context,
     const PortId& new_port_id,
-    const std::string& target_id,
+    const MessageTarget& target,
     const std::string& method_name,
     bool include_tls_channel_id,
     const Message& message,
@@ -157,8 +157,8 @@ void OneTimeMessageHandler::SendMessage(
   }
 
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
-  ipc_sender->SendOpenChannelToExtension(script_context, new_port_id, target_id,
-                                         method_name, include_tls_channel_id);
+  ipc_sender->SendOpenMessageChannel(script_context, new_port_id, target,
+                                     method_name, include_tls_channel_id);
   ipc_sender->SendPostMessageToPort(routing_id, new_port_id, message);
 
   if (!wants_response) {
