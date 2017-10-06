@@ -326,8 +326,8 @@ void DeleteSelectionCommand::InitializePositionData(
                                   kConsiderNonCollapsibleWhitespace)
             .IsNotNull();
     if (!skip_smart_delete && has_leading_whitespace_before_adjustment) {
-      VisiblePosition visible_pos = PreviousPositionOf(
-          CreateVisiblePosition(upstream_start_, VP_DEFAULT_AFFINITY));
+      VisiblePosition visible_pos =
+          PreviousPositionOf(CreateVisiblePosition(upstream_start_));
       pos = visible_pos.DeepEquivalent();
       // Expand out one character upstream for smart delete and recalculate
       // positions based on this change.
@@ -348,8 +348,7 @@ void DeleteSelectionCommand::InitializePositionData(
             .IsNotNull()) {
       // Expand out one character downstream for smart delete and recalculate
       // positions based on this change.
-      pos = NextPositionOf(
-                CreateVisiblePosition(downstream_end_, VP_DEFAULT_AFFINITY))
+      pos = NextPositionOf(CreateVisiblePosition(downstream_end_))
                 .DeepEquivalent();
       upstream_end_ = MostBackwardCaretPosition(pos);
       downstream_end_ = MostForwardCaretPosition(pos);
