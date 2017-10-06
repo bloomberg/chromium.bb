@@ -3707,7 +3707,8 @@ void AXPlatformNodeWin::RemoveAlertTarget() {
 }
 
 base::string16 AXPlatformNodeWin::TextForIAccessibleText() {
-  if (GetData().role == AX_ROLE_TEXT_FIELD)
+  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
+  if (IsSimpleTextControl())
     return GetString16Attribute(AX_ATTR_VALUE);
   return GetText();
 }
