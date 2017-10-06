@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -479,19 +479,20 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent() {
 void ServiceWorkerRegisterJob::OnInstallFinished(
     int request_id,
     std::unique_ptr<InstallEventMethodsReceiver> install_methods_receiver,
-    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerEventStatus event_status,
     bool has_fetch_handler,
     base::Time dispatch_event_time) {
   install_methods_receiver.reset();
-  new_version()->FinishRequest(request_id, status == SERVICE_WORKER_OK,
-                               dispatch_event_time);
+  bool succeeded =
+      event_status == blink::mojom::ServiceWorkerEventStatus::COMPLETED;
+  new_version()->FinishRequest(request_id, succeeded, dispatch_event_time);
 
-  if (status != SERVICE_WORKER_OK) {
-    OnInstallFailed(status);
+  if (!succeeded) {
+    OnInstallFailed(mojo::ConvertTo<ServiceWorkerStatusCode>(event_status));
     return;
   }
 
-  ServiceWorkerMetrics::RecordInstallEventStatus(status);
+  ServiceWorkerMetrics::RecordInstallEventStatus(SERVICE_WORKER_OK);
   ServiceWorkerMetrics::RecordForeignFetchRegistrationCount(
       new_version()->foreign_fetch_scopes().size(),
       new_version()->foreign_fetch_origins().size());

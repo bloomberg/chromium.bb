@@ -824,10 +824,12 @@ void ServiceWorkerFetchDispatcher::OnFetchEventFinished(
     ServiceWorkerVersion* version,
     int event_finish_id,
     scoped_refptr<URLLoaderAssets> url_loader_assets,
-    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
-  version->FinishRequest(event_finish_id, status != SERVICE_WORKER_ERROR_ABORT,
-                         dispatch_event_time);
+  version->FinishRequest(
+      event_finish_id,
+      status != blink::mojom::ServiceWorkerEventStatus::ABORTED,
+      dispatch_event_time);
 }
 
 }  // namespace content

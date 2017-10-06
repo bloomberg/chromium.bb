@@ -74,26 +74,29 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   // get response for this.
   controller_connector_->GetControllerServiceWorker()->DispatchFetchEvent(
       *request, std::move(response_callback_ptr),
-      base::Bind(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
-    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
-  // Status OK and WAIT_UNTIL_REJECTED are expected status: the
-  // ServiceWorkerFetchResponseCallback interface (OnResponse*() or OnFallback()
-  // below) is expected to be called normally. In the case of REJECTED,
-  // OnResponse() is called with an error about the rejected promise.
-  if (status == SERVICE_WORKER_OK ||
-      status == SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED) {
-    return;
+  switch (status) {
+    case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
+      // ServiceWorkerFetchResponseCallback interface (OnResponse*() or
+      // OnFallback() below) is expected to be called normally and handle this
+      // request.
+      break;
+    case blink::mojom::ServiceWorkerEventStatus::REJECTED:
+      // OnResponse() is expected to called with an error about the rejected
+      // promise, and handle this request.
+      break;
+    case blink::mojom::ServiceWorkerEventStatus::ABORTED:
+      // We have an unexpected error: fetch event dispatch failed. Return
+      // network error.
+      weak_factory_.InvalidateWeakPtrs();
+      CommitCompleted(net::ERR_FAILED);
   }
-  // Otherwise, we have an unexpected error: fetch event dispatch failed. Return
-  // network error.
-  // TODO(kinuko): Log the failure.
-  weak_factory_.InvalidateWeakPtrs();
-  CommitCompleted(net::ERR_FAILED);
 }
 
 void ServiceWorkerSubresourceLoader::OnResponse(

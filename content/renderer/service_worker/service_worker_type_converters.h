@@ -16,13 +16,6 @@
 namespace mojo {
 
 template <>
-struct CONTENT_EXPORT TypeConverter<content::ServiceWorkerStatusCode,
-                                    blink::mojom::ServiceWorkerEventStatus> {
-  static content::ServiceWorkerStatusCode Convert(
-      blink::mojom::ServiceWorkerEventStatus status);
-};
-
-template <>
 struct TypeConverter<blink::WebCanMakePaymentEventData,
                      payments::mojom::CanMakePaymentEventDataPtr> {
   static blink::WebCanMakePaymentEventData Convert(

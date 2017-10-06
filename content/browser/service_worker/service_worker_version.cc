@@ -30,6 +30,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
@@ -1080,7 +1081,7 @@ void ServiceWorkerVersion::OnGetClientsFinished(
 
 void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
-    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
   PendingRequest* request = pending_requests_.Lookup(request_id);
   // |request| will be null when the request has been timed out.
@@ -1089,9 +1090,11 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
   // Copy error callback before calling FinishRequest.
   StatusCallback callback = std::move(request->error_callback);
 
-  FinishRequest(request_id, status == SERVICE_WORKER_OK, dispatch_event_time);
+  FinishRequest(request_id,
+                status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                dispatch_event_time);
 
-  std::move(callback).Run(status);
+  std::move(callback).Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
 }
 
 void ServiceWorkerVersion::CountFeature(uint32_t feature) {

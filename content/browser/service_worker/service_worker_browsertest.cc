@@ -42,6 +42,7 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -84,6 +85,7 @@
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -806,20 +808,22 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                        base::Unretained(this), done, result, request_id));
   }
 
-  void ReceiveInstallEventOnIOThread(const base::Closure& done,
-                                     ServiceWorkerStatusCode* out_result,
-                                     int request_id,
-                                     ServiceWorkerStatusCode status,
-                                     bool has_fetch_handler,
-                                     base::Time dispatch_event_time) {
-    version_->FinishRequest(request_id, status == SERVICE_WORKER_OK,
-                            dispatch_event_time);
+  void ReceiveInstallEventOnIOThread(
+      const base::Closure& done,
+      ServiceWorkerStatusCode* out_result,
+      int request_id,
+      blink::mojom::ServiceWorkerEventStatus status,
+      bool has_fetch_handler,
+      base::Time dispatch_event_time) {
+    version_->FinishRequest(
+        request_id, status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+        dispatch_event_time);
     version_->set_fetch_handler_existence(
         has_fetch_handler
             ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
             : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
 
-    *out_result = status;
+    *out_result = mojo::ConvertTo<ServiceWorkerStatusCode>(status);
     if (!done.is_null())
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }

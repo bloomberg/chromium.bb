@@ -8,10 +8,10 @@
 
 namespace mojo {
 
-// TODO: TypeConverter is deprecated, and we should change ServiceWorkerVersion
-// to just use the mojom enum, but it will be a huge change and not sure how to
-// reconcile the NEW and kUnknown thing yet, so we use the mojo type converter
-// temporarily as an identifier to track.
+// TODO(falken): TypeConverter is deprecated, and we should change
+// ServiceWorkerVersion to just use the mojom enum, but it will be a huge change
+// and not sure how to reconcile the NEW and kUnknown thing yet, so we use the
+// mojo type converter temporarily as an identifier to track.
 blink::mojom::ServiceWorkerState
 TypeConverter<blink::mojom::ServiceWorkerState,
               content::ServiceWorkerVersion::Status>::
@@ -32,6 +32,22 @@ TypeConverter<blink::mojom::ServiceWorkerState,
   }
   NOTREACHED() << status;
   return blink::mojom::ServiceWorkerState::kUnknown;
+}
+
+content::ServiceWorkerStatusCode
+TypeConverter<content::ServiceWorkerStatusCode,
+              blink::mojom::ServiceWorkerEventStatus>::
+    Convert(blink::mojom::ServiceWorkerEventStatus status) {
+  switch (status) {
+    case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
+      return content::SERVICE_WORKER_OK;
+    case blink::mojom::ServiceWorkerEventStatus::REJECTED:
+      return content::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
+    case blink::mojom::ServiceWorkerEventStatus::ABORTED:
+      return content::SERVICE_WORKER_ERROR_ABORT;
+  }
+  NOTREACHED() << status;
+  return content::SERVICE_WORKER_ERROR_FAILED;
 }
 
 }  // namespace mojo

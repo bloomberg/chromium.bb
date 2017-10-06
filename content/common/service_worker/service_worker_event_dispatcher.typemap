@@ -11,16 +11,11 @@ public_headers = [
   "//content/public/common/platform_notification_data.h",
   "//content/public/common/push_event_payload.h",
 ]
-sources = [
-  "//content/common/service_worker/service_worker_status_code_traits.cc",
-]
 traits_headers = [
   "//content/common/platform_notification_messages.h",
   "//content/common/service_worker/service_worker_messages.h",
-  "//content/common/service_worker/service_worker_status_code_traits.h",
 ]
 type_mappings = [
-  "blink.mojom.ServiceWorkerEventStatus=::content::ServiceWorkerStatusCode",
   "content.mojom.ExtendableMessageEventSource=::content::ExtendableMessageEventSource",
   "content.mojom.PlatformNotificationData=::content::PlatformNotificationData",
   "content.mojom.PushEventPayload=::content::PushEventPayload",

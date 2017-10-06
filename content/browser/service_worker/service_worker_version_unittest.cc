@@ -28,6 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 // IPC messages for testing ---------------------------------------------------
@@ -952,8 +953,8 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
 
   // Simulate the renderer aborting the pending event.
   // This should not crash: https://crbug.com/676984.
-  TakeExtendableMessageEventCallback().Run(SERVICE_WORKER_ERROR_ABORT,
-                                           base::Time::Now());
+  TakeExtendableMessageEventCallback().Run(
+      blink::mojom::ServiceWorkerEventStatus::ABORTED, base::Time::Now());
   base::RunLoop().RunUntilIdle();
 
   // Simulate the renderer stopping the worker.

@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
 
 namespace content {
@@ -55,7 +56,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void DeleteSoon();
 
   void StartRequest(const ResourceRequest& resource_request);
-  void OnFetchEventFinished(ServiceWorkerStatusCode status,
+  void OnFetchEventFinished(blink::mojom::ServiceWorkerEventStatus status,
                             base::Time dispatch_event_time);
 
   // mojom::ServiceWorkerFetchResponseCallback overrides:

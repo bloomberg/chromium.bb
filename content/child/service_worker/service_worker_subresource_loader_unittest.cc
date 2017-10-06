@@ -107,7 +107,8 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     fetch_event_request_ = request;
     switch (response_mode_) {
       case ResponseMode::kDefault:
-        std::move(callback).Run(SERVICE_WORKER_OK, base::Time());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         return;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(
@@ -122,11 +123,14 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                 base::MakeUnique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
             std::move(stream_handle_), base::Time::Now());
-        std::move(callback).Run(SERVICE_WORKER_OK, base::Time());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         return;
       case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(base::Time::Now());
-        std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+            base::Time::Now());
         return;
       case ResponseMode::kErrorResponse:
         response_callback->OnResponse(
@@ -142,8 +146,9 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
                 base::MakeUnique<
                     ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
             base::Time::Now());
-        std::move(callback).Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
-                                base::Time::Now());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::REJECTED,
+            base::Time::Now());
         return;
     }
     NOTREACHED();

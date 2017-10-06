@@ -28,6 +28,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -93,7 +94,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorkerEventDispatcher::DispatchInstallEventCallback
           callback) override {
     dispatched_events()->push_back(Event::Install);
-    std::move(callback).Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
                             true /* has_fetch_handler */, base::Time::Now());
   }
 };
@@ -106,7 +107,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback) override {
     dispatched_events()->push_back(Event::Activate);
-    std::move(callback).Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
                             base::Time::Now());
   }
 };
