@@ -19,6 +19,7 @@
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/public/platform/TaskType.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -303,9 +304,10 @@ void RenderAccessibilityImpl::HandleAXEvent(
     // When no accessibility events are in-flight post a task to send
     // the events to the browser. We use PostTask so that we can queue
     // up additional events.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&RenderAccessibilityImpl::SendPendingAccessibilityEvents,
+    render_frame_->GetTaskRunner(blink::TaskType::kUnspecedTimer)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       &RenderAccessibilityImpl::SendPendingAccessibilityEvents,
                        weak_factory_.GetWeakPtr()));
   }
 }
