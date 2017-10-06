@@ -3,8 +3,4 @@ specific_include_rules = {
   "^error_page_generator_unittest\.mm$": [
     "+ios/web/web_state/error_translation_util.h",
   ],
-  # TODO(crbug.com/623125): Remove this exception.
-  "^early_page_script_perftest\.mm$": [
-    "+ios/web/web_state/js/page_script_util.h",
-  ],
 }
