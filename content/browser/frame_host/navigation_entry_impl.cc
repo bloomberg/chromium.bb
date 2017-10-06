@@ -778,6 +778,24 @@ void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
 #endif
 }
 
+NavigationEntryImpl::TreeNode* NavigationEntryImpl::GetTreeNode(
+    FrameTreeNode* frame_tree_node) const {
+  NavigationEntryImpl::TreeNode* node = nullptr;
+  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
+  work_queue.push(root_node());
+  while (!work_queue.empty()) {
+    node = work_queue.front();
+    work_queue.pop();
+    if (node->MatchesFrame(frame_tree_node))
+      return node;
+
+    // Enqueue any children and keep looking.
+    for (const auto& child : node->children)
+      work_queue.push(child.get());
+  }
+  return nullptr;
+}
+
 void NavigationEntryImpl::AddOrUpdateFrameEntry(
     FrameTreeNode* frame_tree_node,
     int64_t item_sequence_number,
@@ -810,7 +828,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // We should already have a TreeNode for the parent node by the time this node
   // commits.  Find it first.
   NavigationEntryImpl::TreeNode* parent_node =
-      FindFrameEntry(frame_tree_node->parent());
+      GetTreeNode(frame_tree_node->parent());
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
     // TODO(creis): Kill the renderer if we get here.
@@ -852,14 +870,14 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
 
 FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
     FrameTreeNode* frame_tree_node) const {
-  NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
+  NavigationEntryImpl::TreeNode* tree_node = GetTreeNode(frame_tree_node);
   return tree_node ? tree_node->frame_entry.get() : nullptr;
 }
 
 std::map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
     FrameTreeNode* frame_tree_node) const {
   std::map<std::string, bool> names;
-  NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
+  NavigationEntryImpl::TreeNode* tree_node = GetTreeNode(frame_tree_node);
   if (tree_node) {
     // Return the names of all immediate children.
     for (const auto& child : tree_node->children) {
@@ -938,24 +956,6 @@ void NavigationEntryImpl::SetScreenshotPNGData(
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() const {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
-}
-
-NavigationEntryImpl::TreeNode* NavigationEntryImpl::FindFrameEntry(
-    FrameTreeNode* frame_tree_node) const {
-  NavigationEntryImpl::TreeNode* node = nullptr;
-  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
-  work_queue.push(root_node());
-  while (!work_queue.empty()) {
-    node = work_queue.front();
-    work_queue.pop();
-    if (node->MatchesFrame(frame_tree_node))
-      return node;
-
-    // Enqueue any children and keep looking.
-    for (const auto& child : node->children)
-      work_queue.push(child.get());
-  }
-  return nullptr;
 }
 
 }  // namespace content
