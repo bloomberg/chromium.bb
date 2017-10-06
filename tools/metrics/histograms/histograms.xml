@@ -1893,6 +1893,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.LockScreen.AppsProfile.Creation.Duration" units="ms">
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    The amount of time needed to create a lock screen apps profile. This metric
+    is recorded only if the profile creation was successful. The lock screen
+    apps profile is created if the user has an app enabled on Chrome OS lock
+    screen, and is used as the context in which the app is launched on top of
+    the lock screen.
+  </summary>
+</histogram>
+
+<histogram name="Apps.LockScreen.AppsProfile.Creation.Success"
+    units="BooleanSuccess">
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Boolean indicating whether the lock screen apps profile creation succeeded.
+    The lock screen apps profile is created if the user has an app enabled on
+    Chrome OS lock screen, and is used as the context in which the app is
+    launched on top of the lock screen.
+  </summary>
+</histogram>
+
 <histogram name="Apps.LockScreen.DataItemStorage.ClearTextItemSize"
     units="bytes">
   <owner>tbarzic@chromium.org</owner>

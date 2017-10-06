@@ -18,6 +18,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/lock_screen_apps/fake_lock_screen_profile_creator.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -147,11 +148,7 @@ class LockScreenAppManagerImplTest
 
     profile_ = profile_manager_.CreateTestingProfile("primary_profile");
 
-    lock_screen_profile_ =
-        profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
-
     InitExtensionSystem(profile());
-    InitExtensionSystem(lock_screen_profile()->GetOriginalProfile());
 
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
     arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
@@ -161,6 +158,11 @@ class LockScreenAppManagerImplTest
     chromeos::NoteTakingHelper::Initialize();
     chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
         profile());
+
+    lock_screen_profile_creator_ =
+        base::MakeUnique<lock_screen_apps::FakeLockScreenProfileCreator>(
+            &profile_manager_);
+    lock_screen_profile_creator_->Initialize();
 
     ResetAppManager();
   }
@@ -173,7 +175,6 @@ class LockScreenAppManagerImplTest
 
     chromeos::NoteTakingHelper::Shutdown();
     extensions::ExtensionSystem::Get(profile())->Shutdown();
-    extensions::ExtensionSystem::Get(lock_screen_profile())->Shutdown();
   }
 
   void InitExtensionSystem(Profile* profile) {
@@ -189,9 +190,9 @@ class LockScreenAppManagerImplTest
   void SetUpTestEventRouter() {
     LockScreenEventRouter* event_router =
         extensions::CreateAndUseTestEventRouter<LockScreenEventRouter>(
-            lock_screen_profile()->GetOriginalProfile());
+            LockScreenProfile()->GetOriginalProfile());
     event_observer_ = std::make_unique<LockScreenEventObserver>(
-        lock_screen_profile()->GetOriginalProfile());
+        LockScreenProfile()->GetOriginalProfile());
     event_router->AddEventObserver(event_observer_.get());
   }
 
@@ -234,7 +235,7 @@ class LockScreenAppManagerImplTest
       case TestAppLocation::kUnpacked:
         return original_profile->GetPath().Append("Downloads").Append("app");
       case TestAppLocation::kInternal:
-        return extensions::ExtensionSystem::Get(lock_screen_profile())
+        return extensions::ExtensionSystem::Get(LockScreenProfile())
             ->extension_service()
             ->install_directory()
             .Append(id)
@@ -359,15 +360,37 @@ class LockScreenAppManagerImplTest
     return app;
   }
 
-  void InitializeAndStartAppManager(Profile* profile) {
-    app_manager()->Initialize(profile, lock_screen_profile());
+  // Initializes and starts app manager.
+  // |create_lock_screen_profile| - whether the lock screen profile should be
+  //     created (using the lock screen profile creator passed to the app
+  //     manager) before starting the app manager. If this is not set, the test
+  //     should create the lock screen profile itself (and should not use
+  //     |LockScreenProfile| before that).
+  void InitializeAndStartAppManager(Profile* profile,
+                                    bool create_lock_screen_profile) {
+    app_manager()->Initialize(profile, lock_screen_profile_creator_.get());
+    if (create_lock_screen_profile)
+      CreateLockScreenProfile();
     app_manager()->Start(
         base::Bind(&LockScreenAppManagerImplTest::OnNoteTakingChanged,
                    base::Unretained(this)));
   }
 
+  void CreateLockScreenProfile() {
+    lock_screen_profile_creator_->CreateProfile();
+    if (needs_lock_screen_event_router_)
+      SetUpTestEventRouter();
+  }
+
+  void set_needs_lock_screen_event_router() {
+    needs_lock_screen_event_router_ = true;
+  }
+
   TestingProfile* profile() { return profile_; }
-  TestingProfile* lock_screen_profile() { return lock_screen_profile_; }
+
+  Profile* LockScreenProfile() {
+    return lock_screen_profile_creator_->lock_screen_profile();
+  }
 
   AppManager* app_manager() { return app_manager_.get(); }
 
@@ -395,8 +418,14 @@ class LockScreenAppManagerImplTest
 
   LockScreenEventObserver* event_observer() { return event_observer_.get(); }
 
+  FakeLockScreenProfileCreator* lock_screen_profile_creator() {
+    return lock_screen_profile_creator_.get();
+  }
+
  protected:
   base::SimpleTestTickClock tick_clock_;
+  std::unique_ptr<lock_screen_apps::FakeLockScreenProfileCreator>
+      lock_screen_profile_creator_;
 
  private:
   void OnNoteTakingChanged() { ++note_taking_changed_count_; }
@@ -410,7 +439,6 @@ class LockScreenAppManagerImplTest
 
   TestingProfileManager profile_manager_;
   TestingProfile* profile_ = nullptr;
-  TestingProfile* lock_screen_profile_ = nullptr;
 
   std::unique_ptr<LockScreenEventObserver> event_observer_;
 
@@ -419,6 +447,7 @@ class LockScreenAppManagerImplTest
 
   std::unique_ptr<AppManager> app_manager_;
 
+  bool needs_lock_screen_event_router_ = false;
   int note_taking_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppManagerImplTest);
@@ -439,12 +468,12 @@ TEST_P(LockScreenAppManagerImplTest, StartAddsAppToTarget) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -456,7 +485,7 @@ TEST_P(LockScreenAppManagerImplTest, StartAddsAppToTarget) {
   EXPECT_TRUE(base::PathExists(note_taking_app->path()));
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -473,12 +502,12 @@ TEST_P(LockScreenAppManagerImplTest, StartAddsAppToTarget) {
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::EVERYTHING);
   EXPECT_FALSE(lock_app);
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(note_taking_app->path()));
@@ -490,15 +519,15 @@ TEST_P(LockScreenAppManagerImplTest, StartWhenLockScreenNotesNotEnabled) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           false /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   EXPECT_FALSE(lock_app);
@@ -509,12 +538,12 @@ TEST_P(LockScreenAppManagerImplTest, StartWhenLockScreenNotesNotEnabled) {
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::EVERYTHING);
   EXPECT_FALSE(lock_app);
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(note_taking_app->path()));
@@ -526,12 +555,12 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingDisabledWhileStarted) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -541,7 +570,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingDisabledWhileStarted) {
             app_manager()->GetNoteTakingAppId());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -561,7 +590,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingDisabledWhileStarted) {
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::EVERYTHING);
   EXPECT_FALSE(lock_app);
@@ -572,7 +601,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingDisabledWhileStarted) {
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(note_taking_app->path()));
@@ -584,15 +613,15 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingEnabledWhileStarted) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           false /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::EVERYTHING);
   EXPECT_FALSE(lock_app);
@@ -604,7 +633,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingEnabledWhileStarted) {
   ResetNoteTakingChangedCount();
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -614,7 +643,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingEnabledWhileStarted) {
             app_manager()->GetNoteTakingAppId());
 
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -631,7 +660,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingEnabledWhileStarted) {
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(note_taking_app->path()));
@@ -648,12 +677,12 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingChangedWhileStarted) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -663,7 +692,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingChangedWhileStarted) {
             app_manager()->GetNoteTakingAppId());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -681,7 +710,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingChangedWhileStarted) {
   ResetNoteTakingChangedCount();
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -692,13 +721,13 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingChangedWhileStarted) {
 
   // Verify prod app was unloaded from signin profile.
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::EVERYTHING);
   EXPECT_FALSE(lock_app);
 
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kDevKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
 
@@ -714,7 +743,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingChangedWhileStarted) {
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(dev_note_taking_app->path()));
@@ -739,8 +768,8 @@ TEST_P(LockScreenAppManagerImplTest, NoteTakingChangedToLockScreenSupported) {
 
   // Initialize app manager - the note taking should be disabled initially
   // because the preferred app (prod) is not enabled on lock screen.
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_EQ(false, app_manager()->IsNoteTakingAppAvailable());
 
@@ -754,7 +783,7 @@ TEST_P(LockScreenAppManagerImplTest, NoteTakingChangedToLockScreenSupported) {
   // If test app is installed asynchronously. the app won't be enabled on
   // lock screen until extension service task runner tasks are run.
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -764,7 +793,7 @@ TEST_P(LockScreenAppManagerImplTest, NoteTakingChangedToLockScreenSupported) {
 
   // Verify the dev app copy is installed in the lock screen app profile.
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kDevKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -788,7 +817,7 @@ TEST_P(LockScreenAppManagerImplTest, NoteTakingChangedToLockScreenSupported) {
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   // Make sure original app paths are not deleted.
@@ -802,8 +831,8 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingReloadedWhileStarted) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -813,7 +842,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingReloadedWhileStarted) {
             app_manager()->GetNoteTakingAppId());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -838,7 +867,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingReloadedWhileStarted) {
 
   // Verify prod app was unloaded from signin profile.
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::EVERYTHING);
   EXPECT_FALSE(lock_app);
@@ -854,7 +883,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingReloadedWhileStarted) {
   ResetNoteTakingChangedCount();
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -863,7 +892,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingReloadedWhileStarted) {
             app_manager()->GetNoteTakingAppId());
 
   lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
 
@@ -880,7 +909,7 @@ TEST_P(LockScreenAppManagerImplTest, LockScreenNoteTakingReloadedWhileStarted) {
   EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
   EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(note_taking_app->path()));
@@ -901,7 +930,7 @@ TEST_P(LockScreenAppManagerImplTest,
       ->extension_service()
       ->AddExtension(final_note_taking_app.get());
 
-  InitializeAndStartAppManager(profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
@@ -915,7 +944,7 @@ TEST_P(LockScreenAppManagerImplTest,
   EXPECT_EQ(1, note_taking_changed_count());
   ResetNoteTakingChangedCount();
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(0, note_taking_changed_count());
 
@@ -924,7 +953,7 @@ TEST_P(LockScreenAppManagerImplTest,
             app_manager()->GetNoteTakingAppId());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kDevKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -939,7 +968,7 @@ TEST_P(LockScreenAppManagerImplTest,
 
   app_manager()->Stop();
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(initial_note_taking_app->path()));
@@ -961,7 +990,7 @@ TEST_P(LockScreenAppManagerImplTest,
       ->extension_service()
       ->AddExtension(final_note_taking_app.get());
 
-  InitializeAndStartAppManager(profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
 
   EXPECT_EQ(0, note_taking_changed_count());
   EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
@@ -973,7 +1002,7 @@ TEST_P(LockScreenAppManagerImplTest,
   EXPECT_EQ(1, note_taking_changed_count());
   ResetNoteTakingChangedCount();
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_EQ(1, note_taking_changed_count());
   ResetNoteTakingChangedCount();
@@ -983,7 +1012,7 @@ TEST_P(LockScreenAppManagerImplTest,
             app_manager()->GetNoteTakingAppId());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kDevKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(lock_app);
@@ -998,7 +1027,7 @@ TEST_P(LockScreenAppManagerImplTest,
 
   app_manager()->Stop();
 
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  RunExtensionServiceTaskRunner(LockScreenProfile());
   RunExtensionServiceTaskRunner(profile());
 
   EXPECT_TRUE(base::PathExists(initial_note_taking_app->path()));
@@ -1011,26 +1040,26 @@ TEST_P(LockScreenAppManagerImplTest, ShutdownWhenStarted) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.1",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   const extensions::Extension* lock_app =
-      extensions::ExtensionRegistry::Get(lock_screen_profile())
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
           ->GetExtensionById(chromeos::NoteTakingHelper::kProdKeepExtensionId,
                              extensions::ExtensionRegistry::ENABLED);
   EXPECT_TRUE(lock_app);
 }
 
 TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenEnabled) {
-  SetUpTestEventRouter();
+  set_needs_lock_screen_event_router();
 
   scoped_refptr<const extensions::Extension> note_taking_app =
       AddTestAppWithLockScreenSupport(
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   ASSERT_EQ(chromeos::NoteTakingHelper::kProdKeepExtensionId,
             app_manager()->GetNoteTakingAppId());
@@ -1049,9 +1078,8 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenEnabled) {
 }
 
 TEST_P(LockScreenAppManagerImplTest, LaunchAppWithFalseRestoreLastActionState) {
-  SetUpTestEventRouter();
+  set_needs_lock_screen_event_router();
 
-  event_observer()->set_expect_restore_action_state(false);
   profile()->GetPrefs()->SetBoolean(prefs::kRestoreLastLockScreenNote, false);
 
   scoped_refptr<const extensions::Extension> note_taking_app =
@@ -1059,12 +1087,13 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWithFalseRestoreLastActionState) {
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           true /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   ASSERT_EQ(chromeos::NoteTakingHelper::kProdKeepExtensionId,
             app_manager()->GetNoteTakingAppId());
 
+  event_observer()->set_expect_restore_action_state(false);
   EXPECT_TRUE(app_manager()->LaunchNoteTaking());
 
   ASSERT_EQ(1u, event_observer()->launched_apps().size());
@@ -1079,15 +1108,15 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWithFalseRestoreLastActionState) {
 }
 
 TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenNoLockScreenApp) {
-  SetUpTestEventRouter();
+  set_needs_lock_screen_event_router();
 
   scoped_refptr<const extensions::Extension> note_taking_app =
       AddTestAppWithLockScreenSupport(
           profile(), chromeos::NoteTakingHelper::kProdKeepExtensionId, "1.0",
           false /* enable_on_lock_screen */);
 
-  InitializeAndStartAppManager(profile());
-  RunExtensionServiceTaskRunner(lock_screen_profile());
+  InitializeAndStartAppManager(profile(), true /*create_lock_screen_profile*/);
+  RunExtensionServiceTaskRunner(LockScreenProfile());
 
   EXPECT_FALSE(app_manager()->LaunchNoteTaking());
   EXPECT_TRUE(event_observer()->launched_apps().empty());
@@ -1095,6 +1124,146 @@ TEST_P(LockScreenAppManagerImplTest, LaunchAppWhenNoLockScreenApp) {
   app_manager()->Stop();
   EXPECT_FALSE(app_manager()->LaunchNoteTaking());
   EXPECT_TRUE(event_observer()->launched_apps().empty());
+}
+
+TEST_P(LockScreenAppManagerImplTest, InitializedAfterLockScreenProfileCreated) {
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kDevKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  CreateLockScreenProfile();
+
+  InitializeAndStartAppManager(profile(), false /*create_lock_screen_profile*/);
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
+
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+
+  EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
+  ResetNoteTakingChangedCount();
+
+  EXPECT_TRUE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_EQ(chromeos::NoteTakingHelper::kDevKeepExtensionId,
+            app_manager()->GetNoteTakingAppId());
+
+  const extensions::Extension* lock_app =
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
+          ->GetExtensionById(chromeos::NoteTakingHelper::kDevKeepExtensionId,
+                             extensions::ExtensionRegistry::ENABLED);
+  ASSERT_TRUE(lock_app);
+
+  EXPECT_TRUE(base::PathExists(lock_app->path()));
+  EXPECT_EQ(GetLockScreenAppPath(note_taking_app->id(),
+                                 note_taking_app->VersionString()),
+            lock_app->path());
+  EXPECT_TRUE(base::PathExists(note_taking_app->path()));
+
+  app_manager()->Stop();
+}
+
+TEST_P(LockScreenAppManagerImplTest, StartedBeforeLockScreenProfileCreated) {
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kDevKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), false /*create_lock_screen_profile*/);
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+
+  CreateLockScreenProfile();
+
+  EXPECT_EQ(1, note_taking_changed_count());
+  ResetNoteTakingChangedCount();
+  EXPECT_EQ(!IsInstallAsync(), app_manager()->IsNoteTakingAppAvailable());
+
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+
+  EXPECT_EQ(NoteTakingChangedCountOnStart(), note_taking_changed_count());
+  ResetNoteTakingChangedCount();
+
+  EXPECT_TRUE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_EQ(chromeos::NoteTakingHelper::kDevKeepExtensionId,
+            app_manager()->GetNoteTakingAppId());
+
+  const extensions::Extension* lock_app =
+      extensions::ExtensionRegistry::Get(LockScreenProfile())
+          ->GetExtensionById(chromeos::NoteTakingHelper::kDevKeepExtensionId,
+                             extensions::ExtensionRegistry::ENABLED);
+  ASSERT_TRUE(lock_app);
+
+  EXPECT_TRUE(base::PathExists(lock_app->path()));
+  EXPECT_EQ(GetLockScreenAppPath(note_taking_app->id(),
+                                 note_taking_app->VersionString()),
+            lock_app->path());
+  EXPECT_TRUE(base::PathExists(note_taking_app->path()));
+
+  app_manager()->Stop();
+}
+
+TEST_P(LockScreenAppManagerImplTest, LockScreenProfileCreatedNoSupportedApp) {
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kDevKeepExtensionId, "1.0",
+          false /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), false /*create_lock_screen_profile*/);
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+
+  CreateLockScreenProfile();
+  RunExtensionServiceTaskRunner(LockScreenProfile());
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+
+  app_manager()->Stop();
+}
+
+TEST_P(LockScreenAppManagerImplTest, LockScreenProfileCreationFailure) {
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kDevKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), false /*create_lock_screen_profile*/);
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+
+  lock_screen_profile_creator()->SetProfileCreationFailed();
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+}
+
+TEST_P(LockScreenAppManagerImplTest,
+       LockScreenProfileCreationFailedBeforeInitialization) {
+  lock_screen_profile_creator()->SetProfileCreationFailed();
+
+  scoped_refptr<const extensions::Extension> note_taking_app =
+      AddTestAppWithLockScreenSupport(
+          profile(), chromeos::NoteTakingHelper::kDevKeepExtensionId, "1.0",
+          true /* enable_on_lock_screen */);
+
+  InitializeAndStartAppManager(profile(), false /*create_lock_screen_profile*/);
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
+
+  EXPECT_EQ(0, note_taking_changed_count());
+  EXPECT_FALSE(app_manager()->IsNoteTakingAppAvailable());
+  EXPECT_TRUE(app_manager()->GetNoteTakingAppId().empty());
 }
 
 }  // namespace lock_screen_apps
