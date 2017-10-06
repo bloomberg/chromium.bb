@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/address_normalization_manager.h"
+#include "components/autofill/core/browser/address_normalization_manager.h"
 
 #include <utility>
 
@@ -12,14 +12,14 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 
-namespace payments {
+namespace autofill {
 
 namespace {
 constexpr int kAddressNormalizationTimeoutSeconds = 5;
 }  // namespace
 
 AddressNormalizationManager::AddressNormalizationManager(
-    autofill::AddressNormalizer* address_normalizer,
+    AddressNormalizer* address_normalizer,
     const std::string& default_country_code)
     : default_country_code_(default_country_code),
       address_normalizer_(address_normalizer) {
@@ -39,7 +39,7 @@ void AddressNormalizationManager::FinalizePendingRequestsWithCompletionCallback(
 }
 
 void AddressNormalizationManager::StartNormalizingAddress(
-    autofill::AutofillProfile* profile) {
+    AutofillProfile* profile) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(accepting_requests_) << "FinalizeWithCompletionCallback has been "
                                  "called, cannot normalize more addresses";
@@ -68,14 +68,14 @@ void AddressNormalizationManager::MaybeRunCompletionCallback() {
 
 AddressNormalizationManager::NormalizerDelegate::NormalizerDelegate(
     AddressNormalizationManager* owner,
-    autofill::AddressNormalizer* address_normalizer,
-    autofill::AutofillProfile* profile)
+    AddressNormalizer* address_normalizer,
+    AutofillProfile* profile)
     : owner_(owner), profile_(profile) {
   DCHECK(owner_);
   DCHECK(profile_);
 
   std::string country_code =
-      base::UTF16ToUTF8(profile_->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+      base::UTF16ToUTF8(profile_->GetRawInfo(ADDRESS_HOME_COUNTRY));
   if (!autofill::data_util::IsValidCountryCode(country_code))
     country_code = owner_->default_country_code_;
 
@@ -84,23 +84,23 @@ AddressNormalizationManager::NormalizerDelegate::NormalizerDelegate(
 }
 
 void AddressNormalizationManager::NormalizerDelegate::OnAddressNormalized(
-    const autofill::AutofillProfile& normalized_profile) {
+    const AutofillProfile& normalized_profile) {
   OnCompletion(normalized_profile);
 }
 
 void AddressNormalizationManager::NormalizerDelegate::OnCouldNotNormalize(
-    const autofill::AutofillProfile& profile) {
+    const AutofillProfile& profile) {
   // Since the phone number is formatted in either case, this profile should
   // be used.
   OnCompletion(profile);
 }
 
 void AddressNormalizationManager::NormalizerDelegate::OnCompletion(
-    const autofill::AutofillProfile& profile) {
+    const AutofillProfile& profile) {
   DCHECK(!has_completed_);
   has_completed_ = true;
   *profile_ = profile;
   owner_->MaybeRunCompletionCallback();
 }
 
-}  // namespace payments
+}  // namespace autofill

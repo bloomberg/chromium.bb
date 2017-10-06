@@ -245,7 +245,8 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   return currency_formatter_.get();
 }
 
-AddressNormalizationManager* PaymentRequest::GetAddressNormalizationManager() {
+autofill::AddressNormalizationManager*
+PaymentRequest::GetAddressNormalizationManager() {
   return &address_normalization_manager_;
 }
 
