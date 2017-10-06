@@ -591,6 +591,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * @param featureName The associated feature name.
      */
     public void showDownloadPageTextBubble(final Tab tab, String featureName) {
+        if (tab == null) return;
+
         // TODO(shaktisahu): Find out if the download menu button is enabled (crbug/712438).
         ChromeActivity activity = tab.getActivity();
         if (!(activity instanceof ChromeTabbedActivity) || DeviceFormFactor.isTablet()
