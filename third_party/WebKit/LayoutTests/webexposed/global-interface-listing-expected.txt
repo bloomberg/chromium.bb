@@ -7307,6 +7307,7 @@ interface VTTCue : TextTrackCue
     setter vertical
 interface VTTRegion
     attribute @@toStringTag
+    getter id
     getter lines
     getter regionAnchorX
     getter regionAnchorY
@@ -7315,6 +7316,7 @@ interface VTTRegion
     getter viewportAnchorY
     getter width
     method constructor
+    setter id
     setter lines
     setter regionAnchorX
     setter regionAnchorY

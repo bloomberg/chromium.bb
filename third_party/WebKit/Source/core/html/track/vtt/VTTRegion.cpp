@@ -97,7 +97,7 @@ VTTRegion::VTTRegion()
 
 VTTRegion::~VTTRegion() {}
 
-void VTTRegion::SetId(const String& id) {
+void VTTRegion::setId(const String& id) {
   id_ = id;
 }
 
