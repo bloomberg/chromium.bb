@@ -166,8 +166,11 @@ void EnrollmentHandlerChromeOS::HandleAvailableLicensesResult(
     bool success,
     const CloudPolicyClient::LicenseMap& license_map) {
   if (!success) {
-    ReportResult(
-        EnrollmentStatus::ForStatus(EnrollmentStatus::LICENSE_REQUEST_FAILED));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&EnrollmentHandlerChromeOS::ReportResult,
+            weak_ptr_factory_.GetWeakPtr(),
+            EnrollmentStatus::ForStatus(
+                EnrollmentStatus::LICENSE_REQUEST_FAILED)));
     return;
   }
   if (available_licenses_callback_)

@@ -147,7 +147,7 @@ CHROMEOS_EXPORT extern const char kForceSystemCompositorMode[];
 CHROMEOS_EXPORT extern const char kTestEncryptionMigrationUI[];
 CHROMEOS_EXPORT extern const char kCrosGaiaApiV1[];
 CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];
-CHROMEOS_EXPORT extern const char kEnterpriseEnableLicenseTypeSelection[];
+CHROMEOS_EXPORT extern const char kEnterpriseDisableLicenseTypeSelection[];
 CHROMEOS_EXPORT extern const char kDisablePerUserTimezone[];
 
 // Returns true if the system should wake in response to wifi traffic.

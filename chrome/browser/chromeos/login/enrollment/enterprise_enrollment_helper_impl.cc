@@ -165,8 +165,8 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
   bool check_license_type = false;
   // The license selection dialog is not used when doing Zero Touch.
   if (!enrollment_config_.is_mode_attestation()) {
-    check_license_type = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kEnterpriseEnableLicenseTypeSelection);
+    check_license_type = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnterpriseDisableLicenseTypeSelection);
   }
 
   connector->ScheduleServiceInitialization(0);
