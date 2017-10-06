@@ -328,4 +328,109 @@ TEST_F(NativeRendererMessagingServiceTest, Connect) {
   EXPECT_FALSE(new_port->is_closed());
 }
 
+// Tests sending a one-time message through the messaging service. Note that
+// this is more thoroughly tested in the OneTimeMessageHandler tests; this is
+// just to ensure NativeRendererMessagingService correctly forwards the calls.
+TEST_F(NativeRendererMessagingServiceTest, SendOneTimeMessage) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  const std::string kChannel = "chrome.runtime.sendMessage";
+  PortId port_id(script_context()->context_id(), 0, true);
+  const char kEchoArgs[] =
+      "(function() { this.replyArgs = Array.from(arguments); })";
+  v8::Local<v8::Function> response_callback =
+      FunctionFromString(context, kEchoArgs);
+
+  // Send a message and expect a reply. A new port should be created, and should
+  // remain open (waiting for the response).
+  const Message message("\"hi\"", false);
+  bool include_tls_channel_id = false;
+  EXPECT_CALL(
+      *ipc_message_sender(),
+      SendOpenChannelToExtension(script_context(), port_id, extension()->id(),
+                                 kChannel, include_tls_channel_id));
+  EXPECT_CALL(*ipc_message_sender(),
+              SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
+  messaging_service()->SendOneTimeMessage(script_context(), extension()->id(),
+                                          kChannel, include_tls_channel_id,
+                                          message, response_callback);
+  ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+  EXPECT_TRUE(
+      messaging_service()->HasPortForTesting(script_context(), port_id));
+
+  // Respond to the message. The response callback should be triggered, and the
+  // port should be closed.
+  EXPECT_CALL(*ipc_message_sender(),
+              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
+  messaging_service()->DeliverMessage(*script_context_set(), port_id,
+                                      Message("\"reply\"", false), nullptr);
+  ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+  EXPECT_EQ("[\"reply\"]", GetStringPropertyFromObject(context->Global(),
+                                                       context, "replyArgs"));
+  EXPECT_FALSE(
+      messaging_service()->HasPortForTesting(script_context(), port_id));
+}
+
+// Tests receiving a one-time message through the messaging service. Note that
+// this is more thoroughly tested in the OneTimeMessageHandler tests; this is
+// just to ensure NativeRendererMessagingService correctly forwards the calls.
+TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  constexpr char kRegisterListener[] =
+      "(function() {\n"
+      "  chrome.runtime.onMessage.addListener(\n"
+      "      function(message, sender, reply) {\n"
+      "    this.eventMessage = message;\n"
+      "    reply({data: 'hi'});\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::Function> add_listener =
+      FunctionFromString(context, kRegisterListener);
+  RunFunctionOnGlobal(add_listener, context, 0, nullptr);
+
+  const std::string kChannel = "chrome.runtime.sendMessage";
+  base::UnguessableToken other_context_id = base::UnguessableToken::Create();
+  const PortId port_id(other_context_id, 0, false);
+
+  ExtensionMsg_TabConnectionInfo tab_connection_info;
+  tab_connection_info.frame_id = 0;
+  const int tab_id = 10;
+  GURL source_url("http://example.com");
+  tab_connection_info.tab.Swap(
+      DictionaryBuilder().Set("tabId", tab_id).Build().get());
+  ExtensionMsg_ExternalConnectionInfo external_connection_info;
+  external_connection_info.target_id = extension()->id();
+  external_connection_info.source_id = extension()->id();
+  external_connection_info.source_url = source_url;
+  external_connection_info.guest_process_id =
+      content::ChildProcessHost::kInvalidUniqueID;
+  external_connection_info.guest_render_frame_routing_id = 0;
+
+  // Open a receiver for the message.
+  EXPECT_CALL(*ipc_message_sender(),
+              SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
+  messaging_service()->DispatchOnConnect(
+      *script_context_set(), port_id, kChannel, tab_connection_info,
+      external_connection_info, std::string(), nullptr);
+  ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+  EXPECT_TRUE(
+      messaging_service()->HasPortForTesting(script_context(), port_id));
+
+  // Post the message to the receiver. The receiver should respond, and the
+  // port should close.
+  EXPECT_CALL(*ipc_message_sender(),
+              SendPostMessageToPort(MSG_ROUTING_NONE, port_id,
+                                    Message(R"({"data":"hi"})", false)));
+  EXPECT_CALL(*ipc_message_sender(),
+              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
+  messaging_service()->DeliverMessage(*script_context_set(), port_id,
+                                      Message("\"message\"", false), nullptr);
+  ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+  EXPECT_FALSE(
+      messaging_service()->HasPortForTesting(script_context(), port_id));
+}
+
 }  // namespace extensions
