@@ -69,12 +69,6 @@ bool HardwareDisplayController::Enable(const OverlayPlane& primary) {
 
 void HardwareDisplayController::Disable() {
   TRACE_EVENT0("drm", "HDC::Disable");
-  // Disable all the planes by scheduling a pageflip with an empty plane_list.
-  // This is necessary since drmModeSetCrtc, that is called by
-  // controller->Disable(), will not disable overlays.
-  const OverlayPlaneList plane_list;
-  ActualSchedulePageFlip(plane_list, false, base::BindOnce(&EmptyFlipCallback));
-
   for (const auto& controller : crtc_controllers_)
     controller->Disable();
 
@@ -102,12 +96,18 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
 
   DCHECK(!is_disabled_);
 
+  // Ignore requests with no planes to schedule.
+  if (plane_list.empty()) {
+    std::move(callback).Run(gfx::SwapResult::SWAP_ACK);
+    return true;
+  }
+
   OverlayPlaneList pending_planes = plane_list;
   std::sort(pending_planes.begin(), pending_planes.end(),
             [](const OverlayPlane& l, const OverlayPlane& r) {
               return l.z_order < r.z_order;
             });
-  if (pending_planes.size() && pending_planes.front().z_order < 0) {
+  if (pending_planes.front().z_order < 0) {
     std::move(callback).Run(gfx::SwapResult::SWAP_FAILED);
     return false;
   }
