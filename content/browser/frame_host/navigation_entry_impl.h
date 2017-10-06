@@ -211,6 +211,10 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     return frame_tree_.get();
   }
 
+  // Finds the TreeNode associated with |frame_tree_node|, if any.
+  NavigationEntryImpl::TreeNode* GetTreeNode(
+      FrameTreeNode* frame_tree_node) const;
+
   // Finds the TreeNode associated with |frame_tree_node_id| to add or update
   // its FrameNavigationEntry.  A new FrameNavigationEntry is added if none
   // exists, or else the existing one (which might be shared with other
@@ -415,10 +419,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 #endif
 
  private:
-  // Finds the TreeNode associated with |frame_tree_node|, if any.
-  NavigationEntryImpl::TreeNode* FindFrameEntry(
-      FrameTreeNode* frame_tree_node) const;
-
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
   // later. If you add a new field that needs to be persisted you'll have to
