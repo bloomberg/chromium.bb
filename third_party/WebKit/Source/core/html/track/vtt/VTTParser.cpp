@@ -392,9 +392,9 @@ void VTTParser::CreateNewRegion(const String& header_value) {
   VTTRegion* region = VTTRegion::Create();
   region->SetRegionSettings(header_value);
 
-  if (region->Id().IsEmpty())
+  if (region->id().IsEmpty())
     return;
-  region_map_.Set(region->Id(), region);
+  region_map_.Set(region->id(), region);
 }
 
 bool VTTParser::CollectTimeStamp(const String& line, double& time_stamp) {

@@ -54,8 +54,8 @@ class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
 
   virtual ~VTTRegion();
 
-  const String& Id() const { return id_; }
-  void SetId(const String&);
+  const String& id() const { return id_; }
+  void setId(const String&);
 
   double width() const { return width_; }
   void setWidth(double, ExceptionState&);
