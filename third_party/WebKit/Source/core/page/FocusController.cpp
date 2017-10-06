@@ -75,6 +75,102 @@ inline bool IsShadowInsertionPointFocusScopeOwner(Element& element) {
          ToHTMLShadowElement(element).OlderShadowRoot();
 }
 
+// This class defines the navigation order.
+class FocusNavigation : public GarbageCollected<FocusNavigation> {
+ public:
+  FocusNavigation(ContainerNode& root, FocusController::OwnerMap& owner_map)
+      : root_(&root), owner_map_(owner_map) {}
+  FocusNavigation(ContainerNode& root,
+                  HTMLSlotElement& slot,
+                  FocusController::OwnerMap& owner_map)
+      : root_(&root), slot_(&slot), owner_map_(owner_map) {}
+
+  const Element* Next(const Element& current) {
+    Element* next = ElementTraversal::Next(current, root_);
+    while (next && !IsOwnedByRoot(*next))
+      next = ElementTraversal::Next(*next, root_);
+    return next;
+  }
+
+  const Element* Previous(const Element& current) {
+    Element* previous = ElementTraversal::Previous(current, root_);
+    if (previous == root_)
+      return nullptr;
+    while (previous && !IsOwnedByRoot(*previous))
+      previous = ElementTraversal::Previous(*previous, root_);
+    return previous;
+  }
+
+  const Element* First() {
+    Element* first = ElementTraversal::FirstChild(*root_);
+    while (first && !IsOwnedByRoot(*first))
+      first = ElementTraversal::Next(*first, root_);
+    return first;
+  }
+
+  const Element* Last() {
+    Element* last = ElementTraversal::LastWithin(*root_);
+    while (last && !IsOwnedByRoot(*last))
+      last = ElementTraversal::Previous(*last, root_);
+    return last;
+  }
+
+  Element* Owner() {
+    if (slot_)
+      return slot_;
+
+    return FindOwner(*root_);
+  }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->Trace(root_);
+    visitor->Trace(slot_);
+  }
+
+ private:
+  Element* TreeOwner(ContainerNode* node) {
+    if (ShadowRoot* shadow_root = ToShadowRootOrNull(node)) {
+      return shadow_root->IsYoungest()
+                 ? &shadow_root->host()
+                 : shadow_root->ShadowInsertionPointOfYoungerShadowRoot();
+    }
+    // FIXME: Figure out the right thing for OOPI here.
+    if (Frame* frame = node->GetDocument().GetFrame())
+      return frame->DeprecatedLocalOwner();
+    return nullptr;
+  }
+
+  // Owner is the slot node for slot scope and slot fallback contents scope, the
+  // shadow host for shadow tree scope and the iframe node for frame scope.
+  Element* FindOwner(ContainerNode& node) {
+    auto result = owner_map_.find(&node);
+    if (result != owner_map_.end())
+      return result->value;
+
+    // Fallback contents owner is set to the nearest ancestor slot node even if
+    // the slot node have assigned nodes.
+
+    Element* owner = nullptr;
+    if (node.AssignedSlot())
+      owner = node.AssignedSlot();
+    else if (IsHTMLSlotElement(node.parentNode()))
+      owner = node.ParentOrShadowHostElement();
+    else if (&node == node.ContainingTreeScope().RootNode())
+      owner = TreeOwner(&node);
+    else if (node.parentNode())
+      owner = FindOwner(*node.parentNode());
+
+    owner_map_.insert(&node, owner);
+    return owner;
+  }
+
+  bool IsOwnedByRoot(ContainerNode& node) { return FindOwner(node) == Owner(); }
+
+  Member<ContainerNode> root_;
+  Member<HTMLSlotElement> slot_;
+  FocusController::OwnerMap& owner_map_;
+};
+
 class ScopedFocusNavigation {
   STACK_ALLOCATED();
 
@@ -98,24 +194,37 @@ class ScopedFocusNavigation {
                                           : PreviousFocusableElement();
   }
 
-  Element* CurrentElement() const { return current_; }
+  Element* CurrentElement() const {
+    return const_cast<Element*>(current_.Get());
+  }
   Element* Owner() const;
 
-  static ScopedFocusNavigation CreateFor(const Element&);
-  static ScopedFocusNavigation CreateForDocument(Document&);
-  static ScopedFocusNavigation OwnedByNonFocusableFocusScopeOwner(Element&);
-  static ScopedFocusNavigation OwnedByShadowHost(const Element&);
-  static ScopedFocusNavigation OwnedByShadowInsertionPoint(HTMLShadowElement&);
-  static ScopedFocusNavigation OwnedByHTMLSlotElement(const HTMLSlotElement&);
-  static ScopedFocusNavigation OwnedByIFrame(const HTMLFrameOwnerElement&);
+  static ScopedFocusNavigation CreateFor(const Element&,
+                                         FocusController::OwnerMap&);
+  static ScopedFocusNavigation CreateForDocument(Document&,
+                                                 FocusController::OwnerMap&);
+  static ScopedFocusNavigation OwnedByNonFocusableFocusScopeOwner(
+      Element&,
+      FocusController::OwnerMap&);
+  static ScopedFocusNavigation OwnedByShadowHost(const Element&,
+                                                 FocusController::OwnerMap&);
+  static ScopedFocusNavigation OwnedByShadowInsertionPoint(
+      HTMLShadowElement&,
+      FocusController::OwnerMap&);
+  static ScopedFocusNavigation OwnedByHTMLSlotElement(
+      const HTMLSlotElement&,
+      FocusController::OwnerMap&);
+  static ScopedFocusNavigation OwnedByIFrame(const HTMLFrameOwnerElement&,
+                                             FocusController::OwnerMap&);
   static HTMLSlotElement* FindFallbackScopeOwnerSlot(const Element&);
   static bool IsSlotFallbackScoped(const Element&);
   static bool IsSlotFallbackScopedForThisSlot(const HTMLSlotElement&,
                                               const Element&);
 
  private:
-  ScopedFocusNavigation(TreeScope&, const Element*);
-  ScopedFocusNavigation(HTMLSlotElement&, const Element*);
+  ScopedFocusNavigation(ContainerNode& scoping_root_node,
+                        const Element* current,
+                        FocusController::OwnerMap&);
 
   Element* FindElementWithExactTabIndex(int tab_index, WebFocusType);
   Element* NextElementWithGreaterTabIndex(int tab_index);
@@ -123,183 +232,122 @@ class ScopedFocusNavigation {
   Element* NextFocusableElement();
   Element* PreviousFocusableElement();
 
-  void SetCurrentElement(Element* element) { current_ = element; }
+  void SetCurrentElement(const Element* element) { current_ = element; }
   void MoveToNext();
   void MoveToPrevious();
   void MoveToFirst();
   void MoveToLast();
 
-  Member<ContainerNode> root_node_;
-  Member<HTMLSlotElement> root_slot_;
-  Member<Element> current_;
-  bool slot_fallback_traversal_;
+  Member<const Element> current_;
+  Member<FocusNavigation> navigation_;
 };
 
-ScopedFocusNavigation::ScopedFocusNavigation(TreeScope& tree_scope,
-                                             const Element* current)
-    : root_node_(tree_scope.RootNode()),
-      root_slot_(nullptr),
-      current_(const_cast<Element*>(current)) {}
-
-ScopedFocusNavigation::ScopedFocusNavigation(HTMLSlotElement& slot,
-                                             const Element* current)
-    : root_node_(nullptr),
-      root_slot_(&slot),
-      current_(const_cast<Element*>(current)),
-      slot_fallback_traversal_(slot.AssignedNodes().IsEmpty()) {}
-
-void ScopedFocusNavigation::MoveToNext() {
-  DCHECK(current_);
-  if (root_slot_) {
-    if (slot_fallback_traversal_) {
-      current_ = ElementTraversal::Next(*current_, root_slot_);
-      while (current_ &&
-             !ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
-                 *root_slot_, *current_))
-        current_ = ElementTraversal::Next(*current_, root_slot_);
+ScopedFocusNavigation::ScopedFocusNavigation(
+    ContainerNode& scoping_root_node,
+    const Element* current,
+    FocusController::OwnerMap& owner_map)
+    : current_(const_cast<Element*>(current)) {
+  if (HTMLSlotElement* slot = ToHTMLSlotElementOrNull(scoping_root_node)) {
+    if (slot->AssignedNodes().IsEmpty()) {
+      navigation_ = new FocusNavigation(scoping_root_node, *slot, owner_map);
     } else {
-      current_ = SlotScopedTraversal::Next(*current_);
+      // Here, slot->AssignedNodes() are non null, so the slot must be inside
+      // the shadow tree.
+      DCHECK(scoping_root_node.ContainingShadowRoot());
+      navigation_ =
+          new FocusNavigation(scoping_root_node.ContainingShadowRoot()->host(),
+                              ToHTMLSlotElement(scoping_root_node), owner_map);
     }
   } else {
-    current_ = ElementTraversal::Next(*current_);
-    while (current_ && (SlotScopedTraversal::IsSlotScoped(*current_) ||
-                        ScopedFocusNavigation::IsSlotFallbackScoped(*current_)))
-      current_ = ElementTraversal::Next(*current_);
+    navigation_ = new FocusNavigation(scoping_root_node, owner_map);
   }
+  DCHECK(navigation_);
+}
+
+void ScopedFocusNavigation::MoveToNext() {
+  DCHECK(CurrentElement());
+  SetCurrentElement(navigation_->Next(*CurrentElement()));
 }
 
 void ScopedFocusNavigation::MoveToPrevious() {
-  DCHECK(current_);
-  if (root_slot_) {
-    if (slot_fallback_traversal_) {
-      current_ = ElementTraversal::Previous(*current_, root_slot_);
-      if (current_ == root_slot_)
-        current_ = nullptr;
-      while (current_ &&
-             !ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
-                 *root_slot_, *current_))
-        current_ = ElementTraversal::Previous(*current_);
-    } else {
-      current_ = SlotScopedTraversal::Previous(*current_);
-    }
-  } else {
-    current_ = ElementTraversal::Previous(*current_);
-    while (current_ && (SlotScopedTraversal::IsSlotScoped(*current_) ||
-                        ScopedFocusNavigation::IsSlotFallbackScoped(*current_)))
-      current_ = ElementTraversal::Previous(*current_);
-  }
+  DCHECK(CurrentElement());
+  SetCurrentElement(navigation_->Previous(*CurrentElement()));
 }
 
 void ScopedFocusNavigation::MoveToFirst() {
-  if (root_slot_) {
-    if (!slot_fallback_traversal_) {
-      current_ = SlotScopedTraversal::FirstAssignedToSlot(*root_slot_);
-    } else {
-      Element* first = ElementTraversal::FirstChild(*root_slot_);
-      while (first && !ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
-                          *root_slot_, *first))
-        first = ElementTraversal::Next(*first, root_slot_);
-      current_ = first;
-    }
-  } else {
-    Element* first = root_node_->IsElementNode()
-                         ? &ToElement(*root_node_)
-                         : ElementTraversal::Next(*root_node_);
-    while (first && (SlotScopedTraversal::IsSlotScoped(*first) ||
-                     ScopedFocusNavigation::IsSlotFallbackScoped(*first)))
-      first = ElementTraversal::Next(*first, root_node_);
-    current_ = first;
-  }
+  SetCurrentElement(navigation_->First());
 }
 
 void ScopedFocusNavigation::MoveToLast() {
-  if (root_slot_) {
-    if (!slot_fallback_traversal_) {
-      current_ = SlotScopedTraversal::LastAssignedToSlot(*root_slot_);
-    } else {
-      Element* last = ElementTraversal::LastWithin(*root_slot_);
-      while (last && !ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
-                         *root_slot_, *last))
-        last = ElementTraversal::Previous(*last, root_slot_);
-      current_ = last;
-    }
-  } else {
-    Element* last = ElementTraversal::LastWithin(*root_node_);
-    while (last && (SlotScopedTraversal::IsSlotScoped(*last) ||
-                    ScopedFocusNavigation::IsSlotFallbackScoped(*last)))
-      last = ElementTraversal::Previous(*last, root_node_);
-    current_ = last;
-  }
+  SetCurrentElement(navigation_->Last());
 }
 
 Element* ScopedFocusNavigation::Owner() const {
-  if (root_slot_)
-    return root_slot_;
-  DCHECK(root_node_);
-  if (root_node_->IsShadowRoot()) {
-    ShadowRoot& shadow_root = ToShadowRoot(*root_node_);
-    return shadow_root.IsYoungest()
-               ? &shadow_root.host()
-               : shadow_root.ShadowInsertionPointOfYoungerShadowRoot();
-  }
-  // FIXME: Figure out the right thing for OOPI here.
-  if (Frame* frame = root_node_->GetDocument().GetFrame())
-    return frame->DeprecatedLocalOwner();
-  return nullptr;
+  return navigation_->Owner();
 }
 
-ScopedFocusNavigation ScopedFocusNavigation::CreateFor(const Element& current) {
+ScopedFocusNavigation ScopedFocusNavigation::CreateFor(
+    const Element& current,
+    FocusController::OwnerMap& owner_map) {
   if (HTMLSlotElement* slot = SlotScopedTraversal::FindScopeOwnerSlot(current))
-    return ScopedFocusNavigation(*slot, &current);
+    return ScopedFocusNavigation(*slot, &current, owner_map);
   if (HTMLSlotElement* slot =
           ScopedFocusNavigation::FindFallbackScopeOwnerSlot(current))
-    return ScopedFocusNavigation(*slot, &current);
-  return ScopedFocusNavigation(current.ContainingTreeScope(), &current);
+    return ScopedFocusNavigation(*slot, &current, owner_map);
+  return ScopedFocusNavigation(current.ContainingTreeScope().RootNode(),
+                               &current, owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::CreateForDocument(
-    Document& document) {
-  return ScopedFocusNavigation(document, nullptr);
+    Document& document,
+    FocusController::OwnerMap& owner_map) {
+  return ScopedFocusNavigation(document, nullptr, owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(
-    Element& element) {
+    Element& element,
+    FocusController::OwnerMap& owner_map) {
   if (IsShadowHost(element))
-    return ScopedFocusNavigation::OwnedByShadowHost(element);
+    return ScopedFocusNavigation::OwnedByShadowHost(element, owner_map);
   if (IsShadowInsertionPointFocusScopeOwner(element)) {
     return ScopedFocusNavigation::OwnedByShadowInsertionPoint(
-        ToHTMLShadowElement(element));
+        ToHTMLShadowElement(element), owner_map);
   }
   return ScopedFocusNavigation::OwnedByHTMLSlotElement(
-      ToHTMLSlotElement(element));
+      ToHTMLSlotElement(element), owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByShadowHost(
-    const Element& element) {
+    const Element& element,
+    FocusController::OwnerMap& owner_map) {
   DCHECK(IsShadowHost(element));
-  return ScopedFocusNavigation(*&element.Shadow()->YoungestShadowRoot(),
-                               nullptr);
+  return ScopedFocusNavigation(element.Shadow()->YoungestShadowRoot(), nullptr,
+                               owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByIFrame(
-    const HTMLFrameOwnerElement& frame) {
+    const HTMLFrameOwnerElement& frame,
+    FocusController::OwnerMap& owner_map) {
   DCHECK(frame.ContentFrame());
   DCHECK(frame.ContentFrame()->IsLocalFrame());
   ToLocalFrame(frame.ContentFrame())->GetDocument()->UpdateDistribution();
   return ScopedFocusNavigation(
-      *ToLocalFrame(frame.ContentFrame())->GetDocument(), nullptr);
+      *ToLocalFrame(frame.ContentFrame())->GetDocument(), nullptr, owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByShadowInsertionPoint(
-    HTMLShadowElement& shadow_insertion_point) {
+    HTMLShadowElement& shadow_insertion_point,
+    FocusController::OwnerMap& owner_map) {
   DCHECK(IsShadowInsertionPointFocusScopeOwner(shadow_insertion_point));
   return ScopedFocusNavigation(*shadow_insertion_point.OlderShadowRoot(),
-                               nullptr);
+                               nullptr, owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByHTMLSlotElement(
-    const HTMLSlotElement& element) {
-  return ScopedFocusNavigation(const_cast<HTMLSlotElement&>(element), nullptr);
+    const HTMLSlotElement& element,
+    FocusController::OwnerMap& owner_map) {
+  HTMLSlotElement& slot = const_cast<HTMLSlotElement&>(element);
+  return ScopedFocusNavigation(slot, nullptr, owner_map);
 }
 
 HTMLSlotElement* ScopedFocusNavigation::FindFallbackScopeOwnerSlot(
@@ -563,7 +611,9 @@ Element* ScopedFocusNavigation::PreviousFocusableElement() {
   return PreviousElementWithLowerTabIndex(tab_index);
 }
 
-Element* FindFocusableElementRecursivelyForward(ScopedFocusNavigation& scope) {
+Element* FindFocusableElementRecursivelyForward(
+    ScopedFocusNavigation& scope,
+    FocusController::OwnerMap& owner_map) {
   // Starting element is exclusive.
   while (Element* found = scope.FindFocusableElement(kWebFocusTypeForward)) {
     if (IsShadowHostDelegatesFocus(*found)) {
@@ -571,9 +621,9 @@ Element* FindFocusableElementRecursivelyForward(ScopedFocusNavigation& scope) {
       if (found->tabIndex() >= 0 &&
           IsShadowHostWithoutCustomFocusLogic(*found)) {
         ScopedFocusNavigation inner_scope =
-            ScopedFocusNavigation::OwnedByShadowHost(*found);
+            ScopedFocusNavigation::OwnedByShadowHost(*found, owner_map);
         if (Element* found_in_inner_focus_scope =
-                FindFocusableElementRecursivelyForward(inner_scope))
+                FindFocusableElementRecursivelyForward(inner_scope, owner_map))
           return found_in_inner_focus_scope;
       }
       // Skip to the next element in the same scope.
@@ -586,15 +636,18 @@ Element* FindFocusableElementRecursivelyForward(ScopedFocusNavigation& scope) {
     // <shadow> or slot) Find inside the inward scope and return it if found.
     // Otherwise continue searching in the same scope.
     ScopedFocusNavigation inner_scope =
-        ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(*found);
+        ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(*found,
+                                                                  owner_map);
     if (Element* found_in_inner_focus_scope =
-            FindFocusableElementRecursivelyForward(inner_scope))
+            FindFocusableElementRecursivelyForward(inner_scope, owner_map))
       return found_in_inner_focus_scope;
   }
   return nullptr;
 }
 
-Element* FindFocusableElementRecursivelyBackward(ScopedFocusNavigation& scope) {
+Element* FindFocusableElementRecursivelyBackward(
+    ScopedFocusNavigation& scope,
+    FocusController::OwnerMap& owner_map) {
   // Starting element is exclusive.
   while (Element* found = scope.FindFocusableElement(kWebFocusTypeBackward)) {
     // Now |found| is on a focusable shadow host.
@@ -602,9 +655,9 @@ Element* FindFocusableElementRecursivelyBackward(ScopedFocusNavigation& scope) {
     // it, otherwise return the host itself.
     if (IsKeyboardFocusableShadowHost(*found)) {
       ScopedFocusNavigation inner_scope =
-          ScopedFocusNavigation::OwnedByShadowHost(*found);
+          ScopedFocusNavigation::OwnedByShadowHost(*found, owner_map);
       Element* found_in_inner_focus_scope =
-          FindFocusableElementRecursivelyBackward(inner_scope);
+          FindFocusableElementRecursivelyBackward(inner_scope, owner_map);
       if (found_in_inner_focus_scope)
         return found_in_inner_focus_scope;
       if (IsShadowHostDelegatesFocus(*found))
@@ -622,9 +675,10 @@ Element* FindFocusableElementRecursivelyBackward(ScopedFocusNavigation& scope) {
     // find the next focusable element within the current scope.
     if (IsNonFocusableFocusScopeOwner(*found)) {
       ScopedFocusNavigation inner_scope =
-          ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(*found);
+          ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(*found,
+                                                                    owner_map);
       if (Element* found_in_inner_focus_scope =
-              FindFocusableElementRecursivelyBackward(inner_scope))
+              FindFocusableElementRecursivelyBackward(inner_scope, owner_map))
         return found_in_inner_focus_scope;
       continue;
     }
@@ -635,14 +689,17 @@ Element* FindFocusableElementRecursivelyBackward(ScopedFocusNavigation& scope) {
 }
 
 Element* FindFocusableElementRecursively(WebFocusType type,
-                                         ScopedFocusNavigation& scope) {
+                                         ScopedFocusNavigation& scope,
+                                         FocusController::OwnerMap& owner_map) {
   return (type == kWebFocusTypeForward)
-             ? FindFocusableElementRecursivelyForward(scope)
-             : FindFocusableElementRecursivelyBackward(scope);
+             ? FindFocusableElementRecursivelyForward(scope, owner_map)
+             : FindFocusableElementRecursivelyBackward(scope, owner_map);
 }
 
-Element* FindFocusableElementDescendingDownIntoFrameDocument(WebFocusType type,
-                                                             Element* element) {
+Element* FindFocusableElementDescendingDownIntoFrameDocument(
+    WebFocusType type,
+    Element* element,
+    FocusController::OwnerMap& owner_map) {
   // The element we found might be a HTMLFrameOwnerElement, so descend down the
   // tree until we find either:
   // 1) a focusable element, or
@@ -654,8 +711,10 @@ Element* FindFocusableElementDescendingDownIntoFrameDocument(WebFocusType type,
     ToLocalFrame(owner.ContentFrame())
         ->GetDocument()
         ->UpdateStyleAndLayoutIgnorePendingStylesheets();
-    ScopedFocusNavigation scope = ScopedFocusNavigation::OwnedByIFrame(owner);
-    Element* found_element = FindFocusableElementRecursively(type, scope);
+    ScopedFocusNavigation scope =
+        ScopedFocusNavigation::OwnedByIFrame(owner, owner_map);
+    Element* found_element =
+        FindFocusableElementRecursively(type, scope, owner_map);
     if (!found_element)
       break;
     DCHECK_NE(element, found_element);
@@ -665,19 +724,20 @@ Element* FindFocusableElementDescendingDownIntoFrameDocument(WebFocusType type,
 }
 
 Element* FindFocusableElementAcrossFocusScopesForward(
-    ScopedFocusNavigation& scope) {
-  Element* current = scope.CurrentElement();
+    ScopedFocusNavigation& scope,
+    FocusController::OwnerMap& owner_map) {
+  const Element* current = scope.CurrentElement();
   Element* found;
   if (current && IsShadowHostWithoutCustomFocusLogic(*current)) {
     ScopedFocusNavigation inner_scope =
-        ScopedFocusNavigation::OwnedByShadowHost(*current);
+        ScopedFocusNavigation::OwnedByShadowHost(*current, owner_map);
     Element* found_in_inner_focus_scope =
-        FindFocusableElementRecursivelyForward(inner_scope);
+        FindFocusableElementRecursivelyForward(inner_scope, owner_map);
     found = found_in_inner_focus_scope
                 ? found_in_inner_focus_scope
-                : FindFocusableElementRecursivelyForward(scope);
+                : FindFocusableElementRecursivelyForward(scope, owner_map);
   } else {
-    found = FindFocusableElementRecursivelyForward(scope);
+    found = FindFocusableElementRecursivelyForward(scope, owner_map);
   }
 
   // If there's no focusable element to advance to, move up the focus scopes
@@ -687,16 +747,17 @@ Element* FindFocusableElementAcrossFocusScopesForward(
     Element* owner = current_scope.Owner();
     if (!owner)
       break;
-    current_scope = ScopedFocusNavigation::CreateFor(*owner);
-    found = FindFocusableElementRecursivelyForward(current_scope);
+    current_scope = ScopedFocusNavigation::CreateFor(*owner, owner_map);
+    found = FindFocusableElementRecursivelyForward(current_scope, owner_map);
   }
   return FindFocusableElementDescendingDownIntoFrameDocument(
-      kWebFocusTypeForward, found);
+      kWebFocusTypeForward, found, owner_map);
 }
 
 Element* FindFocusableElementAcrossFocusScopesBackward(
-    ScopedFocusNavigation& scope) {
-  Element* found = FindFocusableElementRecursivelyBackward(scope);
+    ScopedFocusNavigation& scope,
+    FocusController::OwnerMap& owner_map) {
+  Element* found = FindFocusableElementRecursivelyBackward(scope, owner_map);
 
   // If there's no focusable element to advance to, move up the focus scopes
   // until we find one.
@@ -705,23 +766,25 @@ Element* FindFocusableElementAcrossFocusScopesBackward(
     Element* owner = current_scope.Owner();
     if (!owner)
       break;
-    current_scope = ScopedFocusNavigation::CreateFor(*owner);
+    current_scope = ScopedFocusNavigation::CreateFor(*owner, owner_map);
     if (IsKeyboardFocusableShadowHost(*owner) &&
         !IsShadowHostDelegatesFocus(*owner)) {
       found = owner;
       break;
     }
-    found = FindFocusableElementRecursivelyBackward(current_scope);
+    found = FindFocusableElementRecursivelyBackward(current_scope, owner_map);
   }
   return FindFocusableElementDescendingDownIntoFrameDocument(
-      kWebFocusTypeBackward, found);
+      kWebFocusTypeBackward, found, owner_map);
 }
 
-Element* FindFocusableElementAcrossFocusScopes(WebFocusType type,
-                                               ScopedFocusNavigation& scope) {
+Element* FindFocusableElementAcrossFocusScopes(
+    WebFocusType type,
+    ScopedFocusNavigation& scope,
+    FocusController::OwnerMap& owner_map) {
   return (type == kWebFocusTypeForward)
-             ? FindFocusableElementAcrossFocusScopesForward(scope)
-             : FindFocusableElementAcrossFocusScopesBackward(scope);
+             ? FindFocusableElementAcrossFocusScopesForward(scope, owner_map)
+             : FindFocusableElementAcrossFocusScopesBackward(scope, owner_map);
 }
 
 }  // anonymous namespace
@@ -959,6 +1022,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
   DCHECK(frame);
   Document* document = frame->GetDocument();
   document->UpdateDistribution();
+  OwnerMap owner_map;
 
   Element* current = start;
 #if DCHECK_IS_ON()
@@ -969,9 +1033,10 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   ScopedFocusNavigation scope =
-      current ? ScopedFocusNavigation::CreateFor(*current)
-              : ScopedFocusNavigation::CreateForDocument(*document);
-  Element* element = FindFocusableElementAcrossFocusScopes(type, scope);
+      current ? ScopedFocusNavigation::CreateFor(*current, owner_map)
+              : ScopedFocusNavigation::CreateForDocument(*document, owner_map);
+  Element* element =
+      FindFocusableElementAcrossFocusScopes(type, scope, owner_map);
   if (!element) {
     // If there's a RemoteFrame on the ancestor chain, we need to continue
     // searching for focusable elements there.
@@ -996,10 +1061,10 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
     // Chrome doesn't want focus, so we should wrap focus.
     ScopedFocusNavigation scope = ScopedFocusNavigation::CreateForDocument(
-        *ToLocalFrame(page_->MainFrame())->GetDocument());
-    element = FindFocusableElementRecursively(type, scope);
-    element =
-        FindFocusableElementDescendingDownIntoFrameDocument(type, element);
+        *ToLocalFrame(page_->MainFrame())->GetDocument(), owner_map);
+    element = FindFocusableElementRecursively(type, scope, owner_map);
+    element = FindFocusableElementDescendingDownIntoFrameDocument(type, element,
+                                                                  owner_map);
 
     if (!element)
       return false;
@@ -1060,11 +1125,13 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 }
 
 Element* FocusController::FindFocusableElement(WebFocusType type,
-                                               Element& element) {
+                                               Element& element,
+                                               OwnerMap& owner_map) {
   // FIXME: No spacial navigation code yet.
   DCHECK(type == kWebFocusTypeForward || type == kWebFocusTypeBackward);
-  ScopedFocusNavigation scope = ScopedFocusNavigation::CreateFor(element);
-  return FindFocusableElementAcrossFocusScopes(type, scope);
+  ScopedFocusNavigation scope =
+      ScopedFocusNavigation::CreateFor(element, owner_map);
+  return FindFocusableElementAcrossFocusScopes(type, scope, owner_map);
 }
 
 Element* FocusController::NextFocusableElementInForm(Element* element,
@@ -1087,9 +1154,11 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
     return nullptr;
 
   Element* next_element = element;
-  for (next_element = FindFocusableElement(focus_type, *next_element);
-       next_element;
-       next_element = FindFocusableElement(focus_type, *next_element)) {
+  OwnerMap owner_map;
+  for (next_element =
+           FindFocusableElement(focus_type, *next_element, owner_map);
+       next_element; next_element = FindFocusableElement(
+                         focus_type, *next_element, owner_map)) {
     if (!next_element->IsHTMLElement())
       continue;
     if (ToHTMLElement(next_element)->isContentEditableForBinding() &&
@@ -1115,9 +1184,11 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
 Element* FocusController::FindFocusableElementInShadowHost(
     const Element& shadow_host) {
   DCHECK(shadow_host.AuthorShadowRoot());
+  OwnerMap owner_map;
   ScopedFocusNavigation scope =
-      ScopedFocusNavigation::OwnedByShadowHost(shadow_host);
-  return FindFocusableElementAcrossFocusScopes(kWebFocusTypeForward, scope);
+      ScopedFocusNavigation::OwnedByShadowHost(shadow_host, owner_map);
+  return FindFocusableElementAcrossFocusScopes(kWebFocusTypeForward, scope,
+                                               owner_map);
 }
 
 static bool RelinquishesEditingFocus(const Element& element) {
