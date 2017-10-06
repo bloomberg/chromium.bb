@@ -5,8 +5,8 @@
 #include "core/html/forms/OptionList.h"
 
 #include "core/html/HTMLDocument.h"
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

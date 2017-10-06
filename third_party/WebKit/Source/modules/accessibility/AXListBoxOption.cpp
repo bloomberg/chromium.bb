@@ -29,8 +29,8 @@
 #include "modules/accessibility/AXListBoxOption.h"
 
 #include "core/dom/AccessibleNode.h"
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 

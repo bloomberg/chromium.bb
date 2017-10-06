@@ -30,8 +30,8 @@
 
 #include "public/web/WebSelectElement.h"
 
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/html_names.h"
 #include "public/platform/WebString.h"
 

@@ -27,7 +27,7 @@
 
 #include "SkMatrix44.h"
 #include "core/dom/AccessibleNode.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "modules/accessibility/AXMenuList.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"

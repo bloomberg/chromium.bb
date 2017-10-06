@@ -23,13 +23,13 @@
  *
  */
 
-#include "core/html/HTMLOptGroupElement.h"
+#include "core/html/forms/HTMLOptGroupElement.h"
 
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -40,8 +40,7 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
-    : HTMLElement(optgroupTag, document) {
-}
+    : HTMLElement(optgroupTag, document) {}
 
 // An explicit empty destructor should be in HTMLOptGroupElement.cpp, because
 // if an implicit destructor is used or an empty destructor is defined in

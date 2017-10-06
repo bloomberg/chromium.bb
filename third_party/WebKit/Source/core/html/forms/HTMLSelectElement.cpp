@@ -27,7 +27,7 @@
  *
  */
 
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -53,9 +53,9 @@
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHRElement.h"
-#include "core/html/HTMLOptGroupElement.h"
-#include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/html/forms/HTMLOptGroupElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
 #include "core/html/forms/PopupMenu.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
@@ -142,9 +142,10 @@ String HTMLSelectElement::validationMessage() const {
     return String();
   if (CustomError())
     return CustomValidationMessage();
-  if (ValueMissing())
+  if (ValueMissing()) {
     return GetLocale().QueryString(
         WebLocalizedString::kValidationValueMissingForSelect);
+  }
   return String();
 }
 
@@ -519,9 +520,10 @@ HTMLOptionElement* HTMLSelectElement::NextSelectableOptionPageAway(
   const ListItems& items = GetListItems();
   // Can't use m_size because layoutObject forces a minimum size.
   int page_size = 0;
-  if (GetLayoutObject()->IsListBox())
-    page_size = ToLayoutListBox(GetLayoutObject())->size() -
-                1;  // -1 so we still show context.
+  if (GetLayoutObject()->IsListBox()) {
+    // -1 so we still show context.
+    page_size = ToLayoutListBox(GetLayoutObject())->size() - 1;
+  }
 
   // One page away, but not outside valid bounds.
   // If there is a valid option item one page away, the index is chosen.
@@ -687,10 +689,11 @@ void HTMLSelectElement::ScrollToSelection() {
 
 void HTMLSelectElement::SetOptionsChangedOnLayoutObject() {
   if (LayoutObject* layout_object = this->GetLayoutObject()) {
-    if (UsesMenuList())
-      ToLayoutMenuList(layout_object)
-          ->SetNeedsLayoutAndPrefWidthsRecalc(
-              LayoutInvalidationReason::kMenuOptionsChanged);
+    if (!UsesMenuList())
+      return;
+    ToLayoutMenuList(layout_object)
+        ->SetNeedsLayoutAndPrefWidthsRecalc(
+            LayoutInvalidationReason::kMenuOptionsChanged);
   }
 }
 
@@ -1306,9 +1309,10 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event* event) {
     else
       handled = false;
 
-    if (handled && option)
+    if (handled && option) {
       SelectOption(option, kDeselectOtherOptions | kMakeOptionDirty |
                                kDispatchInputAndChangeEvent);
+    }
 
     if (handled)
       event->SetDefaultHandled();
@@ -1560,19 +1564,21 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event* event) {
       if (key == "ArrowDown" || key == "PageDown") {
         HTMLOptionElement* start_option = LastSelectedOption();
         handled = true;
-        if (key == "ArrowDown")
+        if (key == "ArrowDown") {
           end_option = NextSelectableOption(start_option);
-        else
+        } else {
           end_option =
               NextSelectableOptionPageAway(start_option, kSkipForwards);
+        }
       } else if (key == "ArrowUp" || key == "PageUp") {
         HTMLOptionElement* start_option = SelectedOption();
         handled = true;
-        if (key == "ArrowUp")
+        if (key == "ArrowUp") {
           end_option = PreviousSelectableOption(start_option);
-        else
+        } else {
           end_option =
               NextSelectableOptionPageAway(start_option, kSkipBackwards);
+        }
       }
     } else {
       // Set the end index based on the current end index.
@@ -1935,9 +1941,10 @@ void HTMLSelectElement::ShowPopup() {
   if (VisibleBoundsInVisualViewport().IsEmpty())
     return;
 
-  if (!popup_)
+  if (!popup_) {
     popup_ = GetDocument().GetPage()->GetChromeClient().OpenPopupMenu(
         *GetDocument().GetFrame(), *this);
+  }
   if (!popup_)
     return;
 

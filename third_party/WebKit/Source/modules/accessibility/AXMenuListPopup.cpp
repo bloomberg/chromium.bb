@@ -25,7 +25,7 @@
 
 #include "modules/accessibility/AXMenuListPopup.h"
 
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "modules/accessibility/AXMenuListOption.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 

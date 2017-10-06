@@ -25,7 +25,7 @@
 #define HTMLOptionsCollection_h
 
 #include "core/html/HTMLCollection.h"
-#include "core/html/HTMLOptionElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
 
 namespace blink {
 
