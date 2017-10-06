@@ -5,6 +5,8 @@
 import("//tools/grit/repack.gni")
 
 executable("vr_testapp") {
+  testonly = true
+
   sources = [
     "gl_renderer.cc",
     "gl_renderer.h",
@@ -23,6 +25,9 @@ executable("vr_testapp") {
     "//components/security_state/core",
     "//components/toolbar:vector_icons",
     "//components/tracing:startup_tracing",
+
+    # TODO(mthiesse, crbug.com/769373): Remove dependency on device/vr:fakes.
+    "//device/vr:fakes",
     "//skia",
     "//ui/accessibility:ax_gen",
     "//ui/display/types",

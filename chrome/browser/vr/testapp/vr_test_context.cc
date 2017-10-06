@@ -45,8 +45,7 @@ constexpr gfx::Point3F kLaserOrigin = {0.5f, -0.5f, 0.f};
 }  // namespace
 
 VrTestContext::VrTestContext()
-    : ui_(base::MakeUnique<Ui>(this, this, UiInitialState())),
-      controller_info_(base::MakeUnique<ControllerInfo>()),
+    : controller_info_(base::MakeUnique<ControllerInfo>()),
       view_scale_factor_(kDefaultViewScaleFactor) {
   controller_info_->reticle_render_target = nullptr;
   controller_info_->laser_origin = kLaserOrigin;
@@ -57,6 +56,8 @@ VrTestContext::VrTestContext()
       pak_path.AppendASCII("vr_test.pak"));
 
   base::i18n::InitializeICU();
+
+  ui_ = base::MakeUnique<Ui>(this, this, UiInitialState());
 
   GURL gurl("https://dangerous.com/dir/file.html");
   ToolbarState state(gurl, security_state::SecurityLevel::DANGEROUS,
