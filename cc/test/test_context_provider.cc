@@ -191,7 +191,7 @@ void TestContextProvider::DetachFromThread() {
   context_thread_checker_.DetachFromThread();
 }
 
-gpu::Capabilities TestContextProvider::ContextCapabilities() {
+const gpu::Capabilities& TestContextProvider::ContextCapabilities() const {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
   return context3d_->test_capabilities();

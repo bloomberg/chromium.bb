@@ -47,7 +47,7 @@ class TestContextProvider : public viz::ContextProvider {
 
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
-  gpu::Capabilities ContextCapabilities() override;
+  const gpu::Capabilities& ContextCapabilities() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
@@ -98,4 +98,3 @@ class TestContextProvider : public viz::ContextProvider {
 }  // namespace cc
 
 #endif  // CC_TEST_TEST_CONTEXT_PROVIDER_H_
-

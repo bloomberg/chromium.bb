@@ -55,7 +55,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
 
   // gpu::GpuControl implementation:
   void SetGpuControlClient(gpu::GpuControlClient*) override;
-  gpu::Capabilities GetCapabilities() override;
+  const gpu::Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
                       size_t height,

@@ -7,6 +7,7 @@
 
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -25,7 +26,13 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
   GrContext* GetGrContext() override { return gr_context_.get(); }
 
-  gpu::Capabilities GetCapabilities() override { return gpu::Capabilities(); }
+  const gpu::Capabilities& GetCapabilities() const override {
+    return capabilities_;
+  }
+
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
+    return gpu_feature_info_;
+  }
 
   bool IsSoftwareRendering() const override { return false; }
 
@@ -40,6 +47,8 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  private:
   gpu::gles2::GLES2Interface* gl_;
   sk_sp<GrContext> gr_context_;
+  gpu::Capabilities capabilities_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
 }  // namespace blink

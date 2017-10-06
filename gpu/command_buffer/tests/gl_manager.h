@@ -130,7 +130,7 @@ class GLManager : private GpuControl {
 
   // GpuControl implementation.
   void SetGpuControlClient(GpuControlClient*) override;
-  Capabilities GetCapabilities() override;
+  const Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
                       size_t height,
@@ -184,6 +184,8 @@ class GLManager : private GpuControl {
   uint64_t next_fence_sync_release_ = 1;
 
   bool use_iosurface_memory_buffers_ = false;
+
+  Capabilities capabilities_;
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;

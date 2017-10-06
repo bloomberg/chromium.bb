@@ -103,7 +103,7 @@ class MockClientGpuControl : public GpuControl {
   virtual ~MockClientGpuControl();
 
   MOCK_METHOD1(SetGpuControlClient, void(GpuControlClient*));
-  MOCK_METHOD0(GetCapabilities, Capabilities());
+  MOCK_CONST_METHOD0(GetCapabilities, const Capabilities&());
   MOCK_METHOD4(CreateImage,
                int32_t(ClientBuffer buffer,
                        size_t width,
@@ -136,4 +136,3 @@ class MockClientGpuControl : public GpuControl {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_CLIENT_TEST_HELPER_H_
-

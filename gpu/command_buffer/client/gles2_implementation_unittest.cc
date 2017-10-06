@@ -46,6 +46,7 @@ using testing::Sequence;
 using testing::StrictMock;
 using testing::Truly;
 using testing::Return;
+using testing::ReturnRef;
 
 namespace gpu {
 namespace gles2 {
@@ -445,42 +446,42 @@ class GLES2ImplementationTest : public testing::Test {
       helper_->Initialize(limits.command_buffer_size);
 
       gpu_control_.reset(new StrictMock<MockClientGpuControl>());
-      Capabilities capabilities;
-      capabilities.VisitPrecisions(
+      capabilities_.VisitPrecisions(
           [](GLenum shader, GLenum type,
              Capabilities::ShaderPrecision* precision) {
             precision->min_range = 3;
             precision->max_range = 5;
             precision->precision = 7;
           });
-      capabilities.max_combined_texture_image_units =
+      capabilities_.max_combined_texture_image_units =
           kMaxCombinedTextureImageUnits;
-      capabilities.max_cube_map_texture_size = kMaxCubeMapTextureSize;
-      capabilities.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
-      capabilities.max_renderbuffer_size = kMaxRenderbufferSize;
-      capabilities.max_texture_image_units = kMaxTextureImageUnits;
-      capabilities.max_texture_size = kMaxTextureSize;
-      capabilities.max_varying_vectors = kMaxVaryingVectors;
-      capabilities.max_vertex_attribs = kMaxVertexAttribs;
-      capabilities.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
-      capabilities.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
-      capabilities.max_viewport_width = kMaxViewportWidth;
-      capabilities.max_viewport_height = kMaxViewportHeight;
-      capabilities.num_compressed_texture_formats =
+      capabilities_.max_cube_map_texture_size = kMaxCubeMapTextureSize;
+      capabilities_.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
+      capabilities_.max_renderbuffer_size = kMaxRenderbufferSize;
+      capabilities_.max_texture_image_units = kMaxTextureImageUnits;
+      capabilities_.max_texture_size = kMaxTextureSize;
+      capabilities_.max_varying_vectors = kMaxVaryingVectors;
+      capabilities_.max_vertex_attribs = kMaxVertexAttribs;
+      capabilities_.max_vertex_texture_image_units =
+          kMaxVertexTextureImageUnits;
+      capabilities_.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
+      capabilities_.max_viewport_width = kMaxViewportWidth;
+      capabilities_.max_viewport_height = kMaxViewportHeight;
+      capabilities_.num_compressed_texture_formats =
           kNumCompressedTextureFormats;
-      capabilities.num_shader_binary_formats = kNumShaderBinaryFormats;
-      capabilities.max_transform_feedback_separate_attribs =
+      capabilities_.num_shader_binary_formats = kNumShaderBinaryFormats;
+      capabilities_.max_transform_feedback_separate_attribs =
           kMaxTransformFeedbackSeparateAttribs;
-      capabilities.max_uniform_buffer_bindings = kMaxUniformBufferBindings;
-      capabilities.bind_generates_resource_chromium =
+      capabilities_.max_uniform_buffer_bindings = kMaxUniformBufferBindings;
+      capabilities_.bind_generates_resource_chromium =
           bind_generates_resource_service ? 1 : 0;
-      capabilities.sync_query = sync_query;
-      capabilities.occlusion_query_boolean = occlusion_query_boolean;
-      capabilities.timer_queries = timer_queries;
-      capabilities.major_version = major_version;
-      capabilities.minor_version = minor_version;
+      capabilities_.sync_query = sync_query;
+      capabilities_.occlusion_query_boolean = occlusion_query_boolean;
+      capabilities_.timer_queries = timer_queries;
+      capabilities_.major_version = major_version;
+      capabilities_.minor_version = minor_version;
       EXPECT_CALL(*gpu_control_, GetCapabilities())
-          .WillOnce(Return(capabilities));
+          .WillOnce(ReturnRef(capabilities_));
 
       {
         InSequence sequence;
@@ -543,6 +544,7 @@ class GLES2ImplementationTest : public testing::Test {
     std::unique_ptr<GLES2Implementation> gl_;
     CommandBufferEntry* commands_;
     int token_;
+    Capabilities capabilities_;
   };
 
   GLES2ImplementationTest() : commands_(NULL) {}

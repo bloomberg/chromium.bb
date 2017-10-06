@@ -120,7 +120,7 @@ base::Lock* InProcessContextProvider::GetLock() {
   return &context_lock_;
 }
 
-gpu::Capabilities InProcessContextProvider::ContextCapabilities() {
+const gpu::Capabilities& InProcessContextProvider::ContextCapabilities() const {
   return context_->GetCapabilities();
 }
 

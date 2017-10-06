@@ -7,6 +7,7 @@
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +34,12 @@ class WebGraphicsContext3DProviderSoftwareRenderingForTests
   // Not used by WebGL code.
   GrContext* GetGrContext() override { return nullptr; }
   bool BindToCurrentThread() override { return false; }
-  gpu::Capabilities GetCapabilities() override { return gpu::Capabilities(); }
+  const gpu::Capabilities& GetCapabilities() const override {
+    return capabilities_;
+  }
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
+    return gpu_feature_info_;
+  }
   void SetLostContextCallback(const base::Closure&) {}
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
@@ -41,6 +47,8 @@ class WebGraphicsContext3DProviderSoftwareRenderingForTests
 
  private:
   std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
+  gpu::Capabilities capabilities_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
 class DrawingBufferSoftwareRenderingTest : public Test {

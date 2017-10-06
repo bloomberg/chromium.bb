@@ -449,7 +449,7 @@ void CommandBufferProxyImpl::SetGpuControlClient(GpuControlClient* client) {
   gpu_control_client_ = client;
 }
 
-gpu::Capabilities CommandBufferProxyImpl::GetCapabilities() {
+const gpu::Capabilities& CommandBufferProxyImpl::GetCapabilities() const {
   return capabilities_;
 }
 

@@ -244,7 +244,7 @@ void PpapiCommandBufferProxy::SetGpuControlClient(gpu::GpuControlClient*) {
   // to the plugin instance. Make it more uniform and use the GpuControlClient.
 }
 
-gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
+const gpu::Capabilities& PpapiCommandBufferProxy::GetCapabilities() const {
   return capabilities_;
 }
 

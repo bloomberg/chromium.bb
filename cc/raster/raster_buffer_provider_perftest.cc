@@ -82,13 +82,13 @@ class PerfContextProvider : public viz::ContextProvider {
  public:
   PerfContextProvider()
       : context_gl_(new PerfGLES2Interface),
-        cache_controller_(&support_, nullptr) {}
+        cache_controller_(&support_, nullptr) {
+    capabilities_.sync_query = true;
+  }
 
   bool BindToCurrentThread() override { return true; }
-  gpu::Capabilities ContextCapabilities() override {
-    gpu::Capabilities capabilities;
-    capabilities.sync_query = true;
-    return capabilities;
+  const gpu::Capabilities& ContextCapabilities() const override {
+    return capabilities_;
   }
   gpu::gles2::GLES2Interface* ContextGL() override { return context_gl_.get(); }
   gpu::ContextSupport* ContextSupport() override { return &support_; }
@@ -121,6 +121,7 @@ class PerfContextProvider : public viz::ContextProvider {
   TestContextSupport support_;
   viz::ContextCacheController cache_controller_;
   base::Lock context_lock_;
+  gpu::Capabilities capabilities_;
 };
 
 enum RasterBufferProviderType {

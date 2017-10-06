@@ -40,7 +40,7 @@ class GPU_EXPORT GpuControl {
 
   virtual void SetGpuControlClient(GpuControlClient* gpu_control_client) = 0;
 
-  virtual Capabilities GetCapabilities() = 0;
+  virtual const Capabilities& GetCapabilities() const = 0;
 
   // Create an image for a client buffer with the given dimensions and
   // format. Returns its ID or -1 on error.
