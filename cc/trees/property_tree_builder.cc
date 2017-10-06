@@ -503,17 +503,27 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
         HasOnlyTranslationTransforms(layer);
   }
 
+  float post_local_scale_factor = 1.0f;
+
+  if (is_page_scale_layer) {
+    if (!is_root)
+      post_local_scale_factor *= page_scale_factor_;
+    transform_tree_.set_page_scale_factor(page_scale_factor_);
+  }
+
   node->source_node_id = source_index;
-  node->post_local_scale_factor =
-      is_page_scale_layer && !is_root ? page_scale_factor_ : 1.0f;
+  node->post_local_scale_factor = post_local_scale_factor;
   if (is_root) {
     float page_scale_factor_for_root =
         is_page_scale_layer ? page_scale_factor_ : 1.f;
     transform_tree_.SetRootTransformsAndScales(
         transform_tree_.device_scale_factor(), page_scale_factor_for_root,
-        device_transform_);
+        device_transform_, layer->position());
+  } else {
+    node->source_offset = source_offset;
+    node->update_post_local_transform(layer->position(),
+                                      TransformOrigin(layer));
   }
-  node->source_offset = source_offset + layer->position().OffsetFromOrigin();
 
   if (is_overscroll_elasticity_layer) {
     DCHECK(!is_scrollable);
@@ -535,8 +545,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
     }
   }
 
-  node->transform_origin = TransformOrigin(layer).OffsetFromOrigin();
   node->local = Transform(layer);
+  node->update_pre_local_transform(TransformOrigin(layer));
 
   if (StickyPositionConstraint(layer).is_sticky) {
     StickyPositionNodeData* sticky_data =
@@ -1273,7 +1283,8 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
     float page_scale_factor_for_root =
         page_scale_layer_ == root_layer_ ? page_scale_factor_ : 1.f;
     transform_tree_.SetRootTransformsAndScales(
-        device_scale_factor, page_scale_factor_for_root, device_transform_);
+        device_scale_factor, page_scale_factor_for_root, device_transform_,
+        root_layer_->position());
     return;
   }
 
@@ -1302,7 +1313,6 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
 
   property_trees_.clear();
   transform_tree_.set_device_scale_factor(device_scale_factor);
-  transform_tree_.set_page_scale_factor(page_scale_factor_);
   ClipNode root_clip;
   root_clip.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   root_clip.clip = gfx::RectF(viewport);

@@ -728,16 +728,6 @@ void MathUtil::AddToTracedValue(const char* name,
 }
 
 void MathUtil::AddToTracedValue(const char* name,
-                                const gfx::Vector3dF& v,
-                                base::trace_event::TracedValue* res) {
-  res->BeginArray(name);
-  res->AppendDouble(v.x());
-  res->AppendDouble(v.y());
-  res->AppendDouble(v.z());
-  res->EndArray();
-}
-
-void MathUtil::AddToTracedValue(const char* name,
                                 const gfx::ScrollOffset& v,
                                 base::trace_event::TracedValue* res) {
   res->BeginArray(name);

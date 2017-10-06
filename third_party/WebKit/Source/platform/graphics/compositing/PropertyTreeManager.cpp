@@ -168,10 +168,12 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.source_node_id = parent_id;
 
   FloatPoint3D origin = transform_node->Origin();
-  compositor_node.transform_origin =
-      gfx::Vector3dF(origin.X(), origin.Y(), origin.Z());
+  compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
+                                                  -origin.Z());
   compositor_node.local.matrix() =
       TransformationMatrix::ToSkMatrix44(transform_node->Matrix());
+  compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
+                                                   origin.Z());
   compositor_node.needs_local_transform_update = true;
   compositor_node.flattens_inherited_transform =
       transform_node->FlattensInheritedTransform();

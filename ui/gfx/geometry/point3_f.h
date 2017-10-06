@@ -59,8 +59,6 @@ class GFX_EXPORT Point3F {
     z_ -= v.z();
   }
 
-  Vector3dF OffsetFromOrigin() const { return Vector3dF(x_, y_, z_); }
-
   // Returns the squared euclidean distance between two points.
   float SquaredDistanceTo(const Point3F& other) const {
     float dx = x_ - other.x_;
