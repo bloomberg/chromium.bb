@@ -31,6 +31,9 @@ MaterialBookmarksBrowserTest.prototype = {
     'test_timer_proxy.js',
     'test_util.js',
   ]),
+
+  /** override */
+  runAccessibilityChecks: true,
 };
 
 function MaterialBookmarksActionsTest() {}

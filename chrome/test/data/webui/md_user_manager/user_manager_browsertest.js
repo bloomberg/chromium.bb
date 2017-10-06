@@ -37,9 +37,6 @@ UserManagerBrowserTest.prototype = {
     'test_profile_browser_proxy.js',
     'user_manager_pages_tests.js',
   ]),
-
-  /** @override */
-  runAccessibilityChecks: false,
 };
 
 GEN('#if defined(OS_WIN)');

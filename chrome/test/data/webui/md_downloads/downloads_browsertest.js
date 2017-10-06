@@ -28,6 +28,9 @@ DownloadsTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+
+  /** @override */
+  runAccessibilityChecks: true,
 };
 
 /**
