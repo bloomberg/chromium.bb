@@ -205,43 +205,85 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
   DVLOG(4) << __func__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(image);
+  TRACE_EVENT0("webrtc", "CanvasCaptureHandler::CreateNewFrame");
 
-  const gfx::Size size(image->width(), image->height());
-  if (size != last_size) {
-    temp_data_stride_ = kArgbBytesPerPixel * size.width();
-    temp_data_.resize(temp_data_stride_ * size.height());
-    image_info_ =
-        SkImageInfo::Make(size.width(), size.height(), kBGRA_8888_SkColorType,
-                          kUnpremul_SkAlphaType);
-    last_size = size;
+  const uint8_t* source_ptr = nullptr;
+  size_t source_length = 0;
+  size_t source_stride = 0;
+  gfx::Size image_size(image->width(), image->height());
+  SkColorType source_color_type = kUnknown_SkColorType;
+
+  // Initially try accessing pixels directly if they are in memory.
+  SkPixmap pixmap;
+  if (image->peekPixels(&pixmap) &&
+      (pixmap.colorType() == kRGBA_8888_SkColorType ||
+       pixmap.colorType() == kBGRA_8888_SkColorType) &&
+      pixmap.alphaType() == kUnpremul_SkAlphaType) {
+    source_ptr = static_cast<const uint8*>(pixmap.addr(0, 0));
+    source_length = pixmap.getSafeSize64();
+    source_stride = pixmap.rowBytes();
+    image_size.set_width(pixmap.width());
+    image_size.set_height(pixmap.height());
+    source_color_type = pixmap.colorType();
   }
 
-  if (!image->readPixels(image_info_, &temp_data_[0], temp_data_stride_, 0,
-                         0)) {
-    DLOG(ERROR) << "Couldn't read SkImage pixels";
-    return;
+  // Copy the pixels into memory. This call may block main render thread.
+  if (!source_ptr) {
+    if (image_size != last_size) {
+      temp_data_stride_ = kArgbBytesPerPixel * image_size.width();
+      temp_data_.resize(temp_data_stride_ * image_size.height());
+      image_info_ = SkImageInfo::MakeN32(
+          image_size.width(), image_size.height(), kUnpremul_SkAlphaType);
+      last_size = image_size;
+    }
+    if (image->readPixels(image_info_, &temp_data_[0], temp_data_stride_, 0,
+                          0)) {
+      source_ptr = temp_data_.data();
+      source_length = temp_data_.size();
+      source_stride = temp_data_stride_;
+      source_color_type = kN32_SkColorType;
+    } else {
+      DLOG(ERROR) << "Couldn't read SkImage pixels";
+      return;
+    }
   }
 
   const bool isOpaque = image->isOpaque();
   const base::TimeTicks timestamp = base::TimeTicks::Now();
   scoped_refptr<media::VideoFrame> video_frame = frame_pool_.CreateFrame(
-      isOpaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_YV12A, size,
-      gfx::Rect(size), size, timestamp - base::TimeTicks());
+      isOpaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_YV12A,
+      image_size, gfx::Rect(image_size), image_size,
+      timestamp - base::TimeTicks());
   DCHECK(video_frame);
-
-  libyuv::ARGBToI420(temp_data_.data(), temp_data_stride_,
-                     video_frame->visible_data(media::VideoFrame::kYPlane),
-                     video_frame->stride(media::VideoFrame::kYPlane),
-                     video_frame->visible_data(media::VideoFrame::kUPlane),
-                     video_frame->stride(media::VideoFrame::kUPlane),
-                     video_frame->visible_data(media::VideoFrame::kVPlane),
-                     video_frame->stride(media::VideoFrame::kVPlane),
-                     size.width(), size.height());
+  libyuv::FourCC source_pixel_format = libyuv::FOURCC_ANY;
+  switch (source_color_type) {
+    case kRGBA_8888_SkColorType:
+      source_pixel_format = libyuv::FOURCC_ABGR;
+      break;
+    case kBGRA_8888_SkColorType:
+      source_pixel_format = libyuv::FOURCC_ARGB;
+      break;
+    default:
+      NOTREACHED() << "Unexpected SkColorType.";
+  }
+  libyuv::ConvertToI420(source_ptr, source_length,
+                        video_frame->visible_data(media::VideoFrame::kYPlane),
+                        video_frame->stride(media::VideoFrame::kYPlane),
+                        video_frame->visible_data(media::VideoFrame::kUPlane),
+                        video_frame->stride(media::VideoFrame::kUPlane),
+                        video_frame->visible_data(media::VideoFrame::kVPlane),
+                        video_frame->stride(media::VideoFrame::kVPlane),
+                        0 /* crop_x */, 0 /* crop_y */, image_size.width(),
+                        image_size.height(), image_size.width(),
+                        image_size.height(), libyuv::kRotate0,
+                        source_pixel_format);
   if (!isOpaque) {
-    libyuv::ARGBExtractAlpha(temp_data_.data(), temp_data_stride_,
+    // It is ok to use ARGB function because alpha has the same alignment for
+    // both ABGR and ARGB.
+    libyuv::ARGBExtractAlpha(source_ptr, source_stride,
                              video_frame->visible_data(VideoFrame::kAPlane),
                              video_frame->stride(VideoFrame::kAPlane),
-                             size.width(), size.height());
+                             image_size.width(), image_size.height());
   }
 
   last_frame_ = video_frame;
