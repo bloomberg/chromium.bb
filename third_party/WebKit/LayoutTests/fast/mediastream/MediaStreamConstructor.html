@@ -95,10 +95,10 @@ function testConstructor(s) {
     verifyStream(new MediaStream([s.getVideoTracks()[0], s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
 
     s.oninactive = function () {
-        verifyStream(new MediaStream([s.getAudioTracks()[0]]), 0, 0);
-        verifyStream(new MediaStream([s.getVideoTracks()[0]]), 0, 0);
-        verifyStream(new MediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 0, 0);
-        verifyStream(new MediaStream(s), 0, 0);
+        verifyStream(new MediaStream([s.getAudioTracks()[0]]), 1, 0);
+        verifyStream(new MediaStream([s.getVideoTracks()[0]]), 0, 1);
+        verifyStream(new MediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
+        verifyStream(new MediaStream(s), 1, 1);
 
         finishJSTest();
     };
@@ -112,6 +112,20 @@ function verifyStream(s, numAudioTracks, numVideoTracks) {
     nAudio = numAudioTracks;
     nVideo = numVideoTracks;
 
+    var expect_active = false;
+    for (i in newStream.getAudioTracks()) {
+      if (newStream.getAudioTracks()[i].readyState == "live") {
+        expect_active = true;
+        break;
+      }
+    }
+    for (i in newStream.getVideoTracks()) {
+      if (newStream.getVideoTracks()[i].readyState == "live") {
+        expect_active = true;
+        break;
+      }
+    }
+
     debug('Stream constructed');
     shouldBeNonNull(newStream);
     shouldBeDefined(newStream);
@@ -119,11 +133,7 @@ function verifyStream(s, numAudioTracks, numVideoTracks) {
     shouldBe('newStream.getAudioTracks().length', 'nAudio');
     shouldBe('newStream.getVideoTracks().length', 'nVideo');
 
-    if (!nAudio && !nVideo)
-        shouldBe('newStream.active', 'false');
-    else
-        shouldBe('newStream.active', 'true');
-
+    shouldBe('newStream.active', expect_active ? 'true' : 'false');
     shouldBeTrue('checkIdAttribute(newStream.id)');
 }
 
