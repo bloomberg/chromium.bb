@@ -89,6 +89,7 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetPaddingUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -580,11 +581,13 @@ public class LocationBarLayout extends FrameLayout
 
             getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
             int decorHeight = getWindowDelegate().getDecorViewHeight();
-            int availableViewportHeight = Math.min(mTempRect.height(), decorHeight);
+            int additionalHeightForBottomNavMenu =
+                    mBottomSheet != null ? mBottomSheet.getToolbarShadowHeight() : 0;
+            int availableViewportHeight =
+                    Math.min(mTempRect.height(), decorHeight) + additionalHeightForBottomNavMenu;
             int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
             // If the bottom sheet is used, the suggestions should consume all available space.
-            int desiredHeight = mBottomSheet != null
-                    ? availableListHeight : Math.min(availableListHeight, getIdealHeight());
+            int desiredHeight = Math.min(availableListHeight, getIdealHeight());
             if (layoutParams.height != desiredHeight) {
                 layoutParams.height = desiredHeight;
                 updateLayout = true;
@@ -1702,6 +1705,12 @@ public class LocationBarLayout extends FrameLayout
                 return mSuggestionList.getMaxMatchContentsWidth();
             }
         });
+
+        // Must be done after the child view is added to the omnibox suggestions sheet content.
+        if (mBottomSheet != null) {
+            BottomSheetPaddingUtils.applyPaddingToContent(
+                    mOmniboxSuggestionsSheetContent, mBottomSheet);
+        }
     }
 
     /**
@@ -2323,6 +2332,11 @@ public class LocationBarLayout extends FrameLayout
                 @Override
                 public View getContentView() {
                     return mOmniboxResultsContainer;
+                }
+
+                @Override
+                public List<View> getViewsForPadding() {
+                    return CollectionUtil.newArrayList(mSuggestionList);
                 }
 
                 @Nullable

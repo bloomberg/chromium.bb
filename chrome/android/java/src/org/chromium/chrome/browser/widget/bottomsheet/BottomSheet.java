@@ -296,9 +296,15 @@ public class BottomSheet
         View getContentView();
 
         /**
-         * Get the {@link View} that contains the toolbar specific to the content being displayed.
-         * If null is returned, the omnibox is used.
-         * TODO(mdjones): This still needs implementation in the sheet.
+         * Gets the {@link View}s that need additional padding applied to them to accommodate other
+         * UI elements, such as the transparent bottom navigation menu.
+         * @return The {@link View}s that need additional padding applied to them.
+         */
+        List<View> getViewsForPadding();
+
+        /**
+         * Get the {@link View} that contains the toolbar specific to the content being
+         * displayed. If null is returned, the omnibox is used.
          *
          * @return The toolbar view.
          */
@@ -710,6 +716,14 @@ public class BottomSheet
                 || mControlContainer.getVisibility() != VISIBLE;
     }
 
+    @Override
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        assert heightSize != 0;
+        int height = heightSize + mToolbarShadowHeight;
+        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+    }
+
     /**
      * Adds layout change listeners to the views that the bottom sheet depends on. Namely the
      * heights of the root view and control container are important as they are used in many of the
@@ -727,7 +741,6 @@ public class BottomSheet
         getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 
         mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
-        mBottomSheetContentContainer.setPadding(0, 0, 0, mBottomNavHeight - mToolbarShadowHeight);
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
 
@@ -776,8 +789,7 @@ public class BottomSheet
                     // sheet to its default state.
                     // Setting the padding is posted in a runnable for the sake of Android J.
                     // See crbug.com/751013.
-                    final int finalPadding =
-                            keyboardHeight + (mBottomNavHeight - mToolbarShadowHeight);
+                    final int finalPadding = keyboardHeight;
                     post(new Runnable() {
                         @Override
                         public void run() {
@@ -1061,10 +1073,6 @@ public class BottomSheet
             if (oldContent != null) mBottomSheetContentContainer.removeView(oldContent);
         } else {
             View contentView = content.getContentView();
-            if (content.applyDefaultTopPadding()) {
-                contentView.setPadding(contentView.getPaddingLeft(), mToolbarHolder.getHeight(),
-                        contentView.getPaddingRight(), contentView.getPaddingBottom());
-            }
             animators.add(getViewTransitionAnimator(
                     contentView, oldContent, mBottomSheetContentContainer, true));
         }
@@ -1695,13 +1703,6 @@ public class BottomSheet
     }
 
     /**
-     * @return The height of the bottom navigation bar.
-     */
-    public int getBottomNavHeight() {
-        return mBottomNavHeight;
-    }
-
-    /**
      * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
      * mode, when "find in page" is visible, or when the toolbar is hidden.
      */
@@ -1811,5 +1812,26 @@ public class BottomSheet
     @VisibleForTesting
     public @Nullable View getDefaultToolbarView() {
         return mDefaultToolbarView;
+    }
+
+    /**
+     * @return The height of the toolbar holder.
+     */
+    public int getToolbarContainerHeight() {
+        return mToolbarHolder != null ? mToolbarHolder.getHeight() : 0;
+    }
+
+    /**
+     * @return The height of the bottom navigation menu.
+     */
+    public float getBottomNavHeight() {
+        return mBottomNavHeight;
+    }
+
+    /**
+     * @return The height of the toolbar shadow.
+     */
+    public int getToolbarShadowHeight() {
+        return mToolbarShadowHeight;
     }
 }

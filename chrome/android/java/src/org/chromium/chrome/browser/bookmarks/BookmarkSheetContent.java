@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.view.View;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
@@ -14,6 +15,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetCon
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.components.bookmarks.BookmarkId;
+
+import java.util.List;
 
 /**
  * A {@link BottomSheetContent} holding a {@link BookmarkManager} for display in the BottomSheet.
@@ -52,6 +55,12 @@ public class BookmarkSheetContent implements BottomSheetContent {
     @Override
     public View getContentView() {
         return mContentView;
+    }
+
+    @Override
+    public List<View> getViewsForPadding() {
+        return CollectionUtil.newArrayList(
+                mBookmarkManager.getRecyclerView(), mBookmarkManager.getEmptyView());
     }
 
     @Override

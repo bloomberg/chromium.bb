@@ -230,10 +230,11 @@ public class BottomSheetContentController extends BottomNavigationView
         mBottomSheet.addObserver(mBottomSheetObserver);
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
+
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                updateVisuals(newModel.isIncognito());
+                updateVisuals(newModel.isIncognito(), true);
                 showBottomSheetContent(R.id.action_home);
                 mPlaceholderContent.setIsIncognito(newModel.isIncognito());
 
@@ -254,9 +255,9 @@ public class BottomSheetContentController extends BottomNavigationView
                 (ViewGroup) activity.findViewById(R.id.bottom_sheet_snackbar_container);
 
         if (mBottomSheet.useTallBottomNav()) {
-            getLayoutParams().height = mBottomSheet.getBottomNavHeight();
+            getLayoutParams().height = (int) mBottomSheet.getBottomNavHeight();
             ((MarginLayoutParams) snackbarContainer.getLayoutParams()).bottomMargin =
-                    mBottomSheet.getBottomNavHeight();
+                    (int) mBottomSheet.getBottomNavHeight();
         }
 
         mSnackbarManager = new SnackbarManager(mActivity, snackbarContainer);
@@ -278,8 +279,8 @@ public class BottomSheetContentController extends BottomNavigationView
                 updateMenuItemSpacing();
             }
         });
-
-        updateVisuals(mTabModelSelector.isIncognitoSelected());
+        updateVisuals(mTabModelSelector.isIncognitoSelected(), true);
+        BottomSheetPaddingUtils.applyPaddingToContent(mPlaceholderContent, mBottomSheet);
     }
 
     /**
@@ -407,6 +408,10 @@ public class BottomSheetContentController extends BottomNavigationView
             content = new IncognitoBottomSheetContent(mActivity);
         }
 
+        // Call this only after it's created to avoid adding an infinite amount of additional
+        // padding.
+        BottomSheetPaddingUtils.applyPaddingToContent(content, mBottomSheet);
+
         mBottomSheetContents.put(navItemId, content);
         return content;
     }
@@ -435,10 +440,16 @@ public class BottomSheetContentController extends BottomNavigationView
         }
     }
 
-    private void updateVisuals(boolean isIncognitoTabModelSelected) {
-        setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                isIncognitoTabModelSelected ? R.color.incognito_primary_color
-                                            : R.color.modern_primary_color));
+    private void updateVisuals(
+            boolean isIncognitoTabModelSelected, boolean bottomNavIsTransparent) {
+        if (bottomNavIsTransparent) {
+            setBackgroundResource(isIncognitoTabModelSelected
+                            ? R.color.incognito_primary_color_home_bottom_nav
+                            : R.color.primary_color_home_bottom_nav);
+        } else {
+            setBackgroundResource(isIncognitoTabModelSelected ? R.color.incognito_primary_color
+                                                              : R.color.modern_primary_color);
+        }
 
         ColorStateList tint = ApiCompatibilityUtils.getColorStateList(getResources(),
                 isIncognitoTabModelSelected ? R.color.bottom_nav_tint_incognito

@@ -236,6 +236,20 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     /**
+     * @return The {@link RecyclerView} that contains the list of history items.
+     */
+    public RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
+
+    /**
+     * @return The empty {@link TextView} used for when there's no history.
+     */
+    public TextView getEmptyView() {
+        return mEmptyView;
+    }
+
+    /**
      * See {@link SelectableListLayout#detachToolbarView()}.
      */
     public SelectableListToolbar<HistoryItem> detachToolbarView() {
@@ -383,11 +397,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     @VisibleForTesting
     HistoryManagerToolbar getToolbarForTests() {
         return mToolbar;
-    }
-
-    @VisibleForTesting
-    TextView getEmptyViewForTests() {
-        return mEmptyView;
     }
 
     @VisibleForTesting

@@ -9,7 +9,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.R;
+
+import java.util.List;
 
 /**
  * This class is used as a placeholder when there should otherwise be no content in the bottom
@@ -20,7 +23,7 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     private View mView;
 
     /** Whether or not the content is using incognito colors. */
-    private boolean mIsIncongitoThemed;
+    private boolean mIsIncognitoThemed;
 
     public PlaceholderSheetContent(Context context) {
         mView = new View(context);
@@ -36,7 +39,7 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
      * @param isIncognito Whether or not the sheet is incognito.
      */
     public void setIsIncognito(boolean isIncognito) {
-        mIsIncongitoThemed = isIncognito;
+        mIsIncognitoThemed = isIncognito;
 
         int colorId = isIncognito ? R.color.incognito_primary_color : R.color.modern_primary_color;
 
@@ -47,6 +50,11 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     @Override
     public View getContentView() {
         return mView;
+    }
+
+    @Override
+    public List<View> getViewsForPadding() {
+        return CollectionUtil.newArrayList(getContentView());
     }
 
     @Override
@@ -62,7 +70,7 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
 
     @Override
     public boolean isIncognitoThemedContent() {
-        return mIsIncongitoThemed;
+        return mIsIncognitoThemed;
     }
 
     @Override
