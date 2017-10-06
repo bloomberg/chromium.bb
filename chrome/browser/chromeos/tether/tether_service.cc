@@ -180,6 +180,11 @@ void TetherService::Shutdown() {
   if (shut_down_)
     return;
 
+  // Record to UMA Tether's last feature state before it is shutdown.
+  // Tether's feature state at the end of its life is the most likely to
+  // accurately represent how it has been used by the user.
+  RecordTetherFeatureState();
+
   shut_down_ = true;
 
   // Remove all observers. This ensures that once Shutdown() is called, no more
@@ -311,8 +316,6 @@ bool TetherService::HasSyncedTetherHosts() const {
 void TetherService::UpdateTetherTechnologyState() {
   if (!adapter_)
     return;
-
-  RecordTetherFeatureState();
 
   chromeos::NetworkStateHandler::TechnologyState new_tether_technology_state =
       GetTetherTechnologyState();
@@ -491,6 +494,9 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
   if (!IsAllowedByPolicy())
     return PROHIBITED;
 
+  // TODO (hansberry): When !IsBluetoothPowered(), this results in a weird
+  // UI state for Settings where the toggle is clickable but immediately
+  // becomes disabled after enabling it. See crbug.com/753195.
   if (!IsBluetoothPowered())
     return BLUETOOTH_DISABLED;
 
@@ -503,7 +509,7 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
 void TetherService::RecordTetherFeatureState() {
   TetherFeatureState tether_feature_state = GetTetherFeatureState();
   DCHECK(tether_feature_state != TetherFeatureState::TETHER_FEATURE_STATE_MAX);
-  UMA_HISTOGRAM_ENUMERATION("InstantTethering.FeatureState",
+  UMA_HISTOGRAM_ENUMERATION("InstantTethering.FinalFeatureState",
                             tether_feature_state,
                             TetherFeatureState::TETHER_FEATURE_STATE_MAX);
 }
