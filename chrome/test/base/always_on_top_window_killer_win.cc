@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 
 namespace {
 
@@ -64,10 +65,28 @@ BOOL CALLBACK AlwaysOnTopWindowProc(HWND hwnd, LPARAM l_param) {
         // the window in case there are problems.
         DWORD process_id = 0;
         DWORD thread_id = GetWindowThreadProcessId(hwnd, &process_id);
+
+        base::Process process = base::Process::Open(process_id);
+        base::string16 process_path(MAX_PATH, L'\0');
+        if (process.IsValid()) {
+          // It's possible that the actual process owning |hwnd| has gone away
+          // and that a new process using the same PID has appeared. If this
+          // turns out to be an issue, we could fetch the process start time
+          // here and compare it with the time just before getting |thread_id|
+          // above. This is likely overkill for diagnostic purposes.
+          DWORD str_len = process_path.size();
+          if (!::QueryFullProcessImageName(process.Handle(), 0,
+                                           &process_path[0], &str_len) ||
+              str_len >= MAX_PATH) {
+            str_len = 0;
+          }
+          process_path.resize(str_len);
+        }
         LOG(ERROR) << (run_type == RunType::BEFORE_TEST ? kWindowFoundBeforeTest
                                                         : kWindowFoundPostTest)
                    << class_name << " process_id=" << process_id
-                   << " thread_id=" << thread_id;
+                   << " thread_id=" << thread_id
+                   << " process_path=" << process_path;
         return kContinueIterating;
       }
     }
