@@ -60,6 +60,7 @@
           "ui::mojom::DisplayManager",
           "ui::mojom::Gpu",
           "ui::mojom::IMEDriver",
+          "ui::mojom::InputDeviceController",
           "ui::mojom::InputDeviceServer",
           "ui::mojom::RemoteEventDispatcher",
           "ui::mojom::TouchDeviceServer",
