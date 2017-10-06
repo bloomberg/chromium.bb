@@ -13,6 +13,7 @@ fuzzing_engine_add_configs =
 
 source_set("libfuzzer") {
   sources = [
+    "src/FuzzerClangCounters.cpp",
     "src/FuzzerCrossOver.cpp",
     "src/FuzzerDriver.cpp",
     "src/FuzzerExtFunctionsDlsym.cpp",
