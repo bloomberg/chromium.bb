@@ -64,6 +64,14 @@ EGLBoolean eglDestroyImageKHRFn(EGLDisplay dpy, EGLImageKHR image) override;
 EGLBoolean eglDestroyStreamKHRFn(EGLDisplay dpy, EGLStreamKHR stream) override;
 EGLBoolean eglDestroySurfaceFn(EGLDisplay dpy, EGLSurface surface) override;
 EGLBoolean eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) override;
+EGLBoolean eglGetCompositorTimingANDROIDFn(EGLDisplay dpy,
+                                           EGLSurface surface,
+                                           EGLint numTimestamps,
+                                           EGLint* names,
+                                           EGLnsecsANDROID* values) override;
+EGLBoolean eglGetCompositorTimingSupportedANDROIDFn(EGLDisplay dpy,
+                                                    EGLSurface surface,
+                                                    EGLint timestamp) override;
 EGLBoolean eglGetConfigAttribFn(EGLDisplay dpy,
                                 EGLConfig config,
                                 EGLint attribute,
@@ -77,6 +85,18 @@ EGLDisplay eglGetCurrentDisplayFn(void) override;
 EGLSurface eglGetCurrentSurfaceFn(EGLint readdraw) override;
 EGLDisplay eglGetDisplayFn(EGLNativeDisplayType display_id) override;
 EGLint eglGetErrorFn(void) override;
+EGLBoolean eglGetFrameTimestampsANDROIDFn(EGLDisplay dpy,
+                                          EGLSurface surface,
+                                          EGLuint64KHR frameId,
+                                          EGLint numTimestamps,
+                                          EGLint* timestamps,
+                                          EGLnsecsANDROID* values) override;
+EGLBoolean eglGetFrameTimestampSupportedANDROIDFn(EGLDisplay dpy,
+                                                  EGLSurface surface,
+                                                  EGLint timestamp) override;
+EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
+                                      EGLSurface surface,
+                                      EGLuint64KHR* frameId) override;
 EGLDisplay eglGetPlatformDisplayEXTFn(EGLenum platform,
                                       void* native_display,
                                       const EGLint* attrib_list) override;
