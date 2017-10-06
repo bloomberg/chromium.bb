@@ -25,17 +25,17 @@ namespace vr {
 
 namespace {
 
-static constexpr float kWidth = 0.672f;
-static constexpr float kHeight = 0.088f;
-static constexpr float kFontHeight = 0.027f;
+static constexpr float kWidth = 0.672;
+static constexpr float kHeight = 0.088;
+static constexpr float kFontHeight = 0.027;
 static constexpr float kBackButtonWidth = kHeight;
-static constexpr float kBackIconSize = 0.0375f;
-static constexpr float kBackIconOffset = 0.005f;
-static constexpr float kFieldSpacing = 0.014f;
-static constexpr float kSecurityIconSize = 0.03f;
-static constexpr float kUrlRightMargin = 0.02f;
-static constexpr float kSeparatorWidth = 0.002f;
-static constexpr float kChipTextLineMargin = kHeight * 0.3f;
+static constexpr float kBackIconSize = 0.0375;
+static constexpr float kBackIconOffset = 0.005;
+static constexpr float kFieldSpacing = 0.014;
+static constexpr float kSecurityIconSize = 0.03;
+static constexpr float kUrlRightMargin = 0.02;
+static constexpr float kSeparatorWidth = 0.002;
+static constexpr float kChipTextLineMargin = kHeight * 0.3;
 static constexpr SkScalar kStrikeThicknessFactor = (SK_Scalar1 / 9);
 
 using security_state::SecurityLevel;

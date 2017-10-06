@@ -18,8 +18,8 @@ TEST(VrGlUtilTest, CalculateScreenSize) {
 
   gfx::SizeF screen_size = CalculateScreenSize(kProjMatrix, model_matrix, size);
 
-  EXPECT_FLOAT_EQ(screen_size.width(), 0.49592164f);
-  EXPECT_FLOAT_EQ(screen_size.height(), 0.27598655f);
+  EXPECT_FLOAT_EQ(screen_size.width(), 0.49592164);
+  EXPECT_FLOAT_EQ(screen_size.height(), 0.27598655);
 }
 
 }  // namespace vr
