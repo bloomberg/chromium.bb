@@ -6018,22 +6018,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
-// This test is flaky on Windows, see https://crbug.com/765107
-#if defined(OS_WIN)
-#define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatchNoSrc \
-  DISABLED_EnsureFrameNavigationEntriesClearedOnMismatchNoSrc
-#else
-#define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatchNoSrc \
-  EnsureFrameNavigationEntriesClearedOnMismatchNoSrc
-#endif
 // Tests that sending a PageState update from a named subframe does not get
 // incorrectly set on previously existing FrameNavigationEntry for the same
 // name. It is similar to EnsureFrameNavigationEntriesClearedOnMismatch, but
 // doesn't navigate the iframes to real URLs when added to the DOM.
 // See https://crbug.com/628677.
-IN_PROC_BROWSER_TEST_F(
-    NavigationControllerBrowserTest,
-    MAYBE_EnsureFrameNavigationEntriesClearedOnMismatchNoSrc) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       EnsureFrameNavigationEntriesClearedOnMismatchNoSrc) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
