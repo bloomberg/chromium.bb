@@ -6,12 +6,20 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
+#include "components/browser_sync/profile_sync_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +29,8 @@ namespace {
 
 class ArcBootPhaseMonitorBridgeTest : public testing::Test {
  public:
-  ArcBootPhaseMonitorBridgeTest() = default;
+  ArcBootPhaseMonitorBridgeTest()
+      : user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
   ~ArcBootPhaseMonitorBridgeTest() override = default;
 
   void SetUp() override {
@@ -29,9 +38,18 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
         std::make_unique<chromeos::FakeSessionManagerClient>());
     chromeos::DBusThreadManager::Initialize();
 
+    SetArcAvailableCommandLineForTesting(
+        base::CommandLine::ForCurrentProcess());
+
     disable_cpu_restriction_counter_ = 0;
     record_uma_counter_ = 0;
     testing_profile_ = std::make_unique<TestingProfile>();
+
+    const AccountId account_id(AccountId::FromUserEmailGaiaId(
+        testing_profile_->GetProfileUserName(), "1234567890"));
+    GetFakeUserManager()->AddUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+
     arc_session_manager_ = std::make_unique<ArcSessionManager>(
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     bridge_service_ = std::make_unique<ArcBridgeService>();
@@ -64,6 +82,10 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   size_t record_uma_counter() const { return record_uma_counter_; }
   base::TimeDelta last_time_delta() const { return last_time_delta_; }
 
+  sync_preferences::TestingPrefServiceSyncable* GetPrefs() const {
+    return testing_profile_->GetTestingPrefService();
+  }
+
  private:
   class TestDelegateImpl : public ArcBootPhaseMonitorBridge::Delegate {
    public:
@@ -86,11 +108,17 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(TestDelegateImpl);
   };
 
+  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<ArcBootPhaseMonitorBridge> boot_phase_monitor_bridge_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
   size_t disable_cpu_restriction_counter_;
   size_t record_uma_counter_;
@@ -222,13 +250,14 @@ TEST_F(ArcBootPhaseMonitorBridgeTest, TestRecordUMA_AppLaunchesAfterBoot) {
   EXPECT_EQ(1U, record_uma_counter());
 }
 
+// Tests that CPU restriction is disabled when tab restoration is done.
 TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnSessionRestoreFinishedLoadingTabs) {
-  // Check that CPU restriction is disabled when tab restoration is done.
   EXPECT_EQ(0U, disable_cpu_restriction_counter());
   boot_phase_monitor_bridge()->OnSessionRestoreFinishedLoadingTabs();
   EXPECT_EQ(1U, disable_cpu_restriction_counter());
 }
 
+// Tests that nothing happens if tab restoration is done after ARC boot.
 TEST_F(ArcBootPhaseMonitorBridgeTest,
        TestOnSessionRestoreFinishedLoadingTabs_BootFirst) {
   // Tell |arc_session_manager_| that this is not opt-in boot.
@@ -239,6 +268,68 @@ TEST_F(ArcBootPhaseMonitorBridgeTest,
   boot_phase_monitor_bridge()->OnBootCompleted();
   EXPECT_EQ(0U, disable_cpu_restriction_counter());
   boot_phase_monitor_bridge()->OnSessionRestoreFinishedLoadingTabs();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+}
+
+// Tests that OnExtensionsReady() does nothing by default.
+TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnExtensionsReady) {
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+}
+
+// Tests that OnExtensionsReady() does nothing when prefs::kArcEnabled is not
+// set.
+TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnExtensionsReady_ArcNotEnabled) {
+  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(false);
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+}
+
+// Tests that OnExtensionsReady() does nothing when prefs::kArcEnabled is not
+// managed.
+TEST_F(ArcBootPhaseMonitorBridgeTest,
+       TestOnExtensionsReady_ArcEnabledButUnmanaged) {
+  GetPrefs()->SetUserPref(prefs::kArcEnabled,
+                          std::make_unique<base::Value>(true));
+  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+}
+
+// Tests that OnExtensionsReady() relaxes the CPU restriction when ARC is
+// enabled by policy.
+TEST_F(ArcBootPhaseMonitorBridgeTest,
+       TestOnExtensionsReady_ArcEnabledAndManaged) {
+  GetPrefs()->SetManagedPref(prefs::kArcEnabled,
+                             std::make_unique<base::Value>(true));
+  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+  EXPECT_EQ(1U, disable_cpu_restriction_counter());
+}
+
+// Does the same but in a reversed event order.
+TEST_F(ArcBootPhaseMonitorBridgeTest,
+       TestOnExtensionsReady_ArcEnabledAndManaged2) {
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+  GetPrefs()->SetManagedPref(prefs::kArcEnabled,
+                             std::make_unique<base::Value>(true));
+  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
+  EXPECT_EQ(1U, disable_cpu_restriction_counter());
+}
+
+// Does the same but with a throttle object. This emulates the situation where
+// ARC instance finishes booting before other conditions (|extentions_ready_|
+// and |enabled_by_policy_|) are met. |disable_cpu_restriction_counter| should
+// stay 0 in this case because the throttle already has the control.
+TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnExtensionsReady_WithThrottle) {
+  boot_phase_monitor_bridge()->SetThrottleForTesting(
+      std::make_unique<ArcInstanceThrottle>());
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+  GetPrefs()->SetManagedPref(prefs::kArcEnabled,
+                             std::make_unique<base::Value>(true));
+  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
   EXPECT_EQ(0U, disable_cpu_restriction_counter());
 }
 
