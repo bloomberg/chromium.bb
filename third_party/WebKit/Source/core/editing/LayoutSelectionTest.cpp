@@ -379,24 +379,12 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
 }
 
 TEST_F(LayoutSelectionTest, CommitAppearanceIfNeededNotCrash) {
-  SetBodyContent("<div id='host'><span>bar<span></div><div>baz</div>");
-  SetShadowContent("foo", "host");
-  UpdateAllLifecyclePhases();
-  // <div id='host'>
-  //   #shadow-root
-  //     foo
-  //   <span>|bar</span>
-  // </div>
-  // <div>baz^</div>
-  // |span| is not in flat tree.
-  Node* const span =
-      ToElement(GetDocument().QuerySelector("#host")->firstChild());
-  DCHECK(span);
-  Node* const baz = GetDocument().body()->firstChild()->nextSibling();
-  DCHECK(baz);
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .SetBaseAndExtent({baz, 1}, {span, 0})
-                               .Build());
+  Selection().SetSelection(SetSelectionTextToBody(
+      "<div>"
+      "<template data-mode=open>foo</template>"
+      "<span>|bar<span>"  // <span> is not appeared in flat tree.
+      "</div>"
+      "<div>baz^</div>"));
   Selection().CommitAppearanceIfNeeded();
 }
 
