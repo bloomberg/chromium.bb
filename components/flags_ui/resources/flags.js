@@ -48,9 +48,30 @@ function renderTemplate(experimentalFeaturesData) {
     elements[i].onclick = restartBrowser;
   }
 
+  // Toggling of experiment description overflow content.
+  elements = document.querySelectorAll('.experiment .flex:first-child');
+  for (var i = 0; i < elements.length; ++i) {
+    elements[i].addEventListener('click', function(e) {
+      this.classList.toggle('expand');
+    });
+  }
+
+  // Tab panel selection.
+  var tabEls = document.getElementsByClassName('tab');
+  for (var i = 0; i < tabEls.length; ++i) {
+    tabEls[i].addEventListener('click', function(e) {
+      e.preventDefault();
+      for (var j= 0; j < tabEls.length; ++j) {
+        tabEls[j].parentNode.classList.toggle('selected', tabEls[j] == this);
+      }
+    });
+  }
+
   $('experiment-reset-all').onclick = resetAllFlags;
 
   highlightReferencedFlag();
+  var search = new FlagSearch();
+  search.init();
 }
 
 /**
@@ -68,6 +89,12 @@ function highlightReferencedFlag() {
         document.querySelector('.referenced').classList.remove('referenced');
       // Highlight the referenced element.
       el.classList.add('referenced');
+
+      // Switch to unavailable tab if the flag is in this section.
+      if ($('tab-content-unavailable').contains(el)) {
+        $('tab-available').parentNode.classList.remove('selected');
+        $('tab-unavailable').parentNode.classList.add('selected');
+      }
       el.scrollIntoView();
     }
   }
@@ -177,7 +204,156 @@ function handleSelectExperimentalFeatureChoice(node, index) {
   requestExperimentalFeaturesData();
 }
 
-// Get data and have it displayed upon loading.
+/**
+ * Handles in page searching. Matches against the experiment flag name.
+ */
+var FlagSearch = function() {
+  this.experiments_ = [];
+  this.unavailableExperiments_ = [];
+
+  this.searchBox_ = $('search');
+  this.noMatchMsg_ = document.querySelectorAll('.no-match');
+
+  this.searchIntervalId_ = null;
+};
+
+// Delay in ms following a keypress, before a search is made.
+FlagSearch.SEARCH_DEBOUNCE_TIME_MS = 150;
+
+FlagSearch.prototype = {
+  /**
+   * Initialises the in page search. Addings searchbox listeners and
+   * collates the permalinks used for string matching.
+   */
+  init: function() {
+    this.experiments_ =
+        document.querySelectorAll('#tab-content-available .permalink');
+    this.unavailableExperiments_ =
+        document.querySelectorAll('#tab-content-unavailable .permalink');
+
+    this.searchBox_.addEventListener('keyup', this.debounceSearch.bind(this));
+    document.querySelector('.clear-search').addEventListener('click',
+        this.clearSearch.bind(this));
+    this.searchBox_.focus();
+  },
+
+  /**
+   * Clears a search showing all experiments.
+   */
+  clearSearch: function() {
+    this.searchBox_.value = '';
+    this.doSearch();
+  },
+
+  /**
+   * Reset existing highlights on an element.
+   * @param {HTMLElement} el The element to remove all highlighted mark up on.
+   * @param {string} flag The flag name to reset the element's textContent to.
+   */
+  resetHighlights: function(el, flag) {
+    if (el.children) {
+      el.textContent = flag;
+    }
+  },
+
+  /**
+   * Highlights the search term within the permalink flag name.
+   * @param {string} searchTerm Search term user entered.
+   * @param {HTMLElement} el The permalink node where the search tern occurs.
+   * @return {boolean} Whether there was a match.
+   */
+  highlightMatches: function(searchTerm, el) {
+    // Experiment container.
+    var parentEl = el.parentNode.parentNode.parentNode;
+    var flag = el.textContent.toLowerCase();
+    var match = flag.indexOf(searchTerm);
+
+    parentEl.classList.toggle('hidden', match == -1);
+
+    if (match == -1) {
+      this.resetHighlights(el, flag);
+      return false;
+    }
+
+    if (searchTerm != '') {
+      // Clear all nodes.
+      el.textContent = '';
+
+      if (match > 0) {
+        var textNodePrefix =
+            document.createTextNode(flag.substring(0, match));
+        el.appendChild(textNodePrefix);
+      }
+
+      var matchEl = document.createElement('mark');
+      matchEl.textContent = flag.substr(match, searchTerm.length);
+      el.appendChild(matchEl);
+
+      var matchSuffix = flag.substring(match + searchTerm.length);
+      if (matchSuffix) {
+        var textNodeSuffix = document.createTextNode(matchSuffix);
+        el.appendChild(textNodeSuffix);
+      }
+    } else {
+      this.resetHighlights(el, flag);
+    }
+    return true;
+  },
+
+  /**
+   * Performs a search against the permalinks.
+   * @param {Event} e
+   */
+  doSearch: function(e) {
+    // Replace spaces with hyphens as flag names don't have spaces.
+    var searchTerm =
+        this.searchBox_.value.trim().toLowerCase().replace(/\s/, '-');
+    var matches = 0;
+    var unavailableMatches = 0;
+
+    if (searchTerm || searchTerm == '') {
+      document.body.classList.add('searching');
+      // Available experiments
+      for (var i = 0, j = this.experiments_.length; i < j; i++) {
+        if (this.highlightMatches(searchTerm, this.experiments_[i])) {
+          matches++;
+        }
+      }
+      this.noMatchMsg_[0].classList.toggle('hidden', matches);
+
+      // Unavailable experiments
+      for (var i = 0, j = this.unavailableExperiments_.length; i < j; i++) {
+        if (this.highlightMatches(searchTerm,
+            this.unavailableExperiments_[i])) {
+          unavailableMatches++;
+        }
+      }
+      this.noMatchMsg_[1].classList.toggle('hidden', unavailableMatches);
+    }
+
+    this.searchIntervalId_ = null;
+  },
+
+  /**
+   * Debounces the search to improve performance and prevent too many searches
+   * from being initiated.
+   * @param {Event} e
+   */
+  debounceSearch: function(e) {
+    // Don't search if the search term did not change.
+    if (this.searchValue_ == this.searchBox_.value) {
+      return;
+    }
+
+    if (this.searchIntervalId_) {
+      clearTimeout(this.searchIntervalId_);
+    }
+    this.searchIntervalId_ = setTimeout(this.doSearch.bind(this),
+        FlagSearch.SEARCH_DEBOUNCE_TIME_MS);
+  }
+};
+
+// Get and display the data upon loading.
 document.addEventListener('DOMContentLoaded', requestExperimentalFeaturesData);
 
 // Update the highlighted flag when the hash changes.

@@ -25,13 +25,15 @@ extern const char kChannelPromoDev[];
 extern const char kDisable[];
 extern const char kEnable[];
 extern const char kFlagsBlurb[];
-extern const char kFlagsLongTitle[];
+extern const char kFlagsTitle[];
 extern const char kFlagsNoExperimentsAvailable[];
+extern const char kFlagsNoMatches[];
 extern const char kFlagsNotSupported[];
 extern const char kFlagsRestartButton[];
 extern const char kFlagsRestartNotice[];
-extern const char kFlagsTableTitle[];
-extern const char kFlagsUnsupportedTableTitle[];
+extern const char kFlagsSearchPlaceholder[];
+extern const char kFlagsSupportedTitle[];
+extern const char kFlagsUnsupportedTitle[];
 extern const char kFlagsWarningHeader[];
 extern const char kNeedsRestart[];
 extern const char kOwnerWarning[];
@@ -42,6 +44,7 @@ extern const char kShowDevChannelPromotion[];
 extern const char kShowOwnerWarning[];
 extern const char kSupportedFeatures[];
 extern const char kUnsupportedFeatures[];
+extern const char kVersion[];
 
 }  // namespace flags_ui
 

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <message name="IDS_FLAGS_UI_LONG_TITLE" desc="Long version of the title for the about:flags page.">
-    Careful, these experiments may bite
-  </message>
-  <message name="IDS_FLAGS_UI_TABLE_TITLE" desc="Title for the experiments table on the about:flags page.">
+  <message name="IDS_FLAGS_UI_TITLE" desc="Main title for the about:flags page.">
     Experiments
   </message>
   <message name="IDS_FLAGS_UI_WARNING_HEADER" desc="Text right before the warning body text.">
-    WARNING
+    Warning: Experimental features ahead!
   </message>
   <message name="IDS_FLAGS_UI_WARNING_TEXT" desc="Text at the top of the about:flags page, warning users that the about:flags contents are volatile.">
-    These experimental features may change, break, or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data, or your security and privacy could be compromised in unexpected ways. Any experiments you enable will be enabled for all users of this browser. Please proceed with caution.
+    By enabling these features, you could lose browser data or compromise your security or privacy. Enabled features apply to all users of this browser.
   </message>
   <message name="IDS_FLAGS_UI_PROMOTE_BETA_CHANNEL" desc="Shown on the about:flags page when we want to promote the Chrome beta channel">
-    Interested in cool new Chrome features? Try our beta channel at chrome.com/beta.
+    Interested in cool new Chrome features? Try our <ph name="BEGIN_LINK">&lt;a href="https://chrome.com/beta"&gt;</ph>beta channel<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_FLAGS_UI_PROMOTE_DEV_CHANNEL" desc="Shown on the about:flags page when we want to promote the Chrome developer channel">
-    Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.
+    Interested in cool new Chrome features? Try our <ph name="BEGIN_LINK">&lt;a href="https://chrome.com/dev"&gt;</ph>dev channel<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_FLAGS_UI_SEARCH_PLACEHOLDER" desc="Search flags text box placeholder text on the about:flags page.">
+    Search flags
   </message>
   <message name="IDS_FLAGS_UI_DISABLE" desc="The link for disabling a labs experiment.">
     Disable
@@ -27,11 +27,17 @@
   <message name="IDS_FLAGS_UI_RESET_ALL_BUTTON" desc="Text on a button that resets all experiments to their default state when clicked.">
     Reset all to default
   </message>
-  <message name="IDS_FLAGS_UI_UNSUPPORTED_TABLE_TITLE" desc="Title for the unsupported experiments table on the about:flags page. It lists all experiments that are not available on the current platform.">
-    Unavailable Experiments
+  <message name="IDS_FLAGS_UI_SUPPORTED_TITLE" desc="Title for the supported experiments on the about:flags page. It lists all experiments that are not available on the current platform.">
+    Available
+  </message>
+  <message name="IDS_FLAGS_UI_UNSUPPORTED_TITLE" desc="Title for the unsupported experiments on the about:flags page. It lists all experiments that are not available on the current platform.">
+    Unavailable
+  </message>
+  <message name="IDS_FLAGS_UI_NO_MATCHES" desc="Message shown when there are no search matches on the about:flags page">
+    No matching experiments
   </message>
   <message name="IDS_FLAGS_UI_NOT_AVAILABLE" desc="Shown instead of the Enable/Disable link, to let the user know that an experiment is not available on the current platform.">
-    Sorry, this experiment is not available on your platform.
+    Not available on your platform.
   </message>
   <if expr="not chromeos">
     <message name="IDS_FLAGS_UI_RELAUNCH_BUTTON" desc="Text on a button that relaunches Chrome when clicked. ">

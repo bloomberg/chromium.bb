@@ -38,10 +38,9 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
   web::WebUIIOSDataSource* source =
       web::WebUIIOSDataSource::Create(kChromeUIFlagsHost);
 
-  source->AddLocalizedString(flags_ui::kFlagsLongTitle,
-                             IDS_FLAGS_UI_LONG_TITLE);
-  source->AddLocalizedString(flags_ui::kFlagsTableTitle,
-                             IDS_FLAGS_UI_TABLE_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsSearchPlaceholder,
+                             IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
+  source->AddLocalizedString(flags_ui::kFlagsTitle, IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString(flags_ui::kFlagsWarningHeader,
                              IDS_FLAGS_UI_WARNING_HEADER);
   source->AddLocalizedString(flags_ui::kFlagsBlurb, IDS_FLAGS_UI_WARNING_TEXT);
@@ -49,8 +48,10 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_UI_PROMOTE_BETA_CHANNEL);
   source->AddLocalizedString(flags_ui::kChannelPromoDev,
                              IDS_FLAGS_UI_PROMOTE_DEV_CHANNEL);
-  source->AddLocalizedString(flags_ui::kFlagsUnsupportedTableTitle,
-                             IDS_FLAGS_UI_UNSUPPORTED_TABLE_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsSupportedTitle,
+                             IDS_FLAGS_UI_SUPPORTED_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsUnsupportedTitle,
+                             IDS_FLAGS_UI_UNSUPPORTED_TITLE);
   source->AddLocalizedString(flags_ui::kFlagsNotSupported,
                              IDS_FLAGS_UI_NOT_AVAILABLE);
   source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
@@ -59,8 +60,11 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
                              IDS_FLAGS_UI_RELAUNCH_BUTTON);
   source->AddLocalizedString(flags_ui::kResetAllButton,
                              IDS_FLAGS_UI_RESET_ALL_BUTTON);
+  source->AddLocalizedString(flags_ui::kFlagsNoMatches,
+                             IDS_FLAGS_UI_NO_MATCHES);
   source->AddLocalizedString(flags_ui::kDisable, IDS_FLAGS_UI_DISABLE);
   source->AddLocalizedString(flags_ui::kEnable, IDS_FLAGS_UI_ENABLE);
+  source->AddString(flags_ui::kVersion, version_info::GetVersionNumber());
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
