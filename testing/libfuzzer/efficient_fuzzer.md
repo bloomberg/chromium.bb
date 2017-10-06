@@ -197,29 +197,20 @@ if (size > kSizeLimit)
 For more information check out the discussion in [issue 638836].
 
 
-## Coverage
+## Code Coverage
 
-[ClusterFuzz status] page provides fuzzer source-level coverage report 
-from the recent run. Looking at the report might provide an insight
-to improve fuzzer coverage.
+[ClusterFuzz status] page provides fuzzer source-level coverage report from the
+recent run. Looking at the report might provide an insight to improve fuzzer
+coverage.
 
-You can also access source-level coverage report locally:
+You can also generate source-level coverage report locally via running
+[coverage script] stored in Chromium repository. The script provides detailed
+instructions as well as usage example.
 
-```bash
-# produces binary .sancov file
-ASAN_OPTIONS=coverage=1 ./out/libfuzzer/my_fuzzer -runs=0 ~/tmp/my_fuzzer_corpus
-# Convert binary .sancov to symbolized .symcov file.
-./third_party/llvm-build/Release+Asserts/bin/sancov \
-  -symbolize my_fuzzer my_fuzzer.123.sancov > my_fuzzer.symcov
-# Launch coverage report server
-curl https://llvm.org/svn/llvm-project/llvm/trunk/tools/sancov/coverage-report-server.py | python3 \
-  --symcov my_fuzzer.symcov --srcpath path_to_chromium_sources
-# Navigate to http://localhost:8001/ to view coverage report
-```
-Replace `ASAN_OPTIONS` by corresponding option variable if your are using 
-another sanitizer (e.g. `MSAN_OPTIONS`).
+We encourage you to try out the script, as it usually generates a better code
+coverage visualization compared to the coverage report hosted on ClusterFuzz.
 
-*NOTE: This is an experimental feature and an active area of work. We are 
+*NOTE: This is an experimental feature and an active area of work. We are
 working on improving this process.*
 
 
@@ -265,3 +256,4 @@ Other options may be passed through `libfuzzer_options` property.
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
 [Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
 [issue 638836]: https://bugs.chromium.org/p/chromium/issues/detail?id=638836
+[coverage script]: https://cs.chromium.org/chromium/src/testing/libfuzzer/coverage.py

@@ -81,12 +81,29 @@ INFO: -max_len is not provided, using 64
 INFO: PreferSmall: 1
 #0      READ   units: 1 exec/s: 0
 #1      INITED cov: 2361 bits: 95 indir: 29 units: 1 exec/s: 0
-#2      NEW    cov: 2710 bits: 359 indir: 36 units: 2 exec/s: 0 L: 64 MS: 0 
+#2      NEW    cov: 2710 bits: 359 indir: 36 units: 2 exec/s: 0 L: 64 MS: 0
 ```
 
-The `... NEW ...` line appears when libFuzzer finds new and interesting input. The 
-efficient fuzzer should be able to finds lots of them rather quickly.
+The `... NEW ...` line appears when libFuzzer finds new and interesting input.
+The efficient fuzzer should be able to finds lots of them rather quickly.
 The `... pulse ...` line will appear periodically to show the current status.
+
+### Symbolize Stacktrace
+
+If your fuzzer crashes when running locally and you see non-symbolized
+stacktrace, make sure that you have directory containing `llvm-symbolizer`
+binary added in `$PATH`. The symbolizer binary is included in Chromium's Clang
+package located at `third_party/llvm-build/Release+Asserts/bin/` directory.
+
+Alternatively, you can set `external_symbolizer_path` option via `ASAN_OPTIONS`
+env variable:
+
+```bash
+$ ASAN_OPTIONS=external_symbolizer_path=/my/local/llvm/build/llvm-symbolizer \
+    ./fuzzer ./crash-input
+```
+
+The same approach works with other sanitizers (e.g. `MSAN_OPTIONS` and others).
 
 ## Improving Your Fuzzer
 
