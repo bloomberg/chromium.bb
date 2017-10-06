@@ -38,6 +38,9 @@ vars = {
   # custom_vars.
   'checkout_src_internal': 'False',
 
+  # TODO(dpranke): change to != "small" once != is supported.
+  'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
+
   'chromium_git': 'https://chromium.googlesource.com',
   'swiftshader_git': 'https://swiftshader.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
@@ -1013,6 +1016,23 @@ hooks = [
                 'src/tools/perf/conditionally_execute',
                 '--gyp-condition', 'fetch_telemetry_dependencies=1',
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
+    ],
+  },
+
+  # This is used to ensure that all network operations are properly
+  # annotated so we can document what they're for.
+  {
+    'name': 'tools_traffic_annotation_linux',
+    'pattern': '.',
+    'condition': 'host_os == "linux" and checkout_traffic_annotation_tools',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--platform=linux*',
+                '--no_auth',
+                '--num_threads=4',
+                '--bucket', 'chromium-tools-traffic_annotation',
+                '-d', 'src/tools/traffic_annotation/bin/linux64',
     ],
   },
 
