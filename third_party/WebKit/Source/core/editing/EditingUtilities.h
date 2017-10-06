@@ -304,9 +304,11 @@ Position LeadingWhitespacePosition(
     const Position&,
     TextAffinity,
     WhitespacePositionOption = kNotConsiderNonCollapsibleWhitespace);
+
+// TDOO(editing-dev): We should move |TrailingWhitespacePosition()| to
+// "DeleteSelection.cpp" since it is used only in "DeleteSelection.cpp".
 Position TrailingWhitespacePosition(
     const Position&,
-    TextAffinity,
     WhitespacePositionOption = kNotConsiderNonCollapsibleWhitespace);
 unsigned NumEnclosingMailBlockquotes(const Position&);
 PositionWithAffinity PositionRespectingEditingBoundary(

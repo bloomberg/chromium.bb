@@ -1687,7 +1687,6 @@ Position LeadingWhitespacePosition(const Position& position,
 
 // This assumes that it starts in editable content.
 Position TrailingWhitespacePosition(const Position& position,
-                                    TextAffinity,
                                     WhitespacePositionOption option) {
   DCHECK(!NeedsLayoutTreeUpdate(position));
   DCHECK(IsEditablePosition(position)) << position;
