@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,6 +43,7 @@ public class TranslateCompactInfoBar extends InfoBar
     public static final int ACTION_AUTO_NEVER_LANGUAGE = 4;
 
     private final int mInitialStep;
+    private final int mDefaultTextColor;
     private final TranslateOptions mOptions;
 
     private long mNativeTranslateInfoBarPtr;
@@ -157,18 +159,20 @@ public class TranslateCompactInfoBar extends InfoBar
     @CalledByNative
     private static InfoBar create(int initialStep, String sourceLanguageCode,
             String targetLanguageCode, boolean alwaysTranslate, boolean triggeredFromMenu,
-            String[] languages, String[] languageCodes, int[] hashCodes) {
+            String[] languages, String[] languageCodes, int[] hashCodes, int tabTextColor) {
         recordInfobarAction(INFOBAR_IMPRESSION);
         return new TranslateCompactInfoBar(initialStep, sourceLanguageCode, targetLanguageCode,
-                alwaysTranslate, triggeredFromMenu, languages, languageCodes, hashCodes);
+                alwaysTranslate, triggeredFromMenu, languages, languageCodes, hashCodes,
+                tabTextColor);
     }
 
     TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
             boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
-            String[] languageCodes, int[] hashCodes) {
+            String[] languageCodes, int[] hashCodes, int tabTextColor) {
         super(R.drawable.infobar_translate_compact, null, null);
 
         mInitialStep = initialStep;
+        mDefaultTextColor = tabTextColor;
         mOptions = TranslateOptions.create(sourceLanguageCode, targetLanguageCode, languages,
                 languageCodes, alwaysTranslate, triggeredFromMenu, hashCodes);
     }
@@ -196,6 +200,11 @@ public class TranslateCompactInfoBar extends InfoBar
         });
 
         mTabLayout = (TranslateTabLayout) content.findViewById(R.id.translate_infobar_tabs);
+        if (mDefaultTextColor > 0) {
+            mTabLayout.setTabTextColors(
+                    ContextCompat.getColor(getContext(), R.color.black_alpha_87),
+                    ContextCompat.getColor(getContext(), R.color.infobar_accent_blue));
+        }
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
 
         // Set translating status in the beginning for pages translated automatically.
