@@ -4,9 +4,11 @@
 
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "components/certificate_reporting/error_report.h"
+#include "components/encrypted_messages/encrypted_message.pb.h"
+#include "components/encrypted_messages/message_encrypter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -18,6 +20,7 @@
 
 namespace {
 
+static const char kHkdfLabel[] = "certificate report";
 const uint32_t kServerPublicKeyTestVersion = 16;
 
 void SetUpURLHandlersOnIOThread(
@@ -42,16 +45,21 @@ std::string GetUploadData(net::URLRequest* request) {
 std::string GetReportContents(net::URLRequest* request,
                               const uint8_t* server_private_key) {
   std::string serialized_report(GetUploadData(request));
-  certificate_reporting::EncryptedCertLoggerRequest encrypted_request;
-  EXPECT_TRUE(encrypted_request.ParseFromString(serialized_report));
+  encrypted_messages::EncryptedMessage encrypted_message;
+  EXPECT_TRUE(encrypted_message.ParseFromString(serialized_report));
   EXPECT_EQ(kServerPublicKeyTestVersion,
-            encrypted_request.server_public_key_version());
-  EXPECT_EQ(certificate_reporting::EncryptedCertLoggerRequest::
-                AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
-            encrypted_request.algorithm());
+            encrypted_message.server_public_key_version());
+  EXPECT_EQ(
+      encrypted_messages::EncryptedMessage::AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
+      encrypted_message.algorithm());
   std::string decrypted_report;
-  EXPECT_TRUE(certificate_reporting::ErrorReporter::DecryptErrorReport(
-      server_private_key, encrypted_request, &decrypted_report));
+  // TODO(estark): kHkdfLabel needs to include the null character in the label
+  // due to a matching error in the server for the case of certificate
+  // reporting, the strlen + 1 can be removed once that error is fixed.
+  // https://crbug.com/517746
+  EXPECT_TRUE(encrypted_messages::DecryptMessageForTesting(
+      server_private_key, base::StringPiece(kHkdfLabel, strlen(kHkdfLabel) + 1),
+      encrypted_message, &decrypted_report));
   return decrypted_report;
 }
 

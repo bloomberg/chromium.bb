@@ -1,8 +1,8 @@
 include_rules = [
   "+components/network_time",
+  "+components/encrypted_messages",
   "+components/prefs",
   "+components/version_info",
-  "+crypto",
   "+net",
   "+third_party/boringssl/src/include",
 ]

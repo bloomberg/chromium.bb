@@ -22,8 +22,6 @@ class URLRequestContext;
 
 namespace certificate_reporting {
 
-class EncryptedCertLoggerRequest;
-
 // Provides functionality for sending reports about invalid SSL
 // certificate chains to a report collection server.
 class ErrorReporter {
@@ -70,12 +68,6 @@ class ErrorReporter {
       const base::Callback<void(const GURL&,
                                 int /* net_error */,
                                 int /* http_response_code */)>& error_callback);
-
-  // Used by tests.
-  static bool DecryptErrorReport(
-      const uint8_t server_private_key[32],
-      const EncryptedCertLoggerRequest& encrypted_report,
-      std::string* decrypted_serialized_report);
 
   void set_upload_url_for_testing(const GURL& url) { upload_url_ = url; }
 
