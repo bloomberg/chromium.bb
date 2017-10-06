@@ -320,6 +320,31 @@ TEST_F(DownloadSchedulerImplTest, UIPriorityLoadBalancing) {
   MakeEntryActive(next);
 }
 
+TEST_F(DownloadSchedulerImplTest, PickOlderDownloadIfSameParameters) {
+  BuildScheduler(std::vector<DownloadClient>{DownloadClient::TEST,
+                                             DownloadClient::TEST_2});
+
+  // Client TEST: entry 0(Low priority, No Cancel Time, Newer).
+  // Client TEST: entry 1(Low priority, No Cancel Time, Older).
+  // Client TEST: entry 2(Low priority, No Cancel Time, Newer).
+  BuildDataEntries(3);
+  entries_[0].client = DownloadClient::TEST;
+  entries_[0].scheduling_params.priority = SchedulingParams::Priority::LOW;
+  entries_[0].create_time = base::Time::Now();
+  entries_[1].client = DownloadClient::TEST;
+  entries_[1].scheduling_params.priority = SchedulingParams::Priority::LOW;
+  entries_[1].create_time = base::Time::Now() - base::TimeDelta::FromDays(1);
+  entries_[2].client = DownloadClient::TEST;
+  entries_[2].scheduling_params.priority = SchedulingParams::Priority::LOW;
+  entries_[2].create_time = base::Time::Now();
+
+  Entry* next = scheduler_->Next(
+      entries(),
+      BuildDeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+  EXPECT_EQ(&entries_[1], next);
+  MakeEntryActive(next);
+}
+
 // When multiple UI priority entries exist, the next entry is selected based on
 // cancel time and load balancing.
 TEST_F(DownloadSchedulerImplTest, MultipleUIPriorityEntries) {

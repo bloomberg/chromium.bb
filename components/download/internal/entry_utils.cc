@@ -54,10 +54,15 @@ Criteria GetSchedulingCriteria(const Model::EntryList& entries) {
 }
 
 bool EntryBetterThan(const Entry& lhs, const Entry& rhs) {
-  return lhs.scheduling_params.priority > rhs.scheduling_params.priority ||
-         (lhs.scheduling_params.priority == rhs.scheduling_params.priority &&
-          lhs.scheduling_params.cancel_time <
-              rhs.scheduling_params.cancel_time);
+  if (lhs.scheduling_params.priority != rhs.scheduling_params.priority)
+    return lhs.scheduling_params.priority > rhs.scheduling_params.priority;
+
+  if (lhs.scheduling_params.cancel_time != rhs.scheduling_params.cancel_time) {
+    return lhs.scheduling_params.cancel_time <
+           rhs.scheduling_params.cancel_time;
+  }
+
+  return lhs.create_time < rhs.create_time;
 }
 
 DownloadMetaData BuildDownloadMetaData(Entry* entry) {
