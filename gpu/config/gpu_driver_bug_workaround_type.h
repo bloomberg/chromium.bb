@@ -25,6 +25,8 @@
          avoid_one_component_egl_images)                     \
   GPU_OP(AVOID_STENCIL_BUFFERS,                              \
          avoid_stencil_buffers)                              \
+  GPU_OP(AVOID_USING_IMAGE_FLUSH_EXTERNAL_WITH_EGL_CREATE_IMAGE, \
+         avoid_using_image_flush_external_with_egl_create_image) \
   GPU_OP(BROKEN_EGL_IMAGE_REF_COUNTING,                      \
          broken_egl_image_ref_counting)                      \
   GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \
@@ -101,6 +103,8 @@
          disallow_large_instanced_draw)                      \
   GPU_OP(DONT_DISABLE_WEBGL_WHEN_COMPOSITOR_CONTEXT_LOST,    \
          dont_disable_webgl_when_compositor_context_lost)    \
+  GPU_OP(DONT_INITIALIZE_UNINITIALIZED_LOCALS,               \
+         dont_initialize_uninitialized_locals)               \
   GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
          dont_remove_invariant_for_fragment_input)           \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
@@ -163,6 +167,8 @@
          rebind_transform_feedback_before_resume)            \
   GPU_OP(REGENERATE_STRUCT_NAMES,                            \
          regenerate_struct_names)                            \
+  GPU_OP(RELY_ON_IMPLICIT_SYNC_FOR_SWAP_BUFFERS,             \
+         rely_on_implicit_sync_for_swap_buffers)             \
   GPU_OP(REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3,            \
          remove_invariant_and_centroid_for_essl3)            \
   GPU_OP(REMOVE_POW_WITH_CONSTANT_EXPONENT,                  \
@@ -227,10 +233,8 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
-  GPU_OP(RELY_ON_IMPLICIT_SYNC_FOR_SWAP_BUFFERS,             \
-         rely_on_implicit_sync_for_swap_buffers)             \
-  GPU_OP(AVOID_USING_IMAGE_FLUSH_EXTERNAL_WITH_EGL_CREATE_IMAGE, \
-         avoid_using_image_flush_external_with_egl_create_image) \
+// NOTE: Add new workarounds in alphabetical order.
+
 // clang-format on
 
 namespace gpu {

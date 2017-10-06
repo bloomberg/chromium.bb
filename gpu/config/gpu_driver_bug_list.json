@@ -2621,6 +2621,22 @@
       "features": [
         "msaa_is_slow"
       ]
+    },
+    {
+      "id": 242,
+      "description": "Code produced by local variable initialization often triggers crashes in Marshmallow Adreno driver",
+      "cr_bugs": [728271],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "7.0"
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "features": [
+        "dont_initialize_uninitialized_locals"
+      ]
     }
   ],
   "comment": [
