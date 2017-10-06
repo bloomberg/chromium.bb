@@ -64,7 +64,7 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/html_names.h"
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"

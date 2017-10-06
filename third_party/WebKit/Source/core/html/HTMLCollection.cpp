@@ -30,11 +30,11 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLObjectElement.h"
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTagCollection.h"
 #include "core/html/WindowNameCollection.h"
 #include "core/html/forms/HTMLDataListOptionsCollection.h"
+#include "core/html/forms/HTMLOptionElement.h"
+#include "core/html/forms/HTMLOptionsCollection.h"
 #include "core/html_names.h"
 #include "platform/wtf/HashSet.h"
 

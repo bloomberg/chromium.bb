@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/html/HTMLOptionElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/AXObjectCache.h"
@@ -33,9 +33,9 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
-#include "core/html/HTMLOptGroupElement.h"
-#include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/HTMLDataListElement.h"
+#include "core/html/forms/HTMLOptGroupElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutTheme.h"

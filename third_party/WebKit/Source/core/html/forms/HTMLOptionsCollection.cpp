@@ -19,7 +19,7 @@
  *
  */
 
-#include "core/html/HTMLOptionsCollection.h"
+#include "core/html/forms/HTMLOptionsCollection.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -28,8 +28,8 @@
 #include "bindings/core/v8/node_list_or_element.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 
 namespace blink {
 

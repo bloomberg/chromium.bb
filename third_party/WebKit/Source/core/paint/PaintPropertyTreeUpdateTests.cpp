@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/paint/PaintPropertyTreeBuilderTest.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 

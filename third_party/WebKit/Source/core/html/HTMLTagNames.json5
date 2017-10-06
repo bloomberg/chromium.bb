@@ -318,8 +318,12 @@
     {
       name: "optgroup",
       interfaceName: "HTMLOptGroupElement",
+      interfaceHeaderDir: "core/html/forms",
     },
-    "option",
+    {
+      name: "option",
+      interfaceHeaderDir: "core/html/forms",
+    },
     "output",
     {
       name: "shadow",
@@ -385,7 +389,10 @@
       name: "section",
       interfaceName: "HTMLElement",
     },
-    "select",
+    {
+      name: "select",
+      interfaceHeaderDir: "core/html/forms",
+    },      
     {
       name: "slot",
       interfaceName: "HTMLSlotElement",

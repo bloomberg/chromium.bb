@@ -13,8 +13,8 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/DateTimeChooser.h"
+#include "core/html/forms/HTMLOptionElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

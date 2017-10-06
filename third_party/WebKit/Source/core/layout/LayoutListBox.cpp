@@ -32,9 +32,9 @@
 
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLOptGroupElement.h"
-#include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/HTMLOptGroupElement.h"
+#include "core/html/forms/HTMLOptionElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {

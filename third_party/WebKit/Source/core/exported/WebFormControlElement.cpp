@@ -35,8 +35,8 @@
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/forms/HTMLSelectElement.h"
 
 #include "platform/wtf/RefPtr.h"
 
