@@ -1178,6 +1178,17 @@ void av1_calculate_scaled_size(int *width, int *height, int num) {
   }
 }
 
+// Inverse of av1_calculate_scaled_size() above: calculates the original size
+// from the given scaled dimensions and the scale numerator.
+void av1_calculate_unscaled_size(int *width, int *height, int num) {
+  if (num != SCALE_DENOMINATOR) {
+    // Note: av1_calculate_scaled_size() rounds *up* after division when the
+    // resulting dimensions are odd. So here, we round *down*.
+    *width = *width * SCALE_DENOMINATOR / num;
+    *height = *height * SCALE_DENOMINATOR / num;
+  }
+}
+
 #if CONFIG_FRAME_SUPERRES
 // TODO(afergs): Look for in-place upscaling
 // TODO(afergs): aom_ vs av1_ functions? Which can I use?
