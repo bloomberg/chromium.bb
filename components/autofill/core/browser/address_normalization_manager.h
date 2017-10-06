@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZATION_MANAGER_H_
-#define COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZATION_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZATION_MANAGER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZATION_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -14,11 +14,9 @@
 #include "components/autofill/core/browser/address_normalizer.h"
 
 namespace autofill {
+
 class AddressNormalizer;
 class AutofillProfile;
-}  // namespace autofill
-
-namespace payments {
 
 // Class to handle multiple concurrent address normalization requests. This
 // class is not thread-safe.
@@ -27,7 +25,7 @@ class AddressNormalizationManager {
   // Initializes an AddressNormalizationManager. |default_country_code| will be
   // used if the country code in an AutofillProfile to normalize is not valid.
   // The AddressNormalizationManager does not own |address_normalizer|.
-  AddressNormalizationManager(autofill::AddressNormalizer* address_normalizer,
+  AddressNormalizationManager(AddressNormalizer* address_normalizer,
                               const std::string& default_country_code);
 
   ~AddressNormalizationManager();
@@ -42,7 +40,7 @@ class AddressNormalizationManager {
   // Normalizes the address in |profile|. This may or may not happen
   // asynchronously. On completion, the address in |profile| will be updated
   // with the normalized address.
-  void StartNormalizingAddress(autofill::AutofillProfile* profile);
+  void StartNormalizingAddress(AutofillProfile* profile);
 
  private:
   // Implements the payments::AddressNormalizer::Delegate interface, and
@@ -55,20 +53,20 @@ class AddressNormalizationManager {
     // normalization of |profile|. |profile| will be updated when normalization
     // is complete.
     NormalizerDelegate(AddressNormalizationManager* owner,
-                       autofill::AddressNormalizer* address_normalizer,
-                       autofill::AutofillProfile* profile);
+                       AddressNormalizer* address_normalizer,
+                       AutofillProfile* profile);
 
     // Returns whether this delegate has completed or not.
     bool has_completed() const { return has_completed_; }
 
     // AddressNormalizer::Delegate:
     void OnAddressNormalized(
-        const autofill::AutofillProfile& normalized_profile) override;
-    void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override;
+        const AutofillProfile& normalized_profile) override;
+    void OnCouldNotNormalize(const AutofillProfile& profile) override;
 
    private:
     // Helper method that handles when normalization has completed.
-    void OnCompletion(const autofill::AutofillProfile& profile);
+    void OnCompletion(const AutofillProfile& profile);
 
     bool has_completed_ = false;
     AddressNormalizationManager* owner_ = nullptr;
@@ -95,12 +93,12 @@ class AddressNormalizationManager {
   std::vector<std::unique_ptr<NormalizerDelegate>> delegates_;
 
   // An unowned raw pointer to the AddressNormalizer to use.
-  autofill::AddressNormalizer* address_normalizer_;
+  AddressNormalizer* address_normalizer_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(AddressNormalizationManager);
 };
 
-}  // namespace payments
+}  // namespace autofill
 
-#endif  // COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZATION_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZATION_MANAGER_H_

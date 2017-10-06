@@ -41,7 +41,7 @@ autofill::AddressNormalizer* TestPaymentRequest::GetAddressNormalizer() {
   return &address_normalizer_;
 }
 
-AddressNormalizationManager*
+autofill::AddressNormalizationManager*
 TestPaymentRequest::GetAddressNormalizationManager() {
   return &address_normalization_manager_;
 }
