@@ -240,7 +240,12 @@ static_library("protocol") {
       ]
     }
 
-    deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
+    deps += [
+      "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
+      "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
+      "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",
+      "//third_party/webrtc_overrides:init_webrtc",
+    ]
   }
 
   if (enable_remoting_host) {
