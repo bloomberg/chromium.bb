@@ -4,29 +4,20 @@
 
 #include "ash/system/power/tablet_power_button_controller.h"
 
-#include <memory>
-
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
-#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/system/power/power_button_test_base.h"
 #include "ash/test_media_client.h"
 #include "ash/touch/touch_devices_controller.h"
-#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -38,42 +29,16 @@ namespace {
 // A non-zero brightness used for test.
 constexpr int kNonZeroBrightness = 10;
 
-// Vector pointing up (e.g. keyboard in clamshell).
-constexpr gfx::Vector3dF kUpVector = {0, 0,
-                                      TabletPowerButtonController::kGravity};
-
-// Vector pointing down (e.g. keyboard in tablet sitting on table).
-constexpr gfx::Vector3dF kDownVector = {0, 0,
-                                        -TabletPowerButtonController::kGravity};
-
-// Vector pointing sideways (e.g. screen in 90-degree clamshell).
-constexpr gfx::Vector3dF kSidewaysVector = {
-    0, TabletPowerButtonController::kGravity, 0};
-
 }  // namespace
 
-class TabletPowerButtonControllerTest : public AshTestBase {
+class TabletPowerButtonControllerTest : public PowerButtonTestBase {
  public:
   TabletPowerButtonControllerTest() {}
   ~TabletPowerButtonControllerTest() override {}
 
   void SetUp() override {
-    // This also initializes DBusThreadManager.
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    power_manager_client_ = new chromeos::FakePowerManagerClient();
-    dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableTabletMode);
-    AshTestBase::SetUp();
-
+    PowerButtonTestBase::SetUp();
     InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
-
-    lock_state_controller_ = Shell::Get()->lock_state_controller();
-    lock_state_test_api_ =
-        std::make_unique<LockStateControllerTestApi>(lock_state_controller_);
-    generator_ = &AshTestBase::GetEventGenerator();
-
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
     EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
@@ -86,94 +51,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override {
-    generator_ = nullptr;
-    const Config config = Shell::GetAshConfig();
-    AshTestBase::TearDown();
-    // Mash/mus shuts down dbus after each test.
-    if (config == Config::CLASSIC)
-      chromeos::DBusThreadManager::Shutdown();
-  }
-
  protected:
-  // Resets the PowerButtonController and associated members.
-  void ResetPowerButtonController() {
-    ShellTestApi shell_test_api;
-    shell_test_api.ResetPowerButtonControllerForTest();
-    InitPowerButtonControllerMembers(false /* send_accelerometer_update */);
-  }
-
-  // Initializes |power_button_controller_| and other members that point at
-  // objects owned by it. If |send_accelerometer_update| is true, an
-  // accelerometer update is sent so that a TabletPowerButtonController will be
-  // created.
-  void InitPowerButtonControllerMembers(bool send_accelerometer_update) {
-    power_button_controller_ = Shell::Get()->power_button_controller();
-    tick_clock_ = new base::SimpleTestTickClock;
-    power_button_controller_->SetTickClockForTesting(
-        base::WrapUnique(tick_clock_));
-
-    if (send_accelerometer_update) {
-      SendAccelerometerUpdate(kSidewaysVector, kUpVector);
-      tablet_controller_ =
-          power_button_controller_->tablet_power_button_controller_for_test();
-      test_api_ = std::make_unique<TabletPowerButtonController::TestApi>(
-          tablet_controller_);
-    } else {
-      test_api_ = nullptr;
-      tablet_controller_ = nullptr;
-    }
-  }
-
-  // Sends an update with screen and keyboard accelerometer readings to
-  // PowerButtonController, and also |tablet_controller_| if it's non-null and
-  // has registered as an observer.
-  void SendAccelerometerUpdate(const gfx::Vector3dF& screen,
-                               const gfx::Vector3dF& keyboard) {
-    scoped_refptr<chromeos::AccelerometerUpdate> update(
-        new chromeos::AccelerometerUpdate());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, screen.x(), screen.y(),
-                screen.z());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, keyboard.x(),
-                keyboard.y(), keyboard.z());
-
-    power_button_controller_->OnAccelerometerUpdated(update);
-    // |tablet_controller_| may get initialized from nullptr.
-    tablet_controller_ =
-        power_button_controller_->tablet_power_button_controller_for_test();
-
-    if (test_api_ && test_api_->IsObservingAccelerometerReader(
-                         chromeos::AccelerometerReader::GetInstance()))
-      tablet_controller_->OnAccelerometerUpdated(update);
-  }
-
-  void PressPowerButton() {
-    power_button_controller_->OnPowerButtonEvent(true, tick_clock_->NowTicks());
-  }
-
-  void ReleasePowerButton() {
-    power_button_controller_->OnPowerButtonEvent(false,
-                                                 tick_clock_->NowTicks());
-  }
-
-  void UnlockScreen() {
-    lock_state_controller_->OnLockStateChanged(false);
-    GetSessionControllerClient()->UnlockScreen();
-  }
-
-  void Initialize(LoginStatus status) {
-    if (status == LoginStatus::NOT_LOGGED_IN) {
-      ClearLogin();
-    } else {
-      CreateUserSessions(1);
-    }
-  }
-
-  void EnableTabletMode(bool enabled) {
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-        enabled);
-  }
-
   bool GetLockedState() {
     // LockScreen is an async mojo call.
     SessionController* const session_controller =
@@ -196,22 +74,11 @@ class TabletPowerButtonControllerTest : public AshTestBase {
         base::TimeDelta::FromMilliseconds(1));
   }
 
-  // Ownership is passed on to chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
-
-  PowerButtonController* power_button_controller_ = nullptr;  // Not owned.
-  LockStateController* lock_state_controller_ = nullptr;      // Not owned.
-  TabletPowerButtonController* tablet_controller_ = nullptr;  // Not owned.
-  std::unique_ptr<TabletPowerButtonController::TestApi> test_api_;
-  std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
-  base::SimpleTestTickClock* tick_clock_ = nullptr;  // Not owned.
-  ui::test::EventGenerator* generator_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
 };
 
 TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
-  Initialize(LoginStatus::USER);
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
 
@@ -243,19 +110,19 @@ TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
 TEST_F(TabletPowerButtonControllerTest,
        ReleasePowerButtonBeforeStartingShutdownAnimation) {
   PressPowerButton();
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   ReleasePowerButton();
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
@@ -264,7 +131,7 @@ TEST_F(TabletPowerButtonControllerTest,
 TEST_F(TabletPowerButtonControllerTest,
        ReleasePowerButtonDuringShutdownAnimation) {
   PressPowerButton();
-  test_api_->TriggerShutdownTimeout();
+  tablet_test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -280,7 +147,7 @@ TEST_F(TabletPowerButtonControllerTest,
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  test_api_->TriggerShutdownTimeout();
+  tablet_test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -311,19 +178,19 @@ TEST_F(TabletPowerButtonControllerTest,
   // are not forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   PressPowerButton();
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Send the power button event after a longer delay and check that backlights
   // are forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
   PressPowerButton();
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
@@ -346,19 +213,19 @@ TEST_F(TabletPowerButtonControllerTest,
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Send the power button event after a longer delay and check that backlights
   // are forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
   PressPowerButton();
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
@@ -372,7 +239,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
+  PressKey(ui::VKEY_L);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
@@ -382,7 +249,7 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  generator_->MoveMouseBy(1, 1);
+  GenerateMouseMoveEvent();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
@@ -392,9 +259,9 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  generator_->set_flags(ui::EF_IS_SYNTHESIZED);
-  generator_->MoveMouseBy(1, 1);
-  generator_->set_flags(ui::EF_NONE);
+  GetEventGenerator().set_flags(ui::EF_IS_SYNTHESIZED);
+  GenerateMouseMoveEvent();
+  GetEventGenerator().set_flags(ui::EF_NONE);
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
@@ -407,10 +274,10 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnTabletMode) {
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
+  PressKey(ui::VKEY_L);
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 
-  generator_->MoveMouseBy(1, 1);
+  GenerateMouseMoveEvent();
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
 }
 
@@ -426,15 +293,15 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   // generated for each pressing and releasing, and multiple repeating pressed
   // events depending on holding.
   ASSERT_EQ(0, power_manager_client_->num_set_backlights_forced_off_calls());
-  test_api_->SendKeyEvent(&power_key_pressed);
-  test_api_->SendKeyEvent(&power_key_pressed);
+  tablet_test_api_->SendKeyEvent(&power_key_pressed);
+  tablet_test_api_->SendKeyEvent(&power_key_pressed);
   PressPowerButton();
-  test_api_->SendKeyEvent(&power_key_pressed);
-  test_api_->SendKeyEvent(&power_key_pressed);
-  test_api_->SendKeyEvent(&power_key_pressed);
+  tablet_test_api_->SendKeyEvent(&power_key_pressed);
+  tablet_test_api_->SendKeyEvent(&power_key_pressed);
+  tablet_test_api_->SendKeyEvent(&power_key_pressed);
   ReleasePowerButton();
-  test_api_->SendKeyEvent(&power_key_released);
-  test_api_->SendKeyEvent(&power_key_released);
+  tablet_test_api_->SendKeyEvent(&power_key_released);
+  tablet_test_api_->SendKeyEvent(&power_key_released);
   EXPECT_EQ(1, power_manager_client_->num_set_backlights_forced_off_calls());
 }
 
@@ -462,7 +329,7 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
   ASSERT_FALSE(GetGlobalTouchscreenEnabled());
-  generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
+  PressKey(ui::VKEY_L);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_TRUE(GetGlobalTouchscreenEnabled());
 
@@ -473,7 +340,7 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenWhileForcedOff) {
   power_manager_client_->SendBrightnessChanged(0, true);
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
   ASSERT_FALSE(GetGlobalTouchscreenEnabled());
-  generator_->MoveMouseBy(1, 1);
+  GenerateMouseMoveEvent();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_TRUE(GetGlobalTouchscreenEnabled());
 }
@@ -499,21 +366,21 @@ TEST_F(TabletPowerButtonControllerTest, DisableTouchscreenForInactivity) {
 // power button may be pressed and held, which may cause unwanted shutdown.
 TEST_F(TabletPowerButtonControllerTest,
        EnterOrLeaveTabletModeWhilePressingPowerButton) {
-  Initialize(LoginStatus::USER);
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
 
   PressPowerButton();
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   tablet_controller_->OnTabletModeStarted();
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  test_api_->TriggerShutdownTimeout();
+  tablet_test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   tablet_controller_->OnTabletModeStarted();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -523,16 +390,16 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   tablet_controller_->OnTabletModeEnded();
-  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  test_api_->TriggerShutdownTimeout();
+  tablet_test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   tablet_controller_->OnTabletModeEnded();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -645,8 +512,8 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForAcceleration) {
   cl.AppendSwitchASCII(switches::kSpuriousPowerButtonAccelCount, "2");
   cl.AppendSwitchASCII(switches::kSpuriousPowerButtonKeyboardAccel, "4.5");
   cl.AppendSwitchASCII(switches::kSpuriousPowerButtonScreenAccel, "8.0");
-  test_api_->ParseSpuriousPowerButtonSwitches(cl);
-  ASSERT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  tablet_test_api_->ParseSpuriousPowerButtonSwitches(cl);
+  ASSERT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Vectors with varying amounts of acceleration beyond gravity.
   static constexpr gfx::Vector3dF kVector0 = {
@@ -662,59 +529,59 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForAcceleration) {
   // subtracting gravity.
   SendAccelerometerUpdate(kVector0, kVector5);
   SendAccelerometerUpdate(kVector0, kVector9);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_TRUE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Now send two more keyboard readings that are close to gravity. We only have
   // one large reading saved now, so we should permit power button events again.
   SendAccelerometerUpdate(kVector0, kVector0);
   SendAccelerometerUpdate(kVector0, kVector0);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Send a few large screen vectors and check that the button is again blocked.
   SendAccelerometerUpdate(kVector9, kVector0);
   SendAccelerometerUpdate(kVector9, kVector0);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_TRUE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 }
 
 TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForLidAngle) {
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitchASCII(switches::kSpuriousPowerButtonWindow, "5");
   cl.AppendSwitchASCII(switches::kSpuriousPowerButtonLidAngleChange, "200");
-  test_api_->ParseSpuriousPowerButtonSwitches(cl);
-  ASSERT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  tablet_test_api_->ParseSpuriousPowerButtonSwitches(cl);
+  ASSERT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Send two updates in tablet mode with the screen facing up and the keyboard
   // facing down (i.e. 360 degrees between the two).
   SendAccelerometerUpdate(kUpVector, kDownVector);
   SendAccelerometerUpdate(kUpVector, kDownVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Now keep the screen facing up and report the keyboard as being sideways, as
   // if it's been rotated 90 degrees.
   SendAccelerometerUpdate(kUpVector, kSidewaysVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Make the keyboard also face up (180 degrees from start).
   SendAccelerometerUpdate(kUpVector, kUpVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Now make the screen face sideways, completing the 270-degree change to
   // a clamshell orientation. We've exceeded the threshold over the last four
   // samples, so events should be ignored.
   SendAccelerometerUpdate(kSidewaysVector, kUpVector);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_TRUE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // Make the screen travel 90 more degrees so the lid is closed (360 degrees
   // from start).
   SendAccelerometerUpdate(kDownVector, kUpVector);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_TRUE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 
   // After two more closed samples, the 5-sample buffer just contains a
   // 180-degree transition, so events should be accepted again.
   SendAccelerometerUpdate(kDownVector, kUpVector);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_TRUE(tablet_test_api_->IsSpuriousPowerButtonEvent());
   SendAccelerometerUpdate(kDownVector, kUpVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
+  EXPECT_FALSE(tablet_test_api_->IsSpuriousPowerButtonEvent());
 }
 
 // Tests that when backlights get forced off due to tablet power button, media
@@ -753,7 +620,7 @@ TEST_F(TabletPowerButtonControllerTest, SuspendDoneStopsForcingOff) {
 TEST_F(TabletPowerButtonControllerTest, ImmediateLockAnimations) {
   TestSessionStateAnimator* test_animator = new TestSessionStateAnimator;
   lock_state_controller_->set_animator_for_test(test_animator);
-  Initialize(LoginStatus::USER);
+  Initialize(ButtonType::NORMAL, LoginStatus::USER);
   SetShouldLockScreenAutomatically(true);
   ASSERT_FALSE(GetLockedState());
 
@@ -826,7 +693,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   // Trigger a key event to stop backlights forcing off. Chrome will receive
   // brightness changed signal. But we may still have display off state.
-  generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
+  PressKey(ui::VKEY_L);
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
