@@ -15,7 +15,7 @@
 #include "platform/bindings/Microtask.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
+#include "public/platform/modules/serviceworker/service_worker_event_status.mojom-blink.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -241,67 +241,67 @@ void WaitUntilObserver::MaybeCompleteEvent() {
 
   ServiceWorkerGlobalScopeClient* client =
       ServiceWorkerGlobalScopeClient::From(execution_context_);
-  WebServiceWorkerEventResult result =
+  mojom::ServiceWorkerEventStatus status =
       (event_dispatch_state_ == EventDispatchState::kFailed ||
        has_rejected_promise_)
-          ? kWebServiceWorkerEventResultRejected
-          : kWebServiceWorkerEventResultCompleted;
+          ? mojom::ServiceWorkerEventStatus::REJECTED
+          : mojom::ServiceWorkerEventStatus::COMPLETED;
   switch (type_) {
     case kAbortPayment:
-      client->DidHandleAbortPaymentEvent(event_id_, result,
+      client->DidHandleAbortPaymentEvent(event_id_, status,
                                          event_dispatch_time_);
       break;
     case kActivate:
-      client->DidHandleActivateEvent(event_id_, result, event_dispatch_time_);
+      client->DidHandleActivateEvent(event_id_, status, event_dispatch_time_);
       break;
     case kCanMakePayment:
-      client->DidHandleCanMakePaymentEvent(event_id_, result,
+      client->DidHandleCanMakePaymentEvent(event_id_, status,
                                            event_dispatch_time_);
       break;
     case kFetch:
-      client->DidHandleFetchEvent(event_id_, result, event_dispatch_time_);
+      client->DidHandleFetchEvent(event_id_, status, event_dispatch_time_);
       break;
     case kInstall:
-      client->DidHandleInstallEvent(event_id_, result, event_dispatch_time_);
+      client->DidHandleInstallEvent(event_id_, status, event_dispatch_time_);
       break;
     case kMessage:
-      client->DidHandleExtendableMessageEvent(event_id_, result,
+      client->DidHandleExtendableMessageEvent(event_id_, status,
                                               event_dispatch_time_);
       break;
     case kNotificationClick:
-      client->DidHandleNotificationClickEvent(event_id_, result,
+      client->DidHandleNotificationClickEvent(event_id_, status,
                                               event_dispatch_time_);
       consume_window_interaction_timer_.Stop();
       ConsumeWindowInteraction(nullptr);
       break;
     case kNotificationClose:
-      client->DidHandleNotificationCloseEvent(event_id_, result,
+      client->DidHandleNotificationCloseEvent(event_id_, status,
                                               event_dispatch_time_);
       break;
     case kPush:
-      client->DidHandlePushEvent(event_id_, result, event_dispatch_time_);
+      client->DidHandlePushEvent(event_id_, status, event_dispatch_time_);
       break;
     case kSync:
-      client->DidHandleSyncEvent(event_id_, result, event_dispatch_time_);
+      client->DidHandleSyncEvent(event_id_, status, event_dispatch_time_);
       break;
     case kPaymentRequest:
-      client->DidHandlePaymentRequestEvent(event_id_, result,
+      client->DidHandlePaymentRequestEvent(event_id_, status,
                                            event_dispatch_time_);
       break;
     case kBackgroundFetchAbort:
-      client->DidHandleBackgroundFetchAbortEvent(event_id_, result,
+      client->DidHandleBackgroundFetchAbortEvent(event_id_, status,
                                                  event_dispatch_time_);
       break;
     case kBackgroundFetchClick:
-      client->DidHandleBackgroundFetchClickEvent(event_id_, result,
+      client->DidHandleBackgroundFetchClickEvent(event_id_, status,
                                                  event_dispatch_time_);
       break;
     case kBackgroundFetchFail:
-      client->DidHandleBackgroundFetchFailEvent(event_id_, result,
+      client->DidHandleBackgroundFetchFailEvent(event_id_, status,
                                                 event_dispatch_time_);
       break;
     case kBackgroundFetched:
-      client->DidHandleBackgroundFetchedEvent(event_id_, result,
+      client->DidHandleBackgroundFetchedEvent(event_id_, status,
                                               event_dispatch_time_);
       break;
   }

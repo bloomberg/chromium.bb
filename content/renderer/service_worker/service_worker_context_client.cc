@@ -157,18 +157,6 @@ class StreamHandleListener
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
 };
 
-blink::mojom::ServiceWorkerEventStatus WebEventResultToMojo(
-    blink::WebServiceWorkerEventResult result) {
-  switch (result) {
-    case blink::kWebServiceWorkerEventResultCompleted:
-      return blink::mojom::ServiceWorkerEventStatus::COMPLETED;
-    case blink::kWebServiceWorkerEventResultRejected:
-      return blink::mojom::ServiceWorkerEventStatus::REJECTED;
-  }
-  NOTREACHED() << "Got invalid result: " << result;
-  return blink::mojom::ServiceWorkerEventStatus::ABORTED;
-}
-
 WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
     FetchRequestMode mode) {
   return static_cast<WebURLRequest::FetchRequestMode>(mode);
@@ -923,92 +911,91 @@ ServiceWorkerContextClient::CreateDevToolsMessageLoop() {
 
 void ServiceWorkerContextClient::DidHandleActivateEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchActivateEventCallback* callback =
       context_->activate_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->activate_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchAbortEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchBackgroundFetchAbortEventCallback* callback =
       context_->background_fetch_abort_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->background_fetch_abort_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchClickEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchBackgroundFetchClickEventCallback* callback =
       context_->background_fetch_click_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->background_fetch_click_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchFailEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchBackgroundFetchFailEventCallback* callback =
       context_->background_fetch_fail_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->background_fetch_fail_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleBackgroundFetchedEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchBackgroundFetchedEventCallback* callback =
       context_->background_fetched_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->background_fetched_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleExtendableMessageEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchExtendableMessageEventCallback* callback =
       context_->message_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->message_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleInstallEvent(
     int event_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchInstallEventCallback* callback =
       context_->install_event_callbacks.Lookup(event_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
-                           proxy_->HasFetchEventHandler(),
+  std::move(*callback).Run(status, proxy_->HasFetchEventHandler(),
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->install_event_callbacks.Remove(event_id);
   context_->install_methods_map.erase(event_id);
@@ -1088,7 +1075,7 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
 
 void ServiceWorkerContextClient::DidHandleFetchEvent(
     int fetch_event_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
@@ -1098,20 +1085,19 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
   DispatchFetchEventCallback callback =
       std::move(context_->fetch_event_callbacks[fetch_event_id]);
   DCHECK(callback);
-  std::move(callback).Run(WebEventResultToMojo(result),
-                          base::Time::FromDoubleT(event_dispatch_time));
+  std::move(callback).Run(status, base::Time::FromDoubleT(event_dispatch_time));
   context_->fetch_event_callbacks.erase(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchNotificationClickEventCallback* callback =
       context_->notification_click_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
 
   context_->notification_click_event_callbacks.Remove(request_id);
@@ -1119,13 +1105,13 @@ void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
 
 void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchNotificationCloseEventCallback* callback =
       context_->notification_close_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
 
   context_->notification_close_event_callbacks.Remove(request_id);
@@ -1133,26 +1119,26 @@ void ServiceWorkerContextClient::DidHandleNotificationCloseEvent(
 
 void ServiceWorkerContextClient::DidHandlePushEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchPushEventCallback* callback =
       context_->push_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->push_event_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::DidHandleSyncEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchSyncEventCallback* callback =
       context_->sync_event_callbacks.Lookup(request_id);
   DCHECK(callback);
   DCHECK(*callback);
-  std::move(*callback).Run(WebEventResultToMojo(result),
+  std::move(*callback).Run(status,
                            base::Time::FromDoubleT(event_dispatch_time));
   context_->sync_event_callbacks.Remove(request_id);
 }
@@ -1170,12 +1156,11 @@ void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
 
 void ServiceWorkerContextClient::DidHandleAbortPaymentEvent(
     int event_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double dispatch_event_time) {
   DispatchAbortPaymentEventCallback callback =
       std::move(context_->abort_payment_event_callbacks[event_id]);
-  std::move(callback).Run(WebEventResultToMojo(result),
-                          base::Time::FromDoubleT(dispatch_event_time));
+  std::move(callback).Run(status, base::Time::FromDoubleT(dispatch_event_time));
   context_->abort_payment_event_callbacks.erase(event_id);
 }
 
@@ -1192,12 +1177,11 @@ void ServiceWorkerContextClient::RespondToCanMakePaymentEvent(
 
 void ServiceWorkerContextClient::DidHandleCanMakePaymentEvent(
     int event_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double dispatch_event_time) {
   DispatchCanMakePaymentEventCallback callback =
       std::move(context_->can_make_payment_event_callbacks[event_id]);
-  std::move(callback).Run(WebEventResultToMojo(result),
-                          base::Time::FromDoubleT(dispatch_event_time));
+  std::move(callback).Run(status, base::Time::FromDoubleT(dispatch_event_time));
   context_->can_make_payment_event_callbacks.erase(event_id);
 }
 
@@ -1218,12 +1202,11 @@ void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
 
 void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
     int payment_request_id,
-    blink::WebServiceWorkerEventResult result,
+    blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   DispatchPaymentRequestEventCallback callback =
       std::move(context_->payment_request_event_callbacks[payment_request_id]);
-  std::move(callback).Run(WebEventResultToMojo(result),
-                          base::Time::FromDoubleT(event_dispatch_time));
+  std::move(callback).Run(status, base::Time::FromDoubleT(event_dispatch_time));
   context_->payment_request_event_callbacks.erase(payment_request_id);
 }
 

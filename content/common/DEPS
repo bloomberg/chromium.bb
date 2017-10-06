@@ -61,7 +61,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h",
-  "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h",
