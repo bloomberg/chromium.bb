@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
 
 namespace net {
-class IOBuffer;
 struct RedirectInfo;
 }
 
@@ -105,6 +104,8 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
       storage::mojom::BlobPtr body_as_blob,
       const scoped_refptr<ServiceWorkerVersion>& version);
 
+  // Used as the StartLoaderCallback passed to |loader_callback_| when the
+  // service worker provided a response. Returns the response to |client|.
   // |body_as_blob| is kept around until BlobDataHandle is created from
   // blob_uuid just to make sure the blob is kept alive.
   void StartResponse(const ServiceWorkerResponse& response,
@@ -113,16 +114,21 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
                      storage::mojom::BlobPtr body_as_blob,
                      mojom::URLLoaderRequest request,
                      mojom::URLLoaderClientPtr client);
-  void AfterRead(scoped_refptr<net::IOBuffer> buffer, int bytes);
+
+  // Used as the StartLoaderCallback passed to |loader_callback_| on error.
+  // Returns a network error to |client|.
+  void StartErrorResponse(mojom::URLLoaderRequest request,
+                          mojom::URLLoaderClientPtr client);
 
   // Calls url_loader_client_->OnReceiveResopnse() with |response_head_|.
   void CommitResponseHeaders();
   // Calls url_loader_client_->OnComplete(). Expected to be called after
   // CommitResponseHeaders (i.e. status_ == kSentHeader).
   void CommitCompleted(int error_code);
-  // Calls CommitResponseHeaders() if we haven't sent headers yet,
-  // and CommitCompleted() with error code.
-  void DeliverErrorResponse();
+
+  // Calls |loader_callback_| with StartErrorResponse callback. Must not be
+  // called once either StartResponse or StartErrorResponse is called.
+  void ReturnNetworkError();
 
   // mojom::URLLoader:
   void FollowRedirect() override;

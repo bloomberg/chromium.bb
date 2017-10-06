@@ -71,15 +71,12 @@ Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-response-body-with-invalid-chunk.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-css-images.https.html [ Crash Pass ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Pass Failure Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-response-xhr.https.html [ Crash ]
-Bug(none) external/wpt/service-workers/service-worker/foreign-fetch-workers.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/import-scripts-resource-map.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/import-scripts-updated-flag.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/invalid-blobtype.https.html [ Crash ]
@@ -93,7 +90,6 @@ Bug(none) external/wpt/service-workers/service-worker/request-body-blob.https.ht
 Bug(none) external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/shared-worker-controlled.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout Failure ]
-Bug(none) external/wpt/service-workers/service-worker/update-recovery.https.html [ Crash ]
 Bug(none) external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass Crash Failure ]
 Bug(none) external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/navigation-preload/redirect.https.html [ Failure ]
@@ -101,6 +97,7 @@ Bug(none) external/wpt/service-workers/service-worker/navigation-preload/redirec
 # NetworkService won't support Foreign Fetch.
 Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Skip ]
 Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Skip ]
+Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-workers.https.html [ Skip ]
 
 # Passes on NetworkService and fails on non-NetworkService because
 # NetworkService isn't affected by https://crbug.com/595993.

@@ -232,6 +232,9 @@ class Helper : public EmbeddedWorkerTestHelper {
     response_mode_ = ResponseMode::kFallbackResponse;
   }
 
+  // Tells this helper to respond to fetch events with an error response.
+  void RespondWithError() { response_mode_ = ResponseMode::kErrorResponse; }
+
   // Tells this helper to respond to fetch events with
   // FetchEvent#preloadResponse. See NavigationPreloadLoaderClient's
   // documentation for details.
@@ -334,6 +337,24 @@ class Helper : public EmbeddedWorkerTestHelper {
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                  base::Time::Now());
         return;
+      case ResponseMode::kErrorResponse:
+        response_callback->OnResponse(
+            ServiceWorkerResponse(
+                base::MakeUnique<std::vector<GURL>>(), 0 /* status_code */,
+                "" /* status_text */,
+                network::mojom::FetchResponseType::kDefault,
+                base::MakeUnique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+                0 /* blob_size */, nullptr /* blob */,
+                blink::kWebServiceWorkerResponseErrorPromiseRejected,
+                base::Time(), false /* response_is_in_cache_storage */,
+                std::string() /* response_cache_storage_cache_name */,
+                base::MakeUnique<
+                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
+            base::Time::Now());
+        std::move(finish_callback)
+            .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
+                 base::Time::Now());
+        return;
       case ResponseMode::kNavigationPreloadResponse:
         // Deletes itself when done.
         new NavigationPreloadLoaderClient(std::move(preload_handle),
@@ -400,6 +421,7 @@ class Helper : public EmbeddedWorkerTestHelper {
     kBlob,
     kStream,
     kFallbackResponse,
+    kErrorResponse,
     kNavigationPreloadResponse,
     kFailFetchEventDispatch,
     kEarlyResponse,
@@ -605,6 +627,18 @@ TEST_F(ServiceWorkerURLLoaderJobTest, Basic) {
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 }
 
+TEST_F(ServiceWorkerURLLoaderJobTest, NoActiveWorker) {
+  // Clear |version_| to make GetServiceWorkerVersion() return null.
+  version_ = nullptr;
+
+  // Perform the request.
+  JobResult result = StartRequest(CreateRequest());
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
+}
+
 // Test that the request body is passed to the fetch event.
 TEST_F(ServiceWorkerURLLoaderJobTest, RequestBody) {
   const std::string kData = "BlobRequest";
@@ -803,6 +837,18 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FallbackResponse) {
   // The request should not be handled by the job, but it shouldn't be a
   // failure.
   EXPECT_FALSE(was_main_resource_load_failed_called_);
+}
+
+// Test when the service worker rejects the FetchEvent.
+TEST_F(ServiceWorkerURLLoaderJobTest, ErrorResponse) {
+  helper_->RespondWithError();
+
+  // Perform the request.
+  JobResult result = StartRequest(CreateRequest());
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
 }
 
 // Test when dispatching the fetch event to the service worker failed.
