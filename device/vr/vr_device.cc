@@ -19,10 +19,6 @@ VRDevice::VRDevice() : presenting_display_(nullptr), id_(next_id_) {
 
 VRDevice::~VRDevice() {}
 
-unsigned int VRDevice::id() const {
-  return id_;
-}
-
 void VRDevice::AddDisplay(VRDisplayImpl* display) {
   displays_.insert(display);
   OnDisplayAdded(display);

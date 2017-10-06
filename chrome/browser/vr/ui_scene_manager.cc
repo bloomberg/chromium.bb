@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/numerics/math_constants.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/close_button_texture.h"
@@ -70,6 +69,9 @@ void BindColor(UiSceneManager* model, Text* text, P p) {
 }
 
 }  // namespace
+
+using TargetProperty::BOUNDS;
+using TargetProperty::TRANSFORM;
 
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
@@ -347,7 +349,7 @@ void UiSceneManager::CreateBackground() {
                                 panel.y_offset * kSceneSize / 2,
                                 panel.z_offset * kSceneSize / 2);
     panel_element->SetRotate(panel.x_rotation, panel.y_rotation, 0,
-                             base::kPiFloat / 2 * panel.angle);
+                             M_PI_2 * panel.angle);
     panel_element->set_hit_testable(false);
     background_panels_.push_back(panel_element.get());
     scene_->AddUiElement(k2dBrowsingBackground, std::move(panel_element));
@@ -359,7 +361,7 @@ void UiSceneManager::CreateBackground() {
   floor->set_draw_phase(kPhaseFloorCeiling);
   floor->SetSize(kSceneSize, kSceneSize);
   floor->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
-  floor->SetRotate(1, 0, 0, -base::kPiFloat / 2);
+  floor->SetRotate(1, 0, 0, -M_PI_2);
   floor->set_gridline_count(kFloorGridlineCount);
   floor_ = floor.get();
   scene_->AddUiElement(k2dBrowsingBackground, std::move(floor));
@@ -370,7 +372,7 @@ void UiSceneManager::CreateBackground() {
   ceiling->set_draw_phase(kPhaseFloorCeiling);
   ceiling->SetSize(kSceneSize, kSceneSize);
   ceiling->SetTranslate(0.0, kSceneHeight / 2, 0.0);
-  ceiling->SetRotate(1, 0, 0, base::kPiFloat / 2);
+  ceiling->SetRotate(1, 0, 0, M_PI_2);
   ceiling_ = ceiling.get();
   scene_->AddUiElement(k2dBrowsingBackground, std::move(ceiling));
 
@@ -467,7 +469,7 @@ void UiSceneManager::CreateWebVrUrlToast() {
       512,
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
   url_bar->set_name(kWebVrUrlToast);
-  url_bar->set_opacity_when_visible(0.8f);
+  url_bar->set_opacity_when_visible(0.8);
   url_bar->set_draw_phase(kPhaseOverlayForeground);
   url_bar->SetVisible(true);
   url_bar->set_hit_testable(false);
@@ -485,7 +487,7 @@ void UiSceneManager::CreateCloseButton() {
       base::MakeUnique<CloseButtonTexture>());
   element->set_name(kCloseButton);
   element->set_draw_phase(kPhaseForeground);
-  element->SetTranslate(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3f,
+  element->SetTranslate(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
                         -kCloseButtonDistance);
   element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   close_button_ = element.get();
@@ -703,7 +705,7 @@ void UiSceneManager::ConfigureScene() {
         ->SetTranslate(0, kFullscreenVerticalOffset, -kFullscreenDistance);
     main_content_->SetSize(kFullscreenWidth, kFullscreenHeight);
     close_button_->SetTranslate(
-        0, kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35f,
+        0, kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35,
         -kCloseButtonFullscreenDistance);
     close_button_->SetSize(kCloseButtonFullscreenWidth,
                            kCloseButtonFullscreenHeight);
@@ -713,7 +715,7 @@ void UiSceneManager::ConfigureScene() {
         ->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
     main_content_->SetSize(kContentWidth, kContentHeight);
     close_button_->SetTranslate(
-        0, kContentVerticalOffset - (kContentHeight / 2) - 0.3f,
+        0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
         -kCloseButtonDistance);
     close_button_->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   }

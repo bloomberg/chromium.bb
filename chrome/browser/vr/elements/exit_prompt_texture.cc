@@ -19,15 +19,15 @@ namespace vr {
 
 namespace {
 
-constexpr float kWidth = 0.672f;
-constexpr float kHeight = 0.2f;
-constexpr float kButtonWidth = 0.162f;
-constexpr float kButtonHeight = 0.066f;
-constexpr float kPromptTextButtonSeperatorHeight = 0.04f;
-constexpr float kButtonsSeperatorWidth = 0.01f;
-constexpr float kButtonRadiusFactor = 0.006f;
-constexpr float kFontSizePromptText = 0.027f;
-constexpr float kFontSizePromptButtonText = 0.024f;
+constexpr float kWidth = 0.672;
+constexpr float kHeight = 0.2;
+constexpr float kButtonWidth = 0.162;
+constexpr float kButtonHeight = 0.066;
+constexpr float kPromptTextButtonSeperatorHeight = 0.04;
+constexpr float kButtonsSeperatorWidth = 0.01;
+constexpr float kButtonRadiusFactor = 0.006;
+constexpr float kFontSizePromptText = 0.027;
+constexpr float kFontSizePromptButtonText = 0.024;
 
 }  // namespace
 

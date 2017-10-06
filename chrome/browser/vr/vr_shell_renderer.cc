@@ -147,8 +147,8 @@ static constexpr float kMidRingOpacity = 0.22f;
 static constexpr float kReticleColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 // Laser constants
-static constexpr float kFadeEnd = 0.535f;
-static constexpr float kFadePoint = 0.5335f;
+static constexpr float kFadeEnd = 0.535;
+static constexpr float kFadePoint = 0.5335;
 static constexpr float kLaserColor[] = {1.0f, 1.0f, 1.0f, 0.5f};
 static constexpr int kLaserDataWidth = 48;
 static constexpr int kLaserDataHeight = 1;

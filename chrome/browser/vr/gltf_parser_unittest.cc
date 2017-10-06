@@ -45,8 +45,7 @@ std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
 }
 
 TEST_F(GltfParserTest, Parse) {
-  auto asset =
-      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_inline.gltf")));
+  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -110,8 +109,7 @@ TEST_F(GltfParserTest, Parse) {
 }
 
 TEST_F(GltfParserTest, ParseUnknownBuffer) {
-  auto asset =
-      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_inline.gltf")));
+  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -129,8 +127,7 @@ TEST_F(GltfParserTest, ParseUnknownBuffer) {
 }
 
 TEST_F(GltfParserTest, ParseMissingRequired) {
-  auto asset =
-      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_inline.gltf")));
+  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -140,7 +137,7 @@ TEST_F(GltfParserTest, ParseMissingRequired) {
 }
 
 TEST_F(GltfParserTest, ParseExternal) {
-  auto gltf_path = data_dir_.Append(FILE_PATH_LITERAL("sample_external.gltf"));
+  auto gltf_path = data_dir_.Append("sample_external.gltf");
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -154,8 +151,7 @@ TEST_F(GltfParserTest, ParseExternal) {
 }
 
 TEST_F(GltfParserTest, ParseExternalNoPath) {
-  auto asset =
-      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_external.gltf")));
+  auto asset = Deserialize(data_dir_.Append("sample_external.gltf"));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -165,8 +161,7 @@ TEST_F(GltfParserTest, ParseExternalNoPath) {
 
 TEST_F(BinaryGltfParserTest, ParseBinary) {
   std::string data;
-  EXPECT_TRUE(base::ReadFileToString(
-      data_dir_.Append(FILE_PATH_LITERAL("sample.glb")), &data));
+  EXPECT_TRUE(base::ReadFileToString(data_dir_.Append("sample.glb"), &data));
   base::StringPiece glb_data(data);
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
   std::unique_ptr<gltf::Asset> asset =
