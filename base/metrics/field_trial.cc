@@ -1131,8 +1131,9 @@ std::string FieldTrialList::SerializeSharedMemoryHandleMetadata(
 
 #if defined(OS_WIN) || defined(OS_FUCHSIA)
 
-template <class RawHandle>
-SharedMemoryHandle DeserializeImpl(const std::string& switch_value) {
+// static
+SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
+    const std::string& switch_value) {
   std::vector<base::StringPiece> tokens = base::SplitStringPiece(
       switch_value, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 
@@ -1142,8 +1143,10 @@ SharedMemoryHandle DeserializeImpl(const std::string& switch_value) {
   int field_trial_handle = 0;
   if (!base::StringToInt(tokens[0], &field_trial_handle))
     return SharedMemoryHandle();
-  RawHandle handle = reinterpret_cast<RawHandle>(field_trial_handle);
-#if defined(OS_WIN)
+#if defined(OS_FUCHSIA)
+  zx_handle_t handle = static_cast<zx_handle_t>(field_trial_handle);
+#elif defined(OS_WIN)
+  HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
   if (base::IsCurrentProcessElevated()) {
     // base::LaunchElevatedProcess doesn't have a way to duplicate the handle,
     // but this process can since by definition it's not sandboxed.
@@ -1153,7 +1156,7 @@ SharedMemoryHandle DeserializeImpl(const std::string& switch_value) {
                     FALSE, DUPLICATE_SAME_ACCESS);
     CloseHandle(parent_handle);
   }
-#endif
+#endif  // defined(OS_WIN)
 
   base::UnguessableToken guid;
   if (!DeserializeGUIDFromStringPieces(tokens[1], tokens[2], &guid))
@@ -1164,16 +1167,6 @@ SharedMemoryHandle DeserializeImpl(const std::string& switch_value) {
     return SharedMemoryHandle();
 
   return SharedMemoryHandle(handle, static_cast<size_t>(size), guid);
-}
-
-// static
-SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
-    const std::string& switch_value) {
-#if defined(OS_WIN)
-  return DeserializeImpl<HANDLE>(switch_value);
-#else
-  return DeserializeImpl<zx_handle_t>(switch_value);
-#endif
 }
 
 #elif defined(OS_POSIX) && !defined(OS_NACL)
