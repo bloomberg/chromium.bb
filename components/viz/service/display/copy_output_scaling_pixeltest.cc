@@ -192,8 +192,7 @@ const auto kParameters = testing::Values(std::make_tuple(1, 1, 1, 1),
                                          std::make_tuple(2, 2, 1, 1));
 
 using GLCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<GLRenderer>;
-// TODO(crbug/760348): To be enabled once GLRenderer impl lands.
-TEST_P(GLCopyOutputScalingPixelTest, DISABLED_ScaledCopyOfDrawnFrame) {
+TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();
 }
 INSTANTIATE_TEST_CASE_P(, GLCopyOutputScalingPixelTest, kParameters);

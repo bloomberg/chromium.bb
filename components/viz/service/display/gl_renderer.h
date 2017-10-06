@@ -19,6 +19,7 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/color_lut_cache.h"
 #include "components/viz/service/display/direct_renderer.h"
+#include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
 #include "components/viz/service/viz_service_export.h"
@@ -77,9 +78,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
     return shared_geometry_.get();
   }
 
-  void GetFramebufferPixelsAsync(const gfx::Rect& rect,
-                                 const gfx::ColorSpace& framebuffer_color_space,
-                                 std::unique_ptr<CopyOutputRequest> request);
   // Returns the format to use for storage if copying from the current
   // framebuffer. If the root renderpass is current, it uses the best matching
   // format from the OutputSurface, otherwise it uses the best matching format
@@ -137,6 +135,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       float edge[24]);
 
  private:
+  friend class GLRendererCopierPixelTest;
   friend class GLRendererShaderPixelTest;
   friend class GLRendererShaderTest;
 
@@ -244,14 +243,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void InitializeSharedObjects();
   void CleanupSharedObjects();
 
-  typedef base::Callback<void(std::unique_ptr<CopyOutputRequest> copy_request,
-                              bool success)>
-      AsyncGetFramebufferPixelsCleanupCallback;
-  void FinishedReadback(unsigned source_buffer,
-                        unsigned query,
-                        const gfx::Size& size,
-                        const gfx::ColorSpace& framebuffer_color_space);
-
   void ReinitializeGLState();
   void RestoreGLState();
 
@@ -321,7 +312,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   gpu::ContextSupport* context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
 
-  TextureMailboxDeleter* texture_mailbox_deleter_;
+  GLRendererCopier copier_;
 
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;
@@ -332,10 +323,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   const Program* current_program_ = nullptr;
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_cache_ = 0;
-
-  struct PendingAsyncReadPixels;
-  std::vector<std::unique_ptr<PendingAsyncReadPixels>>
-      pending_async_read_pixels_;
 
   std::unique_ptr<cc::ResourceProvider::ScopedWriteLockGL>
       current_framebuffer_lock_;
