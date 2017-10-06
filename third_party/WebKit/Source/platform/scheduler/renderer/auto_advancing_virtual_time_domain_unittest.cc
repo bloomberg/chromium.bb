@@ -66,23 +66,38 @@ namespace {
 void NopTask(bool* task_run) {
   *task_run = true;
 }
+
+class MockObserver : public AutoAdvancingVirtualTimeDomain::Observer {
+ public:
+  MOCK_METHOD0(OnVirtualTimeAdvanced, void());
+};
+
 }  // namesapce
 
 TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeAdvances) {
+  MockObserver mock_observer;
+  auto_advancing_time_domain_->SetObserver(&mock_observer);
+
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   bool task_run = false;
   task_queue_->PostDelayedTask(FROM_HERE, base::Bind(NopTask, &task_run),
                                delay);
 
+  EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced());
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_EQ(initial_time_, clock_->NowTicks());
   EXPECT_EQ(initial_time_ + delay,
             auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_TRUE(task_run);
+
+  auto_advancing_time_domain_->SetObserver(nullptr);
 }
 
 TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
+  MockObserver mock_observer;
+  auto_advancing_time_domain_->SetObserver(&mock_observer);
+
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
   bool task_run = false;
   task_queue_->PostDelayedTask(FROM_HERE, base::Bind(NopTask, &task_run),
@@ -90,11 +105,14 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
 
   auto_advancing_time_domain_->SetCanAdvanceVirtualTime(false);
 
+  EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced()).Times(0);
   mock_task_runner_->RunUntilIdle();
 
   EXPECT_EQ(initial_time_, clock_->NowTicks());
   EXPECT_EQ(initial_time_, auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_FALSE(task_run);
+
+  auto_advancing_time_domain_->SetObserver(nullptr);
 }
 
 }  // namespace auto_advancing_virtual_time_domain_unittest
