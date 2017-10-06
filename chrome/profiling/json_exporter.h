@@ -16,11 +16,7 @@
 namespace profiling {
 
 // Configuration passed to the export functions because they take many
-// arguments. All parameters must be set. The pointers are not managed by this
-// class and must outlive it.
-//
-// Whether something is a pointer or a value is determined by what makes the
-// call site nicer without introducing unnecessary copies.
+// arguments. All parameters must be set.
 struct ExportParams {
   ExportParams();
   ~ExportParams();
@@ -29,11 +25,11 @@ struct ExportParams {
   AllocationCountMap allocs;
 
   // VM map of all regions in the process.
-  const std::vector<memory_instrumentation::mojom::VmRegionPtr>* maps = nullptr;
+  std::vector<memory_instrumentation::mojom::VmRegionPtr> maps;
 
   // Map from context string to context ID. A reverse-mapping will tell you
   // what the context_id in the allocation mean.
-  const std::map<std::string, int>* context_map = nullptr;
+  std::map<std::string, int> context_map;
 
   // Only allocations exceeding this size or count will be exported.
   size_t min_size_threshold = 0;
