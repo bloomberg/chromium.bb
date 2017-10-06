@@ -7,7 +7,6 @@ import("//third_party/protobuf/proto_library.gni")
 static_library("certificate_reporting") {
   sources = [
     "cert_logger.proto",
-    "encrypted_cert_logger.proto",
     "error_report.cc",
     "error_report.h",
     "error_reporter.cc",
@@ -16,13 +15,12 @@ static_library("certificate_reporting") {
 
   public_deps = [
     ":cert_logger_proto",
-    ":encrypted_cert_logger_proto",
   ]
   deps = [
     "//base",
+    "//components/encrypted_messages",
     "//components/network_time",
     "//components/version_info",
-    "//crypto",
     "//net",
     "//url",
   ]
@@ -31,12 +29,6 @@ static_library("certificate_reporting") {
 proto_library("cert_logger_proto") {
   sources = [
     "cert_logger.proto",
-  ]
-}
-
-proto_library("encrypted_cert_logger_proto") {
-  sources = [
-    "encrypted_cert_logger.proto",
   ]
 }
 
@@ -50,11 +42,13 @@ source_set("unit_tests") {
   deps = [
     ":certificate_reporting",
     "//base",
+    "//components/encrypted_messages",
     "//components/network_time",
     "//components/network_time:network_time_test_support",
     "//components/prefs:test_support",
     "//components/version_info",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/boringssl:boringssl",
   ]
 }
