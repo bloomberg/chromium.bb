@@ -7,6 +7,10 @@
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/multitasking_test_application_delegate.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // These command line switches enable slide over or split view test mode for

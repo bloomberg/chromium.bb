@@ -14,6 +14,10 @@
 #import "ios/clean/chrome/app/steps/scheduled_tasks.h"
 #import "ios/clean/chrome/app/steps/ui_initializer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation StepCollections
 
 + (ApplicationSteps*)allApplicationSteps {

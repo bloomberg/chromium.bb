@@ -10,6 +10,10 @@
 #include "ios/web/public/test/web_test_with_web_state.h"
 #include "url/origin.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 constexpr char kTestIconUrl[] = "https://www.google.com/favicon.ico";

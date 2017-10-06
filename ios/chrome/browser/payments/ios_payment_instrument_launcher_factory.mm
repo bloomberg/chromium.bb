@@ -11,6 +11,10 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
 #include "ios/web/public/browser_state.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace payments {
 
 // static

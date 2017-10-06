@@ -4,6 +4,10 @@
 
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 const base::Feature kDragAndDrop{"DragAndDrop",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 

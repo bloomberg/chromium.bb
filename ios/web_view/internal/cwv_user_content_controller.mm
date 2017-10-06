@@ -10,6 +10,10 @@
 #import "ios/web_view/internal/web_view_early_page_script_provider.h"
 #import "ios/web_view/public/cwv_user_script.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CWVUserContentController ()
 @property(weak, nonatomic) CWVWebViewConfiguration* configuration;
 @end

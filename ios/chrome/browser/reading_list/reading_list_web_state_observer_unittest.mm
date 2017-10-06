@@ -17,6 +17,10 @@
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const char kTestURL[] = "http://foo.bar";
 const char kTestTitle[] = "title";

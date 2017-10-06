@@ -62,6 +62,10 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager),

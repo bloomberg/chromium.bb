@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // The current version of the cached position. This number should be incremented
 // each time the NSCoding implementation changes.

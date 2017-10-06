@@ -8,6 +8,10 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 using BookmarkHomeViewControllerTest = BookmarkIOSUnitTest;

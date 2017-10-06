@@ -9,6 +9,10 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Test fixture for CRWPlaceholderNavigationInfo.
 typedef PlatformTest CRWPlaceholderNavigationInfoTest;
 

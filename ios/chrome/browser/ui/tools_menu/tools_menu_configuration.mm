@@ -7,6 +7,10 @@
 #import "base/logging.h"
 #include "ios/web/public/user_agent.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation ToolsMenuConfiguration
 
 @synthesize inTabSwitcher = _inTabSwitcher;

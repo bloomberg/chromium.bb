@@ -9,6 +9,10 @@
 #import "ios/web/public/origin_util.h"
 #include "url/origin.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using password_manager::CredentialManagerError;
 using password_manager::CredentialInfo;
 using password_manager::CredentialType;

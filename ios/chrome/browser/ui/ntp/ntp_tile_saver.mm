@@ -13,6 +13,10 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "net/base/mac/url_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ntp_tile_saver {
 
 // Write the |mostVisitedSites| to disk.

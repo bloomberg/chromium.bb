@@ -4,6 +4,10 @@
 
 #import "ios/clean/chrome/app/steps/simple_application_step.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation SimpleApplicationStep
 
 @synthesize providedFeature = _providedFeature;
