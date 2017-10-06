@@ -118,8 +118,14 @@ bool IsReportingFirstTimeForProfile(const Profile* profile) {
 }
 
 bool IsArcMigrationAllowedInternal(const Profile* profile) {
-  int migration_strategy =
-      profile->GetPrefs()->GetInteger(prefs::kEcryptfsMigrationStrategy);
+  policy_util::EcryptfsMigrationAction migration_strategy =
+      policy_util::GetDefaultEcryptfsMigrationActionForManagedUser(
+          IsActiveDirectoryUserForProfile(profile));
+  if (profile->GetPrefs()->IsManagedPreference(
+          prefs::kEcryptfsMigrationStrategy)) {
+    migration_strategy = static_cast<policy_util::EcryptfsMigrationAction>(
+        profile->GetPrefs()->GetInteger(prefs::kEcryptfsMigrationStrategy));
+  }
   // |kAskForEcryptfsArcUsers| value is received only if the device is in EDU
   // and admin left the migration policy unset. Note that when enabling ARC on
   // the admin console, it is mandatory for the administrator to also choose a
@@ -129,8 +135,7 @@ bool IsArcMigrationAllowedInternal(const Profile* profile) {
   // TODO(pmarko): Remove the special kAskForEcryptfsArcUsers handling when we
   // assess that it's not necessary anymore: crbug.com/761348.
   if (migration_strategy ==
-      static_cast<int>(
-          arc::policy_util::EcryptfsMigrationAction::kAskForEcryptfsArcUsers)) {
+      policy_util::EcryptfsMigrationAction::kAskForEcryptfsArcUsers) {
     // Note that ARC enablement is controlled by policy for managed users (as
     // it's marked 'default_for_enterprise_users': False in
     // policy_templates.json).
@@ -144,8 +149,7 @@ bool IsArcMigrationAllowedInternal(const Profile* profile) {
   }
 
   return migration_strategy !=
-         static_cast<int>(
-             arc::policy_util::EcryptfsMigrationAction::kDisallowMigration);
+         policy_util::EcryptfsMigrationAction::kDisallowMigration;
 }
 
 }  // namespace
@@ -192,7 +196,7 @@ bool IsArcAllowedForProfile(const Profile* profile) {
     return false;
   }
 
-  if (!IsArcCompatibleFileSystemUsedForProfile(profile) &&
+  if (IsArcBlockedDueToIncompatibleFileSystem(profile) &&
       !IsArcMigrationAllowedByPolicyForProfile(profile)) {
     VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
         << "Incompatible encryption and migration forbidden.";
@@ -225,8 +229,17 @@ bool IsArcAllowedForProfile(const Profile* profile) {
 }
 
 bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile) {
-  if (!profile || !profile->GetPrefs()->IsManagedPreference(
-                      prefs::kEcryptfsMigrationStrategy)) {
+  // Always allow migration for unmanaged users.
+  // We're checking if kArcEnabled is managed to find out if the profile is
+  // managed. This is equivalent, because kArcEnabled is marked
+  // 'default_for_enterprise_users': False in policy_templates.json).
+  // Also note that IsArcPlayStoreEnabledPreferenceManagedForProfile cannot be
+  // used here due to function call chain (it calls IsArcAllowedForProfile
+  // again).
+  // TODO(pmarko): crbug.com/771666: Figure out a nicer way to do this on a
+  // const Profile*.
+  if (!profile ||
+      !profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled)) {
     return true;
   }
 
