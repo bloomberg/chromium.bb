@@ -5524,9 +5524,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ExplodedPageState exploded_state;
   EXPECT_TRUE(
       DecodePageState(entry->GetPageState().ToEncodedData(), &exploded_state));
-  EXPECT_EQ(url_a, GURL(exploded_state.top.url_string.string()));
+  EXPECT_EQ(url_a,
+            GURL(exploded_state.top.url_string.value_or(base::string16())));
   EXPECT_EQ(frame_url_a2,
-            GURL(exploded_state.top.children.at(0).url_string.string()));
+            GURL(exploded_state.top.children.at(0).url_string.value_or(
+                base::string16())));
 }
 
 // Start a provisional navigation, but abort it by going back before it commits.
@@ -5623,7 +5625,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ExplodedPageState exploded_state;
   EXPECT_TRUE(
       DecodePageState(entry->GetPageState().ToEncodedData(), &exploded_state));
-  EXPECT_EQ(url_b, GURL(exploded_state.top.url_string.string()));
+  EXPECT_EQ(url_b,
+            GURL(exploded_state.top.url_string.value_or(base::string16())));
   EXPECT_EQ(0U, exploded_state.top.children.size());
 
   // Go back and then forward to see if the PageState loads correctly.
@@ -5712,7 +5715,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ExplodedPageState exploded_state;
   EXPECT_TRUE(
       DecodePageState(entry->GetPageState().ToEncodedData(), &exploded_state));
-  EXPECT_EQ(url_b, GURL(exploded_state.top.url_string.string()));
+  EXPECT_EQ(url_b,
+            GURL(exploded_state.top.url_string.value_or(base::string16())));
 
   // Go back and then forward to see if the PageState loads correctly.
   controller.GoBack();

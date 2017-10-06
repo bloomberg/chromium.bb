@@ -10,7 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/nullable_string16.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_request_body.h"
@@ -24,7 +25,7 @@
 namespace content {
 
 struct CONTENT_EXPORT ExplodedHttpBody {
-  base::NullableString16 http_content_type;
+  base::Optional<base::string16> http_content_type;
   scoped_refptr<ResourceRequestBody> request_body;
   bool contains_passwords;
 
@@ -33,11 +34,11 @@ struct CONTENT_EXPORT ExplodedHttpBody {
 };
 
 struct CONTENT_EXPORT ExplodedFrameState {
-  base::NullableString16 url_string;
-  base::NullableString16 referrer;
-  base::NullableString16 target;
-  base::NullableString16 state_object;
-  std::vector<base::NullableString16> document_state;
+  base::Optional<base::string16> url_string;
+  base::Optional<base::string16> referrer;
+  base::Optional<base::string16> target;
+  base::Optional<base::string16> state_object;
+  std::vector<base::Optional<base::string16>> document_state;
   blink::WebHistoryScrollRestorationType scroll_restoration_type;
   bool did_save_scroll_or_scale_state;
   gfx::PointF visual_viewport_scroll_offset;
@@ -63,7 +64,7 @@ struct CONTENT_EXPORT ExplodedPageState {
   // extract referenced files from ExplodedHttpBody.  |referenced_files|
   // currently contains a list from all frames, but cannot be deserialized into
   // the files referenced by each frame.  See http://crbug.com/441966.
-  std::vector<base::NullableString16> referenced_files;
+  std::vector<base::Optional<base::string16>> referenced_files;
   ExplodedFrameState top;
 
   ExplodedPageState();

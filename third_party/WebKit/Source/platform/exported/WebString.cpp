@@ -103,6 +103,15 @@ WebString WebString::FromUTF16(const base::NullableString16& s) {
   return string;
 }
 
+WebString WebString::FromUTF16(const base::Optional<base::string16>& s) {
+  WebString string;
+  if (!s)
+    string.Reset();
+  else
+    string.Assign(s->data(), s->length());
+  return string;
+}
+
 std::string WebString::Latin1() const {
   String string(private_.Get());
 
