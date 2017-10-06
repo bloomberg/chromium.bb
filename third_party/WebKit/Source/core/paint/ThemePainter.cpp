@@ -21,7 +21,6 @@
 
 #include "core/paint/ThemePainter.h"
 
-#include "core/InputTypeNames.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLInputElement.h"
@@ -30,6 +29,7 @@
 #include "core/html/forms/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintInfo.h"

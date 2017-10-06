@@ -4,7 +4,6 @@
 
 #include "core/html/HTMLImageFallbackHelper.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
@@ -15,6 +14,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/wtf/text/StringBuilder.h"
 

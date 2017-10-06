@@ -30,9 +30,9 @@
 
 #include "core/html/forms/DateTimeChooserImpl.h"
 
-#include "core/InputTypeNames.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/forms/DateTimeChooserClient.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/PagePopup.h"

@@ -4,10 +4,10 @@
 
 #include "modules/media_controls/elements/MediaControlInputElement.h"
 
-#include "core/InputTypeNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/testing/HistogramTester.h"

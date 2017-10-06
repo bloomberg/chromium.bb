@@ -31,13 +31,13 @@
 
 #include "core/html/forms/PasswordInputType.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebFeature.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/RefPtr.h"

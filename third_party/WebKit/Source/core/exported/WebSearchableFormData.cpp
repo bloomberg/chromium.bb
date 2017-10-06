@@ -30,7 +30,6 @@
 
 #include "public/web/WebSearchableFormData.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormControlElement.h"
@@ -39,6 +38,7 @@
 #include "core/html/forms/HTMLOptionElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "platform/network/FormDataEncoder.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "public/web/WebFormElement.h"

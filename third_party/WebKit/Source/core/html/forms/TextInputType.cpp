@@ -30,9 +30,9 @@
 
 #include "core/html/forms/TextInputType.h"
 
-#include "core/InputTypeNames.h"
 #include "core/frame/WebFeature.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/input_type_names.h"
 
 namespace blink {
 

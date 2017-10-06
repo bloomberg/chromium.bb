@@ -30,8 +30,8 @@
 
 #include "core/html/forms/TelephoneInputType.h"
 
-#include "core/InputTypeNames.h"
 #include "core/frame/UseCounter.h"
+#include "core/input_type_names.h"
 
 namespace blink {
 

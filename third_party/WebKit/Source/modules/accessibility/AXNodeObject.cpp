@@ -28,7 +28,6 @@
 
 #include "modules/accessibility/AXNodeObject.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Element.h"
 #include "core/dom/FlatTreeTraversal.h"
@@ -62,6 +61,7 @@
 #include "core/html/forms/LabelsNodeList.h"
 #include "core/html/forms/RadioInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"

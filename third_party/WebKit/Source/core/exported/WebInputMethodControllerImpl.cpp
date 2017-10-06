@@ -4,7 +4,6 @@
 
 #include "core/exported/WebInputMethodControllerImpl.h"
 
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
@@ -17,6 +16,7 @@
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/input_type_names.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "public/platform/WebString.h"

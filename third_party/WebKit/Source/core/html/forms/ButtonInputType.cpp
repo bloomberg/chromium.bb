@@ -30,7 +30,7 @@
 
 #include "core/html/forms/ButtonInputType.h"
 
-#include "core/InputTypeNames.h"
+#include "core/input_type_names.h"
 
 namespace blink {
 

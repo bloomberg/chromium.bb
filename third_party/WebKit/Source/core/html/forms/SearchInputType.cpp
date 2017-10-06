@@ -31,7 +31,6 @@
 #include "core/html/forms/SearchInputType.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/InputTypeNames.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/KeyboardEvent.h"
@@ -40,6 +39,7 @@
 #include "core/html/forms/TextControlInnerElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutSearchField.h"
 
 namespace blink {

@@ -22,7 +22,6 @@
 #include "core/layout/LayoutTheme.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementShadow.h"
 #include "core/editing/FrameSelection.h"
@@ -40,6 +39,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutThemeMobile.h"
 #include "core/page/FocusController.h"
