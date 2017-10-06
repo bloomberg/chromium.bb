@@ -20649,45 +20649,46 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="InfoBarIdentifier">
-  <int value="-1" label="INVALID"/>
-  <int value="0" label="TEST_INFOBAR"/>
   <int value="1" label="APP_BANNER_INFOBAR_DELEGATE_ANDROID"/>
   <int value="2" label="APP_BANNER_INFOBAR_DELEGATE_DESKTOP"/>
-  <int value="3" label="ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE"/>
+  <int value="3"
+      label="ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="4" label="CHROME_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE"/>
-  <int value="5" label="DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="6" label="FULLSCREEN_INFOBAR_DELEGATE"/>
+  <int value="5" label="DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
+  <int value="6" label="FULLSCREEN_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="7" label="HUNG_PLUGIN_INFOBAR_DELEGATE"/>
   <int value="8" label="HUNG_RENDERER_INFOBAR_DELEGATE"/>
-  <int value="9" label="MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="10" label="MEDIA_THROTTLE_INFOBAR_DELEGATE"/>
-  <int value="11" label="REQUEST_QUOTA_INFOBAR_DELEGATE"/>
+  <int value="9" label="MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
+  <int value="10" label="MEDIA_THROTTLE_INFOBAR_DELEGATE (Obsolete)"/>
+  <int value="11" label="REQUEST_QUOTA_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="12" label="DEV_TOOLS_CONFIRM_INFOBAR_DELEGATE"/>
   <int value="13" label="EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE"/>
   <int value="14" label="INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE"/>
   <int value="15" label="THEME_INSTALLED_INFOBAR_DELEGATE"/>
-  <int value="16" label="GEOLOCATION_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="16" label="GEOLOCATION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
   <int value="17" label="THREE_D_API_INFOBAR_DELEGATE"/>
-  <int value="18" label="INSECURE_CONTENT_INFOBAR_DELEGATE"/>
-  <int value="19" label="MIDI_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="20" label="PROTECTED_MEDIA_IDENTIFIER_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="18" label="INSECURE_CONTENT_INFOBAR_DELEGATE (Obsolete)"/>
+  <int value="19" label="MIDI_PERMISSION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
+  <int value="20"
+      label="PROTECTED_MEDIA_IDENTIFIER_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
   <int value="21" label="NACL_INFOBAR_DELEGATE"/>
   <int value="22"
-      label="OBSOLETE_DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="23" label="NOTIFICATION_PERMISSION_INFOBAR_DELEGATE"/>
-  <int value="24" label="AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE"/>
+      label="DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
+  <int value="23" label="NOTIFICATION_PERMISSION_INFOBAR_DELEGATE (Obsolete)"/>
+  <int value="24" label="AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="25" label="GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID"/>
   <int value="26" label="SAVE_PASSWORD_INFOBAR_DELEGATE"/>
   <int value="27" label="PEPPER_BROKER_INFOBAR_DELEGATE"/>
   <int value="28" label="PERMISSION_UPDATE_INFOBAR_DELEGATE"/>
-  <int value="29" label="DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
-  <int value="30" label="NPAPI_REMOVAL_INFOBAR_DELEGATE"/>
+  <int value="29"
+      label="DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID (Obsolete)"/>
+  <int value="30" label="NPAPI_REMOVAL_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="31" label="OUTDATED_PLUGIN_INFOBAR_DELEGATE"/>
-  <int value="32" label="PLUGIN_METRO_MODE_INFOBAR_DELEGATE"/>
+  <int value="32" label="PLUGIN_METRO_MODE_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="33" label="RELOAD_PLUGIN_INFOBAR_DELEGATE"/>
   <int value="34" label="PLUGIN_OBSERVER"/>
-  <int value="35" label="SSL_ADD_CERTIFICATE"/>
-  <int value="36" label="SSL_ADD_CERTIFICATE_INFOBAR_DELEGATE"/>
+  <int value="35" label="SSL_ADD_CERTIFICATE (Obsolete)"/>
+  <int value="36" label="SSL_ADD_CERTIFICATE_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="37" label="POPUP_BLOCKED_INFOBAR_DELEGATE"/>
   <int value="38" label="CHROME_SELECT_FILE_POLICY"/>
   <int value="39" label="KEYSTONE_PROMOTION_INFOBAR_DELEGATE"/>
@@ -20703,18 +20704,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="49" label="AUTOFILL_CC_INFOBAR_DELEGATE"/>
   <int value="50" label="TRANSLATE_INFOBAR_DELEGATE"/>
   <int value="51" label="IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE"/>
-  <int value="52" label="NATIVE_APP_INSTALLER_INFOBAR_DELEGATE"/>
-  <int value="53" label="NATIVE_APP_LAUNCHER_INFOBAR_DELEGATE"/>
-  <int value="54" label="NATIVE_APP_OPEN_POLICY_INFOBAR_DELEGATE"/>
+  <int value="52" label="NATIVE_APP_INSTALLER_INFOBAR_DELEGATE (Obsolete)"/>
+  <int value="53" label="NATIVE_APP_LAUNCHER_INFOBAR_DELEGATE (Obsolete)"/>
+  <int value="54" label="NATIVE_APP_OPEN_POLICY_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="55" label="RE_SIGN_IN_INFOBAR_DELEGATE"/>
   <int value="56" label="SHOW_PASSKIT_ERROR_INFOBAR_DELEGATE"/>
-  <int value="57" label="READER_MODE_INFOBAR_DELEGATE"/>
+  <int value="57" label="READER_MODE_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="58" label="SYNC_ERROR_INFOBAR_DELEGATE"/>
   <int value="59" label="UPGRADE_INFOBAR_DELEGATE"/>
   <int value="60" label="CHROME_WINDOW_ERROR"/>
   <int value="61" label="CONFIRM_DANGEROUS_DOWNLOAD"/>
   <int value="62" label="WINDOWS_DESKTOP_SEARCH_INFOBAR_DELEGATE"/>
-  <int value="63" label="UPDATE_PASSWORD_INFOBAR_DELEGATE"/>
+  <int value="63" label="UPDATE_PASSWORD_INFOBAR_DELEGATE (Obsolete)"/>
   <int value="64" label="DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID"/>
   <int value="65" label="AUTOFILL_CC_ASSIST_INFOBAR_DELEGATE"/>
   <int value="66" label="ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID"/>
