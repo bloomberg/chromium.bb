@@ -220,19 +220,11 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
   button->SetToggledTooltipText(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_HIDE_PASSWORD));
   button->SetImage(views::ImageButton::STATE_NORMAL,
-                   *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                       IDR_SHOW_PASSWORD));
-  button->SetImage(views::ImageButton::STATE_HOVERED,
-                   *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                   *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                        IDR_SHOW_PASSWORD_HOVER));
-  button->SetToggledImage(
-      views::ImageButton::STATE_NORMAL,
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_HIDE_PASSWORD));
-  button->SetToggledImage(
-      views::ImageButton::STATE_HOVERED,
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_HIDE_PASSWORD_HOVER));
+  button->SetToggledImage(views::ImageButton::STATE_NORMAL,
+                          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                              IDR_HIDE_PASSWORD_HOVER));
   button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                             views::ImageButton::ALIGN_MIDDLE);
   return button;

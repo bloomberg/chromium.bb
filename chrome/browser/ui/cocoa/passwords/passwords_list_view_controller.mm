@@ -245,13 +245,10 @@ NSTextField* FederationLabel(const base::string16& text) {
       [passwordViewButton_ setBordered:NO];
       [[passwordViewButton_ cell] setHighlightsBy:NSNoCellMask];
       ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-      gfx::Image image = bundle.GetImageNamed(IDR_SHOW_PASSWORD);
+      gfx::Image image = bundle.GetImageNamed(IDR_SHOW_PASSWORD_HOVER);
       [passwordViewButton_
           setFrameSize:NSMakeSize(image.Width(), image.Height())];
       [passwordViewButton_ setDefaultImage:image.ToNSImage()];
-      [passwordViewButton_
-          setHoverImage:bundle.GetImageNamed(IDR_SHOW_PASSWORD_HOVER)
-                            .ToNSImage()];
       NSString* passwordViewTitle =
           l10n_util::GetNSString(IDS_MANAGE_PASSWORDS_SHOW_PASSWORD);
       [passwordViewButton_ setAccessibilityTitle:passwordViewTitle];
