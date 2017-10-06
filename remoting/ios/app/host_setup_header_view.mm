@@ -29,9 +29,12 @@ static const CGFloat kBottomPadding = 6.f;
 
 - (void)commonInit {
   self.backgroundColor = RemotingTheme.setupListBackgroundColor;
+  NSString* titleText = l10n_util::GetNSString(IDS_HOST_SETUP_TITLE);
+  self.isAccessibilityElement = YES;
+  self.accessibilityLabel = titleText;
 
   UILabel* titleLabel = [[UILabel alloc] init];
-  titleLabel.text = l10n_util::GetNSString(IDS_HOST_SETUP_TITLE);
+  titleLabel.text = titleText;
   titleLabel.font = MDCTypography.titleFont;
   titleLabel.numberOfLines = 1;
   titleLabel.adjustsFontSizeToFitWidth = YES;
