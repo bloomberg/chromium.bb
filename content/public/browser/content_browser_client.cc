@@ -524,13 +524,6 @@ mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
   return network_context;
 }
 
-bool ContentBrowserClient::OverrideLegacySymantecCertConsoleMessage(
-    const GURL& url,
-    const scoped_refptr<net::X509Certificate>& cert,
-    std::string* console_messsage) {
-  return false;
-}
-
 #if defined(OS_ANDROID)
 bool ContentBrowserClient::ShouldOverrideUrlLoading(
     int frame_tree_node_id,

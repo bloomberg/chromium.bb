@@ -4595,6 +4595,19 @@ void RenderFrameImpl::DidRunContentWithCertificateErrors(
   Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_, url));
 }
 
+bool RenderFrameImpl::OverrideLegacySymantecCertConsoleMessage(
+    const blink::WebURL& url,
+    base::Time cert_validity_start,
+    blink::WebString* console_message) {
+  std::string console_message_string;
+  if (GetContentClient()->renderer()->OverrideLegacySymantecCertConsoleMessage(
+          GURL(url), cert_validity_start, &console_message_string)) {
+    *console_message = blink::WebString::FromASCII(console_message_string);
+    return true;
+  }
+  return false;
+}
+
 void RenderFrameImpl::DidChangePerformanceTiming() {
   for (auto& observer : observers_)
     observer.DidChangePerformanceTiming();

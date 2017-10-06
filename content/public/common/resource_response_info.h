@@ -54,6 +54,13 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // True if the resource was loaded in spite of certificate errors.
   bool has_major_certificate_errors;
 
+  // True if the resource was loaded with an otherwise-valid legacy Symantec
+  // certificate which will be distrusted in future.
+  bool is_legacy_symantec_cert;
+
+  // The time at which the certificate (if any) of the resource expires.
+  base::Time cert_validity_start;
+
   // Content length if available. -1 if not available
   int64_t content_length;
 

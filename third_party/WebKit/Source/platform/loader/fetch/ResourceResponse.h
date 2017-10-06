@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/time/time.h"
 #include "platform/PlatformExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/loader/fetch/ResourceLoadInfo.h"
@@ -239,6 +240,16 @@ class PLATFORM_EXPORT ResourceResponse final {
     has_major_certificate_errors_ = has_major_certificate_errors;
   }
 
+  bool IsLegacySymantecCert() const { return is_legacy_symantec_cert_; }
+  void SetIsLegacySymantecCert(bool is_legacy_symantec_cert) {
+    is_legacy_symantec_cert_ = is_legacy_symantec_cert;
+  }
+
+  base::Time CertValidityStart() const { return cert_validity_start_; }
+  void SetCertValidityStart(base::Time cert_validity_start) {
+    cert_validity_start_ = cert_validity_start;
+  }
+
   SecurityStyle GetSecurityStyle() const { return security_style_; }
   void SetSecurityStyle(SecurityStyle security_style) {
     security_style_ = security_style;
@@ -432,6 +443,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   // certificate errors.
   bool has_major_certificate_errors_ : 1;
 
+  // True if the resource was retrieved with a legacy Symantec certificate which
+  // is slated for distrust in future.
+  bool is_legacy_symantec_cert_ : 1;
+
+  // The time at which the resource's certificate expires. Null if there was no
+  // certificate.
+  base::Time cert_validity_start_;
+
   // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
   bool was_fetched_via_spdy_ : 1;
 
@@ -565,6 +584,8 @@ struct CrossThreadResourceResponseData {
   std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
   RefPtr<ResourceLoadTiming> resource_load_timing_;
   bool has_major_certificate_errors_;
+  bool is_legacy_symantec_cert_;
+  base::Time cert_validity_start_;
   ResourceResponse::SecurityStyle security_style_;
   ResourceResponse::SecurityDetails security_details_;
   // This is |certificate| from SecurityDetails since that structure should

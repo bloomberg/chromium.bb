@@ -636,6 +636,17 @@ class BLINK_EXPORT WebFrameClient {
   // connection with certificate errors.
   virtual void DidRunContentWithCertificateErrors(const WebURL& url) {}
 
+  // This frame loaded a resource with an otherwise-valid legacy Symantec
+  // certificate that is slated for distrust. Returns true and populates
+  // |console_message| to override the console message warning that is printed
+  // about the certificate. If it returns false, a generic warning will be
+  // printed.
+  virtual bool OverrideLegacySymantecCertConsoleMessage(const WebURL&,
+                                                        base::Time,
+                                                        WebString*) {
+    return false;
+  }
+
   // A performance timing event (e.g. first paint) occurred
   virtual void DidChangePerformanceTiming() {}
 

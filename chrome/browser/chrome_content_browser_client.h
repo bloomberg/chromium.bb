@@ -350,10 +350,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const base::Callback<content::WebContents*()>& wc_getter) override;
-  bool OverrideLegacySymantecCertConsoleMessage(
-      const GURL& url,
-      const scoped_refptr<net::X509Certificate>& cert,
-      std::string* console_messsage) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

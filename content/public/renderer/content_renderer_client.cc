@@ -261,4 +261,11 @@ bool ContentRendererClient::AllowIdleMediaSuspend() {
   return true;
 }
 
+bool ContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
+    const GURL& url,
+    base::Time cert_expiration,
+    std::string* console_messsage) {
+  return false;
+}
+
 }  // namespace content

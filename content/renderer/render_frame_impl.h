@@ -633,6 +633,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidDisplayContentWithCertificateErrors(
       const blink::WebURL& url) override;
   void DidRunContentWithCertificateErrors(const blink::WebURL& url) override;
+  bool OverrideLegacySymantecCertConsoleMessage(
+      const blink::WebURL& url,
+      base::Time cert_validity_start,
+      blink::WebString* console_message) override;
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
