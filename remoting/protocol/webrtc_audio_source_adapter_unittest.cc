@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/rtc_base/refcount.h"
+#include "third_party/webrtc/rtc_base/refcountedobject.h"
 
 namespace remoting {
 namespace protocol {

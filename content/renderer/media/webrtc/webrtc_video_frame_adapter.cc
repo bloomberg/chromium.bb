@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 
 #include "base/logging.h"
+#include "third_party/webrtc/rtc_base/refcountedobject.h"
 
 namespace {
 
