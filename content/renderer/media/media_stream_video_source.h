@@ -53,8 +53,6 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // RestartCallback is used for both the StopForRestart and Restart operations.
   using RestartCallback = base::OnceCallback<void(RestartResult)>;
 
-  static constexpr double kDefaultAspectRatio =
-      static_cast<double>(kDefaultWidth) / static_cast<double>(kDefaultHeight);
 
   MediaStreamVideoSource();
   ~MediaStreamVideoSource() override;
@@ -127,13 +125,23 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   base::SingleThreadTaskRunner* io_task_runner() const;
 
   // Implementations must return the capture format if available.
+  // Implementations supporting devices of type MEDIA_DEVICE_VIDEO_CAPTURE
+  // must return a value.
   virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const;
 
   // Implementations must return the capture parameters if available.
+  // Implementations supporting devices of type MEDIA_DEVICE_VIDEO_CAPTURE
+  // must return a value. The format in the returned VideoCaptureParams must
+  // coincide with the value returned by GetCurrentFormat().
   virtual base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
       const;
 
   bool IsRunning() const { return state_ == STARTED; }
+
+  size_t NumTracks() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return tracks_.size();
+  }
 
   base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

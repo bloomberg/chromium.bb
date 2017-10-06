@@ -55,6 +55,15 @@ double AspectRatio(const media::VideoCaptureFormat& format) {
          static_cast<double>(format.frame_size.height());
 }
 
+VideoCaptureSettings SelectSettingsVideoDeviceCapture(
+    const VideoDeviceCaptureCapabilities& capabilities,
+    const blink::WebMediaConstraints& constraints) {
+  return SelectSettingsVideoDeviceCapture(
+      capabilities, constraints, MediaStreamVideoSource::kDefaultWidth,
+      MediaStreamVideoSource::kDefaultHeight,
+      MediaStreamVideoSource::kDefaultFrameRate);
+}
+
 }  // namespace
 
 class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {

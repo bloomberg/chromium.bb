@@ -256,7 +256,7 @@ double ResolutionConstraintSourceDistance(
     int max_source_value,
     const blink::LongConstraint& constraint,
     const char** failed_constraint_name) {
-  DCHECK_GE(native_source_value, 1);
+  DCHECK_GE(native_source_value, 0);
   bool constraint_has_min = ConstraintHasMin(constraint);
   long constraint_min = constraint_has_min ? ConstraintMin(constraint) : -1;
   bool constraint_has_max = ConstraintHasMax(constraint);
@@ -697,6 +697,9 @@ using DistanceVector = std::vector<double>;
 void AppendDistanceFromDefault(
     const Candidate& candidate,
     const VideoDeviceCaptureCapabilities& capabilities,
+    int default_width,
+    int default_height,
+    double default_frame_rate,
     DistanceVector* distance_vector) {
   // Favor IDs that appear first in the enumeration.
   for (size_t i = 0; i < capabilities.device_capabilities.size(); ++i) {
@@ -725,17 +728,15 @@ void AppendDistanceFromDefault(
   double resolution_distance = ResolutionSet::Point::SquareEuclideanDistance(
       ResolutionSet::Point(candidate.format().frame_size.height(),
                            candidate.format().frame_size.width()),
-      ResolutionSet::Point(MediaStreamVideoSource::kDefaultHeight,
-                           MediaStreamVideoSource::kDefaultWidth));
+      ResolutionSet::Point(default_height, default_width));
   distance_vector->push_back(resolution_distance);
 
   // Prefer a frame rate close to the default.
   double frame_rate_distance =
-      candidate.format().frame_rate == MediaStreamVideoSource::kDefaultFrameRate
+      candidate.format().frame_rate == default_frame_rate
           ? 0.0
-          : NumericConstraintFitnessDistance(
-                candidate.format().frame_rate,
-                MediaStreamVideoSource::kDefaultFrameRate);
+          : NumericConstraintFitnessDistance(candidate.format().frame_rate,
+                                             default_frame_rate);
   distance_vector->push_back(frame_rate_distance);
 }
 
@@ -757,9 +758,15 @@ VideoDeviceCaptureCapabilities& VideoDeviceCaptureCapabilities::operator=(
 
 VideoCaptureSettings SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaConstraints& constraints,
+    int default_width,
+    int default_height,
+    double default_frame_rate) {
+  DCHECK_GT(default_width, 0);
+  DCHECK_GT(default_height, 0);
+  DCHECK_GE(default_frame_rate, 0.0);
   // This function works only if infinity is defined for the double type.
-  DCHECK(std::numeric_limits<double>::has_infinity);
+  static_assert(std::numeric_limits<double>::has_infinity, "Requires infinity");
 
   // A distance vector contains:
   // a) For each advanced constraint set, a 0/1 value indicating if the
@@ -856,7 +863,8 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
               constrained_format, constraints.Basic()));
 
           // Final criteria are custom distances to default settings.
-          AppendDistanceFromDefault(candidate, capabilities,
+          AppendDistanceFromDefault(candidate, capabilities, default_width,
+                                    default_height, default_frame_rate,
                                     &candidate_distance_vector);
 
           DCHECK_EQ(best_distance.size(), candidate_distance_vector.size());

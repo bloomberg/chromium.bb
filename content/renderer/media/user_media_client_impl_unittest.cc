@@ -97,6 +97,41 @@ blink::WebMediaConstraints CreateFacingModeConstraints(
   return factory.CreateWebMediaConstraints();
 }
 
+void CheckVideoSource(MediaStreamVideoSource* source,
+                      int expected_source_width,
+                      int expected_source_height,
+                      double expected_source_frame_rate) {
+  EXPECT_TRUE(source->IsRunning());
+  EXPECT_TRUE(source->GetCurrentFormat().has_value());
+  media::VideoCaptureFormat format = *source->GetCurrentFormat();
+  EXPECT_EQ(format.frame_size.width(), expected_source_width);
+  EXPECT_EQ(format.frame_size.height(), expected_source_height);
+  EXPECT_EQ(format.frame_rate, expected_source_frame_rate);
+}
+
+void CheckVideoSourceAndTrack(MediaStreamVideoSource* source,
+                              int expected_source_width,
+                              int expected_source_height,
+                              double expected_source_frame_rate,
+                              const blink::WebMediaStreamTrack& web_track,
+                              int expected_track_width,
+                              int expected_track_height,
+                              double expected_track_frame_rate) {
+  CheckVideoSource(source, expected_source_width, expected_source_height,
+                   expected_source_frame_rate);
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
+  MediaStreamVideoTrack* track =
+      MediaStreamVideoTrack::GetVideoTrack(web_track);
+  EXPECT_EQ(track->source(), source);
+
+  blink::WebMediaStreamTrack::Settings settings;
+  track->GetSettings(settings);
+  EXPECT_EQ(settings.width, expected_track_width);
+  EXPECT_EQ(settings.height, expected_track_height);
+  EXPECT_EQ(settings.frame_rate, expected_track_frame_rate);
+}
+
 class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
  public:
   MockMediaStreamVideoCapturerSource(const MediaStreamDevice& device,
@@ -149,8 +184,17 @@ class MockMediaDevicesDispatcherHost
         ::mojom::VideoInputDeviceCapabilities::New();
     device->device_id = kFakeVideoInputDeviceId1;
     device->facing_mode = ::mojom::FacingMode::USER;
-    device->formats.push_back(media::VideoCaptureFormat(
-        gfx::Size(640, 480), 30.0f, media::PIXEL_FORMAT_I420));
+    if (!video_source_ || !video_source_->IsRunning() ||
+        !video_source_->GetCurrentFormat()) {
+      device->formats.push_back(media::VideoCaptureFormat(
+          gfx::Size(640, 480), 30.0f, media::PIXEL_FORMAT_I420));
+      device->formats.push_back(media::VideoCaptureFormat(
+          gfx::Size(800, 600), 30.0f, media::PIXEL_FORMAT_I420));
+      device->formats.push_back(media::VideoCaptureFormat(
+          gfx::Size(1024, 768), 20.0f, media::PIXEL_FORMAT_I420));
+    } else {
+      device->formats.push_back(*video_source_->GetCurrentFormat());
+    }
     std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> result;
     result.push_back(std::move(device));
 
@@ -199,19 +243,39 @@ class MockMediaDevicesDispatcherHost
 
   void GetAllVideoInputDeviceFormats(
       const std::string&,
-      GetAllVideoInputDeviceFormatsCallback) override {
-    NOTREACHED();
+      GetAllVideoInputDeviceFormatsCallback callback) override {
+    media::VideoCaptureFormats formats;
+    formats.push_back(media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
+                                                media::PIXEL_FORMAT_I420));
+    formats.push_back(media::VideoCaptureFormat(gfx::Size(800, 600), 30.0f,
+                                                media::PIXEL_FORMAT_I420));
+    formats.push_back(media::VideoCaptureFormat(gfx::Size(1024, 768), 20.0f,
+                                                media::PIXEL_FORMAT_I420));
+    std::move(callback).Run(formats);
   }
 
   void GetAvailableVideoInputDeviceFormats(
-      const std::string&,
-      GetAvailableVideoInputDeviceFormatsCallback) override {
-    NOTREACHED();
+      const std::string& device_id,
+      GetAvailableVideoInputDeviceFormatsCallback callback) override {
+    if (!video_source_ || !video_source_->IsRunning() ||
+        !video_source_->GetCurrentFormat()) {
+      GetAllVideoInputDeviceFormats(device_id, std::move(callback));
+      return;
+    }
+
+    media::VideoCaptureFormats formats;
+    formats.push_back(*video_source_->GetCurrentFormat());
+    std::move(callback).Run(formats);
+  }
+
+  void SetVideoSource(MediaStreamVideoSource* video_source) {
+    video_source_ = video_source;
   }
 
  private:
   media::AudioParameters audio_parameters_ =
       media::AudioParameters::UnavailableDeviceParams();
+  MediaStreamVideoSource* video_source_ = nullptr;
 };
 
 enum RequestState {
@@ -458,6 +522,28 @@ class UserMediaClientImplTest : public ::testing::Test {
     return desc;
   }
 
+  blink::WebMediaStreamTrack RequestLocalVideoTrack() {
+    blink::WebUserMediaRequest user_media_request =
+        blink::WebUserMediaRequest::CreateForTesting(
+            blink::WebMediaConstraints(), CreateDefaultConstraints());
+    user_media_client_impl_->RequestUserMediaForTest(user_media_request);
+    FakeMediaStreamDispatcherRequestUserMediaComplete();
+    StartMockedVideoSource();
+    EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
+
+    blink::WebMediaStream web_stream =
+        user_media_processor_->last_generated_stream();
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+    web_stream.AudioTracks(audio_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    web_stream.VideoTracks(video_tracks);
+
+    EXPECT_EQ(audio_tracks.size(), 0U);
+    EXPECT_EQ(video_tracks.size(), 1U);
+
+    return video_tracks[0];
+  }
+
   void FakeMediaStreamDispatcherRequestUserMediaComplete() {
     // Audio request ID is used as the shared request ID.
     user_media_processor_->OnStreamGenerated(
@@ -505,6 +591,24 @@ class UserMediaClientImplTest : public ::testing::Test {
               ms_dispatcher_->audio_devices()[0].id);
     EXPECT_EQ(std::string(expected_video_device_id) + "0",
               ms_dispatcher_->video_devices()[0].id);
+  }
+
+  void ApplyConstraintsVideoMode(
+      const blink::WebMediaStreamTrack& web_track,
+      int width,
+      int height,
+      const base::Optional<double>& frame_rate = base::Optional<double>()) {
+    MockConstraintFactory factory;
+    factory.basic().width.SetExact(width);
+    factory.basic().height.SetExact(height);
+    if (frame_rate)
+      factory.basic().frame_rate.SetExact(*frame_rate);
+
+    blink::WebApplyConstraintsRequest apply_constraints_request =
+        blink::WebApplyConstraintsRequest::CreateForTesting(
+            web_track, factory.CreateWebMediaConstraints());
+    user_media_client_impl_->ApplyConstraints(apply_constraints_request);
+    base::RunLoop().RunUntilIdle();
   }
 
   RequestState request_state() const { return state_; }
@@ -1189,6 +1293,167 @@ TEST_F(UserMediaClientImplTest, CreateWithFacingModeEnvironment) {
   TestValidRequestWithConstraints(audio_constraints, video_constraints,
                                   kFakeAudioInputDeviceId1,
                                   kFakeVideoInputDeviceId2);
+}
+
+TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceSingleTrack) {
+  EXPECT_CALL(mock_dispatcher_host_, StreamStarted(_));
+  blink::WebMediaStreamTrack web_track = RequestLocalVideoTrack();
+  MediaStreamVideoTrack* track =
+      MediaStreamVideoTrack::GetVideoTrack(web_track);
+  MediaStreamVideoSource* source = track->source();
+  CheckVideoSource(source, 0, 0, 0.0);
+
+  media_devices_dispatcher_.SetVideoSource(source);
+
+  // The following applyConstraint() request should force a source restart and
+  // produce a video mode with 1024x768.
+  ApplyConstraintsVideoMode(web_track, 1024, 768);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 1024, 768, 20.0);
+
+  // The following applyConstraints() requests should not result in a source
+  // restart since the only format supported by the mock MDDH that supports
+  // 801x600 is the existing 1024x768 mode with downscaling.
+  ApplyConstraintsVideoMode(web_track, 801, 600);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 801, 600, 20.0);
+
+  // The following applyConstraints() requests should result in a source restart
+  // since there is a native mode of 800x600 supported by the mock MDDH.
+  ApplyConstraintsVideoMode(web_track, 800, 600);
+  CheckVideoSourceAndTrack(source, 800, 600, 30.0, web_track, 800, 600, 30.0);
+
+  // The following applyConstraints() requests should fail since the mock MDDH
+  // does not have any mode that can produce 2000x2000.
+  ApplyConstraintsVideoMode(web_track, 2000, 2000);
+  CheckVideoSourceAndTrack(source, 800, 600, 30.0, web_track, 800, 600, 30.0);
+}
+
+TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceTwoTracks) {
+  EXPECT_CALL(mock_dispatcher_host_, StreamStarted(_));
+  blink::WebMediaStreamTrack web_track = RequestLocalVideoTrack();
+  MockMediaStreamVideoCapturerSource* source =
+      user_media_processor_->last_created_video_source();
+  CheckVideoSource(source, 0, 0, 0.0);
+  media_devices_dispatcher_.SetVideoSource(source);
+
+  // Switch the source and track to 1024x768@20Hz.
+  ApplyConstraintsVideoMode(web_track, 1024, 768);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 1024, 768, 20.0);
+
+  // Create a new track and verify that it uses the same source and that the
+  // source's format did not change. The new track uses the same format as the
+  // source by default.
+  EXPECT_CALL(mock_dispatcher_host_, StreamStarted(_));
+  blink::WebMediaStreamTrack web_track2 = RequestLocalVideoTrack();
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track2, 1024, 768,
+                           20.0);
+
+  // Use applyConstraints() to change the first track to 800x600 and verify
+  // that the source is not reconfigured. Downscaling is used instead because
+  // there is more than one track using the source. The second track is left
+  // unmodified.
+  ApplyConstraintsVideoMode(web_track, 800, 600);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 800, 600, 20.0);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track2, 1024, 768,
+                           20.0);
+
+  // Try to use applyConstraints() to change the first track to 800x600@30Hz.
+  // It fails, because the source is open in native 20Hz mode and it does not
+  // support reconfiguration when more than one track is connected.
+  // TODO(guidou): Allow reconfiguring sources with more than one track.
+  // http://crbug.com/768205.
+  ApplyConstraintsVideoMode(web_track, 800, 600, 30.0);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 800, 600, 20.0);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track2, 1024, 768,
+                           20.0);
+
+  // Try to use applyConstraints() to change the first track to 800x600@30Hz.
+  // after stopping the second track. In this case, the source is left with a
+  // single track and it supports reconfiguration to the requested mode.
+  MediaStreamTrack::GetTrack(web_track2)->Stop();
+  ApplyConstraintsVideoMode(web_track, 800, 600, 30.0);
+  CheckVideoSourceAndTrack(source, 800, 600, 30.0, web_track, 800, 600, 30.0);
+}
+
+TEST_F(UserMediaClientImplTest,
+       ApplyConstraintsVideoDeviceFailsToStopForRestart) {
+  EXPECT_CALL(mock_dispatcher_host_, StreamStarted(_));
+  blink::WebMediaStreamTrack web_track = RequestLocalVideoTrack();
+  MockMediaStreamVideoCapturerSource* source =
+      user_media_processor_->last_created_video_source();
+  CheckVideoSource(source, 0, 0, 0.0);
+  media_devices_dispatcher_.SetVideoSource(source);
+
+  // Switch the source and track to 1024x768@20Hz.
+  ApplyConstraintsVideoMode(web_track, 1024, 768);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 1024, 768, 20.0);
+
+  // Try to switch the source and track to 640x480. Since the source cannot
+  // stop for restart, downscaling is used for the track.
+  source->DisableStopForRestart();
+  ApplyConstraintsVideoMode(web_track, 640, 480);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 640, 480, 20.0);
+}
+
+TEST_F(UserMediaClientImplTest,
+       ApplyConstraintsVideoDeviceFailsToRestartAfterStop) {
+  EXPECT_CALL(mock_dispatcher_host_, StreamStarted(_));
+  blink::WebMediaStreamTrack web_track = RequestLocalVideoTrack();
+  MockMediaStreamVideoCapturerSource* source =
+      user_media_processor_->last_created_video_source();
+  CheckVideoSource(source, 0, 0, 0.0);
+  media_devices_dispatcher_.SetVideoSource(source);
+
+  // Switch the source and track to 1024x768.
+  ApplyConstraintsVideoMode(web_track, 1024, 768);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 1024, 768, 20.0);
+
+  // Try to switch the source and track to 640x480. Since the source cannot
+  // restart, source and track are stopped.
+  source->DisableRestart();
+  ApplyConstraintsVideoMode(web_track, 640, 480);
+
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateEnded);
+  EXPECT_FALSE(source->IsRunning());
+}
+
+TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceStopped) {
+  EXPECT_CALL(mock_dispatcher_host_, StreamStarted(_));
+  blink::WebMediaStreamTrack web_track = RequestLocalVideoTrack();
+  MockMediaStreamVideoCapturerSource* source =
+      user_media_processor_->last_created_video_source();
+  CheckVideoSource(source, 0, 0, 0.0);
+  media_devices_dispatcher_.SetVideoSource(source);
+
+  // Switch the source and track to 1024x768.
+  ApplyConstraintsVideoMode(web_track, 1024, 768);
+  CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 1024, 768, 20.0);
+
+  // Try to switch the source and track to 640x480 after stopping the track.
+  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  track->Stop();
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateEnded);
+  EXPECT_FALSE(source->IsRunning());
+  {
+    blink::WebMediaStreamTrack::Settings settings;
+    track->GetSettings(settings);
+    EXPECT_EQ(settings.width, -1);
+    EXPECT_EQ(settings.height, -1);
+    EXPECT_EQ(settings.frame_rate, -1.0);
+  }
+
+  ApplyConstraintsVideoMode(web_track, 640, 480);
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateEnded);
+  EXPECT_FALSE(source->IsRunning());
+  {
+    blink::WebMediaStreamTrack::Settings settings;
+    track->GetSettings(settings);
+    EXPECT_EQ(settings.width, -1);
+    EXPECT_EQ(settings.height, -1);
+    EXPECT_EQ(settings.frame_rate, -1.0);
+  }
 }
 
 }  // namespace content

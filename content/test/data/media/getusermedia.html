@@ -750,6 +750,107 @@
       failTest("Unexpected error: " + e)
     });
   }
+
+  function applyConstraintsVideo() {
+    navigator.mediaDevices.getUserMedia({video:true})
+      .then(stream => {
+        assertEquals(stream.getVideoTracks().length, 1);
+        var track = stream.getVideoTracks()[0];
+        var settings = track.getSettings();
+        var default_device_id = settings.deviceId;
+        var default_width = settings.width;
+        var default_height = settings.height;
+        return track.applyConstraints({
+          width: default_width-1,
+          height: default_height-1
+        }).then(()=> {
+          settings = track.getSettings();
+          assertEquals(settings.deviceId, default_device_id);
+          assertEquals(settings.width, default_width - 1);
+          assertEquals(settings.height, default_height - 1);
+          track.stop();
+          reportTestSuccess();
+        });
+      })
+      .catch(_=>{
+        failTest("Unexpected failure")
+      });
+  }
+
+  function applyConstraintsVideoTwoStreams() {
+    navigator.mediaDevices.getUserMedia({video:true})
+      .then(stream => {
+        assertEquals(stream.getVideoTracks().length, 1);
+        var track1 = stream.getVideoTracks()[0];
+        track1.onmute = () => failTest("Unexpected mute of track1");
+        track1.onunmute = () => failTest("Unexpected unmute of track1");
+        var settings1 = track1.getSettings();
+        var default_device_id = settings1.deviceId;
+        var default_width = settings1.width;
+        var default_height = settings1.height;
+        return navigator.mediaDevices.getUserMedia({video:true})
+          .then(stream2 => {
+            var track2 = stream2.getVideoTracks()[0];
+            track2.onmute = () => failTest("Unexpected mute of track2");
+            track2.onunmute = () => failTest("Unexpected unmute of track2");
+            var settings2 = track2.getSettings();
+            assertEquals(settings2.width, default_width);
+            assertEquals(settings2.height, default_height);
+            assertEquals(settings2.deviceId, default_device_id);
+            return track1.applyConstraints({
+              width: default_width-1,
+              height: default_height-1
+            }).then(()=> {
+              assertEquals(track1.readyState, "live");
+              settings1 = track1.getSettings();
+              assertEquals(settings1.deviceId, default_device_id);
+              assertEquals(settings1.width, default_width - 1);
+              assertEquals(settings1.height, default_height - 1);
+              assertEquals(track2.readyState, "live");
+              settings2 = track2.getSettings();
+              assertEquals(settings2.deviceId, default_device_id);
+              assertEquals(settings2.width, default_width);
+              assertEquals(settings2.height, default_height);
+              track1.stop();
+              track2.stop();
+              reportTestSuccess();
+            });
+          })
+      })
+      .catch(_=>{
+        failTest("Unexpected failure")
+      });
+  }
+
+  function applyConstraintsVideoOverconstrained() {
+    navigator.mediaDevices.getUserMedia({video:true})
+      .then(stream => {
+        assertEquals(stream.getVideoTracks().length, 1);
+        var track = stream.getVideoTracks()[0];
+        var settings = track.getSettings();
+        var default_device_id = settings.deviceId;
+        var default_width = settings.width;
+        var default_height = settings.height;
+        track.applyConstraints({
+          width: {exact: 1000000},
+        }).then(()=> {
+          failTest("applyConstraints succeeded with impossible constraints");
+        }).catch(e => {
+          assertEquals(e.name, "OverconstrainedError");
+          assertEquals(e.constraint, "width");
+          assertTrue(!!e.message);
+          settings = track.getSettings();
+          assertEquals(settings.deviceId, default_device_id);
+          assertEquals(settings.width, default_width);
+          assertEquals(settings.height, default_height);
+          track.stop();
+          reportTestSuccess();
+        });
+      })
+      .catch(_=>{
+        failTest("getUserMedia failed")
+      });
+  }
   </script>
 </head>
 <body>
