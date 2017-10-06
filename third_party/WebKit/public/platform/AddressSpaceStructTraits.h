@@ -12,31 +12,31 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<blink::mojom::AddressSpace, blink::WebAddressSpace> {
-  static blink::mojom::AddressSpace ToMojom(blink::WebAddressSpace input) {
+struct EnumTraits<::blink::mojom::AddressSpace, ::blink::WebAddressSpace> {
+  static ::blink::mojom::AddressSpace ToMojom(::blink::WebAddressSpace input) {
     switch (input) {
-      case blink::kWebAddressSpaceLocal:
-        return blink::mojom::AddressSpace::kLocal;
-      case blink::kWebAddressSpacePrivate:
-        return blink::mojom::AddressSpace::kPrivate;
-      case blink::kWebAddressSpacePublic:
-        return blink::mojom::AddressSpace::kPublic;
+      case ::blink::kWebAddressSpaceLocal:
+        return ::blink::mojom::AddressSpace::kLocal;
+      case ::blink::kWebAddressSpacePrivate:
+        return ::blink::mojom::AddressSpace::kPrivate;
+      case ::blink::kWebAddressSpacePublic:
+        return ::blink::mojom::AddressSpace::kPublic;
     }
     NOTREACHED();
-    return blink::mojom::AddressSpace::kLocal;
+    return ::blink::mojom::AddressSpace::kLocal;
   }
 
-  static bool FromMojom(blink::mojom::AddressSpace input,
-                        blink::WebAddressSpace* output) {
+  static bool FromMojom(::blink::mojom::AddressSpace input,
+                        ::blink::WebAddressSpace* output) {
     switch (input) {
-      case blink::mojom::AddressSpace::kLocal:
-        *output = blink::kWebAddressSpaceLocal;
+      case ::blink::mojom::AddressSpace::kLocal:
+        *output = ::blink::kWebAddressSpaceLocal;
         return true;
-      case blink::mojom::AddressSpace::kPrivate:
-        *output = blink::kWebAddressSpacePrivate;
+      case ::blink::mojom::AddressSpace::kPrivate:
+        *output = ::blink::kWebAddressSpacePrivate;
         return true;
-      case blink::mojom::AddressSpace::kPublic:
-        *output = blink::kWebAddressSpacePublic;
+      case ::blink::mojom::AddressSpace::kPublic:
+        *output = ::blink::kWebAddressSpacePublic;
         return true;
     }
     NOTREACHED();
