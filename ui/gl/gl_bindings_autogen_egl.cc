@@ -57,6 +57,8 @@ void DriverEGL::InitializeStaticBindings() {
       GetGLProcAddress("eglDestroySurface"));
   fn.eglDestroySyncKHRFn = reinterpret_cast<eglDestroySyncKHRProc>(
       GetGLProcAddress("eglDestroySyncKHR"));
+  fn.eglGetCompositorTimingANDROIDFn = 0;
+  fn.eglGetCompositorTimingSupportedANDROIDFn = 0;
   fn.eglGetConfigAttribFn = reinterpret_cast<eglGetConfigAttribProc>(
       GetGLProcAddress("eglGetConfigAttrib"));
   fn.eglGetConfigsFn =
@@ -71,6 +73,9 @@ void DriverEGL::InitializeStaticBindings() {
       reinterpret_cast<eglGetDisplayProc>(GetGLProcAddress("eglGetDisplay"));
   fn.eglGetErrorFn =
       reinterpret_cast<eglGetErrorProc>(GetGLProcAddress("eglGetError"));
+  fn.eglGetFrameTimestampsANDROIDFn = 0;
+  fn.eglGetFrameTimestampSupportedANDROIDFn = 0;
+  fn.eglGetNextFrameIdANDROIDFn = 0;
   fn.eglGetPlatformDisplayEXTFn = 0;
   fn.eglGetProcAddressFn = reinterpret_cast<eglGetProcAddressProc>(
       GetGLProcAddress("eglGetProcAddress"));
@@ -146,6 +151,8 @@ void DriverEGL::InitializeExtensionBindings() {
   ExtensionSet extensions(MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
+  ext.b_EGL_ANDROID_get_frame_timestamps =
+      HasExtension(extensions, "EGL_ANDROID_get_frame_timestamps");
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
   ext.b_EGL_ANGLE_program_cache_control =
@@ -203,6 +210,36 @@ void DriverEGL::InitializeExtensionBindings() {
   if (ext.b_EGL_KHR_stream) {
     fn.eglDestroyStreamKHRFn = reinterpret_cast<eglDestroyStreamKHRProc>(
         GetGLProcAddress("eglDestroyStreamKHR"));
+  }
+
+  if (ext.b_EGL_ANDROID_get_frame_timestamps) {
+    fn.eglGetCompositorTimingANDROIDFn =
+        reinterpret_cast<eglGetCompositorTimingANDROIDProc>(
+            GetGLProcAddress("eglGetCompositorTimingANDROID"));
+  }
+
+  if (ext.b_EGL_ANDROID_get_frame_timestamps) {
+    fn.eglGetCompositorTimingSupportedANDROIDFn =
+        reinterpret_cast<eglGetCompositorTimingSupportedANDROIDProc>(
+            GetGLProcAddress("eglGetCompositorTimingSupportedANDROID"));
+  }
+
+  if (ext.b_EGL_ANDROID_get_frame_timestamps) {
+    fn.eglGetFrameTimestampsANDROIDFn =
+        reinterpret_cast<eglGetFrameTimestampsANDROIDProc>(
+            GetGLProcAddress("eglGetFrameTimestampsANDROID"));
+  }
+
+  if (ext.b_EGL_ANDROID_get_frame_timestamps) {
+    fn.eglGetFrameTimestampSupportedANDROIDFn =
+        reinterpret_cast<eglGetFrameTimestampSupportedANDROIDProc>(
+            GetGLProcAddress("eglGetFrameTimestampSupportedANDROID"));
+  }
+
+  if (ext.b_EGL_ANDROID_get_frame_timestamps) {
+    fn.eglGetNextFrameIdANDROIDFn =
+        reinterpret_cast<eglGetNextFrameIdANDROIDProc>(
+            GetGLProcAddress("eglGetNextFrameIdANDROID"));
   }
 
   if (ext.b_EGL_CHROMIUM_sync_control) {
@@ -431,6 +468,24 @@ EGLBoolean EGLApiBase::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
   return driver_->fn.eglDestroySyncKHRFn(dpy, sync);
 }
 
+EGLBoolean EGLApiBase::eglGetCompositorTimingANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint numTimestamps,
+    EGLint* names,
+    EGLnsecsANDROID* values) {
+  return driver_->fn.eglGetCompositorTimingANDROIDFn(
+      dpy, surface, numTimestamps, names, values);
+}
+
+EGLBoolean EGLApiBase::eglGetCompositorTimingSupportedANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp) {
+  return driver_->fn.eglGetCompositorTimingSupportedANDROIDFn(dpy, surface,
+                                                              timestamp);
+}
+
 EGLBoolean EGLApiBase::eglGetConfigAttribFn(EGLDisplay dpy,
                                             EGLConfig config,
                                             EGLint attribute,
@@ -463,6 +518,30 @@ EGLDisplay EGLApiBase::eglGetDisplayFn(EGLNativeDisplayType display_id) {
 
 EGLint EGLApiBase::eglGetErrorFn(void) {
   return driver_->fn.eglGetErrorFn();
+}
+
+EGLBoolean EGLApiBase::eglGetFrameTimestampsANDROIDFn(EGLDisplay dpy,
+                                                      EGLSurface surface,
+                                                      EGLuint64KHR frameId,
+                                                      EGLint numTimestamps,
+                                                      EGLint* timestamps,
+                                                      EGLnsecsANDROID* values) {
+  return driver_->fn.eglGetFrameTimestampsANDROIDFn(
+      dpy, surface, frameId, numTimestamps, timestamps, values);
+}
+
+EGLBoolean EGLApiBase::eglGetFrameTimestampSupportedANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp) {
+  return driver_->fn.eglGetFrameTimestampSupportedANDROIDFn(dpy, surface,
+                                                            timestamp);
+}
+
+EGLBoolean EGLApiBase::eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
+                                                  EGLSurface surface,
+                                                  EGLuint64KHR* frameId) {
+  return driver_->fn.eglGetNextFrameIdANDROIDFn(dpy, surface, frameId);
 }
 
 EGLDisplay EGLApiBase::eglGetPlatformDisplayEXTFn(EGLenum platform,
@@ -830,6 +909,28 @@ EGLBoolean TraceEGLApi::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
   return egl_api_->eglDestroySyncKHRFn(dpy, sync);
 }
 
+EGLBoolean TraceEGLApi::eglGetCompositorTimingANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint numTimestamps,
+    EGLint* names,
+    EGLnsecsANDROID* values) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::eglGetCompositorTimingANDROID")
+  return egl_api_->eglGetCompositorTimingANDROIDFn(dpy, surface, numTimestamps,
+                                                   names, values);
+}
+
+EGLBoolean TraceEGLApi::eglGetCompositorTimingSupportedANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::eglGetCompositorTimingSupportedANDROID")
+  return egl_api_->eglGetCompositorTimingSupportedANDROIDFn(dpy, surface,
+                                                            timestamp);
+}
+
 EGLBoolean TraceEGLApi::eglGetConfigAttribFn(EGLDisplay dpy,
                                              EGLConfig config,
                                              EGLint attribute,
@@ -869,6 +970,36 @@ EGLDisplay TraceEGLApi::eglGetDisplayFn(EGLNativeDisplayType display_id) {
 EGLint TraceEGLApi::eglGetErrorFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglGetError")
   return egl_api_->eglGetErrorFn();
+}
+
+EGLBoolean TraceEGLApi::eglGetFrameTimestampsANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLuint64KHR frameId,
+    EGLint numTimestamps,
+    EGLint* timestamps,
+    EGLnsecsANDROID* values) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::eglGetFrameTimestampsANDROID")
+  return egl_api_->eglGetFrameTimestampsANDROIDFn(
+      dpy, surface, frameId, numTimestamps, timestamps, values);
+}
+
+EGLBoolean TraceEGLApi::eglGetFrameTimestampSupportedANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::eglGetFrameTimestampSupportedANDROID")
+  return egl_api_->eglGetFrameTimestampSupportedANDROIDFn(dpy, surface,
+                                                          timestamp);
+}
+
+EGLBoolean TraceEGLApi::eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
+                                                   EGLSurface surface,
+                                                   EGLuint64KHR* frameId) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglGetNextFrameIdANDROID")
+  return egl_api_->eglGetNextFrameIdANDROIDFn(dpy, surface, frameId);
 }
 
 EGLDisplay TraceEGLApi::eglGetPlatformDisplayEXTFn(EGLenum platform,
@@ -1355,6 +1486,34 @@ EGLBoolean DebugEGLApi::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
   return result;
 }
 
+EGLBoolean DebugEGLApi::eglGetCompositorTimingANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint numTimestamps,
+    EGLint* names,
+    EGLnsecsANDROID* values) {
+  GL_SERVICE_LOG("eglGetCompositorTimingANDROID"
+                 << "(" << dpy << ", " << surface << ", " << numTimestamps
+                 << ", " << static_cast<const void*>(names) << ", "
+                 << static_cast<const void*>(values) << ")");
+  EGLBoolean result = egl_api_->eglGetCompositorTimingANDROIDFn(
+      dpy, surface, numTimestamps, names, values);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglGetCompositorTimingSupportedANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp) {
+  GL_SERVICE_LOG("eglGetCompositorTimingSupportedANDROID"
+                 << "(" << dpy << ", " << surface << ", " << timestamp << ")");
+  EGLBoolean result = egl_api_->eglGetCompositorTimingSupportedANDROIDFn(
+      dpy, surface, timestamp);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 EGLBoolean DebugEGLApi::eglGetConfigAttribFn(EGLDisplay dpy,
                                              EGLConfig config,
                                              EGLint attribute,
@@ -1421,6 +1580,48 @@ EGLint DebugEGLApi::eglGetErrorFn(void) {
                  << "("
                  << ")");
   EGLint result = egl_api_->eglGetErrorFn();
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglGetFrameTimestampsANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLuint64KHR frameId,
+    EGLint numTimestamps,
+    EGLint* timestamps,
+    EGLnsecsANDROID* values) {
+  GL_SERVICE_LOG("eglGetFrameTimestampsANDROID"
+                 << "(" << dpy << ", " << surface << ", " << frameId << ", "
+                 << numTimestamps << ", "
+                 << static_cast<const void*>(timestamps) << ", "
+                 << static_cast<const void*>(values) << ")");
+  EGLBoolean result = egl_api_->eglGetFrameTimestampsANDROIDFn(
+      dpy, surface, frameId, numTimestamps, timestamps, values);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglGetFrameTimestampSupportedANDROIDFn(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp) {
+  GL_SERVICE_LOG("eglGetFrameTimestampSupportedANDROID"
+                 << "(" << dpy << ", " << surface << ", " << timestamp << ")");
+  EGLBoolean result =
+      egl_api_->eglGetFrameTimestampSupportedANDROIDFn(dpy, surface, timestamp);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
+                                                   EGLSurface surface,
+                                                   EGLuint64KHR* frameId) {
+  GL_SERVICE_LOG("eglGetNextFrameIdANDROID"
+                 << "(" << dpy << ", " << surface << ", "
+                 << static_cast<const void*>(frameId) << ")");
+  EGLBoolean result =
+      egl_api_->eglGetNextFrameIdANDROIDFn(dpy, surface, frameId);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

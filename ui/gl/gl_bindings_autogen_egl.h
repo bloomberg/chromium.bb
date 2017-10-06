@@ -89,6 +89,16 @@ typedef EGLBoolean(GL_BINDING_CALL* eglDestroySurfaceProc)(EGLDisplay dpy,
                                                            EGLSurface surface);
 typedef EGLBoolean(GL_BINDING_CALL* eglDestroySyncKHRProc)(EGLDisplay dpy,
                                                            EGLSyncKHR sync);
+typedef EGLBoolean(GL_BINDING_CALL* eglGetCompositorTimingANDROIDProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint numTimestamps,
+    EGLint* names,
+    EGLnsecsANDROID* values);
+typedef EGLBoolean(GL_BINDING_CALL* eglGetCompositorTimingSupportedANDROIDProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp);
 typedef EGLBoolean(GL_BINDING_CALL* eglGetConfigAttribProc)(EGLDisplay dpy,
                                                             EGLConfig config,
                                                             EGLint attribute,
@@ -103,6 +113,21 @@ typedef EGLSurface(GL_BINDING_CALL* eglGetCurrentSurfaceProc)(EGLint readdraw);
 typedef EGLDisplay(GL_BINDING_CALL* eglGetDisplayProc)(
     EGLNativeDisplayType display_id);
 typedef EGLint(GL_BINDING_CALL* eglGetErrorProc)(void);
+typedef EGLBoolean(GL_BINDING_CALL* eglGetFrameTimestampsANDROIDProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLuint64KHR frameId,
+    EGLint numTimestamps,
+    EGLint* timestamps,
+    EGLnsecsANDROID* values);
+typedef EGLBoolean(GL_BINDING_CALL* eglGetFrameTimestampSupportedANDROIDProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLint timestamp);
+typedef EGLBoolean(GL_BINDING_CALL* eglGetNextFrameIdANDROIDProc)(
+    EGLDisplay dpy,
+    EGLSurface surface,
+    EGLuint64KHR* frameId);
 typedef EGLDisplay(GL_BINDING_CALL* eglGetPlatformDisplayEXTProc)(
     EGLenum platform,
     void* native_display,
@@ -230,6 +255,7 @@ typedef EGLint(GL_BINDING_CALL* eglWaitSyncKHRProc)(EGLDisplay dpy,
 
 struct ExtensionsEGL {
   bool b_EGL_EXT_platform_base;
+  bool b_EGL_ANDROID_get_frame_timestamps;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
   bool b_EGL_ANGLE_program_cache_control;
   bool b_EGL_ANGLE_query_surface_pointer;
@@ -271,6 +297,9 @@ struct ProcsEGL {
   eglDestroyStreamKHRProc eglDestroyStreamKHRFn;
   eglDestroySurfaceProc eglDestroySurfaceFn;
   eglDestroySyncKHRProc eglDestroySyncKHRFn;
+  eglGetCompositorTimingANDROIDProc eglGetCompositorTimingANDROIDFn;
+  eglGetCompositorTimingSupportedANDROIDProc
+      eglGetCompositorTimingSupportedANDROIDFn;
   eglGetConfigAttribProc eglGetConfigAttribFn;
   eglGetConfigsProc eglGetConfigsFn;
   eglGetCurrentContextProc eglGetCurrentContextFn;
@@ -278,6 +307,10 @@ struct ProcsEGL {
   eglGetCurrentSurfaceProc eglGetCurrentSurfaceFn;
   eglGetDisplayProc eglGetDisplayFn;
   eglGetErrorProc eglGetErrorFn;
+  eglGetFrameTimestampsANDROIDProc eglGetFrameTimestampsANDROIDFn;
+  eglGetFrameTimestampSupportedANDROIDProc
+      eglGetFrameTimestampSupportedANDROIDFn;
+  eglGetNextFrameIdANDROIDProc eglGetNextFrameIdANDROIDFn;
   eglGetPlatformDisplayEXTProc eglGetPlatformDisplayEXTFn;
   eglGetProcAddressProc eglGetProcAddressFn;
   eglGetSyncAttribKHRProc eglGetSyncAttribKHRFn;
@@ -384,6 +417,16 @@ class GL_EXPORT EGLApi {
   virtual EGLBoolean eglDestroySurfaceFn(EGLDisplay dpy,
                                          EGLSurface surface) = 0;
   virtual EGLBoolean eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) = 0;
+  virtual EGLBoolean eglGetCompositorTimingANDROIDFn(
+      EGLDisplay dpy,
+      EGLSurface surface,
+      EGLint numTimestamps,
+      EGLint* names,
+      EGLnsecsANDROID* values) = 0;
+  virtual EGLBoolean eglGetCompositorTimingSupportedANDROIDFn(
+      EGLDisplay dpy,
+      EGLSurface surface,
+      EGLint timestamp) = 0;
   virtual EGLBoolean eglGetConfigAttribFn(EGLDisplay dpy,
                                           EGLConfig config,
                                           EGLint attribute,
@@ -397,6 +440,20 @@ class GL_EXPORT EGLApi {
   virtual EGLSurface eglGetCurrentSurfaceFn(EGLint readdraw) = 0;
   virtual EGLDisplay eglGetDisplayFn(EGLNativeDisplayType display_id) = 0;
   virtual EGLint eglGetErrorFn(void) = 0;
+  virtual EGLBoolean eglGetFrameTimestampsANDROIDFn(
+      EGLDisplay dpy,
+      EGLSurface surface,
+      EGLuint64KHR frameId,
+      EGLint numTimestamps,
+      EGLint* timestamps,
+      EGLnsecsANDROID* values) = 0;
+  virtual EGLBoolean eglGetFrameTimestampSupportedANDROIDFn(
+      EGLDisplay dpy,
+      EGLSurface surface,
+      EGLint timestamp) = 0;
+  virtual EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
+                                                EGLSurface surface,
+                                                EGLuint64KHR* frameId) = 0;
   virtual EGLDisplay eglGetPlatformDisplayEXTFn(EGLenum platform,
                                                 void* native_display,
                                                 const EGLint* attrib_list) = 0;
@@ -535,6 +592,10 @@ class GL_EXPORT EGLApi {
 #define eglDestroyStreamKHR ::gl::g_current_egl_context->eglDestroyStreamKHRFn
 #define eglDestroySurface ::gl::g_current_egl_context->eglDestroySurfaceFn
 #define eglDestroySyncKHR ::gl::g_current_egl_context->eglDestroySyncKHRFn
+#define eglGetCompositorTimingANDROID \
+  ::gl::g_current_egl_context->eglGetCompositorTimingANDROIDFn
+#define eglGetCompositorTimingSupportedANDROID \
+  ::gl::g_current_egl_context->eglGetCompositorTimingSupportedANDROIDFn
 #define eglGetConfigAttrib ::gl::g_current_egl_context->eglGetConfigAttribFn
 #define eglGetConfigs ::gl::g_current_egl_context->eglGetConfigsFn
 #define eglGetCurrentContext ::gl::g_current_egl_context->eglGetCurrentContextFn
@@ -542,6 +603,12 @@ class GL_EXPORT EGLApi {
 #define eglGetCurrentSurface ::gl::g_current_egl_context->eglGetCurrentSurfaceFn
 #define eglGetDisplay ::gl::g_current_egl_context->eglGetDisplayFn
 #define eglGetError ::gl::g_current_egl_context->eglGetErrorFn
+#define eglGetFrameTimestampsANDROID \
+  ::gl::g_current_egl_context->eglGetFrameTimestampsANDROIDFn
+#define eglGetFrameTimestampSupportedANDROID \
+  ::gl::g_current_egl_context->eglGetFrameTimestampSupportedANDROIDFn
+#define eglGetNextFrameIdANDROID \
+  ::gl::g_current_egl_context->eglGetNextFrameIdANDROIDFn
 #define eglGetPlatformDisplayEXT \
   ::gl::g_current_egl_context->eglGetPlatformDisplayEXTFn
 #define eglGetProcAddress ::gl::g_current_egl_context->eglGetProcAddressFn

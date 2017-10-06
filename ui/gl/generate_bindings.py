@@ -1937,6 +1937,19 @@ EGL_FUNCTIONS = [
                  ] }],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync' },
 { 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglGetCompositorTimingANDROID',
+                 'extensions': [
+                   'EGL_ANDROID_get_frame_timestamps'
+                 ] }],
+  'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint numTimestamps, '
+               'EGLint* names, EGLnsecsANDROID* values', },
+{ 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglGetCompositorTimingSupportedANDROID',
+                 'extensions': [
+                   'EGL_ANDROID_get_frame_timestamps'
+                 ] }],
+  'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint timestamp', },
+{ 'return_type': 'EGLBoolean',
   'names': ['eglGetConfigAttrib'],
   'arguments':
       'EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint* value', },
@@ -1959,6 +1972,26 @@ EGL_FUNCTIONS = [
 { 'return_type': 'EGLint',
   'names': ['eglGetError'],
   'arguments': 'void', },
+{ 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglGetFrameTimestampsANDROID',
+                 'extensions': [
+                   'EGL_ANDROID_get_frame_timestamps'
+                 ] }],
+  'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLuint64KHR frameId, '
+               'EGLint numTimestamps, EGLint* timestamps, '
+               'EGLnsecsANDROID* values', },
+{ 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglGetFrameTimestampSupportedANDROID',
+                 'extensions': [
+                   'EGL_ANDROID_get_frame_timestamps'
+                 ] }],
+  'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint timestamp', },
+{ 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglGetNextFrameIdANDROID',
+                 'extensions': [
+                   'EGL_ANDROID_get_frame_timestamps'
+                 ] }],
+  'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLuint64KHR* frameId', },
 { 'return_type': 'EGLDisplay',
   'known_as': 'eglGetPlatformDisplayEXT',
   'versions': [{ 'name': 'eglGetPlatformDisplayEXT',
