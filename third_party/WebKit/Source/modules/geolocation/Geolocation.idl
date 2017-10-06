@@ -37,3 +37,6 @@
 
     void clearWatch(long watchID);
 };
+
+// https://www.w3.org/TR/geolocation-API/#position-callback
+callback PositionCallback = void(Position position);

@@ -1646,6 +1646,7 @@ DEFINE_TRACE_WRAPPERS(LocalDOMWindow) {
   visitor->TraceWrappers(custom_elements_);
   visitor->TraceWrappers(document_);
   visitor->TraceWrappers(modulator_);
+  visitor->TraceWrappers(navigator_);
   DOMWindow::TraceWrappers(visitor);
 }
 

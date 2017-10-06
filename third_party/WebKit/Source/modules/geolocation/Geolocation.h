@@ -27,6 +27,7 @@
 #ifndef Geolocation_h
 #define Geolocation_h
 
+#include "bindings/modules/v8/v8_position_callback.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom-blink.h"
@@ -34,7 +35,6 @@
 #include "modules/geolocation/GeoNotifier.h"
 #include "modules/geolocation/GeolocationWatchers.h"
 #include "modules/geolocation/Geoposition.h"
-#include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionErrorCallback.h"
 #include "modules/geolocation/PositionOptions.h"
@@ -60,6 +60,7 @@ class MODULES_EXPORT Geolocation final
   static Geolocation* Create(ExecutionContext*);
   ~Geolocation();
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void ContextDestroyed(ExecutionContext*) override;
@@ -69,13 +70,13 @@ class MODULES_EXPORT Geolocation final
 
   // Creates a oneshot and attempts to obtain a position that meets the
   // constraints of the options.
-  void getCurrentPosition(PositionCallback*,
+  void getCurrentPosition(V8PositionCallback*,
                           PositionErrorCallback*,
                           const PositionOptions&);
 
   // Creates a watcher that will be notified whenever a new position is
   // available that meets the constraints of the options.
-  int watchPosition(PositionCallback*,
+  int watchPosition(V8PositionCallback*,
                     PositionErrorCallback*,
                     const PositionOptions&);
 
@@ -104,7 +105,7 @@ class MODULES_EXPORT Geolocation final
   explicit Geolocation(ExecutionContext*);
 
   typedef HeapVector<Member<GeoNotifier>> GeoNotifierVector;
-  typedef HeapHashSet<Member<GeoNotifier>> GeoNotifierSet;
+  typedef HeapHashSet<TraceWrapperMember<GeoNotifier>> GeoNotifierSet;
 
   bool HasListeners() const {
     return !one_shots_.IsEmpty() || !watchers_.IsEmpty();

@@ -14,7 +14,7 @@
 namespace blink {
 
 GeoNotifier::GeoNotifier(Geolocation* geolocation,
-                         PositionCallback* success_callback,
+                         V8PositionCallback* success_callback,
                          PositionErrorCallback* error_callback,
                          const PositionOptions& options)
     : geolocation_(geolocation),
@@ -42,6 +42,10 @@ DEFINE_TRACE(GeoNotifier) {
   visitor->Trace(fatal_error_);
 }
 
+DEFINE_TRACE_WRAPPERS(GeoNotifier) {
+  visitor->TraceWrappers(success_callback_);
+}
+
 void GeoNotifier::SetFatalError(PositionError* error) {
   // If a fatal error has already been set, stick with it. This makes sure that
   // when permission is denied, this is the error reported, as required by the
@@ -61,7 +65,7 @@ void GeoNotifier::SetUseCachedPosition() {
 }
 
 void GeoNotifier::RunSuccessCallback(Geoposition* position) {
-  success_callback_->handleEvent(position);
+  success_callback_->call(nullptr, position);
 }
 
 void GeoNotifier::RunErrorCallback(PositionError* error) {

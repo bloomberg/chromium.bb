@@ -63,4 +63,8 @@ DEFINE_TRACE(NavigatorGeolocation) {
   Supplement<Navigator>::Trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(NavigatorGeolocation) {
+  visitor->TraceWrappers(geolocation_);
+}
+
 }  // namespace blink

@@ -14,6 +14,8 @@ CallbackFunctionBase::CallbackFunctionBase(ScriptState* scriptState,
   DCHECK(!callback_.IsEmpty());
 }
 
+CallbackFunctionBase::~CallbackFunctionBase() = default;
+
 DEFINE_TRACE_WRAPPERS(CallbackFunctionBase) {
   visitor->TraceWrappers(callback_);
 }
