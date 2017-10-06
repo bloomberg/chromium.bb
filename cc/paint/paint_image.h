@@ -85,14 +85,6 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage& operator=(const PaintImage& other);
   PaintImage& operator=(PaintImage&& other);
 
-  // Makes a new PaintImage representing a subset of the original image. The
-  // subset must be non-empty and lie within the image bounds.
-  PaintImage MakeSubset(const gfx::Rect& subset) const;
-
-  // Makes a new PaintImage representing a static frame of the original image,
-  // which should not be animated by the compositor.
-  PaintImage MakeStatic() const;
-
   bool operator==(const PaintImage& other) const;
 
   // Returns the smallest size that is at least as big as the requested_size
@@ -170,6 +162,7 @@ class CC_PAINT_EXPORT PaintImage {
                          SkImageInfo* info,
                          sk_sp<SkColorSpace> color_space,
                          size_t frame_index) const;
+  PaintImage MakeSubset(const gfx::Rect& subset) const;
 
   void CreateSkImage();
 

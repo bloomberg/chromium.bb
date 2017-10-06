@@ -18,7 +18,7 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
     sk_sp<SkImage> image) {
   DCHECK(!image->isLazyGenerated());
 
-  PaintImageBuilder builder;
+  auto builder = PaintImageBuilder::WithDefault();
   InitPaintImageBuilder(builder);
   builder.set_image(std::move(image));
   paint_image_ = builder.TakePaintImage();

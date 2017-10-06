@@ -74,7 +74,7 @@ TEST(PaintShaderTest, DecodePaintRecord) {
   // ImageProvider.
   auto generator =
       sk_make_sp<testing::StrictMock<MockImageGenerator>>(gfx::Size(100, 100));
-  PaintImage paint_image = PaintImageBuilder()
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
                                .TakePaintImage();

@@ -6,18 +6,36 @@
 
 namespace cc {
 
+// static
+PaintImageBuilder PaintImageBuilder::WithDefault() {
+  return PaintImageBuilder();
+}
+
+// static
+PaintImageBuilder PaintImageBuilder::WithCopy(PaintImage paint_image) {
+  return PaintImageBuilder(std::move(paint_image), false);
+}
+
+// static
+PaintImageBuilder PaintImageBuilder::WithProperties(PaintImage paint_image) {
+  return PaintImageBuilder(std::move(paint_image), true);
+}
+
 PaintImageBuilder::PaintImageBuilder() = default;
-PaintImageBuilder::PaintImageBuilder(PaintImage image)
+PaintImageBuilder::PaintImageBuilder(PaintImage image, bool clear_contents)
     : paint_image_(std::move(image)) {
 #if DCHECK_IS_ON()
   id_set_ = true;
 #endif
-  paint_image_.cached_sk_image_ = nullptr;
-  paint_image_.sk_image_ = nullptr;
-  paint_image_.paint_record_ = nullptr;
-  paint_image_.paint_record_rect_ = gfx::Rect();
-  paint_image_.paint_image_generator_ = nullptr;
+  if (clear_contents) {
+    paint_image_.sk_image_ = nullptr;
+    paint_image_.paint_record_ = nullptr;
+    paint_image_.paint_record_rect_ = gfx::Rect();
+    paint_image_.paint_image_generator_ = nullptr;
+    paint_image_.cached_sk_image_ = nullptr;
+  }
 }
+PaintImageBuilder::PaintImageBuilder(PaintImageBuilder&& other) = default;
 PaintImageBuilder::~PaintImageBuilder() = default;
 
 PaintImage PaintImageBuilder::TakePaintImage() {
@@ -52,7 +70,10 @@ PaintImage PaintImageBuilder::TakePaintImage() {
   }
 #endif
 
-  paint_image_.CreateSkImage();
+  // We may already have a cached_sk_image_ if this builder was created with a
+  // copy.
+  if (!paint_image_.cached_sk_image_)
+    paint_image_.CreateSkImage();
   return std::move(paint_image_);
 }
 

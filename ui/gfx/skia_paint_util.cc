@@ -39,7 +39,7 @@ sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
   shader_scale.setScaleY(local_matrix.getScaleY() / scale);
 
   return cc::PaintShader::MakeImage(
-      cc::PaintImageBuilder()
+      cc::PaintImageBuilder::WithDefault()
           .set_id(cc::PaintImage::kNonLazyStableId)
           .set_image(SkImage::MakeFromBitmap(image_rep.sk_bitmap()))
           .TakePaintImage(),

@@ -82,7 +82,7 @@ class TestImage : public Image {
   }
 
   PaintImage PaintImageForCurrentFrame() override {
-    PaintImageBuilder builder;
+    auto builder = PaintImageBuilder::WithDefault();
     InitPaintImageBuilder(builder);
     builder.set_image(image_);
     return builder.TakePaintImage();

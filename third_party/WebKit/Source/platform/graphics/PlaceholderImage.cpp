@@ -27,7 +27,7 @@ PlaceholderImage::PlaceholderImage(ImageObserver* observer, const IntSize& size)
 PlaceholderImage::~PlaceholderImage() {}
 
 PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
-  PaintImageBuilder builder;
+  auto builder = PaintImageBuilder::WithDefault();
   InitPaintImageBuilder(builder);
   builder.set_completion_state(PaintImage::CompletionState::DONE);
 

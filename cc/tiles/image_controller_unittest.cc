@@ -319,7 +319,7 @@ TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
   DrawImage image =
-      DrawImage(PaintImageBuilder()
+      DrawImage(PaintImageBuilder::WithDefault()
                     .set_id(PaintImage::GetNextId())
                     .set_image(SkImage::MakeFromBitmap(bitmap))
                     .TakePaintImage(),

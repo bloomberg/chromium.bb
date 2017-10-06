@@ -129,7 +129,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
                                          ? PaintImage::AnimationType::ANIMATED
                                          : PaintImage::AnimationType::STATIC;
 
-    return PaintImageBuilder()
+    return PaintImageBuilder::WithDefault()
         .set_id(paint_image_id_)
         .set_animation_type(type)
         .set_completion_state(state)

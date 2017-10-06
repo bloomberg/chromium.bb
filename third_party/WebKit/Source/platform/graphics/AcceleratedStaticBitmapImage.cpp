@@ -177,7 +177,7 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   }
   CreateImageFromMailboxIfNeeded();
 
-  PaintImageBuilder builder;
+  auto builder = PaintImageBuilder::WithDefault();
   InitPaintImageBuilder(builder);
   builder.set_image(texture_holder_->GetSkImage())
       .set_completion_state(PaintImage::CompletionState::DONE);

@@ -267,7 +267,7 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
   // TODO(enne): Move into base class?
   if (bitmap.drawsNothing())
     return;
-  drawImage(PaintImageBuilder()
+  drawImage(PaintImageBuilder::WithDefault()
                 .set_id(PaintImage::kNonLazyStableId)
                 .set_image(SkImage::MakeFromBitmap(bitmap))
                 .TakePaintImage(),

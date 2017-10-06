@@ -1732,7 +1732,7 @@ TEST_P(GpuImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   sk_sp<FakePaintImageGenerator> generator =
       sk_make_sp<FakePaintImageGenerator>(SkImageInfo::MakeN32Premul(10, 10),
                                           frames);
-  PaintImage image = PaintImageBuilder()
+  PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
                          .set_frame_index(0u)

@@ -40,7 +40,7 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   image_canvas->drawRect(SkRect::MakeWH(100, 100), blue_paint);
   image_canvas->drawRect(SkRect::MakeLTRB(100, 100, 200, 200), blue_paint);
 
-  layer->SetImage(PaintImageBuilder()
+  layer->SetImage(PaintImageBuilder::WithDefault()
                       .set_id(PaintImage::GetNextId())
                       .set_image(image_surface->makeImageSnapshot())
                       .TakePaintImage());

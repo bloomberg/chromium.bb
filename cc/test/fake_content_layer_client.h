@@ -67,7 +67,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   void add_draw_image(sk_sp<SkImage> image,
                       const gfx::Point& point,
                       const PaintFlags& flags) {
-    add_draw_image(PaintImageBuilder()
+    add_draw_image(PaintImageBuilder::WithDefault()
                        .set_id(PaintImage::GetNextId())
                        .set_image(std::move(image))
                        .TakePaintImage(),

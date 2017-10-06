@@ -99,12 +99,6 @@ void PaintImage::CreateSkImage() {
   }
 }
 
-PaintImage PaintImage::MakeStatic() const {
-  PaintImage result(*this);
-  result.repetition_count_ = kAnimationNone;
-  return result;
-}
-
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
   // TODO(vmpstr): If this image is using subset_rect, then we don't support

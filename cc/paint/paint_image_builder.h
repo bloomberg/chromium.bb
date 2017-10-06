@@ -18,76 +18,91 @@ namespace cc {
 // Class used to construct a paint image.
 class CC_PAINT_EXPORT PaintImageBuilder {
  public:
-  PaintImageBuilder();
+  static PaintImageBuilder WithDefault();
+
+  // Starts with the given images. Everything, including the "contents" of the
+  // image are copied.
+  static PaintImageBuilder WithCopy(PaintImage image);
+
   // Starts with the given image's flags. Note that this does _not_ keep the
   // "contents" of the image. That is, it clears the cached SkImage, the set
   // SkImage, the set PaintRecord, and any other content type variables.
-  explicit PaintImageBuilder(PaintImage starting_image);
+  static PaintImageBuilder WithProperties(PaintImage image);
+
+  PaintImageBuilder(PaintImageBuilder&& other);
   ~PaintImageBuilder();
 
-  PaintImageBuilder& set_id(PaintImage::Id id) {
+  PaintImageBuilder&& set_id(PaintImage::Id id) {
     paint_image_.id_ = id;
 #if DCHECK_IS_ON()
     id_set_ = true;
 #endif
-    return *this;
+    return std::move(*this);
   }
 
-  PaintImageBuilder& set_image(sk_sp<SkImage> sk_image) {
+  PaintImageBuilder&& set_image(sk_sp<SkImage> sk_image) {
     paint_image_.sk_image_ = std::move(sk_image);
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_paint_record(sk_sp<PaintRecord> paint_record,
-                                      const gfx::Rect& rect,
-                                      PaintImage::ContentId content_id) {
+  PaintImageBuilder&& set_paint_record(sk_sp<PaintRecord> paint_record,
+                                       const gfx::Rect& rect,
+                                       PaintImage::ContentId content_id) {
     DCHECK_NE(content_id, PaintImage::kInvalidContentId);
 
     paint_image_.paint_record_ = std::move(paint_record);
     paint_image_.paint_record_rect_ = rect;
     paint_image_.paint_record_content_id_ = content_id;
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_paint_image_generator(
+  PaintImageBuilder&& set_paint_image_generator(
       sk_sp<PaintImageGenerator> generator) {
     paint_image_.paint_image_generator_ = std::move(generator);
-    return *this;
+    return std::move(*this);
   }
 
-  PaintImageBuilder& set_animation_type(PaintImage::AnimationType type) {
+  PaintImageBuilder&& set_animation_type(PaintImage::AnimationType type) {
     paint_image_.animation_type_ = type;
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_completion_state(PaintImage::CompletionState state) {
+  PaintImageBuilder&& set_completion_state(PaintImage::CompletionState state) {
     paint_image_.completion_state_ = state;
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_is_multipart(bool is_multipart) {
+  PaintImageBuilder&& set_is_multipart(bool is_multipart) {
     paint_image_.is_multipart_ = is_multipart;
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_frame_index(size_t frame_index) {
+  PaintImageBuilder&& set_frame_index(size_t frame_index) {
     paint_image_.frame_index_ = frame_index;
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_repetition_count(int count) {
+  PaintImageBuilder&& set_repetition_count(int count) {
     paint_image_.repetition_count_ = count;
-    return *this;
+    return std::move(*this);
   }
-  PaintImageBuilder& set_reset_animation_sequence_id(
+  PaintImageBuilder&& set_reset_animation_sequence_id(
       PaintImage::AnimationSequenceId id) {
     paint_image_.reset_animation_sequence_id_ = id;
-    return *this;
+    return std::move(*this);
+  }
+
+  // Makes the PaintImage represent a subset of the original image. The
+  // subset must be non-empty and lie within the image bounds.
+  PaintImageBuilder&& make_subset(const gfx::Rect& subset) {
+    paint_image_ = paint_image_.MakeSubset(subset);
+    return std::move(*this);
   }
 
   PaintImage TakePaintImage();
 
  private:
+  PaintImageBuilder();
+  PaintImageBuilder(PaintImage starting_image, bool clear_contents);
+
   PaintImage paint_image_;
 #if DCHECK_IS_ON()
   bool id_set_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(PaintImageBuilder);
 };
 
 }  // namespace cc

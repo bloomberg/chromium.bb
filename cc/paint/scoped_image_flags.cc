@@ -78,7 +78,7 @@ void ScopedImageFlags::DecodeImageShader(const PaintFlags& flags,
 
   sk_sp<SkImage> sk_image =
       sk_ref_sp<SkImage>(const_cast<SkImage*>(decoded_image.image().get()));
-  PaintImage decoded_paint_image = PaintImageBuilder()
+  PaintImage decoded_paint_image = PaintImageBuilder::WithDefault()
                                        .set_id(paint_image.stable_id())
                                        .set_image(std::move(sk_image))
                                        .TakePaintImage();
