@@ -169,6 +169,7 @@ class WhitelistLoadObserver {
   }
 
   void Wait() { run_loop_.Run(); }
+  void Quit() { run_loop_.Quit(); }
 
   const base::FilePath& large_icon_path() const { return large_icon_path_; }
   const base::FilePath& whitelist_path() const { return whitelist_path_; }
@@ -182,7 +183,7 @@ class WhitelistLoadObserver {
     EXPECT_EQ(base::FilePath::StringType(), whitelist_path_.value());
     whitelist_path_ = whitelist_path;
     large_icon_path_ = large_icon_path;
-    run_loop_.Quit();
+    Quit();
   }
 
   base::FilePath large_icon_path_;
@@ -351,10 +352,25 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   const CrxComponent* component =
       component_update_service_.registered_component();
   ASSERT_TRUE(component);
-  const auto result =
-      component->installer->Install(std::move(manifest_), unpacked_path);
-  EXPECT_EQ(0, result.error);
-  EXPECT_EQ(0, result.extended_error);
+
+  // The lambda function argument below is called by the ComponentInstaller
+  // implementation of the SupervisedUserWhitelistInstaller. Quit the observer
+  // in case of errors to allow the test to continue, since the component
+  // installer only calls |ComponentReady| if the install of the component
+  // has succeeded.
+  component->installer->Install(
+      std::move(manifest_), unpacked_path,
+      base::Bind(
+          [](WhitelistLoadObserver* observer,
+             const update_client::CrxInstaller::Result& result) {
+            EXPECT_EQ(0, result.error);
+            EXPECT_EQ(0, result.extended_error);
+            if (result.error)
+              observer->Quit();
+          },
+          &observer));
+
+  scoped_task_environment_.RunUntilIdle();
 
   observer.Wait();
   EXPECT_EQ(whitelist_path_.value(), observer.whitelist_path().value());

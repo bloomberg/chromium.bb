@@ -160,9 +160,6 @@ enum class ComponentState {
   kLastStatus
 };
 
-// Called when a non-blocking call in this module completes.
-using Callback = base::Callback<void(Error error)>;
-
 // Defines an interface for a generic CRX installer.
 class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
  public:
@@ -176,6 +173,8 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
     int extended_error = 0;
   };
 
+  using Callback = base::Callback<void(const Result& result)>;
+
   // Called on the main thread when there was a problem unpacking or
   // verifying the CRX. |error| is a non-zero value which is only meaningful
   // to the caller.
@@ -184,10 +183,12 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   // Called by the update service when a CRX has been unpacked
   // and it is ready to be installed. |manifest| contains the CRX manifest
   // as a json dictionary.|unpack_path| contains the temporary directory
-  // with all the unpacked CRX files.
+  // with all the unpacked CRX files. The caller must invoke the |callback|
+  // when the install flow has completed.
   // This method may be called from a thread other than the main thread.
-  virtual Result Install(std::unique_ptr<base::DictionaryValue> manifest,
-                         const base::FilePath& unpack_path) = 0;
+  virtual void Install(std::unique_ptr<base::DictionaryValue> manifest,
+                       const base::FilePath& unpack_path,
+                       const Callback& callback) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is
   // the filename of the file in this CRX. Returns false if this is
@@ -254,6 +255,9 @@ struct CrxComponent {
   // Reasons why this component/extension is disabled.
   std::vector<int> disabled_reasons;
 };
+
+// Called when a non-blocking call of UpdateClient completes.
+using Callback = base::Callback<void(Error error)>;
 
 // All methods are safe to call only from the browser's main thread. Once an
 // instance of this class is created, the reference to it must be released

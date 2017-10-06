@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -160,10 +161,11 @@ class ComponentInstallerTest : public testing::Test {
   void Unpack(const base::FilePath& crx_path);
   ComponentUnpacker::Result result() const { return result_; }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  private:
   void UnpackComplete(const ComponentUnpacker::Result& result);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   base::RunLoop runloop_;
@@ -291,10 +293,15 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
   EXPECT_TRUE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
   base_dir = base_dir.Append(relative_install_dir);
   EXPECT_TRUE(base::CreateDirectory(base_dir));
-  const auto result = installer->Install(std::move(manifest), unpack_path);
-  EXPECT_EQ(0, result.error);
-  EXPECT_FALSE(base::PathExists(unpack_path));
+  installer->Install(
+      std::move(manifest), unpack_path,
+      base::Bind([](const update_client::CrxInstaller::Result& result) {
+        EXPECT_EQ(0, result.error);
+      }));
 
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);
 }
 
@@ -316,12 +323,17 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
   EXPECT_FALSE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
 
   // Calling |Install| fails since DIR_COMPONENT_USER does not exist.
-  const auto result = installer->Install(std::move(manifest), unpack_path);
-  EXPECT_EQ(
-      static_cast<int>(update_client::InstallError::NO_DIR_COMPONENT_USER),
-      result.error);
-  EXPECT_FALSE(base::PathExists(unpack_path));
+  installer->Install(
+      std::move(manifest), unpack_path,
+      base::Bind([](const update_client::CrxInstaller::Result& result) {
+        EXPECT_EQ(static_cast<int>(
+                      update_client::InstallError::NO_DIR_COMPONENT_USER),
+                  result.error);
+      }));
 
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(base::PathExists(unpack_path));
   EXPECT_CALL(update_client(), Stop()).Times(1);
 }
 

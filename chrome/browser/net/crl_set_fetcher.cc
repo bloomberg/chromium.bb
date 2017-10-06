@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -165,14 +166,14 @@ void CRLSetFetcher::OnUpdateError(int error) {
                << " from component installer";
 }
 
-update_client::CrxInstaller::Result CRLSetFetcher::Install(
-    std::unique_ptr<base::DictionaryValue> manifest,
-    const base::FilePath& unpack_path) {
+void CRLSetFetcher::Install(std::unique_ptr<base::DictionaryValue> manifest,
+                            const base::FilePath& unpack_path,
+                            const Callback& callback) {
   const auto result = update_client::InstallFunctionWrapper(
       base::Bind(&CRLSetFetcher::DoInstall, base::Unretained(this),
                  base::ConstRef(*manifest), base::ConstRef(unpack_path)));
   base::DeleteFile(unpack_path, true);
-  return result;
+  base::PostTask(FROM_HERE, base::BindOnce(callback, result));
 }
 
 bool CRLSetFetcher::DoInstall(const base::DictionaryValue& manifest,

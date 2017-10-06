@@ -101,12 +101,11 @@ class ComponentInstallerPolicy {
   virtual update_client::InstallerAttributes GetInstallerAttributes() const = 0;
 };
 
-// A ComponentInstaller is intended to be final, and not derived from.
-// Customization must be provided by passing a ComponentInstallerPolicy object
-// to the constructor.
-class ComponentInstaller : public update_client::CrxInstaller {
+// Defines the installer for Chrome components. The behavior of this class is
+// controlled by an instance of ComponentInstallerPolicy, at construction time.
+class ComponentInstaller final : public update_client::CrxInstaller {
  public:
-  ComponentInstaller(
+  explicit ComponentInstaller(
       std::unique_ptr<ComponentInstallerPolicy> installer_policy);
 
   // Registers the component for update checks and installs.
@@ -114,11 +113,13 @@ class ComponentInstaller : public update_client::CrxInstaller {
   // versions is done and the component has been registered.
   void Register(ComponentUpdateService* cus, const base::Closure& callback);
 
-  // Overridden from ComponentInstaller:
+  // Overrides from update_client::CrxInstaller.
   void OnUpdateError(int error) override;
-  update_client::CrxInstaller::Result Install(
-      std::unique_ptr<base::DictionaryValue> manifest,
-      const base::FilePath& unpack_path) override;
+
+  void Install(std::unique_ptr<base::DictionaryValue> manifest,
+               const base::FilePath& unpack_path,
+               const Callback& callback) override;
+
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
   // Only user-level component installations can be uninstalled.
@@ -153,7 +154,8 @@ class ComponentInstaller : public update_client::CrxInstaller {
   update_client::CrxInstaller::Result InstallHelper(
       const base::DictionaryValue& manifest,
       const base::FilePath& unpack_path,
-      const base::FilePath& install_path);
+      base::Version* version,
+      base::FilePath* install_path);
   void StartRegistration(
       const scoped_refptr<RegistrationInfo>& registration_info,
       ComponentUpdateService* cus);

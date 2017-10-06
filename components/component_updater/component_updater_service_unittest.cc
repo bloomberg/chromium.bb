@@ -49,15 +49,17 @@ class MockInstaller : public CrxInstaller {
 
   // gMock does not support mocking functions with parameters which have
   // move semantics. This function is a shim to work around it.
-  Result Install(std::unique_ptr<base::DictionaryValue> manifest,
-                 const base::FilePath& unpack_path) {
-    return Install_(manifest, unpack_path);
+  void Install(std::unique_ptr<base::DictionaryValue> manifest,
+               const base::FilePath& unpack_path,
+               const update_client::CrxInstaller::Callback& callback) {
+    Install_(manifest, unpack_path, callback);
   }
 
   MOCK_METHOD1(OnUpdateError, void(int error));
-  MOCK_METHOD2(Install_,
-               Result(const std::unique_ptr<base::DictionaryValue>& manifest,
-                      const base::FilePath& unpack_path));
+  MOCK_METHOD3(Install_,
+               void(const std::unique_ptr<base::DictionaryValue>& manifest,
+                    const base::FilePath& unpack_path,
+                    const update_client::CrxInstaller::Callback& callback));
   MOCK_METHOD2(GetInstalledFile,
                bool(const std::string& file, base::FilePath* installed_file));
   MOCK_METHOD0(Uninstall, bool());

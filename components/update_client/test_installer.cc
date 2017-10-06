@@ -8,6 +8,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/values.h"
 #include "components/update_client/update_client_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,14 +31,19 @@ void TestInstaller::OnUpdateError(int error) {
   error_ = error;
 }
 
-CrxInstaller::Result TestInstaller::Install(
-    std::unique_ptr<base::DictionaryValue> manifest,
-    const base::FilePath& unpack_path) {
+void TestInstaller::Install(std::unique_ptr<base::DictionaryValue> manifest,
+                            const base::FilePath& unpack_path,
+                            const Callback& callback) {
   ++install_count_;
-
   unpack_path_ = unpack_path;
 
-  return Result(InstallError::NONE);
+  InstallComplete(callback, Result(InstallError::NONE));
+}
+
+void TestInstaller::InstallComplete(const Callback& callback,
+                                    const Result& result) const {
+  base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
+                           base::BindOnce(callback, result));
 }
 
 bool TestInstaller::GetInstalledFile(const std::string& file,
@@ -69,9 +76,10 @@ VersionedTestInstaller::~VersionedTestInstaller() {
   base::DeleteFile(install_directory_, true);
 }
 
-CrxInstaller::Result VersionedTestInstaller::Install(
+void VersionedTestInstaller::Install(
     std::unique_ptr<base::DictionaryValue> manifest,
-    const base::FilePath& unpack_path) {
+    const base::FilePath& unpack_path,
+    const Callback& callback) {
   std::string version_string;
   manifest->GetStringASCII("version", &version_string);
   base::Version version(version_string.c_str());
@@ -79,11 +87,14 @@ CrxInstaller::Result VersionedTestInstaller::Install(
   base::FilePath path;
   path = install_directory_.AppendASCII(version.GetString());
   base::CreateDirectory(path.DirName());
-  if (!base::Move(unpack_path, path))
-    return Result(InstallError::GENERIC_ERROR);
+  if (!base::Move(unpack_path, path)) {
+    InstallComplete(callback, Result(InstallError::GENERIC_ERROR));
+    return;
+  }
   current_version_ = version;
   ++install_count_;
-  return Result(InstallError::NONE);
+
+  InstallComplete(callback, Result(InstallError::NONE));
 }
 
 bool VersionedTestInstaller::GetInstalledFile(const std::string& file,
