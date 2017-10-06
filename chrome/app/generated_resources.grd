@@ -5835,15 +5835,6 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Content Settings dialog data -->
-      <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
-        Cookies
-      </message>
-      <message name="IDS_COOKIES_HEADER" desc="Header for cookie exception management page on Content Settings dialog">
-        Cookie and site data exceptions
-      </message>
-      <message name="IDS_COOKIES_SESSION_ONLY_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data for the current session only.">
-        Keep local data only until you quit your browser
-      </message>
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
         Block third-party cookies and site data
       </message>
@@ -6036,9 +6027,6 @@ I don't think this site should be blocked!
       <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
         Hostname pattern
       </message>
-      <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
-        Behavior
-      </message>
       <message name="IDS_EXCEPTIONS_USB_DEVICE_HEADER" desc="A column headers for the exceptions dialog indicating the name of a device the page has access to (e.g. 'Nexus 5')">
         Device
       </message>
@@ -6062,9 +6050,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_EXCEPTIONS_OTR_LABEL" desc="A label informing the user that the table below the label shows incognito-only exceptions">
         Exceptions below only apply to the current incognito session.
-      </message>
-      <message name="IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS" desc="Placeholder text before the user adds a new exception" >
-        [*.]example.com
       </message>
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
@@ -6104,9 +6089,6 @@ I don't think this site should be blocked!
 
       <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
         Manage exceptions...
-      </message>
-      <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
-        All cookies and site data...
       </message>
       <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
         Manage handlers...
@@ -7478,20 +7460,8 @@ I don't think this site should be blocked!
 
 
       <!-- Cookies Window -->
-      <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
-        Cookies and site data
-      </message>
-      <message name="IDS_COOKIES_SEARCH_COOKIES" desc="Placeholder text shown in the search box in the Cookies Window">
-        Search cookies
-      </message>
       <message name="IDS_COOKIES_REMOVE_LABEL" desc="The label of the 'Remove' button in the Cookies Window">
         Remove
-      </message>
-      <message name="IDS_COOKIES_REMOVE_ALL_LABEL" desc="The label of the 'Remove All' button in the Cookies Window">
-        Remove all
-      </message>
-      <message name="IDS_COOKIES_REMOVE_ALL_SHOWN_LABEL" desc="The label of the 'Remove All Shown' button after a query search string is entered in the Cookies Window">
-        Remove all shown
       </message>
       <message name="IDS_COOKIES_COOKIE_NAME_LABEL" desc="The Cookie Name label">
         Name
@@ -7540,18 +7510,6 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_COOKIE_NONESELECTED" desc="Field value when no cookie is selected">
         no cookie selected
       </message>
-      <message name="IDS_COOKIES_DOMAIN_COLUMN_HEADER" desc="The label of the Domain header in the Cookies table">
-        Site
-      </message>
-      <message name="IDS_COOKIES_DATA_COLUMN_HEADER" desc="The label of the Locally Stored Data header in the Cookies table">
-        Locally stored data
-      </message>
-      <message name="IDS_COOKIES_SINGLE_COOKIE" desc="The text displayed when there is one cookie in the Cookies table">
-        1 cookie
-      </message>
-      <message name="IDS_COOKIES_PLURAL_COOKIES" desc="The text displayed when there are two or more cookies in the Cookies table">
-        <ph name="COOKIES">$1<ex>42</ex></ph> cookies
-      </message>
       <message name="IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
         Description:
       </message>
@@ -7584,9 +7542,6 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_APPLICATION_CACHE" desc="The text shown when there is an Application Cache (name of an HTML standard) in the Cookies table">
         Application cache
       </message>
-      <message name="IDS_COOKIES_FLASH_LSO" desc="The text shown when Flash has Local Shared Objects (informally known as 'Flash cookies') stored">
-        Flash data
-      </message>
       <message name="IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
         Manifest:
       </message>
@@ -7595,9 +7550,6 @@ I don't think this site should be blocked!
           Size:
         </message>
       </if>
-      <message name="IDS_COOKIES_DATABASE_STORAGE" desc="The text shown when there is either Web Database or Indexed Database Storage (names of HTML standards) in the Cookies table">
-        Database storage
-      </message>
       <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of an HTML standard) are displayed">
         Web databases
       </message>
@@ -7630,12 +7582,6 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_FILE_SYSTEMS" desc="Label for the folder under which a list of file systems (name of an HTML standard) are displayed">
         File systems
       </message>
-      <message name="IDS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL" desc="Label for a temporary file system's disk usage.">
-        Temporary storage:
-      </message>
-      <message name="IDS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL" desc="Label for a persistent file system's disk usage.">
-        Persistent storage:
-      </message>
       <message name="IDS_COOKIES_FILE_SYSTEM_USAGE_NONE" desc="Value displayed when no file system of a particular type exists.">
         None
       </message>
@@ -7653,9 +7599,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_COOKIES_SERVICE_WORKERS" desc="Label for Service Workers (name of an HTML standard)">
         Service Workers
-      </message>
-      <message name="IDS_COOKIES_SERVICE_WORKER_SCOPES_LABEL" desc="Label for list of Service Worker (name of an HTML standard) patterns">
-        Scopes:
       </message>
       <message name="IDS_COOKIES_CACHE_STORAGE" desc="The text shown when there is Cache Storage (name of a Web standard) in the Cookies table">
         Cache Storage
@@ -9894,9 +9837,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <!-- Android does not support multiple profiles and supervised users -->
       <if expr="not is_android">
         <!-- Manage Profile Dialog -->
-        <message name="IDS_DISCONNECT_ACCOUNT_TITLE" desc="Title of the disconnect account dialog">
-          Disconnect Account
-        </message>
         <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
           Edit
         </message>
