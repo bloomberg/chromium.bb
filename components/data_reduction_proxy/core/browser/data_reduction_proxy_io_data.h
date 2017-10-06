@@ -130,7 +130,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       bool data_reduction_proxy_enabled,
       DataReductionProxyRequestType request_type,
       const std::string& mime_type);
-  void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
+  void SetLoFiUsedThisSession();
 
   // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
   // thread objects.

@@ -146,10 +146,9 @@ void DataReductionProxyService::SetUnreachable(bool unreachable) {
   settings_->SetUnreachable(unreachable);
 }
 
-void DataReductionProxyService::SetLoFiModeActiveOnMainFrame(
-    bool lo_fi_mode_active) {
+void DataReductionProxyService::SetLoFiUsedThisSession() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  settings_->SetLoFiModeActiveOnMainFrame(lo_fi_mode_active);
+  settings_->SetLoFiUsedThisSession();
 }
 
 void DataReductionProxyService::SetLoFiModeOff() {

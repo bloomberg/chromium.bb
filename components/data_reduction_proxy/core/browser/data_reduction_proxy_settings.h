@@ -111,10 +111,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Enables or disables the data reduction proxy.
   void SetDataReductionProxyEnabled(bool enabled);
 
-  // Sets |lo_fi_mode_active_| to true if Lo-Fi is currently active, meaning
-  // requests are being sent with "q=low" headers. Set from the IO thread only
-  // on main frame requests.
-  void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
+  // Indicates that Lo-Fi has been used, meaning requests are being sent with
+  // "q=low" headers. Set from the IO thread only on main frame requests.
+  void SetLoFiUsedThisSession();
 
   // Increments the number of times the Lo-Fi UI has been shown.
   void IncrementLoFiUIShown();

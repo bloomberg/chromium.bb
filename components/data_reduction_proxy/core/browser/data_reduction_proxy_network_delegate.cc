@@ -318,12 +318,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
     GURL* new_url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // |data_reduction_proxy_io_data_| can be NULL for Webview.
-  if (data_reduction_proxy_io_data_ &&
-      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
-    data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(false);
-  }
-
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider() &&
       data_reduction_proxy_io_data_->IsEnabled()) {
@@ -455,11 +449,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   DCHECK(data);
-  if (data_reduction_proxy_io_data_ &&
-      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
-    data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
-        lofi_decider ? lofi_decider->IsSlowPagePreviewRequested(*headers)
-                     : false);
+  if (data_reduction_proxy_io_data_ && lofi_decider &&
+      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) &&
+      lofi_decider->IsSlowPagePreviewRequested(*headers)) {
+    data_reduction_proxy_io_data_->SetLoFiUsedThisSession();
   }
 
   data->set_lofi_requested(
