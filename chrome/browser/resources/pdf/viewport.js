@@ -736,6 +736,15 @@ Viewport.prototype = {
    * @param {number} page the index of the page to go to. zero-based.
    */
   goToPage: function(page) {
+    this.goToPageAndY(page, 0);
+  },
+
+  /**
+   * Go to the given y position in the given page index.
+   * @param {number} page the index of the page to go to. zero-based.
+   * @param {number} y the y position in the page to go to.
+   */
+  goToPageAndY: function(page, y) {
     this.mightZoom_(() => {
       if (this.pageDimensions_.length === 0)
         return;
@@ -752,7 +761,7 @@ Viewport.prototype = {
         toolbarOffset = this.topToolbarHeight_;
       this.position = {
         x: dimensions.x * this.zoom,
-        y: dimensions.y * this.zoom - toolbarOffset
+        y: (dimensions.y + y) * this.zoom - toolbarOffset
       };
       this.updateViewport_();
     });

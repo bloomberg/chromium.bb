@@ -482,6 +482,13 @@ class PDFiumEngine : public PDFEngine,
   void KillTouchTimer(int timer_id);
   void HandleLongPress(const pp::TouchInputEvent& event);
 
+  // Returns a VarDictionary (representing a bookmark), which in turn contains
+  // child VarDictionaries (representing the child bookmarks).
+  // If nullptr is passed in as the bookmark then we traverse from the "root".
+  // Note that the "root" bookmark contains no useful information.
+  pp::VarDictionary TraverseBookmarks(FPDF_BOOKMARK bookmark,
+                                      unsigned int depth);
+
   // FPDF_FORMFILLINFO callbacks.
   static void Form_Invalidate(FPDF_FORMFILLINFO* param,
                               FPDF_PAGE page,
