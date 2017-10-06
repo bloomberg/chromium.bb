@@ -181,13 +181,14 @@ Element* InsertParagraphSeparatorCommand::CloneHierarchyUnderNewBlock(
 void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   // TODO(editing-dev): We shouldn't construct an
   // InsertParagraphSeparatorCommand with none or invalid selection.
-  if (EndingVisibleSelection().IsNone() ||
-      !EndingVisibleSelection().IsValidFor(GetDocument()))
+  const VisibleSelection& visible_selection = EndingVisibleSelection();
+  if (visible_selection.IsNone() ||
+      !visible_selection.IsValidFor(GetDocument()))
     return;
 
-  Position insertion_position = EndingVisibleSelection().Start();
+  Position insertion_position = visible_selection.Start();
 
-  TextAffinity affinity = EndingVisibleSelection().Affinity();
+  TextAffinity affinity = visible_selection.Affinity();
 
   // Delete the current selection.
   if (EndingSelection().IsRange()) {
@@ -196,8 +197,10 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
     DeleteSelection(editing_state, false, true);
     if (editing_state->IsAborted())
       return;
-    insertion_position = EndingVisibleSelection().Start();
-    affinity = EndingVisibleSelection().Affinity();
+    const VisibleSelection& visble_selection_after_delete =
+        EndingVisibleSelection();
+    insertion_position = visble_selection_after_delete.Start();
+    affinity = visble_selection_after_delete.Affinity();
   }
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();

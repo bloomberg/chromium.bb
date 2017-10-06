@@ -151,8 +151,9 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
   // TODO(editing-dev): We shouldn't construct an InsertTextCommand with none or
   // invalid selection.
-  if (EndingVisibleSelection().IsNone() ||
-      !EndingVisibleSelection().IsValidFor(GetDocument()))
+  const VisibleSelection& visible_selection = EndingVisibleSelection();
+  if (visible_selection.IsNone() ||
+      !visible_selection.IsValidFor(GetDocument()))
     return;
 
   // Delete the current selection.
@@ -293,10 +294,11 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
   if (!select_inserted_text_) {
     SelectionInDOMTree::Builder builder;
-    builder.SetAffinity(EndingVisibleSelection().Affinity());
+    const VisibleSelection& selection = EndingVisibleSelection();
+    builder.SetAffinity(selection.Affinity());
     builder.SetIsDirectional(EndingSelection().IsDirectional());
-    if (EndingVisibleSelection().End().IsNotNull())
-      builder.Collapse(EndingVisibleSelection().End());
+    if (selection.End().IsNotNull())
+      builder.Collapse(selection.End());
     SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
   }
 }
