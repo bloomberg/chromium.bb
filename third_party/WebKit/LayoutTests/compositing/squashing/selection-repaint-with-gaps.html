@@ -21,19 +21,14 @@
    }
 </style>
 <script src="../../resources/run-after-layout-and-paint.js"></script>
-  
+
 <!-- This test checks whether repaint rects for selection on squashed layers is correct. -->
-  
+
 <div class="overlap"></div>
 <div style="top: 20px" class="item"><div class="inline-block">lorem ipsum</div></div>
 <div style="top: 100px" class="item" id="item1"><div class="inline-block">lorem ipsum</div></div>
 <div style="top: 180px" class="item" id="item2"><div class="inline-block">lorem ipsum</div></div>
 
-</div>
-<div id="output" style="display: none">
-    <pre id="case1"></pre>
-    <pre id="case2"></pre>
-</div>
 <script>
     if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
@@ -49,8 +44,9 @@
         // Case 1: selection that does not have any gaps.
         selection.setBaseAndExtent(document.querySelector("#item1"), 0, document.querySelector("#item1"), 1);
 
+        let layerTreeAsText = [];
         if (window.internals) {
-            document.querySelector('#case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+            layerTreeAsText.push(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
             window.internals.stopTrackingRepaints(document);
         }
 
@@ -63,14 +59,13 @@
         selection.setBaseAndExtent(document.querySelector("#item1"), 0, document.querySelector("#item2"), 1);
 
         if (window.internals) {
-            document.querySelector('#case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+            layerTreeAsText.push(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
             window.internals.stopTrackingRepaints(document);
         }
 
-        document.querySelector('#output').style.display = 'block';
-
-
-        if (window.testRunner)
+        if (window.testRunner) {
+            testRunner.setCustomTextOutput(layerTreeAsText.join(''));
             testRunner.notifyDone();
+        }
     });
 </script>
