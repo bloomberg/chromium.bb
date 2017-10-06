@@ -47,33 +47,33 @@ extern "C" {
 #include "./aom_image.h"
 
 /*!\brief Decorator indicating a function is deprecated */
-#ifndef DEPRECATED
+#ifndef AOM_DEPRECATED
 #if defined(__GNUC__) && __GNUC__
-#define DEPRECATED __attribute__((deprecated))
+#define AOM_DEPRECATED __attribute__((deprecated))
 #elif defined(_MSC_VER)
-#define DEPRECATED
+#define AOM_DEPRECATED
 #else
-#define DEPRECATED
+#define AOM_DEPRECATED
 #endif
-#endif /* DEPRECATED */
+#endif /* AOM_DEPRECATED */
 
-#ifndef DECLSPEC_DEPRECATED
+#ifndef AOM_DECLSPEC_DEPRECATED
 #if defined(__GNUC__) && __GNUC__
-#define DECLSPEC_DEPRECATED /**< \copydoc #DEPRECATED */
+#define AOM_DECLSPEC_DEPRECATED /**< \copydoc #AOM_DEPRECATED */
 #elif defined(_MSC_VER)
-/*!\brief \copydoc #DEPRECATED */
-#define DECLSPEC_DEPRECATED __declspec(deprecated)
+/*!\brief \copydoc #AOM_DEPRECATED */
+#define AOM_DECLSPEC_DEPRECATED __declspec(deprecated)
 #else
-#define DECLSPEC_DEPRECATED /**< \copydoc #DEPRECATED */
+#define AOM_DECLSPEC_DEPRECATED /**< \copydoc #AOM_DEPRECATED */
 #endif
-#endif /* DECLSPEC_DEPRECATED */
+#endif /* AOM_DECLSPEC_DEPRECATED */
 
 /*!\brief Decorator indicating a function is potentially unused */
-#ifdef UNUSED
+#ifdef AOM_UNUSED
 #elif defined(__GNUC__) || defined(__clang__)
-#define UNUSED __attribute__((unused))
+#define AOM_UNUSED __attribute__((unused))
 #else
-#define UNUSED
+#define AOM_UNUSED
 #endif
 
 /*!\brief Decorator indicating that given struct/union/enum is packed */
@@ -433,7 +433,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
  */
 #define AOM_CTRL_USE_TYPE(id, typ)                                           \
   static aom_codec_err_t aom_codec_control_##id(aom_codec_ctx_t *, int, typ) \
-      UNUSED;                                                                \
+      AOM_UNUSED;                                                            \
                                                                              \
   static aom_codec_err_t aom_codec_control_##id(aom_codec_ctx_t *ctx,        \
                                                 int ctrl_id, typ data) {     \
@@ -450,13 +450,13 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
  * It defines a static function with the correctly typed arguments as a
  * wrapper to the type-unsafe internal function.
  */
-#define AOM_CTRL_USE_TYPE_DEPRECATED(id, typ)                        \
-  DECLSPEC_DEPRECATED static aom_codec_err_t aom_codec_control_##id( \
-      aom_codec_ctx_t *, int, typ) DEPRECATED UNUSED;                \
-                                                                     \
-  DECLSPEC_DEPRECATED static aom_codec_err_t aom_codec_control_##id( \
-      aom_codec_ctx_t *ctx, int ctrl_id, typ data) {                 \
-    return aom_codec_control_(ctx, ctrl_id, data);                   \
+#define AOM_CTRL_USE_TYPE_DEPRECATED(id, typ)                            \
+  AOM_DECLSPEC_DEPRECATED static aom_codec_err_t aom_codec_control_##id( \
+      aom_codec_ctx_t *, int, typ) AOM_DEPRECATED AOM_UNUSED;            \
+                                                                         \
+  AOM_DECLSPEC_DEPRECATED static aom_codec_err_t aom_codec_control_##id( \
+      aom_codec_ctx_t *ctx, int ctrl_id, typ data) {                     \
+    return aom_codec_control_(ctx, ctrl_id, data);                       \
   } /**<\hideinitializer*/
 
 /*!\brief aom_codec_control void type definition macro
@@ -471,7 +471,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
  */
 #define AOM_CTRL_VOID(id)                                               \
   static aom_codec_err_t aom_codec_control_##id(aom_codec_ctx_t *, int) \
-      UNUSED;                                                           \
+      AOM_UNUSED;                                                       \
                                                                         \
   static aom_codec_err_t aom_codec_control_##id(aom_codec_ctx_t *ctx,   \
                                                 int ctrl_id) {          \

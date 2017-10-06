@@ -117,7 +117,7 @@ void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
   }
 }
 
-static void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
+static void copy_sb8_16(AOM_UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
                         const uint8_t *src, int src_voffset, int src_hoffset,
                         int sstride, int vsize, int hsize) {
 #if CONFIG_HIGHBITDEPTH

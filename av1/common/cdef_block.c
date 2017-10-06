@@ -137,7 +137,7 @@ const int cdef_sec_taps[2][2] = { { 2, 1 }, { 2, 1 } };
 void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
                          const uint16_t *in, int pri_strength, int sec_strength,
                          int dir, int pri_damping, int sec_damping, int bsize,
-                         UNUSED int max_unused)
+                         AOM_UNUSED int max_unused)
 #else
 void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
                          const uint16_t *in, int pri_strength, int sec_strength,

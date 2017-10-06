@@ -241,7 +241,7 @@ void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
                                         int sec_strength, int dir,
                                         int pri_damping, int sec_damping,
-                                        UNUSED int max_unused)
+                                        AOM_UNUSED int max_unused)
 #else
 void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
@@ -478,7 +478,7 @@ void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
                                         int sec_strength, int dir,
                                         int pri_damping, int sec_damping,
-                                        UNUSED int max_unused)
+                                        AOM_UNUSED int max_unused)
 #else
 void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
@@ -694,7 +694,7 @@ void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
                                          int sec_strength, int dir,
                                          int pri_damping, int sec_damping,
-                                         UNUSED int max_unused)
+                                         AOM_UNUSED int max_unused)
 #else
 void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
@@ -867,7 +867,7 @@ void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
                                          int sec_strength, int dir,
                                          int pri_damping, int sec_damping,
-                                         UNUSED int max_unused)
+                                         AOM_UNUSED int max_unused)
 #else
 void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
