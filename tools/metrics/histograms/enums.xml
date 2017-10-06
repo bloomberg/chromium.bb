@@ -7715,6 +7715,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="DataUrlMimeType">
+  <obsolete>
+    Removed from code October 2017.
+  </obsolete>
   <int value="0" label="Other"/>
   <int value="1" label="HTML"/>
   <int value="2" label="XHTML"/>

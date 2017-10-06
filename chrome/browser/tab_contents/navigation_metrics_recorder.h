@@ -9,29 +9,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace rappor {
-class RapporServiceImpl;
-}
-
 class NavigationMetricsRecorder
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationMetricsRecorder> {
  public:
   ~NavigationMetricsRecorder() override;
-
-  void set_rappor_service_for_testing(
-      rappor::RapporServiceImpl* rappor_service);
-
-  // This enum is used in building a histogram. So, this is append only,
-  // any new scheme should be added at the end, before MIME_TYPE_MAX.
-  enum MimeType {
-    MIME_TYPE_OTHER,
-    MIME_TYPE_HTML,
-    MIME_TYPE_XHTML,
-    MIME_TYPE_PDF,
-    MIME_TYPE_SVG,
-    MIME_TYPE_MAX
-  };
 
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
@@ -42,8 +24,6 @@ class NavigationMetricsRecorder
       content::NavigationHandle* navigation_handle) override;
 
   void RegisterSyntheticSigninIsolationTrial();
-
-  rappor::RapporServiceImpl* rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };
