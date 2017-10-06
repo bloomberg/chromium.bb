@@ -57,9 +57,12 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
+
+  // Blink layout tests might call into this even though an unthreaded CC
+  // doesn't have BrowserControls itself.
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
-                                  bool animate) override;
+                                  bool animate) override {}
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const viz::BeginFrameArgs& args) override;
