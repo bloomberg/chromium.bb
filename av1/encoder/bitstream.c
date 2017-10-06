@@ -1765,11 +1765,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       const int bw = tx_size_wide_unit[max_tx_size];
       const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
       const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
+      int init_depth =
+          (height != width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
       int idx, idy;
       for (idy = 0; idy < height; idy += bh)
         for (idx = 0; idx < width; idx += bw)
-          write_tx_size_vartx(cm, xd, mbmi, max_tx_size, height != width, idy,
-                              idx, w);
+          write_tx_size_vartx(cm, xd, mbmi, max_tx_size, init_depth, idy, idx,
+                              w);
 #if CONFIG_RECT_TX_EXT
       if (is_quarter_tx_allowed(xd, mbmi, is_inter_block(mbmi)) &&
           quarter_txsize_lookup[bsize] != max_tx_size &&

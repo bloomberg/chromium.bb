@@ -4991,6 +4991,8 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const int bw = tx_size_wide_unit[max_tx_size];
     int idx, idy;
     int block = 0;
+    int init_depth =
+        (mi_height != mi_width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
     ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
     ENTROPY_CONTEXT ctxl[2 * MAX_MIB_SIZE];
@@ -5006,10 +5008,9 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
     for (idy = 0; idy < mi_height; idy += bh) {
       for (idx = 0; idx < mi_width; idx += bw) {
-        select_tx_block(cpi, x, idy, idx, 0, block, max_tx_size,
-                        mi_height != mi_width, plane_bsize, ctxa, ctxl,
-                        tx_above, tx_left, &pn_rd_stats, ref_best_rd - this_rd,
-                        &is_cost_valid);
+        select_tx_block(cpi, x, idy, idx, 0, block, max_tx_size, init_depth,
+                        plane_bsize, ctxa, ctxl, tx_above, tx_left,
+                        &pn_rd_stats, ref_best_rd - this_rd, &is_cost_valid);
         if (pn_rd_stats.rate == INT_MAX) {
           av1_invalid_rd_stats(rd_stats);
           return;

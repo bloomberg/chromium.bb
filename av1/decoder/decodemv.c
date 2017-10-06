@@ -2917,12 +2917,14 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
       const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
       const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
       int idx, idy;
+      int init_depth =
+          (height != width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
 
       mbmi->min_tx_size = TX_SIZES_ALL;
       for (idy = 0; idy < height; idy += bh)
         for (idx = 0; idx < width; idx += bw)
-          read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size,
-                             height != width, idy, idx, r);
+          read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, init_depth,
+                             idy, idx, r);
 #if CONFIG_RECT_TX_EXT
       if (is_quarter_tx_allowed(xd, mbmi, inter_block) &&
           mbmi->tx_size == max_tx_size) {

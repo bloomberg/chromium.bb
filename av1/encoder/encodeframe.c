@@ -6072,6 +6072,8 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
+  int init_depth =
+      (mi_height != mi_width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
 
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
@@ -6080,8 +6082,7 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
 
   for (idy = 0; idy < mi_height; idy += bh)
     for (idx = 0; idx < mi_width; idx += bw)
-      update_txfm_count(x, xd, td_counts, max_tx_size, mi_width != mi_height,
-                        idy, idx);
+      update_txfm_count(x, xd, td_counts, max_tx_size, init_depth, idy, idx);
 }
 
 static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
