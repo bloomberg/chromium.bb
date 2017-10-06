@@ -299,8 +299,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   Notification* notification = GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
-  LOG(INFO) << "Notification ID: " << notification->id();
-
   EXPECT_EQ(base::ASCIIToUTF16(kNewTitle), notification->title());
   EXPECT_EQ(base::ASCIIToUTF16(kNewMessage), notification->message());
   EXPECT_EQ(kNewPriority, notification->priority());

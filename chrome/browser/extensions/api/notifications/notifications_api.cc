@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -61,6 +62,10 @@ namespace notifications = api::notifications;
 
 namespace {
 
+// The maximum length of a notification ID, in number of characters. Some
+// platforms have limitattions on the length of the ID.
+constexpr int kNotificationIdLengthLimit = 500;
+
 const char kMissingRequiredPropertiesForCreateNotification[] =
     "Some of the required properties are missing: type, iconUrl, title and "
     "message.";
@@ -74,6 +79,8 @@ const char kExtraListItemsProvided[] =
     "List items provided for notification type != list";
 const char kExtraImageProvided[] =
     "Image resource provided for notification type != image";
+const char kNotificationIdTooLong[] =
+    "The notification's ID should be %d characters or less";
 
 #if !defined(OS_CHROMEOS)
 const char kLowPriorityDeprecatedOnPlatform[] =
@@ -335,6 +342,14 @@ bool NotificationsApiFunction::CreateNotification(
 
   if (options->is_clickable.get())
     optional_fields.clickable = *options->is_clickable;
+
+  // TODO(crbug.com/772004): Remove the manual limitation in favor of an IDL
+  // annotation once supported.
+  if (id.size() > kNotificationIdLengthLimit) {
+    SetError(
+        base::StringPrintf(kNotificationIdTooLong, kNotificationIdLengthLimit));
+    return false;
+  }
 
   std::string notification_id = CreateScopedIdentifier(extension_->id(), id);
   Notification notification(

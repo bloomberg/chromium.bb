@@ -153,6 +153,23 @@ function testIdUsage() {
     .then(succeed);
 };
 
+function testIdLimit() {
+  var testName = "testIdLimit";
+  console.log("Starting " + testName);
+  var succeed = succeedTest(testName);
+  var fail = failTest(testName);
+
+  // Notification Ids are limited to 500 characters in length.
+  var id = 'a'.repeat(501);
+
+  create(id, {
+    type: 'basic',
+    iconUrl: red_dot,
+    title: 'My title',
+    message: 'My message'
+  }).then(fail, succeed);
+}
+
 function testBaseFormat() {
   var testName = "testBaseFormat";
   console.log("Starting " + testName);
@@ -351,6 +368,6 @@ function testOptionalParameters() {
 }
 
 chrome.test.runTests([
-    testIdUsage, testBaseFormat, testListItem, testGetAll, testProgress,
-    testLargeImage, testOptionalParameters
+    testIdUsage, testIdLimit, testBaseFormat, testListItem, testGetAll,
+    testProgress, testLargeImage, testOptionalParameters
 ]);
