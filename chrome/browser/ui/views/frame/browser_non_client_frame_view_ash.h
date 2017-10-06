@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "ash/shell_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 
@@ -24,7 +24,7 @@ class HeaderPainter;
 // Provides the BrowserNonClientFrameView for Chrome OS.
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
-                                     public ash::TabletModeObserver,
+                                     public TabletModeClientObserver,
                                      public TabIconViewModel {
  public:
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
@@ -62,9 +62,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
-  // ash::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  // TabletModeClientObserver:
+  void OnTabletModeToggled(bool enabled) override;
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
@@ -84,7 +83,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ToggleTabletModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshTestHostedApp,
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
                            FrameLayout);
 
   friend class BrowserHeaderPainterAsh;

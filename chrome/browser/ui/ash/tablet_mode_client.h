@@ -29,6 +29,7 @@ class TabletModeClient : public ash::mojom::TabletModeClient {
   static TabletModeClient* Get();
 
   bool tablet_mode_enabled() const { return tablet_mode_enabled_; }
+  bool auto_hide_title_bars() const { return auto_hide_title_bars_; }
 
   // Adds the observer and immediately triggers it with the initial state.
   void AddObserver(TabletModeClientObserver* observer);
@@ -46,6 +47,9 @@ class TabletModeClient : public ash::mojom::TabletModeClient {
   void BindAndSetClient();
 
   bool tablet_mode_enabled_ = false;
+
+  // Whether title bars should be shown be auto hidden in tablet mode.
+  const bool auto_hide_title_bars_;
 
   // Binds to the client interface in ash.
   mojo::Binding<ash::mojom::TabletModeClient> binding_;

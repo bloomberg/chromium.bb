@@ -12,7 +12,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -351,79 +350,4 @@ TEST_F(ImmersiveModeControllerAshTestHostedApp, Layout) {
   EXPECT_FALSE(tabstrip->visible());
   EXPECT_FALSE(toolbar->visible());
   EXPECT_EQ(header_height, GetBoundsInWidget(contents_web_view).y());
-}
-
-// Verify the immersive mode status is as expected in tablet mode (titlebars are
-// autohidden in tablet mode).
-TEST_F(ImmersiveModeControllerAshTestHostedApp, ImmersiveModeStatusTabletMode) {
-  ASSERT_FALSE(controller()->IsEnabled());
-
-  // Verify that after entering tablet mode, immersive mode is enabled.
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      true);
-  EXPECT_TRUE(controller()->IsEnabled());
-
-  // Verify that after minimizing, immersive mode is disabled.
-  browser()->window()->Minimize();
-  EXPECT_FALSE(controller()->IsEnabled());
-
-  // Verify that after showing the browser, immersive mode is reenabled.
-  browser()->window()->Show();
-  EXPECT_TRUE(controller()->IsEnabled());
-
-  // Verify that immersive mode remains if fullscreen is toggled while in tablet
-  // mode.
-  ToggleFullscreen();
-  EXPECT_TRUE(controller()->IsEnabled());
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      false);
-  EXPECT_TRUE(controller()->IsEnabled());
-
-  // Verify that immersive mode remains if the browser was fullscreened when
-  // entering tablet mode.
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      true);
-  EXPECT_TRUE(controller()->IsEnabled());
-
-  // Verify that if the browser is not fullscreened, upon exiting tablet mode,
-  // immersive mode is not enabled.
-  ToggleFullscreen();
-  EXPECT_TRUE(controller()->IsEnabled());
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      false);
-  EXPECT_FALSE(controller()->IsEnabled());
-}
-
-// Verify that the frame layout is as expected when using immersive mode in
-// tablet mode.
-TEST_F(ImmersiveModeControllerAshTestHostedApp, FrameLayout) {
-  ASSERT_FALSE(controller()->IsEnabled());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  // We know we're using Ash, so static cast.
-  BrowserNonClientFrameViewAsh* frame_view =
-      static_cast<BrowserNonClientFrameViewAsh*>(
-          browser_view->GetWidget()->non_client_view()->frame_view());
-  ash::FrameCaptionButtonContainerView* caption_button_container =
-      frame_view->caption_button_container_;
-  ash::FrameCaptionButtonContainerView::TestApi frame_test_api(
-      caption_button_container);
-
-  EXPECT_TRUE(frame_test_api.size_button()->visible());
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      true);
-  frame_test_api.EndAnimations();
-
-  // Verify the size button is hidden in tablet mode.
-  EXPECT_FALSE(frame_test_api.size_button()->visible());
-  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
-      false);
-  frame_test_api.EndAnimations();
-
-  // Verify the size button is visible in clamshell mode, and that it does not
-  // cover the other two buttons.
-  EXPECT_TRUE(frame_test_api.size_button()->visible());
-  EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
-      frame_test_api.close_button()->GetBoundsInScreen()));
-  EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
-      frame_test_api.minimize_button()->GetBoundsInScreen()));
 }

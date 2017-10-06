@@ -13,10 +13,10 @@
 #include "ash/frame/header_painter_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -68,13 +68,11 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
   ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow(),
                                                       nullptr);
   ash::Shell::Get()->AddShellObserver(this);
-  ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  // TODO(sammiequon): Add test for shutdown procedure.
-  if (ash::Shell::Get()->tablet_mode_controller())
-    ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
 }
 
@@ -114,6 +112,10 @@ void BrowserNonClientFrameViewAsh::Init() {
     frame()->GetNativeWindow()->SetProperty(
         aura::client::kAppType, static_cast<int>(ash::AppType::BROWSER));
   }
+
+  // TabletModeClient may not be initialized during unit tests.
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->AddObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -326,38 +328,40 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
   caption_button_container_->SetVisible(true);
 }
 
-void BrowserNonClientFrameViewAsh::OnTabletModeStarted() {
+///////////////////////////////////////////////////////////////////////////////
+// ash::mojom::TabletModeClient:
+
+void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
   caption_button_container_->UpdateSizeButtonVisibility();
 
-  // Enter immersive mode if the feature is enabled and the widget is not
-  // already in fullscreen mode. Popups that are not activated but not
-  // minimized are still put in immersive mode, since they may still be visible
-  // but not activated due to something transparent and/or not fullscreen (ie.
-  // fullscreen launcher).
-  if (ash::Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars() &&
-      !frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal() &&
-      !frame()->IsMinimized()) {
-    browser_view()->immersive_mode_controller()->SetEnabled(true);
-    return;
+  if (enabled) {
+    // Enter immersive mode if the feature is enabled and the widget is not
+    // already in fullscreen mode. Popups that are not activated but not
+    // minimized are still put in immersive mode, since they may still be
+    // visible but not activated due to something transparent and/or not
+    // fullscreen (ie. fullscreen launcher).
+    if (TabletModeClient::Get()->auto_hide_title_bars() &&
+        !frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal() &&
+        !frame()->IsMinimized()) {
+      browser_view()->immersive_mode_controller()->SetEnabled(true);
+      return;
+    }
+  } else {
+    // Exit immersive mode if the feature is enabled and the widget is not in
+    // fullscreen mode.
+    if (TabletModeClient::Get()->auto_hide_title_bars() &&
+        !frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal()) {
+      browser_view()->immersive_mode_controller()->SetEnabled(false);
+      return;
+    }
   }
-  InvalidateLayout();
-  frame()->client_view()->InvalidateLayout();
-  frame()->GetRootView()->Layout();
-}
 
-void BrowserNonClientFrameViewAsh::OnTabletModeEnded() {
-  caption_button_container_->UpdateSizeButtonVisibility();
-
-  // Exit immersive mode if the feature is enabled and the widget is not in
-  // fullscreen mode.
-  if (!frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal() &&
-      ash::Shell::Get()->tablet_mode_controller()->auto_hide_title_bars()) {
-    browser_view()->immersive_mode_controller()->SetEnabled(false);
-    return;
-  }
   InvalidateLayout();
-  frame()->client_view()->InvalidateLayout();
-  frame()->GetRootView()->Layout();
+  // Can be null in tests.
+  if (frame()->client_view())
+    frame()->client_view()->InvalidateLayout();
+  if (frame()->GetRootView())
+    frame()->GetRootView()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
