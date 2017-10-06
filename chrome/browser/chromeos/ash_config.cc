@@ -14,11 +14,10 @@ namespace {
 
 ash::Config ComputeAshConfig() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string flag = command_line->GetSwitchValueASCII(switches::kMusConfig);
   ash::Config config = ash::Config::CLASSIC;
-  if (command_line->HasSwitch(switches::kMash) || flag == switches::kMash)
+  if (command_line->HasSwitch(switches::kMash))
     config = ash::Config::MASH;
-  else if (command_line->HasSwitch(switches::kMus) || flag == switches::kMus)
+  else if (command_line->HasSwitch(switches::kMus))
     config = ash::Config::MUS;
   VLOG_IF(1, config != ash::Config::CLASSIC &&
                  !service_manager::ServiceManagerIsRemote())

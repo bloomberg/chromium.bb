@@ -976,12 +976,6 @@ const char kMash[]                          = "mash";
 
 // Used to enable mus as a separate process, but chrome+ash still together.
 const char kMus[] = "mus";
-
-// This is added to child processes launched from mash or mus. The value of
-// this switch is either kMus or kMash. For example, if chrome is run with
-// '--mash' then the child process representing ash is launched with the
-// switch '--mus-config=mash'.
-const char kMusConfig[] = "mus-config";
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
