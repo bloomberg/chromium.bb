@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+PASS Event properties post dispatch without ShadowRoots (composed: true).
+PASS Event properties post dispatch without ShadowRoots (composed: false).
+PASS Event properties post dispatch with an open ShadowRoot (composed: true).
+PASS Event properties post dispatch with an open ShadowRoot (composed: false).
+PASS Event properties post dispatch with a closed ShadowRoot (composed: true).
+PASS Event properties post dispatch with a closed ShadowRoot (composed: false).
+PASS Event properties post dispatch with nested ShadowRoots (composed: true).
+PASS Event properties post dispatch with nested ShadowRoots (composed: false).
+FAIL Event properties post dispatch with relatedTarget in the same shadow tree. (composed: true) assert_equals: expected null but got Element node <div id="relatedTarget">\n        <div id="target"></div>\n...
+FAIL Event properties post dispatch with relatedTarget in the same shadow tree. (composed: false) assert_equals: expected null but got Element node <div id="relatedTarget">\n        <div id="target"></div>\n...
+PASS Event properties post dispatch with relatedTarget in the document tree and the shadow tree. (composed: true)
+FAIL Event properties post dispatch with relatedTarget in the document tree and the shadow tree. (composed: false) assert_equals: expected null but got Element node <div id="relatedTarget"></div>
+FAIL Event properties post dispatch with relatedTarget in the different shadow trees. (composed: true) assert_equals: expected Element node <div id="host1">\n    \n  </div> but got null
+FAIL Event properties post dispatch with relatedTarget in the different shadow trees. (composed: false) assert_equals: expected null but got Element node <div id="host2">\n    \n  </div>
+Harness: the test ran to completion.
+
