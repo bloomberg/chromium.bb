@@ -8021,6 +8021,79 @@
             "chrome_internal"
         ]
     },
+    "eve-bertha-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "eve-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-bertha-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "eve-bertha"
+        ]
+    },
+    "eve-bertha-full": {
+        "_template": "full",
+        "boards": [
+            "eve-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-bertha-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "eve-bertha"
+        ]
+    },
+    "eve-bertha-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "eve-bertha"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "eve-bertha-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "eve-bertha"
+        ]
+    },
+    "eve-bertha-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "eve-bertha"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
+    },
+    "eve-bertha-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "eve-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-bertha-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "eve-bertha"
+        ]
+    },
     "eve-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -13645,6 +13718,7 @@
     },
     "lakitu-nc-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "lakitu-nc"
@@ -16000,6 +16074,7 @@
             "edgar-release",
             "elm-release",
             "enguarde-release",
+            "eve-bertha-release",
             "eve-kvm-release",
             "eve-release",
             "eve-userdebug-release",
@@ -16028,6 +16103,7 @@
             "kevin-release",
             "kip-release",
             "lakitu-gpu-release",
+            "lakitu-nc-release",
             "lakitu-release",
             "lakitu-st-release",
             "lakitu_next-release",
