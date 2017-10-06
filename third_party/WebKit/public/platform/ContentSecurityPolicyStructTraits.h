@@ -12,28 +12,28 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<blink::mojom::ContentSecurityPolicyType,
-                  blink::WebContentSecurityPolicyType> {
-  static blink::mojom::ContentSecurityPolicyType ToMojom(
-      blink::WebContentSecurityPolicyType input) {
+struct EnumTraits<::blink::mojom::ContentSecurityPolicyType,
+                  ::blink::WebContentSecurityPolicyType> {
+  static ::blink::mojom::ContentSecurityPolicyType ToMojom(
+      ::blink::WebContentSecurityPolicyType input) {
     switch (input) {
-      case blink::kWebContentSecurityPolicyTypeReport:
-        return blink::mojom::ContentSecurityPolicyType::kReport;
-      case blink::kWebContentSecurityPolicyTypeEnforce:
-        return blink::mojom::ContentSecurityPolicyType::kEnforce;
+      case ::blink::kWebContentSecurityPolicyTypeReport:
+        return ::blink::mojom::ContentSecurityPolicyType::kReport;
+      case ::blink::kWebContentSecurityPolicyTypeEnforce:
+        return ::blink::mojom::ContentSecurityPolicyType::kEnforce;
     }
     NOTREACHED();
-    return blink::mojom::ContentSecurityPolicyType::kReport;
+    return ::blink::mojom::ContentSecurityPolicyType::kReport;
   }
 
-  static bool FromMojom(blink::mojom::ContentSecurityPolicyType input,
-                        blink::WebContentSecurityPolicyType* output) {
+  static bool FromMojom(::blink::mojom::ContentSecurityPolicyType input,
+                        ::blink::WebContentSecurityPolicyType* output) {
     switch (input) {
-      case blink::mojom::ContentSecurityPolicyType::kReport:
-        *output = blink::kWebContentSecurityPolicyTypeReport;
+      case ::blink::mojom::ContentSecurityPolicyType::kReport:
+        *output = ::blink::kWebContentSecurityPolicyTypeReport;
         return true;
-      case blink::mojom::ContentSecurityPolicyType::kEnforce:
-        *output = blink::kWebContentSecurityPolicyTypeEnforce;
+      case ::blink::mojom::ContentSecurityPolicyType::kEnforce:
+        *output = ::blink::kWebContentSecurityPolicyTypeEnforce;
         return true;
     }
     NOTREACHED();
