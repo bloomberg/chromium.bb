@@ -11,6 +11,8 @@ namespace media {
 // Local-only audio (don't send over multiroom).
 extern const char kLocalAudioDeviceId[];
 
+extern const char kPlatformAudioDeviceId[];
+
 extern const char kAlarmAudioDeviceId[];
 
 // TODO(kmackay|bshaya) Remove this, just use

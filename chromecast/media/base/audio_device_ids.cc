@@ -8,6 +8,7 @@ namespace chromecast {
 namespace media {
 
 const char kLocalAudioDeviceId[] = "local";
+const char kPlatformAudioDeviceId[] = "platform";
 const char kAlarmAudioDeviceId[] = "assistant-alarm";
 const char kTtsAudioDeviceId[] = "assistant-tts";
 
