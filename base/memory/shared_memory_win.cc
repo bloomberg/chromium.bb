@@ -290,17 +290,25 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
 }
 
 bool SharedMemory::MapAt(off_t offset, size_t bytes) {
-  if (!shm_.IsValid())
+  if (!shm_.IsValid()) {
+    DLOG(ERROR) << "Invalid SharedMemoryHandle.";
     return false;
+  }
 
-  if (bytes > static_cast<size_t>(std::numeric_limits<int>::max()))
+  if (bytes > static_cast<size_t>(std::numeric_limits<int>::max())) {
+    DLOG(ERROR) << "Bytes required exceeds the 2G limitation.";
     return false;
+  }
 
-  if (memory_)
+  if (memory_) {
+    DLOG(ERROR) << "The SharedMemory has been mapped already.";
     return false;
+  }
 
-  if (external_section_ && !IsSectionSafeToMap(shm_.GetHandle()))
+  if (external_section_ && !IsSectionSafeToMap(shm_.GetHandle())) {
+    DLOG(ERROR) << "SharedMemoryHandle is not safe to be mapped.";
     return false;
+  }
 
   memory_ = MapViewOfFile(
       shm_.GetHandle(),
@@ -314,6 +322,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
     SharedMemoryTracker::GetInstance()->IncrementMemoryUsage(*this);
     return true;
   }
+  DPLOG(ERROR) << "Failed executing MapViewOfFile";
   return false;
 }
 
