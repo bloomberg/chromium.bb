@@ -1511,6 +1511,9 @@ now we are only interested in H264, VP8 and VP9.
 </rappor-metric>
 
 <rappor-metric name="Navigation.Scheme.Data" type="ETLD_PLUS_ONE">
+  <obsolete>
+    No longer being logged.
+  </obsolete>
   <owner>meacer@chromium.org</owner>
   <summary>
     The domain and registry of the URL that resulted in a main frame navigation

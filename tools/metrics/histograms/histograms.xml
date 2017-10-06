@@ -37295,6 +37295,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Navigation.MainFrameScheme.DataUrl.MimeType"
     enum="DataUrlMimeType">
+  <obsolete>
+    Removed from code October 2017.
+  </obsolete>
   <owner>meacer@chromium.org</owner>
   <summary>
     The mime type of the data: URL for each main-frame navigation. This only
