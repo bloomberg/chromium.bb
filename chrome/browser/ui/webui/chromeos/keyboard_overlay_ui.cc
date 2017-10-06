@@ -29,14 +29,14 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/display/manager/display_manager.h"
 
-using chromeos::input_method::ModifierKey;
 using content::WebUIMessageHandler;
+using ui::chromeos::ModifierKey;
 using ui::WebDialogUI;
 
 namespace {
@@ -50,16 +50,16 @@ const char kLearnMoreURL[] =
 #endif
 
 struct ModifierToLabel {
-  const ModifierKey modifier;
+  const ModifierKey::ModifierKeyValue modifier;
   const char* label;
 } kModifierToLabels[] = {
-  {chromeos::input_method::kSearchKey, "search"},
-  {chromeos::input_method::kControlKey, "ctrl"},
-  {chromeos::input_method::kAltKey, "alt"},
-  {chromeos::input_method::kVoidKey, "disabled"},
-  {chromeos::input_method::kCapsLockKey, "caps lock"},
-  {chromeos::input_method::kEscapeKey, "esc"},
-  {chromeos::input_method::kBackspaceKey, "backspace"},
+    {ui::chromeos::ModifierKey::kSearchKey, "search"},
+    {ui::chromeos::ModifierKey::kControlKey, "ctrl"},
+    {ui::chromeos::ModifierKey::kAltKey, "alt"},
+    {ui::chromeos::ModifierKey::kVoidKey, "disabled"},
+    {ui::chromeos::ModifierKey::kCapsLockKey, "caps lock"},
+    {ui::chromeos::ModifierKey::kEscapeKey, "esc"},
+    {ui::chromeos::ModifierKey::kBackspaceKey, "backspace"},
 };
 
 struct I18nContentToMessage {
@@ -294,7 +294,7 @@ bool TopRowKeysAreFunctionKeys(Profile* profile) {
   return prefs ? prefs->GetBoolean(prefs::kLanguageSendFunctionKeys) : false;
 }
 
-std::string ModifierKeyToLabel(ModifierKey modifier) {
+std::string ModifierKeyToLabel(ModifierKey::ModifierKeyValue modifier) {
   for (size_t i = 0; i < arraysize(kModifierToLabels); ++i) {
     if (modifier == kModifierToLabels[i].modifier) {
       return kModifierToLabels[i].label;
@@ -407,14 +407,18 @@ void KeyboardOverlayHandler::GetInputMethodId(const base::ListValue* args) {
 void KeyboardOverlayHandler::GetLabelMap(const base::ListValue* args) {
   DCHECK(profile_);
   PrefService* pref_service = profile_->GetPrefs();
-  typedef std::map<ModifierKey, ModifierKey> ModifierMap;
+  typedef std::map<ModifierKey::ModifierKeyValue, ModifierKey::ModifierKeyValue>
+      ModifierMap;
   ModifierMap modifier_map;
-  modifier_map[chromeos::input_method::kSearchKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageRemapSearchKeyTo));
-  modifier_map[chromeos::input_method::kControlKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageRemapControlKeyTo));
-  modifier_map[chromeos::input_method::kAltKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageRemapAltKeyTo));
+  modifier_map[ModifierKey::kSearchKey] =
+      static_cast<ModifierKey::ModifierKeyValue>(
+          pref_service->GetInteger(prefs::kLanguageRemapSearchKeyTo));
+  modifier_map[ModifierKey::kControlKey] =
+      static_cast<ModifierKey::ModifierKeyValue>(
+          pref_service->GetInteger(prefs::kLanguageRemapControlKeyTo));
+  modifier_map[ModifierKey::kAltKey] =
+      static_cast<ModifierKey::ModifierKeyValue>(
+          pref_service->GetInteger(prefs::kLanguageRemapAltKeyTo));
   // TODO(mazda): Support prefs::kLanguageRemapCapsLockKeyTo once Caps Lock is
   // added to the overlay UI.
 
