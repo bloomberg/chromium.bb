@@ -28,6 +28,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/crx_file/id_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -490,9 +491,11 @@ bool ShowPackageInfo(const std::string& package_name,
 bool IsArcItem(content::BrowserContext* context, const std::string& id) {
   DCHECK(context);
 
-  // Some unit tests use empty id.
-  if (id.empty())
+  // Some unit tests use empty id; some ids are not valid crx ids.
+  if (id.empty() || !crx_file::id_util::IdIsValid(id)) {
+    DLOG_IF(WARNING, !id.empty()) << "Invalid crx app id: " << id;
     return false;
+  }
 
   const ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(context);
   if (!arc_prefs)
