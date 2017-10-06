@@ -8,8 +8,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,8 +21,11 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
@@ -33,6 +38,7 @@ import org.chromium.ui.test.util.UiRestriction;
 public class ChromeHomeAppMenuTest {
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
     private AppMenuHandler mAppMenuHandler;
+    private BottomSheet mBottomSheet;
 
     @Rule
     public BottomSheetTestRule mBottomSheetTestRule = new BottomSheetTestRule();
@@ -41,6 +47,7 @@ public class ChromeHomeAppMenuTest {
     public void setUp() throws Exception {
         mBottomSheetTestRule.startMainActivityOnBlankPage();
         mAppMenuHandler = mBottomSheetTestRule.getActivity().getAppMenuHandler();
+        mBottomSheet = mBottomSheetTestRule.getBottomSheet();
     }
 
     @Test
@@ -81,6 +88,60 @@ public class ChromeHomeAppMenuTest {
         AppMenu appMenu = mAppMenuHandler.getAppMenu();
 
         assertNull(appMenu.getFooterView());
+        Assert.assertEquals(
+                "There should be four app menu items.", appMenu.getListView().getCount(), 4);
+        Assert.assertEquals("'New tab' should be the first item", R.id.new_tab_menu_id,
+                appMenu.getListView().getItemIdAtPosition(0));
+        Assert.assertEquals("'New incognito tab' should be the second item",
+                R.id.new_incognito_tab_menu_id, appMenu.getListView().getItemIdAtPosition(1));
+        Assert.assertEquals("'Close all tabs' should be the third item",
+                R.id.close_all_tabs_menu_id, appMenu.getListView().getItemIdAtPosition(2));
+        Assert.assertEquals("'Settings' should be the fourth item", R.id.preferences_id,
+                appMenu.getListView().getItemIdAtPosition(3));
+    }
+
+    @Test
+    @SmallTest
+    public void testNewTabMenu() {
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mBottomSheetTestRule.getActivity(), R.id.new_tab_menu_id);
+        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
+
+        showAppMenuAndAssertMenuShown();
+        AppMenu appMenu = mAppMenuHandler.getAppMenu();
+
+        assertNull(appMenu.getFooterView());
+        Assert.assertEquals(
+                "There should be four app menu items.", appMenu.getListView().getCount(), 4);
+        Assert.assertEquals("'New incognito tab' should be the first item",
+                R.id.new_incognito_tab_menu_id, appMenu.getListView().getItemIdAtPosition(0));
+        Assert.assertEquals("'Recent tabs' should be the second item", R.id.recent_tabs_menu_id,
+                appMenu.getListView().getItemIdAtPosition(1));
+        Assert.assertEquals("'Settings' should be the third item", R.id.preferences_id,
+                appMenu.getListView().getItemIdAtPosition(2));
+        Assert.assertEquals("'Help & feedback' should be the fourth item", R.id.help_id,
+                appMenu.getListView().getItemIdAtPosition(3));
+    }
+
+    @Test
+    @SmallTest
+    public void testNewIncognitoTabMenu() {
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mBottomSheetTestRule.getActivity(), R.id.new_incognito_tab_menu_id);
+        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
+
+        showAppMenuAndAssertMenuShown();
+        AppMenu appMenu = mAppMenuHandler.getAppMenu();
+
+        assertNull(appMenu.getFooterView());
+        Assert.assertEquals(
+                "There should be three app menu items.", appMenu.getListView().getCount(), 3);
+        Assert.assertEquals("'New tab' should be the first item", R.id.new_tab_menu_id,
+                appMenu.getListView().getItemIdAtPosition(0));
+        Assert.assertEquals("'Settings' should be the second item", R.id.preferences_id,
+                appMenu.getListView().getItemIdAtPosition(1));
+        Assert.assertEquals("'Help & feedback' should be the third item", R.id.help_id,
+                appMenu.getListView().getItemIdAtPosition(2));
     }
 
     private void showAppMenuAndAssertMenuShown() {
