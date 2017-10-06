@@ -50707,6 +50707,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.ThroughputAnalyzer.HangingRequests.Erased" units="count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Count of the requests that were marked as hanging by the heuristic algorithm
+    in the throughput analyzer in the network quality estimator. A sample is
+    recorded everytime the heuristic algorithm is run.
+  </summary>
+</histogram>
+
+<histogram name="NQE.ThroughputAnalyzer.HangingRequests.NotErased"
+    units="count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Count of the requests that were not marked as hanging by the heuristic
+    algorithm in the throughput analyzer in the network quality estimator. A
+    sample is recorded everytime the heuristic algorithm is run.
+  </summary>
+</histogram>
+
 <histogram name="NQE.TransportRTT" units="ms">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>

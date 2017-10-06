@@ -22,11 +22,13 @@ typedef base::Callback<void(int32_t)> ThroughputObservationCallback;
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }
 
 namespace net {
 
 class NetworkQualityEstimatorParams;
+class NetworkQualityProvider;
 class URLRequest;
 
 namespace nqe {
@@ -57,14 +59,19 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // estimation.
   // Virtualized for testing.
   ThroughputAnalyzer(
+      const NetworkQualityProvider* network_quality_provider,
       const NetworkQualityEstimatorParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ThroughputObservationCallback throughput_observation_callback,
+      base::TickClock* tick_clock,
       const NetLogWithSource& net_log);
   virtual ~ThroughputAnalyzer();
 
   // Notifies |this| that the headers of |request| are about to be sent.
   void NotifyStartTransaction(const URLRequest& request);
+
+  // Notifies |this| that unfiltered bytes have been read for |request|.
+  void NotifyBytesRead(const URLRequest& request);
 
   // Notifies |this| that |request| has completed.
   void NotifyRequestCompleted(const URLRequest& request);
@@ -81,6 +88,9 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // observation window.
   bool IsCurrentlyTrackingThroughput() const;
 
+  // Overrides the tick clock used by |this| for testing.
+  void SetTickClockForTesting(base::TickClock* tick_clock);
+
  protected:
   // Exposed for testing.
   bool disable_throughput_measurements() const {
@@ -94,10 +104,26 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // testing.
   virtual int64_t GetBitsReceived() const;
 
+  // Returns the number of in-flight requests that can be used for computing
+  // throughput.
+  size_t CountInFlightRequests() const;
+
+  // Removes hanging requests from |requests_|. If any hanging requests are
+  // detected to be in-flight, the observation window is ended. Protected for
+  // testing.
+  void EraseHangingRequests(const URLRequest& request);
+
  private:
   friend class TestThroughputAnalyzer;
 
-  typedef base::hash_set<const URLRequest*> Requests;
+  // Mapping from URL request to the last time data was received for that
+  // request.
+  typedef base::hash_map<const URLRequest*, base::TimeTicks> Requests;
+
+  // Set of URL requests to hold the requests that reduce the accuracy of
+  // throughput computation. These requests are not used in throughput
+  // computation.
+  typedef base::hash_set<const URLRequest*> AccuracyDegradingRequests;
 
   // Returns true if downstream throughput can be recorded. In that case,
   // |downstream_kbps| is set to the computed downstream throughput (in
@@ -129,11 +155,19 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // do not exceed their capacities.
   void BoundRequestsSize();
 
+  // Guaranteed to be non-null during the duration of |this|.
+  const NetworkQualityProvider* network_quality_provider_;
+
+  // Guaranteed to be non-null during the duration of |this|.
   const NetworkQualityEstimatorParams* params_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Called every time a new throughput observation is available.
   ThroughputObservationCallback throughput_observation_callback_;
+
+  // Guaranteed to be non-null during the lifetime of |this|.
+  base::TickClock* tick_clock_;
 
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;
@@ -149,11 +183,14 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // Container that holds active requests that reduce the accuracy of
   // throughput computation. These requests are not used in throughput
   // computation.
-  Requests accuracy_degrading_requests_;
+  AccuracyDegradingRequests accuracy_degrading_requests_;
 
   // Container that holds active requests that do not reduce the accuracy of
   // throughput computation. These requests are used in throughput computation.
   Requests requests_;
+
+  // Last time when the check for hanging requests was run.
+  base::TimeTicks last_hanging_request_check_;
 
   // If true, then |this| throughput analyzer stops tracking the throughput
   // observations until Chromium is restarted. This may happen if the throughput
