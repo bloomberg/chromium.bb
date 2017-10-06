@@ -138,7 +138,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
     for test_name, test_dir in ListTests(results_path):
       if cts_helper.isCtsTest(test_name):
-        self._ReportCtsResults(test_name, test_dir)
+        self._ReportCtsResults(test_name, os.path.join(results_path, test_dir))
 
   def _ReportCtsResults(self, test_name, test_dir):
     """Report CTS/GTS result to their dashboards.
@@ -147,6 +147,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       test_name: name of the test.
       test_dir: path to the test directory.
     """
+    logging.info('Reporting cts test: %s in %s', test_name, test_dir)
     builder = self._run.GetBuilderName()
     buildbucket_id = self._run.options.buildbucket_id
     buildbucket_id = str(buildbucket_id)

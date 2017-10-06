@@ -72,7 +72,7 @@ def getApfeFiles(test_name, test_folder):
     test_folder: path to test folder.
 
   Returns:
-    A list of xml.gz files or []
+    A list of APFE files or []
   """
   if not isCtsTest(test_name):
     return []
@@ -109,6 +109,7 @@ def uploadFiles(dir_entry, build, apfe_id, job_id, package, uploader,
     uploader: upload function to upload to gs
   """
   xml_files = getXMLGZFiles(package, dir_entry)
+  logging.info('Uploading CTS/GTS xml files: %s', xml_files)
   for xml in xml_files:
     timestamp = os.path.basename(os.path.dirname(xml))
     gs_url = os.path.join(constants.DEFAULT_CTS_RESULTS_GSURI, package,
@@ -120,6 +121,7 @@ def uploadFiles(dir_entry, build, apfe_id, job_id, package, uploader,
   # CTS APFE submission.
   if not _is_test_collector(package):
     apfe_files = getApfeFiles(package, dir_entry)
+    logging.info('Uploading CTS/GTS apfe files: %s', apfe_files)
     for apfe in apfe_files:
       timestamp = os.path.splitext(os.path.basename(apfe))[0]
       gs_url = os.path.join(constants.DEFAULT_CTS_APFE_GSURI, build,
