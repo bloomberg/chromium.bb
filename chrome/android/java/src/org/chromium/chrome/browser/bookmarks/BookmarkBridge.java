@@ -436,7 +436,7 @@ public class BookmarkBridge {
     }
 
     /**
-     * @return BokmarkId representing special "desktop" folder, namely "bookmark bar".
+     * @return BookmarkId representing special "desktop" folder, namely "bookmark bar".
      */
     public BookmarkId getDesktopFolderId() {
         assert mIsNativeBookmarkModelLoaded;

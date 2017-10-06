@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -82,11 +83,21 @@ public class BookmarkTest {
                         mActivityTestRule.getActivity().getActivityTab().getProfile());
             }
         });
-        BookmarkTestUtil.waitForBookmarkModelLoaded();
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE_URL_GOOGLE);
         mTestPageFoo = mTestServer.getURL(TEST_PAGE_URL_FOO);
+    }
+
+    private void readPartnerBookmarks() throws InterruptedException {
+        // Do not read partner bookmarks in setUp(), so that the lazy reading is covered.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBookmarksShim.kickOffReading(mActivityTestRule.getActivity());
+            }
+        });
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
 
     @After
@@ -132,7 +143,7 @@ public class BookmarkTest {
     @SmallTest
     public void testAddBookmark() throws InterruptedException {
         mActivityTestRule.loadUrl(mTestPage);
-        // Click star button to bookmark the curent tab.
+        // Click star button to bookmark the current tab.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.bookmark_this_page_id);
         // All actions with BookmarkModel needs to run on UI thread.
@@ -173,7 +184,8 @@ public class BookmarkTest {
 
     @Test
     @SmallTest
-    public void testUrlComposition() {
+    public void testUrlComposition() throws InterruptedException {
+        readPartnerBookmarks();
         BookmarkId mobileId = mBookmarkModel.getMobileFolderId();
         BookmarkId bookmarkBarId = mBookmarkModel.getDesktopFolderId();
         BookmarkId otherId = mBookmarkModel.getOtherFolderId();
@@ -332,7 +344,9 @@ public class BookmarkTest {
         });
     }
 
-    private BookmarkId addBookmark(final String title, final String url) throws ExecutionException {
+    private BookmarkId addBookmark(final String title, final String url)
+            throws InterruptedException, ExecutionException {
+        readPartnerBookmarks();
         return ThreadUtils.runOnUiThreadBlocking(new Callable<BookmarkId>() {
             @Override
             public BookmarkId call() throws Exception {
