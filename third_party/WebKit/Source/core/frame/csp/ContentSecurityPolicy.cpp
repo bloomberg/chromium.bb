@@ -94,12 +94,8 @@ bool CheckHeaderTypeMatches(
 }  // namespace
 
 bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
-  if (RuntimeEnabledFeatures::HideNonceContentAttributeEnabled()) {
-    if (element->nonce().IsNull())
-      return false;
-  } else if (!element->FastHasAttribute(HTMLNames::nonceAttr)) {
+  if (element->nonce().IsNull())
     return false;
-  }
 
   bool nonceable = true;
 
@@ -129,11 +125,7 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
       nonceable ? WebFeature::kCleanScriptElementWithNonce
                 : WebFeature::kPotentiallyInjectedScriptElementWithNonce);
 
-  // This behavior is locked behind the experimental flag for the moment; if we
-  // decide to ship it, drop this check. https://crbug.com/639293
-  return !RuntimeEnabledFeatures::
-             ExperimentalContentSecurityPolicyFeaturesEnabled() ||
-         nonceable;
+  return nonceable;
 }
 
 static WebFeature GetUseCounterType(ContentSecurityPolicyHeaderType type) {

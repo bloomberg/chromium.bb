@@ -1034,8 +1034,7 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   // updated.
   Element::InsertedInto(insertion_point);
 
-  if (RuntimeEnabledFeatures::HideNonceContentAttributeEnabled() &&
-      GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
+  if (GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy() &&
       InActiveDocument() && FastHasAttribute(nonceAttr)) {
     setAttribute(nonceAttr, g_empty_atom);
   }

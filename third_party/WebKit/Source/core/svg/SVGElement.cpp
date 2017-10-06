@@ -412,8 +412,7 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
 
   if (hasAttribute(nonceAttr) && getAttribute(nonceAttr) != g_empty_atom) {
     setNonce(getAttribute(nonceAttr));
-    if (RuntimeEnabledFeatures::HideNonceContentAttributeEnabled() &&
-        InActiveDocument() &&
+    if (InActiveDocument() &&
         GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
       setAttribute(nonceAttr, g_empty_atom);
     }
