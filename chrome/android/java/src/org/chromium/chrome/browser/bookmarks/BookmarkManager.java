@@ -166,9 +166,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
         initializeToLoadingState();
         mBookmarkModel.runAfterBookmarkModelLoaded(mModelLoadedRunnable);
 
-        // Load partner bookmarks explicitly. We load partner bookmarks in the deferred startup
-        // code, but that might be executed much later. Especially on L, showing loading
-        // progress bar blocks that so it won't be loaded. http://crbug.com/429383
+        // Load partner bookmarks explicitly.
         PartnerBookmarksShim.kickOffReading(activity);
 
         mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());

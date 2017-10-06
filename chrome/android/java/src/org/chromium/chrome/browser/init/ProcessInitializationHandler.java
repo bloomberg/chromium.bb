@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
@@ -283,8 +282,6 @@ public class ProcessInitializationHandler {
                                 NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
                     }
                 });
-
-                PartnerBookmarksShim.kickOffReading(application);
 
                 PowerMonitor.create();
 
