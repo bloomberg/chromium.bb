@@ -75,9 +75,12 @@ void MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded(
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_wheel_event.delta_x = 0;
   mouse_wheel_event.delta_y = 0;
+  mouse_wheel_event.wheel_ticks_x = 0;
+  mouse_wheel_event.wheel_ticks_y = 0;
   mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
   mouse_wheel_event.dispatch_type =
       blink::WebInputEvent::DispatchType::kEventNonBlocking;
+
   if (should_route_event) {
     host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
         host_view_, &mouse_wheel_event,
