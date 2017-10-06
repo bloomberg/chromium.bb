@@ -61,6 +61,9 @@ class CHROMEOS_EXPORT PrinterDetector {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Begins to issue the Notify callbacks for the attached observers.
+  virtual void StartObservers() = 0;
+
   // Get the current list of known printers.
   virtual std::vector<DetectedPrinter> GetPrinters() = 0;
 };

@@ -42,8 +42,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // SettingsPageUIHandler overrides:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   // Gets all CUPS printers and return it to WebUI.

@@ -158,7 +158,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
 
 class FakePrinterDetector : public PrinterDetector {
  public:
-  FakePrinterDetector() = default;
+  FakePrinterDetector() : start_observers_calls_(0) {}
   ~FakePrinterDetector() override = default;
 
   void AddObserver(Observer* observer) override {
@@ -167,6 +167,15 @@ class FakePrinterDetector : public PrinterDetector {
   void RemoveObserver(Observer* observer) override {
     observers_.RemoveObserver(observer);
   }
+
+  void StartObservers() override {
+    ++start_observers_calls_;
+  }
+
+  int StartObserversCalls() const {
+    return start_observers_calls_;
+  }
+
   std::vector<DetectedPrinter> GetPrinters() override { return detections_; }
 
   void AddDetections(
@@ -192,6 +201,7 @@ class FakePrinterDetector : public PrinterDetector {
  private:
   std::vector<DetectedPrinter> detections_;
   base::ObserverList<PrinterDetector::Observer> observers_;
+  int start_observers_calls_;
 };
 
 // Fake PpdProvider backend.  This fake generates PpdReferences based on
@@ -472,6 +482,23 @@ TEST_F(CupsPrintersManagerTest, GetPrinter) {
 
   std::unique_ptr<Printer> printer = manager_->GetPrinter("Nope");
   EXPECT_EQ(printer, nullptr);
+}
+
+// Test that the Start() method in CupsPrinterManager will only execute
+// a single time. In order to test this we check to see that the
+// StartObservers() method in each of the printer detectors has only been called
+// a single time even after calling Start() in CupsPrintersManager multiple
+// times.
+TEST_F(CupsPrintersManagerTest, StartObservingCalledOnce) {
+  manager_->Start();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1, usb_detector_->StartObserversCalls());
+  EXPECT_EQ(1, zeroconf_detector_->StartObserversCalls());
+
+  manager_->Start();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1, usb_detector_->StartObserversCalls());
+  EXPECT_EQ(1, zeroconf_detector_->StartObserversCalls());
 }
 
 }  // namespace

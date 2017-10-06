@@ -214,22 +214,24 @@ class ZeroconfPrinterDetectorImpl
     return GetPrintersLocked();
   }
 
-  // When an observer is added, immediately schedule a callback with no printers
-  // and a scan done callback.  Note that, since we're using
-  // ThreadSafeObserverList the callbacks here are posted for later execution,
-  // not executed immediately.
   void AddObserver(Observer* observer) override {
     observer_list_->AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observer_list_->RemoveObserver(observer);
+  }
+
+  // Schedules callbacks for the observers using ThreadSafeObserverList. This
+  // means that the callbacks are posted for later execution and not executed
+  // immediately.
+  void StartObservers() override {
     observer_list_->Notify(
         FROM_HERE, &PrinterDetector::Observer::OnPrintersFound, GetPrinters());
     // TODO(justincarlson) - Figure out a more intelligent way to figure out
     // when a scan is reasonably "done".
     observer_list_->Notify(FROM_HERE,
                            &PrinterDetector::Observer::OnPrinterScanComplete);
-  }
-
-  void RemoveObserver(Observer* observer) override {
-    observer_list_->RemoveObserver(observer);
   }
 
   // ServiceDiscoveryDeviceLister::Delegate implementation
