@@ -6,6 +6,7 @@
 
 #include <objbase.h>
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 
@@ -50,7 +51,7 @@ bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
 
   return true;
 }
-}
+}  // namespace
 
 WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
                                                const AudioParameters& params,
@@ -533,8 +534,10 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
     hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
                                              endpoint_device_.GetAddressOf());
 
-    endpoint_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL,
-                               &system_audio_volume_);
+    if (SUCCEEDED(hr)) {
+      endpoint_device_->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL,
+                                 NULL, &system_audio_volume_);
+    }
   } else if (device_id_ == AudioDeviceDescription::kLoopbackInputDeviceId) {
     // Capture the default playback stream.
     hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
