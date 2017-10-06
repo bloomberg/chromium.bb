@@ -350,7 +350,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   content_layer_client.set_bounds(visible_rect.size());
 
   PaintImage discardable_image =
-      CreateDiscardablePaintImage(gfx::Size(1 << 25, 1 << 25));
+      CreateDiscardablePaintImage(gfx::Size(1 << 25, 1 << 25), nullptr,
+                                  false /* allocate_encoded_memory */);
   PaintFlags flags;
   content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
                                       flags);

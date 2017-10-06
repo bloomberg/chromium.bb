@@ -52,14 +52,16 @@ sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size) {
 }
 
 PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
-                                       sk_sp<SkColorSpace> color_space) {
+                                       sk_sp<SkColorSpace> color_space,
+                                       bool allocate_encoded_data) {
   if (!color_space)
     color_space = SkColorSpace::MakeSRGB();
 
   return PaintImageBuilder::WithDefault()
       .set_id(PaintImage::GetNextId())
       .set_paint_image_generator(sk_make_sp<FakePaintImageGenerator>(
-          SkImageInfo::MakeN32Premul(size.width(), size.height(), color_space)))
+          SkImageInfo::MakeN32Premul(size.width(), size.height(), color_space),
+          std::vector<FrameMetadata>{FrameMetadata()}, allocate_encoded_data))
       .TakePaintImage();
 }
 
