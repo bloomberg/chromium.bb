@@ -8,6 +8,7 @@ import filecmp
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -20,10 +21,47 @@ def ZapTimestamp(filename):
   # independent, replace that date with a fixed string of the same length.
   # Also blank out the minor version number.
   if filename.endswith('.tlb'):
-    contents = re.sub(
-        'Created by MIDL version 8\.\d\d\.\d{4} at ... Jan 1. ..:..:.. 2038',
-        'Created by MIDL version 8.xx.xxxx at a redacted point in time',
-        contents)
+    # See https://chromium-review.googlesource.com/c/chromium/src/+/693223 for
+    # a fairly complete description of the .tlb binary format.
+    # TLB files start with a 54 byte header. Offset 0x20 stores how many types
+    # are defined in the file, and the header is followed by that many uint32s.
+    # After that, 15 section headers appear.  Each section header is 16 bytes,
+    # starting with offset and length uint32s.
+    # Section 12 in the file contains custom() data. custom() data has a type
+    # (int, string, etc).  Each custom data chunk starts with a uint16_t
+    # describing its type.  Type 8 is string data, consisting of a uint32_t
+    # len, followed by that many data bytes, followed by 'W' bytes to pad to a
+    # 4 byte boundary.  Type 0x13 is uint32 data, followed by 4 data bytes,
+    # followed by two 'W' to pad to a 4 byte boundary.
+    # The custom block always starts with one string containing "Created by
+    # MIDL version 8...", followed by one uint32 containing 0x7fffffff,
+    # followed by another uint32 containing the MIDL compiler version (e.g.
+    # 0x0801026e for v8.1.622 -- 0x26e == 622).  These 3 fields take 0x54 bytes.
+    # There might be more custom data after that, but these 3 blocks are always
+    # there for file-level metadata.
+    # All data is little-endian in the file.
+    assert contents[0:8] == 'MSFT\x02\x00\x01\x00'
+    ntypes, = struct.unpack_from('<I', contents, 0x20)
+    custom_off, custom_len = struct.unpack_from(
+        '<II', contents, 0x54 + 4*ntypes + 11*16)
+    assert custom_len >= 0x54
+    # First: Type string (0x8), followed by 0x3e characters.
+    assert contents[custom_off:custom_off+6] == '\x08\x00\x3e\x00\x00\x00'
+    assert re.match(
+        'Created by MIDL version 8\.\d\d\.\d{4} at ... Jan 1. ..:..:.. 2038\n',
+        contents[custom_off+6:custom_off+6+0x3e])
+    # Second: Type uint32 (0x13) storing 0x7fffffff (followed by WW / 0x57 pad)
+    assert contents[custom_off+6+0x3e:custom_off+6+0x3e+8] == \
+        '\x13\x00\xff\xff\xff\x7f\x57\x57'
+    # Third: Type uint32 (0x13) storing MIDL compiler version.
+    assert contents[custom_off+6+0x3e+8:custom_off+6+0x3e+8+2] == '\x13\x00'
+    # Replace "Created by" string with fixed string, and fixed MIDL version with
+    # 8.1.622 always.
+    contents = (contents[0:custom_off+6] +
+        'Created by MIDL version 8.xx.xxxx at a redacted point in time\n' +
+        # uint32 (0x13) val 0x7fffffff, WW, uint32 (0x13), val 0x0801026e, WW
+        '\x13\x00\xff\xff\xff\x7f\x57\x57\x13\x00\x6e\x02\x01\x08\x57\x57' +
+        contents[custom_off + 0x54:])
   else:
     contents = re.sub(
         'File created by MIDL compiler version 8\.\d\d\.\d{4} \*/\r\n'
@@ -113,8 +151,6 @@ def main(arch, outdir, tlb, h, dlldata, iid, proxy, idl, *flags):
       return popen.returncode
     if is_chromoting:
       return 0
-    # Skip checking of results until crbug.com/756607 is fixed.
-    return 0
 
     for f in os.listdir(tmp_dir):
       ZapTimestamp(os.path.join(tmp_dir, f))
