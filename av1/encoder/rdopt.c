@@ -5126,6 +5126,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride,
                               BLOCK_8X8, 8, 8, 8, 8, qindex) *
                  16;
+      if (x->tune_metric == AOM_TUNE_PSNR) assert(sum_rd_stats.sse == dist_8x8);
       sum_rd_stats.sse = dist_8x8;
 
 #if CONFIG_HIGHBITDEPTH
@@ -5183,6 +5184,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       dist_8x8 = av1_dist_8x8(cpi, x, src, src_stride, pred8, 8, BLOCK_8X8, 8,
                               8, 8, 8, qindex) *
                  16;
+      if (x->tune_metric == AOM_TUNE_PSNR)
+        assert(sum_rd_stats.dist == dist_8x8);
       sum_rd_stats.dist = dist_8x8;
       tmp_rd = RDCOST(x->rdmult, sum_rd_stats.rate, sum_rd_stats.dist);
     }
