@@ -27,13 +27,81 @@ var tests = [
                          secondBookmark.title);
     chrome.test.assertEq('URI Bookmark', uriBookmark.title);
 
-    // Check pages.
+    // Check bookmark fields.
     chrome.test.assertEq(0, firstBookmark.page);
-    chrome.test.assertEq(1, firstNestedBookmark.page);
-    chrome.test.assertEq(2, secondBookmark.page);
-    chrome.test.assertEq(undefined, uriBookmark.page);
+    chrome.test.assertEq(166, firstBookmark.y);
+    chrome.test.assertEq(undefined, firstBookmark.uri);
 
+    chrome.test.assertEq(1, firstNestedBookmark.page);
+    chrome.test.assertEq(166, firstNestedBookmark.y);
+    chrome.test.assertEq(undefined, firstNestedBookmark.uri);
+
+    chrome.test.assertEq(2, secondBookmark.page);
+    chrome.test.assertEq(166, secondBookmark.y);
+    chrome.test.assertEq(undefined, secondBookmark.uri);
+
+    chrome.test.assertEq(undefined, uriBookmark.page);
+    chrome.test.assertEq(undefined, uriBookmark.y);
     chrome.test.assertEq('http://www.chromium.org', uriBookmark.uri);
+
+    chrome.test.succeed();
+  },
+
+  /**
+   * Test that a bookmark is followed when clicked in test-bookmarks.pdf.
+   */
+  function testFollowBookmark() {
+    var bookmarkContent = Polymer.Base.create('viewer-bookmarks-content', {
+      bookmarks: viewer.bookmarks,
+      depth: 1
+    });
+
+    Polymer.dom.flush();
+
+    var rootBookmarks =
+        bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
+    chrome.test.assertEq(3, rootBookmarks.length, "three root bookmarks");
+    MockInteractions.tap(rootBookmarks[0].$.expand);
+
+    Polymer.dom.flush();
+
+    var subBookmarks =
+        rootBookmarks[0].shadowRoot.querySelectorAll('viewer-bookmark');
+    chrome.test.assertEq(1, subBookmarks.length, "one sub bookmark");
+
+    var lastPageChange;
+    var lastYChange;
+    var lastUriNavigation;
+    bookmarkContent.addEventListener('change-page', function(e) {
+      lastPageChange = e.detail.page;
+      lastYChange = undefined;
+      lastUriNavigation = undefined;
+    });
+    bookmarkContent.addEventListener('change-page-and-y', function(e) {
+      lastPageChange = e.detail.page;
+      lastYChange = e.detail.y;
+      lastUriNavigation = undefined;
+    });
+    bookmarkContent.addEventListener('navigate', function(e) {
+      lastPageChange = undefined;
+      lastYChange = undefined;
+      lastUriNavigation = e.detail.uri;
+    });
+
+    function testTapTarget(tapTarget, expectedEvent) {
+      lastPageChange = undefined;
+      lastYChange = undefined;
+      lastUriNavigation = undefined;
+      MockInteractions.tap(tapTarget);
+      chrome.test.assertEq(expectedEvent.page, lastPageChange);
+      chrome.test.assertEq(expectedEvent.y, lastYChange);
+      chrome.test.assertEq(expectedEvent.uri, lastUriNavigation);
+    }
+
+    testTapTarget(rootBookmarks[0].$.item, {page: 0, y: 166})
+    testTapTarget(subBookmarks[0].$.item, {page: 1, y: 166})
+    testTapTarget(rootBookmarks[1].$.item, {page: 2, y: 166})
+    testTapTarget(rootBookmarks[2].$.item, {uri: "http://www.chromium.org"})
 
     chrome.test.succeed();
   }
