@@ -71,8 +71,10 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
       prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
   standard_params.is_signin_allowed = profile->IsSyncAllowed();
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
-  standard_params.is_signed_in = signin_manager->IsAuthenticated();
-  standard_params.is_signin_in_progress = signin_manager->AuthInProgress();
+  standard_params.is_signed_in =
+      signin_manager && signin_manager->IsAuthenticated();
+  standard_params.is_signin_in_progress =
+      signin_manager && signin_manager->AuthInProgress();
   standard_params.is_supervised_user = profile->IsSupervised();
 
 #if defined(OS_WIN)

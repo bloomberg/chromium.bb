@@ -5,9 +5,16 @@
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 using StandardOnboardingTabsParams =
     StartupTabProviderImpl::StandardOnboardingTabsParams;
@@ -442,4 +449,22 @@ TEST(StartupTabProviderTest, GetNewTabPageTabsForState_Negative) {
       StartupTabProviderImpl::GetNewTabPageTabsForState(pref_last);
 
   ASSERT_TRUE(output.empty());
+}
+
+TEST(StartupTabProviderTest, IncognitoProfile) {
+  content::TestBrowserThreadBundle thread_bundle;
+  TestingProfile profile;
+  Profile* incognito = profile.GetOffTheRecordProfile();
+  StartupTabs output = StartupTabProviderImpl().GetOnboardingTabs(incognito);
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    ASSERT_EQ(1U, output.size());
+    EXPECT_EQ(StartupTabProviderImpl::GetWin10WelcomePageUrl(false),
+              output[0].url.GetOrigin());
+  } else {
+    EXPECT_TRUE(output.empty());
+  }
+#else
+  EXPECT_TRUE(output.empty());
+#endif
 }
