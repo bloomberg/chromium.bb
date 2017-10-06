@@ -1,4 +1,3 @@
-lorem ipsumlorem ipsumlorem ipsum
 {
   "layers": [
     {
