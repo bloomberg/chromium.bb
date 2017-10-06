@@ -39,7 +39,7 @@ NSString* GAIASignInForm(NSString* formAction,
   return [NSString
       stringWithFormat:
           @"<html><body>"
-           "<form novalidate method=\"post\" action=\"%@\" "
+           "<form novalidate action=\"%@\" "
            "id=\"gaia_loginform\">"
            "  <input name=\"GALX\" type=\"hidden\" value=\"abcdefghij\">"
            "  <input name=\"service\" type=\"hidden\" value=\"mail\">"
@@ -210,7 +210,6 @@ TEST_F(PasswordControllerJsTest,
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"action\":\"https://chromium.test/generic_submit\","
-           "\"method\":\"post\","
            "\"name\":\"login_form\","
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
@@ -229,12 +228,12 @@ TEST_F(PasswordControllerJsTest,
        FindAndPreparePasswordFormsSingleFrameMultipleForms) {
   LoadHtmlAndInject(
       @"<html><body>"
-       "<form action='/generic_submit' method='post' id='login_form1'>"
+       "<form action='/generic_submit' id='login_form1'>"
        "  Name: <input type='text' name='name'>"
        "  Password: <input type='password' name='password'>"
        "  <input type='submit' value='Submit'>"
        "</form>"
-       "<form action='/generic_s2' method='post' name='login_form2'>"
+       "<form action='/generic_s2' name='login_form2'>"
        "  Name: <input type='text' name='name2'>"
        "  Password: <input type='password' name='password2'>"
        "  <input type='submit' value='Submit'>"
@@ -245,7 +244,6 @@ TEST_F(PasswordControllerJsTest,
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"action\":\"https://chromium.test/generic_submit\","
-           "\"method\":\"post\","
            "\"name\":\"login_form1\","
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
@@ -255,7 +253,6 @@ TEST_F(PasswordControllerJsTest,
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]},"
            "{\"action\":\"https://chromium.test/generic_s2\","
-           "\"method\":\"post\","
            "\"name\":\"login_form2\","
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name2\",\"type\":\"text\"},"
@@ -273,7 +270,7 @@ TEST_F(PasswordControllerJsTest,
 TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
   LoadHtmlAndInject(
       @"<html><body>"
-       "<form name='np' id='np1' action='/generic_submit' method='post'>"
+       "<form name='np' id='np1' action='/generic_submit'>"
        "  Name: <input type='text' name='name'>"
        "  Password: <input type='password' name='password'>"
        "  <input type='submit' value='Submit'>"
@@ -285,7 +282,6 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
   NSString* result = [NSString
       stringWithFormat:
           @"{\"action\":\"https://chromium.test/generic_submit\","
-           "\"method\":\"post\","
            "\"name\":\"np\","
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
@@ -317,7 +313,6 @@ TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"action\":\"https://chromium.test/\","
-           "\"method\":null,"
            "\"name\":\"login_form\","
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
@@ -370,7 +365,6 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
   NSString* expected_command = [NSString
       stringWithFormat:
           @"{\"action\":\"%s\","
-           "\"method\":null,"
            "\"name\":\"login_form\","
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"username\",\"type\":\"text\"},"
