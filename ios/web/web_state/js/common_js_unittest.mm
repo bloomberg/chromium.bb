@@ -142,6 +142,34 @@ TEST_F(CommonJsTest, Stringify) {
   }
 }
 
+TEST_F(CommonJsTest, RemoveQueryAndReferenceFromURL) {
+  struct TestData {
+    NSString* input_url;
+    NSString* expected_output;
+  } test_data[] = {
+      {@"http://foo1.com/bar", @"http://foo1.com/bar"},
+      {@"http://foo2.com/bar#baz", @"http://foo2.com/bar"},
+      {@"http://foo3.com/bar?baz", @"http://foo3.com/bar"},
+      // Order of fragment and query string does not matter.
+      {@"http://foo4.com/bar#baz?blech", @"http://foo4.com/bar"},
+      {@"http://foo5.com/bar?baz#blech", @"http://foo5.com/bar"},
+      // Truncates on the first fragment mark.
+      {@"http://foo6.com/bar/#baz#blech", @"http://foo6.com/bar/"},
+      // Poorly formed URLs are normalized.
+      {@"http:///foo7.com//bar?baz", @"http://foo7.com//bar"},
+  };
+  for (size_t i = 0; i < arraysize(test_data); i++) {
+    LoadHtml(@"<p>");
+    TestData& data = test_data[i];
+    id result = ExecuteJavaScript(
+        [NSString stringWithFormat:
+                      @"__gCrWeb.common.removeQueryAndReferenceFromURL('%@')",
+                      data.input_url]);
+    EXPECT_NSEQ(data.expected_output, result)
+        << " in test " << i << ": " << base::SysNSStringToUTF8(data.input_url);
+  }
+}
+
 TEST_F(CommonJsTest, IsSameOrigin) {
   TestScriptAndExpectedValue test_data[] = {
       {@"'http://abc.com', 'http://abc.com'", @YES},
