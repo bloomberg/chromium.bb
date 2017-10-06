@@ -531,6 +531,13 @@ mojom("mojo_layouttest_bindings") {
   ]
 }
 
+mojom("test_interfaces") {
+  testonly = true
+  sources = [
+    "echo.mojom",
+  ]
+}
+
 static_library("layouttest_support") {
   testonly = true
 
@@ -1192,6 +1199,7 @@ test("content_unittests") {
     "../browser/fileapi/fileapi_message_filter_unittest.cc",
     "../browser/fileapi/upload_file_system_file_element_reader_unittest.cc",
     "../browser/frame_host/ancestor_throttle_unittest.cc",
+    "../browser/frame_host/frame_service_base_unittest.cc",
     "../browser/frame_host/frame_tree_node_blame_context_unittest.cc",
     "../browser/frame_host/frame_tree_unittest.cc",
     "../browser/frame_host/mixed_content_navigation_throttle_unittest.cc",
@@ -1571,6 +1579,7 @@ test("content_unittests") {
   deps = [
     ":content_test_mojo_bindings",
     ":content_unittests_catalog_source",
+    ":test_interfaces",
     ":test_support",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",

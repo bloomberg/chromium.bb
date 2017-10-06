@@ -35,6 +35,7 @@ source_set("unit_tests") {
     ":browser",
     "//base/test:test_support",
     "//components/prefs:test_support",
+    "//content/test:test_support",
     "//media/mojo/services",
     "//testing/gtest",
   ]

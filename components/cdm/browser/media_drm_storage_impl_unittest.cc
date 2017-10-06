@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "base/test/test_message_loop.h"
 #include "base/unguessable_token.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/test/test_render_frame_host.h"
 #include "media/mojo/services/mojo_media_drm_storage.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -19,14 +20,28 @@
 
 namespace cdm {
 
+namespace {
+
 const char kMediaDrmStorage[] = "media.media_drm_storage";
 const char kTestOrigin[] = "https://www.testorigin.com:80";
 
-class MediaDrmStorageImplTest : public ::testing::Test {
+content::RenderFrameHost* SimulateNavigation(content::RenderFrameHost* rfh,
+                                             const GURL& url) {
+  auto navigation_simulator =
+      content::NavigationSimulator::CreateRendererInitiated(url, rfh);
+  navigation_simulator->Commit();
+  return navigation_simulator->GetFinalRenderFrameHost();
+}
+
+}  // namespace
+
+class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
  public:
   MediaDrmStorageImplTest() {}
 
   void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+
     pref_service_.reset(new TestingPrefServiceSimple());
     PrefRegistrySimple* registry = pref_service_->registry();
     MediaDrmStorageImpl::RegisterProfilePrefs(registry);
@@ -52,10 +67,12 @@ class MediaDrmStorageImplTest : public ::testing::Test {
     auto media_drm_storage = base::MakeUnique<media::MojoMediaDrmStorage>(
         std::move(media_drm_storage_ptr));
 
+    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+    content::RenderFrameHostTester::For(rfh)->InitializeRenderFrameIfNeeded();
+    rfh = SimulateNavigation(rfh, GURL(kTestOrigin));
+
     // The created object will be destroyed on connection error.
-    new MediaDrmStorageImpl(nullptr,  // Use null RenderFrameHost for testing.
-                            pref_service_.get(), url::Origin(GURL(kTestOrigin)),
-                            std::move(request));
+    new MediaDrmStorageImpl(rfh, pref_service_.get(), std::move(request));
 
     media_drm_storage->Initialize(base::BindOnce(
         [](base::UnguessableToken* out_origin_id,
@@ -136,7 +153,6 @@ class MediaDrmStorageImplTest : public ::testing::Test {
     EXPECT_EQ(expected_session_data->mime_type, session_data->mime_type);
   }
 
-  base::TestMessageLoop message_loop_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<media::MediaDrmStorage> media_drm_storage_;
   base::UnguessableToken origin_id_;

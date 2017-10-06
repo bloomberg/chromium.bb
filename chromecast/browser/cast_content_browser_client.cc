@@ -119,15 +119,14 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   PrefService* pref_service = CastBrowserProcess::GetInstance()->pref_service();
   DCHECK(pref_service);
 
-  url::Origin origin = render_frame_host->GetLastCommittedOrigin();
-  if (origin.unique()) {
+  if (render_frame_host->GetLastCommittedOrigin().unique()) {
     DVLOG(1) << __func__ << ": Unique origin.";
     return;
   }
 
   // The object will be deleted on connection error, or when the frame navigates
   // away.
-  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service, origin,
+  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
                                std::move(request));
 }
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
