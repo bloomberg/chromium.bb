@@ -46,11 +46,11 @@ enum EWordSide { kRightWordIfOnBoundary = false, kLeftWordIfOnBoundary = true };
 
 // This struct represents local caret rectangle in |layout_object|.
 struct LocalCaretRect {
-  LayoutObject* layout_object = nullptr;
+  const LayoutObject* layout_object = nullptr;
   LayoutRect rect;
 
   LocalCaretRect() = default;
-  LocalCaretRect(LayoutObject* layout_object, const LayoutRect& rect)
+  LocalCaretRect(const LayoutObject* layout_object, const LayoutRect& rect)
       : layout_object(layout_object), rect(rect) {}
 
   bool IsEmpty() const { return !layout_object || rect.IsEmpty(); }

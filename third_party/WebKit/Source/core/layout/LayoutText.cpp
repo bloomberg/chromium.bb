@@ -690,9 +690,10 @@ PositionWithAffinity LayoutText::PositionForPoint(const LayoutPoint& point) {
   return CreatePositionWithAffinity(0);
 }
 
-LayoutRect LayoutText::LocalCaretRect(InlineBox* inline_box,
-                                      int caret_offset,
-                                      LayoutUnit* extra_width_to_end_of_line) {
+LayoutRect LayoutText::LocalCaretRect(
+    const InlineBox* inline_box,
+    int caret_offset,
+    LayoutUnit* extra_width_to_end_of_line) const {
   if (!inline_box)
     return LayoutRect();
 
@@ -700,9 +701,9 @@ LayoutRect LayoutText::LocalCaretRect(InlineBox* inline_box,
   if (!inline_box->IsInlineTextBox())
     return LayoutRect();
 
-  InlineTextBox* box = ToInlineTextBox(inline_box);
+  const InlineTextBox* box = ToInlineTextBox(inline_box);
   // Find an InlineBox before caret position, which is used to get caret height.
-  InlineBox* caret_box = box;
+  const InlineBox* caret_box = box;
   if (box->GetLineLayoutItem().Style(box->IsFirstLineStyle())->Direction() ==
       TextDirection::kLtr) {
     if (box->PrevLeafChild() && caret_offset == 0)

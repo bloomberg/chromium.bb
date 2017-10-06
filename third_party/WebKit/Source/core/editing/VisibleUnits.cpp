@@ -669,10 +669,8 @@ bool IsEndOfEditableOrNonEditableContent(
   return IsTextControlElement(next_position.DeepEquivalent().AnchorNode());
 }
 
-// TODO(editing-dev): Once we mark |LayoutObject::LocalCaretRect()| |const|,
-// we should make this function to take |const LayoutObject&|.
 static LocalCaretRect ComputeLocalCaretRect(
-    LayoutObject* layout_object,
+    const LayoutObject* layout_object,
     const InlineBoxPosition box_position) {
   return LocalCaretRect(
       layout_object, layout_object->LocalCaretRect(box_position.inline_box,

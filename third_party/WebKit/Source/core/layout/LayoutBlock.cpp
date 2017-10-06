@@ -1828,9 +1828,10 @@ bool LayoutBlock::ShouldPaintDragCaret() const {
   return GetFrame()->GetPage()->GetDragCaret().ShouldPaintCaret(*this);
 }
 
-LayoutRect LayoutBlock::LocalCaretRect(InlineBox* inline_box,
-                                       int caret_offset,
-                                       LayoutUnit* extra_width_to_end_of_line) {
+LayoutRect LayoutBlock::LocalCaretRect(
+    const InlineBox* inline_box,
+    int caret_offset,
+    LayoutUnit* extra_width_to_end_of_line) const {
   // Do the normal calculation in most cases.
   if ((FirstChild() && !FirstChild()->IsPseudoElement()) ||
       IsInlineBoxWrapperActuallyChild())

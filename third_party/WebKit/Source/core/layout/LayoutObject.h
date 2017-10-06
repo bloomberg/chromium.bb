@@ -1486,9 +1486,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
      * useful for character range rect computations
      */
   virtual LayoutRect LocalCaretRect(
-      InlineBox*,
+      const InlineBox*,
       int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr);
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const;
 
   // When performing a global document tear-down, the layoutObject of the
   // document is cleared. We use this as a hook to detect the case of document

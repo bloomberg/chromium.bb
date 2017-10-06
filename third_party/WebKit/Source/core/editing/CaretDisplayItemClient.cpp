@@ -81,7 +81,10 @@ static LayoutRect MapCaretRectToCaretPainter(
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
 
-  LayoutItem caret_layout_item = LayoutItem(caret_rect.layout_object);
+  // TODO(layout-dev): We should allow constructing a "const layout item" from a
+  // |const LayoutObject*| that allows using all const functions.
+  LayoutItem caret_layout_item =
+      LayoutItem(const_cast<LayoutObject*>(caret_rect.layout_object));
   DCHECK(caret_layout_item.IsDescendantOf(caret_painter_item));
 
   LayoutRect result_rect = caret_rect.rect;

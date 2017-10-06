@@ -1051,9 +1051,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual PaginationBreakability GetPaginationBreakability() const;
 
   LayoutRect LocalCaretRect(
-      InlineBox*,
+      const InlineBox*,
       int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr) override;
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
 
   // Returns whether content which overflows should be clipped. This is not just
   // because of overflow clip, but other types of clip as well, such as

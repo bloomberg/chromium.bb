@@ -496,9 +496,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  private:
   LayoutRect LocalCaretRect(
-      InlineBox*,
+      const InlineBox*,
       int caret_offset,
-      LayoutUnit* extra_width_to_end_of_line = nullptr) final;
+      LayoutUnit* extra_width_to_end_of_line = nullptr) const final;
   bool IsInlineBoxWrapperActuallyChild() const;
 
   Position PositionForBox(InlineBox*, bool start = true) const;
