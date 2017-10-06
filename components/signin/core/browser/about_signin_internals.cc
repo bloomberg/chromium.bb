@@ -161,6 +161,21 @@ void ClearPref(PrefService* prefs, TimedSigninStatusField field) {
   prefs->ClearPref(time_pref);
 }
 
+std::string GetAccountConsistencyDescription() {
+  switch (signin::GetAccountConsistencyMethod()) {
+    case signin::AccountConsistencyMethod::kDisabled:
+      return "None";
+    case signin::AccountConsistencyMethod::kMirror:
+      return "Mirror";
+    case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
+      return "DICE fixing auth errors";
+    case signin::AccountConsistencyMethod::kDice:
+      return "DICE";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // anonymous namespace
 
 AboutSigninInternals::AboutSigninInternals(
@@ -509,9 +524,8 @@ AboutSigninInternals::SigninStatus::ToValue(
   base::ListValue* basic_info =
       AddSection(signin_info.get(), "Basic Information");
   AddSectionEntry(basic_info, "Chrome Version", product_version);
-  AddSectionEntry(
-      basic_info, "Account Consistency?",
-      signin::IsAccountConsistencyMirrorEnabled() == true ? "On" : "Off");
+  AddSectionEntry(basic_info, "Account Consistency",
+                  GetAccountConsistencyDescription());
   AddSectionEntry(basic_info, "Signin Status",
       signin_manager->IsAuthenticated() ? "Signed In" : "Not Signed In");
   OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
