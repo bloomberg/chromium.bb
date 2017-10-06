@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -218,27 +219,58 @@ bool ShouldForceDircrypto(const AccountId& account_id) {
 }
 
 // Decodes the EcryptfsMigrationStrategy user policy into the
-// EcryptfsMigrationAction enum. If the policy is present, returns true and sets
-// *|out_value|. Otherwise, returns false.
-bool DecodeMigrationActionFromPolicy(
-    const enterprise_management::CloudPolicySettings* policy,
-    apu::EcryptfsMigrationAction* out_value) {
+// EcryptfsMigrationAction enum. If the policy is present and has a valid value,
+// returns the value. Otherwise returns base::nullopt.
+base::Optional<apu::EcryptfsMigrationAction> DecodeMigrationActionFromPolicy(
+    const enterprise_management::CloudPolicySettings* policy) {
   if (!policy->has_ecryptfsmigrationstrategy())
-    return false;
+    return base::nullopt;
 
   const enterprise_management::IntegerPolicyProto& policy_proto =
       policy->ecryptfsmigrationstrategy();
   if (!policy_proto.has_value())
-    return false;
+    return base::nullopt;
 
   if (policy_proto.value() < 0 ||
       policy_proto.value() >
           static_cast<int64_t>(apu::kEcryptfsMigrationActionMaxValue)) {
-    return false;
+    return base::nullopt;
   }
 
-  *out_value = static_cast<apu::EcryptfsMigrationAction>(policy_proto.value());
-  return true;
+  return static_cast<apu::EcryptfsMigrationAction>(policy_proto.value());
+}
+
+// Decides which EcryptfsMigrationAction should be used based on policy fetch
+// result, policy payload and user type. |policy_payload| is only dereferenced
+// if |policy_fetch_result| is PolicyFetchResult::SUCCESS.
+apu::EcryptfsMigrationAction GetEcryptfsMigrationAction(
+    PolicyFetchResult policy_fetch_result,
+    enterprise_management::CloudPolicySettings* policy_payload,
+    bool active_directory_user) {
+  switch (policy_fetch_result) {
+    case PolicyFetchResult::NO_POLICY:
+      // There was no policy, the user is unmanaged. They get to choose
+      // themselves if they'd like to migrate.
+      VLOG(1) << "Policy pre-fetch result: No user policy present";
+      return apu::EcryptfsMigrationAction::kAskUser;
+    case PolicyFetchResult::SUCCESS: {
+      // User policy was retreived, adhere to it if it contains the
+      // EcryptfsMigrationStrategy policy value.
+      VLOG(1) << "Policy pre-fetch result: User policy fetched";
+      base::Optional<apu::EcryptfsMigrationAction> action =
+          DecodeMigrationActionFromPolicy(policy_payload);
+      if (action)
+        return action.value();
+      break;
+    }
+    case PolicyFetchResult::ERROR:
+      // We don't know if the user has policy or not. Stay on the safe side
+      // and stick to the default for this user type.
+      VLOG(1) << "Policy pre-fetch: User policy could not be fetched.";
+      break;
+  }
+  return apu::GetDefaultEcryptfsMigrationActionForManagedUser(
+      active_directory_user);
 }
 
 // Returns true if ArcEnabled policy is present and set to true. Otherwise
@@ -1019,32 +1051,15 @@ void ExistingUserController::OnOldEncryptionDetected(
 
 void ExistingUserController::OnPolicyFetchResult(
     const UserContext& user_context,
-    PolicyFetchResult result,
+    PolicyFetchResult policy_fetch_result,
     std::unique_ptr<enterprise_management::CloudPolicySettings>
         policy_payload) {
-  apu::EcryptfsMigrationAction action =
-      apu::EcryptfsMigrationAction::kDisallowMigration;
-  if (result == PolicyFetchResult::NO_POLICY) {
-    // There was no policy, the user is unmanaged. They get to choose themselves
-    // if they'd like to migrate.
-    VLOG(1) << "Policy pre-fetch result: No user policy present";
-    action = apu::EcryptfsMigrationAction::kAskUser;
-  } else if (result == PolicyFetchResult::SUCCESS) {
-    // User policy was retreived, adhere to it.
-    VLOG(1) << "Policy pre-fetch result: User policy fetched";
-    if (!DecodeMigrationActionFromPolicy(policy_payload.get(), &action)) {
-      // User policy was present, but the EcryptfsMigrationStrategy policy value
-      // was not there. Stay on the safe side and don't start migration.
-      action = apu::EcryptfsMigrationAction::kDisallowMigration;
-    }
-  } else {
-    // We don't know if the user has policy or not. Stay on the safe side and
-    // don't start migration.
-    VLOG(1) << "Policy pre-fetch: User policy could not be fetched. Result: "
-            << static_cast<int>(result);
-    action = apu::EcryptfsMigrationAction::kDisallowMigration;
-  }
-  VLOG(1) << "Migration action: " << static_cast<int>(action);
+  const bool active_directory_user =
+      user_context.GetUserType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+  const apu::EcryptfsMigrationAction action = GetEcryptfsMigrationAction(
+      policy_fetch_result, policy_payload.get(), active_directory_user);
+  VLOG(1) << "Migration action (active_directory_user=" << active_directory_user
+          << "): " << static_cast<int>(action);
 
   switch (action) {
     case apu::EcryptfsMigrationAction::kDisallowMigration:
