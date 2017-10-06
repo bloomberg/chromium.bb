@@ -105,3 +105,8 @@ Description of the patches:
 - 0014-truncate-uint8-constants.patch
 
   Fixed upstream in CL 163270735
+
+- 0017-constexpr-for-vs-2017.patch
+
+  Define PROTOBUF_CONSTEXPR_VAR as constexpr for VS 2017, also landed upstream
+  as https://github.com/google/protobuf/commit/210be267fd81d5aafdc049d197d57cb45b75f3ba
