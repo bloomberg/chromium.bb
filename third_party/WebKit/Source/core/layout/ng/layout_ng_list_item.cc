@@ -12,7 +12,9 @@
 namespace blink {
 
 LayoutNGListItem::LayoutNGListItem(Element* element)
-    : LayoutNGBlockFlow(element) {
+    : LayoutNGBlockFlow(element),
+      marker_type_(kStatic),
+      is_marker_text_updated_(false) {
   SetInline(false);
 }
 
@@ -53,7 +55,16 @@ void LayoutNGListItem::StyleDidChange(StyleDifference diff,
 }
 
 void LayoutNGListItem::OrdinalValueChanged() {
-  if (marker_)
+  if (marker_type_ == kOrdinalValue && is_marker_text_updated_) {
+    is_marker_text_updated_ = false;
+    DCHECK(marker_);
+    marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kListValueChange);
+  }
+}
+
+void LayoutNGListItem::WillCollectInlines() {
+  if (marker_ && !is_marker_text_updated_)
     UpdateMarkerText(ToLayoutText(marker_->SlowFirstChild()));
 }
 
@@ -75,14 +86,17 @@ void LayoutNGListItem::DestroyMarker() {
 void LayoutNGListItem::UpdateMarkerText(LayoutText* text) {
   DCHECK(text);
   StringBuilder marker_text_builder;
-  MarkerText(&marker_text_builder, kWithSuffix);
+  marker_type_ = MarkerText(&marker_text_builder, kWithSuffix);
   text->SetText(marker_text_builder.ToString().ReleaseImpl());
+  is_marker_text_updated_ = true;
 }
 
 void LayoutNGListItem::UpdateMarker() {
   const ComputedStyle& style = StyleRef();
   if (style.ListStyleType() == EListStyleType::kNone) {
     DestroyMarker();
+    marker_type_ = kStatic;
+    is_marker_text_updated_ = true;
     return;
   }
 
@@ -126,9 +140,8 @@ void LayoutNGListItem::UpdateMarker() {
     text = LayoutText::CreateEmptyAnonymous(GetDocument());
     text->SetStyle(marker_->MutableStyle());
     marker_->AddChild(text);
+    is_marker_text_updated_ = false;
   }
-
-  UpdateMarkerText(text);
 
   LayoutObject* first_child = FirstChild();
   if (first_child != marker_) {
@@ -142,12 +155,13 @@ int LayoutNGListItem::Value() const {
   return ordinal_.Value(*GetNode());
 }
 
-void LayoutNGListItem::MarkerText(StringBuilder* text,
-                                  MarkerTextFormat format) const {
+LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
+    StringBuilder* text,
+    MarkerTextFormat format) const {
   const ComputedStyle& style = StyleRef();
   switch (style.ListStyleType()) {
     case EListStyleType::kNone:
-      break;
+      return kStatic;
     case EListStyleType::kDisc:
     case EListStyleType::kCircle:
     case EListStyleType::kSquare:
@@ -155,7 +169,7 @@ void LayoutNGListItem::MarkerText(StringBuilder* text,
       text->Append(ListMarkerText::GetText(Style()->ListStyleType(), 0));
       if (format == kWithSuffix)
         text->Append(' ');
-      break;
+      return kStatic;
     case EListStyleType::kArabicIndic:
     case EListStyleType::kArmenian:
     case EListStyleType::kBengali:
@@ -214,9 +228,11 @@ void LayoutNGListItem::MarkerText(StringBuilder* text,
         text->Append(ListMarkerText::Suffix(Style()->ListStyleType(), value));
         text->Append(' ');
       }
-      break;
+      return kOrdinalValue;
     }
   }
+  NOTREACHED();
+  return kStatic;
 }
 
 String LayoutNGListItem::MarkerTextWithoutSuffix() const {

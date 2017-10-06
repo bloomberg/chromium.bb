@@ -22,6 +22,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   String MarkerTextWithoutSuffix() const;
 
   void OrdinalValueChanged();
+  void WillCollectInlines() override;
 
   // Returns whether the LayoutObject is a list marker or not.
   static bool IsListMarker(LayoutObject*);
@@ -39,13 +40,17 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   bool IsInside() const;
 
   enum MarkerTextFormat { kWithSuffix, kWithoutSuffix };
-  void MarkerText(StringBuilder*, MarkerTextFormat) const;
+  enum MarkerType { kStatic, kOrdinalValue };
+  MarkerType MarkerText(StringBuilder*, MarkerTextFormat) const;
   void UpdateMarkerText(LayoutText*);
   void UpdateMarker();
   void DestroyMarker();
 
   ListItemOrdinal ordinal_;
   LayoutObject* marker_ = nullptr;
+
+  unsigned marker_type_ : 1;  // MarkerType
+  unsigned is_marker_text_updated_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListItem, IsLayoutNGListItem());
