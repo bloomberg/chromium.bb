@@ -43,6 +43,9 @@ class FuzzedDataProvider {
     return array[provider_.ConsumeUint32InRange(0, size - 1)];
   }
 
+  // Reports the remaining bytes available for fuzzed input.
+  size_t RemainingBytes() { return provider_.remaining_bytes(); }
+
  private:
   base::FuzzedDataProvider provider_;
 };
