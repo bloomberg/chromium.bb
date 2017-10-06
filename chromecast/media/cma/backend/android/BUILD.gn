@@ -79,6 +79,6 @@ android_library("audio_track_java") {
   ]
 
   if (enable_volume_tables_access) {
-    deps += [ "//chromecast/internal/android/prebuilt/things:system_support_lib_java" ]
+    deps += [ "//chromecast/internal/android/prebuilt/things:support_lib_java" ]
   }
 }
