@@ -22,8 +22,6 @@
 
 namespace blink {
 
-class ScriptState;
-
 class CORE_EXPORT V8VoidCallbackFunctionTypedef final : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionTypedef* Create(ScriptState*, v8::Local<v8::Value> callback);

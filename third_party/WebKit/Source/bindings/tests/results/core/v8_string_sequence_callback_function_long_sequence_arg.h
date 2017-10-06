@@ -22,8 +22,6 @@
 
 namespace blink {
 
-class ScriptState;
-
 class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public CallbackFunctionBase {
  public:
   static V8StringSequenceCallbackFunctionLongSequenceArg* Create(ScriptState*, v8::Local<v8::Value> callback);

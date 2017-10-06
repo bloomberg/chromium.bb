@@ -22,7 +22,6 @@
 
 namespace blink {
 
-class ScriptState;
 class HTMLDivElement;
 
 class CORE_EXPORT V8VoidCallbackFunctionInterfaceArg final : public CallbackFunctionBase {
