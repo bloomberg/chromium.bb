@@ -172,7 +172,10 @@
       name: "footer",
       interfaceName: "HTMLElement",
     },
-    "form",
+    {
+      name: "form",
+      interfaceHeaderDir: "core/html/forms",
+    },
     "frame",
     {
       name: "frameset",
@@ -249,7 +252,10 @@
       name: "keygen",
       interfaceName: "HTMLUnknownElement",
     },
-    "label",
+    {
+      name: "label",
+      interfaceHeaderDir: "core/html/forms",
+    },
     {
       name: "layer",
       interfaceName: "HTMLElement",
@@ -324,7 +330,10 @@
       name: "option",
       interfaceHeaderDir: "core/html/forms",
     },
-    "output",
+    {
+      name: "output",
+      interfaceHeaderDir: "core/html/forms",
+    },
     {
       name: "shadow",
       interfaceName: "HTMLShadowElement",

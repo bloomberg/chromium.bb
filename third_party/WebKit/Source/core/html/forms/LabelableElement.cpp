@@ -22,10 +22,10 @@
  *
  */
 
-#include "core/html/LabelableElement.h"
+#include "core/html/forms/LabelableElement.h"
 
 #include "core/dom/NodeRareData.h"
-#include "core/html/LabelsNodeList.h"
+#include "core/html/forms/LabelsNodeList.h"
 
 namespace blink {
 

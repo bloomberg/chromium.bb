@@ -33,9 +33,9 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/events/Event.h"
 #include "core/html/HTMLFormControlElement.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/forms/HTMLFormElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 
 #include "platform/wtf/RefPtr.h"

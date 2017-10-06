@@ -27,8 +27,8 @@
  */
 
 #include "modules/accessibility/AXRelationCache.h"
-#include "core/html/HTMLLabelElement.h"
-#include "core/html/LabelableElement.h"
+#include "core/html/forms/HTMLLabelElement.h"
+#include "core/html/forms/LabelableElement.h"
 
 namespace blink {
 

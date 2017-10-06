@@ -28,10 +28,10 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
+#include "core/html/forms/HTMLFormElement.h"
 #include "core/html_names.h"
 
 namespace blink {

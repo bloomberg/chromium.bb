@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/LabelsNodeList.h"
+#include "core/html/forms/LabelsNodeList.h"
 
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
-#include "core/html/HTMLLabelElement.h"
-#include "core/html/LabelableElement.h"
+#include "core/html/forms/HTMLLabelElement.h"
+#include "core/html/forms/LabelableElement.h"
 #include "core/html_names.h"
 
 namespace blink {
