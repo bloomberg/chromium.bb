@@ -70,7 +70,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager() {
     StoresToCheck stores_to_check(
         {GetUrlMalwareId(), GetChromeUrlApiId(),
-         ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING_PUBLIC),
+         ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING),
          ListIdentifier(CHROME_PLATFORM, URL, POTENTIALLY_HARMFUL_APPLICATION),
          ListIdentifier(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER)});
     return V4GetHashProtocolManager::Create(NULL, stores_to_check,
@@ -286,8 +286,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashRequest) {
   info->add_threat_entry_types(URL);
 
   for (const ThreatType& tt : std::set<ThreatType>{
-           MALWARE_THREAT, SOCIAL_ENGINEERING_PUBLIC,
-           POTENTIALLY_HARMFUL_APPLICATION, API_ABUSE, SUBRESOURCE_FILTER}) {
+           MALWARE_THREAT, SOCIAL_ENGINEERING, POTENTIALLY_HARMFUL_APPLICATION,
+           API_ABUSE, SUBRESOURCE_FILTER}) {
     info->add_threat_types(tt);
   }
 
@@ -397,7 +397,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
     FindFullHashesResponse se_res;
     se_res.mutable_negative_cache_duration()->set_seconds(600);
     ThreatMatch* se = se_res.add_matches();
-    se->set_threat_type(SOCIAL_ENGINEERING_PUBLIC);
+    se->set_threat_type(SOCIAL_ENGINEERING);
     se->set_platform_type(CHROME_PLATFORM);
     se->set_threat_entry_type(URL);
     FullHash full_hash("Everything's shiny, Cap'n.");
@@ -421,8 +421,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
     ASSERT_EQ(1ul, full_hash_infos.size());
     const FullHashInfo& fhi = full_hash_infos[0];
     EXPECT_EQ(full_hash, fhi.full_hash);
-    const ListIdentifier list_id(CHROME_PLATFORM, URL,
-                                 SOCIAL_ENGINEERING_PUBLIC);
+    const ListIdentifier list_id(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING);
     EXPECT_EQ(list_id, fhi.list_id);
     EXPECT_EQ(ThreatPatternType::SOCIAL_ENGINEERING_LANDING,
               fhi.metadata.threat_pattern_type);

@@ -129,8 +129,7 @@ ListIdentifier GetUrlMalBinId() {
 }
 
 ListIdentifier GetUrlSocEngId() {
-  return ListIdentifier(GetCurrentPlatformType(), URL,
-                        SOCIAL_ENGINEERING_PUBLIC);
+  return ListIdentifier(GetCurrentPlatformType(), URL, SOCIAL_ENGINEERING);
 }
 
 ListIdentifier GetUrlSubresourceFilterId() {
