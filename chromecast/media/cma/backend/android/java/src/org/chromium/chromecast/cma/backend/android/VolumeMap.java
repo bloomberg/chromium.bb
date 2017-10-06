@@ -14,6 +14,7 @@ import android.util.SparseIntArray;
 import com.google.android.things.audio.VolumeTableReader;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -24,6 +25,8 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("chromecast::media")
 @TargetApi(Build.VERSION_CODES.N)
 public final class VolumeMap {
+    private static final String TAG = "VolumeMap";
+
     private static AudioManager sAudioManager = null;
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
@@ -57,6 +60,24 @@ public final class VolumeMap {
     private static int getStreamType(int castType) {
         int i = ANDROID_TYPE_TO_CAST_TYPE_MAP.indexOfValue(castType);
         return ANDROID_TYPE_TO_CAST_TYPE_MAP.keyAt(i);
+    }
+
+    /**
+     * Logs the dB value at each discrete Android volume index for the given cast type.
+     * Note that this is not identical to the volume table, which may contain a different number
+     * of points and at different levels.
+     */
+    @CalledByNative
+    static void dumpVolumeTables(int castType) {
+        int streamType = getStreamType(castType);
+        int maxIndex = MAX_VOLUME_INDEX.get(streamType);
+        int deviceType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
+        Log.i(TAG, "Volume points for stream " + streamType + " (maxIndex=" + maxIndex + "):");
+        for (int idx = 0; idx <= maxIndex; idx++) {
+            float db = VolumeTableReader.getStreamVolumeDB(streamType, idx, deviceType);
+            float level = (float) idx / (float) maxIndex;
+            Log.i(TAG, "    " + idx + "(" + level + ") -> " + db);
+        }
     }
 
     /**
