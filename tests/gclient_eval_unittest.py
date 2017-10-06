@@ -142,8 +142,16 @@ class EvaluateConditionTest(unittest.TestCase):
         'a or b', {'a': 'b and c', 'b': 'not c', 'c': 'False'}))
 
   def test_string_equality(self):
+    self.assertTrue(gclient_eval.EvaluateCondition(
+        'foo == "baz"', {'foo': '"baz"'}))
     self.assertFalse(gclient_eval.EvaluateCondition(
         'foo == "bar"', {'foo': '"baz"'}))
+
+  def test_string_inequality(self):
+    self.assertTrue(gclient_eval.EvaluateCondition(
+        'foo != "bar"', {'foo': '"baz"'}))
+    self.assertFalse(gclient_eval.EvaluateCondition(
+        'foo != "baz"', {'foo': '"baz"'}))
 
   def test_string_bool(self):
     self.assertFalse(gclient_eval.EvaluateCondition(

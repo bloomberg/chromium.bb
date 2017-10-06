@@ -306,6 +306,8 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
 
       if isinstance(node.ops[0], ast.Eq):
         return left == right
+      if isinstance(node.ops[0], ast.NotEq):
+        return left != right
 
       raise ValueError(
           'unexpected operator: %s %s (inside %r)' % (
