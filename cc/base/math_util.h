@@ -263,9 +263,6 @@ class CC_BASE_EXPORT MathUtil {
                                const gfx::Vector2dF& v,
                                base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
-                               const gfx::Vector3dF& v,
-                               base::trace_event::TracedValue* res);
-  static void AddToTracedValue(const char* name,
                                const gfx::ScrollOffset& v,
                                base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,

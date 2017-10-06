@@ -463,11 +463,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
 }
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
-  gfx::Transform transform;
-  transform.Scale(node->post_local_scale_factor, node->post_local_scale_factor);
-  transform.Translate(node->source_offset);
-  transform.Translate3d(node->transform_origin);
-
+  gfx::Transform transform = node->post_local;
   if (NeedsSourceToParentUpdate(node)) {
     gfx::Transform to_parent;
     ComputeTranslation(node->source_node_id, node->parent_id, &to_parent);
@@ -517,10 +513,9 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
                           fixed_position_adjustment.y());
   transform.Translate(StickyPositionOffset(this, node));
   transform.PreconcatTransform(node->local);
-  transform.Translate3d(-node->transform_origin);
+  transform.PreconcatTransform(node->pre_local);
 
-  node->to_parent = transform;
-  node->is_invertible = transform.IsInvertible();
+  node->set_to_parent(transform);
   node->needs_local_transform_update = false;
 }
 
@@ -628,26 +623,51 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
 void TransformTree::SetRootTransformsAndScales(
     float device_scale_factor,
     float page_scale_factor_for_root,
-    const gfx::Transform& device_transform) {
+    const gfx::Transform& device_transform,
+    gfx::PointF root_position) {
   gfx::Vector2dF device_transform_scale_components =
       MathUtil::ComputeTransform2dScaleComponents(device_transform, 1.f);
+
   // Not handling the rare case of different x and y device scale.
   device_transform_scale_factor_ =
       std::max(device_transform_scale_components.x(),
                device_transform_scale_components.y());
 
-  float total_scale = device_scale_factor * page_scale_factor_for_root;
-  gfx::Transform root_to_screen = device_transform;
-  root_to_screen.Scale(total_scale, total_scale);
-  if (root_to_screen == ToScreen(kRootNodeId))
-    return;
+  // If DT is the device transform, DSF is the matrix scaled by (device scale
+  // factor * page scale factor for root), RP is the matrix translated by root's
+  // position,
+  // Let Screen Space Scale(SSS) = scale component of DT*DSF*RP,
+  // then the screen space transform of the root transform node is set to SSS
+  // and the post local transform of the contents root node is set to
+  // SSS^-1*DT*DSF*RP.
+  gfx::Transform transform = device_transform;
+  transform.Scale(device_scale_factor * page_scale_factor_for_root,
+                  device_scale_factor * page_scale_factor_for_root);
+  transform.Translate(root_position.x(), root_position.y());
+  float fallback_value = device_scale_factor * page_scale_factor_for_root;
+  gfx::Vector2dF screen_space_scale =
+      MathUtil::ComputeTransform2dScaleComponents(transform, fallback_value);
+  DCHECK_NE(screen_space_scale.x(), 0.f);
+  DCHECK_NE(screen_space_scale.y(), 0.f);
 
-  SetToScreen(kRootNodeId, root_to_screen);
+  gfx::Transform root_to_screen;
+  root_to_screen.Scale(screen_space_scale.x(), screen_space_scale.y());
   gfx::Transform root_from_screen;
-  Node(kRootNodeId)->ancestors_are_invertible =
-      root_to_screen.GetInverse(&root_from_screen);
-  SetFromScreen(kRootNodeId, root_from_screen);
-  set_needs_update(true);
+  bool invertible = root_to_screen.GetInverse(&root_from_screen);
+  DCHECK(invertible);
+  if (root_to_screen != ToScreen(kRootNodeId)) {
+    SetToScreen(kRootNodeId, root_to_screen);
+    SetFromScreen(kRootNodeId, root_from_screen);
+    set_needs_update(true);
+  }
+
+  transform.ConcatTransform(root_from_screen);
+  TransformNode* contents_root_node = Node(kContentsRootNodeId);
+  if (contents_root_node->post_local != transform) {
+    contents_root_node->post_local = transform;
+    contents_root_node->needs_local_transform_update = true;
+    set_needs_update(true);
+  }
 }
 
 void TransformTree::UpdateOuterViewportContainerBoundsDelta() {

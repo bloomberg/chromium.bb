@@ -623,7 +623,6 @@ void Layer::SetContentsOpaque(bool opaque) {
 }
 
 void Layer::SetPosition(const gfx::PointF& position) {
-  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.position == position)
     return;
@@ -633,18 +632,16 @@ void Layer::SetPosition(const gfx::PointF& position) {
     return;
 
   SetSubtreePropertyChanged();
-  if (TransformNode* transform_node = GetTransformNode()) {
-    gfx::Vector2dF source_offset = position.OffsetFromOrigin();
-    if (parent_)
-      source_offset += parent_->offset_to_transform_parent();
-
-    transform_node->source_offset = source_offset;
+  TransformNode* transform_node = GetTransformNode();
+  if (transform_node) {
+    transform_node->update_post_local_transform(position, transform_origin());
     transform_node->needs_local_transform_update = true;
     transform_node->transform_changed = true;
     layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
   } else {
     SetPropertyTreesNeedRebuild();
   }
+
   SetNeedsCommit();
 }
 
@@ -715,7 +712,8 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   TransformNode* transform_node = GetTransformNode();
   if (transform_node) {
     DCHECK_EQ(transform_tree_index(), transform_node->id);
-    transform_node->transform_origin = transform_origin.OffsetFromOrigin();
+    transform_node->update_pre_local_transform(transform_origin);
+    transform_node->update_post_local_transform(position(), transform_origin);
     transform_node->needs_local_transform_update = true;
     transform_node->transform_changed = true;
     layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
