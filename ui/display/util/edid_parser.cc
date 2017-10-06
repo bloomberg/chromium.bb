@@ -69,15 +69,15 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
   //   bytes 10-11: manufacturer product code, in little-endian
   //   bytes 54-125: four descriptors (18-bytes each) which may contain
   //     the display name.
-  const unsigned int kManufacturerOffset = 8;
-  const unsigned int kManufacturerLength = 2;
-  const unsigned int kProductCodeOffset = 10;
-  const unsigned int kProductCodeLength = 2;
-  const unsigned int kDescriptorOffset = 54;
-  const unsigned int kNumDescriptors = 4;
-  const unsigned int kDescriptorLength = 18;
+  const size_t kManufacturerOffset = 8;
+  const size_t kManufacturerLength = 2;
+  const size_t kProductCodeOffset = 10;
+  const size_t kProductCodeLength = 2;
+  const size_t kDescriptorOffset = 54;
+  const size_t kNumDescriptors = 4;
+  const size_t kDescriptorLength = 18;
   // The specifier types.
-  const unsigned char kMonitorNameDescriptor = 0xfc;
+  const uint8_t kMonitorNameDescriptor = 0xfc;
 
   if (manufacturer_id) {
     if (edid.size() < kManufacturerOffset + kManufacturerLength) {
@@ -104,7 +104,7 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
   if (human_readable_name)
     human_readable_name->clear();
 
-  for (unsigned int i = 0; i < kNumDescriptors; ++i) {
+  for (size_t i = 0; i < kNumDescriptors; ++i) {
     if (edid.size() < kDescriptorOffset + (i + 1) * kDescriptorLength)
       break;
 
@@ -115,17 +115,17 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
       const int kMaxResolution = 10080;  // 8k display.
 
       if (active_pixel_out) {
-        const int kHorizontalPixelLsbOffset = 2;
-        const int kHorizontalPixelMsbOffset = 4;
-        const int kVerticalPixelLsbOffset = 5;
-        const int kVerticalPixelMsbOffset = 7;
+        const size_t kHorizontalPixelLsbOffset = 2;
+        const size_t kHorizontalPixelMsbOffset = 4;
+        const size_t kVerticalPixelLsbOffset = 5;
+        const size_t kVerticalPixelMsbOffset = 7;
 
-        int h_lsb = edid[offset + kHorizontalPixelLsbOffset];
-        int h_msb = edid[offset + kHorizontalPixelMsbOffset];
+        const uint8_t h_lsb = edid[offset + kHorizontalPixelLsbOffset];
+        const uint8_t h_msb = edid[offset + kHorizontalPixelMsbOffset];
         int h_pixel = std::min(h_lsb + ((h_msb & 0xF0) << 4), kMaxResolution);
 
-        int v_lsb = edid[offset + kVerticalPixelLsbOffset];
-        int v_msb = edid[offset + kVerticalPixelMsbOffset];
+        const uint8_t v_lsb = edid[offset + kVerticalPixelLsbOffset];
+        const uint8_t v_msb = edid[offset + kVerticalPixelMsbOffset];
         int v_pixel = std::min(v_lsb + ((v_msb & 0xF0) << 4), kMaxResolution);
 
         active_pixel_out->SetSize(h_pixel, v_pixel);
@@ -135,14 +135,14 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
       }
 
       if (physical_display_size_out) {
-        const int kHorizontalSizeLsbOffset = 12;
-        const int kVerticalSizeLsbOffset = 13;
-        const int kSizeMsbOffset = 14;
+        const size_t kHorizontalSizeLsbOffset = 12;
+        const size_t kVerticalSizeLsbOffset = 13;
+        const size_t kSizeMsbOffset = 14;
 
-        int h_lsb = edid[offset + kHorizontalSizeLsbOffset];
-        int v_lsb = edid[offset + kVerticalSizeLsbOffset];
+        const uint8_t h_lsb = edid[offset + kHorizontalSizeLsbOffset];
+        const uint8_t v_lsb = edid[offset + kVerticalSizeLsbOffset];
 
-        int msb = edid[offset + kSizeMsbOffset];
+        const uint8_t msb = edid[offset + kSizeMsbOffset];
         int h_size = h_lsb + ((msb & 0xF0) << 4);
         int v_size = v_lsb + ((msb & 0x0F) << 8);
         physical_display_size_out->SetSize(h_size, v_size);
@@ -186,43 +186,42 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
   return true;
 }
 
-bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
-                             bool* flag) {
+bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid, bool* flag) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the extension format of EDID.  Also see EIA/CEA-861 spec for
   // the format of the extensions and how video capability is encoded.
   //  - byte 0: tag.  should be 02h.
   //  - byte 1: revision.  only cares revision 3 (03h).
   //  - byte 4-: data block.
-  const unsigned int kExtensionBase = 128;
-  const unsigned int kExtensionSize = 128;
-  const unsigned int kNumExtensionsOffset = 126;
-  const unsigned int kDataBlockOffset = 4;
-  const unsigned char kCEAExtensionTag = '\x02';
-  const unsigned char kExpectedExtensionRevision = '\x03';
-  const unsigned char kExtendedTag = 7;
-  const unsigned char kExtendedVideoCapabilityTag = 0;
-  const unsigned int kPTOverscan = 4;
-  const unsigned int kITOverscan = 2;
-  const unsigned int kCEOverscan = 0;
+  const size_t kExtensionBaseOffset = 128;
+  const size_t kExtensionSize = 128;
+  const size_t kNumExtensionsOffset = 126;
+  const size_t kDataBlockOffset = 4;
+  const uint8_t kCEAExtensionTag = '\x02';
+  const uint8_t kExpectedExtensionRevision = '\x03';
+  const uint8_t kExtendedTag = 7;
+  const uint8_t kExtendedVideoCapabilityTag = 0;
+  const uint8_t kPTOverscanFlagPosition = 4;
+  const uint8_t kITOverscanFlagPosition = 2;
+  const uint8_t kCEOverscanFlagPosition = 0;
 
   if (edid.size() <= kNumExtensionsOffset)
     return false;
 
-  unsigned char num_extensions = edid[kNumExtensionsOffset];
+  const uint8_t num_extensions = edid[kNumExtensionsOffset];
 
   for (size_t i = 0; i < num_extensions; ++i) {
     // Skip parsing the whole extension if size is not enough.
-    if (edid.size() < kExtensionBase + (i + 1) * kExtensionSize)
+    if (edid.size() < kExtensionBaseOffset + (i + 1) * kExtensionSize)
       break;
 
-    size_t extension_offset = kExtensionBase + i * kExtensionSize;
-    unsigned char tag = edid[extension_offset];
-    unsigned char revision = edid[extension_offset + 1];
-    if (tag != kCEAExtensionTag || revision != kExpectedExtensionRevision)
+    const size_t extension_offset = kExtensionBaseOffset + i * kExtensionSize;
+    const uint8_t cea_tag = edid[extension_offset];
+    const uint8_t revision = edid[extension_offset + 1];
+    if (cea_tag != kCEAExtensionTag || revision != kExpectedExtensionRevision)
       continue;
 
-    unsigned char timing_descriptors_start = std::min(
+    const uint8_t timing_descriptors_start = std::min(
         edid[extension_offset + 2], static_cast<unsigned char>(kExtensionSize));
 
     for (size_t data_offset = extension_offset + kDataBlockOffset;
@@ -232,8 +231,8 @@ bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
       // - byte 1 remaining bits: the length of data block.
       // - byte 2: the extended tag.  '0' for video capability.
       // - byte 3: the capability.
-      unsigned char tag = edid[data_offset] >> 5;
-      unsigned char payload_length = edid[data_offset] & 0x1f;
+      const uint8_t tag = edid[data_offset] >> 5;
+      const uint8_t payload_length = edid[data_offset] & 0x1f;
       if (data_offset + payload_length + 1 > edid.size())
         break;
 
@@ -244,14 +243,10 @@ bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
       }
 
       // The difference between preferred, IT, and CE video formats
-      // doesn't matter. Sets |flag| to true if any of these flags are true.
-      if ((edid[data_offset + 2] & (1 << kPTOverscan)) ||
-          (edid[data_offset + 2] & (1 << kITOverscan)) ||
-          (edid[data_offset + 2] & (1 << kCEOverscan))) {
-        *flag = true;
-      } else {
-        *flag = false;
-      }
+      // doesn't matter. Set |flag| to true if any of these flags are true.
+      *flag = (edid[data_offset + 2] & (1 << kPTOverscanFlagPosition)) ||
+              (edid[data_offset + 2] & (1 << kITOverscanFlagPosition)) ||
+              (edid[data_offset + 2] & (1 << kCEOverscanFlagPosition));
       return true;
     }
   }
@@ -267,32 +262,32 @@ bool ParseChromaticityCoordinates(const std::vector<uint8_t>& edid,
   // [1] http://en.wikipedia.org/wiki/Extended_display_identification_data
   // [2] "VESA Enhanced EDID Standard " Release A, Revision 1, Feb 2000, Sec 3.7
   //  "Phosphor or Filter Chromaticity: 10 bytes"
-  const unsigned int kChromaticityOffset = 25;
+  const size_t kChromaticityOffset = 25;
   const unsigned int kChromaticityLength = 10;
 
-  const unsigned int kRedGreenLsbOffset = 25;
-  const unsigned int kRedxLsbPosition = 6;
-  const unsigned int kRedyLsbPosition = 4;
-  const unsigned int kGreenxLsbPosition = 3;
-  const unsigned int kGreenyLsbPosition = 0;
+  const size_t kRedGreenLsbOffset = 25;
+  const uint8_t kRedxLsbPosition = 6;
+  const uint8_t kRedyLsbPosition = 4;
+  const uint8_t kGreenxLsbPosition = 3;
+  const uint8_t kGreenyLsbPosition = 0;
 
-  const unsigned int kBlueWhiteLsbOffset = 26;
-  const unsigned int kBluexLsbPosition = 6;
-  const unsigned int kBlueyLsbPosition = 4;
-  const unsigned int kWhitexLsbPosition = 3;
-  const unsigned int kWhiteyLsbPosition = 0;
+  const size_t kBlueWhiteLsbOffset = 26;
+  const uint8_t kBluexLsbPosition = 6;
+  const uint8_t kBlueyLsbPosition = 4;
+  const uint8_t kWhitexLsbPosition = 3;
+  const uint8_t kWhiteyLsbPosition = 0;
 
   // All LSBits parts are 2 bits wide.
-  const unsigned int kLsbMask = 0x3;
+  const uint8_t kLsbMask = 0x3;
 
-  const unsigned int kRedxMsbOffset = 27;
-  const unsigned int kRedyMsbOffset = 28;
-  const unsigned int kGreenxMsbOffset = 29;
-  const unsigned int kGreenyMsbOffset = 30;
-  const unsigned int kBluexMsbOffset = 31;
-  const unsigned int kBlueyMsbOffset = 32;
-  const unsigned int kWhitexMsbOffset = 33;
-  const unsigned int kWhiteyMsbOffset = 34;
+  const size_t kRedxMsbOffset = 27;
+  const size_t kRedyMsbOffset = 28;
+  const size_t kGreenxMsbOffset = 29;
+  const size_t kGreenyMsbOffset = 30;
+  const size_t kBluexMsbOffset = 31;
+  const size_t kBlueyMsbOffset = 32;
+  const size_t kWhitexMsbOffset = 33;
+  const size_t kWhiteyMsbOffset = 34;
 
   static_assert(
       kChromaticityOffset + kChromaticityLength == kWhiteyMsbOffset + 1,
