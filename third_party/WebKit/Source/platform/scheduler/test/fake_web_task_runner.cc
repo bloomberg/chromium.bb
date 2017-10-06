@@ -126,5 +126,11 @@ FakeWebTaskRunner::TakePendingTasksForTesting() {
   return std::move(data_->task_queue_);
 }
 
+bool FakeWebTaskRunner::PostDelayedTask(const base::Location& location,
+                                        base::OnceClosure task,
+                                        base::TimeDelta delay) {
+  return base_task_runner_->PostDelayedTask(location, std::move(task), delay);
+}
+
 }  // namespace scheduler
 }  // namespace blink

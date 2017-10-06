@@ -53,5 +53,12 @@ WebTaskRunnerImpl::ToSingleThreadTaskRunner() {
   return task_queue_.get();
 }
 
+bool WebTaskRunnerImpl::PostDelayedTask(const base::Location& location,
+                                        base::OnceClosure task,
+                                        base::TimeDelta delay) {
+  return task_queue_->PostTaskWithMetadata(
+      TaskQueue::PostedTask(std::move(task), location, delay, true));
+}
+
 }  // namespace scheduler
 }  // namespace blink

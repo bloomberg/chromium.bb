@@ -117,28 +117,28 @@ TaskHandle::TaskHandle(RefPtr<Runner> runner) : runner_(std::move(runner)) {
 // crbug.com/679915 for more details.
 void WebTaskRunner::PostTask(const WebTraceLocation& location,
                              CrossThreadClosure task) {
-  ToSingleThreadTaskRunner()->PostTask(
-      location, base::BindOnce(&RunCrossThreadClosure, std::move(task)));
+  PostDelayedTask(location,
+                  base::BindOnce(&RunCrossThreadClosure, std::move(task)),
+                  base::TimeDelta());
 }
 
 void WebTaskRunner::PostDelayedTask(const WebTraceLocation& location,
                                     CrossThreadClosure task,
                                     TimeDelta delay) {
-  ToSingleThreadTaskRunner()->PostDelayedTask(
+  PostDelayedTask(
       location, base::BindOnce(&RunCrossThreadClosure, std::move(task)), delay);
 }
 
 void WebTaskRunner::PostTask(const WebTraceLocation& location,
                              WTF::Closure task) {
-  ToSingleThreadTaskRunner()->PostTask(location,
-                                       ConvertToBaseCallback(std::move(task)));
+  PostDelayedTask(location, ConvertToBaseCallback(std::move(task)),
+                  base::TimeDelta());
 }
 
 void WebTaskRunner::PostDelayedTask(const WebTraceLocation& location,
                                     WTF::Closure task,
                                     TimeDelta delay) {
-  ToSingleThreadTaskRunner()->PostDelayedTask(
-      location, ConvertToBaseCallback(std::move(task)), delay);
+  PostDelayedTask(location, ConvertToBaseCallback(std::move(task)), delay);
 }
 
 TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,

@@ -31,6 +31,11 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
 
   TaskQueue* GetTaskQueue() const { return task_queue_.get(); }
 
+ protected:
+  bool PostDelayedTask(const base::Location&,
+                       base::OnceClosure,
+                       base::TimeDelta) override;
+
  private:
   explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);
   ~WebTaskRunnerImpl() override;
