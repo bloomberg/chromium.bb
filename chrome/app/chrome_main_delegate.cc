@@ -190,9 +190,6 @@ const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
 
 namespace {
 
-base::LazyInstance<ChromeMainDelegate::ServiceCatalogFactory>::Leaky
-    g_service_catalog_factory = LAZY_INSTANCE_INITIALIZER;
-
 #if defined(OS_WIN)
 // Early versions of Chrome incorrectly registered a chromehtml: URL handler,
 // which gives us nothing but trouble. Avoid launching chrome this way since
@@ -511,12 +508,6 @@ ChromeMainDelegate::ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks) {
 }
 
 ChromeMainDelegate::~ChromeMainDelegate() {
-}
-
-// static
-void ChromeMainDelegate::InstallServiceCatalogFactory(
-    ServiceCatalogFactory factory) {
-  g_service_catalog_factory.Get() = std::move(factory);
 }
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {

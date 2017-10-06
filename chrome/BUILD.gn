@@ -73,22 +73,6 @@ if (is_win) {
   }
 }
 
-# Dependencies which must accompany ChromeMainDelegate when embedded
-# Mash services are enabled.
-if (enable_package_mash_services) {
-  embedded_mash_service_deps = [
-    "//chrome/app/mash:chrome_mash_catalog",
-    "//chrome/app/mash:embedded_services",
-    "//mash/common",
-    "//mash/quick_launch/public/interfaces:constants",
-    "//services/ui/public/interfaces:constants",
-  ]
-
-  if (is_chromeos) {
-    embedded_mash_service_deps += [ "//chrome/app/mash:chrome_mus_catalog" ]
-  }
-}
-
 # This target exists above chrome and it's main components in the dependency
 # tree as a central place to put assert_no_deps annotations. Since this depends
 # on Chrome and the main DLLs it uses, it will transitively assert that those
@@ -296,10 +280,6 @@ if (!is_android && !is_mac) {
             "//build/config/linux:xext",
           ]
         }
-
-        if (enable_package_mash_services) {
-          deps += embedded_mash_service_deps
-        }
       }
 
       # These files are used by the installer so we need a public dep.
@@ -332,24 +312,6 @@ if (!is_android && !is_mac) {
     if (!is_win && use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
-    }
-  }
-
-  if (enable_package_mash_services) {
-    chrome_binary("chrome_test") {
-      # Note that the output name needs to end with "chrome", because that's what
-      # telemetry test-runner expects.
-      output_name = "test_chrome"
-      sources = []
-      deps = [
-        "//chrome/app/mash:chrome_test_catalog",
-      ]
-      data = [
-        "$root_out_dir/chrome_200_percent.pak",
-      ]
-      if (!is_win && use_aura) {
-        sources += [ "app/chrome_test_exe_main_aura.cc" ]
-      }
     }
   }
 }  # !is_android && !is_mac
@@ -451,10 +413,6 @@ if (is_win) {
         ":child_dependencies",
         "//content/public/app:both",
       ]
-    }
-
-    if (enable_package_mash_services) {
-      deps += embedded_mash_service_deps
     }
 
     if (is_clang && is_official_build && !use_lld) {
@@ -1199,10 +1157,6 @@ if (is_win) {
       "-Wl," + rebase_path("app/framework.order", root_build_dir),
       "-ObjC",
     ]
-
-    if (enable_package_mash_services) {
-      deps += embedded_mash_service_deps
-    }
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
   }

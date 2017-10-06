@@ -1019,13 +1019,6 @@ if (!is_android) {
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
     ]
-
-    if (enable_package_mash_services) {
-      deps += [ "//chrome:chrome_test" ]
-      data_deps = [
-        "//chrome:chrome_test",
-      ]
-    }
   }
 
   group("telemetry_gpu_unittests_run") {
@@ -1077,12 +1070,6 @@ static_library("browser_tests_runner") {
       "base/browser_tests_main_chromeos.cc",
       "base/mash_browser_tests_main.cc",
       "base/mash_browser_tests_main.h",
-    ]
-
-    deps += [
-      "//chrome/app/mash:embedded_services",
-      "//mash/session/public/interfaces:constants",
-      "//services/service_manager/background:lib",
     ]
   } else {
     sources += [ "base/browser_tests_main.cc" ]
@@ -1149,6 +1136,8 @@ test("browser_tests") {
 
     data_deps += [
       # Needed for --run-in-mash, which triggers launching chrome.
+      # TODO(sky): this seems wrong, figure a better way to get resources.
+      "//ash/mus:resources",
       "//chrome",
       "//ui/keyboard:resources",
     ]
@@ -2966,13 +2955,6 @@ group("telemetry_perf_unittests") {
     # For smoke testing run_multiple_telemetry_benchmarks_as_googletest
     "//testing/scripts/run_multiple_telemetry_benchmarks_as_googletest.py",
   ]
-
-  if (enable_package_mash_services) {
-    deps += [ "//chrome:chrome_test" ]
-    data_deps = [
-      "//chrome:chrome_test",
-    ]
-  }
 }
 
 group("telemetry_perf_tests") {

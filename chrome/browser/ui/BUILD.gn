@@ -3353,6 +3353,7 @@ split_static_library("ui") {
         "ash/launcher/launcher_arc_app_updater.h",
         "views/arc_app_dialog_view.cc",
       ]
+      deps += [ "//mash/common" ]
     }
   } else {
     sources += [
