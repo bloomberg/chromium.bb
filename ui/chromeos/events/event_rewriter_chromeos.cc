@@ -20,6 +20,7 @@
 #include "device/udev_linux/scoped_udev.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event.h"
@@ -64,45 +65,45 @@ const struct ModifierRemapping {
 } kModifierRemappings[] = {
     {// kModifierRemappingCtrl references this entry by index.
      ui::EF_CONTROL_DOWN,
-     ::chromeos::input_method::kControlKey,
+     ui::chromeos::ModifierKey::kControlKey,
      prefs::kLanguageRemapControlKeyTo,
      {ui::EF_CONTROL_DOWN, ui::DomCode::CONTROL_LEFT, ui::DomKey::CONTROL,
       ui::VKEY_CONTROL}},
     {// kModifierRemappingNeoMod3 references this entry by index.
      ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN,
-     ::chromeos::input_method::kNumModifierKeys,
+     ui::chromeos::ModifierKey::kNumModifierKeys,
      nullptr,
      {ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN, ui::DomCode::CAPS_LOCK,
       ui::DomKey::ALT_GRAPH, ui::VKEY_ALTGR}},
     {ui::EF_COMMAND_DOWN,
-     ::chromeos::input_method::kSearchKey,
+     ui::chromeos::ModifierKey::kSearchKey,
      prefs::kLanguageRemapSearchKeyTo,
      {ui::EF_COMMAND_DOWN, ui::DomCode::META_LEFT, ui::DomKey::META,
       ui::VKEY_LWIN}},
     {ui::EF_ALT_DOWN,
-     ::chromeos::input_method::kAltKey,
+     ui::chromeos::ModifierKey::kAltKey,
      prefs::kLanguageRemapAltKeyTo,
      {ui::EF_ALT_DOWN, ui::DomCode::ALT_LEFT, ui::DomKey::ALT, ui::VKEY_MENU}},
     {ui::EF_NONE,
-     ::chromeos::input_method::kVoidKey,
+     ui::chromeos::ModifierKey::kVoidKey,
      nullptr,
      {ui::EF_NONE, ui::DomCode::NONE, ui::DomKey::NONE, ui::VKEY_UNKNOWN}},
     {ui::EF_MOD3_DOWN,
-     ::chromeos::input_method::kCapsLockKey,
+     ui::chromeos::ModifierKey::kCapsLockKey,
      prefs::kLanguageRemapCapsLockKeyTo,
      {ui::EF_MOD3_DOWN, ui::DomCode::CAPS_LOCK, ui::DomKey::CAPS_LOCK,
       ui::VKEY_CAPITAL}},
     {ui::EF_NONE,
-     ::chromeos::input_method::kEscapeKey,
+     ui::chromeos::ModifierKey::kEscapeKey,
      prefs::kLanguageRemapEscapeKeyTo,
      {ui::EF_NONE, ui::DomCode::ESCAPE, ui::DomKey::ESCAPE, ui::VKEY_ESCAPE}},
     {ui::EF_NONE,
-     ::chromeos::input_method::kBackspaceKey,
+     ui::chromeos::ModifierKey::kBackspaceKey,
      prefs::kLanguageRemapBackspaceKeyTo,
      {ui::EF_NONE, ui::DomCode::BACKSPACE, ui::DomKey::BACKSPACE,
       ui::VKEY_BACK}},
     {ui::EF_NONE,
-     ::chromeos::input_method::kNumModifierKeys,
+     ui::chromeos::ModifierKey::kNumModifierKeys,
      prefs::kLanguageRemapDiamondKeyTo,
      {ui::EF_NONE, ui::DomCode::F15, ui::DomKey::F15, ui::VKEY_F15}}};
 
@@ -766,7 +767,7 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
     state->key = remapped_key->result.key;
     incoming.flags |= characteristic_flag;
     characteristic_flag = remapped_key->flag;
-    if (remapped_key->remap_to == ::chromeos::input_method::kCapsLockKey)
+    if (remapped_key->remap_to == ui::chromeos::ModifierKey::kCapsLockKey)
       characteristic_flag |= ui::EF_CAPS_LOCK_ON;
     state->code = RelocateModifier(
         state->code, ui::KeycodeConverter::DomCodeToLocation(incoming.code));
