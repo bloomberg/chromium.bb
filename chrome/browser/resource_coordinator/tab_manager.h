@@ -286,11 +286,11 @@ class TabManager : public TabStripModelObserver,
   // The initial value was chosen because most of users activate backgrounded
   // tabs within 30 minutes. (c.f. Tabs.StateTransfer.Time_Inactive_Active)
   static constexpr base::TimeDelta kDefaultMinTimeToPurge =
-      base::TimeDelta::FromMinutes(30);
+      base::TimeDelta::FromMinutes(1);
 
   // The min/max time to purge ratio. The max time to purge is set to be
   // min time to purge times this value.
-  const int kDefaultMinMaxTimeToPurgeRatio = 2;
+  const int kDefaultMinMaxTimeToPurgeRatio = 4;
 
   // Finds TabStripModel which has a WebContents whose id is the given
   // web_contents_id, and returns the WebContents index and the TabStripModel.
