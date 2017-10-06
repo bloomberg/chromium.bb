@@ -581,6 +581,8 @@ public class TabPersistentStore extends TabPersister {
         int restoredIndex = 0;
         if (tabToRestore.fromMerge) {
             // Put any tabs being merged into this list at the end.
+            // TODO(ltian): need to figure out a way to add merged tabs before Browser Actions tabs
+            // when tab restore and Browser Actions tab merging happen at the same time.
             restoredIndex = mTabModelSelector.getModel(isIncognito).getCount();
         } else if (restoredTabs.size() > 0
                 && tabToRestore.originalIndex > restoredTabs.keyAt(restoredTabs.size() - 1)) {

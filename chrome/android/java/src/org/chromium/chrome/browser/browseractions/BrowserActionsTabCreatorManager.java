@@ -56,7 +56,11 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
 
         @Override
         public Tab createFrozenTab(TabState state, int id, int index) {
-            Tab tab = Tab.createFrozenTabFromState(id, false, null, Tab.INVALID_TAB_ID, state);
+            Context context = ContextUtils.getApplicationContext();
+            WindowAndroid windowAndroid = new WindowAndroid(context);
+            Tab tab = Tab.createFrozenTabFromState(
+                    id, false, windowAndroid, Tab.INVALID_TAB_ID, state);
+            tab.initialize(null, null, new TabDelegateFactory(), true, false);
             mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
             return tab;
         }

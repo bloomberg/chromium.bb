@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -287,7 +288,6 @@ public class BrowserActionActivityTest {
         mOnBrowserActionsMenuShownCallback.waitForCallback(1);
         mOnFinishNativeInitializationCallback.waitForCallback(1);
         Assert.assertEquals(2, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
-
         openTabInBackground(activity2);
         // Notification title should be shown for multiple tabs.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -350,7 +350,22 @@ public class BrowserActionActivityTest {
         mDidAddTabCallback.waitForCallback(0);
         // New tab should be added to the BrowserActionTabModelSelector.
         Assert.assertEquals(1, selector.getCurrentModel().getCount());
-        Assert.assertEquals(mTestPage, selector.getCurrentModel().getTabAt(0).getUrl());
+        Tab newTab = selector.getCurrentModel().getTabAt(0);
+        Assert.assertEquals(mTestPage, newTab.getUrl());
+
+        // Browser Actions tabs should be merged into Chrome tab model when Chrome starts.
+        Intent notificationIntent = BrowserActionsService.getNotificationIntent();
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mActivityTestRule.startActivityCompletely(notificationIntent);
+        TabModel currentModel =
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return currentModel.getCount() == 1;
+            }
+        });
+        Assert.assertEquals(newTab.getId(), currentModel.getTabAt(0).getId());
     }
 
     @Test
@@ -392,8 +407,34 @@ public class BrowserActionActivityTest {
         // BrowserActionTabModelSelector should have two tabs and tabs should be added sequentially.
         mDidAddTabCallback.waitForCallback(1);
         Assert.assertEquals(2, selector.getCurrentModel().getCount());
-        Assert.assertEquals(mTestPage, selector.getCurrentModel().getTabAt(0).getUrl());
-        Assert.assertEquals(mTestPage2, selector.getCurrentModel().getTabAt(1).getUrl());
+        Tab newTab1 = selector.getCurrentModel().getTabAt(0);
+        Tab newTab2 = selector.getCurrentModel().getTabAt(1);
+        Assert.assertEquals(mTestPage, newTab1.getUrl());
+        Assert.assertEquals(mTestPage2, newTab2.getUrl());
+
+        // Browser Actions tabs should be merged into Chrome tab model when Chrome starts.
+        Intent notificationIntent = BrowserActionsService.getNotificationIntent();
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mActivityTestRule.startActivityCompletely(notificationIntent);
+        TabModel currentModel =
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return currentModel.getCount() == 2;
+            }
+        });
+        Assert.assertEquals(newTab1.getId(), currentModel.getTabAt(0).getId());
+        Assert.assertEquals(newTab2.getId(), currentModel.getTabAt(1).getId());
+        Assert.assertEquals(1, currentModel.index());
+
+        // Tab switcher should be shown on phones.
+        if (DeviceFormFactor.isTablet()) {
+            Assert.assertFalse(
+                    mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        } else {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
     }
 
     private void openTabInBackground(BrowserActionActivity activity) {
