@@ -33,7 +33,9 @@ namespace {
 int gTimeDeltaInDaysForTesting = 0;
 
 InstallableParams ParamsToGetManifest() {
-  return InstallableParams();
+  InstallableParams params;
+  params.check_eligibility = true;
+  return params;
 }
 
 }  // anonymous namespace
@@ -58,8 +60,6 @@ void AppBannerManager::SetTotalEngagementToTrigger(double engagement) {
 
 void AppBannerManager::RequestAppBanner(const GURL& validated_url,
                                         bool is_debug_mode) {
-  content::WebContents* contents = web_contents();
-
   // The only time we should start the pipeline while it is already running is
   // if it's been triggered from devtools.
   if (state_ != State::INACTIVE) {
@@ -74,22 +74,6 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   // skew from testing).
   DCHECK(!need_to_log_status_);
   need_to_log_status_ = !IsDebugMode();
-
-  // Exit if this is an incognito window, non-main frame, or insecure context.
-  InstallableStatusCode code = NO_ERROR_DETECTED;
-  if (Profile::FromBrowserContext(contents->GetBrowserContext())
-          ->IsOffTheRecord()) {
-    code = IN_INCOGNITO;
-  } else if (contents->GetMainFrame()->GetParent()) {
-    code = NOT_IN_MAIN_FRAME;
-  } else if (!InstallableManager::IsContentSecure(contents)) {
-    code = NOT_FROM_SECURE_ORIGIN;
-  }
-
-  if (code != NO_ERROR_DETECTED) {
-    StopWithCode(code);
-    return;
-  }
 
   if (validated_url_.is_empty())
     validated_url_ = validated_url;

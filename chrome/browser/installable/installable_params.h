@@ -6,9 +6,16 @@
 #define CHROME_BROWSER_INSTALLABLE_INSTALLABLE_PARAMS_H_
 
 // This struct specifies the work to be done by the InstallableManager.
-// Data is cached and fetched in the order specified in this struct. A web app
-// manifest will always be fetched first.
+// Data is cached and fetched in the order specified in this struct.
+// If the eligibility check fails, processing halts immediately. Otherwise, a
+// web app manifest is fetched before the remaining items.
 struct InstallableParams {
+  // Check whether the current WebContents is eligible to be installed, i.e it:
+  //  - is served over HTTPS
+  //  - is a top-level frame
+  //  - is not in an incognito profile.
+  bool check_eligibility = false;
+
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the primary icon size parameters.
   bool fetch_valid_primary_icon = false;

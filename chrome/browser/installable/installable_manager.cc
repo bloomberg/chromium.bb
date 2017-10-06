@@ -18,6 +18,7 @@
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
@@ -118,6 +119,7 @@ InstallableManager::IconProperty& InstallableManager::IconProperty::operator=(
 InstallableManager::InstallableManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       metrics_(base::MakeUnique<InstallableMetrics>()),
+      eligibility_(base::MakeUnique<EligiblityProperty>()),
       manifest_(base::MakeUnique<ManifestProperty>()),
       valid_manifest_(base::MakeUnique<ValidManifestProperty>()),
       worker_(base::MakeUnique<ServiceWorkerProperty>()),
@@ -224,6 +226,9 @@ void InstallableManager::SetIconFetched(const IconPurpose purpose) {
 
 InstallableStatusCode InstallableManager::GetErrorCode(
     const InstallableParams& params) {
+  if (params.check_eligibility && eligibility_->error != NO_ERROR_DETECTED)
+    return eligibility_->error;
+
   if (manifest_->error != NO_ERROR_DETECTED)
     return manifest_->error;
 
@@ -251,6 +256,10 @@ InstallableStatusCode InstallableManager::GetErrorCode(
   }
 
   return NO_ERROR_DETECTED;
+}
+
+InstallableStatusCode InstallableManager::eligibility_error() const {
+  return eligibility_->error;
 }
 
 InstallableStatusCode InstallableManager::manifest_error() const {
@@ -294,7 +303,8 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
   // Returns true if for all resources:
   //  a. the params did not request it, OR
   //  b. the resource has been fetched/checked.
-  return manifest_->fetched &&
+  return (!params.check_eligibility || eligibility_->fetched) &&
+         manifest_->fetched &&
          (!params.check_installable ||
           (valid_manifest_->fetched && worker_->fetched)) &&
          (!params.fetch_valid_primary_icon ||
@@ -388,7 +398,9 @@ void InstallableManager::WorkOnTask() {
     return;
   }
 
-  if (!manifest_->fetched) {
+  if (params.check_eligibility && !eligibility_->fetched) {
+    CheckEligiblity();
+  } else if (!manifest_->fetched) {
     FetchManifest();
   } else if (params.fetch_valid_primary_icon &&
              !IsIconFetched(IconPurpose::ANY)) {
@@ -405,6 +417,22 @@ void InstallableManager::WorkOnTask() {
   } else {
     NOTREACHED();
   }
+}
+
+void InstallableManager::CheckEligiblity() {
+  // Fail if this is an incognito window, non-main frame, or insecure context.
+  content::WebContents* web_contents = GetWebContents();
+  if (Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          ->IsOffTheRecord()) {
+    eligibility_->error = IN_INCOGNITO;
+  } else if (web_contents->GetMainFrame()->GetParent()) {
+    eligibility_->error = NOT_IN_MAIN_FRAME;
+  } else if (!IsContentSecure(web_contents)) {
+    eligibility_->error = NOT_FROM_SECURE_ORIGIN;
+  }
+
+  eligibility_->fetched = true;
+  WorkOnTask();
 }
 
 void InstallableManager::FetchManifest() {
