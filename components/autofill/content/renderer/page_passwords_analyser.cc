@@ -23,6 +23,7 @@ namespace autofill {
 
 namespace {
 
+const char kDocumentationUrl[] = "https://goo.gl/9p2vKq";
 const char* kTypeAttributes[] = {"text", "email", "tel", "password"};
 const char* kTypeTextAttributes[] = {"text", "email", "tel"};
 char kTextFieldSignature = 'T';
@@ -76,6 +77,17 @@ class ConsoleLogger : public PagePasswordsAnalyserLogger {
   // the course of a single analysis, for ordering purposes.
   std::map<ConsoleLevel, std::vector<Entry>> node_buffer_;
 };
+
+// Produce a relevant link to developer documentation regarding the warning or
+// error. If no particular reference is given, the default URL will be provided.
+// Otherwise, the URL will point to the specified anchor.
+std::string LinkDocumentation(const std::string& message,
+                              const char* reference = nullptr) {
+  std::string documented = message + " (More info: " + kDocumentationUrl + ")";
+  if (reference)
+    return documented + std::string("#") + reference;
+  return documented;
+}
 
 // A simple wrapper that provides some extra data about nodes
 // during the DOM traversal (e.g. whether it lies within a <form>
@@ -251,8 +263,9 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
       continue;
     // Any password fields inside <form> elements will have been skipped,
     // leaving just those without associated forms.
-    logger->Send("Password field is not contained in a form:",
-                 PagePasswordsAnalyserLogger::kVerbose, password_inputs[i]);
+    logger->Send(
+        LinkDocumentation("Password field is not contained in a form:"),
+        PagePasswordsAnalyserLogger::kVerbose, password_inputs[i]);
   }
   // Check for input fields that are not contained inside forms, to make sure
   // their id attributes don't conflict with other fields also not contained
@@ -275,12 +288,14 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
     if (nodes.size() <= 1)
       continue;
     if (!id_attr.empty()) {
-      logger->Send(
-          base::StringPrintf("Found %zu elements with non-unique id #%s:",
-                             nodes.size(), id_attr.c_str()),
-          PagePasswordsAnalyserLogger::kError, nodes);
+      logger->Send(LinkDocumentation(base::StringPrintf(
+                       "Found %zu elements with non-unique id #%s:",
+                       nodes.size(), id_attr.c_str())),
+                   PagePasswordsAnalyserLogger::kError, nodes);
     } else {
-      logger->Send("The id attribute must be unique and non-empty:",
+      logger->Send(LinkDocumentation(base::StringPrintf(
+                       "Found %zu elements with non-unique id #%s:",
+                       nodes.size(), id_attr.c_str())),
                    PagePasswordsAnalyserLogger::kError, nodes);
     }
   }
@@ -398,8 +413,8 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
       // Manager associates the correct account name with the password (for
       // example in password reset forms).
       logger->Send(
-          "Password forms should have (optionally hidden) "
-          "username fields for accessibility:",
+          LinkDocumentation("Password forms should have (optionally hidden) "
+                            "username fields for accessibility:"),
           PagePasswordsAnalyserLogger::kVerbose, form);
     } else {
       // By default (if the other heuristics fail), the first text field
@@ -414,9 +429,10 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
 
   if (FormIsTooComplex(signature)) {
     logger->Send(
-        "Multiple forms should be contained in their own "
-        "form elements; break up complex forms into ones that represent a "
-        "single action:",
+        LinkDocumentation(
+            "Multiple forms should be contained in their own "
+            "form elements; break up complex forms into ones that represent a "
+            "single action:"),
         PagePasswordsAnalyserLogger::kVerbose, form);
     return;
   }
@@ -445,11 +461,10 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
   for (size_t i = 0; i < inputs.size(); ++i) {
     if (autocomplete_suggestions.count(i) &&
         !inputs[i].HasAttribute("autocomplete"))
-      logger->Send(
-          "Input elements should have autocomplete "
-          "attributes (suggested: \"" +
-              autocomplete_suggestions[i] + "\"):",
-          PagePasswordsAnalyserLogger::kVerbose, inputs[i]);
+      logger->Send(LinkDocumentation("Input elements should have autocomplete "
+                                     "attributes (suggested: \"" +
+                                     autocomplete_suggestions[i] + "\"):"),
+                   PagePasswordsAnalyserLogger::kVerbose, inputs[i]);
   }
 }
 
@@ -484,8 +499,8 @@ void PagePasswordsAnalyser::AnalyseDocumentDOM(
 }
 
 void PagePasswordsAnalyser::AnalyseDocumentDOM(blink::WebLocalFrame* frame) {
-  ConsoleLogger console_logger(frame);
-  AnalyseDocumentDOM(frame, &console_logger);
+  ConsoleLogger logger(frame);
+  AnalyseDocumentDOM(frame, &logger);
 }
 
 }  // namespace autofill

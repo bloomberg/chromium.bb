@@ -31,6 +31,8 @@ class MockPagePasswordsAnalyserLogger : public PagePasswordsAnalyserLogger {
   MOCK_METHOD0(Flush, void());
 };
 
+const char kExpectedDocumentationLink[] = " (More info: https://goo.gl/9p2vKq)";
+
 const char kPasswordFieldNotInForm[] =
     "<input type='password' autocomplete='new-password'>";
 
@@ -127,9 +129,11 @@ class PagePasswordsAnalyserTest : public ChromeRenderViewTest {
               const ConsoleLevel level,
               const std::vector<size_t>& element_indices) {
     std::vector<blink::WebNode> nodes;
+    std::string documented = message + kExpectedDocumentationLink;
     for (size_t index : element_indices)
       nodes.push_back(elements_[index]);
-    EXPECT_CALL(mock_logger, Send(message, level, nodes)).RetiresOnSaturation();
+    EXPECT_CALL(mock_logger, Send(documented, level, nodes))
+        .RetiresOnSaturation();
   }
 
   void RunTestCase() {
