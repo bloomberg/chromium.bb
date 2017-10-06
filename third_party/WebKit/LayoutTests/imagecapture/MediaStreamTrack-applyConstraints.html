@@ -54,7 +54,9 @@ promise_test(async function() {
 
     let appliedConstraints;
     try {
-      appliedConstraints = await videoTrack.applyConstraints(constraints);
+      let promise = videoTrack.applyConstraints(constraints);
+      GCController.collect();
+      appliedConstraints = await promise;
     } catch (error) {
       assert_unreached('applyConstraints(): ' + error.message);
     }
