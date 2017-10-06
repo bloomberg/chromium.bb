@@ -29,8 +29,10 @@
 #include "remoting/protocol/webrtc_audio_module.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
-#include "third_party/webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "third_party/webrtc/api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "third_party/webrtc/api/audio_codecs/audio_decoder_factory_template.h"
+#include "third_party/webrtc/api/audio_codecs/audio_encoder_factory_template.h"
+#include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
+#include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
 
 using buzz::QName;
@@ -181,9 +183,9 @@ class WebrtcTransport::PeerConnectionWrapper
 
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
         worker_thread, rtc::Thread::Current(), audio_module_.get(),
-        webrtc::CreateBuiltinAudioEncoderFactory(),
-        webrtc::CreateBuiltinAudioDecoderFactory(), encoder_factory.release(),
-        nullptr);
+        webrtc::CreateAudioEncoderFactory<webrtc::AudioEncoderOpus>(),
+        webrtc::CreateAudioDecoderFactory<webrtc::AudioDecoderOpus>(),
+        encoder_factory.release(), nullptr);
 
     webrtc::FakeConstraints constraints;
     constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
