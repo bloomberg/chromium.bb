@@ -197,8 +197,11 @@ class PreviewsIODataTest : public testing::Test {
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest() const {
-    return context_.CreateRequest(GURL("http://example.com"),
-                                  net::DEFAULT_PRIORITY, nullptr,
+    return CreateRequestWithURL(GURL("http://example.com"));
+  }
+
+  std::unique_ptr<net::URLRequest> CreateRequestWithURL(const GURL& url) const {
+    return context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                   TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
@@ -427,6 +430,21 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowed) {
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+  variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(PreviewsIODataTest, MissingHostDisallowed) {
+  InitializeUIService();
+  CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
+                             {{"max_allowed_effective_connection_type", "2G"}});
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(GURL("file:///sdcard")), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi(),
+      params::GetBlackListedHostsForClientLoFiFieldTrial()));
   variations::testing::ClearAllVariationParams();
 }
 

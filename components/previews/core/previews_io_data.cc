@@ -131,6 +131,11 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     PreviewsType type,
     net::EffectiveConnectionType effective_connection_type_threshold,
     const std::vector<std::string>& host_blacklist_from_server) const {
+  if (!request.url().has_host()) {
+    // Don't capture UMA on this case, as it is not important and can happen
+    // when navigating to files on disk, etc.
+    return false;
+  }
   if (is_enabled_callback_.is_null() || !previews_black_list_) {
     LogPreviewsEligibilityReason(
         PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE, type);
