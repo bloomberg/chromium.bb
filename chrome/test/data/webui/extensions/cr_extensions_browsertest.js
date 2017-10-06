@@ -159,6 +159,11 @@ TEST_F('CrExtensionsItemsTest', 'RemoveButton', function() {
 
 var CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
   /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/detail_view.html';
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       'extension_detail_view_test.js',
@@ -189,6 +194,11 @@ TEST_F(
 // Extension Item List Tests
 
 var CrExtensionsItemListTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/item_list.html';
+  }
+
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
@@ -460,6 +470,11 @@ TEST_F('CrExtensionsErrorPageTest', 'ErrorSelection', function() {
 // Extension Code Section Tests
 
 var CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/code_section.html';
+  }
+
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([

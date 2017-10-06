@@ -23,10 +23,6 @@ cr.define('extension_code_section_tests', function() {
 
     var couldNotDisplayCode = 'No code here';
 
-    suiteSetup(function() {
-      return PolymerTest.importHtml('chrome://extensions/code_section.html');
-    });
-
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();

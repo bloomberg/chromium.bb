@@ -58,10 +58,6 @@ cr.define('extension_error_page_tests', function() {
       fromIncognito: false,
     };
 
-    suiteSetup(function() {
-      return PolymerTest.importHtml('chrome://extensions/error_page.html');
-    });
-
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();

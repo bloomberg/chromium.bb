@@ -16,10 +16,6 @@ cr.define('extension_item_list_tests', function() {
     var itemList;
     var testVisible;
 
-    suiteSetup(function() {
-      return PolymerTest.importHtml('chrome://extensions/item-list.html');
-    });
-
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
