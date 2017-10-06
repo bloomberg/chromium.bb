@@ -587,6 +587,17 @@ class TestExpectationsModel(object):
 
         self._shorten_filename = shorten_filename or (lambda x: x)
 
+    def all_lines(self):
+        return sorted(self._test_to_expectation_line.values(),
+                      cmp=self._compare_lines)
+
+    def _compare_lines(self, line_a, line_b):
+        if line_a.name == line_b.name:
+            return 0
+        if line_a.name < line_b.name:
+            return -1
+        return 1
+
     def _merge_test_map(self, self_map, other_map):
         for test in other_map:
             new_expectations = set(other_map[test])
