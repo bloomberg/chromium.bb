@@ -9,9 +9,4 @@ interface MemlogClient {
   // |sender_pipe|. There is currently no mechanism to stop recording
   // allocations.
   StartProfiling(handle sender_pipe);
-
-  // Flushes the memlog pipe associated with this client. A barrier packet is
-  // set over the memlog pipe with the given identifier. This allows the
-  // receiver to synchronize with the flush.
-  FlushPipe(uint32 barrier_id);
 };

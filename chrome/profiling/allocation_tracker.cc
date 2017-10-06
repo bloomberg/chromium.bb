@@ -53,44 +53,13 @@ void AllocationTracker::OnFree(const FreePacket& free_packet) {
   }
 }
 
-void AllocationTracker::OnBarrier(const BarrierPacket& barrier_packet) {
-  RunnerSnapshotCallbackPair pair;
-  {
-    base::AutoLock lock(snapshot_lock_);
-    auto found = registered_snapshot_callbacks_.find(barrier_packet.barrier_id);
-    if (found == registered_snapshot_callbacks_.end()) {
-      DLOG(WARNING) << "Unexpected barrier";
-      return;
-    }
-    pair = std::move(found->second);
-    registered_snapshot_callbacks_.erase(found);
-  }
-
-  // Execute the callback outside of the lock. The arguments here must be
-  // copied.
-  pair.first->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](SnapshotCallback cb, AllocationCountMap counts,
-             ContextMap context) {
-            std::move(cb).Run(true, std::move(counts), std::move(context));
-          },
-          std::move(pair.second), AllocationEventSetToCountMap(live_allocs_),
-          context_));
-}
-
 void AllocationTracker::OnComplete() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 std::move(complete_callback_));
 }
 
-void AllocationTracker::SnapshotOnBarrier(
-    uint32_t barrier_id,
-    scoped_refptr<base::SequencedTaskRunner> callback_runner,
-    SnapshotCallback callback) {
-  base::AutoLock lock(snapshot_lock_);
-  registered_snapshot_callbacks_[barrier_id] =
-      std::make_pair(std::move(callback_runner), std::move(callback));
+AllocationCountMap AllocationTracker::GetCounts() const {
+  return AllocationEventSetToCountMap(live_allocs_);
 }
 
 }  // namespace profiling

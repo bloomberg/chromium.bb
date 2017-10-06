@@ -15,7 +15,6 @@ constexpr uint32_t kStreamSignature = 0xF6103B71;
 
 constexpr uint32_t kAllocPacketType = 0xA1A1A1A1;
 constexpr uint32_t kFreePacketType = 0xFEFEFEFE;
-constexpr uint32_t kBarrierPacketType = 0xBABABABA;
 
 constexpr uint32_t kMaxStackEntries = 256;
 constexpr uint32_t kMaxContextLen = 256;
@@ -55,15 +54,6 @@ struct FreePacket {
   uint32_t op = kFreePacketType;
 
   uint64_t address;
-};
-
-// A barrier packet is a way to synchronize with the sender to make sure all
-// events are received up to a certain point. The barrier ID is just a number
-// that can be used to uniquely identify these events.
-struct BarrierPacket {
-  const uint32_t op = kBarrierPacketType;
-
-  uint32_t barrier_id;
 };
 #pragma pack(pop)
 

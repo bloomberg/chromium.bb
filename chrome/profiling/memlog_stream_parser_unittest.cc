@@ -29,8 +29,6 @@ class TestReceiver : public MemlogReceiver {
     // Make our saved header invalid so we can't confuse the locally
     // initialized one with a valid one that's received.
     header_.signature = 0;
-    last_barrier_.barrier_id =
-        std::numeric_limits<decltype(last_barrier_.barrier_id)>::max();
   }
 
   bool got_header() const { return got_header_; }
@@ -63,13 +61,6 @@ class TestReceiver : public MemlogReceiver {
     last_free_ = free_packet;
   }
 
-  int barrier_count() const { return barrier_count_; }
-  const BarrierPacket& last_barrier() const { return last_barrier_; }
-  void OnBarrier(const BarrierPacket& barrier) override {
-    barrier_count_++;
-    last_barrier_.barrier_id = barrier.barrier_id;
-  }
-
   bool got_complete() const { return got_complete_; }
   void OnComplete() override {
     ASSERT_FALSE(got_complete_);  // Don't expect more than one.
@@ -87,9 +78,6 @@ class TestReceiver : public MemlogReceiver {
 
   int free_count_ = 0;
   FreePacket last_free_;
-
-  int barrier_count_ = 0;
-  BarrierPacket last_barrier_;
 
   bool got_complete_ = false;
 };
@@ -215,22 +203,6 @@ TEST(MemlogStreamParser, GoodFree) {
   EXPECT_EQ(1, receiver.free_count());
 
   EXPECT_EQ(fr.address, receiver.last_free().address);
-}
-
-TEST(MemlogStreamParser, Barrier) {
-  TestReceiver receiver;
-  scoped_refptr<MemlogStreamParser> parser(new MemlogStreamParser(&receiver));
-  SendHeader(parser);
-
-  constexpr uint32_t barrier_id = 0x12345678;
-
-  BarrierPacket b;
-  b.barrier_id = barrier_id;
-
-  SendData(parser, &b, sizeof(BarrierPacket));
-  EXPECT_EQ(1, receiver.barrier_count());
-
-  EXPECT_EQ(barrier_id, receiver.last_barrier().barrier_id);
 }
 
 }  // namespace profiling

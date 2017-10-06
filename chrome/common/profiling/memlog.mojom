@@ -4,7 +4,6 @@
 
 module profiling.mojom;
 
-import "chrome/common/profiling/memlog_client.mojom";
 import "mojo/common/file.mojom";
 import "mojo/common/process_id.mojom";
 import "mojo/common/values.mojom";
@@ -20,14 +19,9 @@ interface Memlog {
   // In normal usage, each child process will be given the other end of this
   // pipe.
   //
-  // The "client" interface will be for the instrumented process. It allows the
-  // profiling process to talk to the new sender.
-  //
   // This function has a return value so the caller can know when the
   // connection has been established.
-  AddSender(mojo.common.mojom.ProcessId pid,
-            MemlogClient client,
-            handle sender_pipe) => ();
+  AddSender(mojo.common.mojom.ProcessId pid, handle sender_pipe) => ();
 
   // Dumps the memory log of the process with the given |pid| into
   // |output_file|. |metadata| is a dictionary that should be added to the trace
