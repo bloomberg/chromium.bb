@@ -243,7 +243,9 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
   if _RunAndCheck(
       dry_run,
       [mkbootfs_path, '-o', bootfs_name,
-       '--target=boot', os.path.join(SDK_ROOT, 'bootdata.bin'),
+       # TODO(wez): Parameterize this on the |target_cpu| from GN.
+       '--target=boot', os.path.join(
+           SDK_ROOT, 'target', 'x86_64', 'bootdata.bin'),
        '--target=system', manifest_file.name]) != 0:
     return None
 
@@ -361,7 +363,8 @@ def _GetResultsFromImg(dry_run, test_launcher_summary_output):
 
 
 def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
-  kernel_path = os.path.join(SDK_ROOT, 'kernel', 'zircon.bin')
+  # TODO(wez): Parameterize this on the |target_cpu| from GN.
+  kernel_path = os.path.join(SDK_ROOT, 'target', 'x86_64', 'zircon.bin')
 
   if use_device:
     # TODO(fuchsia): This doesn't capture stdout as there's no way to do so
