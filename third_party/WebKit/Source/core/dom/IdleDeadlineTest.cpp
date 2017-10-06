@@ -20,7 +20,6 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   // WebScheduler implementation:
   WebTaskRunner* LoadingTaskRunner() override { return nullptr; }
   WebTaskRunner* TimerTaskRunner() override { return nullptr; }
-  WebTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
   bool CanExceedIdleDeadlineIfRequired() override { return false; }
