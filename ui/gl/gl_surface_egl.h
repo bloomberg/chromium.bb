@@ -15,6 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -136,9 +137,17 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects);
 
  private:
+  struct SwapInfo {
+    bool frame_id_is_valid;
+    EGLuint64KHR frame_id;
+  };
+
   // Commit the |pending_overlays_| and clear the vector. Returns false if any
   // fail to be committed.
   bool CommitAndClearPendingOverlays();
+
+  void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
+  void TraceSwapEvents(EGLuint64KHR oldFrameId);
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
@@ -149,6 +158,13 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_internal_;
 
   std::vector<GLSurfaceOverlay> pending_overlays_;
+
+  // Stored in separate vectors so we can pass the egl timestamps
+  // directly to the EGL functions.
+  std::vector<EGLint> supported_egl_timestamps_;
+  std::vector<const char*> supported_event_names_;
+
+  base::queue<SwapInfo> swap_info_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };
