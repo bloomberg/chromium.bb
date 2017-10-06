@@ -78,7 +78,7 @@ console-filter-test.js:46 end
 [Violation] Violation message text
 
 Running: addURL1Filter
-Blocking messages from console-filter-test.js
+Blocking messages from test://evaluations/0/console-filter-test.js
 log-source.js:3 1topGroup
 log-source.js:3 3topGroup
 log-source.js:3 5topGroup

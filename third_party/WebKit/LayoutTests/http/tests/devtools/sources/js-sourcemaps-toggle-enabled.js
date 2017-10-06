@@ -6,22 +6,15 @@
   TestRunner.addResult(`Verify that JavaScript sourcemap enabling and disabling adds/removes sourcemap sources.\n`);
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
-  await TestRunner.evaluateInPagePromise(`
-      function addScript() {
-          var script = document.createElement('script');
-          script.src = relativeToTest('resources/sourcemap-script.js');
-          document.head.appendChild(script);
-      }
-  `);
 
   var sourcesNavigator = new Sources.SourcesNavigatorView();
   sourcesNavigator.show(UI.inspectorView.element);
 
   Common.moduleSetting('jsSourceMapsEnabled').set(true);
-  TestRunner.evaluateInPagePromise('addScript()');
-  await TestRunner.waitForUISourceCode('sourcemap-typescript.ts'),
+  TestRunner.addScriptTag('resources/sourcemap-script.js');
+  await TestRunner.waitForUISourceCode('sourcemap-typescript.ts');
 
-      TestRunner.markStep('dumpInitialNavigator');
+  TestRunner.markStep('dumpInitialNavigator');
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.markStep('disableJSSourceMaps');
