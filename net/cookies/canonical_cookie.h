@@ -106,6 +106,7 @@ class NET_EXPORT CanonicalCookie {
   void SetLastAccessDate(const base::Time& date) {
     last_access_date_ = date;
   }
+  void SetCreationDate(const base::Time& date) { creation_date_ = date; }
 
   // Returns true if the given |url_path| path-matches the cookie-path as
   // described in section 5.1.4 in RFC 6265.
@@ -159,10 +160,6 @@ class NET_EXPORT CanonicalCookie {
   // greater than the last access time.
   bool IsCanonical() const;
 
-  // Sets the creation date of the cookie to the specified value.  It
-  // is only valid to call this method if the existing creation date
-  // is null.
-  void SetCreationDate(base::Time new_creation_date);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);

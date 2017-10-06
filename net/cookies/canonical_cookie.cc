@@ -448,11 +448,6 @@ bool CanonicalCookie::IsCanonical() const {
   return true;
 }
 
-void CanonicalCookie::SetCreationDate(base::Time new_creation_date) {
-  DCHECK(CreationDate().is_null());
-  creation_date_ = new_creation_date;
-}
-
 // static
 CanonicalCookie::CookiePrefix CanonicalCookie::GetCookiePrefix(
     const std::string& name) {
