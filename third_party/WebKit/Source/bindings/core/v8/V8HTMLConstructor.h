@@ -5,7 +5,7 @@
 #ifndef V8HTMLConstructor_h
 #define V8HTMLConstructor_h
 
-#include "core/HTMLElementTypeHelpers.h"
+#include "core/html_element_type_helpers.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "v8/include/v8.h"
 

@@ -249,6 +249,6 @@ class HasHTMLTagName {
 
 }  // namespace blink
 
-#include "core/HTMLElementTypeHelpers.h"
+#include "core/html_element_type_helpers.h"
 
 #endif  // HTMLElement_h

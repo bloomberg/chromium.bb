@@ -345,6 +345,6 @@ inline bool Node::HasTagName(const SVGQualifiedName& name) const {
 
 }  // namespace blink
 
-#include "core/SVGElementTypeHelpers.h"
+#include "core/svg_element_type_helpers.h"
 
 #endif  // SVGElement_h

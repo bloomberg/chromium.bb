@@ -50,9 +50,10 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
 
         assert self.namespace, 'A namespace is required.'
 
+        basename = self.namespace.lower() + '_element_type_helpers'
         self._outputs = {
-            (self.namespace + "ElementTypeHelpers.h"): self.generate_helper_header,
-            (self.namespace + "ElementTypeHelpers.cpp"): self.generate_helper_implementation,
+            (basename + '.h'): self.generate_helper_header,
+            (basename + '.cc'): self.generate_helper_implementation,
         }
 
         base_element_header = 'core/%s/%s_element.h' % (self.namespace.lower(), self.namespace.lower())
@@ -77,11 +78,11 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         for tag in tags:
             tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == self.fallback_interface)
 
-    @template_expander.use_jinja("templates/ElementTypeHelpers.h.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/element_type_helpers.h.tmpl", filters=filters)
     def generate_helper_header(self):
         return self._template_context
 
-    @template_expander.use_jinja("templates/ElementTypeHelpers.cpp.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/element_type_helpers.cc.tmpl", filters=filters)
     def generate_helper_implementation(self):
         return self._template_context
 

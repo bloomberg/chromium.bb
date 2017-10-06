@@ -29,7 +29,6 @@
 
 #include "core/fullscreen/Fullscreen.h"
 
-#include "core/HTMLElementTypeHelpers.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -42,6 +41,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html_element_type_helpers.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBlockFlow.h"

@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptCustomElementDefinitionBuilder.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDefinitionOptions.h"
@@ -23,6 +22,7 @@
 #include "core/html/custom/CustomElementUpgradeReaction.h"
 #include "core/html/custom/CustomElementUpgradeSorter.h"
 #include "core/html/custom/V0CustomElementRegistrationContext.h"
+#include "core/html_element_type_helpers.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/Allocator.h"
 
