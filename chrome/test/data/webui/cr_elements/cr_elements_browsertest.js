@@ -318,14 +318,6 @@ CrElementsToggleTest.prototype = {
   ]),
 };
 
-// Times out on Windows 10.
-// https://crbug.com/770574.
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-
-TEST_F('CrElementsToggleTest', 'MAYBE_All', function() {
+TEST_F('CrElementsToggleTest', 'All', function() {
   mocha.run();
 });
