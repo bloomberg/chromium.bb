@@ -299,7 +299,7 @@ class HidApiTest : public ShellApiTest {
         &collections, &has_report_id, &max_input_report_size,
         &max_output_report_size, &max_feature_report_size);
 
-    device::mojom::HidDeviceInfoPtr device = device::mojom::HidDeviceInfo::New(
+    auto device = device::mojom::HidDeviceInfo::New(
         device_guid, vendor_id, product_id, "Test Device", serial_number,
         device::mojom::HidBusType::kHIDBusTypeUSB, report_descriptor,
         collections, has_report_id, max_input_report_size,

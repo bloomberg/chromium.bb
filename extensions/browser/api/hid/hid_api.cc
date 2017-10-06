@@ -259,8 +259,6 @@ void HidReceiveFunction::OnFinished(
     const base::Optional<std::vector<uint8_t>>& buffer) {
   if (success) {
     DCHECK(buffer);
-    DCHECK_GE(buffer->size(), 0u);
-
     Respond(TwoArguments(
         std::make_unique<base::Value>(report_id),
         base::Value::CreateWithCopiedBuffer(
