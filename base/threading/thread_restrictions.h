@@ -344,11 +344,6 @@ class BASE_EXPORT ThreadRestrictions {
   //
   // DEPRECATED. Use DisallowBaseSyncPrimitives.
   static void DisallowWaiting();
-
-  // Check whether the current thread is allowed to wait, and DCHECK if not.
-  //
-  // DEPRECATED. Use AssertBaseSyncPrimitivesAllowed.
-  static void AssertWaitAllowed();
 #else
   // Inline the empty definitions of these functions so that they can be
   // compiled out.
@@ -357,7 +352,6 @@ class BASE_EXPORT ThreadRestrictions {
   static bool SetSingletonAllowed(bool allowed) { return true; }
   static void AssertSingletonAllowed() {}
   static void DisallowWaiting() {}
-  static void AssertWaitAllowed() {}
 #endif
 
  private:

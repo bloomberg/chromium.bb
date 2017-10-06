@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -86,7 +85,6 @@ void IncrementPrefValue(const char* path) {
 
 // Called on a background thread to load hardware class information.
 std::string GetHardwareClassOnBackgroundThread() {
-  base::ThreadRestrictions::AssertWaitAllowed();
   std::string hardware_class;
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       "hardware_class", &hardware_class);

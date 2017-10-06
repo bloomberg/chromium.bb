@@ -447,8 +447,6 @@ void PrintJob::ControlledWorkerShutdown() {
 
   // Now make sure the thread object is cleaned up. Do this on a worker
   // thread because it may block.
-  // TODO(fdoray): Remove MayBlock() once base::Thread::Stop() passes
-  // base::ThreadRestrictions::AssertWaitAllowed().
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
       {base::MayBlock(), base::WithBaseSyncPrimitives(),
