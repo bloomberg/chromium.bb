@@ -21,6 +21,7 @@
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/api/video/video_rotation.h"
+#include "third_party/webrtc/rtc_base/refcountedobject.h"
 
 namespace content {
 

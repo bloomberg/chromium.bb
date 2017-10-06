@@ -22,6 +22,7 @@
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/bind.h"
 #include "third_party/webrtc/rtc_base/refcount.h"
+#include "third_party/webrtc/rtc_base/refcountedobject.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"

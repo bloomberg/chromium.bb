@@ -35,8 +35,6 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
 
   rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() override;
 
-  friend class rtc::RefCountedObject<WebRtcVideoFrameAdapter>;
-
  protected:
   ~WebRtcVideoFrameAdapter() override;
 
