@@ -85,6 +85,8 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_idb_observer_callback.h",
   "$bindings_modules_v8_output_dir/v8_media_session_action_handler.cc",
   "$bindings_modules_v8_output_dir/v8_media_session_action_handler.h",
+  "$bindings_modules_v8_output_dir/v8_position_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_position_callback.h",
   "$bindings_modules_v8_output_dir/v8_remote_playback_availability_callback.cc",
   "$bindings_modules_v8_output_dir/v8_remote_playback_availability_callback.h",
 ]

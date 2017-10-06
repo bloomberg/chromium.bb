@@ -5,18 +5,20 @@
 #ifndef GeolocationWatchers_h
 #define GeolocationWatchers_h
 
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class GeoNotifier;
 
-class GeolocationWatchers {
+class GeolocationWatchers : public TraceWrapperBase {
   DISALLOW_NEW();
 
  public:
   GeolocationWatchers() {}
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   bool Add(int id, GeoNotifier*);
   GeoNotifier* Find(int id);
@@ -29,7 +31,7 @@ class GeolocationWatchers {
   void GetNotifiersVector(HeapVector<Member<GeoNotifier>>&) const;
 
  private:
-  typedef HeapHashMap<int, Member<GeoNotifier>> IdToNotifierMap;
+  typedef HeapHashMap<int, TraceWrapperMember<GeoNotifier>> IdToNotifierMap;
   typedef HeapHashMap<Member<GeoNotifier>, int> NotifierToIdMap;
 
   IdToNotifierMap id_to_notifier_map_;

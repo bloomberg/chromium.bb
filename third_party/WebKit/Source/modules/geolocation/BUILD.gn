@@ -18,7 +18,6 @@ blink_modules_sources("geolocation") {
     "Geoposition.h",
     "NavigatorGeolocation.cpp",
     "NavigatorGeolocation.h",
-    "PositionCallback.h",
     "PositionError.h",
     "PositionErrorCallback.h",
   ]

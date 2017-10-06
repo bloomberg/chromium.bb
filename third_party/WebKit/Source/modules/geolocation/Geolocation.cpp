@@ -113,6 +113,13 @@ DEFINE_TRACE(Geolocation) {
   PageVisibilityObserver::Trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(Geolocation) {
+  for (const auto& one_shot : one_shots_)
+    visitor->TraceWrappers(one_shot);
+  visitor->TraceWrappers(watchers_);
+  ScriptWrappable::TraceWrappers(visitor);
+}
+
 Document* Geolocation::GetDocument() const {
   return ToDocument(GetExecutionContext());
 }
@@ -172,7 +179,7 @@ void Geolocation::RecordOriginTypeAccess() const {
   }
 }
 
-void Geolocation::getCurrentPosition(PositionCallback* success_callback,
+void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
                                      PositionErrorCallback* error_callback,
                                      const PositionOptions& options) {
   if (!GetFrame())
@@ -188,7 +195,7 @@ void Geolocation::getCurrentPosition(PositionCallback* success_callback,
   one_shots_.insert(notifier);
 }
 
-int Geolocation::watchPosition(PositionCallback* success_callback,
+int Geolocation::watchPosition(V8PositionCallback* success_callback,
                                PositionErrorCallback* error_callback,
                                const PositionOptions& options) {
   if (!GetFrame())
@@ -345,7 +352,7 @@ void Geolocation::ExtractNotifiersWithCachedPosition(
     } else
       non_cached.push_back(notifier);
   }
-  notifiers.swap(non_cached);
+  swap(notifiers, non_cached);
 }
 
 void Geolocation::CopyToSet(const GeoNotifierVector& src,

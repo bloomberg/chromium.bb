@@ -18,7 +18,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
     : public GarbageCollectedFinalized<CallbackFunctionBase>,
       public TraceWrapperBase {
  public:
-  virtual ~CallbackFunctionBase() = default;
+  virtual ~CallbackFunctionBase();
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   DECLARE_VIRTUAL_TRACE_WRAPPERS();

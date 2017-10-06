@@ -66,6 +66,7 @@ class CORE_EXPORT Navigator final : public GarbageCollected<Navigator>,
   Vector<String> languages() override;
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   explicit Navigator(LocalFrame*);
