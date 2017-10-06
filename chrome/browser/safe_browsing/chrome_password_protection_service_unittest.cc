@@ -241,13 +241,11 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
                    std::string(kTestAccountID), std::string(kTestEmail));
-  service_->InitializeAccountInfo();
   EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
             service_->GetSyncAccountType());
 
   SetUpSyncAccount("example.edu", std::string(kTestAccountID),
                    std::string(kTestEmail));
-  service_->InitializeAccountInfo();
   EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
             service_->GetSyncAccountType());
 }
@@ -427,7 +425,6 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetChangePasswordURL) {
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount("example.com", std::string(kTestAccountID),
                    std::string(kTestEmail));
-  service_->InitializeAccountInfo();
   EXPECT_EQ(GURL("https://accounts.google.com/"
                  "AccountChooser?Email=foo%40example.com&continue=https%3A%2F%"
                  "2Fmyaccount.google.com%2Fsigninoptions%2Fpassword%3Futm_"
