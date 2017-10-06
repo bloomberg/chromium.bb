@@ -56,9 +56,7 @@ class ArcAccessibilityHelperBridge
   void SetNativeChromeVoxArcSupport(bool enabled);
 
   // Receives the result of setting native ChromeVox Arc support.
-  void OnSetNativeChromeVoxArcSupportProcessed(const std::string& package_name,
-                                               bool enabled,
-                                               bool processed);
+  void OnSetNativeChromeVoxArcSupportProcessed(bool enabled, bool processed);
 
   // KeyedService overrides.
   void Shutdown() override;
@@ -77,25 +75,19 @@ class ArcAccessibilityHelperBridge
   void OnAction(const ui::AXActionData& data) const override;
 
   // ArcAppListPrefs::Observer overrides.
-  void OnTaskCreated(int task_id,
-                     const std::string& package_name,
-                     const std::string& activity,
-                     const std::string& intent) override;
   void OnTaskDestroyed(int32_t task_id) override;
-  void OnTaskSetActive(int32_t task_id) override;
 
   // ArcNotificationSurfaceManager::Observer overrides.
   void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
   void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override;
 
-  const std::map<std::string, std::unique_ptr<AXTreeSourceArc>>&
-  package_name_to_tree_for_test() {
-    return package_name_to_tree_;
+  const std::map<int32_t, std::unique_ptr<AXTreeSourceArc>>&
+  task_id_to_tree_for_test() {
+    return task_id_to_tree_;
   }
-  const std::map<std::string, std::set<int32_t>>&
-  package_name_to_task_ids_for_test() {
-    return package_name_to_task_ids_;
-  }
+
+ protected:
+  virtual aura::Window* GetActiveWindow();
 
  private:
   // exo::WMHelper::ActivationObserver overrides.
@@ -104,7 +96,7 @@ class ArcAccessibilityHelperBridge
 
   void OnActionResult(const ui::AXActionData& data, bool result) const;
 
-  AXTreeSourceArc* GetOrCreateFromPackageName(const std::string& package_name);
+  AXTreeSourceArc* GetOrCreateFromTaskId(int32_t task_id);
   AXTreeSourceArc* CreateFromNotificationKey(
       const std::string& notification_key);
   AXTreeSourceArc* GetFromNotificationKey(
@@ -114,12 +106,9 @@ class ArcAccessibilityHelperBridge
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;
-  std::map<std::string, std::unique_ptr<AXTreeSourceArc>> package_name_to_tree_;
+  std::map<int32_t, std::unique_ptr<AXTreeSourceArc>> task_id_to_tree_;
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>>
       notification_key_to_tree_;
-  std::map<std::string, std::set<int32_t>> package_name_to_task_ids_;
-  int32_t current_task_id_;
-  std::unique_ptr<AXTreeSourceArc> fallback_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };

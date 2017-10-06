@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -259,6 +259,10 @@ struct AccessibilityEventData {
   // with AccessibilityNodeInfo.getWindowId now, do not expect that it always
   // matches with it.
   [MinVersion=6]int32 window_id;
+
+  // Task associated with this event (usually the front task when this event
+  // gets dispatched).
+  [MinVersion=8]int32 task_id;
 };
 
 // AccessibilityActionData is a struct to contain info of AccessibilityAction in
@@ -286,7 +290,7 @@ interface AccessibilityHelperHost {
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
 };
 
-// Next method ID: 6
+// Next method ID: 7
 interface AccessibilityHelperInstance {
   Init@0(AccessibilityHelperHost host);
 
@@ -303,6 +307,11 @@ interface AccessibilityHelperInstance {
 
   // Sets the package to use ChromeVox (true) or TalkBack (false). Returns true
   // if the request was processed.
-  [MinVersion=7]SetNativeChromeVoxArcSupport@5(
-    string package_name, bool enabled) => (bool processed);
+  [MinVersion=7]SetNativeChromeVoxArcSupportDeprecated@5(
+      string package_name, bool enabled) => (bool processed);
+
+  // Sets the focused window's package to use ChromeVox (true) or TalkBack
+  // (false).
+  [MinVersion=8]SetNativeChromeVoxArcSupportForFocusedWindow@6(
+      bool enabled) => (bool processed);
 };
