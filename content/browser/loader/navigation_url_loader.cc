@@ -12,6 +12,7 @@
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/navigation_url_loader_network_service.h"
+#include "content/browser/loader/url_loader_request_handler.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/common/content_features.h"
 
@@ -36,7 +37,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     return base::MakeUnique<NavigationURLLoaderNetworkService>(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, appcache_handle,
-        delegate);
+        delegate, std::vector<std::unique_ptr<URLLoaderRequestHandler>>());
   } else {
     return base::MakeUnique<NavigationURLLoaderImpl>(
         resource_context, storage_partition, std::move(request_info),

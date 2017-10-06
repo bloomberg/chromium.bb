@@ -111,16 +111,18 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // of URLLoaderRequestHandler's and successively calls MaybeCreateLoader
 // on each until the request is successfully handled. The same sequence
 // may be performed multiple times when redirects happen.
-// TODO(michaeln): Expose this class and add unittests.
+// TODO(michaeln): Expose this class and add more unittests.
 class NavigationURLLoaderNetworkService::URLLoaderRequestController
     : public mojom::URLLoaderClient {
  public:
   URLLoaderRequestController(
+      std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers,
       std::unique_ptr<ResourceRequest> resource_request,
       ResourceContext* resource_context,
       scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter,
       const base::WeakPtr<NavigationURLLoaderNetworkService>& owner)
-      : resource_request_(std::move(resource_request)),
+      : handlers_(std::move(initial_handlers)),
+        resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
         default_url_loader_factory_getter_(default_url_loader_factory_getter),
         owner_(owner),
@@ -138,6 +140,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       const base::Callback<WebContents*(void)>& web_contents_getter,
       std::unique_ptr<service_manager::Connector> connector) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(!started_);
+    started_ = true;
     web_contents_getter_ = web_contents_getter;
     const ResourceType resource_type = request_info->is_main_frame
                                            ? RESOURCE_TYPE_MAIN_FRAME
@@ -161,7 +165,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       return;
     }
 
-    DCHECK(handlers_.empty());
     if (service_worker_navigation_handle_core) {
       RequestContextFrameType frame_type =
           request_info->is_main_frame ? REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL
@@ -279,15 +282,17 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
       // TODO(davidben): This logic still needs to be replicated at the
       // consumers.
-      if (resource_request_->method == "POST") {
-        // If being switched from POST, must remove Origin header.
-        // TODO(jww): This is Origin header removal is probably layering
-        // violation and should be refactored into //content.
-        // See https://crbug.com/471397.
-        // See also: https://crbug.com/760487
-        resource_request_->headers.RemoveHeader(
-            net::HttpRequestHeaders::kOrigin);
-      }
+      //
+      // The Origin header is sent on anything that is not a GET or HEAD, which
+      // suggests all redirects that change methods (since they always change to
+      // GET) should drop the Origin header.
+      // See https://fetch.spec.whatwg.org/#origin-header
+      // TODO(jww): This is Origin header removal is probably layering
+      // violation and should be refactored into //content.
+      // See https://crbug.com/471397.
+      // See also: https://crbug.com/760487
+      resource_request_->headers.RemoveHeader(net::HttpRequestHeaders::kOrigin);
+
       // The inclusion of a multipart Content-Type header can cause problems
       // with some servers:
       // http://code.google.com/p/chromium/issues/detail?id=843
@@ -491,6 +496,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // URLLoaderClient::OnReceivedResponse() is called.
   bool received_response_ = false;
 
+  bool started_ = false;
+
   // The completion status if it has been received. This is needed to handle
   // the case that the response is intercepted by download, and OnComplete() is
   // already called while we are transferring the |url_loader_| and response
@@ -507,7 +514,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_navigation_handle,
     AppCacheNavigationHandle* appcache_handle,
-    NavigationURLLoaderDelegate* delegate)
+    NavigationURLLoaderDelegate* delegate,
+    std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers)
     : delegate_(delegate),
       allow_download_(request_info->common_params.allow_download),
       weak_factory_(this) {
@@ -570,7 +578,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   DCHECK(!request_controller_);
   request_controller_ = base::MakeUnique<URLLoaderRequestController>(
-      std::move(new_request), resource_context,
+      std::move(initial_handlers), std::move(new_request), resource_context,
       static_cast<StoragePartitionImpl*>(storage_partition)
           ->url_loader_factory_getter(),
       weak_factory_.GetWeakPtr());
