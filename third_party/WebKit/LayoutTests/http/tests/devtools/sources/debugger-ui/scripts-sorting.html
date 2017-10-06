@@ -18,9 +18,9 @@ async function test() {
   Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
-  var pageMock = new TestRunner.PageMock('http://example.com');
+  var pageMock = new SDKTestRunner.PageMock('http://example.com');
   pageMock.disableDOMCapability();
-  TestRunner.connectToPage('mock-target-1', pageMock);
+  SDKTestRunner.connectToPage('mock-target-1', pageMock);
 
   var uiSourceCodes = [];
   async function addUISourceCode(url, isContentScript) {

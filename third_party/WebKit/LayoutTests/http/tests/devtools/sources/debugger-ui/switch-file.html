@@ -18,8 +18,8 @@ async function test() {
   ];
   files = files.map(file => 'http://example.com/' + file);
 
-  var page = new TestRunner.PageMock('http://example.com');
-  TestRunner.connectToPage('mock-page', page);
+  var page = new SDKTestRunner.PageMock('http://example.com');
+  SDKTestRunner.connectToPage('mock-page', page);
 
   var uiSourceCodes = [];
   for (var i = 0; i < files.length; ++i) {
