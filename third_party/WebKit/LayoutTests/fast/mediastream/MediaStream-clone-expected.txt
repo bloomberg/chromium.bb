@@ -15,6 +15,11 @@ PASS stream.getVideoTracks()[0].id is not cloned_stream.getVideoTracks()[0].id
 PASS track is not cloned_track
 PASS track.id is not cloned_track.id
 PASS stream.getAudioTracks().length is 2
+PASS stream3.getAudioTracks().length is 1
+PASS stream3.getVideoTracks().length is 1
+PASS stream3.getAudioTracks()[0].readyState is "ended"
+PASS stream3.getVideoTracks()[0].readyState is "ended"
+PASS stream3.active is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
