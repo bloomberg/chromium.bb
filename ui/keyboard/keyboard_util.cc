@@ -151,10 +151,8 @@ bool IsKeyboardOverscrollEnabled() {
 
   // Users of the sticky accessibility on-screen keyboard are likely to be using
   // mouse input, which may interfere with overscrolling.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableNewVirtualKeyboardBehavior) ||
-      (keyboard::KeyboardController::GetInstance() &&
-       keyboard::KeyboardController::GetInstance()->keyboard_locked())) {
+  if (keyboard::KeyboardController::GetInstance() &&
+      keyboard::KeyboardController::GetInstance()->keyboard_locked()) {
     return false;
   }
 

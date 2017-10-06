@@ -59,6 +59,10 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_test_util.h"
+#include "ui/keyboard/keyboard_ui.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
@@ -115,9 +119,10 @@ display::Display GetDisplayNearestWindow(aura::Window* window) {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window);
 }
 
-void DisableNewVKMode() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kDisableNewVirtualKeyboardBehavior);
+void EnableStickyKeyboard() {
+  keyboard::KeyboardController::ResetInstance(new keyboard::KeyboardController(
+      base::MakeUnique<keyboard::FakeKeyboardUI>(), nullptr));
+  keyboard::KeyboardController::GetInstance()->set_keyboard_locked(true);
 }
 
 }  // namespace
@@ -1566,8 +1571,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
 // Tests that when a child window gains focus the top level window containing it
 // is resized to fit the remaining workspace area.
 TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
-  // Append the flag to cause work area change in non-sticky mode.
-  DisableNewVKMode();
+  EnableStickyKeyboard();
 
   // See comment at top of file for why this is needed.
   CustomFrameViewAshSizeLock min_size_lock;
@@ -1599,8 +1603,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
-  // Append the flag to cause work area change in non-sticky mode.
-  DisableNewVKMode();
+  EnableStickyKeyboard();
 
   // See comment at top of file for why this is needed.
   CustomFrameViewAshSizeLock min_size_lock;
@@ -1652,8 +1655,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, IgnoreKeyboardBoundsChange) {
-  // Append the flag to cause work area change in non-sticky mode.
-  DisableNewVKMode();
+  EnableStickyKeyboard();
   InitKeyboardBounds();
 
   std::unique_ptr<aura::Window> window(CreateTestWindow(keyboard_bounds()));

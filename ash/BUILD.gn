@@ -1411,7 +1411,6 @@ test("ash_unittests") {
     "wm/workspace/magnetism_matcher_unittest.cc",
     "wm/workspace/multi_window_resize_controller_unittest.cc",
     "wm/workspace/workspace_event_handler_unittest.cc",
-    "wm/workspace/workspace_layout_manager_keyboard_unittest.cc",
     "wm/workspace/workspace_layout_manager_unittest.cc",
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
