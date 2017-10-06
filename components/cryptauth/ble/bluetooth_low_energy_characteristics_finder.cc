@@ -28,6 +28,7 @@ BluetoothLowEnergyCharacteristicsFinder::
         const SuccessCallback& success_callback,
         const ErrorCallback& error_callback)
     : adapter_(adapter),
+      bluetooth_device_(device),
       remote_service_(remote_service),
       to_peripheral_char_(to_peripheral_char),
       from_peripheral_char_(from_peripheral_char),
@@ -57,6 +58,9 @@ BluetoothLowEnergyCharacteristicsFinder::
 void BluetoothLowEnergyCharacteristicsFinder::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic) {
+  // Ignore events about other devices.
+  if (characteristic->GetService()->GetDevice() != bluetooth_device_)
+    return;
   HandleCharacteristicUpdate(characteristic);
 }
 
@@ -64,6 +68,10 @@ void BluetoothLowEnergyCharacteristicsFinder::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattService* service) {
   if (!service || service->GetUUID() != remote_service_.uuid)
+    return;
+
+  // Ignore events about other devices.
+  if (service->GetDevice() != bluetooth_device_)
     return;
 
   if (!to_peripheral_char_.id.empty() && !from_peripheral_char_.id.empty())

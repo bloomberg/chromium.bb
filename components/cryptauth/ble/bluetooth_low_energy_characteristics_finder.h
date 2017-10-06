@@ -93,6 +93,9 @@ class BluetoothLowEnergyCharacteristicsFinder
   // The Bluetooth adapter where the connection was established.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
+  // The Bluetooth device to which the connection was established.
+  device::BluetoothDevice* bluetooth_device_;
+
   // Remote service the |connection_| was established with.
   RemoteAttribute remote_service_;
 
