@@ -21,6 +21,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -587,6 +588,7 @@ class RemoveWhileNotificationIsRunningObserver : public Foo {
 
   void Observe(int x) override {
     notification_running_.Signal();
+    ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
     barrier_.Wait();
   }
 
@@ -617,9 +619,8 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
   // TaskScheduler can safely use |barrier|.
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  CreateSequencedTaskRunnerWithTraits({WithBaseSyncPrimitives()})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
+  CreateSequencedTaskRunnerWithTraits({})->PostTask(
+      FROM_HERE, base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                 observer_list, Unretained(&observer)));
   TaskScheduler::GetInstance()->FlushForTesting();
 
