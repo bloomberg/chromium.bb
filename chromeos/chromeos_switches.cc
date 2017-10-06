@@ -515,9 +515,9 @@ const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
 // List of locales supported by voice interaction.
 const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
 
-// Enables license type selection by user during enrollment.
-const char kEnterpriseEnableLicenseTypeSelection[] =
-    "enterprise-enable-license-type-selection";
+// Disable license type selection by user during enrollment.
+const char kEnterpriseDisableLicenseTypeSelection[] =
+    "enterprise-disable-license-type-selection";
 
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
