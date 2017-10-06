@@ -311,7 +311,6 @@ class RendererSchedulerImplTest : public ::testing::Test {
         MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL);
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->TimerTaskQueue();
-    v8_task_runner_ = scheduler_->V8TaskQueue();
     fake_queue_ = scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::FRAME_LOADING);
   }
@@ -617,7 +616,6 @@ class RendererSchedulerImplTest : public ::testing::Test {
   // - 'M': Loading Control task
   // - 'I': Idle task
   // - 'T': Timer task
-  // - 'V': V8 task
   void PostTestTasks(std::vector<std::string>* run_order,
                      const std::string& task_descriptor) {
     std::istringstream stream(task_descriptor);
@@ -648,10 +646,6 @@ class RendererSchedulerImplTest : public ::testing::Test {
           break;
         case 'T':
           timer_task_runner_->PostTask(
-              FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
-          break;
-        case 'V':
-          v8_task_runner_->PostTask(
               FROM_HERE, base::Bind(&AppendToVectorTestTask, run_order, task));
           break;
         default:
@@ -727,7 +721,6 @@ class RendererSchedulerImplTest : public ::testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> loading_control_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   bool simulate_timer_task_ran_;
   bool simulate_compositor_task_ran_;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
@@ -2612,13 +2605,12 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
   ASSERT_TRUE(run_order.empty());
 
   // Timer tasks should be paused until the foregrounded signal.
-  PostTestTasks(&run_order, "T4 T5 V1");
+  PostTestTasks(&run_order, "T4 T5");
   now += base::TimeDelta::FromSeconds(10);
   clock_->SetNowTicks(now);
   RunUntilIdle();
-  EXPECT_THAT(run_order, ::testing::ElementsAre(std::string("V1")));
+  EXPECT_THAT(run_order, ::testing::ElementsAre());
 
-  run_order.clear();
   scheduler_->SetRendererBackgrounded(false);
   RunUntilIdle();
   EXPECT_THAT(run_order,
@@ -3858,8 +3850,6 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_->VirtualTimeControlTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->V8TaskQueue()->GetTimeDomain(),
-            scheduler_->GetVirtualTimeDomain());
 
   // The main control task queue remains in the real time domain.
   EXPECT_EQ(scheduler_->ControlTaskQueue()->GetTimeDomain(),
@@ -3913,8 +3903,6 @@ TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
   EXPECT_EQ(scheduler_->TimerTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
   EXPECT_EQ(scheduler_->ControlTaskQueue()->GetTimeDomain(),
-            scheduler_->real_time_domain());
-  EXPECT_EQ(scheduler_->V8TaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
   EXPECT_FALSE(scheduler_->VirtualTimeControlTaskQueue());
 }

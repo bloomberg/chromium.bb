@@ -71,7 +71,6 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   web_scheduler_.reset(new WebSchedulerImpl(
       worker_scheduler_.get(), worker_scheduler_->IdleTaskRunner(),
       worker_scheduler_->DefaultTaskQueue(),
-      worker_scheduler_->DefaultTaskQueue(),
       worker_scheduler_->DefaultTaskQueue()));
   base::MessageLoop::current()->AddDestructionObserver(this);
   web_task_runner_ = WebTaskRunnerImpl::Create(task_queue_);

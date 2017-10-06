@@ -33331,7 +33331,6 @@ from previous Chrome versions.
   <int value="13" label="FrameDeferrable"/>
   <int value="14" label="FramePausable"/>
   <int value="15" label="FrameUnpausable"/>
-  <int value="16" label="V8"/>
 </enum>
 
 <enum name="RendererType">
