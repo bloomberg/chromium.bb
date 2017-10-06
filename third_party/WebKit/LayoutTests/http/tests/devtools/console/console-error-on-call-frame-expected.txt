@@ -9,6 +9,6 @@ VM:1 42
 testFunction @ console-error-on-call-frame.js:15
 setTimeout (async)
 scheduleTestFunction @ VM:3
-(anonymous) @ console-error-on-call-frame.js:19
+(anonymous) @ VM:1
 undefined
 

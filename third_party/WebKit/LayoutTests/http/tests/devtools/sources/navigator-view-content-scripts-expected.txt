@@ -8,8 +8,6 @@ top
   127.0.0.1:8000
     devtools/resources
       inspected-page.html
-  (no domain)
-    navigator-view-content-scripts.js
   localhost:8080
     LayoutTests/inspector/debugger/foo/bar
       script.js
@@ -21,8 +19,6 @@ top
   127.0.0.1:8000
     devtools/resources
       inspected-page.html
-  (no domain)
-    navigator-view-content-scripts.js
   localhost:8080
     LayoutTests/inspector/debugger/foo/bar
       script.js
