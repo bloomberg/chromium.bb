@@ -80,11 +80,16 @@ if (NOT CONFIG_PARALLEL_DEBLOCKING)
       "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c")
 endif ()
 
+if (NOT CONFIG_EXT_PARTITION)
+  set(AOM_DSP_COMMON_ASM_NEON
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon_asm.asm"
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon_asm.asm"
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon_asm.asm"
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon_asm.asm")
+endif ()
+
 set(AOM_DSP_COMMON_ASM_NEON
-    "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon_asm.asm"
-    "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon_asm.asm"
-    "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon_asm.asm"
-    "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon_asm.asm"
+    ${AOM_DSP_COMMON_ASM_NEON}
     "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.asm"
     "${AOM_ROOT}/aom_dsp/arm/idct16x16_add_neon.asm"
     "${AOM_ROOT}/aom_dsp/arm/idct32x32_1_add_neon.asm"
@@ -105,8 +110,13 @@ if (NOT CONFIG_PARALLEL_DEBLOCKING)
       "${AOM_ROOT}/aom_dsp/arm/loopfilter_mb_neon.asm")
 endif ()
 
+if (NOT CONFIG_EXT_PARTITION)
+  set(AOM_DSP_COMMON_INTRIN_NEON
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_neon.c")
+endif ()
+
 set(AOM_DSP_COMMON_INTRIN_NEON
-    "${AOM_ROOT}/aom_dsp/arm/aom_convolve_neon.c"
+    ${AOM_DSP_COMMON_INTRIN_NEON}
     "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
@@ -125,12 +135,17 @@ if (NOT CONFIG_PARALLEL_DEBLOCKING)
 endif ()
 
 if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
+  if (NOT CONFIG_EXT_PARTITION)
+    set(AOM_DSP_COMMON_INTRIN_NEON
+        ${AOM_DSP_COMMON_INTRIN_NEON}
+        "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon.c"
+        "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon.c"
+        "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon.c"
+        "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon.c")
+  endif ()
+
   set(AOM_DSP_COMMON_INTRIN_NEON
       ${AOM_DSP_COMMON_INTRIN_NEON}
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon.c"
       "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.c"
       "${AOM_ROOT}/aom_dsp/arm/idct16x16_add_neon.c"
       "${AOM_ROOT}/aom_dsp/arm/idct32x32_1_add_neon.c"

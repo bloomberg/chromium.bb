@@ -126,6 +126,7 @@ DSP_SRCS-$(HAVE_AVX2)  += x86/highbd_convolve_avx2.c
 endif
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_convolve_copy_sse2.asm
 
+ifneq ($(CONFIG_EXT_PARTITION),yes)
 ifeq ($(HAVE_NEON_ASM),yes)
 DSP_SRCS-yes += arm/aom_convolve_copy_neon_asm$(ASM)
 DSP_SRCS-yes += arm/aom_convolve8_avg_neon_asm$(ASM)
@@ -141,6 +142,7 @@ DSP_SRCS-yes += arm/aom_convolve_avg_neon.c
 DSP_SRCS-yes += arm/aom_convolve_neon.c
 endif  # HAVE_NEON
 endif  # HAVE_NEON_ASM
+endif  # CONFIG_EXT_PARTITION
 
 # common (msa)
 DSP_SRCS-$(HAVE_MSA) += mips/aom_convolve8_avg_horiz_msa.c
