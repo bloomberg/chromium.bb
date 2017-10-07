@@ -106,6 +106,8 @@ class ServiceWorkerTest : public ExtensionApiTest,
                           public ::testing::WithParamInterface<BindingsType> {
  public:
   ServiceWorkerTest() : current_channel_(version_info::Channel::STABLE) {}
+  explicit ServiceWorkerTest(version_info::Channel channel)
+      : current_channel_(channel) {}
 
   ~ServiceWorkerTest() override {}
 
@@ -302,7 +304,13 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
 
 class ServiceWorkerLazyBackgroundTest : public ServiceWorkerTest {
  public:
-  ServiceWorkerLazyBackgroundTest() {}
+  ServiceWorkerLazyBackgroundTest()
+      : ServiceWorkerTest(
+            // Extensions APIs from SW are only enabled on trunk.
+            // It is important to set the channel early so that this change is
+            // visible in renderers running with service workers (and no
+            // extension).
+            version_info::Channel::UNKNOWN) {}
   ~ServiceWorkerLazyBackgroundTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -761,9 +769,6 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, EventsToStoppedWorker) {
 // extension of the worker is not running.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
                        EventsToStoppedExtension) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-
   LazyBackgroundObserver lazy_observer;
   ResultCatcher catcher;
   const Extension* extension = LoadExtensionWithFlags(
@@ -812,7 +817,63 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
   ExtensionTestMessageListener newtab_listener("hello-newtab", false);
   newtab_listener.set_failure_message("WRONG_NEWTAB");
   content::WebContents* new_web_contents =
-      AddTab(browser(), GURL("about:blank"));
+      AddTab(browser(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(new_web_contents);
+  EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
+}
+
+// Tests that events to service worker correctly after browser restart.
+// This test is similar to EventsToStoppedExtension, except that the event
+// delivery is verified after a browser restart.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
+                       PRE_EventsAfterRestart) {
+  LazyBackgroundObserver lazy_observer;
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/events_to_stopped_extension"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  ProcessManager* pm = ProcessManager::Get(browser()->profile());
+  EXPECT_GT(pm->GetLazyKeepaliveCount(extension), 0);
+
+  // |extension|'s background page opens a tab to its resource.
+  content::WebContents* extension_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(extension_web_contents));
+  EXPECT_EQ(extension->GetResourceURL("page.html").spec(),
+            extension_web_contents->GetURL().spec());
+  {
+    // Let the service worker start and register a listener to
+    // chrome.tabs.onCreated event.
+    ExtensionTestMessageListener add_listener_done("listener-added", false);
+    content::ExecuteScriptAsync(extension_web_contents,
+                                "window.runServiceWorkerAsync()");
+    EXPECT_TRUE(add_listener_done.WaitUntilSatisfied());
+
+    base::RunLoop run_loop;
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    content::StopServiceWorkerForPattern(
+        storage_partition->GetServiceWorkerContext(),
+        // The service worker is registered at the top level scope.
+        extension->url(), run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Close the tab to |extension|'s resource. This will also close the
+  // extension's event page.
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
+  lazy_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest, EventsAfterRestart) {
+  ExtensionTestMessageListener newtab_listener("hello-newtab", false);
+  content::WebContents* new_web_contents =
+      AddTab(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(new_web_contents);
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }

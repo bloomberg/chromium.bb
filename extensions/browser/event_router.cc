@@ -806,7 +806,8 @@ void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
 
   std::set<std::string> registered_worker_events =
       GetRegisteredEvents(extension->id(), RegisteredEventType::kServiceWorker);
-  listeners_.LoadUnfilteredLazyListeners(extension->id(), registered_events);
+  listeners_.LoadUnfilteredWorkerListeners(extension->id(),
+                                           registered_worker_events);
 
   const DictionaryValue* filtered_events = GetFilteredEvents(extension->id());
   if (filtered_events)
