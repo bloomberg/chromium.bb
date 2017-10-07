@@ -170,6 +170,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_EQ(tag1, actual_params->GetTag());
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
   EXPECT_STREQ(text, copied_text.c_str());
+  copied_text.clear();
 
   // Check with an empty string.
   uint32_t tag2 = 777;
@@ -185,6 +186,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
+  EXPECT_TRUE(copied_text.empty());
 
   uint32_t tag3 = 888;
   param_size = 1;
@@ -201,6 +203,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   EXPECT_EQ(0u, param_size);
   EXPECT_EQ(WCHAR_TYPE, type);
   EXPECT_TRUE(actual_params->GetParameterStr(0, &copied_text));
+  EXPECT_TRUE(copied_text.empty());
   EXPECT_TRUE(actual_params->GetParameterStr(1, &copied_text));
   EXPECT_STREQ(text, copied_text.c_str());
 
