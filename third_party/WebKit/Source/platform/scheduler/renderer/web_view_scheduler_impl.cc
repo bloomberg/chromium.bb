@@ -137,6 +137,11 @@ void WebViewSchedulerImpl::SetPageVisible(bool page_visible) {
   UpdateBackgroundThrottlingState();
 }
 
+void WebViewSchedulerImpl::SetPageStopped(bool stopped) {
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+    frame_scheduler->SetPageStopped(stopped);
+}
+
 std::unique_ptr<WebFrameSchedulerImpl>
 WebViewSchedulerImpl::CreateWebFrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context,

@@ -55,7 +55,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   static constexpr ClientId kInvalidClientId = 0u;
 
-  static constexpr size_t kOutstandingUnlimited = 0u;
+  static constexpr size_t kOutstandingUnlimited =
+      std::numeric_limits<size_t>::max();
 
   static ResourceLoadScheduler* Create(FetchContext* context = nullptr) {
     return new ResourceLoadScheduler(context ? context
@@ -131,7 +132,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     kInitial,
     kThrottled,
     kNotThrottled,
-    kPartiallyThrottled
+    kPartiallyThrottled,
+    kStopped,
   };
   ThrottlingHistory throttling_history_ = ThrottlingHistory::kInitial;
 

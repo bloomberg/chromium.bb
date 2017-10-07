@@ -47,6 +47,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl
 
   // WebViewScheduler implementation:
   void SetPageVisible(bool page_visible) override;
+  void SetPageStopped(bool) override;
   std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext* blame_context,
       WebFrameScheduler::FrameType frame_type) override;
