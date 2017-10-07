@@ -5,7 +5,6 @@
 #ifndef MEDIA_CDM_CDM_HOST_FILES_H_
 #define MEDIA_CDM_CDM_HOST_FILES_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -30,17 +29,24 @@ class FilePath;
 namespace media {
 
 // Manages all CDM host files.
+
+// TODO(xhwang): Remove all functions suffixed with "WithAdapter" after CDM
+// adapter is deprecated.
+
 class MEDIA_EXPORT CdmHostFiles {
  public:
   CdmHostFiles();
   ~CdmHostFiles();
 
-  // Opens CDM host files for the CDM adapter at |cdm_adapter_path| and returns
-  // the created CdmHostFiles instance. Returns nullptr if any of the files
-  // cannot be opened, in which case no file will be left open.
-  static std::unique_ptr<CdmHostFiles> Create(
+  // Opens all common files and CDM specific files for the CDM adapter
+  // registered at |cdm_adapter_path|.
+  void InitializeWithAdapter(
       const base::FilePath& cdm_adapter_path,
-      const std::vector<CdmHostFilePath>& host_files);
+      const std::vector<CdmHostFilePath>& cdm_host_file_paths);
+
+  // Opens all common files and CDM specific files for the CDM at |cdm_path|.
+  void Initialize(const base::FilePath& cdm_path,
+                  const std::vector<CdmHostFilePath>& cdm_host_file_paths);
 
   // Status of CDM host verification.
   // Note: Reported to UMA. Do not change the values.
@@ -57,32 +63,36 @@ class MEDIA_EXPORT CdmHostFiles {
   // by the CDM. If unexpected error happens, all files will be closed.
   // Otherwise, the PlatformFiles are passed to the CDM which will close the
   // files later.
-  Status InitVerification(base::NativeLibrary cdm_adapter_library,
-                          const base::FilePath& cdm_adapter_path);
-
- private:
-  // Opens all common files and CDM specific files for the CDM adapter
-  // registered at |cdm_adapter_path|.
-  void OpenFiles(const base::FilePath& cdm_adapter_path,
-                 const std::vector<CdmHostFilePath>& cdm_host_file_paths);
-
-  // Opens common CDM host files shared by all CDMs.
-  void OpenCommonFiles(const std::vector<CdmHostFilePath>& cdm_host_file_paths);
-
-  // Opens CDM specific files for the CDM adapter registered at
-  // |cdm_adapter_path|.
-  void OpenCdmFiles(const base::FilePath& cdm_adapter_path);
-
-  // Fills |cdm_host_files| with common and CDM specific files for
-  // |cdm_adapter_path|. The ownership of those files are also transferred.
-  void TakePlatformFiles(const base::FilePath& cdm_adapter_path,
-                         std::vector<cdm::HostFile>* cdm_host_files);
+  // NOTE: Initialize*() must be called before calling this.
+  Status InitVerificationWithAdapter(base::NativeLibrary cdm_adapter_library,
+                                     const base::FilePath& cdm_adapter_path);
+  Status InitVerification(base::NativeLibrary cdm_library);
 
   void CloseAllFiles();
 
+ private:
+  // Opens common CDM host files shared by all CDMs.
+  void OpenCommonFiles(const std::vector<CdmHostFilePath>& cdm_host_file_paths);
+
+  // Opens the CDM file and the CDM adapter file.
+  void OpenCdmFileWithAdapter(const base::FilePath& cdm_adapter_path);
+
+  // Opens the CDM file.
+  void OpenCdmFile(const base::FilePath& cdm_path);
+
+  // Fills |cdm_host_files| with common and CDM specific files. The ownership
+  // of those files are also transferred.
+  void TakePlatformFiles(std::vector<cdm::HostFile>* cdm_host_files);
+
   using ScopedFileVector = std::vector<std::unique_ptr<CdmHostFile>>;
+
+  // Files common to all CDM types, e.g. main executable.
   ScopedFileVector common_files_;
-  std::map<base::FilePath, ScopedFileVector> cdm_specific_files_map_;
+
+  // Files specific to each CDM type. When the CDM is hosted by a CDM adapter,
+  // this includes both the CDM adapter and the CDM. Otherwise, this only
+  // includes the CDM.
+  ScopedFileVector cdm_specific_files_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmHostFiles);
 };

@@ -858,13 +858,6 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DecryptOnly_VideoOnly_MP4_VP9) {
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, VerifyCdmHostTest) {
-  // TODO(xhwang): Enable CDM host verification in mojo CDM. See
-  // http://crbug.com/730770
-  if (IsUsingMojoCdm()) {
-    DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
-    return;
-  }
-
   TestNonPlaybackCases(kExternalClearKeyVerifyCdmHostTestKeySystem,
                        kUnitTestSuccess);
 }

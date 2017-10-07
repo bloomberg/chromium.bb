@@ -62,10 +62,6 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::MediaService> bindings_;
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  bool is_cdm_loaded_ = false;
-#endif
 };
 
 }  // namespace media
