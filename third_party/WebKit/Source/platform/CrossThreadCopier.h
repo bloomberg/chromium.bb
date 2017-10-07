@@ -94,12 +94,21 @@ struct CrossThreadCopier
 
 // CrossThreadCopier specializations follow.
 template <typename T>
-struct CrossThreadCopier<RefPtr<T>>
-    : public CrossThreadCopierPassThrough<RefPtr<T>> {
+struct CrossThreadCopier<WTF::RetainedRefWrapper<T>> {
   STATIC_ONLY(CrossThreadCopier);
   static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value,
                 "RefPtr<T> can be passed across threads only if T is "
                 "ThreadSafeRefCounted.");
+  using Type = WTF::RetainedRefWrapper<T>;
+  static Type Copy(Type pointer) { return pointer; }
+};
+template <typename T>
+struct CrossThreadCopier<RefPtr<T>> {
+  STATIC_ONLY(CrossThreadCopier);
+  static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value,
+                "RefPtr<T> can be passed across threads only if T is "
+                "ThreadSafeRefCounted.");
+  using Type = RefPtr<T>;
   static RefPtr<T> Copy(RefPtr<T> pointer) { return pointer; }
 };
 template <typename T>
