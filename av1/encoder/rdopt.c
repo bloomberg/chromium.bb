@@ -6221,12 +6221,13 @@ static int64_t cfl_alpha_dist_lbd(const int16_t *pred_buf_q3,
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       const int uv = src[i];
-      const int scaled_luma = get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]);
 
-      diff = uv - clip_pixel(scaled_luma + dc_pred);
+      diff = uv -
+             clip_pixel(get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred);
       dist += diff * diff;
 
-      diff = uv - clip_pixel(-scaled_luma + dc_pred);
+      diff = uv - clip_pixel(get_scaled_luma_q0(-alpha_q3, pred_buf_q3[i]) +
+                             dc_pred);
       dist_neg += diff * diff;
     }
     pred_buf_q3 += MAX_SB_SIZE;
@@ -6267,12 +6268,15 @@ static int64_t cfl_alpha_dist_hbd(const int16_t *pred_buf_q3,
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       const int uv = src[i];
-      const int scaled_luma = get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]);
 
-      diff = uv - clip_pixel_highbd(scaled_luma + dc_pred, bit_depth);
+      diff = uv - clip_pixel_highbd(
+                      get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred,
+                      bit_depth);
       dist += diff * diff;
 
-      diff = uv - clip_pixel_highbd(-scaled_luma + dc_pred, bit_depth);
+      diff = uv - clip_pixel_highbd(
+                      get_scaled_luma_q0(-alpha_q3, pred_buf_q3[i]) + dc_pred,
+                      bit_depth);
       dist_neg += diff * diff;
     }
     pred_buf_q3 += MAX_SB_SIZE;
