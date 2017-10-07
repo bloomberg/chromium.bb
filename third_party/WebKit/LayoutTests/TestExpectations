@@ -1092,6 +1092,11 @@ crbug.com/658305 css3/filters/effect-reference-zoom.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-zoom-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/filter-effect-removed.html [ Failure Pass ]
 
+crbug.com/459499 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.html [ Skip ]
+crbug.com/459499 http/tests/devtools/sources/debugger-breakpoints/debugger-set-breakpoint-regex.html [ Skip ]
+crbug.com/459499 virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/debugger-set-breakpoint-regex.html [ Skip ]
+crbug.com/459499 virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.html [ Skip ]
+
 crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
