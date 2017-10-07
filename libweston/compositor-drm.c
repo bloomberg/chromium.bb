@@ -657,9 +657,25 @@ drm_output_update_msc(struct drm_output *output, unsigned int seq);
 static void
 drm_output_destroy(struct weston_output *output_base);
 
-static int
-drm_plane_crtc_supported(struct drm_output *output, struct drm_plane *plane)
+/**
+ * Returns true if the plane can be used on the given output for its current
+ * repaint cycle.
+ */
+static bool
+drm_plane_is_available(struct drm_plane *plane, struct drm_output *output)
 {
+	assert(plane->state_cur);
+
+	/* The plane still has a request not yet completed by the kernel. */
+	if (!plane->state_cur->complete)
+		return false;
+
+	/* The plane is still active on another output. */
+	if (plane->state_cur->output && plane->state_cur->output != output)
+		return false;
+
+	/* Check whether the plane can be used with this CRTC; possible_crtcs
+	 * is a bitmask of CRTC indices (pipe), rather than CRTC object ID. */
 	return !!(plane->possible_crtcs & (1 << output->pipe));
 }
 
@@ -2024,12 +2040,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		if (p->type != WDRM_PLANE_TYPE_OVERLAY)
 			continue;
 
-		if (!drm_plane_crtc_supported(output, p))
-			continue;
-
-		if (!p->state_cur->complete)
-			continue;
-		if (p->state_cur->output && p->state_cur->output != output)
+		if (!drm_plane_is_available(p, output))
 			continue;
 
 		state = drm_output_state_get_plane(output_state, p);
