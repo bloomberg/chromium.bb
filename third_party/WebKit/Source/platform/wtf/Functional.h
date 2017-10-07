@@ -127,6 +127,27 @@ PassedWrapper<T> Passed(T&& value) {
   return PassedWrapper<T>(std::move(value));
 }
 
+template <typename T>
+class RetainedRefWrapper final {
+ public:
+  explicit RetainedRefWrapper(T* ptr) : ptr_(ptr) {}
+  explicit RetainedRefWrapper(RefPtr<T> ptr) : ptr_(std::move(ptr)) {}
+  T* get() const { return ptr_.get(); }
+
+ private:
+  RefPtr<T> ptr_;
+};
+
+template <typename T>
+RetainedRefWrapper<T> RetainedRef(T* ptr) {
+  return RetainedRefWrapper<T>(ptr);
+}
+
+template <typename T>
+RetainedRefWrapper<T> RetainedRef(RefPtr<T> ptr) {
+  return RetainedRefWrapper<T>(std::move(ptr));
+}
+
 template <typename T, FunctionThreadAffinity threadAffinity>
 class UnretainedWrapper final {
  public:
@@ -290,8 +311,10 @@ typedef Function<void(), kCrossThreadAffinity> CrossThreadClosure;
 namespace base {
 
 template <typename T>
-struct BindUnwrapTraits<WTF::RefPtr<T>> {
-  static T* Unwrap(const WTF::RefPtr<T>& wrapped) { return wrapped.get(); }
+struct BindUnwrapTraits<WTF::RetainedRefWrapper<T>> {
+  static T* Unwrap(const WTF::RetainedRefWrapper<T>& wrapped) {
+    return wrapped.get();
+  }
 };
 
 template <typename T>

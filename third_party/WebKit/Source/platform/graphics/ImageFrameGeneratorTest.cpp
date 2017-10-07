@@ -260,7 +260,8 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
       Platform::Current()->CreateThread("DecodeThread");
   thread->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      CrossThreadBind(&DecodeThreadMain, generator_, segment_reader_));
+      CrossThreadBind(&DecodeThreadMain, WTF::RetainedRef(generator_),
+                      WTF::RetainedRef(segment_reader_)));
   thread.reset();
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(1, decoders_destroyed_);

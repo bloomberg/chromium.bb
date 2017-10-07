@@ -355,18 +355,18 @@ TEST(FunctionalTest, RefCountedStorage) {
   RefPtr<Number> five = Number::Create(5);
   EXPECT_TRUE(five->HasOneRef());
   Function<int()> multiply_five_by_two_function =
-      WTF::Bind(MultiplyNumberByTwo, five);
+      WTF::Bind(MultiplyNumberByTwo, WTF::RetainedRef(five));
   EXPECT_EQ(2, five->RefCount());
   EXPECT_EQ(10, multiply_five_by_two_function());
   EXPECT_EQ(2, five->RefCount());
 
   Function<int()> multiply_four_by_two_function =
-      WTF::Bind(MultiplyNumberByTwo, Number::Create(4));
+      WTF::Bind(MultiplyNumberByTwo, WTF::RetainedRef(Number::Create(4)));
   EXPECT_EQ(8, multiply_four_by_two_function());
 
   RefPtr<Number> six = Number::Create(6);
   Function<int()> multiply_six_by_two_function =
-      WTF::Bind(MultiplyNumberByTwo, std::move(six));
+      WTF::Bind(MultiplyNumberByTwo, WTF::RetainedRef(std::move(six)));
   EXPECT_FALSE(six);
   EXPECT_EQ(12, multiply_six_by_two_function());
 }
