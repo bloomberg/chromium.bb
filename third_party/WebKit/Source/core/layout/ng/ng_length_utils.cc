@@ -377,6 +377,18 @@ int ResolveUsedColumnCount(int computed_count,
   return std::max(1, std::min(computed_count, count_from_width));
 }
 
+int ResolveUsedColumnCount(LayoutUnit available_size,
+                           const ComputedStyle& style) {
+  LayoutUnit computed_column_inline_size =
+      style.HasAutoColumnWidth()
+          ? NGSizeIndefinite
+          : std::max(LayoutUnit(1), LayoutUnit(style.ColumnWidth()));
+  LayoutUnit gap = ResolveUsedColumnGap(style);
+  int computed_count = style.ColumnCount();
+  return ResolveUsedColumnCount(computed_count, computed_column_inline_size,
+                                gap, available_size);
+}
+
 LayoutUnit ResolveUsedColumnInlineSize(int computed_count,
                                        LayoutUnit computed_size,
                                        LayoutUnit used_gap,

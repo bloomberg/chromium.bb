@@ -27,9 +27,13 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   Optional<MinMaxSize> ComputeMinMaxSize() const override;
 
  private:
-  RefPtr<NGConstraintSpace> CreateConstraintSpaceForColumns() const;
-
-  NGLogicalSize content_box_size_;
+  NGLogicalSize CalculateColumnSize(const NGLogicalSize& content_box_size);
+  LayoutUnit CalculateBalancedColumnBlockSize(const NGLogicalSize& column_size,
+                                              int column_count);
+  RefPtr<NGConstraintSpace> CreateConstraintSpaceForColumns(
+      const NGLogicalSize& column_size) const;
+  RefPtr<NGConstraintSpace> CreateConstaintSpaceForBalancing(
+      const NGLogicalSize& column_size) const;
 };
 
 }  // namespace Blink

@@ -789,5 +789,270 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   EXPECT_EQ(LayoutUnit(100), size->max_size);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancing) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:330x60
+      offset:5,5 size:100x50
+        offset:0,0 size:30x50
+      offset:115,5 size:100x50
+        offset:0,0 size:30x50
+      offset:225,5 size:100x50
+        offset:0,0 size:30x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingFixedHeightExactMatch) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        height: 50px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:330x60
+      offset:5,5 size:100x50
+        offset:0,0 size:30x50
+      offset:115,5 size:100x50
+        offset:0,0 size:30x50
+      offset:225,5 size:100x50
+        offset:0,0 size:30x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingFixedHeightLessContent) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x110
+    offset:0,0 size:330x110
+      offset:5,5 size:100x50
+        offset:0,0 size:30x50
+      offset:115,5 size:100x50
+        offset:0,0 size:30x50
+      offset:225,5 size:100x50
+        offset:0,0 size:30x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest,
+       ColumnBalancingFixedHeightOverflowingContent) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        height: 35px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x45
+    offset:0,0 size:330x45
+      offset:5,5 size:100x35
+        offset:0,0 size:30x35
+      offset:115,5 size:100x35
+        offset:0,0 size:30x35
+      offset:225,5 size:100x35
+        offset:0,0 size:30x35
+      offset:335,5 size:100x35
+        offset:0,0 size:30x35
+      offset:445,5 size:100x10
+        offset:0,0 size:30x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingMinHeight) {
+  // Min-height has no effect on the columns, only on the multicol
+  // container. Balanced columns should never be taller than they have to be.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        min-height:70px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:330x60
+      offset:5,5 size:100x50
+        offset:0,0 size:30x50
+      offset:115,5 size:100x50
+        offset:0,0 size:30x50
+      offset:225,5 size:100x50
+        offset:0,0 size:30x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingMaxHeight) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        max-height:40px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:330x50
+      offset:5,5 size:100x40
+        offset:0,0 size:30x40
+      offset:115,5 size:100x40
+        offset:0,0 size:30x40
+      offset:225,5 size:100x40
+        offset:0,0 size:30x40
+      offset:335,5 size:100x30
+        offset:0,0 size:30x30
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest,
+       ColumnBalancingMinHeightLargerThanMaxHeight) {
+  // Min-height has no effect on the columns, only on the multicol
+  // container. Balanced columns should never be taller than they have to be.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        min-height:70px;
+        max-height:50px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:330x60
+      offset:5,5 size:100x50
+        offset:0,0 size:30x50
+      offset:115,5 size:100x50
+        offset:0,0 size:30x50
+      offset:225,5 size:100x50
+        offset:0,0 size:30x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingFixedHeightMinHeight) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        height:40px;
+        max-height:30px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:330x40
+      offset:5,5 size:100x30
+        offset:0,0 size:30x30
+      offset:115,5 size:100x30
+        offset:0,0 size:30x30
+      offset:225,5 size:100x30
+        offset:0,0 size:30x30
+      offset:335,5 size:100x30
+        offset:0,0 size:30x30
+      offset:445,5 size:100x30
+        offset:0,0 size:30x30
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink
