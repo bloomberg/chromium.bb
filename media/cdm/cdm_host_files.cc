@@ -4,7 +4,6 @@
 
 #include "media/cdm/cdm_host_files.h"
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -68,40 +67,14 @@ base::FilePath GetCdmPath(const base::FilePath& cdm_adapter_path) {
       base::GetNativeLibraryName(cdm_file_name));
 }
 
-}  // namespace
-
-CdmHostFiles::CdmHostFiles() {
-  DVLOG(1) << __func__;
-}
-
-CdmHostFiles::~CdmHostFiles() {
-  DVLOG(1) << __func__;
-}
-
-// static
-std::unique_ptr<CdmHostFiles> CdmHostFiles::Create(
-    const base::FilePath& cdm_adapter_path,
-    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
-  DVLOG(1) << __func__;
-  std::unique_ptr<CdmHostFiles> cdm_host_files =
-      base::MakeUnique<CdmHostFiles>();
-  cdm_host_files->OpenFiles(cdm_adapter_path, cdm_host_file_paths);
-  return cdm_host_files;
-}
-
-CdmHostFiles::Status CdmHostFiles::InitVerification(
-    base::NativeLibrary cdm_adapter_library,
-    const base::FilePath& cdm_adapter_path) {
-  DVLOG(1) << __func__;
+// Gets the library where InitVerificationFunc pointer can be obtained.
+// TODO(crbug.com/403462): Remove this after CDM adapter is deprecated.
+base::NativeLibrary GetCdmLibrary(base::NativeLibrary cdm_adapter_library,
+                                  const base::FilePath& cdm_adapter_path) {
   DCHECK(cdm_adapter_library);
 
-  // Get function pointer exported by the CDM.
-  // See media/cdm/api/content_decryption_module_ext.h.
-  using InitVerificationFunc =
-      bool (*)(const cdm::HostFile* cdm_host_files, uint32_t num_files);
-  static const char kInitVerificationFuncName[] = "VerifyCdmHost_0";
-
   base::NativeLibrary cdm_library;
+
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   // On POSIX, "the dlsym() function shall search for the named symbol in all
   // objects loaded automatically as a result of loading the object referenced
@@ -114,13 +87,62 @@ CdmHostFiles::Status CdmHostFiles::InitVerification(
   base::NativeLibraryLoadError error;
   scoped_cdm_library.Reset(
       base::LoadNativeLibrary(GetCdmPath(cdm_adapter_path), &error));
-  if (!scoped_cdm_library.is_valid()) {
+  if (!scoped_cdm_library.is_valid())
     LOG(ERROR) << "Failed to load CDM (error: " << error.ToString() << ")";
-    CloseAllFiles();
-    return Status::kCdmLoadFailed;
-  }
-  cdm_library = scoped_cdm_library.get();
+  else
+    cdm_library = scoped_cdm_library.get();
 #endif
+
+  return cdm_library;
+}
+
+}  // namespace
+
+CdmHostFiles::CdmHostFiles() {
+  DVLOG(1) << __func__;
+}
+
+CdmHostFiles::~CdmHostFiles() {
+  DVLOG(1) << __func__;
+}
+
+void CdmHostFiles::InitializeWithAdapter(
+    const base::FilePath& cdm_adapter_path,
+    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
+  OpenCdmFileWithAdapter(cdm_adapter_path);
+  OpenCommonFiles(cdm_host_file_paths);
+}
+
+void CdmHostFiles::Initialize(
+    const base::FilePath& cdm_path,
+    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
+  OpenCdmFile(cdm_path);
+  OpenCommonFiles(cdm_host_file_paths);
+}
+
+CdmHostFiles::Status CdmHostFiles::InitVerificationWithAdapter(
+    base::NativeLibrary cdm_adapter_library,
+    const base::FilePath& cdm_adapter_path) {
+  DVLOG(1) << __func__;
+  DCHECK(cdm_adapter_library);
+  base::NativeLibrary cdm_library =
+      GetCdmLibrary(cdm_adapter_library, cdm_adapter_path);
+  if (!cdm_library)
+    return Status::kCdmLoadFailed;
+
+  return InitVerification(cdm_library);
+}
+
+CdmHostFiles::Status CdmHostFiles::InitVerification(
+    base::NativeLibrary cdm_library) {
+  DVLOG(1) << __func__;
+  DCHECK(cdm_library);
+
+  // Get function pointer exported by the CDM.
+  // See media/cdm/api/content_decryption_module_ext.h.
+  using InitVerificationFunc =
+      bool (*)(const cdm::HostFile* cdm_host_files, uint32_t num_files);
+  static const char kInitVerificationFuncName[] = "VerifyCdmHost_0";
 
   InitVerificationFunc init_verification_func =
       reinterpret_cast<InitVerificationFunc>(
@@ -132,10 +154,9 @@ CdmHostFiles::Status CdmHostFiles::InitVerification(
     return Status::kGetFunctionFailed;
   }
 
-  // Fills |cdm_host_files| with common and CDM specific files for
-  // |cdm_adapter_path|.
+  // Fills |cdm_host_files| with common and CDM specific files.
   std::vector<cdm::HostFile> cdm_host_files;
-  TakePlatformFiles(cdm_adapter_path, &cdm_host_files);
+  TakePlatformFiles(&cdm_host_files);
 
   // std::vector::data() is not guaranteed to be nullptr when empty().
   const cdm::HostFile* cdm_host_files_ptr =
@@ -163,11 +184,9 @@ CdmHostFiles::Status CdmHostFiles::InitVerification(
   return Status::kSuccess;
 }
 
-void CdmHostFiles::OpenFiles(
-    const base::FilePath& cdm_adapter_path,
-    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
-  OpenCdmFiles(cdm_adapter_path);
-  OpenCommonFiles(cdm_host_file_paths);
+void CdmHostFiles::CloseAllFiles() {
+  common_files_.clear();
+  cdm_specific_files_.clear();
 }
 
 void CdmHostFiles::OpenCommonFiles(
@@ -180,48 +199,36 @@ void CdmHostFiles::OpenCommonFiles(
   }
 }
 
-void CdmHostFiles::OpenCdmFiles(const base::FilePath& cdm_adapter_path) {
+void CdmHostFiles::OpenCdmFileWithAdapter(
+    const base::FilePath& cdm_adapter_path) {
   DCHECK(!cdm_adapter_path.empty());
-  DCHECK(!cdm_specific_files_map_.count(cdm_adapter_path));
-
-  std::unique_ptr<CdmHostFile> cdm_adapter_file =
-      CdmHostFile::Create(cdm_adapter_path, GetSigFilePath(cdm_adapter_path));
+  cdm_specific_files_.push_back(
+      CdmHostFile::Create(cdm_adapter_path, GetSigFilePath(cdm_adapter_path)));
 
   base::FilePath cdm_path = GetCdmPath(cdm_adapter_path);
-  std::unique_ptr<CdmHostFile> cdm_file =
-      CdmHostFile::Create(cdm_path, GetSigFilePath(cdm_path));
+  if (cdm_path.empty()) {
+    LOG(ERROR) << "CDM path is empty.";
+    return;
+  }
 
-  ScopedFileVector cdm_specific_files;
-  cdm_specific_files.reserve(2);
-  cdm_specific_files.push_back(std::move(cdm_adapter_file));
-  cdm_specific_files.push_back(std::move(cdm_file));
+  OpenCdmFile(cdm_path);
+}
 
-  cdm_specific_files_map_[cdm_adapter_path] = std::move(cdm_specific_files);
+void CdmHostFiles::OpenCdmFile(const base::FilePath& cdm_path) {
+  DCHECK(!cdm_path.empty());
+  cdm_specific_files_.push_back(
+      CdmHostFile::Create(cdm_path, GetSigFilePath(cdm_path)));
 }
 
 void CdmHostFiles::TakePlatformFiles(
-    const base::FilePath& cdm_adapter_path,
     std::vector<cdm::HostFile>* cdm_host_files) {
   DCHECK(cdm_host_files->empty());
 
   // Populate an array of cdm::HostFile.
   for (const auto& file : common_files_)
     cdm_host_files->push_back(file->TakePlatformFile());
-
-  // Check whether CDM specific files exist.
-  const auto& iter = cdm_specific_files_map_.find(cdm_adapter_path);
-  if (iter == cdm_specific_files_map_.end()) {
-    NOTREACHED() << "No CDM specific files for " << cdm_adapter_path.value();
-  } else {
-    const ScopedFileVector& cdm_specific_files = iter->second;
-    for (const auto& file : cdm_specific_files)
-      cdm_host_files->push_back(file->TakePlatformFile());
-  }
-}
-
-void CdmHostFiles::CloseAllFiles() {
-  common_files_.clear();
-  cdm_specific_files_map_.clear();
+  for (const auto& file : cdm_specific_files_)
+    cdm_host_files->push_back(file->TakePlatformFile());
 }
 
 // Question(xhwang): Any better way to check whether a plugin is a CDM? Maybe

@@ -34,6 +34,10 @@
 #include "media/mojo/services/mojo_media_client.h"   // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#include "media/cdm/cdm_host_file.h"
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
 namespace {
 
 std::unique_ptr<service_manager::Service> CreateVideoCaptureService() {
@@ -66,6 +70,14 @@ class CdmMojoMediaClient final : public media::MojoMediaClient {
     return std::make_unique<media::CdmAdapterFactory>(
         base::Bind(&CreateCdmHelper, host_interfaces));
   }
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+  void AddCdmHostFilePaths(
+      std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override {
+    GetContentClient()->AddContentDecryptionModules(nullptr,
+                                                    cdm_host_file_paths);
+  }
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 };
 
 std::unique_ptr<service_manager::Service> CreateCdmService() {
