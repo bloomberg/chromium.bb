@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPAPI_PREFERENCES_BUILDER_H_
 #define CONTENT_RENDERER_PEPPER_PPAPI_PREFERENCES_BUILDER_H_
 
+namespace gpu {
+struct GpuFeatureInfo;
+}
 namespace ppapi {
 struct Preferences;
 }
@@ -15,7 +18,8 @@ struct WebPreferences;
 
 class PpapiPreferencesBuilder {
  public:
-  static ppapi::Preferences Build(const WebPreferences& prefs);
+  static ppapi::Preferences Build(const WebPreferences& prefs,
+                                  const gpu::GpuFeatureInfo& gpu_feature_info);
 };
 
 }  // namespace content
