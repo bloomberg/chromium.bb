@@ -36,16 +36,20 @@
 //   content/browser/service_worker/service_worker_database.cc for details.
 // - Integer values are serialized as a string by base::Int*ToString().
 //
-// key: "bgfetch_registration_" + <std::string 'registration_id'>
+// key: "bgfetch_registration_developer_id_to_unique_id_"
+//          + <std::string 'developer_id'>
+// value: <std::string 'unique_id'>
+//
+// key: "bgfetch_registration_" + <std::string 'unique_id'>
 // value: <std::string 'serialized content::proto::BackgroundFetchRegistration'>
 //
-// key: "bgfetch_request_" + <std::string 'registration_id'>
+// key: "bgfetch_request_" + <std::string 'registration unique_id'>
 //          + "_" + <int 'request_index'>
 // value: <TODO: FetchAPIRequest serialized as a string>
 //
 // key: "bgfetch_pending_request_"
 //          + <int64_t 'registration_creation_microseconds_since_unix_epoch'>
-//          + "_" + <std::string 'registration_id'>
+//          + "_" + <std::string 'registration unique_id'>
 //          + "_" + <int 'request_index'>
 // value: ""
 
@@ -53,49 +57,58 @@ namespace content {
 
 namespace {
 
-const char kSeparator[] = "_";  // Warning: registration IDs may contain these.
+// Warning: registration |developer_id|s may contain kSeparator characters.
+const char kSeparator[] = "_";
+
+const char kRegistrationDeveloperIdToUniqueIdKeyPrefix[] =
+    "bgfetch_registration_developer_id_to_unique_id_";
 const char kRegistrationKeyPrefix[] = "bgfetch_registration_";
 const char kRequestKeyPrefix[] = "bgfetch_request_";
 const char kPendingRequestKeyPrefix[] = "bgfetch_pending_request_";
 
+std::string RegistrationDeveloperIdToUniqueIdKey(
+    const std::string& developer_id) {
+  // Allows looking up the active registration's |unique_id| by |developer_id|.
+  return kRegistrationDeveloperIdToUniqueIdKeyPrefix + developer_id;
+}
+
 std::string RegistrationKey(
     const BackgroundFetchRegistrationId& registration_id) {
-  // Allows looking up a registration by ID.
-  return kRegistrationKeyPrefix + registration_id.id();
+  // Allows looking up a registration by |unique_id|.
+  return kRegistrationKeyPrefix + registration_id.unique_id();
 }
 
 std::string RequestKeyPrefix(
     const BackgroundFetchRegistrationId& registration_id) {
   // Allows looking up all requests within a registration.
-  return kRequestKeyPrefix + registration_id.id() + kSeparator;
+  return kRequestKeyPrefix + registration_id.unique_id() + kSeparator;
 }
 
 std::string RequestKey(const BackgroundFetchRegistrationId& registration_id,
                        int request_index) {
-  // Allows looking up a request by registration ID and index within that.
+  // Allows looking up a request by registration id and index within that.
   return RequestKeyPrefix(registration_id) + base::IntToString(request_index);
 }
 
 std::string PendingRequestKeyPrefix(
     int64_t registration_creation_microseconds_since_unix_epoch,
     const BackgroundFetchRegistrationId& registration_id) {
-  // These keys are ordered by creation time rather than by registration_id, so
-  // the highest priority pending requests can be looked up by fetching the
-  // lexicographically smallest keys.
+  // These keys are ordered by the registration's creation time rather than by
+  // its |unique_id|, so that the highest priority pending requests in FIFO
+  // order can be looked up by fetching the lexicographically smallest keys.
+  // https://crbug.com/741609 may introduce more advanced prioritisation.
   //
-  // Currently (pending crbug.com/741609) registrations within each
-  // StoragePartition are prioritised in simple FIFO order by creation time.
   // Since the ordering must survive restarts, wall clock time is used, but that
   // is not monotonically increasing, so the ordering is not exact, and the
-  // registration ID is appended to break ties in case the wall clock returns
-  // the same values more than once.
+  // |unique_id| is appended to break ties in case the wall clock returns the
+  // same values more than once.
   //
   // On Nov 20 2286 17:46:39 the microseconds will transition from 9999999999999
   // to 10000000000000 and pending requests will briefly sort incorrectly.
   return kPendingRequestKeyPrefix +
          base::Int64ToString(
              registration_creation_microseconds_since_unix_epoch) +
-         kSeparator + registration_id.id() + kSeparator;
+         kSeparator + registration_id.unique_id() + kSeparator;
 }
 
 std::string PendingRequestKey(
@@ -231,21 +244,24 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
   void Start() override {
     service_worker_context()->GetRegistrationUserData(
         registration_id_.service_worker_registration_id(),
-        {RegistrationKey(registration_id_)},
-        base::Bind(&CreateRegistrationTask::DidGetRegistration,
+        {RegistrationDeveloperIdToUniqueIdKey(registration_id_.developer_id())},
+        base::Bind(&CreateRegistrationTask::DidGetUniqueId,
                    weak_factory_.GetWeakPtr()));
   }
 
  private:
-  void DidGetRegistration(const std::vector<std::string>& data,
-                          ServiceWorkerStatusCode status) {
+  void DidGetUniqueId(const std::vector<std::string>& data,
+                      ServiceWorkerStatusCode status) {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kNotFound:
         StoreRegistration();
         return;
       case DatabaseStatus::kOk:
+        // Can't create a registration since there is already an active
+        // registration with the same |developer_id|. It must be deactivated
+        // (completed/failed/aborted) first.
         std::move(callback_).Run(
-            blink::mojom::BackgroundFetchError::DUPLICATED_ID);
+            blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
         Finished();  // Destroys |this|.
         return;
       case DatabaseStatus::kFailed:
@@ -276,6 +292,9 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
       Finished();  // Destroys |this|.
       return;
     }
+    entries.emplace_back(
+        RegistrationDeveloperIdToUniqueIdKey(registration_id_.developer_id()),
+        registration_id_.unique_id());
     entries.emplace_back(RegistrationKey(registration_id_),
                          std::move(serialized_registration_proto));
 
@@ -347,7 +366,12 @@ class DeleteRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
  private:
   void DidGetRegistration(const std::vector<std::string>& data,
                           ServiceWorkerStatusCode status) {
+    // TODO(crbug.com/757760): In future removing the
+    // RegistrationDeveloperIdToUniqueIdKey and RegistrationKey will happen
+    // separately, since registration data must persist for as long as
+    // JavaScript retains a reference to it, even once completed/failed/aborted.
     std::vector<std::string> prefixes_to_clear = {
+        RegistrationDeveloperIdToUniqueIdKey(registration_id_.developer_id()),
         RegistrationKey(registration_id_), RequestKeyPrefix(registration_id_)};
 
     if (status == SERVICE_WORKER_OK) {
@@ -513,11 +537,11 @@ void BackgroundFetchDataManager::SetListener(
     const BackgroundFetchRegistrationId& registration_id,
     RegistrationListener* listener) {
   if (listener) {
-    DCHECK_EQ(0u, listeners_.count(registration_id));
-    listeners_[registration_id] = listener;
+    DCHECK_EQ(0u, listeners_.count(registration_id.unique_id()));
+    listeners_.emplace(registration_id.unique_id(), listener);
   } else {
-    DCHECK_EQ(1u, listeners_.count(registration_id));
-    listeners_.erase(registration_id);
+    DCHECK_EQ(1u, listeners_.count(registration_id.unique_id()));
+    listeners_.erase(registration_id.unique_id());
   }
 }
 
@@ -535,37 +559,59 @@ void BackgroundFetchDataManager::CreateRegistration(
     return;
   }
 
-  if (registrations_.find(registration_id) != registrations_.end()) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_ID);
+  // New registrations should never re-use a |unique_id|.
+  DCHECK_EQ(0u, registrations_.count(registration_id.unique_id()));
+
+  auto developer_id_tuple =
+      std::make_tuple(registration_id.service_worker_registration_id(),
+                      registration_id.origin(), registration_id.developer_id());
+
+  if (active_unique_ids_.count(developer_id_tuple)) {
+    std::move(callback).Run(
+        blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
     return;
   }
 
+  // Mark |unique_id| as the currently active registration for
+  // |developer_id_tuple|.
+  active_unique_ids_.emplace(std::move(developer_id_tuple),
+                             registration_id.unique_id());
+
   // Create the |RegistrationData|, and store it for easy access.
-  registrations_.insert(std::make_pair(
-      registration_id, base::MakeUnique<RegistrationData>(requests, options)));
+  registrations_.emplace(registration_id.unique_id(),
+                         std::make_unique<RegistrationData>(requests, options));
 
   // Inform the |callback| of the newly created registration.
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
 }
 
 void BackgroundFetchDataManager::GetRegistration(
-    const BackgroundFetchRegistrationId& registration_id,
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    const std::string& developer_id,
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = registrations_.find(registration_id);
-  if (iter == registrations_.end()) {  // Not found.
+  auto developer_id_tuple =
+      std::make_tuple(service_worker_registration_id, origin, developer_id);
+
+  auto iter = active_unique_ids_.find(developer_id_tuple);
+  if (iter == active_unique_ids_.end()) {
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID,
                             base::nullopt /* registration */);
     return;
   }
 
-  const BackgroundFetchOptions& options = iter->second->options();
+  const std::string& unique_id = iter->second;
+
+  DCHECK_EQ(1u, registrations_.count(unique_id));
+  const BackgroundFetchOptions& options = registrations_[unique_id]->options();
 
   // Compile the BackgroundFetchRegistration object that will be given to the
   // developer, representing the data associated with the |controller|.
   BackgroundFetchRegistration registration;
-  registration.id = iter->first.id();
+  registration.developer_id = developer_id;
+  registration.unique_id = unique_id;
   registration.icons = options.icons;
   registration.title = options.title;
   registration.download_total = options.download_total;
@@ -575,12 +621,12 @@ void BackgroundFetchDataManager::GetRegistration(
 }
 
 void BackgroundFetchDataManager::UpdateRegistrationUI(
-    const BackgroundFetchRegistrationId& registration_id,
+    const std::string& unique_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto registrations_iter = registrations_.find(registration_id);
+  auto registrations_iter = registrations_.find(unique_id);
   if (registrations_iter == registrations_.end()) {  // Not found.
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
     return;
@@ -590,7 +636,7 @@ void BackgroundFetchDataManager::UpdateRegistrationUI(
   registrations_iter->second->SetTitle(title);
 
   // Update any active JobController that cached this data for notifications.
-  auto listeners_iter = listeners_.find(registration_id);
+  auto listeners_iter = listeners_.find(unique_id);
   if (listeners_iter != listeners_.end())
     listeners_iter->second->UpdateUI(title);
 
@@ -602,7 +648,7 @@ void BackgroundFetchDataManager::PopNextRequest(
     NextRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = registrations_.find(registration_id);
+  auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
 
   RegistrationData* registration_data = iter->second.get();
@@ -620,7 +666,7 @@ void BackgroundFetchDataManager::MarkRequestAsStarted(
     const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = registrations_.find(registration_id);
+  auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
 
   RegistrationData* registration_data = iter->second.get();
@@ -633,7 +679,7 @@ void BackgroundFetchDataManager::MarkRequestAsComplete(
     MarkedCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = registrations_.find(registration_id);
+  auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
 
   RegistrationData* registration_data = iter->second.get();
@@ -648,7 +694,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     SettledFetchesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = registrations_.find(registration_id);
+  auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
 
   RegistrationData* registration_data = iter->second.get();
@@ -731,32 +777,37 @@ void BackgroundFetchDataManager::DeleteRegistration(
     return;
   }
 
-  auto iter = registrations_.find(registration_id);
-  if (iter == registrations_.end()) {
+  // TODO(crbug.com/757760): In future removing entries from
+  // active_unique_ids_ and from registrations_ will happen separately,
+  // since entries in registrations_ must persist for as long as JavaScript
+  // retains a reference to them, even once completed/failed/aborted.
+
+  if (!registrations_.erase(registration_id.unique_id())) {
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
     return;
   }
 
-  registrations_.erase(iter);
+  auto developer_id_tuple =
+      std::make_tuple(registration_id.service_worker_registration_id(),
+                      registration_id.origin(), registration_id.developer_id());
+  active_unique_ids_.erase(developer_id_tuple);
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
 }
 
-void BackgroundFetchDataManager::GetIdsForServiceWorker(
+void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
     int64_t service_worker_registration_id,
-    blink::mojom::BackgroundFetchService::GetIdsCallback callback) {
+    blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<std::string> ids;
-  for (const auto& entry : registrations_) {
-    const BackgroundFetchRegistrationId& registration_id = entry.first;
-    if (service_worker_registration_id ==
-        registration_id.service_worker_registration_id()) {
-      ids.emplace_back(registration_id.id());
-    }
+  std::vector<std::string> developer_ids;
+  for (const auto& entry : active_unique_ids_) {
+    if (service_worker_registration_id == std::get<0>(entry.first))
+      developer_ids.emplace_back(std::get<2>(entry.first));
   }
 
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE, ids);
+  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
+                          developer_ids);
 }
 
 void BackgroundFetchDataManager::AddDatabaseTask(

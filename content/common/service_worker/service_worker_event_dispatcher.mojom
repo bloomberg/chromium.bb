@@ -69,20 +69,29 @@ interface ServiceWorkerEventDispatcher {
   DispatchActivateEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  DispatchBackgroundFetchAbortEvent(string id)
+
+  // These methods dispatch to the ServiceWorkerGlobalScope the events listed on
+  // https://wicg.github.io/background-fetch/#service-worker-global-events.
+  // The callbacks are called once the event handler has run and waitUntil()
+  // promise has settled. |developer_id| and |unique_id| are documented in
+  // content::BackgroundFetchRegistrationId.
+  DispatchBackgroundFetchAbortEvent(string developer_id)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  DispatchBackgroundFetchClickEvent(string id, BackgroundFetchState state)
+  DispatchBackgroundFetchClickEvent(string developer_id,
+                                    BackgroundFetchState state)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  DispatchBackgroundFetchFailEvent(string id,
+  DispatchBackgroundFetchFailEvent(string developer_id,
                                    array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  DispatchBackgroundFetchedEvent(string id,
+  DispatchBackgroundFetchedEvent(string developer_id,
+                                 string unique_id,
                                  array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
+
   // The callback is called once the event finishes, which means the event
   // handler ran and all outstanding respondWith() and waitUntil() promises have
   // settled. |response_callback| is called once the promise to respondWith()

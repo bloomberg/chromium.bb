@@ -111,21 +111,22 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
 
   // Methods that actually invoke the event on an activated Service Worker.
   static void DoDispatchBackgroundFetchAbortEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
   static void DoDispatchBackgroundFetchClickEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       mojom::BackgroundFetchState state,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
   static void DoDispatchBackgroundFetchFailEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
   static void DoDispatchBackgroundFetchedEvent(
-      const std::string& tag,
+      const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);

@@ -26,20 +26,24 @@ class BackgroundFetchRegistration final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  BackgroundFetchRegistration(String id,
+  BackgroundFetchRegistration(const String& developer_id,
+                              const String& unique_id,
                               unsigned long long upload_total,
                               unsigned long long uploaded,
                               unsigned long long download_total,
                               unsigned long long downloaded,
                               HeapVector<IconDefinition> icons,
-                              String title);
+                              const String& title);
   ~BackgroundFetchRegistration();
 
   // Sets the ServiceWorkerRegistration that this BackgroundFetchRegistration
   // has been associated with.
   void SetServiceWorkerRegistration(ServiceWorkerRegistration*);
 
+  // Web Exposed attribute defined in the IDL file. Corresponds to the
+  // |developer_id| used elsewhere in the codebase.
   String id() const;
+
   unsigned long long uploadTotal() const;
   unsigned long long uploaded() const;
   unsigned long long downloadTotal() const;
@@ -64,7 +68,14 @@ class BackgroundFetchRegistration final : public EventTargetWithInlineData {
 
   Member<ServiceWorkerRegistration> registration_;
 
-  String id_;
+  // Corresponds to IDL 'id' attribute. Not unique - an active registration can
+  // have the same |developer_id_| as one or more inactive registrations.
+  String developer_id_;
+  // Globally unique ID for the registration, generated in content/. Used to
+  // distinguish registrations in case a developer re-uses |developer_id_|s. Not
+  // exposed to JavaScript.
+  String unique_id_;
+
   unsigned long long upload_total_;
   unsigned long long uploaded_;
   unsigned long long download_total_;

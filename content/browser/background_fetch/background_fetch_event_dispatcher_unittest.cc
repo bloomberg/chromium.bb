@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -19,8 +20,10 @@
 namespace content {
 namespace {
 
-const char kExampleId[] = "my-id";
-const char kExampleId2[] = "my-second-id";
+const char kExampleDeveloperId[] = "my-id";
+const char kExampleDeveloperId2[] = "my-second-id";
+const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
+const char kExampleUniqueId2[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 
 class BackgroundFetchEventDispatcherTest : public BackgroundFetchTestBase {
  public:
@@ -37,7 +40,8 @@ class BackgroundFetchEventDispatcherTest : public BackgroundFetchTestBase {
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
   BackgroundFetchRegistrationId invalid_registration_id(
-      9042 /* random invalid id */, origin(), kExampleId);
+      9042 /* random invalid SW id */, origin(), kExampleDeveloperId,
+      kExampleUniqueId);
 
   base::RunLoop run_loop;
   event_dispatcher_.DispatchBackgroundFetchAbortEvent(invalid_registration_id,
@@ -54,8 +58,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin(), kExampleDeveloperId,
+                                                kExampleUniqueId);
 
   {
     base::RunLoop run_loop;
@@ -65,8 +74,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId,
+            embedded_worker_test_helper()->last_developer_id().value());
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -75,8 +85,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   embedded_worker_test_helper()->set_fail_abort_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
-      registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleId2);
+      service_worker_registration_id, origin(), kExampleDeveloperId2,
+      kExampleUniqueId2);
 
   {
     base::RunLoop run_loop;
@@ -86,8 +96,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId2,
+            embedded_worker_test_helper()->last_developer_id().value());
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -101,8 +112,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin(), kExampleDeveloperId,
+                                                kExampleUniqueId);
 
   {
     base::RunLoop run_loop;
@@ -113,8 +129,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId,
+            embedded_worker_test_helper()->last_developer_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
   EXPECT_EQ(mojom::BackgroundFetchState::PENDING,
@@ -127,8 +144,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   embedded_worker_test_helper()->set_fail_click_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
-      registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleId2);
+      service_worker_registration_id, origin(), kExampleDeveloperId2,
+      kExampleUniqueId2);
 
   {
     base::RunLoop run_loop;
@@ -139,8 +156,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId2,
+            embedded_worker_test_helper()->last_developer_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
   EXPECT_EQ(mojom::BackgroundFetchState::SUCCEEDED,
@@ -158,8 +176,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin(), kExampleDeveloperId,
+                                                kExampleUniqueId);
 
   std::vector<BackgroundFetchSettledFetch> fetches;
   fetches.push_back(BackgroundFetchSettledFetch());
@@ -172,8 +195,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId,
+            embedded_worker_test_helper()->last_developer_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -188,8 +212,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
   embedded_worker_test_helper()->set_fail_fetch_fail_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
-      registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleId2);
+      service_worker_registration_id, origin(), kExampleDeveloperId2,
+      kExampleUniqueId2);
 
   {
     base::RunLoop run_loop;
@@ -199,8 +223,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId2,
+            embedded_worker_test_helper()->last_developer_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -218,8 +243,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin(), kExampleDeveloperId,
+                                                kExampleUniqueId);
 
   std::vector<BackgroundFetchSettledFetch> fetches;
   fetches.push_back(BackgroundFetchSettledFetch());
@@ -232,8 +262,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId,
+            embedded_worker_test_helper()->last_developer_id().value());
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+  EXPECT_EQ(kExampleUniqueId,
+            embedded_worker_test_helper()->last_unique_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -248,8 +283,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
   embedded_worker_test_helper()->set_fail_fetched_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
-      registration_id.service_worker_registration_id(),
-      registration_id.origin(), kExampleId2);
+      service_worker_registration_id, origin(), kExampleDeveloperId2,
+      kExampleUniqueId2);
 
   {
     base::RunLoop run_loop;
@@ -259,8 +294,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_id().has_value());
-  EXPECT_EQ(kExampleId2, embedded_worker_test_helper()->last_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  EXPECT_EQ(kExampleDeveloperId2,
+            embedded_worker_test_helper()->last_developer_id().value());
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+  EXPECT_EQ(kExampleUniqueId2,
+            embedded_worker_test_helper()->last_unique_id().value());
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),

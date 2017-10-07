@@ -31,7 +31,7 @@ using testing::_;
 namespace content {
 namespace {
 
-const char kExampleTag[] = "my-example-tag";
+const char kExampleDeveloperId[] = "my-example-id";
 
 class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
  public:
@@ -48,7 +48,14 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       std::map<GURL, std::string /* method */> request_data) {
     DCHECK(registration_id);
 
-    ASSERT_TRUE(CreateRegistrationId(kExampleTag, registration_id));
+    int64_t service_worker_registration_id = RegisterServiceWorker();
+    ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+              service_worker_registration_id);
+
+    // New |unique_id|, since this is a new Background Fetch registration.
+    *registration_id = BackgroundFetchRegistrationId(
+        service_worker_registration_id, origin(), kExampleDeveloperId,
+        base::GenerateGUID());
 
     std::vector<ServiceWorkerFetchRequest> requests;
     requests.reserve(request_data.size());

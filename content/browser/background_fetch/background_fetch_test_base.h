@@ -22,7 +22,6 @@
 
 namespace content {
 
-class BackgroundFetchRegistrationId;
 class ServiceWorkerRegistration;
 
 // Base class containing common functionality needed in unit tests written for
@@ -39,14 +38,11 @@ class BackgroundFetchTestBase : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  // Creates a Background Fetch registration backed by a Service Worker
-  // registration for the testing origin. The resulting registration will be
-  // stored in |*registration_id|. Returns whether creation was successful,
-  // which must be asserted by tests. The ServiceWorkerRegistration that
-  // backs the |*registration_id| will be kept alive for the test's lifetime.
-  bool CreateRegistrationId(const std::string& tag,
-                            BackgroundFetchRegistrationId* registration_id)
-      WARN_UNUSED_RESULT;
+  // Registers a Service Worker for the testing origin and returns its
+  // |service_worker_registration_id|. If registration failed, this will be
+  // |blink::mojom::kInvalidServiceWorkerRegistrationId|. The
+  // ServiceWorkerRegistration will be kept alive for the test's lifetime.
+  int64_t RegisterServiceWorker();
 
   // Creates a ServiceWorkerFetchRequest instance for the given details and
   // provides a faked |response|.

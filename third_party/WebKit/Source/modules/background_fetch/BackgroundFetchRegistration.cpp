@@ -14,14 +14,16 @@
 namespace blink {
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
-    String id,
+    const String& developer_id,
+    const String& unique_id,
     unsigned long long upload_total,
     unsigned long long uploaded,
     unsigned long long download_total,
     unsigned long long downloaded,
     HeapVector<IconDefinition> icons,
-    String title)
-    : id_(id),
+    const String& title)
+    : developer_id_(developer_id),
+      unique_id_(unique_id),
       upload_total_(upload_total),
       uploaded_(uploaded),
       download_total_(download_total),
@@ -38,7 +40,7 @@ void BackgroundFetchRegistration::SetServiceWorkerRegistration(
 }
 
 String BackgroundFetchRegistration::id() const {
-  return id_;
+  return developer_id_;
 }
 
 unsigned long long BackgroundFetchRegistration::uploadTotal() const {
@@ -80,8 +82,9 @@ ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
 
   DCHECK(registration_);
   BackgroundFetchBridge::From(registration_)
-      ->Abort(id_, WTF::Bind(&BackgroundFetchRegistration::DidAbort,
-                             WrapPersistent(this), WrapPersistent(resolver)));
+      ->Abort(developer_id_, unique_id_,
+              WTF::Bind(&BackgroundFetchRegistration::DidAbort,
+                        WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -100,7 +103,7 @@ void BackgroundFetchRegistration::DidAbort(
       resolver->Reject(DOMException::Create(
           kAbortError, "Failed to abort registration due to I/O error."));
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.
       break;

@@ -67,9 +67,9 @@ class MODULES_EXPORT BackgroundFetchManager final
   void DidGetRegistration(ScriptPromiseResolver*,
                           mojom::blink::BackgroundFetchError,
                           BackgroundFetchRegistration*);
-  void DidGetIds(ScriptPromiseResolver*,
-                 mojom::blink::BackgroundFetchError,
-                 const Vector<String>& ids);
+  void DidGetDeveloperIds(ScriptPromiseResolver*,
+                          mojom::blink::BackgroundFetchError,
+                          const Vector<String>& developer_ids);
 
   Member<ServiceWorkerRegistration> registration_;
   Member<BackgroundFetchBridge> bridge_;

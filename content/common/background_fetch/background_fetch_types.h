@@ -52,7 +52,14 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   BackgroundFetchRegistration(const BackgroundFetchRegistration& other);
   ~BackgroundFetchRegistration();
 
-  std::string id;
+  // Corresponds to IDL 'id' attribute. Not unique - an active registration can
+  // have the same |developer_id| as one or more inactive registrations.
+  std::string developer_id;
+  // Globally unique ID for the registration, generated in content/. Used to
+  // distinguish registrations in case a developer re-uses |developer_id|s. Not
+  // exposed to JavaScript.
+  std::string unique_id;
+
   uint64_t upload_total = 0;
   uint64_t uploaded = 0;
   uint64_t download_total = 0;

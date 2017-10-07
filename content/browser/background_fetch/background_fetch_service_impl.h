@@ -41,39 +41,30 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   // blink::mojom::BackgroundFetchService implementation.
   void Fetch(int64_t service_worker_registration_id,
              const url::Origin& origin,
-             const std::string& id,
+             const std::string& developer_id,
              const std::vector<ServiceWorkerFetchRequest>& requests,
              const BackgroundFetchOptions& options,
              FetchCallback callback) override;
-  void UpdateUI(int64_t service_worker_registration_id,
-                const url::Origin& origin,
-                const std::string& id,
+  void UpdateUI(const std::string& unique_id,
                 const std::string& title,
                 UpdateUICallback callback) override;
-  void Abort(int64_t service_worker_registration_id,
-             const url::Origin& origin,
-             const std::string& id,
-             AbortCallback callback) override;
+  void Abort(const std::string& unique_id, AbortCallback callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const url::Origin& origin,
-                       const std::string& id,
+                       const std::string& developer_id,
                        GetRegistrationCallback callback) override;
-  void GetIds(int64_t service_worker_registration_id,
-              const url::Origin& origin,
-              GetIdsCallback callback) override;
+  void GetDeveloperIds(int64_t service_worker_registration_id,
+                       const url::Origin& origin,
+                       GetDeveloperIdsCallback callback) override;
 
  private:
-  // Validates and returns whether the |id| contains a valid value. The
-  // renderer will be flagged for having send a bad message if it isn't.
-  bool ValidateId(const std::string& id) WARN_UNUSED_RESULT;
-
-  // Validates and returns whether |requests| contains at least a valid request.
-  // The renderer will be flagged for having send a bad message if it isn't.
+  // Validates and returns whether the |developer_id|, |unique_id|, |requests|
+  // and |title| respectively have valid values. The renderer will be flagged
+  // for having sent a bad message if the values are invalid.
+  bool ValidateDeveloperId(const std::string& developer_id) WARN_UNUSED_RESULT;
+  bool ValidateUniqueId(const std::string& unique_id) WARN_UNUSED_RESULT;
   bool ValidateRequests(const std::vector<ServiceWorkerFetchRequest>& requests)
       WARN_UNUSED_RESULT;
-
-  // Validates and returns whether the |title| contains a valid value. The
-  // renderer will be flagged for having send a bad message if it isn't.
   bool ValidateTitle(const std::string& title) WARN_UNUSED_RESULT;
 
   // Id of the renderer process that this service has been created for.

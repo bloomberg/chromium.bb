@@ -25,9 +25,10 @@ TypeConverter<blink::BackgroundFetchRegistration*,
     icons.push_back(iconPtr.To<blink::IconDefinition>());
 
   return new blink::BackgroundFetchRegistration(
-      mojoRegistration->id, mojoRegistration->upload_total,
-      mojoRegistration->uploaded, mojoRegistration->download_total,
-      mojoRegistration->downloaded, std::move(icons), mojoRegistration->title);
+      mojoRegistration->developer_id, mojoRegistration->unique_id,
+      mojoRegistration->upload_total, mojoRegistration->uploaded,
+      mojoRegistration->download_total, mojoRegistration->downloaded,
+      std::move(icons), mojoRegistration->title);
 }
 
 blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<

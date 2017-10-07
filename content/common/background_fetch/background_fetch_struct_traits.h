@@ -45,9 +45,13 @@ template <>
 struct CONTENT_EXPORT
     StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
                  content::BackgroundFetchRegistration> {
-  static const std::string& id(
+  static const std::string& developer_id(
       const content::BackgroundFetchRegistration& registration) {
-    return registration.id;
+    return registration.developer_id;
+  }
+  static const std::string& unique_id(
+      const content::BackgroundFetchRegistration& registration) {
+    return registration.unique_id;
   }
   static uint64_t upload_total(
       const content::BackgroundFetchRegistration& registration) {

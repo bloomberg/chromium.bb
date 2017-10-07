@@ -82,7 +82,8 @@ void BackgroundFetchContext::DidCreateRegistration(
   // Create the BackgroundFetchRegistration the renderer process will receive,
   // which enables it to resolve the promise telling the developer it worked.
   BackgroundFetchRegistration registration;
-  registration.id = registration_id.id();
+  registration.developer_id = registration_id.developer_id();
+  registration.unique_id = registration_id.unique_id();
   registration.icons = options.icons;
   registration.title = options.title;
   registration.download_total = options.download_total;
@@ -92,10 +93,10 @@ void BackgroundFetchContext::DidCreateRegistration(
 }
 
 BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
-    const BackgroundFetchRegistrationId& registration_id) const {
+    const std::string& unique_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto iter = active_fetches_.find(registration_id);
+  auto iter = active_fetches_.find(unique_id);
   if (iter == active_fetches_.end())
     return nullptr;
 
@@ -124,7 +125,7 @@ void BackgroundFetchContext::CreateController(
   controller->Start();
 
   active_fetches_.insert(
-      std::make_pair(registration_id, std::move(controller)));
+      std::make_pair(registration_id.unique_id(), std::move(controller)));
 }
 
 void BackgroundFetchContext::DidCompleteJob(
@@ -134,7 +135,7 @@ void BackgroundFetchContext::DidCompleteJob(
   const BackgroundFetchRegistrationId& registration_id =
       controller->registration_id();
 
-  DCHECK_GT(active_fetches_.count(registration_id), 0u);
+  DCHECK_GT(active_fetches_.count(registration_id.unique_id()), 0u);
   switch (controller->state()) {
     case BackgroundFetchJobController::State::ABORTED:
       event_dispatcher_.DispatchBackgroundFetchAbortEvent(
@@ -193,14 +194,14 @@ void BackgroundFetchContext::DeleteRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<std::unique_ptr<BlobHandle>>& blob_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_GT(active_fetches_.count(registration_id), 0u);
+  DCHECK_GT(active_fetches_.count(registration_id.unique_id()), 0u);
 
   // Delete all persistent information associated with the |registration_id|.
   data_manager_.DeleteRegistration(
       registration_id, base::BindOnce(&RecordRegistrationDeletedError));
 
   // Delete the local state associated with the |registration_id|.
-  active_fetches_.erase(registration_id);
+  active_fetches_.erase(registration_id.unique_id());
 }
 
 }  // namespace content

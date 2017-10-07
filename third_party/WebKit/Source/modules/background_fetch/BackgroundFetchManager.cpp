@@ -266,7 +266,7 @@ void BackgroundFetchManager::DidFetch(
       DCHECK(registration);
       resolver->Resolve(registration);
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
       DCHECK(!registration);
       resolver->Reject(DOMException::Create(
           kInvalidStateError,
@@ -379,7 +379,7 @@ void BackgroundFetchManager::DidGetRegistration(
       resolver->Reject(DOMException::Create(
           kAbortError, "Failed to get registration due to I/O error."));
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.
       break;
@@ -400,25 +400,27 @@ ScriptPromise BackgroundFetchManager::getIds(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  bridge_->GetIds(WTF::Bind(&BackgroundFetchManager::DidGetIds,
-                            WrapPersistent(this), WrapPersistent(resolver)));
+  bridge_->GetDeveloperIds(
+      WTF::Bind(&BackgroundFetchManager::DidGetDeveloperIds,
+                WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
-void BackgroundFetchManager::DidGetIds(ScriptPromiseResolver* resolver,
-                                       mojom::blink::BackgroundFetchError error,
-                                       const Vector<String>& ids) {
+void BackgroundFetchManager::DidGetDeveloperIds(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundFetchError error,
+    const Vector<String>& developer_ids) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-      resolver->Resolve(ids);
+      resolver->Resolve(developer_ids);
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
-      DCHECK(ids.IsEmpty());
+      DCHECK(developer_ids.IsEmpty());
       resolver->Reject(DOMException::Create(
           kAbortError, "Failed to get registration IDs due to I/O error."));
       return;
-    case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
+    case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
       // Not applicable for this callback.

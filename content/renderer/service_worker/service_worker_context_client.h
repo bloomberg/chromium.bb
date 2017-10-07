@@ -270,18 +270,19 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       DispatchBackgroundFetchAbortEventCallback callback) override;
   void DispatchBackgroundFetchClickEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       mojom::BackgroundFetchState state,
       DispatchBackgroundFetchClickEventCallback callback) override;
   void DispatchBackgroundFetchFailEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchFailEventCallback callback) override;
   void DispatchBackgroundFetchedEvent(
-      const std::string& tag,
+      const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchedEventCallback callback) override;
   void DispatchExtendableMessageEvent(

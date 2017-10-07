@@ -17,18 +17,27 @@ namespace content {
 // to uniquely identify a Background Fetch registration in scope of a profile.
 class CONTENT_EXPORT BackgroundFetchRegistrationId {
  public:
+  // Constructs a null ID.
   BackgroundFetchRegistrationId();
+
+  // See corresponding getters for descriptions of |developer_id| and
+  // |unique_id|.
   BackgroundFetchRegistrationId(int64_t service_worker_registration_id,
                                 const url::Origin& origin,
-                                const std::string& id);
+                                const std::string& developer_id,
+                                const std::string& unique_id);
+
+  // Copyable and movable.
   BackgroundFetchRegistrationId(const BackgroundFetchRegistrationId& other);
   BackgroundFetchRegistrationId(BackgroundFetchRegistrationId&& other);
-  ~BackgroundFetchRegistrationId();
-
   BackgroundFetchRegistrationId& operator=(
       const BackgroundFetchRegistrationId& other);
+  BackgroundFetchRegistrationId& operator=(
+      BackgroundFetchRegistrationId&& other);
 
-  // Returns whether the |other| registration id are identical or different.
+  ~BackgroundFetchRegistrationId();
+
+  // Return whether the |other| registration id are identical or different.
   bool operator==(const BackgroundFetchRegistrationId& other) const;
   bool operator!=(const BackgroundFetchRegistrationId& other) const;
 
@@ -43,12 +52,32 @@ class CONTENT_EXPORT BackgroundFetchRegistrationId {
     return service_worker_registration_id_;
   }
   const url::Origin& origin() const { return origin_; }
-  const std::string& id() const { return id_; }
+
+  // The IDL 'id' attribute provided by the website.
+  //
+  // Should not be used as a primary key in any data structures, since not only
+  // are they per-ServiceWorkerRegistration, but there can exist two or more
+  // different Background Fetch registrations at once with the same
+  // |developer_id|. For example, if JavaScript holds a reference to a
+  // BackgroundFetchRegistration object after that registration is
+  // completed/failed/aborted and then the website creates a new registration
+  // with the same |developer_id|, the original BackgroundFetchRegistration
+  // object is still valid and must continue to refer to the old data.
+  const std::string& developer_id() const { return developer_id_; }
+
+  // The opaque globally unique ID for the Background Fetch registration.
+  //
+  // Values are never re-used. Internal only, never exposed to JavaScript.
+  // Always use this instead of |developer_id| (APIs that receive a
+  // |developer_id| from the website must look up the associated |unique_id| as
+  // soon as possible).
+  const std::string& unique_id() const { return unique_id_; }
 
  private:
   int64_t service_worker_registration_id_;
   url::Origin origin_;
-  std::string id_;
+  std::string developer_id_;
+  std::string unique_id_;
 };
 
 }  // namespace content

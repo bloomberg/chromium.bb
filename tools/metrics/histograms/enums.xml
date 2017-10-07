@@ -2710,7 +2710,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="161" label="BDH_INVALID_DESCRIPTOR_ID"/>
   <int value="162" label="RWH_INVALID_BEGIN_FRAME_ACK_DID_NOT_SWAP"/>
   <int value="163" label="RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME"/>
-  <int value="164" label="BFSI_INVALID_ID"/>
+  <int value="164" label="BFSI_INVALID_DEVELOPER_ID"/>
   <int value="165" label="BFSI_INVALID_REQUESTS"/>
   <int value="166" label="BFSI_INVALID_TITLE"/>
   <int value="167" label="RWH_INVALID_FRAME_TOKEN"/>
@@ -2725,6 +2725,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="176" label="SWDH_PROVIDER_CREATED_DUPLICATE_ID"/>
   <int value="177" label="SWDH_PROVIDER_CREATED_BAD_ID"/>
   <int value="178" label="RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY"/>
+  <int value="179" label="BFSI_INVALID_UNIQUE_ID"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

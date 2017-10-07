@@ -12,12 +12,12 @@ namespace blink {
 BackgroundFetchEvent::BackgroundFetchEvent(const AtomicString& type,
                                            const BackgroundFetchEventInit& init,
                                            WaitUntilObserver* observer)
-    : ExtendableEvent(type, init, observer), id_(init.id()) {}
+    : ExtendableEvent(type, init, observer), developer_id_(init.id()) {}
 
 BackgroundFetchEvent::~BackgroundFetchEvent() = default;
 
 String BackgroundFetchEvent::id() const {
-  return id_;
+  return developer_id_;
 }
 
 const AtomicString& BackgroundFetchEvent::InterfaceName() const {

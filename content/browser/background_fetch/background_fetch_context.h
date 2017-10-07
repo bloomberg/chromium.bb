@@ -52,10 +52,10 @@ class CONTENT_EXPORT BackgroundFetchContext
                   const BackgroundFetchOptions& options,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
-  // Returns the JobController that is handling the |registration_id|, or a
-  // nullptr if it does not exist. Must be immediately used by the caller.
+  // Returns the JobController that is handling the |unique_id|, or a nullptr if
+  // it does not exist. Must be immediately used by the caller.
   BackgroundFetchJobController* GetActiveFetch(
-      const BackgroundFetchRegistrationId& registration_id) const;
+      const std::string& unique_id) const;
 
   BackgroundFetchDataManager& data_manager() { return data_manager_; }
 
@@ -104,10 +104,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   BackgroundFetchEventDispatcher event_dispatcher_;
   BackgroundFetchDelegateProxy delegate_proxy_;
 
-  // Map of the Background Fetch fetches that are currently in-progress. Must
-  // be destroyed before |data_manager_|.
-  std::map<BackgroundFetchRegistrationId,
-           std::unique_ptr<BackgroundFetchJobController>>
+  // Map from background fetch registration |unique_id|s to active job
+  // controllers. Must be destroyed before |data_manager_|.
+  std::map<std::string, std::unique_ptr<BackgroundFetchJobController>>
       active_fetches_;
 
   base::WeakPtrFactory<BackgroundFetchContext> weak_factory_;  // Must be last.
