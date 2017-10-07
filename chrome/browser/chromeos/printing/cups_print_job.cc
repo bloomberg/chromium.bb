@@ -35,4 +35,8 @@ bool CupsPrintJob::IsJobFinished() {
          state_ == CupsPrintJob::State::STATE_DOCUMENT_DONE;
 }
 
+bool CupsPrintJob::PipelineDead() {
+  return error_code_ == CupsPrintJob::ErrorCode::FILTER_FAILED;
+}
+
 }  // namespace chromeos
