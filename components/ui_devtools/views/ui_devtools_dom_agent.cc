@@ -100,6 +100,69 @@ std::unique_ptr<DOM::Node> BuildDomNodeFromUIElement(UIElement* root) {
                    std::move(children), root->node_id());
 }
 
+void DrawRulerText(const base::string16& utf16_text,
+                   const gfx::Point& p,
+                   gfx::Canvas* canvas,
+                   gfx::RenderText* render_text_) {
+  render_text_->SetText(utf16_text);
+  render_text_->SetColor(SK_ColorRED);
+  const gfx::Rect text_rect(gfx::Rect(p, render_text_->GetStringSize()));
+  canvas->FillRect(text_rect, SK_ColorWHITE, SkBlendMode::kColor);
+  render_text_->SetDisplayRect(text_rect);
+  render_text_->Draw(canvas);
+}
+
+void DrawRulers(const gfx::Rect& screen_bounds,
+                gfx::Canvas* canvas,
+                gfx::RenderText* render_text_) {
+  // Top horizontal ruler from left to right.
+  canvas->Draw1pxLine(gfx::PointF(0.0f, 0.0f),
+                      gfx::PointF(screen_bounds.right(), 0.0f),
+                      SK_ColorMAGENTA);
+
+  // Left veritical ruler from top to bottom.
+  canvas->Draw1pxLine(gfx::PointF(0.0f, 0.0f),
+                      gfx::PointF(0.0f, screen_bounds.bottom()),
+                      SK_ColorMAGENTA);
+
+  int short_stroke = 5;
+  int long_stroke = 10;
+  int gap_between_strokes = 4;
+  int gap_between_long_stroke = 100;
+
+  // Draw top horizontal ruler.
+  for (int x = gap_between_strokes; x < screen_bounds.right();
+       x += gap_between_strokes) {
+    if (x % gap_between_long_stroke == 0) {
+      canvas->Draw1pxLine(gfx::PointF(x, 0.0f), gfx::PointF(x, long_stroke),
+                          SK_ColorMAGENTA);
+      // Draw ruler marks.
+      base::string16 utf16_text = base::UTF8ToUTF16(std::to_string(x));
+      DrawRulerText(utf16_text, gfx::Point(x + 2, long_stroke), canvas,
+                    render_text_);
+
+    } else {
+      canvas->Draw1pxLine(gfx::PointF(x, 0.0f), gfx::PointF(x, short_stroke),
+                          SK_ColorMAGENTA);
+    }
+  }
+
+  // Draw left vertical ruler.
+  for (int y = 0; y < screen_bounds.bottom(); y += gap_between_strokes) {
+    if (y % gap_between_long_stroke == 0) {
+      canvas->Draw1pxLine(gfx::PointF(0.0f, y), gfx::PointF(long_stroke, y),
+                          SK_ColorMAGENTA);
+      // Draw ruler marks.
+      base::string16 utf16_text = base::UTF8ToUTF16(std::to_string(y));
+      DrawRulerText(utf16_text, gfx::Point(short_stroke + 1, y + 2), canvas,
+                    render_text_);
+    } else {
+      canvas->Draw1pxLine(gfx::PointF(0.0f, y), gfx::PointF(short_stroke, y),
+                          SK_ColorMAGENTA);
+    }
+  }
+}
+
 // Draw width() x height() of a rectangle if not empty. Otherwise, draw either
 // width() or height() if any of them is not empty.
 void DrawSizeOfRectangle(const gfx::Rect& hovered_rect,
@@ -178,7 +241,7 @@ void DrawRectGuideLinesOnCanvas(const gfx::Rect& screen_bounds,
                    gfx::PointF(rect_f.right(), screen_bounds.bottom()), flags);
 }
 
-void DrawTextWithAnyBounds(float x1,
+void DrawSizeWithAnyBounds(float x1,
                            float y1,
                            float x2,
                            float y2,
@@ -205,7 +268,7 @@ void DrawR1ContainsR2(const gfx::RectF& pinned_rect_f,
   float x2 = hovered_rect_f.x();
   float y2 = y1;
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
                         render_text);
 
   // Horizontal right distance line.
@@ -214,7 +277,7 @@ void DrawR1ContainsR2(const gfx::RectF& pinned_rect_f,
   x2 = pinned_rect_f.right();
   y2 = y1;
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
                         render_text);
 
   // Vertical top distance line.
@@ -223,7 +286,7 @@ void DrawR1ContainsR2(const gfx::RectF& pinned_rect_f,
   x2 = x1;
   y2 = hovered_rect_f.y();
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 
   // Vertical bottom distance line.
@@ -232,7 +295,7 @@ void DrawR1ContainsR2(const gfx::RectF& pinned_rect_f,
   x2 = x1;
   y2 = pinned_rect_f.bottom();
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 }
 
@@ -247,7 +310,7 @@ void DrawR1HorizontalFullLeftR2(const gfx::RectF& pinned_rect_f,
   float x2 = pinned_rect_f.x();
   float y2 = y1;
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
                         render_text);
 }
 
@@ -263,7 +326,7 @@ void DrawR1TopFullLeftR2(const gfx::RectF& pinned_rect_f,
 
   // Horizontal left dotted line.
   canvas_->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas_,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas_,
                         render_text);
   x1 = hovered_rect_f.x() + hovered_rect_f.width() / 2;
   y1 = hovered_rect_f.y() + hovered_rect_f.height();
@@ -272,7 +335,7 @@ void DrawR1TopFullLeftR2(const gfx::RectF& pinned_rect_f,
 
   // Vertical left dotted line.
   canvas_->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas_,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas_,
                         render_text);
 }
 
@@ -288,7 +351,7 @@ void DrawR1BottomFullLeftR2(const gfx::RectF& pinned_rect_f,
 
   // Horizontal left distance line.
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
                         render_text);
 
   x1 = hovered_rect_f.x() + hovered_rect_f.width() / 2;
@@ -298,7 +361,7 @@ void DrawR1BottomFullLeftR2(const gfx::RectF& pinned_rect_f,
 
   // Vertical left distance line.
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 }
 
@@ -314,7 +377,7 @@ void DrawR1TopPartialLeftR2(const gfx::RectF& pinned_rect_f,
 
   // Vertical left dotted line.
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 }
 
@@ -330,7 +393,7 @@ void DrawR1BottomPartialLeftR2(const gfx::RectF& pinned_rect_f,
 
   // Vertical left dotted line.
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 }
 
@@ -345,7 +408,7 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
   float x2 = x1;
   float y2 = hovered_rect_f.y();
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 
   // Vertical dotted line for the bottom side of the pinned rectangle
@@ -354,7 +417,7 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
   x2 = x1;
   y2 = hovered_rect_f.bottom();
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
                         render_text);
 
   // Horizontal dotted line for the left side of the pinned rectangle
@@ -363,7 +426,7 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
   x2 = hovered_rect_f.x();
   y2 = y1;
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
                         render_text);
 
   // Horizontal dotted line for the right side of the pinned rectangle
@@ -372,7 +435,7 @@ void DrawR1IntersectsR2(const gfx::RectF& pinned_rect_f,
   x2 = hovered_rect_f.right();
   y2 = y1;
   canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
-  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+  DrawSizeWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
                         render_text);
 }
 
@@ -589,8 +652,8 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   gfx::RectF hovered_rect_f(hovered_rect_);
 
   cc::PaintFlags flags;
-  flags.setColor(SK_ColorBLUE);
   flags.setStrokeWidth(1.0f);
+  flags.setColor(SK_ColorBLUE);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
 
   constexpr SkScalar intervals[] = {1.f, 4.f};
@@ -600,6 +663,8 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
     render_text_ =
         base::WrapUnique<gfx::RenderText>(gfx::RenderText::CreateInstance());
   }
+  DrawRulers(screen_bounds, canvas, render_text_.get());
+
   // Display guide lines if |highlight_rect_config_| is NO_DRAW.
   if (highlight_rect_config_ == HighlightRectsConfiguration::NO_DRAW) {
     hovered_rect_f.Inset(gfx::InsetsF(-1));
