@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 321 PASS, 185 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 509 tests; 324 PASS, 185 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.\norg> against <http://example.org/foo/bar>
 PASS Parsing: <http://user:pass@foo:21/bar;par?b#c> against <http://example.org/foo/bar>
@@ -451,6 +451,9 @@ FAIL Parsing: <https://[0:1.290.0.0.0]> against <about:blank> assert_equals: fai
 FAIL Parsing: <https://[0:1.23.23]> against <about:blank> assert_equals: failure should set href to input expected "https://[0:1.23.23]" but got "https://[0:1.23.23]/"
 FAIL Parsing: <http://?> against <about:blank> assert_equals: failure should set href to input expected "http://?" but got "http:/?"
 FAIL Parsing: <http://#> against <about:blank> assert_equals: failure should set href to input expected "http://#" but got "http:/#"
+PASS Parsing: <http://f:4294967377/c> against <http://example.org/>
+PASS Parsing: <http://f:18446744073709551697/c> against <http://example.org/>
+PASS Parsing: <http://f:340282366920938463463374607431768211537/c> against <http://example.org/>
 FAIL Parsing: <sc://ñ> against <about:blank> assert_equals: host expected "%C3%B1" but got ""
 FAIL Parsing: <sc://ñ?x> against <about:blank> assert_equals: host expected "%C3%B1" but got ""
 FAIL Parsing: <sc://ñ#x> against <about:blank> assert_equals: host expected "%C3%B1" but got ""
