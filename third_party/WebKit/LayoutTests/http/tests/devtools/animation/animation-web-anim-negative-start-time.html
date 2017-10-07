@@ -24,11 +24,6 @@ function test() {
   Animation.AnimationTimeline.prototype.width = function() {
     return 50;
   };
-  // Override animation color for testing
-  // FIXME: Set animation name of Web Animation instead; not supported yet
-  Animation.AnimationUI.Color = function() {
-    return 'black';
-  };
 
   UI.viewManager.showView('animations');
   var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
