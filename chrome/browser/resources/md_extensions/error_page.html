@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
@@ -21,13 +22,15 @@
       :host {
         display: block;
         height: 100%;
-        overflow: auto;
+      }
+
+      #container {
+        height: 100%;
+        overflow: overlay;
       }
 
       #main {
         background-color: white;
-        display: flex;
-        flex-direction: column;
         margin: auto;
         min-height: 100%;
         width: 640px;
@@ -148,62 +151,64 @@
         -webkit-margin-start: var(--cr-icon-ripple-margin);
       }
     </style>
-    <div id="main">
-      <div id="heading">
-        <button id="close-button" is="paper-icon-button-light"
-            class="icon-arrow-back no-overlap" on-tap="onCloseButtonTap_">
-        </button>
-        <span>$i18n{errorsPageHeading}</span>
-      </div>
-      <div class="section">
-        <extensions-code-section id="code-section"
-            could-not-display-code="$i18n{noErrorsToShow}">
-        </extensions-code-section>
-        <div id="errors-list">
-          <template is="dom-repeat" items="[[calculateShownItems_(data.*)]]">
-            <div class="item-container">
-              <div class$="error-item [[computeErrorClass_(selectedError_, item)]]">
-                <div class="start" on-tap="onErrorItemAction_"
-                    on-keydown="onErrorItemAction_" tabindex="0">
-                  <img class$="[[computeErrorIconClass_(item)]]">
-                  <div class="error-message">[[item.message]]</div>
-                  <cr-expand-button hidden="[[!computeIsRuntimeError_(item)]]"
-                      expanded="[[isEqual_(selectedError_, item)]]"
-                      tab-index="-1">
-                  </cr-expand-button>
-                </div>
-                <div class="separator"></div>
-                <button is="paper-icon-button-light" class="icon-delete-gray"
-                    on-tap="onDeleteErrorAction_"
-                    on-keydown="onDeleteErrorAction_">
-                </button>
-              </div>
-              <template is="dom-if" if="[[computeIsRuntimeError_(item)]]">
-                <iron-collapse opened="[[isEqual_(selectedError_, item)]]">
-                  <div id="devtools-controls">
-                    <div id="stack-trace-heading">
-                      $i18n{stackTrace}
-                    </div>
-                    <ul id="stack-trace-container">
-                      <template is="dom-repeat" items="[[item.stackTrace]]">
-                        <li on-tap="onStackFrameTap_"
-                            hidden="[[!shouldDisplayFrame_(item.url)]]"
-                            class$="[[getStackFrameClass_(item, selectedStackFrame_)]]">
-                          [[getStackTraceLabel_(item)]]
-                        </li>
-                      </template>
-                    </ul>
-                    <paper-button id="dev-tool-button" class="action-button"
-                        disabled="[[!item.canInspect]]"
-                        on-tap="onDevToolButtonTap_">
-                      $i18n{openInDevtool}
-                    </paper-button>
+    <div id="container">
+      <div id="main">
+        <div id="heading">
+          <button id="close-button" is="paper-icon-button-light"
+              class="icon-arrow-back no-overlap" on-tap="onCloseButtonTap_">
+          </button>
+          <span>$i18n{errorsPageHeading}</span>
+        </div>
+        <div class="section">
+          <extensions-code-section id="code-section"
+              could-not-display-code="$i18n{noErrorsToShow}">
+          </extensions-code-section>
+          <div id="errors-list">
+            <template is="dom-repeat" items="[[calculateShownItems_(data.*)]]">
+              <div class="item-container">
+                <div class$="error-item [[computeErrorClass_(selectedError_, item)]]">
+                  <div class="start" on-tap="onErrorItemAction_"
+                      on-keydown="onErrorItemAction_" tabindex="0">
+                    <img class$="[[computeErrorIconClass_(item)]]">
+                    <div class="error-message">[[item.message]]</div>
+                    <cr-expand-button hidden="[[!computeIsRuntimeError_(item)]]"
+                        expanded="[[isEqual_(selectedError_, item)]]"
+                        tab-index="-1">
+                    </cr-expand-button>
                   </div>
-                </iron-collapse>
-              </template>
-            </div>
-          </template>
-        </iron-list>
+                  <div class="separator"></div>
+                  <button is="paper-icon-button-light" class="icon-delete-gray"
+                      on-tap="onDeleteErrorAction_"
+                      on-keydown="onDeleteErrorAction_">
+                  </button>
+                </div>
+                <template is="dom-if" if="[[computeIsRuntimeError_(item)]]">
+                  <iron-collapse opened="[[isEqual_(selectedError_, item)]]">
+                    <div id="devtools-controls">
+                      <div id="stack-trace-heading">
+                        $i18n{stackTrace}
+                      </div>
+                      <ul id="stack-trace-container">
+                        <template is="dom-repeat" items="[[item.stackTrace]]">
+                          <li on-tap="onStackFrameTap_"
+                              hidden="[[!shouldDisplayFrame_(item.url)]]"
+                              class$="[[getStackFrameClass_(item, selectedStackFrame_)]]">
+                            [[getStackTraceLabel_(item)]]
+                          </li>
+                        </template>
+                      </ul>
+                      <paper-button id="dev-tool-button" class="action-button"
+                          disabled="[[!item.canInspect]]"
+                          on-tap="onDevToolButtonTap_">
+                        $i18n{openInDevtool}
+                      </paper-button>
+                    </div>
+                  </iron-collapse>
+                </template>
+              </div>
+            </template>
+          </iron-list>
+        </div>
       </div>
     </div>
   </template>
