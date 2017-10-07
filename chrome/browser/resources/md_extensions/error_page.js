@@ -46,6 +46,8 @@ cr.define('extensions', function() {
   const ErrorPage = Polymer({
     is: 'extensions-error-page',
 
+    behaviors: [CrContainerShadowBehavior],
+
     properties: {
       /** @type {!chrome.developerPrivate.ExtensionInfo|undefined} */
       data: Object,
