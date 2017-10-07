@@ -286,13 +286,13 @@ static bool g_verify_host_files_result = false;
 bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
   DVLOG(1) << __func__ << ": " << num_files;
 
-  // We should always have the CDM and at least one common file.
+  // We should always have the CDM and CDM adapter and at least one common file.
   // The common CDM host file (e.g. chrome) might not exist since we are running
   // in browser_tests.
-  const uint32_t kMinNumHostFiles = 2;
+  const uint32_t kMinNumHostFiles = 3;
 
-  // We should always have the CDM.
-  const int kNumCdmFiles = 1;
+  // We should always have the CDM and CDM adapter.
+  const int kNumCdmFiles = 2;
 
   if (num_files < kMinNumHostFiles) {
     LOG(ERROR) << "Too few host files: " << num_files;
