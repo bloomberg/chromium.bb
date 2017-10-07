@@ -14,8 +14,10 @@ namespace blink {
 
 class NGBreakToken;
 class NGConstraintSpace;
-struct NGInlineNodeData;
 class NGLayoutResult;
+enum class NGBaselineAlgorithmType;
+struct NGBaseline;
+struct NGInlineNodeData;
 
 // This overrides the default layout block algorithm to use Layout NG.
 class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
@@ -58,6 +60,8 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
   void UpdateOutOfFlowBlockLayout();
 
   const NGPhysicalFragment* CurrentFragment() const;
+
+  const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
 
   void UpdateMargins(const NGConstraintSpace&);
 
