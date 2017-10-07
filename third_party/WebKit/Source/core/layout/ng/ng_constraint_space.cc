@@ -10,6 +10,19 @@
 
 namespace blink {
 
+namespace {
+
+bool ShouldComputeBaseline(const LayoutBox& box) {
+  if (box.IsLayoutBlock() &&
+      ToLayoutBlock(box).UseLogicalBottomMarginEdgeForInlineBlockBaseline())
+    return false;
+  if (box.IsWritingModeRoot())
+    return false;
+  return true;
+}
+
+}  // namespace
+
 NGConstraintSpace::NGConstraintSpace(
     NGWritingMode writing_mode,
     bool is_orthogonal_writing_mode_root,
@@ -129,8 +142,21 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
   DCHECK_GE(initial_containing_block_size.width, LayoutUnit());
   DCHECK_GE(initial_containing_block_size.height, LayoutUnit());
 
-  return NGConstraintSpaceBuilder(writing_mode, initial_containing_block_size)
-      .SetAvailableSize(available_size)
+  NGConstraintSpaceBuilder builder(writing_mode, initial_containing_block_size);
+
+  if (ShouldComputeBaseline(box)) {
+    FontBaseline baseline_type = IsHorizontalWritingMode(writing_mode)
+                                     ? kAlphabeticBaseline
+                                     : kIdeographicBaseline;
+    // Add all types because we don't know which baselines will be requested.
+    builder
+        .AddBaselineRequest(
+            {NGBaselineAlgorithmType::kAtomicInline, baseline_type})
+        .AddBaselineRequest(
+            {NGBaselineAlgorithmType::kFirstLine, baseline_type});
+  }
+
+  return builder.SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size)
       .SetIsInlineDirectionTriggersScrollbar(
           box.StyleRef().OverflowInlineDirection() == EOverflow::kAuto)
