@@ -24,6 +24,7 @@ offscreen-images: false
 screenshot-thumbnails: false
 script-blocking-first-paint: false
 speed-index-metric: false
+time-to-first-byte: true
 total-byte-weight: true
 user-timings: true
 uses-optimized-images: false

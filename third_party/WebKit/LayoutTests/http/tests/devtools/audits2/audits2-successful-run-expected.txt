@@ -30,6 +30,7 @@ Retrieving: EventListeners
 Retrieving: AnchorsWithNoRelNoopener
 Retrieving: AppCacheManifest
 Retrieving: DOMStats
+Retrieving: JSLibraries
 Retrieving: OptimizedImages
 Retrieving: PasswordInputsWithPreventedPaste
 Retrieving: ResponseCompression
@@ -48,7 +49,7 @@ Disconnecting from browser...
 Analyzing and running audits...
 Evaluating: Uses HTTPS
 Evaluating: Redirects HTTP traffic to HTTPS
-Evaluating: Registers a Service Worker
+Evaluating: Registers a service worker
 Evaluating: Responds with a 200 when offline
 Evaluating: Has a `<meta name="viewport">` tag with `width` or `initial-scale`
 Evaluating: Contains some content when JavaScript is not available
@@ -57,6 +58,8 @@ Evaluating: Page load is fast enough on 3G
 Evaluating: Perceptual Speed Index
 Evaluating: Screenshot Thumbnails
 Evaluating: Estimated Input Latency
+Evaluating: No browser errors logged to the console
+Evaluating: Keep server response times low (TTFB)
 Evaluating: First Interactive (beta)
 Evaluating: Consistently Interactive (beta)
 Evaluating: User Timing marks and measures
@@ -66,6 +69,7 @@ Evaluating: Configured for a custom splash screen
 Evaluating: Address bar matches brand colors
 Evaluating: Manifest's `short_name` won't be truncated when displayed on homescreen
 Evaluating: Content is sized correctly for the viewport
+Evaluating: Uses Images with appropriate aspect ratio
 Evaluating: Avoids deprecated APIs
 Evaluating: Site works cross-browser
 Evaluating: Page transitions don't feel like they block on the network
@@ -118,6 +122,7 @@ Evaluating: Avoids requesting the geolocation permission on page load
 Evaluating: Reduce render-blocking stylesheets
 Evaluating: Avoids `document.write()`
 Evaluating: Avoids Mutation Events in its own scripts
+Evaluating: Avoids front-end JavaScript libraries with known security vulnerabilities
 Evaluating: Avoids WebSQL DB
 Evaluating: Avoids requesting the notification permission on page load
 Evaluating: Allows users to paste into password fields
@@ -128,7 +133,7 @@ Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 2.3.1
+Version: 2.5.1
 
 
 accesskeys: true
@@ -153,6 +158,7 @@ dlitem: true
 document-title: false
 dom-size: true
 duplicate-id: true
+errors-in-console: false
 estimated-input-latency: false
 external-anchors-use-rel-noopener: true
 first-interactive: false
@@ -162,6 +168,7 @@ geolocation-on-start: true
 html-has-lang: false
 html-lang-valid: true
 image-alt: true
+image-aspect-ratio: false
 input-image-alt: true
 is-on-https: true
 label: true
@@ -176,6 +183,7 @@ meta-refresh: true
 meta-viewport: true
 no-document-write: true
 no-mutation-events: true
+no-vulnerable-libraries: true
 no-websql: true
 notification-on-start: true
 object-alt: true
@@ -194,6 +202,7 @@ tabindex: true
 td-headers-attr: true
 th-has-data-cells: true
 themed-omnibox: false
+time-to-first-byte: true
 total-byte-weight: true
 user-timings: true
 uses-http2: false
