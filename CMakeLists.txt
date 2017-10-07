@@ -499,8 +499,14 @@ if (ENABLE_EXAMPLES AND "${CMAKE_GENERATOR}" MATCHES "Makefiles$")
   # Users of the configure build expect the example targets to be built in the
   # examples sub directory of the configured build directory after running make.
   file(MAKE_DIRECTORY "${AOM_CONFIG_DIR}/examples")
-  set_target_properties(${AOM_EXAMPLE_TARGETS} PROPERTIES
-                        RUNTIME_OUTPUT_DIRECTORY "${AOM_CONFIG_DIR}/examples")
+
+  foreach (target ${AOM_EXAMPLE_TARGETS})
+    if (NOT "${target}" MATCHES "aomdec\|aomenc")
+      set_target_properties(${target} PROPERTIES
+                            RUNTIME_OUTPUT_DIRECTORY
+                            "${AOM_CONFIG_DIR}/examples")
+    endif ()
+  endforeach ()
 
   if (ENABLE_TOOLS AND AOM_TOOL_TARGETS)
     # The same expectation is true for tool targets.
