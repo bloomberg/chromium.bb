@@ -68,7 +68,6 @@ import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
-import org.chromium.content_public.browser.SmartSelectionToggle;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.File;
@@ -413,7 +412,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         PathService.override(PathService.DIR_MODULE, "/system/lib/");
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
-        SmartSelectionToggle.setEnabled(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O);
         // Make sure that ResourceProvider is initialized before starting the browser process.
         final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
         final String webViewPackageName = webViewPackageInfo.packageName;

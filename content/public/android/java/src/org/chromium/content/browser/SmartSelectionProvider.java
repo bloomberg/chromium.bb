@@ -17,6 +17,7 @@ import android.view.textclassifier.TextClassificationManager;
 import android.view.textclassifier.TextClassifier;
 import android.view.textclassifier.TextSelection;
 
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;

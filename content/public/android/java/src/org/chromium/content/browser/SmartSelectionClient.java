@@ -11,6 +11,7 @@ import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -41,24 +42,18 @@ public class SmartSelectionClient implements SelectionClient {
     // Used for surrounding text request.
     private static final int NUM_EXTRA_CHARS = 240;
 
-    // Is smart selection enabled?
-    private static boolean sEnabled;
-
     private long mNativeSmartSelectionClient;
     private SmartSelectionProvider mProvider;
     private ResultCallback mCallback;
-
-    public static void setEnabled(boolean enabled) {
-        sEnabled = enabled;
-    }
 
     /**
      * Creates the SmartSelectionClient. Returns null in case SmartSelectionProvider does not exist
      * in the system.
      */
-    public static SmartSelectionClient create(
-            ResultCallback callback, WindowAndroid windowAndroid, WebContents webContents) {
-        if (!sEnabled) return null;
+    public static SmartSelectionClient create(ResultCallback callback, WebContents webContents) {
+        WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || windowAndroid == null) return null;
+
         SmartSelectionProvider provider = new SmartSelectionProvider(callback, windowAndroid);
         return new SmartSelectionClient(provider, callback, webContents);
     }

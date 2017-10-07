@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content_public.browser;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.View.OnClickListener;
 import android.view.textclassifier.TextClassifier;
+
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.SmartSelectionClient;
 
 /**
  * Interface to a content layer client that can process and modify selection text.
@@ -112,9 +115,12 @@ public interface SelectionClient {
      */
     void cancelAllRequests();
 
+    // The clang-format tool is confused by the java 8 usage of default in an interface.
+    // TODO(donnd): remove this once it's supported.
+    // clang-format off
     /**
-     * Sets TextClassifier for the Smart Text selection. Pass null argument to use the system
-     * classifier
+     * Sets the TextClassifier for the Smart Text Selection feature. Pass {@code null} to use the
+     * system classifier.
      */
     default void setTextClassifier(TextClassifier textClassifier) {}
 
@@ -133,4 +139,12 @@ public interface SelectionClient {
     default TextClassifier getCustomTextClassifier() {
         return null;
     }
+
+    /** Creates a {@link SelectionClient} instance. */
+    public static SelectionClient createSmartSelectionClient(WebContents webContents) {
+        SelectionClient.ResultCallback callback =
+                ContentViewCore.fromWebContents(webContents).getPopupControllerResultCallback();
+        return SmartSelectionClient.create(callback, webContents);
+    }
+        // clang-format on
 }

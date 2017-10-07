@@ -274,6 +274,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextualsearch/NearTopTapSuppression.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/QuickAnswersHeuristic.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/RecentScrollTapSuppression.java",
+  "java/src/org/chromium/chrome/browser/contextualsearch/SelectionClientManager.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/SwipeRecognizer.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/TapDurationSuppression.java",
   "java/src/org/chromium/chrome/browser/contextualsearch/TapFarFromPreviousSuppression.java",

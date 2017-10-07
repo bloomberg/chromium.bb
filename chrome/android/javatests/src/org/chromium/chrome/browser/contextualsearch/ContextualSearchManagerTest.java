@@ -79,6 +79,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiDisableIf;
@@ -2244,9 +2245,10 @@ public class ContextualSearchManagerTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mManager.onSelectionEvent(
+                SelectionClient selectionClient = mManager.getContextualSearchSelectionClient();
+                selectionClient.onSelectionEvent(
                         SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 333, 450);
-                mManager.onSelectionEvent(
+                selectionClient.onSelectionEvent(
                         SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 303, 450);
             }
         });
