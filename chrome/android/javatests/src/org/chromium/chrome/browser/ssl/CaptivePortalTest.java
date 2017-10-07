@@ -49,6 +49,7 @@ import java.util.concurrent.Callable;
 @CommandLineParameter({"", "enable-features=" + ChromeFeatureList.CAPTIVE_PORTAL_CERTIFICATE_LIST})
 public class CaptivePortalTest {
     private static final String CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX = "Connect to";
+    private static final String SSL_INTERSTITIAL_TITLE = "Privacy error";
     private static final int INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS = 5;
 
     // UMA events copied from ssl_error_handler.h.
@@ -142,6 +143,9 @@ public class CaptivePortalTest {
                 RecordHistogram.getHistogramValueCountForTesting(
                         "interstitial.ssl_error_handler", HANDLE_ALL));
         Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting("interstitial.ssl_error_handler",
+                        SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE));
+        Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "interstitial.ssl_error_handler", CAPTIVE_PORTAL_CERT_FOUND));
         Assert.assertEquals(0,
@@ -157,10 +161,44 @@ public class CaptivePortalTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "interstitial.ssl_error_handler", HANDLE_ALL));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting("interstitial.ssl_error_handler",
+                        SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE));
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "interstitial.ssl_error_handler", CAPTIVE_PORTAL_CERT_FOUND));
         Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", OS_REPORTS_CAPTIVE_PORTAL));
+    }
+
+    /** When CaptivePortalInterstitial feature is disabled, the result of OS captive portal
+     *  APIs should be ignored, and a generic SSL interstitial should be displayed.
+     */
+    @Test
+    @CommandLineFlags.Add({"disable-features=CaptivePortalInterstitial"})
+    public void testOSReportsCaptivePortal_FeatureDisabled() throws Exception {
+        CaptivePortalHelper.setOSReportsCaptivePortalForTesting(true);
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        ChromeTabUtils.loadUrlOnUiThread(
+                tab, mServer.getURL("/chrome/test/data/android/navigate/simple.html"));
+        waitForInterstitial(tab.getWebContents(), true);
+        Assert.assertTrue(tab.isShowingInterstitialPage());
+
+        new TabTitleObserver(tab, SSL_INTERSTITIAL_TITLE)
+                .waitForTitleUpdate(INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS);
+
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", HANDLE_ALL));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", SHOW_SSL_INTERSTITIAL_OVERRIDABLE));
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "interstitial.ssl_error_handler", CAPTIVE_PORTAL_CERT_FOUND));
+        Assert.assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "interstitial.ssl_error_handler", OS_REPORTS_CAPTIVE_PORTAL));
     }
