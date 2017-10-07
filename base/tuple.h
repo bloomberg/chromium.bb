@@ -33,10 +33,6 @@
 
 namespace base {
 
-template <typename T>
-using MakeIndexSequenceForTuple = std::make_index_sequence<
-    std::tuple_size<typename std::decay<T>::type>::value>;
-
 // Dispatchers ----------------------------------------------------------------
 //
 // Helper functions that call the given method on an object, with the unpacked
@@ -60,8 +56,9 @@ template <typename ObjT, typename Method, typename Tuple>
 inline void DispatchToMethod(const ObjT& obj,
                              Method method,
                              Tuple&& args) {
+  constexpr size_t size = std::tuple_size<std::decay_t<Tuple>>::value;
   DispatchToMethodImpl(obj, method, std::forward<Tuple>(args),
-                       MakeIndexSequenceForTuple<Tuple>());
+                       std::make_index_sequence<size>());
 }
 
 // Static Dispatchers with no out params.
@@ -75,8 +72,9 @@ inline void DispatchToFunctionImpl(Function function,
 
 template <typename Function, typename Tuple>
 inline void DispatchToFunction(Function function, Tuple&& args) {
+  constexpr size_t size = std::tuple_size<std::decay_t<Tuple>>::value;
   DispatchToFunctionImpl(function, std::forward<Tuple>(args),
-                         MakeIndexSequenceForTuple<Tuple>());
+                         std::make_index_sequence<size>());
 }
 
 // Dispatchers with out parameters.
@@ -102,9 +100,11 @@ inline void DispatchToMethod(const ObjT& obj,
                              Method method,
                              InTuple&& in,
                              OutTuple* out) {
+  constexpr size_t in_size = std::tuple_size<std::decay_t<InTuple>>::value;
+  constexpr size_t out_size = std::tuple_size<OutTuple>::value;
   DispatchToMethodImpl(obj, method, std::forward<InTuple>(in), out,
-                       MakeIndexSequenceForTuple<InTuple>(),
-                       MakeIndexSequenceForTuple<OutTuple>());
+                       std::make_index_sequence<in_size>(),
+                       std::make_index_sequence<out_size>());
 }
 
 }  // namespace base
