@@ -42,9 +42,10 @@ inline void DispatchResourceReply(ObjT* obj,
                                   Method method,
                                   const ResourceMessageReplyParams& params,
                                   TupleType&& args_tuple) {
+  constexpr size_t size = std::tuple_size<std::decay_t<TupleType>>::value;
   DispatchResourceReplyImpl(obj, method, params,
                             std::forward<TupleType>(args_tuple),
-                            base::MakeIndexSequenceForTuple<TupleType>());
+                            std::make_index_sequence<size>());
 }
 
 template <typename CallbackType, typename TupleType, size_t... indices>
@@ -64,9 +65,10 @@ template <typename CallbackType, typename TupleType>
 inline void DispatchResourceReply(CallbackType&& callback,
                                   const ResourceMessageReplyParams& params,
                                   TupleType&& args_tuple) {
+  constexpr size_t size = std::tuple_size<std::decay_t<TupleType>>::value;
   DispatchResourceReplyImpl(std::forward<CallbackType>(callback), params,
                             std::forward<TupleType>(args_tuple),
-                            base::MakeIndexSequenceForTuple<TupleType>());
+                            std::make_index_sequence<size>());
 }
 
 // Used to dispatch resource replies. In most cases, you should not call this
