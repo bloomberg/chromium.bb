@@ -7,6 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#include "base/metrics/histogram_macros.h"
+#include "media/cdm/cdm_host_files.h"
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
 // INITIALIZE_CDM_MODULE is a macro in api/content_decryption_module.h.
 // However, we need to pass it as a string to GetFunctionPointer(). The follow
 // macro helps expanding it into a string.
@@ -15,7 +20,32 @@
 
 namespace media {
 
+namespace {
+
 static CdmModule* g_cdm_module = nullptr;
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+// Initialize CDM host verification. Returns false if fatal error happened.
+// Otherwise returns true.
+// TODO(xhwang): Add comments on the sandbox model after the CDM process is
+// sandboxed.
+void InitCdmHostVerification(
+    base::NativeLibrary cdm_library,
+    const base::FilePath& cdm_path,
+    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
+  DCHECK(cdm_library);
+
+  CdmHostFiles cdm_host_files;
+  cdm_host_files.Initialize(cdm_path, cdm_host_file_paths);
+
+  auto status = cdm_host_files.InitVerification(cdm_library);
+
+  UMA_HISTOGRAM_ENUMERATION("Media.EME.CdmHostVerificationStatus", status,
+                            CdmHostFiles::Status::kStatusCount);
+}
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
+}  // namespace
 
 // static
 CdmModule* CdmModule::GetInstance() {
@@ -47,19 +77,26 @@ CdmModule::~CdmModule() {
 }
 
 CdmModule::CreateCdmFunc CdmModule::GetCreateCdmFunc() {
-  if (!is_initialize_called_) {
-    DCHECK(false) << __func__ << " called before CdmModule is initialized.";
+  if (!was_initialize_called_) {
+    NOTREACHED() << __func__ << " called before CdmModule is initialized.";
     return nullptr;
   }
 
+  // If initialization failed, nullptr will be returned.
   return create_cdm_func_;
 }
 
-void CdmModule::Initialize(const base::FilePath& cdm_path) {
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+bool CdmModule::Initialize(const base::FilePath& cdm_path,
+                           std::vector<CdmHostFilePath> cdm_host_file_paths) {
+#else
+bool CdmModule::Initialize(const base::FilePath& cdm_path) {
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   DVLOG(2) << __func__ << ": cdm_path = " << cdm_path.value();
 
-  DCHECK(!is_initialize_called_);
-  is_initialize_called_ = true;
+  DCHECK(!was_initialize_called_);
+  was_initialize_called_ = true;
+
   cdm_path_ = cdm_path;
 
   // Load the CDM.
@@ -69,34 +106,43 @@ void CdmModule::Initialize(const base::FilePath& cdm_path) {
   if (!library_.is_valid()) {
     LOG(ERROR) << "CDM at " << cdm_path.value() << " could not be loaded.";
     LOG(ERROR) << "Error: " << error.ToString();
-    return;
+    return false;
   }
 
   // Get function pointers.
   // TODO(xhwang): Define function names in macros to avoid typo errors.
-  using InitializeCdmModuleFunc = void (*)();
-  InitializeCdmModuleFunc initialize_cdm_module_func =
-      reinterpret_cast<InitializeCdmModuleFunc>(
-          library_.GetFunctionPointer(MAKE_STRING(INITIALIZE_CDM_MODULE)));
+  initialize_cdm_module_func_ = reinterpret_cast<InitializeCdmModuleFunc>(
+      library_.GetFunctionPointer(MAKE_STRING(INITIALIZE_CDM_MODULE)));
   deinitialize_cdm_module_func_ = reinterpret_cast<DeinitializeCdmModuleFunc>(
       library_.GetFunctionPointer("DeinitializeCdmModule"));
   create_cdm_func_ = reinterpret_cast<CreateCdmFunc>(
       library_.GetFunctionPointer("CreateCdmInstance"));
 
-  if (!initialize_cdm_module_func || !deinitialize_cdm_module_func_ ||
+  if (!initialize_cdm_module_func_ || !deinitialize_cdm_module_func_ ||
       !create_cdm_func_) {
     LOG(ERROR) << "Missing entry function in CDM at " << cdm_path.value();
+    initialize_cdm_module_func_ = nullptr;
     deinitialize_cdm_module_func_ = nullptr;
     create_cdm_func_ = nullptr;
     library_.Release();
-    return;
+    return false;
   }
 
-  initialize_cdm_module_func();
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+  InitCdmHostVerification(library_.get(), cdm_path_, cdm_host_file_paths);
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
+  return true;
+}
+
+void CdmModule::InitializeCdmModule() {
+  DCHECK(was_initialize_called_);
+  DCHECK(initialize_cdm_module_func_);
+  initialize_cdm_module_func_();
 }
 
 base::FilePath CdmModule::GetCdmPath() const {
-  DCHECK(is_initialize_called_);
+  DCHECK(was_initialize_called_);
   return cdm_path_;
 }
 

@@ -7,10 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/overlay_info.h"
+#include "media/media_features.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
@@ -40,6 +42,7 @@ class RendererFactory;
 class VideoDecoder;
 class VideoFrame;
 class VideoRendererSink;
+struct CdmHostFilePath;
 
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
@@ -91,6 +94,12 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // nullptr if the host chose not to bind the InterfacePtr.
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces);
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+  // Gets a list of CDM host file paths and put them in |cdm_host_file_paths|.
+  virtual void AddCdmHostFilePaths(
+      std::vector<CdmHostFilePath>* cdm_host_file_paths);
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
  protected:
   MojoMediaClient();
