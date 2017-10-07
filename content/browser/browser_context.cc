@@ -365,9 +365,8 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
                           base::Bind(ShutdownServiceWorkerContext));
 
   // Shared workers also keep render process hosts alive, and are expected to
-  // return ref counts to 0 after documents close. However, shared worker
-  // bookkeeping is done on the IO thread and we want to ensure the hosts are
-  // destructed now, so forcibly release their ref counts here.
+  // return ref counts to 0 after documents close. However, to ensure that
+  // hosts are destructed now, forcibly release their ref counts here.
   for (RenderProcessHost::iterator host_iterator =
            RenderProcessHost::AllHostsIterator();
        !host_iterator.IsAtEnd(); host_iterator.Advance()) {

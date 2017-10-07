@@ -12,12 +12,11 @@
 namespace content {
 class ResourceContext;
 
-// Instances of this class live on the IO thread and have their lifetime bound
+// Instances of this class live on the UI thread and have their lifetime bound
 // to a Mojo connection.
 class CONTENT_EXPORT SharedWorkerConnectorImpl
     : public mojom::SharedWorkerConnector {
  public:
-  // Called on the UI thread:
   static void Create(int process_id,
                      int frame_id,
                      mojom::SharedWorkerConnectorRequest request);
@@ -25,11 +24,11 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
  private:
   friend class SharedWorkerServiceImplTest;
 
-  static void CreateOnIOThread(int process_id,
-                               int frame_id,
-                               ResourceContext* resource_context,
-                               const WorkerStoragePartition& partition,
-                               mojom::SharedWorkerConnectorRequest request);
+  static void CreateInternal(int process_id,
+                             int frame_id,
+                             ResourceContext* resource_context,
+                             const WorkerStoragePartition& partition,
+                             mojom::SharedWorkerConnectorRequest request);
 
   SharedWorkerConnectorImpl(
       int process_id,

@@ -1516,8 +1516,6 @@ source_set("browser") {
     "shared_worker/shared_worker_host.h",
     "shared_worker/shared_worker_instance.cc",
     "shared_worker/shared_worker_instance.h",
-    "shared_worker/shared_worker_message_filter.cc",
-    "shared_worker/shared_worker_message_filter.h",
     "shared_worker/shared_worker_service_impl.cc",
     "shared_worker/shared_worker_service_impl.h",
     "shared_worker/worker_storage_partition.cc",

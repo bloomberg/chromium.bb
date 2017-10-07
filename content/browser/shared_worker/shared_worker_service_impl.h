@@ -30,7 +30,6 @@ namespace content {
 
 class SharedWorkerInstance;
 class SharedWorkerHost;
-class SharedWorkerMessageFilter;
 class ResourceContext;
 class WorkerServiceObserver;
 class WorkerStoragePartitionId;
@@ -42,9 +41,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
   // Returns the SharedWorkerServiceImpl singleton.
   static SharedWorkerServiceImpl* GetInstance();
 
-  void AddFilter(SharedWorkerMessageFilter* filter);
-  void RemoveFilter(SharedWorkerMessageFilter* filter);
-
   // WorkerService implementation:
   bool TerminateWorker(int process_id, int route_id) override;
   void TerminateAllWorkersForTesting(base::OnceClosure callback) override;
@@ -52,8 +48,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
   void AddObserver(WorkerServiceObserver* observer) override;
   void RemoveObserver(WorkerServiceObserver* observer) override;
 
-  // These methods correspond to worker related IPCs.
-  void CreateWorker(
+  // Creates the worker if necessary or connects to an already existing worker.
+  void ConnectToWorker(
       int process_id,
       int frame_id,
       mojom::SharedWorkerInfoPtr info,
@@ -63,98 +59,33 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id);
 
-  void OnProcessClosing(int process_id);
-
-  // Checks the worker dependency of renderer processes and calls
-  // IncrementWorkerRefCount and DecrementWorkerRefCount of
-  // RenderProcessHostImpl on UI thread if necessary.
-  void CheckWorkerDependency();
-
-  void NotifyWorkerDestroyed(int process_id, int route_id);
-
   void DestroyHost(int process_id, int route_id);
 
  private:
-  class SharedWorkerPendingInstance;
-  class SharedWorkerReserver;
-
   friend struct base::DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
 
-  using UpdateWorkerDependencyFunc = void (*)(const std::vector<int>&,
-                                              const std::vector<int>&);
-  using TryReserveWorkerFunc = bool (*)(int /* process_id */,
-                                        mojom::SharedWorkerFactoryPtrInfo*);
-
   using WorkerID = std::pair<int /* process_id */, int /* route_id */>;
   using WorkerHostMap = std::map<WorkerID, std::unique_ptr<SharedWorkerHost>>;
-  using PendingInstanceMap =
-      std::map<int, std::unique_ptr<SharedWorkerPendingInstance>>;
 
   SharedWorkerServiceImpl();
   ~SharedWorkerServiceImpl() override;
 
   void ResetForTesting();
 
-  SharedWorkerMessageFilter* GetFilter(int render_process_id);
+  void CreateWorker(std::unique_ptr<SharedWorkerInstance> instance,
+                    mojom::SharedWorkerClientPtr client,
+                    int process_id,
+                    int frame_id,
+                    const blink::MessagePortChannel& message_port);
 
-  // Reserves the render process to create Shared Worker. This reservation
-  // procedure will be executed on UI thread and
-  // RenderProcessReservedCallback() or RenderProcessReserveFailedCallback()
-  // will be called on IO thread.
-  // (SecureContextMismatch is used for UMA and should be handled as success.)
-  void ReserveRenderProcessToCreateWorker(
-      std::unique_ptr<SharedWorkerPendingInstance> pending_instance);
-
-  // Called after the render process is reserved to create Shared Worker in it.
-  void RenderProcessReservedCallback(int pending_instance_id,
-                                     int worker_process_id,
-                                     int worker_route_id,
-                                     bool is_new_worker,
-                                     mojom::SharedWorkerFactoryPtrInfo factory,
-                                     bool pause_on_start);
-
-  // Called after the fast shutdown is detected while reserving the render
-  // process to create Shared Worker in it.
-  void RenderProcessReserveFailedCallback(
-      int pending_instance_id,
-      int worker_process_id,
-      int worker_route_id,
-      bool is_new_worker,
-      mojom::SharedWorkerFactoryPtrInfo factory,
-      bool pause_on_start);
-
-  // Returns nullptr if there is no host for given ids.
+  // Returns nullptr if there is no such host.
   SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);
-
-  SharedWorkerHost* FindSharedWorkerHost(const SharedWorkerInstance& instance);
-  SharedWorkerPendingInstance* FindPendingInstance(
+  SharedWorkerHost* FindAvailableSharedWorkerHost(
       const SharedWorkerInstance& instance);
 
-  // Returns the IDs of the renderer processes which are executing
-  // SharedWorkers connected to other renderer processes.
-  const std::set<int> GetRenderersWithWorkerDependency();
-
-  void ChangeUpdateWorkerDependencyFuncForTesting(
-      UpdateWorkerDependencyFunc new_func);
-  void ChangeTryReserveWorkerFuncForTesting(TryReserveWorkerFunc new_func);
-
-  std::set<int> last_worker_depended_renderers_;
-  // Function ptr to update worker dependency, tests may override this.
-  UpdateWorkerDependencyFunc update_worker_dependency_;
-
-  // Function ptr to reserve worker on UI thread, tests may override this.
-  static TryReserveWorkerFunc s_try_reserve_worker_func_;
-
   WorkerHostMap worker_hosts_;
-  PendingInstanceMap pending_instances_;
-  int next_pending_instance_id_;
-
   base::ObserverList<WorkerServiceObserver> observers_;
-
-  // Map from render process ID to filter.
-  std::map<int, scoped_refptr<SharedWorkerMessageFilter>> filters_;
-
   base::OnceClosure terminate_all_workers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);

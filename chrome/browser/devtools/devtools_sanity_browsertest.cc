@@ -680,7 +680,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     ~WorkerCreationObserver() override {}
 
     void WorkerCreated(const GURL& url,
-                       const base::string16& name,
+                       const std::string& name,
                        int process_id,
                        int route_id) override {
       if (url.path().rfind(path_) == std::string::npos)
@@ -730,24 +730,20 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     CloseDevToolsWindow();
   }
 
-  static void TerminateWorkerOnIOThread(scoped_refptr<WorkerData> worker_data) {
+  static void TerminateWorker(scoped_refptr<WorkerData> worker_data) {
     if (!WorkerService::GetInstance()->TerminateWorker(
         worker_data->worker_process_id, worker_data->worker_route_id))
       FAIL() << "Failed to terminate worker.\n";
+
     WorkerService::GetInstance()->AddObserver(
         new WorkerTerminationObserver(worker_data.get()));
-  }
 
-  static void TerminateWorker(scoped_refptr<WorkerData> worker_data) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&TerminateWorkerOnIOThread, worker_data));
     content::RunMessageLoop();
   }
 
-  static void WaitForFirstSharedWorkerOnIOThread(
-      const std::string& path,
-      scoped_refptr<WorkerData> worker_data) {
+  static scoped_refptr<WorkerData> WaitForFirstSharedWorker(const char* path) {
+    scoped_refptr<WorkerData> worker_data(new WorkerData());
+
     std::vector<WorkerService::WorkerInfo> worker_info =
         WorkerService::GetInstance()->GetWorkers();
     for (size_t i = 0; i < worker_info.size(); i++) {
@@ -755,20 +751,12 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         continue;
       worker_data->worker_process_id = worker_info[0].process_id;
       worker_data->worker_route_id = worker_info[0].route_id;
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::MessageLoop::QuitWhenIdleClosure());
-      return;
+      return worker_data;
     }
 
     WorkerService::GetInstance()->AddObserver(
         new WorkerCreationObserver(path, worker_data.get()));
-  }
 
-  static scoped_refptr<WorkerData> WaitForFirstSharedWorker(const char* path) {
-    scoped_refptr<WorkerData> worker_data(new WorkerData());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&WaitForFirstSharedWorkerOnIOThread, path, worker_data));
     content::RunMessageLoop();
     return worker_data;
   }
