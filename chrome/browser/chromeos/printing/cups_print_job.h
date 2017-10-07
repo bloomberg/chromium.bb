@@ -31,6 +31,7 @@ class CupsPrintJob {
     PAPER_JAM,
     OUT_OF_INK,
     PRINTER_UNREACHABLE,
+    FILTER_FAILED,
     UNKNOWN_ERROR,
   };
 
@@ -66,6 +67,9 @@ class CupsPrintJob {
 
   // Returns true if |state_| represents a terminal state.
   bool IsJobFinished();
+
+  // Returns true if cups pipeline failed.
+  bool PipelineDead();
 
  private:
   Printer printer_;
