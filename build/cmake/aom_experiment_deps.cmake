@@ -94,6 +94,13 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_EXT_PARTITION_TYPES)
+    if (CONFIG_SUPERTX)
+      change_config_and_warn(CONFIG_SUPERTX 0
+                             CONFIG_EXT_PARTITION_TYPES)
+    endif ()
+  endif ()
+
   if (CONFIG_JNT_COMP)
     if (NOT CONFIG_FRAME_MARKER)
       change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_JNT_COMP)
