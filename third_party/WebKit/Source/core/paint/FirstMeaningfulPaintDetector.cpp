@@ -308,6 +308,9 @@ void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(double stamp,
   DCHECK_GT(swap_stamp, 0.0);
   DCHECK(network2_quiet_reached_);
 
+  probe::paintTiming(GetDocument(), "firstMeaningfulPaint",
+    swap_stamp);
+
   // If there's only been one contentful paint, then there won't have been
   // a meaningful paint signalled to the Scheduler, so mark one now.
   // This is a no-op if a FMPC has already been marked.
