@@ -2593,26 +2593,13 @@ drm_output_fini_pixman(struct drm_output *output);
 static int
 drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mode)
 {
-	struct drm_output *output;
-	struct drm_mode *drm_mode;
-	struct drm_backend *b;
-
-	if (output_base == NULL) {
-		weston_log("output is NULL.\n");
-		return -1;
-	}
-
-	if (mode == NULL) {
-		weston_log("mode is NULL.\n");
-		return -1;
-	}
-
-	b = to_drm_backend(output_base->compositor);
-	output = to_drm_output(output_base);
-	drm_mode  = choose_mode (output, mode);
+	struct drm_output *output = to_drm_output(output_base);
+	struct drm_backend *b = to_drm_backend(output_base->compositor);
+	struct drm_mode *drm_mode = choose_mode(output, mode);
 
 	if (!drm_mode) {
-		weston_log("%s, invalid resolution:%dx%d\n", __func__, mode->width, mode->height);
+		weston_log("%s: invalid resolution %dx%d\n",
+			   output_base->name, mode->width, mode->height);
 		return -1;
 	}
 
