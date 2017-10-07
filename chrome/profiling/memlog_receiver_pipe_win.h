@@ -11,37 +11,22 @@
 
 #include "base/files/platform_file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_win.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-
-namespace base {
-class TaskRunner;
-}
+#include "chrome/profiling/memlog_receiver_pipe.h"
 
 namespace profiling {
 
-class MemlogStreamReceiver;
-
-class MemlogReceiverPipe
-    : public base::RefCountedThreadSafe<MemlogReceiverPipe>,
-      public base::MessagePumpForIO::IOHandler {
+class MemlogReceiverPipe : public MemlogReceiverPipeBase,
+                           public base::MessagePumpForIO::IOHandler {
  public:
-  explicit MemlogReceiverPipe(base::ScopedPlatformFile handle);
+  explicit MemlogReceiverPipe(mojo::edk::ScopedPlatformHandle handle);
 
   // Must be called on the IO thread.
   void StartReadingOnIOThread();
 
-  void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
-                   scoped_refptr<MemlogStreamReceiver> receiver);
-
-  // Callback that indicates an error has occurred and the connection should
-  // be closed. May be called more than once in an error condition.
-  void ReportError();
-
  private:
-  friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
   ~MemlogReceiverPipe() override;
 
   void ReadUntilBlocking();
@@ -52,10 +37,6 @@ class MemlogReceiverPipe
                      DWORD bytes_transfered,
                      DWORD error) override;
 
-  scoped_refptr<base::TaskRunner> receiver_task_runner_;
-  scoped_refptr<MemlogStreamReceiver> receiver_;
-
-  base::win::ScopedHandle handle_;
   base::MessagePumpForIO::IOContext context_;
 
   bool read_outstanding_ = false;

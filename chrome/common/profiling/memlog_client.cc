@@ -38,8 +38,7 @@ void MemlogClient::OnServiceManagerConnected(
 }
 
 void MemlogClient::BindToInterface(mojom::MemlogClientRequest request) {
-  binding_.reset(
-      new mojo::Binding<mojom::MemlogClient>(this, std::move(request)));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void MemlogClient::StartProfiling(mojo::ScopedHandle sender_pipe) {
@@ -56,6 +55,10 @@ void MemlogClient::StartProfiling(mojo::ScopedHandle sender_pipe) {
   memlog_sender_pipe_->Send(&header, sizeof(header));
 
   InitAllocatorShim(memlog_sender_pipe_.get());
+}
+
+void MemlogClient::FlushPipe(uint32_t barrier_id) {
+  AllocatorShimFlushPipe(barrier_id);
 }
 
 }  // namespace profiling

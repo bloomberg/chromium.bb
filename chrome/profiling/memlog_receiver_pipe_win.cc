@@ -25,10 +25,12 @@ const int kReadBufferSize = 1024 * 64;
 
 }  // namespace
 
-MemlogReceiverPipe::MemlogReceiverPipe(base::ScopedPlatformFile handle)
-    : handle_(std::move(handle)), read_buffer_(new char[kReadBufferSize]) {
+MemlogReceiverPipe::MemlogReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
+    : MemlogReceiverPipeBase(std::move(handle)),
+      read_buffer_(new char[kReadBufferSize]) {
   ZeroOverlapped();
-  base::MessageLoopForIO::current()->RegisterIOHandler(handle_.Get(), this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(handle_.get().handle,
+                                                       this);
 }
 
 MemlogReceiverPipe::~MemlogReceiverPipe() {
@@ -36,17 +38,6 @@ MemlogReceiverPipe::~MemlogReceiverPipe() {
 
 void MemlogReceiverPipe::StartReadingOnIOThread() {
   ReadUntilBlocking();
-}
-
-void MemlogReceiverPipe::SetReceiver(
-    scoped_refptr<base::TaskRunner> task_runner,
-    scoped_refptr<MemlogStreamReceiver> receiver) {
-  receiver_task_runner_ = task_runner;
-  receiver_ = receiver;
-}
-
-void MemlogReceiverPipe::ReportError() {
-  handle_.Close();
 }
 
 void MemlogReceiverPipe::ReadUntilBlocking() {
@@ -60,7 +51,7 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
 
   DCHECK(!read_outstanding_);
   read_outstanding_ = true;
-  if (!::ReadFile(handle_.Get(), read_buffer_.get(), kReadBufferSize,
+  if (!::ReadFile(handle_.get().handle, read_buffer_.get(), kReadBufferSize,
                   &bytes_read, &context_.overlapped)) {
     if (GetLastError() == ERROR_IO_PENDING) {
       return;
@@ -90,10 +81,9 @@ void MemlogReceiverPipe::OnIOCompleted(
 
   if (bytes_transfered && receiver_) {
     receiver_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ReceiverPipeStreamDataThunk,
+        FROM_HERE, base::BindOnce(&MemlogReceiverPipe::OnStreamDataThunk, this,
                                   base::MessageLoop::current()->task_runner(),
-                                  scoped_refptr<MemlogReceiverPipe>(this),
-                                  receiver_, std::move(read_buffer_),
+                                  std::move(read_buffer_),
                                   static_cast<size_t>(bytes_transfered)));
     read_buffer_.reset(new char[kReadBufferSize]);
   }
