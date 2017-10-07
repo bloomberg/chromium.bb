@@ -64,10 +64,8 @@ namespace {
 const base::Feature kMITMSoftwareInterstitial{
     "MITMSoftwareInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 const base::Feature kCaptivePortalInterstitial{
     "CaptivePortalInterstitial", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 const base::Feature kCaptivePortalCertificateList{
     "CaptivePortalCertificateList", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -187,11 +185,9 @@ void RecordUMA(SSLErrorHandler::UMAEvent event) {
                             SSLErrorHandler::SSL_ERROR_HANDLER_EVENT_COUNT);
 }
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 bool IsCaptivePortalInterstitialEnabled() {
   return base::FeatureList::IsEnabled(kCaptivePortalInterstitial);
 }
-#endif
 
 std::unique_ptr<std::unordered_set<std::string>> LoadCaptivePortalCertHashes(
     const chrome_browser_ssl::SSLErrorAssistantConfig& proto) {
@@ -886,8 +882,9 @@ void SSLErrorHandler::StartHandlingError() {
   // opens a new tab if it detects a portal ignoring the types of SSL errors. To
   // be consistent with captive portal detector, use the result of OS detection
   // without checking only_error_is_name_mismatch.
-  if (g_config.Pointer()->DoesOSReportCaptivePortalForTesting() ||
-      delegate_->DoesOSReportCaptivePortal()) {
+  if (IsCaptivePortalInterstitialEnabled() &&
+      (g_config.Pointer()->DoesOSReportCaptivePortalForTesting() ||
+       delegate_->DoesOSReportCaptivePortal())) {
     RecordUMA(OS_REPORTS_CAPTIVE_PORTAL);
     ShowCaptivePortalInterstitial(GURL());
     return;

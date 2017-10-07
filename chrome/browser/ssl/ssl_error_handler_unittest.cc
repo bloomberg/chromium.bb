@@ -287,7 +287,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 // mismatch error.
 class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
  public:
-  SSLErrorHandlerNameMismatchTest() : field_trial_list_(nullptr) {}
+  SSLErrorHandlerNameMismatchTest() {}
   ~SSLErrorHandlerNameMismatchTest() override {}
 
   void SetUp() override {
@@ -332,7 +332,6 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
   net::SSLInfo ssl_info_;
   std::unique_ptr<TestSSLErrorHandler> error_handler_;
   TestSSLErrorHandlerDelegate* delegate_;
-  base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerNameMismatchTest);
 };
@@ -358,8 +357,6 @@ class SSLErrorHandlerNameMismatchNoSANTest
 // recreated by calling ResetErrorHandler() with an appropriate cert status.
 class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
  public:
-  SSLErrorAssistantTest() : field_trial_list_(nullptr) {}
-
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
@@ -381,6 +378,9 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
   const net::SSLInfo& ssl_info() { return ssl_info_; }
 
  protected:
+  SSLErrorAssistantTest() {}
+  ~SSLErrorAssistantTest() override {}
+
   void SetCaptivePortalFeatureEnabled(bool enabled) {
     if (enabled) {
       scoped_feature_list_.InitFromCommandLine(
@@ -581,7 +581,6 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
   net::SSLInfo ssl_info_;
   std::unique_ptr<TestSSLErrorHandler> error_handler_;
   TestSSLErrorHandlerDelegate* delegate_;
-  base::FieldTrialList field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorAssistantTest);
@@ -876,6 +875,34 @@ TEST_F(SSLErrorHandlerNameMismatchTest, OSReportsCaptivePortal) {
       SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::OS_REPORTS_CAPTIVE_PORTAL, 1);
+}
+
+// Test that a captive portal interstitial isn't shown if the OS reports a
+// portal but CaptivePortalInterstitial feature is disabled.
+TEST_F(SSLErrorHandlerNameMismatchTest,
+       OSReportsCaptivePortal_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      std::string(), "CaptivePortalInterstitial" /* disabled */);
+
+  base::HistogramTester histograms;
+  delegate()->set_os_reports_captive_portal();
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  error_handler()->StartHandlingError();
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_FALSE(delegate()->captive_portal_checked());
+  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::OS_REPORTS_CAPTIVE_PORTAL, 0);
 }
 
 TEST_F(SSLErrorHandlerNameMismatchTest,
