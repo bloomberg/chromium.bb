@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/crosscall_params.h"
 
@@ -236,6 +237,7 @@ bool CrossCallParamsEx::GetParameterVoidPtr(uint32_t index, void** param) {
 // scanned for invalid characters.
 bool CrossCallParamsEx::GetParameterStr(uint32_t index,
                                         base::string16* string) {
+  DCHECK(string->empty());
   uint32_t size = 0;
   ArgType type;
   void* start = GetRawParameter(index, &size, &type);
@@ -244,14 +246,14 @@ bool CrossCallParamsEx::GetParameterStr(uint32_t index,
 
   // Check if this is an empty string.
   if (size == 0) {
-    *string = L"";
+    *string = base::WideToUTF16(L"");
     return true;
   }
 
   if (!start || ((size % sizeof(wchar_t)) != 0))
     return false;
-  string->append(reinterpret_cast<wchar_t*>(start), size / (sizeof(wchar_t)));
-  return true;
+  return base::WideToUTF16(reinterpret_cast<wchar_t*>(start),
+                           size / sizeof(wchar_t), string);
 }
 
 bool CrossCallParamsEx::GetParameterPtr(uint32_t index,
