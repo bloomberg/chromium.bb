@@ -801,7 +801,6 @@ void CompositorTimingHistory::DrawAborted() {
 }
 
 void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
-                                      bool main_thread_missed_last_deadline,
                                       base::TimeTicks impl_frame_time) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();

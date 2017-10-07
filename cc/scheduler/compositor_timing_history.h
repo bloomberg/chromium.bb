@@ -75,7 +75,6 @@ class CC_EXPORT CompositorTimingHistory {
   void DrawAborted();
   void WillDraw();
   void DidDraw(bool used_new_active_tree,
-               bool main_thread_missed_last_deadline,
                base::TimeTicks impl_frame_time);
   void DidSubmitCompositorFrame();
   void DidReceiveCompositorFrameAck();
