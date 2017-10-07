@@ -5,9 +5,14 @@
 #ifndef SANDBOX_SRC_CROSSCALL_PARAMS_H__
 #define SANDBOX_SRC_CROSSCALL_PARAMS_H__
 
+#if !defined(SANDBOX_FUZZ_TARGET)
 #include <windows.h>
 
 #include <lmaccess.h>
+#else
+#include "sandbox/win/fuzzer/fuzzer_types.h"
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
