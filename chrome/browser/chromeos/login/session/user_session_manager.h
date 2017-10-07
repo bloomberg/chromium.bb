@@ -254,6 +254,9 @@ class UserSessionManager
 
   void Shutdown();
 
+  static bool NeedRestartToApplyPerSessionFlagsForProfile(
+      const Profile* profile);
+
  private:
   friend class test::UserSessionManagerTestApi;
   friend struct base::DefaultSingletonTraits<UserSessionManager>;
