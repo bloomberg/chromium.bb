@@ -65,7 +65,7 @@ public abstract class ChromeFeatureList {
         if (sTestFeatures != null) {
             Boolean enabled = sTestFeatures.get(featureName);
             if (enabled == null) throw new IllegalArgumentException(featureName);
-            return enabled.booleanValue();
+            return enabled;
         }
 
         assert isInitialized();

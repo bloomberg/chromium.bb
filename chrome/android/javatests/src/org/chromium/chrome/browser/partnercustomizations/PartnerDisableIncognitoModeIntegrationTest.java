@@ -42,6 +42,7 @@ import java.util.concurrent.ExecutionException;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        ChromeSwitches.ALLOW_PARTNER_CUSTOMIZATION,
 })
 public class PartnerDisableIncognitoModeIntegrationTest {
     @Rule
