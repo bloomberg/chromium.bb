@@ -271,6 +271,19 @@ FYI_WATERFALL = {
       'os_type': 'win',
       'type': Types.DEQP,
     },
+    'Win7 Experimental Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          # TODO(jmadill): change this to experimental driver version.
+          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
