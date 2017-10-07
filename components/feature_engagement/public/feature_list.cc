@@ -24,6 +24,10 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHChromeHomeExpandFeature,
     &kIPHChromeHomeMenuHeaderFeature,
     &kIPHMediaDownloadFeature,
+    &kIPHContextualSearchFeature,
+    &kIPHContextualSearchTapFeature,
+    &kIPHContextualSearchPanelFeature,
+    &kIPHContextualSearchOptInFeature,
 #endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
     &kIPHBookmarkFeature,

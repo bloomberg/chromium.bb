@@ -71,6 +71,28 @@ public final class EventConstants {
     public static final String MEDIA_DOWNLOAD_BUTTON_DISPLAYED = "media_download_button_displayed";
 
     /**
+     * Contextual Search panel was opened.
+     */
+    public static final String CONTEXTUAL_SEARCH_PANEL_OPENED = "contextual_search_panel_opened";
+
+    /**
+     * Contextual Search showed an entity result for the searched query.
+     */
+    public static final String CONTEXTUAL_SEARCH_ENTITY_RESULT = "contextual_search_entity_result";
+
+    /**
+     * Contextual Search was triggered by a tap.
+     */
+    public static final String CONTEXTUAL_SEARCH_TRIGGERED_BY_TAP =
+            "contextual_search_triggered_by_tap";
+
+    /**
+     * Contextual Search was triggered by longpressing.
+     */
+    public static final String CONTEXTUAL_SEARCH_TRIGGERED_BY_LONGPRESS =
+            "contextual_search_triggered_by_longpress";
+
+    /**
      * Do not instantiate.
      */
     private EventConstants() {}

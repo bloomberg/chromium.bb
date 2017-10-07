@@ -97709,6 +97709,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              menu."/>
   <suffix name="IPH_DataSaverPreview"
       label="In product help data saver preview."/>
+  <suffix name="IPH_ContextualSearch"
+      label="In product help for contextual search."/>
+  <suffix name="IPH_ContextualSearchTap"
+      label="In product help for tap trigger for contextual search."/>
+  <suffix name="IPH_ContextualSearchPanel"
+      label="In product help for opening the contextual search panel."/>
+  <suffix name="IPH_ContextualSearchOptIn"
+      label="In product help for opting-in for contextual search."/>
   <suffix name="IPH_DataSaverDetail"
       label="In product help data saver detail."/>
   <suffix name="IPH_DownloadPage" label="In product help download page."/>

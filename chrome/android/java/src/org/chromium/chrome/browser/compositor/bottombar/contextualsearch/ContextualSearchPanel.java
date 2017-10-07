@@ -24,7 +24,10 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -208,6 +211,11 @@ public class ContextualSearchPanel extends OverlayPanel {
             // After opening the Panel to either expanded or maximized state,
             // the promo should disappear.
             getPeekPromoControl().hide();
+
+            // Notify Feature Engagement that the Panel has opened.
+            Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(mActivity.getActivityTab().getProfile());
+            tracker.notifyEvent(EventConstants.CONTEXTUAL_SEARCH_PANEL_OPENED);
         }
 
         super.setPanelState(toState, reason);

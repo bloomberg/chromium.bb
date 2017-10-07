@@ -20,6 +20,27 @@ public final class FeatureConstants {
     public static final String MEDIA_DOWNLOAD_FEATURE = "IPH_MediaDownload";
 
     /**
+     * An IPH feature that encourages users who search a query from a web page in a new tab, to use
+     * Contextual Search instead.
+     */
+    public static final String CONTEXTUAL_SEARCH_FEATURE = "IPH_ContextualSearch";
+
+    /**
+     * An IPH feature for promoting tap over longpress for activating Contextual Search.
+     */
+    public static final String CONTEXTUAL_SEARCH_TAP_FEATURE = "IPH_ContextualSearchTap";
+
+    /**
+     * An IPH feature for encouraging users to open the Contextual Search Panel.
+     */
+    public static final String CONTEXTUAL_SEARCH_PANEL_FEATURE = "IPH_ContextualSearchPanel";
+
+    /**
+     * An IPH feature for encouraging users to opt-in for Contextual Search.
+     */
+    public static final String CONTEXTUAL_SEARCH_OPT_IN_FEATURE = "IPH_ContextualSearchOptIn";
+
+    /**
      * Do not instantiate.
      */
     private FeatureConstants() {}
