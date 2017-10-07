@@ -54,6 +54,7 @@ import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
@@ -480,8 +481,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         mSelectionPopupController = new SelectionPopupController(
                 mContext, windowAndroid, webContents, mContainerView, mRenderCoordinates);
-        mSelectionPopupController.setSelectionClient(SmartSelectionClient.create(
-                mSelectionPopupController.getResultCallback(), windowAndroid, webContents));
         mSelectionPopupController.setCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
         mSelectionPopupController.setContainerView(mContainerView);
 
@@ -533,6 +532,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     public void setNonSelectionActionModeCallback(ActionMode.Callback callback) {
         mSelectionPopupController.setNonSelectionCallback(callback);
+    }
+
+    public SelectionClient.ResultCallback getPopupControllerResultCallback() {
+        return mSelectionPopupController.getResultCallback();
     }
 
     private void addDisplayAndroidObserverIfNeeded() {
@@ -2126,10 +2129,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         return mFullscreenRequiredForOrientationLock;
     }
 
-    /**
-     * Sets the client that can process and augment existing text selection, e.g. Contextual Search.
-     * @param selectionClient The client that receives related notifications.
-     */
+    /** Sets the given {@link SelectionClient} in the selection popup controller. */
     public void setSelectionClient(SelectionClient selectionClient) {
         mSelectionPopupController.setSelectionClient(selectionClient);
     }

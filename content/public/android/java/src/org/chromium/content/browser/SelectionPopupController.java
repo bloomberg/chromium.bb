@@ -18,6 +18,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.CharacterStyle;
@@ -44,6 +45,7 @@ import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -131,7 +133,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private PastePopupMenu mPastePopupMenu;
     private boolean mWasPastePopupShowingOnInsertionDragStart;
 
-    // The client that processes textual selection, or null if none exists.
+    /** The {@link SelectionClient} that processes textual selection, or {@code null} if none
+     * exists. */
     private SelectionClient mSelectionClient;
 
     // The classificaton result of the selected text if the selection exists and
@@ -231,6 +234,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return mClassificationResult;
     }
 
+    /**
+     * Gets the current {@link SelectionClient}.
+     */
     public SelectionClient getSelectionClient() {
         return mSelectionClient;
     }
@@ -1097,8 +1103,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
     }
 
-    // The client that implements selection augmenting functionality, or null if none exists.
-    void setSelectionClient(SelectionClient selectionClient) {
+    /**
+     * Sets the client that implements selection augmenting functionality, or null if none exists.
+     */
+    void setSelectionClient(@Nullable SelectionClient selectionClient) {
         mSelectionClient = selectionClient;
 
         mClassificationResult = null;
@@ -1159,7 +1167,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
     }
 
-    // The callback class that delivers result from a SmartSelectionClient.
+    // The callback class that delivers the result from a SmartSelectionClient.
     private class SmartSelectionCallback implements SelectionClient.ResultCallback {
         @Override
         public void onClassified(SelectionClient.Result result) {
