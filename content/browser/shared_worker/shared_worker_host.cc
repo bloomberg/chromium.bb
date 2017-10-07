@@ -22,52 +22,55 @@
 namespace content {
 namespace {
 
-void NotifyWorkerReadyForInspection(int process_id, int route_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(NotifyWorkerReadyForInspection, process_id, route_id));
-    return;
-  }
-  SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
-      process_id, route_id);
+void AllowFileSystemOnIOThreadResponse(base::OnceCallback<void(bool)> callback,
+                                       bool result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), result));
 }
 
-void NotifyWorkerDestroyed(int process_id, int route_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(NotifyWorkerDestroyed, process_id, route_id));
-    return;
-  }
-  SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(process_id,
-                                                              route_id);
+void AllowFileSystemOnIOThread(const GURL& url,
+                               ResourceContext* resource_context,
+                               std::vector<std::pair<int, int>> render_frames,
+                               base::OnceCallback<void(bool)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GetContentClient()->browser()->AllowWorkerFileSystem(
+      url, resource_context, render_frames,
+      base::Bind(&AllowFileSystemOnIOThreadResponse, base::Passed(&callback)));
+}
+
+bool AllowIndexedDBOnIOThread(const GURL& url,
+                              const base::string16& name,
+                              ResourceContext* resource_context,
+                              std::vector<std::pair<int, int>> render_frames) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return GetContentClient()->browser()->AllowWorkerIndexedDB(
+      url, name, resource_context, render_frames);
 }
 
 }  // namespace
 
-SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
-                                   int process_id,
-                                   int route_id)
+SharedWorkerHost::SharedWorkerHost(
+    std::unique_ptr<SharedWorkerInstance> instance,
+    int process_id,
+    int route_id)
     : binding_(this),
-      instance_(instance),
+      instance_(std::move(instance)),
       process_id_(process_id),
       route_id_(route_id),
       next_connection_request_id_(1),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(instance_);
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
                            base::TimeTicks::Now() - creation_time_);
-  if (!closed_ && !termination_message_sent_)
-    NotifyWorkerDestroyed(process_id_, route_id_);
-  SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(process_id_,
+  if (!closed_ && !termination_message_sent_) {
+    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(process_id_,
                                                                 route_id_);
+  }
 }
 
 void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
@@ -96,29 +99,30 @@ void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
 void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  GetContentClient()->browser()->AllowWorkerFileSystem(
-      url, instance_->resource_context(), GetRenderFrameIDsForWorker(),
-      base::Bind(&SharedWorkerHost::AllowFileSystemResponse,
-                 weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AllowFileSystemOnIOThread, url,
+                     instance_->resource_context(),
+                     GetRenderFrameIDsForWorker(), std::move(callback)));
 }
 
-void SharedWorkerHost::AllowFileSystemResponse(
-    base::OnceCallback<void(bool)> callback,
-    bool allowed) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(allowed);
-}
-
-bool SharedWorkerHost::AllowIndexedDB(const GURL& url,
-                                      const base::string16& name) {
-  return GetContentClient()->browser()->AllowWorkerIndexedDB(
-      url, name, instance_->resource_context(), GetRenderFrameIDsForWorker());
+void SharedWorkerHost::AllowIndexedDB(const GURL& url,
+                                      const base::string16& name,
+                                      base::OnceCallback<void(bool)> callback) {
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&AllowIndexedDBOnIOThread, url, name,
+                     instance_->resource_context(),
+                     GetRenderFrameIDsForWorker()),
+      std::move(callback));
 }
 
 void SharedWorkerHost::TerminateWorker() {
   termination_message_sent_ = true;
-  if (!closed_)
-    NotifyWorkerDestroyed(process_id_, route_id_);
+  if (!closed_) {
+    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(process_id_,
+                                                                route_id_);
+  }
   worker_->Terminate();
   // Now, we wait to observe OnWorkerConnectionLost.
 }
@@ -151,12 +155,15 @@ void SharedWorkerHost::OnContextClosed() {
   // being sent to the worker (messages can still be sent from the worker,
   // for exception reporting, etc).
   closed_ = true;
-  if (!termination_message_sent_)
-    NotifyWorkerDestroyed(process_id_, route_id_);
+  if (!termination_message_sent_) {
+    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(process_id_,
+                                                                route_id_);
+  }
 }
 
 void SharedWorkerHost::OnReadyForInspection() {
-  NotifyWorkerReadyForInspection(process_id_, route_id_);
+  SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
+      process_id_, route_id_);
 }
 
 void SharedWorkerHost::OnScriptLoaded() {
@@ -196,6 +203,10 @@ void SharedWorkerHost::AddClient(mojom::SharedWorkerClientPtr client,
                                  int process_id,
                                  int frame_id,
                                  const blink::MessagePortChannel& port) {
+  // Pass the actual creation context type, so the client can understand if
+  // there is a mismatch between security levels.
+  client->OnCreated(instance_->creation_context_type());
+
   clients_.emplace_back(std::move(client), next_connection_request_id_++,
                         process_id, frame_id);
   ClientInfo& info = clients_.back();

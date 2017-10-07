@@ -102,17 +102,13 @@ class WorkerObserver
     DCHECK(callback_.is_null());
     DCHECK(!callback.is_null());
     callback_ = callback;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&WorkerObserver::StartOnIOThread, this));
+    content::WorkerService::GetInstance()->AddObserver(this);
   }
 
   void Stop() {
     DCHECK(!callback_.is_null());
     callback_ = base::Closure();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&WorkerObserver::StopOnIOThread, this));
+    content::WorkerService::GetInstance()->RemoveObserver(this);
   }
 
  private:
@@ -121,39 +117,21 @@ class WorkerObserver
 
   // content::WorkerServiceObserver overrides:
   void WorkerCreated(const GURL& url,
-                     const base::string16& name,
+                     const std::string& name,
                      int process_id,
                      int route_id) override {
-    NotifyOnIOThread();
+    Notify();
   }
 
-  void WorkerDestroyed(int process_id, int route_id) override {
-    NotifyOnIOThread();
-  }
+  void WorkerDestroyed(int process_id, int route_id) override { Notify(); }
 
-  void StartOnIOThread() {
-    content::WorkerService::GetInstance()->AddObserver(this);
-  }
-
-  void StopOnIOThread() {
-    content::WorkerService::GetInstance()->RemoveObserver(this);
-  }
-
-  void NotifyOnIOThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&WorkerObserver::NotifyOnUIThread, this));
-  }
-
-  void NotifyOnUIThread() {
+  void Notify() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (callback_.is_null())
       return;
     callback_.Run();
   }
 
-  // Accessed on UI thread.
   base::Closure callback_;
 };
 

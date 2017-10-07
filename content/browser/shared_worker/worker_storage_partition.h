@@ -41,6 +41,10 @@ class ServiceWorkerContextWrapper;
 // This class is effectively a struct, but we make it a class because we want to
 // define copy constructors, assignment operators, and an Equals() function for
 // it which makes it look awkward as a struct.
+//
+// TODO(darin): This class is no longer used off the UI thread, so we can
+// probably simplify it or eliminate it altogether.
+//
 class CONTENT_EXPORT WorkerStoragePartition {
  public:
   WorkerStoragePartition(

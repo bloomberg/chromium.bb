@@ -788,18 +788,9 @@ void BlinkTestController::OnTestFinished() {
 }
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
-  // TODO(darin): Eliminate this thread hopping once WorkerService runs on the
-  // UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::BindOnce([]() {
-        WorkerService::GetInstance()->TerminateAllWorkersForTesting(
-            base::BindOnce([]() {
-              BrowserThread::PostTask(
-                  BrowserThread::UI, FROM_HERE, base::BindOnce([]() {
-                    BlinkTestController::Get()->OnAllSharedWorkersDestroyed();
-                  }));
-            }));
-      }));
+  WorkerService::GetInstance()->TerminateAllWorkersForTesting(
+      base::BindOnce(&BlinkTestController::OnAllSharedWorkersDestroyed,
+                     base::Unretained(this)));
 }
 
 void BlinkTestController::OnAllSharedWorkersDestroyed() {

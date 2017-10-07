@@ -53,8 +53,9 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   // RenderProcessHostImpl::Release() avoids destroying RenderProcessHosts in
   // --single-process mode to avoid race conditions.
   DCHECK(hosts.empty() || profile->IsOffTheRecord() ||
-      content::RenderProcessHost::run_renderer_in_process()) << \
-      "Profile still has " << hosts.size() << " hosts";
+         profile->HasOffTheRecordProfile() ||
+         content::RenderProcessHost::run_renderer_in_process())
+      << "Profile still has " << hosts.size() << " hosts";
   // Note that we still test for !profile->IsOffTheRecord here even though we
   // DCHECK'd above because we want to protect Release builds against this even
   // we need to identify if there are leaks when we run Debug builds.

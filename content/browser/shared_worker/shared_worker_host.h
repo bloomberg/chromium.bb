@@ -36,12 +36,9 @@ class SharedWorkerInstance;
 // the browser <-> worker communication channel. This is owned by
 // SharedWorkerServiceImpl and destructed when a worker context or worker's
 // message filter is closed.
-//
-// NOTE: This class is intended to only be used on the IO thread.
-//
 class SharedWorkerHost : public mojom::SharedWorkerHost {
  public:
-  SharedWorkerHost(SharedWorkerInstance* instance,
+  SharedWorkerHost(std::unique_ptr<SharedWorkerInstance> instance,
                    int process_id,
                    int route_id);
   ~SharedWorkerHost() override;
@@ -51,7 +48,9 @@ class SharedWorkerHost : public mojom::SharedWorkerHost {
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
-  bool AllowIndexedDB(const GURL& url, const base::string16& name);
+  void AllowIndexedDB(const GURL& url,
+                      const base::string16& name,
+                      base::OnceCallback<void(bool)> callback);
 
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();

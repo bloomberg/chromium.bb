@@ -38,21 +38,17 @@ void SharedWorkerConnectorImpl::Create(
       storage_partition_impl->GetIndexedDBContext(),
       storage_partition_impl->GetServiceWorkerContext());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SharedWorkerConnectorImpl::CreateOnIOThread, process_id,
-                     frame_id, resource_context, worker_storage_partition,
-                     std::move(request)));
+  CreateInternal(process_id, frame_id, resource_context,
+                 worker_storage_partition, std::move(request));
 }
 
 // static
-void SharedWorkerConnectorImpl::CreateOnIOThread(
+void SharedWorkerConnectorImpl::CreateInternal(
     int process_id,
     int frame_id,
     ResourceContext* resource_context,
     const WorkerStoragePartition& worker_storage_partition,
     mojom::SharedWorkerConnectorRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::MakeStrongBinding(
       base::WrapUnique(new SharedWorkerConnectorImpl(
           process_id, frame_id, resource_context, worker_storage_partition)),
@@ -74,7 +70,7 @@ void SharedWorkerConnectorImpl::Connect(
     mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port) {
-  SharedWorkerServiceImpl::GetInstance()->CreateWorker(
+  SharedWorkerServiceImpl::GetInstance()->ConnectToWorker(
       process_id_, frame_id_, std::move(info), std::move(client),
       creation_context_type, blink::MessagePortChannel(std::move(message_port)),
       resource_context_, WorkerStoragePartitionId(worker_storage_partition_));
