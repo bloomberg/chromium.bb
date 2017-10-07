@@ -39,6 +39,8 @@ static_library("sandbox") {
     "src/interception_internal.h",
     "src/interceptors.h",
     "src/internal_types.h",
+    "src/ipc_args.cc",
+    "src/ipc_args.h",
     "src/ipc_tags.h",
     "src/job.cc",
     "src/job.h",
