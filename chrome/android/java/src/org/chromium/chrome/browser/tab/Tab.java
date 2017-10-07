@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler;
@@ -1612,6 +1613,8 @@ public class Tab
 
     private void maybeShowDataSaverInProductHelp(final Tracker tracker) {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DATA_SAVER_DETAIL_FEATURE)) return;
+
+        if (!(getActivity() instanceof ChromeTabbedActivity)) return;
 
         ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(getActivity(),
                 getActivity().getToolbarManager().getMenuButton(),
