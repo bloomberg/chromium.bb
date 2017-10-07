@@ -119,14 +119,13 @@ void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {
       // Don't show warning dialog if any logged in user in multi-profiles
       // session dismissed it.
       for (user_manager::UserList::const_iterator it = logged_in_users.begin();
-           it != logged_in_users.end();
-           ++it) {
+           it != logged_in_users.end(); ++it) {
         if (multi_user_util::GetProfileFromAccountId((*it)->GetAccountId())
                 ->GetPrefs()
                 ->GetBoolean(prefs::kMultiProfileWarningShowDismissed)) {
           bool active_user_show_option =
-              ProfileManager::GetActiveUserProfile()->
-              GetPrefs()->GetBoolean(prefs::kMultiProfileWarningShowDismissed);
+              ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+                  prefs::kMultiProfileWarningShowDismissed);
           std::move(on_accept).Run(true, active_user_show_option);
           return;
         }

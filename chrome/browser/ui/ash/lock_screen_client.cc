@@ -49,8 +49,8 @@ void LockScreenClient::AuthenticateUser(const AccountId& account_id,
                                         bool authenticated_by_pin,
                                         AuthenticateUserCallback callback) {
   if (delegate_)
-    delegate_->HandleAuthenticateUser(account_id, hashed_password,
-                                    authenticated_by_pin, std::move(callback));
+    delegate_->HandleAuthenticateUser(
+        account_id, hashed_password, authenticated_by_pin, std::move(callback));
 }
 
 void LockScreenClient::ShowLockScreen(

@@ -33,8 +33,7 @@ class BrowserStatusMonitor::LocalWebContentsObserver
  public:
   LocalWebContentsObserver(content::WebContents* contents,
                            BrowserStatusMonitor* monitor)
-      : content::WebContentsObserver(contents),
-        monitor_(monitor) {}
+      : content::WebContentsObserver(contents), monitor_(monitor) {}
 
   ~LocalWebContentsObserver() override {}
 
@@ -117,8 +116,8 @@ void BrowserStatusMonitor::UpdateAppItemState(
 
 void BrowserStatusMonitor::UpdateBrowserItemState() {
   DCHECK(initialized_);
-  launcher_controller_->GetBrowserShortcutLauncherItemController()->
-      UpdateBrowserItemState();
+  launcher_controller_->GetBrowserShortcutLauncherItemController()
+      ->UpdateBrowserItemState();
 }
 
 void BrowserStatusMonitor::OnWindowActivated(
@@ -135,9 +134,8 @@ void BrowserStatusMonitor::OnWindowActivated(
     if (browser)
       contents_from_lost = browser->tab_strip_model()->GetActiveWebContents();
     if (contents_from_lost) {
-      UpdateAppItemState(
-          contents_from_lost,
-          ChromeLauncherController::APP_STATE_INACTIVE);
+      UpdateAppItemState(contents_from_lost,
+                         ChromeLauncherController::APP_STATE_INACTIVE);
     }
   }
 
@@ -147,9 +145,8 @@ void BrowserStatusMonitor::OnWindowActivated(
     if (browser)
       contents_from_gained = browser->tab_strip_model()->GetActiveWebContents();
     if (contents_from_gained) {
-      UpdateAppItemState(
-          contents_from_gained,
-          ChromeLauncherController::APP_STATE_WINDOW_ACTIVE);
+      UpdateAppItemState(contents_from_gained,
+                         ChromeLauncherController::APP_STATE_WINDOW_ACTIVE);
     }
   }
 
@@ -194,13 +191,13 @@ void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
   // Update immediately on a tab change.
   if (old_contents &&
       (TabStripModel::kNoTab !=
-           browser->tab_strip_model()->GetIndexOfWebContents(old_contents)))
+       browser->tab_strip_model()->GetIndexOfWebContents(old_contents)))
     UpdateAppItemState(old_contents, state);
 
   if (new_contents) {
-    state = browser->window()->IsActive() ?
-        ChromeLauncherController::APP_STATE_WINDOW_ACTIVE :
-        ChromeLauncherController::APP_STATE_ACTIVE;
+    state = browser->window()->IsActive()
+                ? ChromeLauncherController::APP_STATE_WINDOW_ACTIVE
+                : ChromeLauncherController::APP_STATE_ACTIVE;
     UpdateAppItemState(new_contents, state);
     UpdateBrowserItemState();
     SetShelfIDForBrowserWindowContents(browser, new_contents);
@@ -214,8 +211,7 @@ void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
   DCHECK(old_contents && new_contents);
   Browser* browser = chrome::FindBrowserWithWebContents(new_contents);
 
-  UpdateAppItemState(old_contents,
-                     ChromeLauncherController::APP_STATE_REMOVED);
+  UpdateAppItemState(old_contents, ChromeLauncherController::APP_STATE_REMOVED);
   RemoveWebContentsObserver(old_contents);
 
   ChromeLauncherController::AppState state =
@@ -238,16 +234,14 @@ void BrowserStatusMonitor::TabInsertedAt(TabStripModel* tab_strip_model,
                                          bool foreground) {
   // An inserted tab is not active - ActiveTabChanged() will be called to
   // activate. We initialize therefore with |APP_STATE_INACTIVE|.
-  UpdateAppItemState(contents,
-                     ChromeLauncherController::APP_STATE_INACTIVE);
+  UpdateAppItemState(contents, ChromeLauncherController::APP_STATE_INACTIVE);
   AddWebContentsObserver(contents);
 }
 
 void BrowserStatusMonitor::TabClosingAt(TabStripModel* tab_strip_mode,
                                         content::WebContents* contents,
                                         int index) {
-  UpdateAppItemState(contents,
-                     ChromeLauncherController::APP_STATE_REMOVED);
+  UpdateAppItemState(contents, ChromeLauncherController::APP_STATE_REMOVED);
   RemoveWebContentsObserver(contents);
 }
 
@@ -298,7 +292,7 @@ bool BrowserStatusMonitor::IsV1AppInShelfWithAppId(const std::string& app_id) {
 void BrowserStatusMonitor::AddWebContentsObserver(
     content::WebContents* contents) {
   if (webcontents_to_observer_map_.find(contents) ==
-          webcontents_to_observer_map_.end()) {
+      webcontents_to_observer_map_.end()) {
     webcontents_to_observer_map_[contents] =
         base::MakeUnique<LocalWebContentsObserver>(contents, this);
   }
@@ -307,7 +301,7 @@ void BrowserStatusMonitor::AddWebContentsObserver(
 void BrowserStatusMonitor::RemoveWebContentsObserver(
     content::WebContents* contents) {
   DCHECK(webcontents_to_observer_map_.find(contents) !=
-      webcontents_to_observer_map_.end());
+         webcontents_to_observer_map_.end());
   webcontents_to_observer_map_.erase(contents);
 }
 
@@ -319,6 +313,6 @@ ash::ShelfID BrowserStatusMonitor::GetShelfIDForWebContents(
 void BrowserStatusMonitor::SetShelfIDForBrowserWindowContents(
     Browser* browser,
     content::WebContents* web_contents) {
-  launcher_controller_->GetBrowserShortcutLauncherItemController()->
-      SetShelfIDForBrowserWindowContents(browser, web_contents);
+  launcher_controller_->GetBrowserShortcutLauncherItemController()
+      ->SetShelfIDForBrowserWindowContents(browser, web_contents);
 }

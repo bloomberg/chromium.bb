@@ -99,8 +99,8 @@ TEST_F(LauncherContextMenuTest,
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
-  EXPECT_TRUE(menu->IsCommandIdEnabled(
-      LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
+  EXPECT_TRUE(
+      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
 
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
@@ -109,8 +109,8 @@ TEST_F(LauncherContextMenuTest,
   // The item should be disabled.
   ASSERT_TRUE(IsItemPresentInMenu(
       menu.get(), LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
-  EXPECT_FALSE(menu->IsCommandIdEnabled(
-      LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
+  EXPECT_FALSE(
+      menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW));
 }
 
 // Verifies that "New window" menu item in the launcher context
@@ -121,16 +121,16 @@ TEST_F(LauncherContextMenuTest,
   // Initially, "New window" should be enabled.
   std::unique_ptr<LauncherContextMenu> menu =
       CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
-  ASSERT_TRUE(IsItemPresentInMenu(
-      menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
+  ASSERT_TRUE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_WINDOW));
 
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
                                       IncognitoModePrefs::FORCED);
   menu = CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT, primary_id);
-  ASSERT_TRUE(IsItemPresentInMenu(
-      menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
+  ASSERT_TRUE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_NEW_WINDOW));
   EXPECT_FALSE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_NEW_WINDOW));
 }
 

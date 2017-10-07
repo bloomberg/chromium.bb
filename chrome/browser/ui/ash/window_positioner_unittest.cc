@@ -108,52 +108,45 @@ TEST_F(WindowPositionerTest, cascading) {
   gfx::Rect cascade_1 = window_positioner()->GetPopupPosition(popup_position);
   EXPECT_EQ(gfx::Rect(work_area.x() + grid_size_, work_area.y() + grid_size_,
                       popup_position.width(), popup_position.height()),
-                      cascade_1);
+            cascade_1);
 
   gfx::Rect cascade_2 = window_positioner()->GetPopupPosition(popup_position);
-  EXPECT_EQ(gfx::Rect(work_area.x() + 2 * grid_size_,
-                      work_area.y() + 2 * grid_size_,
-                      popup_position.width(), popup_position.height()),
-                      cascade_2);
+  EXPECT_EQ(
+      gfx::Rect(work_area.x() + 2 * grid_size_, work_area.y() + 2 * grid_size_,
+                popup_position.width(), popup_position.height()),
+      cascade_2);
 
   // Check that if there is even only a pixel missing it will cascade.
-  window()->SetBounds(gfx::Rect(work_area.x() + popup_position.width() - 1,
-                                work_area.y() + popup_position.height() - 1,
-                                work_area.width() -
-                                    2 * (popup_position.width() - 1),
-                                work_area.height() -
-                                    2 * (popup_position.height() - 1)));
+  window()->SetBounds(
+      gfx::Rect(work_area.x() + popup_position.width() - 1,
+                work_area.y() + popup_position.height() - 1,
+                work_area.width() - 2 * (popup_position.width() - 1),
+                work_area.height() - 2 * (popup_position.height() - 1)));
 
   gfx::Rect cascade_3 = window_positioner()->GetPopupPosition(popup_position);
-  EXPECT_EQ(gfx::Rect(work_area.x() + 3 * grid_size_,
-                      work_area.y() + 3 * grid_size_,
-                      popup_position.width(), popup_position.height()),
-                      cascade_3);
+  EXPECT_EQ(
+      gfx::Rect(work_area.x() + 3 * grid_size_, work_area.y() + 3 * grid_size_,
+                popup_position.width(), popup_position.height()),
+      cascade_3);
 
   // Check that we overflow into the next line when we do not fit anymore in Y.
-  gfx::Rect popup_position_4(0, 0, 200,
-                             work_area.height() -
-                                 (cascade_3.y() - work_area.y()));
-  gfx::Rect cascade_4 =
-      window_positioner()->GetPopupPosition(popup_position_4);
-  EXPECT_EQ(gfx::Rect(work_area.x() + 2 * grid_size_,
-                      work_area.y() + grid_size_,
-                      popup_position_4.width(), popup_position_4.height()),
-                      cascade_4);
+  gfx::Rect popup_position_4(
+      0, 0, 200, work_area.height() - (cascade_3.y() - work_area.y()));
+  gfx::Rect cascade_4 = window_positioner()->GetPopupPosition(popup_position_4);
+  EXPECT_EQ(
+      gfx::Rect(work_area.x() + 2 * grid_size_, work_area.y() + grid_size_,
+                popup_position_4.width(), popup_position_4.height()),
+      cascade_4);
 
   // Check that we overflow back to the first possible location if we overflow
   // to the end.
-  gfx::Rect popup_position_5(0, 0,
-                            work_area.width() + 1 -
-                                (cascade_4.x() - work_area.x()),
-                            work_area.height() -
-                                (2 * grid_size_ - work_area.y()));
-  gfx::Rect cascade_5 =
-      window_positioner()->GetPopupPosition(popup_position_5);
-  EXPECT_EQ(gfx::Rect(work_area.x() + grid_size_,
-                      work_area.y() + grid_size_,
+  gfx::Rect popup_position_5(
+      0, 0, work_area.width() + 1 - (cascade_4.x() - work_area.x()),
+      work_area.height() - (2 * grid_size_ - work_area.y()));
+  gfx::Rect cascade_5 = window_positioner()->GetPopupPosition(popup_position_5);
+  EXPECT_EQ(gfx::Rect(work_area.x() + grid_size_, work_area.y() + grid_size_,
                       popup_position_5.width(), popup_position_5.height()),
-                      cascade_5);
+            cascade_5);
 }
 
 TEST_F(WindowPositionerTest, filling) {
@@ -161,54 +154,49 @@ TEST_F(WindowPositionerTest, filling) {
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect popup_position(0, 0, 256, 128);
   // Leave space on the left and the right and see if we fill top to bottom.
-  window()->SetBounds(gfx::Rect(work_area.x() + popup_position.width(),
-                                work_area.y(),
-                                work_area.width() - 2 * popup_position.width(),
-                                work_area.height()));
+  window()->SetBounds(gfx::Rect(
+      work_area.x() + popup_position.width(), work_area.y(),
+      work_area.width() - 2 * popup_position.width(), work_area.height()));
   window()->Show();
   // Check that we are positioned in the top left corner.
   gfx::Rect top_left = window_positioner()->GetPopupPosition(popup_position);
-  EXPECT_EQ(gfx::Rect(work_area.x(), work_area.y(),
-                      popup_position.width(), popup_position.height()),
-                      top_left);
+  EXPECT_EQ(gfx::Rect(work_area.x(), work_area.y(), popup_position.width(),
+                      popup_position.height()),
+            top_left);
 
   // Now block the found location.
   popup()->SetBounds(top_left);
   popup()->Show();
   gfx::Rect mid_left = window_positioner()->GetPopupPosition(popup_position);
   EXPECT_EQ(gfx::Rect(work_area.x(),
-                      AlignToGridRoundDown(
-                          work_area.y() + top_left.height(), grid_size_),
-                          popup_position.width(), popup_position.height()),
-                      mid_left);
+                      AlignToGridRoundDown(work_area.y() + top_left.height(),
+                                           grid_size_),
+                      popup_position.width(), popup_position.height()),
+            mid_left);
 
   // Block now everything so that we can only put the popup on the bottom
   // of the left side.
   // Note: We need to keep one "grid spacing free" if the window does not
   // fit into the grid (which is true for 200 height).`
-  popup()->SetBounds(gfx::Rect(work_area.x(), work_area.y(),
-                               popup_position.width(),
-                               work_area.height() - popup_position.height() -
-                                   grid_size_ + 1));
-  gfx::Rect bottom_left = window_positioner()->GetPopupPosition(
-                              popup_position);
-  EXPECT_EQ(gfx::Rect(work_area.x(),
-                      work_area.bottom() - popup_position.height(),
-                      popup_position.width(), popup_position.height()),
-                      bottom_left);
+  popup()->SetBounds(
+      gfx::Rect(work_area.x(), work_area.y(), popup_position.width(),
+                work_area.height() - popup_position.height() - grid_size_ + 1));
+  gfx::Rect bottom_left = window_positioner()->GetPopupPosition(popup_position);
+  EXPECT_EQ(
+      gfx::Rect(work_area.x(), work_area.bottom() - popup_position.height(),
+                popup_position.width(), popup_position.height()),
+      bottom_left);
 
   // Block now enough to force the right side.
-  popup()->SetBounds(gfx::Rect(work_area.x(), work_area.y(),
-                               popup_position.width(),
-                               work_area.height() - popup_position.height() +
-                               1));
-  gfx::Rect top_right = window_positioner()->GetPopupPosition(
-                            popup_position);
-  EXPECT_EQ(gfx::Rect(AlignToGridRoundDown(work_area.right() -
-                                           popup_position.width(), grid_size_),
-                      work_area.y(),
-                      popup_position.width(), popup_position.height()),
-                      top_right);
+  popup()->SetBounds(
+      gfx::Rect(work_area.x(), work_area.y(), popup_position.width(),
+                work_area.height() - popup_position.height() + 1));
+  gfx::Rect top_right = window_positioner()->GetPopupPosition(popup_position);
+  EXPECT_EQ(
+      gfx::Rect(AlignToGridRoundDown(work_area.right() - popup_position.width(),
+                                     grid_size_),
+                work_area.y(), popup_position.width(), popup_position.height()),
+      top_right);
 }
 
 TEST_F(WindowPositionerTest, biggerThenBorder) {
@@ -219,9 +207,9 @@ TEST_F(WindowPositionerTest, biggerThenBorder) {
 
   // Check that the popup is placed full screen.
   gfx::Rect full = window_positioner()->GetPopupPosition(pop_position);
-  EXPECT_EQ(gfx::Rect(work_area.x(), work_area.y(),
-                      pop_position.width(), pop_position.height()),
-                      full);
+  EXPECT_EQ(gfx::Rect(work_area.x(), work_area.y(), pop_position.width(),
+                      pop_position.height()),
+            full);
 }
 
 }  // namespace ash

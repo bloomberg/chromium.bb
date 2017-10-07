@@ -40,8 +40,8 @@ class UserChangeActionDisabler {
     ash::WindowPositioner::DisableAutoPositioning(false);
     ash::Shell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
   }
- private:
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(UserChangeActionDisabler);
 };
 
@@ -114,11 +114,9 @@ UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
     FinalizeAnimation();
   } else {
     user_changed_animation_timer_.reset(new base::Timer(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(animation_speed_ms_),
-        base::Bind(
-            &UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation,
-            base::Unretained(this)),
+        FROM_HERE, base::TimeDelta::FromMilliseconds(animation_speed_ms_),
+        base::Bind(&UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation,
+                   base::Unretained(this)),
         true));
     user_changed_animation_timer_->Reset();
   }
@@ -337,8 +335,7 @@ UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
   TransitioningScreenCover cover = NO_USER_COVERS_SCREEN;
   for (MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator it_map =
            owner_->window_to_entry().begin();
-       it_map != owner_->window_to_entry().end();
-       ++it_map) {
+       it_map != owner_->window_to_entry().end(); ++it_map) {
     aura::Window* window = it_map->first;
     if (root_window && window->GetRootWindow() != root_window)
       continue;

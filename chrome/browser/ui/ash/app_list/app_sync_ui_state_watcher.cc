@@ -9,8 +9,7 @@
 
 AppSyncUIStateWatcher::AppSyncUIStateWatcher(Profile* profile,
                                              app_list::AppListModel* model)
-    : app_sync_ui_state_(AppSyncUIState::Get(profile)),
-      model_(model) {
+    : app_sync_ui_state_(AppSyncUIState::Get(profile)), model_(model) {
   if (app_sync_ui_state_) {
     app_sync_ui_state_->AddObserver(this);
     OnAppSyncUIStatusChanged();

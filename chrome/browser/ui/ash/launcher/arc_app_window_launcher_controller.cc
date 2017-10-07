@@ -492,9 +492,8 @@ ArcAppWindowLauncherController::ControllerForWindow(aura::Window* window) {
 
   for (auto& it : task_id_to_app_window_info_) {
     ArcAppWindow* app_window = it.second->app_window();
-    if (app_window &&
-        app_window->widget() ==
-            views::Widget::GetWidgetForNativeWindow(window)) {
+    if (app_window && app_window->widget() ==
+                          views::Widget::GetWidgetForNativeWindow(window)) {
       return it.second->app_window()->controller();
     }
   }

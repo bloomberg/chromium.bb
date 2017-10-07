@@ -13,7 +13,7 @@ namespace ash {
 namespace mus {
 class WindowManager;
 }
-}
+}  // namespace ash
 
 // Creates and owns ash.
 // TODO(jamescook): Fold this into ChromeBrowserMainExtraPartsAsh.

@@ -12,7 +12,7 @@ class AppListPresenterImpl;
 class AppListView;
 class AppsGridView;
 class StartPageView;
-}
+}  // namespace app_list
 
 // Accesses private data from an AppListServiceAsh and AppListPresenterImpl
 // for testing.

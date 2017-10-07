@@ -89,10 +89,8 @@ class AcceleratorCommandsFullscreenBrowserTest
       public InProcessBrowserTest {
  public:
   AcceleratorCommandsFullscreenBrowserTest()
-      : initial_show_state_(GetParam()) {
-  }
-  virtual ~AcceleratorCommandsFullscreenBrowserTest() {
-  }
+      : initial_show_state_(GetParam()) {}
+  virtual ~AcceleratorCommandsFullscreenBrowserTest() {}
 
   // Sets |window_state|'s show state to |initial_show_state_|.
   void SetToInitialShowState(ash::wm::WindowState* window_state) {
@@ -220,10 +218,8 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
       public extensions::PlatformAppBrowserTest {
  public:
   AcceleratorCommandsPlatformAppFullscreenBrowserTest()
-      : initial_show_state_(GetParam()) {
-  }
-  virtual ~AcceleratorCommandsPlatformAppFullscreenBrowserTest() {
-  }
+      : initial_show_state_(GetParam()) {}
+  virtual ~AcceleratorCommandsPlatformAppFullscreenBrowserTest() {}
 
   // Sets |app_window|'s show state to |initial_show_state_|.
   void SetToInitialShowState(extensions::AppWindow* app_window) {
@@ -251,8 +247,8 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
 IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
                        ToggleFullscreen) {
   ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
-  const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal",
-                                                                    "Launched");
+  const extensions::Extension* extension =
+      LoadAndLaunchPlatformApp("minimal", "Launched");
 
   {
     // Test that ToggleFullscreen() toggles a platform's app's fullscreen

@@ -18,7 +18,8 @@ class AppListPresenterImpl;
 }
 
 namespace base {
-template <typename T> struct DefaultSingletonTraits;
+template <typename T>
+struct DefaultSingletonTraits;
 }
 
 class AppListControllerDelegateAsh;

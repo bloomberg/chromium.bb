@@ -206,8 +206,7 @@ AppListControllerDelegate* AppListServiceAsh::GetControllerDelegate() {
   return controller_delegate_.get();
 }
 
-void AppListServiceAsh::CreateForProfile(Profile* default_profile) {
-}
+void AppListServiceAsh::CreateForProfile(Profile* default_profile) {}
 
 void AppListServiceAsh::DestroyAppList() {
   // On Ash, the app list is torn down whenever it is dismissed, so just ensure
