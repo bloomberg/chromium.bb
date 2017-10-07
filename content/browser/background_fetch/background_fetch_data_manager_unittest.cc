@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -22,10 +23,13 @@
 namespace content {
 namespace {
 
-const char kExampleId[] = "my-example-id";
+const char kExampleDeveloperId[] = "my-example-id";
+const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
+const char kAlternativeUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 
-// A "bgfetch_registration_" per registration (not including keys for requests).
-const size_t kUserDataKeysPerRegistration = 1u;
+// A "bgfetch_registration_developer_id_to_unique_id_" and
+// "bgfetch_registration_" per registration (not including keys for requests).
+const size_t kUserDataKeysPerRegistration = 2u;
 // A "bgfetch_request_" and "bgfetch_pending_request_" per request. See schema
 // documentation in background_fetch_data_manager.cc.
 const size_t kUserDataKeysPerRequest = 2u;
@@ -134,8 +138,13 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   // Tests that the BackgroundFetchDataManager correctly rejects creating a
   // registration that's already known to the system.
 
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  BackgroundFetchRegistrationId registration_id1(service_worker_registration_id,
+                                                 origin(), kExampleDeveloperId,
+                                                 kExampleUniqueId);
 
   std::vector<ServiceWorkerFetchRequest> requests;
   BackgroundFetchOptions options;
@@ -143,23 +152,34 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   blink::mojom::BackgroundFetchError error;
 
   // Deleting the not-yet-created registration should fail.
-  DeleteRegistration(registration_id, &error);
+  DeleteRegistration(registration_id1, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   // Creating the initial registration should succeed.
-  CreateRegistration(registration_id, requests, options, &error);
+  CreateRegistration(registration_id1, requests, options, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  // Attempting to create it again should yield an error.
-  CreateRegistration(registration_id, requests, options, &error);
-  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_ID);
+  // Different |unique_id|, since this is a new Background Fetch registration,
+  // even though it shares the same |developer_id|.
+  BackgroundFetchRegistrationId registration_id2(service_worker_registration_id,
+                                                 origin(), kExampleDeveloperId,
+                                                 kAlternativeUniqueId);
 
-  // Deleting the registration should succeed.
-  DeleteRegistration(registration_id, &error);
+  // Attempting to create a second registration with the same |developer_id| and
+  // |service_worker_registration_id| should yield an error.
+  CreateRegistration(registration_id2, requests, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
+
+  // Deleting the second registration that failed to be created should fail.
+  DeleteRegistration(registration_id2, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
+
+  // Deleting the initial registration should succeed.
+  DeleteRegistration(registration_id1, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  // And then recreating the registration again should work fine.
-  CreateRegistration(registration_id, requests, options, &error);
+  // And now registering the second registration should work fine.
+  CreateRegistration(registration_id2, requests, options, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
@@ -170,9 +190,11 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistrationPersisted) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBackgroundFetchPersistence);
 
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
-  int64_t sw_id = registration_id.service_worker_registration_id();
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id1(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<ServiceWorkerFetchRequest> requests(2u);
   BackgroundFetchOptions options;
@@ -184,27 +206,34 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistrationPersisted) {
   EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(sw_id, "bgfetch_").size());
 
   // Creating the initial registration should succeed.
-  CreateRegistration(registration_id, requests, options, &error);
+  CreateRegistration(registration_id1, requests, options, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(expected_data_count,
             GetRegistrationUserDataByKeyPrefix(sw_id, "bgfetch_").size());
 
   RestartDataManagerFromPersistentStorage();
 
-  // Attempting to create it again should yield an error, even after restarting.
-  CreateRegistration(registration_id, requests, options, &error);
-  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_ID);
+  // Different |unique_id|, since this is a new Background Fetch registration,
+  // even though it shares the same |developer_id|.
+  BackgroundFetchRegistrationId registration_id2(
+      sw_id, origin(), kExampleDeveloperId, kAlternativeUniqueId);
+
+  // Attempting to create a second registration with the same |developer_id| and
+  // |service_worker_registration_id| should yield an error, even after
+  // restarting.
+  CreateRegistration(registration_id2, requests, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
 
   // Deleting the registration should succeed.
-  DeleteRegistration(registration_id, &error);
+  DeleteRegistration(registration_id1, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(sw_id, "bgfetch_").size());
 
   RestartDataManagerFromPersistentStorage();
 
-  // And then recreating the registration again should work fine, even after
+  // And now registering the second registration should work fine, even after
   // restarting.
-  CreateRegistration(registration_id, requests, options, &error);
+  CreateRegistration(registration_id2, requests, options, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(expected_data_count,
             GetRegistrationUserDataByKeyPrefix(sw_id, "bgfetch_").size());
@@ -218,8 +247,9 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBackgroundFetchPersistence);
 
-  BackgroundFetchRegistrationId registration_id;
-  ASSERT_TRUE(CreateRegistrationId(kExampleId, &registration_id));
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
 
   std::vector<ServiceWorkerFetchRequest> requests;
   BackgroundFetchOptions options;
@@ -232,6 +262,11 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
   base::RepeatingClosure quit_once_all_finished_closure =
       base::BarrierClosure(num_parallel_creates, run_loop.QuitClosure());
   for (int i = 0; i < num_parallel_creates; i++) {
+    // New |unique_id| per iteration, since each is a distinct registration.
+    BackgroundFetchRegistrationId registration_id(
+        service_worker_registration_id, origin(), kExampleDeveloperId,
+        base::GenerateGUID());
+
     background_fetch_data_manager_->CreateRegistration(
         registration_id, requests, options,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidCreateRegistration,
@@ -241,23 +276,23 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
   run_loop.Run();
 
   int success_count = 0;
-  int duplicated_id_count = 0;
+  int duplicated_developer_id_count = 0;
   for (auto error : errors) {
     switch (error) {
       case blink::mojom::BackgroundFetchError::NONE:
         success_count++;
         break;
-      case blink::mojom::BackgroundFetchError::DUPLICATED_ID:
-        duplicated_id_count++;
+      case blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
+        duplicated_developer_id_count++;
         break;
       default:
         break;
     }
   }
   // Exactly one of the calls should have succeeded in creating a registration,
-  // and all the others should have failed with DUPLICATED_ID.
+  // and all the others should have failed with DUPLICATED_DEVELOPER_ID.
   EXPECT_EQ(1, success_count);
-  EXPECT_EQ(num_parallel_creates - 1, duplicated_id_count);
+  EXPECT_EQ(num_parallel_creates - 1, duplicated_developer_id_count);
 }
 
 }  // namespace content

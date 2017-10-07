@@ -83,12 +83,7 @@ void BackgroundFetchTestBase::TearDown() {
   tear_down_called_ = true;
 }
 
-bool BackgroundFetchTestBase::CreateRegistrationId(
-    const std::string& tag,
-    BackgroundFetchRegistrationId* registration_id) {
-  DCHECK(registration_id);
-  DCHECK(registration_id->is_null());
-
+int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
   GURL script_url(kTestScriptUrl);
 
   int64_t service_worker_registration_id =
@@ -109,7 +104,7 @@ bool BackgroundFetchTestBase::CreateRegistrationId(
   if (service_worker_registration_id ==
       blink::mojom::kInvalidServiceWorkerRegistrationId) {
     ADD_FAILURE() << "Could not obtain a valid Service Worker registration";
-    return false;
+    return blink::mojom::kInvalidServiceWorkerRegistrationId;
   }
 
   scoped_refptr<ServiceWorkerRegistration> service_worker_registration;
@@ -129,15 +124,13 @@ bool BackgroundFetchTestBase::CreateRegistrationId(
 
   if (!service_worker_registration) {
     ADD_FAILURE() << "Could not find the new Service Worker registration.";
-    return false;
+    return blink::mojom::kInvalidServiceWorkerRegistrationId;
   }
-
-  *registration_id = BackgroundFetchRegistrationId(
-      service_worker_registration->id(), origin_, tag);
 
   service_worker_registrations_.push_back(
       std::move(service_worker_registration));
-  return true;
+
+  return service_worker_registration_id;
 }
 
 ServiceWorkerFetchRequest

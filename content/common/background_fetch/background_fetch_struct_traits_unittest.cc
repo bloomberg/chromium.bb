@@ -59,7 +59,8 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchOptionsRoundtrip) {
 
 TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
   BackgroundFetchRegistration registration;
-  registration.id = "my_id";
+  registration.developer_id = "my_id";
+  registration.unique_id = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
   registration.icons = {
       CreateIconDefinition("my_icon.png", "256x256", "image/png"),
       CreateIconDefinition("my_small_icon.jpg", "128x128", "image/jpg")};
@@ -71,7 +72,8 @@ TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
       blink::mojom::BackgroundFetchRegistration::Serialize(&registration),
       &roundtrip_registration));
 
-  EXPECT_EQ(roundtrip_registration.id, registration.id);
+  EXPECT_EQ(roundtrip_registration.developer_id, registration.developer_id);
+  EXPECT_EQ(roundtrip_registration.unique_id, registration.unique_id);
 
   ASSERT_EQ(roundtrip_registration.icons.size(), registration.icons.size());
   for (size_t i = 0; i < registration.icons.size(); ++i) {

@@ -63,19 +63,21 @@ class WebServiceWorkerContextProxy {
 
   enum class BackgroundFetchState { kPending, kSucceeded, kFailed };
 
-  virtual void DispatchBackgroundFetchAbortEvent(int event_id,
-                                                 const WebString& tag) = 0;
+  virtual void DispatchBackgroundFetchAbortEvent(
+      int event_id,
+      const WebString& developer_id) = 0;
   virtual void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const WebString& tag,
+      const WebString& developer_id,
       BackgroundFetchState status) = 0;
   virtual void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebString& tag,
+      const WebString& developer_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
   virtual void DispatchBackgroundFetchedEvent(
       int event_id,
-      const WebString& tag,
+      const WebString& developer_id,
+      const WebString& unique_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
   virtual void DispatchExtendableMessageEvent(
       int event_id,

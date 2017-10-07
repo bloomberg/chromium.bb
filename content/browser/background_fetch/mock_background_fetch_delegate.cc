@@ -65,25 +65,19 @@ void MockBackgroundFetchDelegate::DownloadUrl(
   // use the DownloadService, we should signal StartResult::UNEXPECTED_GUID.
   DCHECK(seen_guids_.find(guid) == seen_guids_.end());
 
-  std::unique_ptr<TestResponse> test_response;
-  scoped_refptr<const net::HttpResponseHeaders> response_headers;
-
   auto url_iter = url_responses_.find(url);
-  if (url_iter != url_responses_.end()) {
-    test_response = std::move(url_iter->second);
-    url_responses_.erase(url_iter);
-  } else {
-    // TODO(delphick): When we use the DownloadService, we should signal
-    // StartResult::INTERNAL_ERROR to say the URL wasn't registered rather than
-    // assuming 404.
-    test_response = TestResponseBuilder(404).Build();
+  if (url_iter == url_responses_.end()) {
+    // Since no response was provided, do not respond. This allows testing
+    // long-lived fetches.
+    return;
   }
 
-  response_headers = test_response->headers;
+  std::unique_ptr<TestResponse> test_response = std::move(url_iter->second);
+  url_responses_.erase(url_iter);
 
   std::unique_ptr<BackgroundFetchResponse> response =
       std::make_unique<BackgroundFetchResponse>(std::vector<GURL>({url}),
-                                                response_headers);
+                                                test_response->headers);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

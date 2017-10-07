@@ -203,21 +203,22 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback);
   virtual void OnBackgroundFetchAbortEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchAbortEventCallback callback);
   virtual void OnBackgroundFetchClickEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       mojom::BackgroundFetchState state,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchClickEventCallback callback);
   virtual void OnBackgroundFetchFailEvent(
-      const std::string& tag,
+      const std::string& developer_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchFailEventCallback callback);
   virtual void OnBackgroundFetchedEvent(
-      const std::string& tag,
+      const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchedEventCallback callback);
@@ -298,21 +299,22 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback);
   void OnBackgroundFetchAbortEventStub(
-      const std::string& tag,
+      const std::string& developer_id,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchAbortEventCallback callback);
   void OnBackgroundFetchClickEventStub(
-      const std::string& tag,
+      const std::string& developer_id,
       mojom::BackgroundFetchState state,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchClickEventCallback callback);
   void OnBackgroundFetchFailEventStub(
-      const std::string& tag,
+      const std::string& developer_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchFailEventCallback callback);
   void OnBackgroundFetchedEventStub(
-      const std::string& tag,
+      const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchedEventCallback callback);

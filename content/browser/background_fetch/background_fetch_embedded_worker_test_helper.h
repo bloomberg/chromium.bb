@@ -50,7 +50,12 @@ class BackgroundFetchEmbeddedWorkerTestHelper
     fetched_event_closure_ = closure;
   }
 
-  const base::Optional<std::string>& last_id() const { return last_id_; }
+  const base::Optional<std::string>& last_developer_id() const {
+    return last_developer_id_;
+  }
+  const base::Optional<std::string>& last_unique_id() const {
+    return last_unique_id_;
+  }
   const base::Optional<mojom::BackgroundFetchState>& last_state() const {
     return last_state_;
   }
@@ -62,21 +67,22 @@ class BackgroundFetchEmbeddedWorkerTestHelper
  protected:
   // EmbeddedWorkerTestHelper overrides:
   void OnBackgroundFetchAbortEvent(
-      const std::string& id,
+      const std::string& developer_id,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchAbortEventCallback callback) override;
   void OnBackgroundFetchClickEvent(
-      const std::string& id,
+      const std::string& developer_id,
       mojom::BackgroundFetchState state,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchClickEventCallback callback) override;
   void OnBackgroundFetchFailEvent(
-      const std::string& id,
+      const std::string& developer_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchFailEventCallback callback) override;
   void OnBackgroundFetchedEvent(
-      const std::string& id,
+      const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchedEventCallback callback) override;
@@ -92,7 +98,8 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   base::Closure fetch_fail_event_closure_;
   base::Closure fetched_event_closure_;
 
-  base::Optional<std::string> last_id_;
+  base::Optional<std::string> last_developer_id_;
+  base::Optional<std::string> last_unique_id_;
   base::Optional<mojom::BackgroundFetchState> last_state_;
   base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches_;
 
