@@ -38,6 +38,12 @@ extern "C" int WINAPI wWinMain(HINSTANCE /* instance */,
 // std C lib routines, and is set by MSVC's std C lib implementation normally.
 extern "C" {
 #pragma function(memset)
+#ifdef __clang__
+// Marking memset as used is necessary in order to link with LLVM link-time
+// optimization (LTO). It prevents LTO from discarding the memset symbol,
+// allowing for compiler-generated references to memset to be satisfied.
+__attribute__((used))
+#endif
 void* memset(void* dest, int c, size_t count) {
   uint8_t* scan = reinterpret_cast<uint8_t*>(dest);
   while (count--)
