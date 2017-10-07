@@ -54,8 +54,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
       const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner)
       override;
 
-  // Preload dlls required for encoding.
-  static void PreSandboxInitialization();
+  // Preload dlls required for encoding. Returns true if all required dlls are
+  // correctly loaded.
+  static bool PreSandboxInitialization();
 
  protected:
   ~MediaFoundationVideoEncodeAccelerator() override;
