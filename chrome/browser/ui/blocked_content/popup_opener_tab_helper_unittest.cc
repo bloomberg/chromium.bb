@@ -16,32 +16,38 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/infobars/infobar_android.h"
+#endif  // defined(OS_ANDROID)
+
+class InfoBarAndroid;
+
 constexpr char kTabUnderVisibleTime[] = "Tab.TabUnder.VisibleTime";
 constexpr char kPopupToTabUnder[] = "Tab.TabUnder.PopupToTabUnderTime";
 
-class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness,
-                                 public content::WebContentsDelegate {
+class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   PopupOpenerTabHelperTest() : ChromeRenderViewHostTestHarness() {}
   ~PopupOpenerTabHelperTest() override {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    web_contents()->SetDelegate(this);
     auto tick_clock = base::MakeUnique<base::SimpleTestTickClock>();
     raw_clock_ = tick_clock.get();
     PopupOpenerTabHelper::CreateForWebContents(web_contents(),
                                                std::move(tick_clock));
+    InfoBarService::CreateForWebContents(web_contents());
 
     // The tick clock needs to be advanced manually so it isn't set to null,
     // which the code uses to determine if it is set yet.
@@ -52,8 +58,6 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness,
 
   void TearDown() override {
     popups_.clear();
-    if (web_contents())
-      web_contents()->SetDelegate(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -309,9 +313,29 @@ class BlockTabUnderTest : public PopupOpenerTabHelperTest {
         TabUnderNavigationThrottle::kBlockTabUnders);
   }
 
+  InfoBarAndroid* GetInfoBar() {
+#if defined(OS_ANDROID)
+    auto* service = InfoBarService::FromWebContents(web_contents());
+    if (!service->infobar_count())
+      return nullptr;
+    EXPECT_EQ(1u, service->infobar_count());
+    InfoBarAndroid* infobar =
+        static_cast<InfoBarAndroid*>(service->infobar_at(0));
+    EXPECT_TRUE(infobar);
+    return infobar;
+#endif  // defined(OS_ANDROID)
+    return nullptr;
+  }
+
+  void ExpectUIShown(bool shown) {
+#if defined(OS_ANDROID)
+    EXPECT_EQ(shown, !!GetInfoBar());
+#endif  // defined(OS_ANDROID)
+  }
+
   // content::WebContentsDelegate:
   void OnDidBlockFramebust(content::WebContents* web_contents,
-                           const GURL& url) override {
+                           const GURL& url) {
     blocked_urls_.push_back(url);
   }
 
@@ -320,8 +344,6 @@ class BlockTabUnderTest : public PopupOpenerTabHelperTest {
     scoped_feature_list_->InitAndDisableFeature(
         TabUnderNavigationThrottle::kBlockTabUnders);
   }
-
-  const std::vector<GURL>& blocked_urls() { return blocked_urls_; }
 
  private:
   std::vector<GURL> blocked_urls_;
@@ -335,7 +357,7 @@ TEST_F(BlockTabUnderTest, SimpleTabUnder_IsBlocked) {
   SimulatePopup();
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
-  EXPECT_EQ(blocked_url, blocked_urls().back());
+  ExpectUIShown(true);
 }
 
 TEST_F(BlockTabUnderTest, NoFeature_NoBlocking) {
@@ -343,21 +365,21 @@ TEST_F(BlockTabUnderTest, NoFeature_NoBlocking) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   SimulatePopup();
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://example.test/")));
-  EXPECT_TRUE(blocked_urls().empty());
+  ExpectUIShown(false);
 }
 
 TEST_F(BlockTabUnderTest, NoPopup_NoBlocking) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   web_contents()->WasHidden();
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://example.test/")));
-  EXPECT_TRUE(blocked_urls().empty());
+  ExpectUIShown(false);
 }
 
 TEST_F(BlockTabUnderTest, SameOriginRedirect_NoBlocking) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   SimulatePopup();
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/path")));
-  EXPECT_TRUE(blocked_urls().empty());
+  ExpectUIShown(false);
 }
 
 TEST_F(BlockTabUnderTest, BrowserInitiatedNavigation_NoBlocking) {
@@ -369,7 +391,7 @@ TEST_F(BlockTabUnderTest, BrowserInitiatedNavigation_NoBlocking) {
           GURL("https://example.test"), web_contents());
   simulator->SetHasUserGesture(false);
   simulator->Commit();
-  EXPECT_TRUE(blocked_urls().empty());
+  ExpectUIShown(false);
 }
 
 TEST_F(BlockTabUnderTest, TabUnderCrossOriginRedirect_IsBlocked) {
@@ -389,7 +411,7 @@ TEST_F(BlockTabUnderTest, TabUnderCrossOriginRedirect_IsBlocked) {
   simulator->Redirect(blocked_url);
   EXPECT_EQ(content::NavigationThrottle::CANCEL,
             simulator->GetLastThrottleCheckResult());
-  EXPECT_EQ(blocked_url, blocked_urls().back());
+  ExpectUIShown(true);
 }
 
 // Ensure that even though the *redirect* occurred in the background, if the
@@ -418,7 +440,7 @@ TEST_F(BlockTabUnderTest,
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             simulator->GetLastThrottleCheckResult());
   simulator->Commit();
-  EXPECT_TRUE(blocked_urls().empty());
+  ExpectUIShown(false);
 }
 
 // There is no time limit to this intervention. Explicitly test that navigations
@@ -433,7 +455,7 @@ TEST_F(BlockTabUnderTest, TabUnderWithLongWait_IsBlocked) {
 
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
-  EXPECT_EQ(blocked_url, blocked_urls().back());
+  ExpectUIShown(true);
 }
 
 TEST_F(BlockTabUnderTest, TabUnderWithSubsequentGesture_IsNotBlocked) {
@@ -443,7 +465,6 @@ TEST_F(BlockTabUnderTest, TabUnderWithSubsequentGesture_IsNotBlocked) {
   // First, try navigating without a gesture. It should be blocked.
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
-  EXPECT_EQ(blocked_url, blocked_urls().back());
 
   // Now, let the opener get a user gesture. Cast to avoid reaching into private
   // members.
@@ -454,6 +475,7 @@ TEST_F(BlockTabUnderTest, TabUnderWithSubsequentGesture_IsNotBlocked) {
   // A subsequent navigation should be allowed, even if it is classified as a
   // suspicious redirect.
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://example.test2/")));
+  ExpectUIShown(false);
 }
 
 TEST_F(BlockTabUnderTest, MultipleRedirectAttempts_AreBlocked) {
@@ -462,10 +484,11 @@ TEST_F(BlockTabUnderTest, MultipleRedirectAttempts_AreBlocked) {
 
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
+  ExpectUIShown(true);
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
+  ExpectUIShown(true);
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
-  EXPECT_EQ(blocked_url, blocked_urls().back());
-  EXPECT_EQ(3u, blocked_urls().size());
+  ExpectUIShown(true);
 }
 
 TEST_F(BlockTabUnderTest,

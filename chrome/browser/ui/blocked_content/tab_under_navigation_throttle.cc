@@ -4,14 +4,46 @@
 
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 
+#include <utility>
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
+#include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
+#endif  // defined(OS_ANDROID)
+
+namespace {
+
+void LogAction(TabUnderNavigationThrottle::Action action) {
+  UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction", action,
+                            TabUnderNavigationThrottle::Action::kCount);
+}
+
+void ShowUI(content::WebContents* web_contents,
+            const GURL& url,
+            base::OnceClosure click_closure) {
+#if defined(OS_ANDROID)
+  FramebustBlockInfoBar::Show(web_contents,
+                              base::MakeUnique<FramebustBlockMessageDelegate>(
+                                  web_contents, url, std::move(click_closure)));
+#else
+  NOTIMPLEMENTED() << "The BlockTabUnders experiment does not currently have a "
+                      "UI implemented on desktop platforms.";
+#endif
+}
+
+}  // namespace
 
 const base::Feature TabUnderNavigationThrottle::kBlockTabUnders{
     "BlockTabUnders", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -66,10 +98,9 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
 content::NavigationThrottle::ThrottleCheckResult
 TabUnderNavigationThrottle::MaybeBlockNavigation() {
   content::WebContents* contents = navigation_handle()->GetWebContents();
-  content::WebContentsDelegate* delegate = contents->GetDelegate();
   auto* popup_opener = PopupOpenerTabHelper::FromWebContents(contents);
 
-  if (delegate && popup_opener &&
+  if (popup_opener &&
       popup_opener->has_opened_popup_since_last_user_gesture() &&
       IsSuspiciousClientRedirect(navigation_handle(), started_in_background_)) {
     popup_opener->OnDidTabUnder();
@@ -77,7 +108,8 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
 
     if (block_) {
       LogAction(Action::kBlocked);
-      delegate->OnDidBlockFramebust(contents, navigation_handle()->GetURL());
+      ShowUI(contents, navigation_handle()->GetURL(),
+             base::BindOnce(&LogAction, Action::kClickedThrough));
       return content::NavigationThrottle::CANCEL;
     }
   }
@@ -98,8 +130,4 @@ TabUnderNavigationThrottle::WillRedirectRequest() {
 
 const char* TabUnderNavigationThrottle::GetNameForLogging() {
   return "TabUnderNavigationThrottle";
-}
-
-void TabUnderNavigationThrottle::LogAction(Action action) const {
-  UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction", action, Action::kCount);
 }

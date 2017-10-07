@@ -26,8 +26,11 @@
 
 FramebustBlockMessageDelegate::FramebustBlockMessageDelegate(
     content::WebContents* web_contents,
-    const GURL& blocked_url)
-    : web_contents_(web_contents), blocked_url_(blocked_url) {}
+    const GURL& blocked_url,
+    base::OnceClosure click_closure)
+    : click_closure_(std::move(click_closure)),
+      web_contents_(web_contents),
+      blocked_url_(blocked_url) {}
 
 FramebustBlockMessageDelegate::~FramebustBlockMessageDelegate() = default;
 
@@ -63,6 +66,8 @@ const GURL& FramebustBlockMessageDelegate::GetBlockedUrl() const {
 }
 
 void FramebustBlockMessageDelegate::OnLinkClicked() {
+  if (!click_closure_.is_null())
+    std::move(click_closure_).Run();
   web_contents_->OpenURL(content::OpenURLParams(
       blocked_url_, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PAGE_TRANSITION_LINK, false));

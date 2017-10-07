@@ -427,9 +427,9 @@ void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
 void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {
-  FramebustBlockInfoBar::Show(
-      web_contents,
-      base::MakeUnique<FramebustBlockMessageDelegate>(web_contents, url));
+  FramebustBlockInfoBar::Show(web_contents,
+                              base::MakeUnique<FramebustBlockMessageDelegate>(
+                                  web_contents, url, base::OnceClosure()));
 }
 
 }  // namespace android

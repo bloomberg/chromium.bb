@@ -45,6 +45,9 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
     // if the experiment is turned off.
     kDidTabUnder,
 
+    // The user clicked through to navigate to the blocked redirect.
+    kClickedThrough,
+
     kCount
   };
 
@@ -74,8 +77,6 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
   const char* GetNameForLogging() override;
-
-  void LogAction(Action) const;
 
   bool started_in_background_ = false;
 

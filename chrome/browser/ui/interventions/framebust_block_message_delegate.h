@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_INTERVENTIONS_FRAMEBUST_BLOCK_MESSAGE_DELEGATE_H_
 #define CHROME_BROWSER_UI_INTERVENTIONS_FRAMEBUST_BLOCK_MESSAGE_DELEGATE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
@@ -19,7 +20,8 @@ class WebContents;
 class FramebustBlockMessageDelegate {
  public:
   FramebustBlockMessageDelegate(content::WebContents* web_contents,
-                                const GURL& blocked_url);
+                                const GURL& blocked_url,
+                                base::OnceClosure click_closure);
   virtual ~FramebustBlockMessageDelegate();
 
   int GetIconId() const;
@@ -29,6 +31,9 @@ class FramebustBlockMessageDelegate {
   void OnLinkClicked();
 
  private:
+  // Closure to be called when the link is clicked.
+  base::OnceClosure click_closure_;
+
   // WebContents associated with the frame that was targeted by the framebust.
   // Will be used to continue the navigation to the blocked URL.
   content::WebContents* web_contents_;
