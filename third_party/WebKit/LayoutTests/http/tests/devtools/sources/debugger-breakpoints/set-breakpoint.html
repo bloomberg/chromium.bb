@@ -89,10 +89,10 @@ var test = function() {
     },
 
     async function testSetBreakpointOnTheSameLine(next) {
-      var breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, 'foo.js', undefined, 2, '');
+      var breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, 'foo.js', undefined, undefined, 2, '');
       TestRunner.assertTrue(!!breakpointId);
 
-      breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, 'foo.js', undefined, 2, '');
+      breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, 'foo.js', undefined, undefined, 2, '');
       TestRunner.assertTrue(!breakpointId);
 
       next();
