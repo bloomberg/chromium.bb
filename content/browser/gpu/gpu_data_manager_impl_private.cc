@@ -816,15 +816,6 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     WebPreferences* prefs) const {
   DCHECK(prefs);
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D))
-    prefs->flash_3d_enabled = false;
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D)) {
-    prefs->flash_stage3d_enabled = false;
-    prefs->flash_stage3d_baseline_enabled = false;
-  }
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE))
-    prefs->flash_stage3d_baseline_enabled = false;
-
 #if defined(USE_AURA)
   if (!CanUseGpuBrowserCompositor()) {
     prefs->accelerated_2d_canvas_enabled = false;

@@ -106,6 +106,55 @@ GpuFeatureStatus Get2DCanvasFeatureStatus(
   return kGpuFeatureStatusEnabled;
 }
 
+GpuFeatureStatus GetFlash3DFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    bool use_swift_shader,
+    bool use_swift_shader_for_webgl) {
+  if (use_swift_shader) {
+    // This is for testing only. Chrome should exercise the GPU accelerated
+    // path on top of SwiftShader driver.
+    return kGpuFeatureStatusEnabled;
+  }
+  if (use_swift_shader_for_webgl)
+    return kGpuFeatureStatusDisabled;
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_FLASH3D))
+    return kGpuFeatureStatusBlacklisted;
+  return kGpuFeatureStatusEnabled;
+}
+
+GpuFeatureStatus GetFlashStage3DFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    bool use_swift_shader,
+    bool use_swift_shader_for_webgl) {
+  if (use_swift_shader) {
+    // This is for testing only. Chrome should exercise the GPU accelerated
+    // path on top of SwiftShader driver.
+    return kGpuFeatureStatusEnabled;
+  }
+  if (use_swift_shader_for_webgl)
+    return kGpuFeatureStatusDisabled;
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_FLASH_STAGE3D))
+    return kGpuFeatureStatusBlacklisted;
+  return kGpuFeatureStatusEnabled;
+}
+
+GpuFeatureStatus GetFlashStage3DBaselineFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    bool use_swift_shader,
+    bool use_swift_shader_for_webgl) {
+  if (use_swift_shader) {
+    // This is for testing only. Chrome should exercise the GPU accelerated
+    // path on top of SwiftShader driver.
+    return kGpuFeatureStatusEnabled;
+  }
+  if (use_swift_shader_for_webgl)
+    return kGpuFeatureStatusDisabled;
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_FLASH_STAGE3D) ||
+      blacklisted_features.count(GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE))
+    return kGpuFeatureStatusBlacklisted;
+  return kGpuFeatureStatusEnabled;
+}
+
 void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
                                     base::CommandLine* command_line) {
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_D3D11)) {
@@ -255,6 +304,15 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] =
       Get2DCanvasFeatureStatus(blacklisted_features, use_swift_shader,
                                use_swift_shader_for_webgl);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH3D] =
+      GetFlash3DFeatureStatus(blacklisted_features, use_swift_shader,
+                              use_swift_shader_for_webgl);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D] =
+      GetFlashStage3DFeatureStatus(blacklisted_features, use_swift_shader,
+                                   use_swift_shader_for_webgl);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
+      GetFlashStage3DBaselineFeatureStatus(
+          blacklisted_features, use_swift_shader, use_swift_shader_for_webgl);
 
   std::set<base::StringPiece> all_disabled_extensions;
   std::string disabled_gl_extensions_value =

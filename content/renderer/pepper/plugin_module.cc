@@ -34,6 +34,7 @@
 #include "content/renderer/pepper/ppb_var_deprecated_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_audio_output_dev.h"
@@ -724,12 +725,24 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
       path, render_frame->GetRoutingID(), plugin_child_id));
   std::unique_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper(
       this, peer_pid, plugin_child_id, permissions, is_external));
-  if (!dispatcher->Init(channel_handle,
-                        &GetInterface,
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (!render_thread)
+    return nullptr;
+  scoped_refptr<gpu::GpuChannelHost> channel =
+      render_thread->EstablishGpuChannelSync();
+  // If no channel is established, feature statuses are unknown and disabled.
+  const gpu::GpuFeatureInfo default_gpu_feature_info;
+  const gpu::GpuFeatureInfo& gpu_feature_info =
+      channel ? channel->gpu_feature_info() : default_gpu_feature_info;
+
+  if (!dispatcher->Init(channel_handle, &GetInterface,
                         ppapi::Preferences(PpapiPreferencesBuilder::Build(
-                            render_frame->render_view()->webkit_preferences())),
-                        hung_filter.get()))
-    return NULL;
+                            render_frame->render_view()->webkit_preferences(),
+                            gpu_feature_info)),
+                        hung_filter.get())) {
+    return nullptr;
+  }
 
   RendererPpapiHostImpl* host_impl =
       RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
