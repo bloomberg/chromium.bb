@@ -40178,8 +40178,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rdsmith@chromium.org</owner>
   <owner>ellyjones@chromium.org</owner>
   <summary>
-    Counts of various events that can occur on the network error page. See the
-    histogram for details.
+    Counts of various events that can occur on the network error page. Note that
+    this histogram enum buckets are not mutually exclusive and so a single error
+    page load might report samples into multiple ones. Each bucket has
+    descriptions that further explain the context of their samples.
   </summary>
 </histogram>
 
