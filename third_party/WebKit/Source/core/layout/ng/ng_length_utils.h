@@ -92,6 +92,8 @@ CORE_EXPORT int ResolveUsedColumnCount(int computed_count,
                                        LayoutUnit computed_size,
                                        LayoutUnit used_gap,
                                        LayoutUnit available_size);
+CORE_EXPORT int ResolveUsedColumnCount(LayoutUnit available_size,
+                                       const ComputedStyle&);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-width.
