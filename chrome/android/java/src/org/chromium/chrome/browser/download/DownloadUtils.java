@@ -871,25 +871,26 @@ public class DownloadUtils {
      * @return Resource ID of the corresponding icon.
      */
     public static int getIconResId(int fileType, @IconSize int iconSize) {
+        // TODO(huayinz): Make image view size same as icon size so that 36dp icons can be removed.
         switch (fileType) {
             case DownloadFilter.FILTER_PAGE:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_site_white_24dp
-                                                   : R.drawable.ic_drive_site_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_globe_24dp
+                                                   : R.drawable.ic_globe_36dp;
             case DownloadFilter.FILTER_VIDEO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_videocam_white_24dp
-                                                   : R.drawable.ic_videocam_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_videocam_24dp
+                                                   : R.drawable.ic_videocam_36dp;
             case DownloadFilter.FILTER_AUDIO:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_music_note_white_24dp
-                                                   : R.drawable.ic_music_note_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_music_note_24dp
+                                                   : R.drawable.ic_music_note_36dp;
             case DownloadFilter.FILTER_IMAGE:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_image_white_24dp
-                                                   : R.drawable.ic_image_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_image_24dp
+                                                   : R.drawable.ic_drive_image_36dp;
             case DownloadFilter.FILTER_DOCUMENT:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_text_white_24dp
-                                                   : R.drawable.ic_drive_text_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_document_24dp
+                                                   : R.drawable.ic_drive_document_36dp;
             default:
-                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_file_white_24dp
-                                                   : R.drawable.ic_drive_file_white_36dp;
+                return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_file_24dp
+                                                   : R.drawable.ic_drive_file_36dp;
         }
     }
 
