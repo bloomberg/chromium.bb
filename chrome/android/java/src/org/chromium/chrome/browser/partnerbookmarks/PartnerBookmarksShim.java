@@ -8,9 +8,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeSwitches;
 
 import java.util.concurrent.TimeUnit;
 
@@ -43,8 +45,10 @@ public class PartnerBookmarksShim {
         if (skip) {
             Log.i(TAG, "Skip reading partner bookmarks since recent result was empty.");
         }
-
-        if ((context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == 0 || skip) {
+        boolean systemOrForced =
+                (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) == 1
+                || CommandLine.getInstance().hasSwitch(ChromeSwitches.ALLOW_PARTNER_CUSTOMIZATION);
+        if (skip || !systemOrForced) {
             reader.onBookmarksRead();
             return;
         }
