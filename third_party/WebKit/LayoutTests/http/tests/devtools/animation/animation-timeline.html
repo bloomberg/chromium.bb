@@ -21,21 +21,21 @@
 <script src="../../inspector/inspector-test.js"></script>
 <script src="../../inspector/elements-test.js"></script>
 <script>
-var player;
+var animation;
 
 function startAnimationWithDelay()
 {
-    player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100, id: "testId" });
+    animation = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100, id: "testId" });
 }
 
 function startAnimationWithEndDelay()
 {
-    player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200 });
+    animation = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200, id: "testId2" });
 }
 
 function startAnimationWithStepTiming()
 {
-    player = node.animate([{ width: "100px", easing: "steps(5, end)" }, { width: "200px", easing: "step-start" }], 200);
+    animation = node.animate([{ width: "100px", easing: "steps(5, end)" }, { width: "200px", easing: "step-start" }], { duration: 200, id: "testId3" });
 }
 
 function startCSSAnimation()
@@ -57,11 +57,6 @@ function test() {
   // Override timeline width for testing
   Animation.AnimationTimeline.prototype.width = function() {
     return 1000;
-  };
-  // Override animation color for testing
-  // FIXME: Set animation name of Web Animation instead; not supported yet
-  Animation.AnimationUI.Color = function() {
-    return 'black';
   };
 
   UI.viewManager.showView('animations');
