@@ -3020,7 +3020,7 @@ public class Tab
         Context context = ContextUtils.getApplicationContext();
         WindowAndroid windowAndroid = new WindowAndroid(context);
         Tab tab = new Tab(INVALID_TAB_ID, INVALID_TAB_ID, false, windowAndroid,
-                TabLaunchType.FROM_DETACHED, null, null);
+                TabLaunchType.FROM_SPECULATIVE_BACKGROUND_CREATION, null, null);
         tab.initialize(null, null, delegateFactory, true, false);
 
         // Resize the webContent to avoid expensive post load resize when attaching the tab.
