@@ -56,6 +56,13 @@ DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
 DEFINE_VARIATION_PARAM(kIPHChromeHomeMenuHeaderFeature,
                        "IPH_ChromeHomeMenuHeader");
 DEFINE_VARIATION_PARAM(kIPHMediaDownloadFeature, "IPH_MediaDownload");
+DEFINE_VARIATION_PARAM(kIPHContextualSearchFeature, "IPH_ContextualSearch");
+DEFINE_VARIATION_PARAM(kIPHContextualSearchTapFeature,
+                       "IPH_ContextualSearchTap");
+DEFINE_VARIATION_PARAM(kIPHContextualSearchPanelFeature,
+                       "IPH_ContextualSearchPanel");
+DEFINE_VARIATION_PARAM(kIPHContextualSearchOptInFeature,
+                       "IPH_ContextualSearchOptIn");
 #endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
@@ -84,6 +91,10 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHChromeHomeExpandFeature),
         VARIATION_ENTRY(kIPHChromeHomeMenuHeaderFeature),
         VARIATION_ENTRY(kIPHMediaDownloadFeature),
+        VARIATION_ENTRY(kIPHContextualSearchFeature),
+        VARIATION_ENTRY(kIPHContextualSearchTapFeature),
+        VARIATION_ENTRY(kIPHContextualSearchPanelFeature),
+        VARIATION_ENTRY(kIPHContextualSearchOptInFeature),
 #elif defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
         VARIATION_ENTRY(kIPHBookmarkFeature),
         VARIATION_ENTRY(kIPHIncognitoWindowFeature),
