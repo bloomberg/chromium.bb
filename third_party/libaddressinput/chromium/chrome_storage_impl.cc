@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/writeable_pref_store.h"
 #include "third_party/libaddressinput/chromium/fallback_data_store.h"
@@ -26,7 +25,7 @@ void ChromeStorageImpl::Put(const std::string& key, std::string* data) {
   DCHECK(data);
   std::unique_ptr<std::string> owned_data(data);
   backing_store_->SetValue(
-      key, base::MakeUnique<base::Value>(std::move(*owned_data)),
+      key, std::make_unique<base::Value>(std::move(*owned_data)),
       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
@@ -48,7 +47,7 @@ void ChromeStorageImpl::OnInitializationCompleted(bool succeeded) {
 void ChromeStorageImpl::DoGet(const std::string& key,
                               const Storage::Callback& data_ready) {
   if (!backing_store_->IsInitializationComplete()) {
-    outstanding_requests_.push_back(base::MakeUnique<Request>(key, data_ready));
+    outstanding_requests_.push_back(std::make_unique<Request>(key, data_ready));
     return;
   }
 

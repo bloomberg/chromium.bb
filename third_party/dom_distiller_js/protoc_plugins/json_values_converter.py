@@ -117,7 +117,7 @@ class CppConverterWriter(writer.CodeWriter):
 
   def RepeatedMemberFieldWriteToValue(self, field):
     prologue = (
-        'auto field_list = base::MakeUnique<base::ListValue>();\n'
+        'auto field_list = std::make_unique<base::ListValue>();\n'
         'for (int i = 0; i < message.{field_name}_size(); ++i) {{\n'
     )
 
