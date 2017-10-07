@@ -66464,7 +66464,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="RendererScheduler.TaskDurationPerFrameType" units="ms">
+<histogram name="RendererScheduler.TaskDurationPerFrameType"
+    enum="RendererSchedulerFrameType" units="ms">
   <owner>altimin@chromium.org</owner>
   <summary>
     Total duration of renderer per-frame tasks split per frame type. Used to
