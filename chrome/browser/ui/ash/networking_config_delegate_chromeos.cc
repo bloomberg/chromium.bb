@@ -18,11 +18,9 @@
 
 namespace chromeos {
 
-NetworkingConfigDelegateChromeos::NetworkingConfigDelegateChromeos() {
-}
+NetworkingConfigDelegateChromeos::NetworkingConfigDelegateChromeos() {}
 
-NetworkingConfigDelegateChromeos::~NetworkingConfigDelegateChromeos() {
-}
+NetworkingConfigDelegateChromeos::~NetworkingConfigDelegateChromeos() {}
 
 std::unique_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
 NetworkingConfigDelegateChromeos::LookUpExtensionForNetwork(

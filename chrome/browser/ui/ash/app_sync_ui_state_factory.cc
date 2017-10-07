@@ -26,14 +26,13 @@ AppSyncUIStateFactory* AppSyncUIStateFactory::GetInstance() {
 
 AppSyncUIStateFactory::AppSyncUIStateFactory()
     : BrowserContextKeyedServiceFactory(
-        "AppSyncUIState",
-        BrowserContextDependencyManager::GetInstance()) {
+          "AppSyncUIState",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
-AppSyncUIStateFactory::~AppSyncUIStateFactory() {
-}
+AppSyncUIStateFactory::~AppSyncUIStateFactory() {}
 
 KeyedService* AppSyncUIStateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

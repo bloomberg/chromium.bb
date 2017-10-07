@@ -22,11 +22,9 @@
 MultiProfileBrowserStatusMonitor::MultiProfileBrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
     : BrowserStatusMonitor(launcher_controller),
-      launcher_controller_(launcher_controller) {
-}
+      launcher_controller_(launcher_controller) {}
 
-MultiProfileBrowserStatusMonitor::~MultiProfileBrowserStatusMonitor() {
-}
+MultiProfileBrowserStatusMonitor::~MultiProfileBrowserStatusMonitor() {}
 
 void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
     const std::string& user_email) {
@@ -45,8 +43,7 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
 
   // Remove old (tabbed V1) applications.
   for (Browser* browser : *browser_list) {
-    if (!browser->is_app() &&
-        browser->is_type_tabbed() &&
+    if (!browser->is_app() && browser->is_type_tabbed() &&
         !multi_user_util::IsProfileFromActiveUser(browser->profile())) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         launcher_controller_->UpdateAppState(
@@ -58,16 +55,15 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
 
   // Handle apps in browser tabs: Add new (tabbed V1) applications.
   for (Browser* browser : *browser_list) {
-    if (!browser->is_app() &&
-        browser->is_type_tabbed() &&
+    if (!browser->is_app() && browser->is_type_tabbed() &&
         multi_user_util::IsProfileFromActiveUser(browser->profile())) {
       int active_index = browser->tab_strip_model()->active_index();
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         launcher_controller_->UpdateAppState(
             browser->tab_strip_model()->GetWebContentsAt(i),
-            browser->window()->IsActive() && i == active_index ?
-                ChromeLauncherController::APP_STATE_WINDOW_ACTIVE :
-                ChromeLauncherController::APP_STATE_INACTIVE);
+            browser->window()->IsActive() && i == active_index
+                ? ChromeLauncherController::APP_STATE_WINDOW_ACTIVE
+                : ChromeLauncherController::APP_STATE_INACTIVE);
       }
     }
   }

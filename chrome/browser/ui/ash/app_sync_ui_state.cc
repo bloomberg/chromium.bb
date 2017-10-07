@@ -98,9 +98,8 @@ void AppSyncUIState::SetStatus(Status status) {
   switch (status_) {
     case STATUS_SYNCING:
       max_syncing_status_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kMaxSyncingTimeMs),
-          this, &AppSyncUIState::OnMaxSyncingTimer);
+          FROM_HERE, base::TimeDelta::FromMilliseconds(kMaxSyncingTimeMs), this,
+          &AppSyncUIState::OnMaxSyncingTimer);
       break;
     case STATUS_NORMAL:
     case STATUS_TIMED_OUT:
@@ -118,9 +117,10 @@ void AppSyncUIState::CheckAppSync() {
     return;
 
   const bool synced = sync_service_->IsSyncActive();
-  const bool has_pending_extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          pending_extension_manager()->HasPendingExtensionFromSync();
+  const bool has_pending_extension = extensions::ExtensionSystem::Get(profile_)
+                                         ->extension_service()
+                                         ->pending_extension_manager()
+                                         ->HasPendingExtensionFromSync();
 
   if (synced && !has_pending_extension)
     SetStatus(STATUS_NORMAL);

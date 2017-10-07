@@ -19,7 +19,7 @@ enum class LoginStatus;
 namespace views {
 class Widget;
 class WidgetDelegate;
-}
+}  // namespace views
 
 // Handles method calls delegated back to chrome from ash. Also notifies ash of
 // relevant state changes in chrome.

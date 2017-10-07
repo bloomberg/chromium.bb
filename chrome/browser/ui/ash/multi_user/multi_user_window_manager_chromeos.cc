@@ -82,10 +82,10 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
     std::vector<Profile*> profiles =
         g_browser_process->profile_manager()->GetLoadedProfiles();
     for (std::vector<Profile*>::iterator it = profiles.begin();
-         it != profiles.end() && app_window == NULL;
-         it++) {
-      app_window = extensions::AppWindowRegistry::Get(*it)
-                       ->GetAppWindowForNativeWindow(window);
+         it != profiles.end() && app_window == NULL; it++) {
+      app_window =
+          extensions::AppWindowRegistry::Get(*it)->GetAppWindowForNativeWindow(
+              window);
     }
     if (app_window) {
       if (app_window->window_type() ==
@@ -313,8 +313,7 @@ bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() const {
 void MultiUserWindowManagerChromeOS::GetOwnersOfVisibleWindows(
     std::set<AccountId>* account_ids) const {
   for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
-       it != window_to_entry_.end();
-       ++it) {
+       it != window_to_entry_.end(); ++it) {
     if (it->first->IsVisible())
       account_ids->insert(it->second->owner());
   }
@@ -348,8 +347,8 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
 
   account_id_to_app_observer_[account_id] =
       new AppObserver(account_id.GetUserEmail());
-  extensions::AppWindowRegistry::Get(profile)
-      ->AddObserver(account_id_to_app_observer_[account_id]);
+  extensions::AppWindowRegistry::Get(profile)->AddObserver(
+      account_id_to_app_observer_[account_id]);
 
   // Account all existing application windows of this user accordingly.
   const extensions::AppWindowRegistry::AppWindowList& app_windows =
@@ -416,7 +415,8 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(
-    aura::Window* window, bool visible) {
+    aura::Window* window,
+    bool visible) {
   // This command gets called first and immediately when show or hide gets
   // called. We remember here the desired state for restoration IF we were
   // not ourselves issuing the call.
@@ -440,7 +440,8 @@ void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanged(
-    aura::Window* window, bool visible) {
+    aura::Window* window,
+    bool visible) {
   if (suppress_visibility_changes_)
     return;
 
@@ -561,7 +562,9 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
 }
 
 void MultiUserWindowManagerChromeOS::SetWindowVisibility(
-    aura::Window* window, bool visible, int animation_time_in_ms) {
+    aura::Window* window,
+    bool visible,
+    int animation_time_in_ms) {
   // For a panel window, it's possible that this panel window is in the middle
   // of relayout animation because of hiding/reshowing shelf during profile
   // switch. Thus the window's visibility might not be its real visibility. See
@@ -614,7 +617,8 @@ void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
 }
 
 void MultiUserWindowManagerChromeOS::ShowWithTransientChildrenRecursive(
-    aura::Window* window, int animation_time_in_ms) {
+    aura::Window* window,
+    int animation_time_in_ms) {
   aura::Window::Windows::const_iterator it =
       wm::GetTransientChildren(window).begin();
   for (; it != wm::GetTransientChildren(window).end(); ++it)
@@ -655,7 +659,7 @@ void MultiUserWindowManagerChromeOS::AddTransientOwnerRecursive(
 
   // Remember the current visibility.
   DCHECK(transient_window_to_visibility_.find(window) ==
-             transient_window_to_visibility_.end());
+         transient_window_to_visibility_.end());
   transient_window_to_visibility_[window] = window->IsVisible();
 
   // Add observers to track state changes.
@@ -710,8 +714,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
     ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
 
   AnimationSetter animation_setter(
-      window,
-      GetAdjustedAnimationTimeInMS(animation_time_in_ms));
+      window, GetAdjustedAnimationTimeInMS(animation_time_in_ms));
 
   if (visible)
     window->Show();
@@ -721,8 +724,9 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
 
 int MultiUserWindowManagerChromeOS::GetAdjustedAnimationTimeInMS(
     int default_time_in_ms) const {
-  return animation_speed_ == ANIMATION_SPEED_NORMAL ? default_time_in_ms :
-      (animation_speed_ == ANIMATION_SPEED_FAST ? 10 : 0);
+  return animation_speed_ == ANIMATION_SPEED_NORMAL
+             ? default_time_in_ms
+             : (animation_speed_ == ANIMATION_SPEED_FAST ? 10 : 0);
 }
 
 }  // namespace chrome

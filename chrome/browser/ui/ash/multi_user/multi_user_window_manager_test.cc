@@ -29,9 +29,8 @@ TestMultiUserWindowManager::~TestMultiUserWindowManager() {
   // SetInstanceForTest call. As such no uninstall is required.
 }
 
-void TestMultiUserWindowManager::SetWindowOwner(
-    aura::Window* window,
-    const AccountId& account_id) {
+void TestMultiUserWindowManager::SetWindowOwner(aura::Window* window,
+                                                const AccountId& account_id) {
   NOTREACHED();
 }
 
@@ -87,11 +86,8 @@ const AccountId& TestMultiUserWindowManager::GetUserPresentingWindow(
   return browser_owner_;
 }
 
-void TestMultiUserWindowManager::AddUser(content::BrowserContext* profile) {
-}
+void TestMultiUserWindowManager::AddUser(content::BrowserContext* profile) {}
 
-void TestMultiUserWindowManager::AddObserver(Observer* observer) {
-}
+void TestMultiUserWindowManager::AddObserver(Observer* observer) {}
 
-void TestMultiUserWindowManager::RemoveObserver(Observer* observer) {
-}
+void TestMultiUserWindowManager::RemoveObserver(Observer* observer) {}

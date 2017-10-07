@@ -211,8 +211,8 @@ AppShortcutLauncherItemController::GetRunningApplications() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (WebContentMatchesApp(
-              extension, refocus_pattern, web_contents, browser))
+      if (WebContentMatchesApp(extension, refocus_pattern, web_contents,
+                               browser))
         items.push_back(web_contents);
     }
   }
@@ -249,8 +249,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(
           (index + active_index) % tab_strip->count());
-      if (WebContentMatchesApp(
-              extension, refocus_pattern, web_contents, browser))
+      if (WebContentMatchesApp(extension, refocus_pattern, web_contents,
+                               browser))
         return web_contents;
     }
   }
@@ -265,8 +265,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (WebContentMatchesApp(
-              extension, refocus_pattern, web_contents, browser))
+      if (WebContentMatchesApp(extension, refocus_pattern, web_contents,
+                               browser))
         return web_contents;
     }
   }
@@ -282,9 +282,10 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
   // then the contents match the app.
   if (browser->is_app()) {
     const extensions::Extension* browser_extension =
-        ExtensionRegistry::Get(browser->profile())->GetExtensionById(
-            web_app::GetExtensionIdFromApplicationName(browser->app_name()),
-            ExtensionRegistry::EVERYTHING);
+        ExtensionRegistry::Get(browser->profile())
+            ->GetExtensionById(
+                web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+                ExtensionRegistry::EVERYTHING);
     return browser_extension == extension;
   }
 
@@ -331,8 +332,8 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
     // could be a v2 app or ARC app.
     if (browser && browser->window()->IsActive()) {
       TabStripModel* tab_strip = browser->tab_strip_model();
-      content::WebContents* active = tab_strip->GetWebContentsAt(
-          tab_strip->active_index());
+      content::WebContents* active =
+          tab_strip->GetWebContentsAt(tab_strip->active_index());
       std::vector<content::WebContents*>::const_iterator i(
           std::find(items.begin(), items.end(), active));
       if (i != items.end()) {
@@ -340,7 +341,7 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
           // If there is only a single item available, we animate it upon key
           // action.
           AnimateWindow(browser->window()->GetNativeWindow(),
-              wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+                        wm::WINDOW_ANIMATION_TYPE_BOUNCE);
         } else {
           int index = (static_cast<int>(i - items.begin()) + 1) % items.size();
           ActivateContent(items[index]);
@@ -360,8 +361,9 @@ bool AppShortcutLauncherItemController::IsV2App() {
 
 bool AppShortcutLauncherItemController::AllowNextLaunchAttempt() {
   if (last_launch_attempt_.is_null() ||
-      last_launch_attempt_ + base::TimeDelta::FromMilliseconds(
-          kClickSuppressionInMS) < base::Time::Now()) {
+      last_launch_attempt_ +
+              base::TimeDelta::FromMilliseconds(kClickSuppressionInMS) <
+          base::Time::Now()) {
     last_launch_attempt_ = base::Time::Now();
     return true;
   }

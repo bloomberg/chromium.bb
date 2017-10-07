@@ -1039,15 +1039,13 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   // Start the animation and see that the old window is becoming invisible, the
   // new one is becoming visible, and the background starts transitionining.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ(kArrowBAccountIdString,
-            GetWallpaperUserIdForTest());
+  EXPECT_EQ(kArrowBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ(kArrowBAccountIdString,
-            GetWallpaperUserIdForTest());
+  EXPECT_EQ(kArrowBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
@@ -1276,7 +1274,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, ShowForUserSwitchesDesktop) {
 
 class TestWindowObserver : public aura::WindowObserver {
  public:
-  TestWindowObserver(): resize_calls_(0) {}
+  TestWindowObserver() : resize_calls_(0) {}
   ~TestWindowObserver() override {}
 
   void OnWindowBoundsChanged(aura::Window* window,

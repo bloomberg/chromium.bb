@@ -33,8 +33,7 @@ PaletteDelegateChromeOS::PaletteDelegateChromeOS() : weak_factory_(this) {
                  content::NotificationService::AllSources());
 }
 
-PaletteDelegateChromeOS::~PaletteDelegateChromeOS() {
-}
+PaletteDelegateChromeOS::~PaletteDelegateChromeOS() {}
 
 std::unique_ptr<PaletteDelegateChromeOS::EnableListenerSubscription>
 PaletteDelegateChromeOS::AddPaletteEnableListener(

@@ -387,9 +387,8 @@ void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
 
   base::FilePath screenshot_path =
       screenshot_directory.AppendASCII(GetScreenshotBaseFilename() + ".png");
-  screenshot_grabber_->TakeScreenshot(window,
-                                      gfx::Rect(window->bounds().size()),
-                                      screenshot_path);
+  screenshot_grabber_->TakeScreenshot(
+      window, gfx::Rect(window->bounds().size()), screenshot_path);
   base::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
 }
 

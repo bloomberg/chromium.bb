@@ -41,9 +41,7 @@ class UserSwitchAnimatorChromeOS {
   // Check if a window is covering the entire work area of the screen it is on.
   static bool CoversScreen(aura::Window* window);
 
-  bool IsAnimationFinished() {
-    return animation_step_ == ANIMATION_STEP_ENDED;
-  }
+  bool IsAnimationFinished() { return animation_step_ == ANIMATION_STEP_ENDED; }
 
   // Returns the user id for which the wallpaper is currently shown.
   // If a wallpaper is transitioning to B it will be returned as "->B".

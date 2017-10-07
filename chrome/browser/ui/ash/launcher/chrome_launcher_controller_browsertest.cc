@@ -878,7 +878,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_SetIcon) {
   ASSERT_TRUE(app_custom_icon_item_delegate);
   EXPECT_TRUE(app_custom_icon_item_delegate->image_set_by_controller());
 
-// Ensure icon heights are correct (see test.js in app_icon/ test directory)
+  // Ensure icon heights are correct (see test.js in app_icon/ test directory)
   EXPECT_EQ(ash::kShelfSize, app_item.image.height());
   EXPECT_EQ(extension_misc::EXTENSION_ICON_LARGE,
             app_custom_icon_item.image.height());

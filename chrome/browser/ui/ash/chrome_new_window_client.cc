@@ -155,9 +155,8 @@ void ChromeNewWindowClient::OpenFileManager() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   const ExtensionService* const service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service ||
-      !extensions::util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
-                                                        profile)) {
+  if (!service || !extensions::util::IsAppLaunchableWithoutEnabling(
+                      kFileManagerAppId, profile)) {
     return;
   }
 
