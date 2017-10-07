@@ -92,8 +92,14 @@ class NetworkTrafficAnnotationChecker():
       errors: list of str List of all issued errors.
     """
 
+    # If for some reason the network traffic annotations become incompatible
+    # with the current version of clang, and this test starts failing,
+    # please set test_is_enabled to "False" and file a bug to get this
+    # reenabled, and cc the people listed in //tools/traffic_annotation/OWNERS.
     # TODO(rhalavati): Actually enable the check.
-    return [], []
+    test_is_enabled = False
+    if not test_is_enabled:
+      return [], []
 
     if not self.build_path:
       return [self.COULD_NOT_RUN_MESSAGE], []
