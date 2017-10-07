@@ -9,49 +9,29 @@
 
 #include "base/files/platform_file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-
-namespace base {
-class TaskRunner;
-}  // namespace base
+#include "chrome/profiling/memlog_receiver_pipe.h"
 
 namespace profiling {
 
-class MemlogStreamReceiver;
-
-class MemlogReceiverPipe
-    : public base::RefCountedThreadSafe<MemlogReceiverPipe>,
-      public base::MessageLoopForIO::Watcher {
+class MemlogReceiverPipe : public MemlogReceiverPipeBase,
+                           public base::MessageLoopForIO::Watcher {
  public:
-  explicit MemlogReceiverPipe(base::ScopedPlatformFile fd);
+  explicit MemlogReceiverPipe(mojo::edk::ScopedPlatformHandle handle);
 
   // Must be called on the IO thread.
   void StartReadingOnIOThread();
 
-  void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
-                   scoped_refptr<MemlogStreamReceiver> receiver);
-
-  // Callback that indicates an error has occurred and the connection should
-  // be closed. May be called more than once in an error condition.
-  void ReportError();
-
  private:
-  friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
   ~MemlogReceiverPipe() override;
 
   // MessageLoopForIO::Watcher implementation.
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  mojo::edk::ScopedPlatformHandle handle_;
   base::MessageLoopForIO::FileDescriptorWatcher controller_;
   std::unique_ptr<char[]> read_buffer_;
-
-  scoped_refptr<base::TaskRunner> receiver_task_runner_;
-  scoped_refptr<MemlogStreamReceiver> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogReceiverPipe);
 };

@@ -57,6 +57,12 @@ class SendBuffer {
     used_ += sz;
   }
 
+  void Flush() {
+    base::AutoLock lock(lock_);
+    if (used_ > 0)
+      SendCurrentBuffer();
+  }
+
  private:
   void SendCurrentBuffer() {
     g_sender_pipe->Send(buffer_, used_);
@@ -298,6 +304,17 @@ void AllocatorShimLogFree(void* address) {
 
     DoSend(address, &free_packet, sizeof(FreePacket));
   }
+}
+
+void AllocatorShimFlushPipe(uint32_t barrier_id) {
+  if (!g_send_buffers)
+    return;
+  for (int i = 0; i < kNumSendBuffers; i++)
+    g_send_buffers[i].Flush();
+
+  BarrierPacket barrier;
+  barrier.barrier_id = barrier_id;
+  g_sender_pipe->Send(&barrier, sizeof(barrier));
 }
 
 void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,

@@ -127,8 +127,13 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void LaunchAsService();
 
   // Sends the receiving end of the data pipe to the profiling service.
+  //
+  // This takes two MemlogClients. One is for the browser (us) to use to
+  // communicate with the client, the other is for sending to the profiling
+  // process for it to communicate with the client.
   void SendPipeToProfilingService(
-      profiling::mojom::MemlogClientPtr memlog_client,
+      profiling::mojom::MemlogClientPtr client_for_browser,
+      profiling::mojom::MemlogClientPtr client_for_profiling,
       base::ProcessId pid);
   // Sends the sending end of the data pipe to the client process.
   void SendPipeToClientProcess(profiling::mojom::MemlogClientPtr memlog_client,

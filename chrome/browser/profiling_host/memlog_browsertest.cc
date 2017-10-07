@@ -172,9 +172,8 @@ void DumpProcess(base::ProcessId pid, const base::FilePath& dumpfile_path) {
 // file. Specifically:
 //   1) Starts the memlog process
 //   2) Makes a bunch of allocations
-//   3) Flush the allocations [with more allocations]
-//   4) Performs a heap dump.
-//   5) Checks that the allocations from (2) made it into (4).
+//   3) Performs a heap dump.
+//   4) Checks that the allocations from (2) made it into (4).
 IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   if (!GetParam()) {
     // Test that nothing has been started if the flag is not passed. Then early
@@ -199,10 +198,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   // Make some specific allocations in Browser to do a deeper test of the
   // allocation tracking. On the renderer side, this is harder so all that's
   // tested there is the existence of information.
-  //
-  // For the Browser allocations, because the data sending is buffered, it is
-  // necessary to generate a large number of allocations to flush the buffer.
-  // That's done by creating |kFlushCount| allocations of size 1.
   constexpr int kBrowserAllocSize = 103 * 1024;
   constexpr int kBrowserAllocCount = 2048;
 
@@ -214,16 +209,8 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   base::PartitionAllocatorGeneric partition_allocator;
   partition_allocator.init();
 
-  // Assuming an average stack size of 20 frames, each alloc packet is ~160
-  // bytes in size, and there are 400 packets to fill up a channel. There are 17
-  // channels, so ~6800 allocations should flush all channels. But this assumes
-  // even distribution of allocations across channels. Unfortunately, we're
-  // using a fairly dumb hash function. To prevent test flakiness, increase
-  // those allocations by an order of magnitude.
-  constexpr int kFlushCount = 68000;
-
   std::vector<char*> leaks;
-  leaks.reserve(2 * kBrowserAllocCount + +kPartitionAllocSize + kFlushCount);
+  leaks.reserve(2 * kBrowserAllocCount + kPartitionAllocSize);
   for (int i = 0; i < kBrowserAllocCount; ++i) {
     leaks.push_back(new char[kBrowserAllocSize]);
   }
@@ -238,10 +225,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   for (int i = 0; i < kBrowserAllocCount; ++i) {
     leaks.push_back(new char[i + 1]);  // Variadic allocation.
     total_variadic_allocations += i + 1;
-  }
-
-  for (int i = 0; i < kFlushCount; ++i) {
-    leaks.push_back(new char[1]);
   }
 
   // Navigate around to force allocations in the renderer.
