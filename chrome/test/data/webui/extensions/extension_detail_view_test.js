@@ -30,13 +30,6 @@ cr.define('extension_detail_view_tests', function() {
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
-      loadTimeData.data = {
-        itemDependentEntry: '',
-        itemOff: '',
-        itemOn: '',
-        itemSourcePolicy: '',
-        itemSourceWebstore: '',
-      };
       extensionData = extension_test_util.createExtensionInfo({
         incognitoAccess: {isEnabled: true, isActive: false},
         fileAccess: {isEnabled: true, isActive: false},
