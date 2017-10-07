@@ -278,6 +278,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
+  void SetStoppedInBackground(bool) const;
+
   struct TaskQueuePolicy {
     // Default constructor of TaskQueuePolicy should match behaviour of a
     // newly-created task queue.
