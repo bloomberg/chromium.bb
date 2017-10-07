@@ -27326,30 +27326,93 @@ from previous Chrome versions.
 </enum>
 
 <enum name="NetErrorPageEvents">
-  <int value="0" label="Error Page Shown"/>
-  <int value="1" label="Reload Button Shown"/>
-  <int value="2" label="Reload Button Clicked"/>
-  <int value="3" label="Reload Button Click Load Error"/>
-  <int value="4" label="Show Saved Copy Button Shown"/>
-  <int value="5" label="Show Saved Copy Button Clicked"/>
-  <int value="6" label="Show Saved Copy Button Click Load Error"/>
-  <int value="7" label="More Button Clicked"/>
-  <int value="8" label="Browser Initiated Reload"/>
-  <int value="9" label="Both Buttons Shown"/>
-  <int value="10" label="Both Buttons Shown, Reload Clicked"/>
-  <int value="11" label="Both Buttons Shown, Show Saved Copy Clicked"/>
-  <int value="12" label="Easter egg activated"/>
-  <int value="13" label="Show Cached Copy button shown"/>
-  <int value="14" label="Show Cached Copy button clicked"/>
-  <int value="15" label="Show Cached Page button shown"/>
-  <int value="16" label="Show Cached Page button clicked"/>
-  <int value="17" label="Diagnose button clicked"/>
-  <int value="18" label="Show Offline Pages Button Shown"/>
-  <int value="19" label="Show Offline Pages Button Clicked"/>
-  <int value="20" label="Show Offline Copy Button Shown"/>
-  <int value="21" label="Show Offline Copy Button Clicked"/>
-  <int value="22" label="Download Button Shown"/>
-  <int value="23" label="Download Button Clicked"/>
+  <int value="0" label="Error Page Shown">
+    An error page was shown. This bucket encompasses all others and works as a
+    total count for error pages (instead of the histogram's total sample count
+    which doesn't reflect that information).
+  </int>
+  <int value="1" label="Reload Button Shown">
+    An error page was shown with at least a &quot;Reload&quot; button on it.
+  </int>
+  <int value="2" label="Reload Button Clicked">
+    An error page was shown with at least a &quot;Reload&quot; button on it and
+    the user pressed that button.
+  </int>
+  <int value="3" label="Reload Button Click Load Error">
+    An error page was previously loaded with a &quot;Reload&quot; button and
+    another load error happened as a result of the user pressing that button.
+  </int>
+  <int value="4" label="Show Saved Copy Button Shown">
+    An error page was shown with at least a &quot;Show Saved Copy&quot; button
+    on it.
+  </int>
+  <int value="5" label="Show Saved Copy Button Clicked">
+    An error page was shown with at least a &quot;Show Saved Copy&quot; button
+    on it and the user pressed that button.
+  </int>
+  <int value="6" label="Show Saved Copy Button Click Load Error">
+    An error page was previously loaded with a &quot;Show Saved Copy&quot;
+    button and another load error happened as a result of the user pressing that
+    button.
+  </int>
+  <int value="7" label="More Button Clicked">
+    An error page was shown with at least a &quot;More&quot; (aka
+    &quot;Details&quot;) button on it and the user pressed that button.
+  </int>
+  <int value="8" label="Browser Initiated Reload">
+    An error page was previously loaded and the user started a reload by
+    pressing the browser's reload button.
+  </int>
+  <int value="9" label="Both Reload And Show Saved Copy Buttons Shown">
+    An error page was shown with at least a &quot;Reload&quot; and a &quot;Show
+    Saved Copy&quot; buttons on it. Note that this is not exclusive with the
+    respective individual button buckets.
+  </int>
+  <int value="10"
+      label="Both Reload And Show Saved Copy Buttons Shown, Reload Clicked">
+    An error page was shown with at least a &quot;Reload&quot; and a &quot;Show
+    Saved Copy&quot; buttons on it and the user pressed the &quot;Reload&quot;
+    button. Note that this is not exclusive with the respective individual
+    button buckets.
+  </int>
+  <int value="11"
+      label="Both Reload And Show Saved Copy Buttons Shown, Show Saved Copy
+             Clicked">
+    An error page was shown with at least a &quot;Reload&quot; and a &quot;Show
+    Saved Copy&quot; buttons on it and the user pressed the &quot;Show Saved
+    Copy&quot; button. Note that this is not exclusive with the respective
+    individual button buckets.
+  </int>
+  <int value="12" label="Easter egg activated">
+    An error page was shown with the offline dino image and and the user
+    activated it (to play the dino game).
+  </int>
+  <int value="13" label="Show Cached Copy button shown">
+    An error page was shown with at least a &quot;Show Cached Copy&quot; button
+    on it.
+  </int>
+  <int value="14" label="Show Cached Copy button clicked">
+    An error page was shown with at least a &quot;Show Cached Copy&quot; button
+    on it and the user pressed that button.
+  </int>
+  <int value="15" label="Show Cached Page button shown">Obsolete.</int>
+  <int value="16" label="Show Cached Page button clicked">Obsolete.</int>
+  <int value="17" label="Diagnose button clicked">
+    An error page was shown with at least a &quot;Diagnose Error&quot; button on
+    it and the user pressed that button.
+  </int>
+  <int value="18" label="Show Offline Pages Button Shown">Obsolete.</int>
+  <int value="19" label="Show Offline Pages Button Clicked">Obsolete.</int>
+  <int value="20" label="Show Offline Copy Button Shown">Obsolete.</int>
+  <int value="21" label="Show Offline Copy Button Clicked">Obsolete.</int>
+  <int value="22" label="Download Button Shown">
+    An error page was shown with at least a &quot;Download Page Later&quot;
+    button on it.
+  </int>
+  <int value="23" label="Download Button Clicked">
+    An error page was shown with at least a &quot;Download Page Later&quot;
+    button on it and the user pressed that button.
+  </int>
 </enum>
 
 <enum name="NetFilterType">
