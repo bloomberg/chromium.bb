@@ -60,7 +60,7 @@ config("compiler") {
   # Building with Clang on Windows is a work in progress and very
   # experimental. See crbug.com/82385.
   if (is_clang) {
-    cflags += [ "-fmsc-version=1900" ]
+    cflags += [ "-fmsc-version=1911" ]
 
     if (current_cpu == "x86") {
       cflags += [ "-m32" ]
