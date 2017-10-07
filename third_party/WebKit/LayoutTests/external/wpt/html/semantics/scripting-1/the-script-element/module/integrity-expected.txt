@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS The integrity attribute must have no affect on inline module scripts
+PASS The integrity attribute must be verified on the top-level of a module and allow it to execute when it matches
+FAIL The integrity attribute must be verified on the top-level of a module and not allow it to execute when there's a mismatch assert_array_equals: The module and its dependency must not have executed lengths differ, expected 0 got 2
+Harness: the test ran to completion.
+

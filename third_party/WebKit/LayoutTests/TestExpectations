@@ -3269,7 +3269,6 @@ crbug.com/755405 [ Android ] external/wpt/html/webappapis/timers/type-long-setti
 crbug.com/755405 [ Android ] external/wpt/html-imports/document/document-method-changes.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html-imports/fetching/already-in-import-map.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/html-imports/fetching/loading-attempt.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/infrastructure/failing-test.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/innerText/setter.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/input-events/idlharness.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/media-capabilities/decodingInfo.html [ Failure ]
@@ -3681,7 +3680,7 @@ crbug.com/762486 virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-
 crbug.com/763208 http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 crbug.com/763208 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 
-crbug.com/763666 external/wpt/assumptions/ahem.html [ Failure ]
+crbug.com/763666 external/wpt/infrastructure/assumptions/ahem.html [ Failure ]
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
 
 # Sheriff failures 2017-09-11
