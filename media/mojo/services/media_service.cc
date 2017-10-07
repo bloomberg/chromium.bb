@@ -59,31 +59,15 @@ void MediaService::Create(mojom::MediaServiceRequest request) {
 
 void MediaService::LoadCdm(const base::FilePath& cdm_path) {
   DVLOG(1) << __func__ << ": cdm_path = " << cdm_path.value();
-
-  // Ignore request if service has already stopped.
-  if (!mojo_media_client_)
-    return;
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  CdmModule* instance = CdmModule::GetInstance();
-  if (instance->was_initialize_called()) {
-    DCHECK_EQ(cdm_path, instance->GetCdmPath());
+  if (is_cdm_loaded_) {
+    DCHECK_EQ(cdm_path, CdmModule::GetInstance()->GetCdmPath());
     return;
   }
 
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-  std::vector<CdmHostFilePath> cdm_host_file_paths;
-  mojo_media_client_->AddCdmHostFilePaths(&cdm_host_file_paths);
-  if (!instance->Initialize(cdm_path, cdm_host_file_paths))
-    return;
-#else
-  if (!instance->Initialize(cdm_path))
-    return;
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-
-  // TODO(crbug.com/510604): If the process is not sandboxed, sandbox it now!
-  instance->InitializeCdmModule();
-#endif  //  BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  CdmModule::GetInstance()->Initialize(cdm_path);
+  is_cdm_loaded_ = true;
+#endif
 }
 
 void MediaService::CreateInterfaceFactory(

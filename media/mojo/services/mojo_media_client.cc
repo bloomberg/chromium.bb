@@ -57,9 +57,4 @@ std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
   return nullptr;
 }
 
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-void MojoMediaClient::AddCdmHostFilePaths(
-    std::vector<media::CdmHostFilePath>* /* cdm_host_file_paths */) {}
-#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-
 }  // namespace media
