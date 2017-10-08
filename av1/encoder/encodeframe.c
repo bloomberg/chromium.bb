@@ -1589,7 +1589,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
   int super_block_upper_left =
       ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
 
-  if (cm->delta_q_present_flag && (bsize != BLOCK_64X64 || !mbmi->skip) &&
+  if (cm->delta_q_present_flag && (bsize != cm->sb_size || !mbmi->skip) &&
       super_block_upper_left) {
     const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
     const int absdq = abs(dq);
@@ -2147,7 +2147,7 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   if (!dry_run) {
 #if CONFIG_EXT_DELTA_Q
     mbmi = &xd->mi[0]->mbmi;
-    if (bsize == BLOCK_64X64 && mbmi->skip == 1 &&
+    if (bsize == cpi->common.sb_size && mbmi->skip == 1 &&
         cpi->common.delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
       for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
@@ -3132,7 +3132,7 @@ static void set_partition_range(const AV1_COMMON *const cm,
 
   const int idx_str = cm->mi_stride * mi_row + mi_col;
   MODE_INFO **const prev_mi = &cm->prev_mi_grid_visible[idx_str];
-  BLOCK_SIZE min_size = BLOCK_64X64;  // default values
+  BLOCK_SIZE min_size = cm->sb_size;  // default values
   BLOCK_SIZE max_size = BLOCK_4X4;
 
   if (prev_mi) {
@@ -4707,7 +4707,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       assert(current_qindex > 0);
 
       xd->delta_qindex = current_qindex - cm->base_qindex;
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, BLOCK_64X64);
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->sb_size);
       xd->mi[0]->mbmi.current_q_index = current_qindex;
 #if !CONFIG_EXT_DELTA_Q
       xd->mi[0]->mbmi.segment_id = 0;

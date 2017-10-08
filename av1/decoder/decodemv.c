@@ -94,7 +94,7 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
-  if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_lf_flag) {
+  if ((bsize != cm->sb_size || mbmi->skip == 0) && read_delta_lf_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
     if (cm->delta_lf_multi) {
       assert(lf_id >= 0 && lf_id < FRAME_LF_COUNT);
