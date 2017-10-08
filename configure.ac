@@ -184,6 +184,7 @@ AC_CONFIG_FILES([
 	tables/Makefile
 	liblouis.pc
 	tests/Makefile
+	tests/braille-specs/Makefile
 	tests/resolve_table.h
 	tests/tables/Makefile
 	tests/tables/emphclass/Makefile
