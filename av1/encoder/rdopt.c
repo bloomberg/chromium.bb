@@ -6440,10 +6440,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_GLOBAL_MOTION
   int is_global[2];
 #if CONFIG_COMPOUND_SINGLEREF
-  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
 #else
-  for (ref = 0; ref < 2; ++ref) {
+  for (ref = 0; ref < 2; ++ref)
 #endif  // CONFIG_COMPOUND_SINGLEREF
+  {
     WarpedMotionParams *const wm =
         &xd->global_motion[xd->mi[0]->mbmi.ref_frame[ref]];
     is_global[ref] = is_global_mv_block(xd->mi[0], block, wm->wmtype);
@@ -6477,10 +6478,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_COMPOUND_SINGLEREF
-  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
 #else
-  for (ref = 0; ref < 2; ++ref) {
+  for (ref = 0; ref < 2; ++ref)
 #endif  // CONFIG_COMPOUND_SINGLEREF
+  {
 #if !CONFIG_CB4X4
     if (bsize < BLOCK_8X8 && ref_mv_sub8x8 != NULL)
       ref_mv[ref].as_int = ref_mv_sub8x8[ref]->as_int;
@@ -6534,10 +6536,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int num_ites =
       (has_second_ref(mbmi) || mbmi->mode == SR_NEW_NEWMV) ? 4 : 1;
   const int start_ite = has_second_ref(mbmi) ? 0 : 1;
-  for (ite = start_ite; ite < (start_ite + num_ites); ite++) {
+  for (ite = start_ite; ite < (start_ite + num_ites); ite++)
 #else
-  for (ite = 0; ite < 4; ite++) {
+  for (ite = 0; ite < 4; ite++)
 #endif  // CONFIG_COMPOUND_SINGLEREF
+  {
     struct buf_2d ref_yv12[2];
     int bestsme = INT_MAX;
     int sadpb = x->sadperbit16;
@@ -6649,10 +6652,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       x->best_mv.as_mv.row *= 8;
       x->best_mv.as_mv.col *= 8;
     }
-    if (bestsme < INT_MAX && cpi->common.cur_frame_mv_precision_level == 0) {
+    if (bestsme < INT_MAX && cpi->common.cur_frame_mv_precision_level == 0)
 #else
-    if (bestsme < INT_MAX) {
+    if (bestsme < INT_MAX)
 #endif
+    {
       int dis; /* TODO: use dis in distortion calculation later. */
       unsigned int sse;
       bestsme = cpi->find_fractional_mv_step(
@@ -6687,10 +6691,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   *rate_mv = 0;
 
 #if CONFIG_COMPOUND_SINGLEREF
-  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
 #else
-  for (ref = 0; ref < 2; ++ref) {
+  for (ref = 0; ref < 2; ++ref)
 #endif  // CONFIG_COMPOUND_SINGLEREF
+  {
     if (scaled_ref_frame[ref]) {
       // Restore the prediction frame pointers to their unscaled versions.
       int i;
