@@ -15,17 +15,17 @@
 namespace blink {
 
 void IdlenessDetector::Shutdown() {
-  if (!started_)
-    return;
-  network_quiet_timer_.Stop();
-  Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
-  started_ = false;
+  Stop();
+  local_frame_ = nullptr;
 }
 
 void IdlenessDetector::DomContentLoadedEventFired() {
-  if (!started_) {
+  if (!local_frame_)
+    return;
+
+  if (!task_observer_added_) {
     Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
-    started_ = true;
+    task_observer_added_ = true;
   }
 
   network_2_quiet_ = 0;
@@ -40,6 +40,9 @@ void IdlenessDetector::DomContentLoadedEventFired() {
 }
 
 void IdlenessDetector::OnWillSendRequest() {
+  if (!local_frame_)
+    return;
+
   int request_count =
       local_frame_->GetDocument()->Fetcher()->ActiveRequestCount();
   // If we are above the allowed number of active requests, reset timers.
@@ -52,6 +55,9 @@ void IdlenessDetector::OnWillSendRequest() {
 // This function is called when the number of active connections is decreased.
 // Note that the number of active connections doesn't decrease monotonically.
 void IdlenessDetector::OnDidLoadResource() {
+  if (!local_frame_)
+    return;
+
   // Document finishes parsing after DomContentLoadedEventEnd is fired,
   // check the status in order to avoid false signals.
   if (!local_frame_->GetDocument()->HasFinishedParsing())
@@ -114,7 +120,7 @@ void IdlenessDetector::WillProcessTask(double start_time) {
   }
 
   if (network_0_quiet_ < 0 && network_2_quiet_ < 0)
-    ShutdownIfPossible();
+    Stop();
 }
 
 void IdlenessDetector::DidProcessTask(double start_time, double end_time) {
@@ -127,21 +133,18 @@ void IdlenessDetector::DidProcessTask(double start_time, double end_time) {
 
 IdlenessDetector::IdlenessDetector(LocalFrame* local_frame)
     : local_frame_(local_frame),
-      started_(false),
+      task_observer_added_(false),
       network_quiet_timer_(
           TaskRunnerHelper::Get(TaskType::kUnthrottled, local_frame),
           this,
           &IdlenessDetector::NetworkQuietTimerFired) {}
 
-IdlenessDetector::~IdlenessDetector() {
-  Shutdown();
-}
-
-void IdlenessDetector::ShutdownIfPossible() {
-  if (network_0_quiet_ >= 0 || network_2_quiet_ >= 0)
+void IdlenessDetector::Stop() {
+  network_quiet_timer_.Stop();
+  if (!task_observer_added_)
     return;
-
-  Shutdown();
+  Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
+  task_observer_added_ = false;
 }
 
 void IdlenessDetector::NetworkQuietTimerFired(TimerBase*) {
