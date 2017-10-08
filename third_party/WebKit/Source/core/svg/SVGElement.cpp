@@ -410,8 +410,9 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
   UpdateRelativeLengthsInformation();
   BuildPendingResourcesIfNeeded();
 
-  if (hasAttribute(nonceAttr) && getAttribute(nonceAttr) != g_empty_atom) {
-    setNonce(getAttribute(nonceAttr));
+  const AtomicString& nonce_value = FastGetAttribute(nonceAttr);
+  if (!nonce_value.IsEmpty()) {
+    setNonce(nonce_value);
     if (InActiveDocument() &&
         GetDocument().GetContentSecurityPolicy()->HasHeaderDeliveredPolicy()) {
       setAttribute(nonceAttr, g_empty_atom);
