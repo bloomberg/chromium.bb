@@ -4394,7 +4394,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        mi_row, mi_col, bsize2, mi_row, mi_col + mi_step, bsize2,
                        mi_row + mi_step, mi_col, subsize);
 #endif
+#if !CONFIG_PVQ
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+#else
+    restore_context(x, &x_ctx, mi_row, mi_col, &pre_rdo_buf, bsize);
+#endif  // !CONFIG_PVQ
   }
   // PARTITION_HORZ_B
   if (partition_horz_allowed && ab_partition_allowed) {
@@ -4419,7 +4423,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        mi_row, mi_col, subsize, mi_row + mi_step, mi_col,
                        bsize2, mi_row + mi_step, mi_col + mi_step, bsize2);
 #endif
+#if !CONFIG_PVQ
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+#else
+    restore_context(x, &x_ctx, mi_row, mi_col, &pre_rdo_buf, bsize);
+#endif  // !CONFIG_PVQ
   }
   // PARTITION_VERT_A
   if (partition_vert_allowed && ab_partition_allowed) {
@@ -4444,7 +4452,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        mi_row, mi_col, bsize2, mi_row + mi_step, mi_col, bsize2,
                        mi_row, mi_col + mi_step, subsize);
 #endif
+#if !CONFIG_PVQ
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+#else
+    restore_context(x, &x_ctx, mi_row, mi_col, &pre_rdo_buf, bsize);
+#endif  // !CONFIG_PVQ
   }
   // PARTITION_VERT_B
   if (partition_vert_allowed && ab_partition_allowed) {
@@ -4469,7 +4481,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        mi_row, mi_col, subsize, mi_row, mi_col + mi_step,
                        bsize2, mi_row + mi_step, mi_col + mi_step, bsize2);
 #endif
+#if !CONFIG_PVQ
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+#else
+    restore_context(x, &x_ctx, mi_row, mi_col, &pre_rdo_buf, bsize);
+#endif  // !CONFIG_PVQ
   }
 
 #if CONFIG_EXT_PARTITION

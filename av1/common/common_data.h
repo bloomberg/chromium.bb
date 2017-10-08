@@ -844,7 +844,7 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
   // 4x16,            16x4,               8x32
   TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
   // 32x8             16x64,              64x16
-  TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8
+  TX_8X8 - TX_8X8,    TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,
 #if CONFIG_EXT_PARTITION
   // 32x128,          128x32
   TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8
