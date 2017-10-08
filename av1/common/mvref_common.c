@@ -917,10 +917,10 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                   max_col_offset, &processed_cols);
 
   switch (nearest_refmv_count) {
-    case 0:
-      mode_context[ref_frame] |= 0;
+    case 0: mode_context[ref_frame] |= 0;
+#if !CONFIG_OPT_REF_MV
       if (*refmv_count >= 1) mode_context[ref_frame] |= 1;
-
+#endif
       if (*refmv_count == 1)
         mode_context[ref_frame] |= (1 << REFMV_OFFSET);
       else if (*refmv_count >= 2)
