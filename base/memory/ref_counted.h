@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <cassert>
 #include <iosfwd>
 #include <type_traits>
 
@@ -575,12 +574,12 @@ class scoped_refptr {
   T* get() const { return ptr_; }
 
   T& operator*() const {
-    assert(ptr_ != nullptr);
+    DCHECK(ptr_);
     return *ptr_;
   }
 
   T* operator->() const {
-    assert(ptr_ != nullptr);
+    DCHECK(ptr_);
     return ptr_;
   }
 
