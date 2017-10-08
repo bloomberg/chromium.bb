@@ -36,7 +36,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
   def _inner(self, args, test_string):
     cwd = 'bleh'
     gclient_utils.sys.stdout.write(
-        '\n________ running \'boo foo bar\' in \'bleh\'\n')
+        '________ running \'boo foo bar\' in \'bleh\'\n')
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
     # pylint: disable=no-member
@@ -67,19 +67,10 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     args = ['boo', 'foo', 'bar']
     test_string = 'ahah\naccb\nallo\naddb\n'
     self._inner(args, test_string)
-    self.checkstdout('\n________ running \'boo foo bar\' in \'bleh\'\n'
-        'ahah\naccb\nallo\naddb\n\n'
+    self.checkstdout('________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n'
         '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb'
         '\n')
-
-  def testNoLF(self):
-    # Exactly as testCheckCallAndFilterAndHeader without trailing \n
-    args = ['boo', 'foo', 'bar']
-    test_string = 'ahah\naccb\nallo\naddb'
-    self._inner(args, test_string)
-    self.checkstdout('\n________ running \'boo foo bar\' in \'bleh\'\n'
-        'ahah\naccb\nallo\naddb\n'
-        '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb')
 
 
 class SplitUrlRevisionTestCase(GclientUtilBase):
