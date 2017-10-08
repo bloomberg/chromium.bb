@@ -1645,7 +1645,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 
         AOM_RC_ONE_PASS,  // g_pass
 
-        25,  // g_lag_in_frames
+        17,  // g_lag_in_frames
 
         0,                // rc_dropframe_thresh
         RESIZE_NONE,      // rc_resize_mode
