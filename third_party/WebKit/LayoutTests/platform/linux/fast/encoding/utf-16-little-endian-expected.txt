@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 scrollWidth 807 scrollHeight 1115
+layer at (0,0) size 800x600 scrollWidth 807 scrollHeight 1140
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x1115.44
-    LayoutBlockFlow {BODY} at (8,8) size 784x1094.11 [bgcolor=#EEEEEE]
+layer at (0,0) size 800x1140 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x1140.44
+    LayoutBlockFlow {BODY} at (8,8) size 784x1119.11 [bgcolor=#EEEEEE]
       LayoutBlockFlow (anonymous) at (0,0) size 784x22
         LayoutInline {SPAN} at (0,0) size 191x16
           LayoutText {#text} at (0,0) size 0x0
@@ -22,102 +22,107 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,28.66) size 784x2
-      LayoutBlockFlow (anonymous) at (0,37.31) size 784x37
-        LayoutInline {SPAN} at (0,0) size 110x35
-          LayoutInline {SPAN} at (0,0) size 110x35
-            LayoutText {#text} at (0,0) size 0x0
-            LayoutInline {SPAN} at (0,0) size 110x19
-              LayoutText {#text} at (0,0) size 0x0
-              LayoutBlockFlow {IMG} at (0,1) size 53x20
-                LayoutInline {SPAN} at (0,0) size 53x19
-                  LayoutInline {SPAN} at (0,0) size 53x19
-                    LayoutText {#text} at (0,0) size 53x19
-                      text run at (0,0) width 53: "Names"
-              LayoutText {#text} at (53,0) size 57x19
-                text run at (53,0) width 4: " "
-                text run at (57,0) width 53: "Names"
-              LayoutBR {BR} at (110,15) size 0x0
-            LayoutText {#text} at (0,0) size 0x0
-            LayoutInline {SPAN} at (0,0) size 84x16
-              LayoutText {#text} at (0,0) size 0x0
-              LayoutText {#text} at (0,0) size 0x0
-            LayoutText {#text} at (0,0) size 0x0
-          LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,80.97) size 784x2
-      LayoutBlockFlow (anonymous) at (0,89.63) size 784x52
-        LayoutInline {SPAN} at (0,0) size 571x50
-          LayoutInline {SPAN} at (0,0) size 571x50
-            LayoutText {#text} at (0,0) size 0x0
-            LayoutBlockFlow {IMG} at (0,4) size 62x16
-              LayoutInline {SPAN} at (0,0) size 62x16
-                LayoutInline {SPAN} at (0,0) size 62x16
-                  LayoutText {#text} at (0,0) size 62x16
-                    text run at (0,0) width 62: "Addresses"
-            LayoutText {#text} at (62,2) size 4x16
-              text run at (62,2) width 4: " "
-            LayoutInline {SPAN} at (0,0) size 83x19
-              LayoutText {#text} at (66,0) size 83x19
-                text run at (66,0) width 83: "Addresses"
-              LayoutBR {BR} at (149,15) size 0x0
-            LayoutText {#text} at (0,0) size 0x0
-            LayoutText {#text} at (0,0) size 0x0
-          LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,148.28) size 784x2
-      LayoutBlockFlow (anonymous) at (0,156.94) size 784x21
-        LayoutInline {SPAN} at (0,0) size 126x22
-          LayoutInline {SPAN} at (0,0) size 126x22
+      LayoutBlockFlow (anonymous) at (0,37.31) size 784x40
+        LayoutInline {SPAN} at (0,0) size 126x38
+          LayoutInline {SPAN} at (0,0) size 126x38
             LayoutText {#text} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 126x19
               LayoutText {#text} at (0,0) size 0x0
-              LayoutBlockFlow {IMG} at (0,1) size 59x20
-                LayoutInline {SPAN} at (0,0) size 59x19
-                  LayoutInline {SPAN} at (0,0) size 59x19
-                    LayoutText {#text} at (0,0) size 59x19
-                      text run at (0,0) width 59: "Phones"
-              LayoutText {#text} at (59,0) size 67x19
-                text run at (59,0) width 4: " "
-                text run at (63,0) width 63: "Phones "
+              LayoutBlockFlow {IMG} at (0,1) size 69x20
+                LayoutInline {SPAN} at (0,0) size 53x19
+                  LayoutImage (floating) {IMG} at (0,0) size 16x16
+                  LayoutInline {SPAN} at (0,0) size 53x19
+                    LayoutText {#text} at (16,0) size 53x19
+                      text run at (16,0) width 53: "Names"
+              LayoutText {#text} at (69,0) size 57x19
+                text run at (69,0) width 4: " "
+                text run at (73,0) width 53: "Names"
               LayoutBR {BR} at (126,15) size 0x0
             LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,239.94) size 784x0
+            LayoutInline {SPAN} at (0,0) size 100x16
+              LayoutText {#text} at (0,0) size 0x0
+              LayoutText {#text} at (0,0) size 0x0
+            LayoutText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,83.97) size 784x2
+      LayoutBlockFlow (anonymous) at (0,92.63) size 784x58
+        LayoutInline {SPAN} at (0,0) size 587x56
+          LayoutInline {SPAN} at (0,0) size 587x56
+            LayoutText {#text} at (0,0) size 0x0
+            LayoutBlockFlow {IMG} at (0,4) size 78x16
+              LayoutInline {SPAN} at (0,0) size 62x16
+                LayoutImage (floating) {IMG} at (0,0) size 16x16
+                LayoutInline {SPAN} at (0,0) size 62x16
+                  LayoutText {#text} at (16,0) size 62x16
+                    text run at (16,0) width 62: "Addresses"
+            LayoutText {#text} at (78,2) size 4x16
+              text run at (78,2) width 4: " "
+            LayoutInline {SPAN} at (0,0) size 83x19
+              LayoutText {#text} at (82,0) size 83x19
+                text run at (82,0) width 83: "Addresses"
+              LayoutBR {BR} at (165,15) size 0x0
+            LayoutText {#text} at (0,0) size 0x0
+            LayoutText {#text} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,157.28) size 784x2
+      LayoutBlockFlow (anonymous) at (0,165.94) size 784x37
+        LayoutInline {SPAN} at (0,0) size 142x38
+          LayoutInline {SPAN} at (0,0) size 142x38
+            LayoutText {#text} at (0,0) size 0x0
+            LayoutInline {SPAN} at (0,0) size 142x19
+              LayoutText {#text} at (0,0) size 0x0
+              LayoutBlockFlow {IMG} at (0,1) size 75x20
+                LayoutInline {SPAN} at (0,0) size 59x19
+                  LayoutImage (floating) {IMG} at (0,0) size 16x16
+                  LayoutInline {SPAN} at (0,0) size 59x19
+                    LayoutText {#text} at (16,0) size 59x19
+                      text run at (16,0) width 59: "Phones"
+              LayoutText {#text} at (75,0) size 67x19
+                text run at (75,0) width 4: " "
+                text run at (79,0) width 63: "Phones "
+              LayoutBR {BR} at (142,15) size 0x0
+            LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,264.94) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,246.59) size 784x2
-      LayoutBlockFlow (anonymous) at (0,255.25) size 784x21
-        LayoutInline {SPAN} at (0,0) size 128x16
-          LayoutInline {SPAN} at (0,0) size 128x16
+      LayoutBlockFlow (anonymous) at (0,271.59) size 784x2
+      LayoutBlockFlow (anonymous) at (0,280.25) size 784x21
+        LayoutInline {SPAN} at (0,0) size 144x16
+          LayoutInline {SPAN} at (0,0) size 144x16
             LayoutText {#text} at (0,0) size 0x0
-            LayoutInline {SPAN} at (0,0) size 128x19
+            LayoutInline {SPAN} at (0,0) size 144x19
               LayoutText {#text} at (0,0) size 0x0
-              LayoutBlockFlow {IMG} at (0,1) size 62x20
+              LayoutBlockFlow {IMG} at (0,1) size 78x20
                 LayoutInline {SPAN} at (0,0) size 62x19
+                  LayoutImage (floating) {IMG} at (0,0) size 16x16
                   LayoutInline {SPAN} at (0,0) size 62x19
-                    LayoutText {#text} at (0,0) size 62x19
-                      text run at (0,0) width 62: "Itinerary"
-              LayoutText {#text} at (62,0) size 66x19
-                text run at (62,0) width 4: " "
-                text run at (66,0) width 62: "Itinerary"
+                    LayoutText {#text} at (16,0) size 62x19
+                      text run at (16,0) width 62: "Itinerary"
+              LayoutText {#text} at (78,0) size 66x19
+                text run at (78,0) width 4: " "
+                text run at (82,0) width 62: "Itinerary"
             LayoutText {#text} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,276.25) size 784x63
-        LayoutTable {TABLE} at (0,0) size 580x63
-          LayoutTableSection {TBODY} at (0,0) size 580x63
-            LayoutTableRow {TR} at (0,2) size 580x59
+      LayoutBlockFlow (anonymous) at (0,301.25) size 784x63
+        LayoutTable {TABLE} at (0,0) size 596x63
+          LayoutTableSection {TBODY} at (0,0) size 596x63
+            LayoutTableRow {TR} at (0,2) size 596x59
               LayoutTableCell {TD} at (2,30) size 2x2 [r=0 c=0 rs=1 cs=1]
               LayoutTableCell {TD} at (6,2) size 2x2 [r=0 c=1 rs=1 cs=1]
-              LayoutTableCell {TD} at (10,21) size 148x21 [r=0 c=2 rs=1 cs=1]
-                LayoutBlockFlow {IMG} at (1,1) size 145.23x19
+              LayoutTableCell {TD} at (10,21) size 164x21 [r=0 c=2 rs=1 cs=1]
+                LayoutBlockFlow {IMG} at (1,1) size 161.23x19
                   LayoutInline {SPAN} at (0,0) size 146x18
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 146x18
-                      LayoutText {#text} at (0,0) size 146x18
-                        text run at (0,0) width 146: "TUR - Tour Package"
+                      LayoutText {#text} at (16,0) size 146x18
+                        text run at (16,0) width 146: "TUR - Tour Package"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (160,2) size 418x59 [r=0 c=3 rs=1 cs=1]
+              LayoutTableCell {TD} at (176,2) size 418x59 [r=0 c=3 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 146x18
                   text run at (1,1) width 146: "TUR - Tour Package"
                 LayoutBR {BR} at (146,16) size 1x0
@@ -126,33 +131,34 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutBR {BR} at (227,35) size 1x0
                 LayoutText {#text} at (1,39) size 416x18
                   text run at (1,39) width 416: "Comments: -** TICKETLESS CONF CODE IS WHGNSO**"
-      LayoutBlockFlow (anonymous) at (0,339.25) size 784x0
+      LayoutBlockFlow (anonymous) at (0,364.25) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,345.91) size 784x2
-      LayoutBlockFlow (anonymous) at (0,354.56) size 784x0
+      LayoutBlockFlow (anonymous) at (0,370.91) size 784x2
+      LayoutBlockFlow (anonymous) at (0,379.56) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,354.56) size 784x206
-        LayoutTable {TABLE} at (0,0) size 710x206
-          LayoutTableSection {TBODY} at (0,0) size 710x206
-            LayoutTableRow {TR} at (0,2) size 710x202
+      LayoutBlockFlow (anonymous) at (0,379.56) size 784x206
+        LayoutTable {TABLE} at (0,0) size 726x206
+          LayoutTableSection {TBODY} at (0,0) size 726x206
+            LayoutTableRow {TR} at (0,2) size 726x202
               LayoutTableCell {TD} at (2,102) size 2x2 [r=0 c=0 rs=1 cs=1]
               LayoutTableCell {TD} at (6,2) size 2x2 [r=0 c=1 rs=1 cs=1]
-              LayoutTableCell {TD} at (10,92) size 90x21 [r=0 c=2 rs=1 cs=1]
-                LayoutBlockFlow {IMG} at (1,1) size 88x19
+              LayoutTableCell {TD} at (10,92) size 106x21 [r=0 c=2 rs=1 cs=1]
+                LayoutBlockFlow {IMG} at (1,1) size 104x19
                   LayoutInline {SPAN} at (0,0) size 88x18
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 88x18
-                      LayoutText {#text} at (0,0) size 88x18
-                        text run at (0,0) width 88: "Air Segment"
+                      LayoutText {#text} at (16,0) size 88x18
+                        text run at (16,0) width 88: "Air Segment"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (102,2) size 606x202 [r=0 c=3 rs=1 cs=1]
+              LayoutTableCell {TD} at (118,2) size 606x202 [r=0 c=3 rs=1 cs=1]
                 LayoutBlockFlow (anonymous) at (1,1) size 604x133
                   LayoutText {#text} at (0,0) size 24x18
                     text run at (0,0) width 24: "Air "
@@ -225,33 +231,34 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   LayoutInline {SPACE} at (0,0) size 0x18
                     LayoutInline {SPACE} at (0,0) size 0x18
                       LayoutBR {BR} at (0,0) size 0x18
-      LayoutBlockFlow (anonymous) at (0,560.56) size 784x0
+      LayoutBlockFlow (anonymous) at (0,585.56) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,567.22) size 784x2
-      LayoutBlockFlow (anonymous) at (0,575.88) size 784x0
+      LayoutBlockFlow (anonymous) at (0,592.22) size 784x2
+      LayoutBlockFlow (anonymous) at (0,600.88) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,575.88) size 784x206
-        LayoutTable {TABLE} at (0,0) size 599x206
-          LayoutTableSection {TBODY} at (0,0) size 599x206
-            LayoutTableRow {TR} at (0,2) size 599x202
+      LayoutBlockFlow (anonymous) at (0,600.88) size 784x206
+        LayoutTable {TABLE} at (0,0) size 615x206
+          LayoutTableSection {TBODY} at (0,0) size 615x206
+            LayoutTableRow {TR} at (0,2) size 615x202
               LayoutTableCell {TD} at (2,102) size 2x2 [r=0 c=0 rs=1 cs=1]
               LayoutTableCell {TD} at (6,2) size 2x2 [r=0 c=1 rs=1 cs=1]
-              LayoutTableCell {TD} at (10,92) size 90x21 [r=0 c=2 rs=1 cs=1]
-                LayoutBlockFlow {IMG} at (1,1) size 88x19
+              LayoutTableCell {TD} at (10,92) size 106x21 [r=0 c=2 rs=1 cs=1]
+                LayoutBlockFlow {IMG} at (1,1) size 104x19
                   LayoutInline {SPAN} at (0,0) size 88x18
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 88x18
-                      LayoutText {#text} at (0,0) size 88x18
-                        text run at (0,0) width 88: "Air Segment"
+                      LayoutText {#text} at (16,0) size 88x18
+                        text run at (16,0) width 88: "Air Segment"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (102,2) size 495x202 [r=0 c=3 rs=1 cs=1]
+              LayoutTableCell {TD} at (118,2) size 495x202 [r=0 c=3 rs=1 cs=1]
                 LayoutBlockFlow (anonymous) at (1,1) size 493x133
                   LayoutText {#text} at (0,0) size 24x18
                     text run at (0,0) width 24: "Air "
@@ -324,33 +331,34 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   LayoutInline {SPACE} at (0,0) size 0x18
                     LayoutInline {SPACE} at (0,0) size 0x18
                       LayoutBR {BR} at (0,0) size 0x18
-      LayoutBlockFlow (anonymous) at (0,781.88) size 784x0
+      LayoutBlockFlow (anonymous) at (0,806.88) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,788.53) size 784x2
-      LayoutBlockFlow (anonymous) at (0,797.19) size 784x0
+      LayoutBlockFlow (anonymous) at (0,813.53) size 784x2
+      LayoutBlockFlow (anonymous) at (0,822.19) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,797.19) size 784x120
-        LayoutTable {TABLE} at (0,0) size 613x120
-          LayoutTableSection {TBODY} at (0,0) size 613x120
-            LayoutTableRow {TR} at (0,2) size 613x116
+      LayoutBlockFlow (anonymous) at (0,822.19) size 784x120
+        LayoutTable {TABLE} at (0,0) size 629x120
+          LayoutTableSection {TBODY} at (0,0) size 629x120
+            LayoutTableRow {TR} at (0,2) size 629x116
               LayoutTableCell {TD} at (2,59) size 2x2 [r=0 c=0 rs=1 cs=1]
               LayoutTableCell {TD} at (6,2) size 2x2 [r=0 c=1 rs=1 cs=1]
-              LayoutTableCell {TD} at (10,49) size 90x21 [r=0 c=2 rs=1 cs=1]
-                LayoutBlockFlow {IMG} at (1,1) size 88x19
+              LayoutTableCell {TD} at (10,49) size 106x21 [r=0 c=2 rs=1 cs=1]
+                LayoutBlockFlow {IMG} at (1,1) size 104x19
                   LayoutInline {SPAN} at (0,0) size 88x18
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 88x18
-                      LayoutText {#text} at (0,0) size 88x18
-                        text run at (0,0) width 88: "Air Segment"
+                      LayoutText {#text} at (16,0) size 88x18
+                        text run at (16,0) width 88: "Air Segment"
                 LayoutText {#text} at (0,0) size 0x0
-              LayoutTableCell {TD} at (102,2) size 509x116 [r=0 c=3 rs=1 cs=1]
+              LayoutTableCell {TD} at (118,2) size 509x116 [r=0 c=3 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 24x18
                   text run at (1,1) width 24: "Air "
                 LayoutBR {BR} at (0,0) size 0x0
@@ -380,28 +388,29 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                     LayoutText {#text} at (241,96) size 4x18
                       text run at (241,96) width 4: " "
                     LayoutBR {BR} at (245,111) size 0x0
-      LayoutBlockFlow (anonymous) at (0,917.19) size 784x0
+      LayoutBlockFlow (anonymous) at (0,942.19) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {SPAN} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,923.84) size 784x2
-      LayoutBlockFlow (anonymous) at (0,932.50) size 784x52
+      LayoutBlockFlow (anonymous) at (0,948.84) size 784x2
+      LayoutBlockFlow (anonymous) at (0,957.50) size 784x52
         LayoutInline {SPAN} at (0,0) size 196x50
           LayoutInline {SPAN} at (0,0) size 0x0
             LayoutInline {SPAN} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
-          LayoutInline {SPAN} at (0,0) size 77x19
+          LayoutInline {SPAN} at (0,0) size 93x19
             LayoutText {#text} at (0,0) size 0x0
-            LayoutBlockFlow {IMG} at (0,11) size 0x0
+            LayoutBlockFlow {IMG} at (0,3) size 16x16
               LayoutInline {SPAN} at (0,0) size 0x0
+                LayoutImage (floating) {IMG} at (0,0) size 16x16
                 LayoutInline {SPAN} at (0,0) size 0x0
-            LayoutText {#text} at (0,0) size 77x19
-              text run at (0,0) width 4: " "
-              text run at (4,0) width 73: "Remarks:"
-            LayoutBR {BR} at (77,15) size 0x0
+            LayoutText {#text} at (16,0) size 77x19
+              text run at (16,0) width 4: " "
+              text run at (20,0) width 73: "Remarks:"
+            LayoutBR {BR} at (93,15) size 0x0
           LayoutText {#text} at (0,0) size 0x0
           LayoutBR {BR} at (0,20) size 0x16
           LayoutInline {SPAN} at (0,0) size 196x16
@@ -410,45 +419,47 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               text run at (125,36) width 71: "8103220490"
             LayoutBR {BR} at (195,49) size 1x0
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,991.16) size 784x2
-      LayoutBlockFlow (anonymous) at (0,999.81) size 784x21
-        LayoutInline {SPAN} at (0,0) size 182x16
-          LayoutInline {SPAN} at (0,0) size 182x19
+      LayoutBlockFlow (anonymous) at (0,1016.16) size 784x2
+      LayoutBlockFlow (anonymous) at (0,1024.81) size 784x21
+        LayoutInline {SPAN} at (0,0) size 198x16
+          LayoutInline {SPAN} at (0,0) size 198x19
             LayoutText {#text} at (0,0) size 0x0
-            LayoutBlockFlow {IMG} at (0,1) size 62x20
+            LayoutBlockFlow {IMG} at (0,1) size 78x20
               LayoutInline {SPAN} at (0,0) size 62x19
+                LayoutImage (floating) {IMG} at (0,0) size 16x16
                 LayoutInline {SPAN} at (0,0) size 62x19
-                  LayoutText {#text} at (0,0) size 62x19
-                    text run at (0,0) width 62: "Itinerary"
-            LayoutText {#text} at (62,0) size 4x19
-              text run at (62,0) width 4: " "
+                  LayoutText {#text} at (16,0) size 62x19
+                    text run at (16,0) width 62: "Itinerary"
+            LayoutText {#text} at (78,0) size 4x19
+              text run at (78,0) width 4: " "
             LayoutInline {B} at (0,0) size 112x19
-              LayoutText {#text} at (66,0) size 112x19
-                text run at (66,0) width 112: "Web Bookings"
-            LayoutText {#text} at (177,0) size 5x19
-              text run at (177,0) width 5: " "
+              LayoutText {#text} at (82,0) size 112x19
+                text run at (82,0) width 112: "Web Bookings"
+            LayoutText {#text} at (193,0) size 5x19
+              text run at (193,0) width 5: " "
             LayoutInline {SPAN} at (0,0) size 1x19
-              LayoutBR {BR} at (181,15) size 1x0
+              LayoutBR {BR} at (197,15) size 1x0
               LayoutInline {SPAN} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,1027.47) size 784x2
-      LayoutBlockFlow (anonymous) at (0,1036.13) size 784x20
-        LayoutInline {SPAN} at (0,0) size 257x16
-          LayoutInline {SPAN} at (0,0) size 257x16
+      LayoutBlockFlow (anonymous) at (0,1052.47) size 784x2
+      LayoutBlockFlow (anonymous) at (0,1061.13) size 784x20
+        LayoutInline {SPAN} at (0,0) size 273x16
+          LayoutInline {SPAN} at (0,0) size 273x16
             LayoutText {#text} at (0,0) size 0x0
-            LayoutInline {SPAN} at (0,0) size 257x19
+            LayoutInline {SPAN} at (0,0) size 273x19
               LayoutText {#text} at (0,0) size 0x0
-              LayoutBlockFlow {IMG} at (0,11) size 0x0
+              LayoutBlockFlow {IMG} at (0,3) size 16x16
                 LayoutInline {SPAN} at (0,0) size 0x0
+                  LayoutImage (floating) {IMG} at (0,0) size 16x16
                   LayoutInline {SPAN} at (0,0) size 0x0
-              LayoutText {#text} at (0,0) size 257x19
-                text run at (0,0) width 4: " "
-                text run at (4,0) width 253: "Remarks and Service Information"
-              LayoutBR {BR} at (257,15) size 0x0
+              LayoutText {#text} at (16,0) size 257x19
+                text run at (16,0) width 4: " "
+                text run at (20,0) width 253: "Remarks and Service Information"
+              LayoutBR {BR} at (273,15) size 0x0
             LayoutText {#text} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,1062.78) size 784x31.33
+      LayoutBlockFlow (anonymous) at (0,1087.78) size 784x31.33
         LayoutBlockFlow {P} at (0,15.33) size 784x16
           LayoutText {#text} at (0,0) size 204x16
             text run at (0,0) width 204: "This itinerary is subject to change. "
@@ -456,82 +467,86 @@ layer at (0,0) size 800x1115 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (204,0) size 163x16
               text run at (204,0) width 163: "Click here for latest updates"
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,1107.44) size 784x0
+      LayoutBlockFlow (anonymous) at (0,1132.44) size 784x0
         LayoutInline {SPAN} at (0,0) size 0x0
           LayoutInline {SPAN} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
 layer at (8,37) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,89) size 784x2 clip at (0,0) size 0x0
+layer at (8,92) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,156) size 784x2 clip at (0,0) size 0x0
+layer at (8,165) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,255) size 784x2 clip at (0,0) size 0x0
+layer at (8,280) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,354) size 784x2 clip at (0,0) size 0x0
+layer at (8,379) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,575) size 784x2 clip at (0,0) size 0x0
+layer at (8,600) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,797) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (8,822) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,932) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (8,957) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,999) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (8,1024) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,1035) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (8,1060) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (8,1071) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (8,1096) size 784x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
-layer at (23,45) size 84x16
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 84x16
+layer at (23,45) size 100x16
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 100x16
     LayoutText {#text} at (0,0) size 0x0
-    LayoutInline {SPAN} at (0,0) size 84x16
+    LayoutInline {SPAN} at (0,0) size 100x16
       LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {IMG} at (0,34) size 0x0
+      LayoutBlockFlow {IMG} at (0,21) size 16x16
         LayoutInline {SPAN} at (0,0) size 0x0
+          LayoutImage (floating) {IMG} at (0,0) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
-      LayoutText {#text} at (0,21) size 4x16
-        text run at (0,21) width 4: " "
+      LayoutText {#text} at (16,24) size 4x16
+        text run at (16,24) width 4: " "
       LayoutInline {SPAN} at (0,0) size 80x16
-        LayoutText {#text} at (4,21) size 80x16
-          text run at (4,21) width 80: "HAO, SCOTT"
-        LayoutBR {BR} at (84,34) size 0x0
+        LayoutText {#text} at (20,24) size 80x16
+          text run at (20,24) width 80: "HAO, SCOTT"
+        LayoutBR {BR} at (100,37) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
 layer at (48,45) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
-layer at (23,98) size 571x32
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 571x32
+layer at (23,101) size 587x35
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 587x35
     LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {IMG} at (0,33) size 0x0
+    LayoutBlockFlow {IMG} at (0,20) size 16x16
       LayoutInline {SPAN} at (0,0) size 0x0
+        LayoutImage (floating) {IMG} at (0,0) size 16x16
         LayoutInline {SPAN} at (0,0) size 0x0
-    LayoutText {#text} at (0,20) size 571x16
-      text run at (0,20) width 4: " "
-      text run at (4,20) width 56: "Address: "
-      text run at (60,20) width 511: "ST. JUDE MEDICAL, 21700 OXNARD ST SUITE 800, WOODLAND HILLS CA Z/91367 "
-    LayoutBR {BR} at (570,33) size 1x0
-    LayoutBlockFlow {IMG} at (0,49) size 0x0
+    LayoutText {#text} at (16,23) size 571x16
+      text run at (16,23) width 4: " "
+      text run at (20,23) width 56: "Address: "
+      text run at (76,23) width 511: "ST. JUDE MEDICAL, 21700 OXNARD ST SUITE 800, WOODLAND HILLS CA Z/91367 "
+    LayoutBR {BR} at (586,36) size 1x0
+    LayoutBlockFlow {IMG} at (0,39) size 16x16
       LayoutInline {SPAN} at (0,0) size 0x0
+        LayoutImage (floating) {IMG} at (0,0) size 16x16
         LayoutInline {SPAN} at (0,0) size 0x0
-    LayoutText {#text} at (0,36) size 406x16
-      text run at (0,36) width 4: " "
-      text run at (4,36) width 48: "Deliver: "
-      text run at (52,36) width 103: "DEBI STANGEL, "
-      text run at (155,36) width 115: "119 GLEN COURT, "
-      text run at (269,36) width 137: "DANVILLE CA Z/94526"
-layer at (23,165) size 0x16
-  LayoutInline (relative positioned) {SPAN} at (0,0) size 0x16
+    LayoutText {#text} at (16,42) size 406x16
+      text run at (16,42) width 4: " "
+      text run at (20,42) width 48: "Deliver: "
+      text run at (68,42) width 103: "DEBI STANGEL, "
+      text run at (171,42) width 115: "119 GLEN COURT, "
+      text run at (285,42) width 137: "DANVILLE CA Z/94526"
+layer at (23,174) size 16x16
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 16x16
     LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {IMG} at (0,21) size 0x0
+    LayoutBlockFlow {IMG} at (0,21) size 16x16
       LayoutInline {SPAN} at (0,0) size 0x0
+        LayoutImage (floating) {IMG} at (0,0) size 16x16
         LayoutInline {SPAN} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
-layer at (23,186) size 784x62 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow (anonymous) (relative positioned) at (0,177.94) size 784x62
-layer at (43,171) size 528x62
+layer at (23,211) size 784x62 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,202.94) size 784x62
+layer at (43,196) size 528x62
   LayoutTable (relative positioned) {TABLE} at (0,0) size 528x62 [border: (1px outset #808080)]
     LayoutTableSection {TBODY} at (1,1) size 526x60
       LayoutTableRow {TR} at (0,2) size 526x23 [bgcolor=#E0E0E0]
@@ -558,9 +573,9 @@ layer at (43,171) size 528x62
       LayoutTableRow {TR} at (0,54) size 526x0
       LayoutTableRow {TR} at (0,56) size 526x0
       LayoutTableRow {TR} at (0,58) size 526x0
-layer at (23,248) size 0x0
+layer at (23,273) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
-layer at (33,1044) size 0x0
+layer at (33,1069) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0

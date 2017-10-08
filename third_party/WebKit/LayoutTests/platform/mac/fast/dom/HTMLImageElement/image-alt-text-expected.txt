@@ -8,12 +8,13 @@ layer at (0,0) size 800x600
           text run at (0,0) width 780: "This tests whether alt text is shown for image elements with no src attribute. You should see \"Success\" twice, followed by"
           text run at (0,18) width 106: "a blue rectangle."
       LayoutBlockFlow {P} at (0,52) size 784x95
-        LayoutBlockFlow {IMG} at (0,0) size 50.66x18
+        LayoutBlockFlow {IMG} at (0,0) size 66.66x18
           LayoutInline {SPAN} at (0,0) size 51x18
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 51x18
-              LayoutText {#text} at (0,0) size 51x18
-                text run at (0,0) width 51: "Success"
-        LayoutBR {BR} at (50,14) size 1x0
+              LayoutText {#text} at (16,0) size 51x18
+                text run at (16,0) width 51: "Success"
+        LayoutBR {BR} at (66,14) size 1x0
         LayoutBlockFlow {IMG} at (0,18) size 102x52 [border: (1px solid #000000)]
         LayoutBR {BR} at (102,69) size 0x0
         LayoutImage {IMG} at (0,70) size 75x25

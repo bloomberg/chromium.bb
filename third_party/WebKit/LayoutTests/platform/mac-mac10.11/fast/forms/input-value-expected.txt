@@ -93,12 +93,13 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (2,112) size 392x20 [r=5 c=0 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 226x18
                   text run at (1,1) width 226: "image with value property changed"
-              LayoutTableCell {TD} at (396,114) size 238x15 [r=5 c=1 rs=1 cs=1]
-                LayoutBlockFlow {INPUT} at (1,1) size 33.59x13
+              LayoutTableCell {TD} at (396,113) size 238x18 [r=5 c=1 rs=1 cs=1]
+                LayoutBlockFlow {INPUT} at (1,1) size 49.59x16
                   LayoutInline {SPAN} at (0,0) size 34x13
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 34x13
-                      LayoutText {#text} at (0,0) size 34x13
-                        text run at (0,0) width 34: "before"
+                      LayoutText {#text} at (16,0) size 34x13
+                        text run at (16,0) width 34: "before"
               LayoutTableCell {TD} at (636,112) size 63x20 [r=5 c=2 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 30x18
                   text run at (1,1) width 30: "after"

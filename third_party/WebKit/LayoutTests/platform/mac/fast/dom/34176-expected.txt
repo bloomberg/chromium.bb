@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1446
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1450
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1446
-    LayoutBlockFlow {BODY} at (8,16) size 769x1414
+layer at (0,0) size 785x1450 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1450
+    LayoutBlockFlow {BODY} at (8,16) size 769x1418
       LayoutBlockFlow {P} at (0,0) size 769x54
         LayoutText {#text} at (8,0) size 761x54
           text run at (8,0) width 405: "Test rendering of 3 text runs -- TextRun1 TextRun2 TextRun3, "
@@ -202,22 +202,23 @@ layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,727) size 769x0
         LayoutInline {B} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,735) size 769x679
+      LayoutBlockFlow (anonymous) at (0,735) size 769x683
         LayoutBlockFlow {P} at (0,18) size 769x18
           LayoutText {#text} at (91,0) size 678x18
             text run at (91,0) width 678: "Text in <img>, <href>, <em>, <tr>. The following English text should all display as \"This is a Test\"."
-        LayoutBlockFlow {DIV} at (0,52) size 769x18 [bgcolor=#FF0000]
-          LayoutText {#text} at (680,0) size 62x18
-            text run at (680,0) width 62: "This is a "
-          LayoutInline {SPAN} at (0,0) size 89x18
-            LayoutInline {A} at (0,0) size 89x18 [color=#551A8B]
-              LayoutText {#text} at (741,0) size 28x18
-                text run at (741,0) width 28: "Test"
-              LayoutInline {SPAN} at (0,0) size 1x18
-                LayoutBlockFlow {IMG} at (680.23,14) size 0x0
+        LayoutBlockFlow {DIV} at (0,52) size 769x20 [bgcolor=#FF0000]
+          LayoutText {#text} at (680,2) size 62x18
+            text run at (680,2) width 62: "This is a "
+          LayoutInline {SPAN} at (0,0) size 105x18
+            LayoutInline {A} at (0,0) size 105x18 [color=#551A8B]
+              LayoutText {#text} at (741,2) size 28x18
+                text run at (741,2) width 28: "Test"
+              LayoutInline {SPAN} at (0,0) size 17x18
+                LayoutBlockFlow {IMG} at (664.23,0) size 16x16
                   LayoutInline {SPAN} at (0,0) size 0x0
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 0x0
-        LayoutBlockFlow {DIV} at (0,70) size 769x19 [bgcolor=#FF0000]
+        LayoutBlockFlow {DIV} at (0,72) size 769x19 [bgcolor=#FF0000]
           LayoutText {#text} at (680,1) size 62x18
             text run at (680,1) width 62: "This is a "
           LayoutInline {SPAN} at (0,0) size 122x18
@@ -228,7 +229,7 @@ layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 30x18
                 LayoutText {#text} at (647,1) size 30x18
                   text run at (647,1) width 30 RTL: "\x{5E9}\x{5E0}\x{5D1}"
-        LayoutBlockFlow {DIV} at (0,89) size 769x18 [bgcolor=#FF0000]
+        LayoutBlockFlow {DIV} at (0,91) size 769x18 [bgcolor=#FF0000]
           LayoutText {#text} at (682,0) size 61x18
             text run at (682,0) width 61: "This is a "
           LayoutInline {SPAN} at (0,0) size 87x18
@@ -236,18 +237,19 @@ layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (742,0) size 27x18
                 text run at (742,0) width 27: "Test"
               LayoutInline {A} at (0,0) size 1x18 [color=#551A8B]
-        LayoutBlockFlow {DIV} at (0,107) size 769x18 [bgcolor=#FF0000]
-          LayoutText {#text} at (682,0) size 61x18
-            text run at (682,0) width 61: "This is a "
-          LayoutInline {SPAN} at (0,0) size 87x18
-            LayoutInline {EM} at (0,0) size 87x18
-              LayoutText {#text} at (742,0) size 27x18
-                text run at (742,0) width 27: "Test"
-              LayoutInline {SPAN} at (0,0) size 1x18
-                LayoutBlockFlow {IMG} at (682.02,14) size 0x0
+        LayoutBlockFlow {DIV} at (0,109) size 769x20 [bgcolor=#FF0000]
+          LayoutText {#text} at (682,2) size 61x18
+            text run at (682,2) width 61: "This is a "
+          LayoutInline {SPAN} at (0,0) size 103x18
+            LayoutInline {EM} at (0,0) size 103x18
+              LayoutText {#text} at (742,2) size 27x18
+                text run at (742,2) width 27: "Test"
+              LayoutInline {SPAN} at (0,0) size 17x18
+                LayoutBlockFlow {IMG} at (666.02,0) size 16x16
                   LayoutInline {SPAN} at (0,0) size 0x0
+                    LayoutImage (floating) {IMG} at (0,0) size 16x16
                     LayoutInline {SPAN} at (0,0) size 0x0
-        LayoutBlockFlow {DIV} at (0,125) size 769x18
+        LayoutBlockFlow {DIV} at (0,129) size 769x18
           LayoutText {#text} at (638,0) size 62x18
             text run at (638,0) width 62: "This is a "
           LayoutInline {SPAN} at (0,0) size 70x18
@@ -257,7 +259,7 @@ layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {SPAN} at (0,0) size 38x18
                 LayoutText {#text} at (731,0) size 38x18
                   text run at (731,0) width 38: "again"
-        LayoutBlockFlow {DIV} at (0,143) size 769x42
+        LayoutBlockFlow {DIV} at (0,147) size 769x42
           LayoutBlockFlow (anonymous) at (0,0) size 769x18
             LayoutText {#text} at (682,0) size 61x18
               text run at (682,0) width 61: "This is a "
@@ -275,7 +277,7 @@ layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBlockFlow (anonymous) at (0,42) size 769x0
             LayoutInline {SPAN} at (0,0) size 0x0
               LayoutInline {EM} at (0,0) size 0x0
-        LayoutBlockFlow {UL} at (0,211) size 769x468
+        LayoutBlockFlow {UL} at (0,215) size 769x468
           LayoutListItem {LI} at (40,0) size 729x18
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
             LayoutText {#text} at (0,0) size 111x18
@@ -380,7 +382,7 @@ layer at (0,0) size 785x1446 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
             LayoutText {#text} at (0,0) size 119x18
               text run at (0,0) width 119: "Test 25: : Success"
-      LayoutBlockFlow (anonymous) at (0,1430) size 769x0
+      LayoutBlockFlow (anonymous) at (0,1434) size 769x0
         LayoutInline {B} at (0,0) size 0x0
 layer at (8,86) size 769x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,70) size 769x2 [border: (1px inset #EEEEEE)]
@@ -394,7 +396,7 @@ layer at (8,619) size 769x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 
   LayoutBlockFlow {HR} at (0,603) size 769x2 [border: (1px inset #EEEEEE)]
 layer at (8,751) size 769x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,0) size 769x2 [border: (1px inset #EEEEEE)]
-layer at (8,944) size 769x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
-  LayoutBlockFlow {HR} at (0,193) size 769x2 [border: (1px inset #EEEEEE)]
+layer at (8,948) size 769x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,197) size 769x2 [border: (1px inset #EEEEEE)]
 selection start: position 0 of child 0 {#text} of child 14 {DIV} of child 56 {B} of body
 selection end:   position 4 of child 0 {#text} of child 14 {DIV} of child 56 {B} of body

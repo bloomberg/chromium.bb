@@ -8,9 +8,9 @@ layer at (0,0) size 785x850 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 322: "crbug.com/644802: Render alt text per html5 spec"
 layer at (8,42) size 769x800 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,34) size 769x800
-    LayoutMultiColumnSet (anonymous) at (0,0) size 769x264
-layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutMultiColumnFlowThread (anonymous) at (0,0) size 180.25x916
+    LayoutMultiColumnSet (anonymous) at (0,0) size 769x266
+layer at (8,42) size 180x924 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutMultiColumnFlowThread (anonymous) at (0,0) size 180.25x924
     LayoutBlockFlow {DIV} at (0,16) size 180.25x106
       LayoutBlockFlow {P} at (0,0) size 180.25x18
         LayoutText {#text} at (0,0) size 136x18
@@ -32,18 +32,19 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (12,50) size 0x0
         LayoutText {#text} at (0,54) size 12x18
           text run at (0,54) width 12: "4."
-        LayoutBlockFlow {IMG} at (12,54) size 43.98x18 [bgcolor=#008000]
+        LayoutBlockFlow {IMG} at (12,54) size 59.98x18 [bgcolor=#008000]
           LayoutInline {SPAN} at (0,0) size 44x18
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 44x18
-              LayoutText {#text} at (0,0) size 44x18
-                text run at (0,0) width 44: "alt text"
+              LayoutText {#text} at (16,0) size 44x18
+                text run at (16,0) width 44: "alt text"
         LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {DIV} at (0,138) size 180.25x124
+    LayoutBlockFlow {DIV} at (0,138) size 180.25x126
       LayoutBlockFlow {P} at (0,0) size 180.25x36
         LayoutText {#text} at (0,0) size 180x36
           text run at (0,0) width 180: "Different dimensions, no alt"
           text run at (0,18) width 24: "text"
-      LayoutBlockFlow (anonymous) at (0,52) size 180.25x72
+      LayoutBlockFlow (anonymous) at (0,52) size 180.25x74
         LayoutText {#text} at (0,0) size 12x18
           text run at (0,0) width 12: "1."
         LayoutBlockFlow {IMG} at (12,14) size 0x0 [bgcolor=#008000]
@@ -56,19 +57,20 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,36) width 12: "3."
         LayoutBlockFlow {IMG} at (12,50) size 0x0 [bgcolor=#008000]
         LayoutBR {BR} at (12,50) size 0x0
-        LayoutText {#text} at (0,54) size 12x18
-          text run at (0,54) width 12: "4."
-        LayoutBlockFlow {IMG} at (12,68) size 0x0
+        LayoutText {#text} at (0,56) size 12x18
+          text run at (0,56) width 12: "4."
+        LayoutBlockFlow {IMG} at (12,54) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {DIV} at (0,264) size 180.25x124
+    LayoutBlockFlow {DIV} at (0,266) size 180.25x126
       LayoutBlockFlow {P} at (0,0) size 180.25x36
         LayoutText {#text} at (0,0) size 180x36
           text run at (0,0) width 180: "Different dimensions, no alt"
           text run at (0,18) width 32: "text, "
           text run at (31,18) width 50: "src = \"\""
-      LayoutBlockFlow (anonymous) at (0,52) size 180.25x72
+      LayoutBlockFlow (anonymous) at (0,52) size 180.25x74
         LayoutText {#text} at (0,0) size 12x18
           text run at (0,0) width 12: "1."
         LayoutBlockFlow {IMG} at (12,14) size 0x0 [bgcolor=#008000]
@@ -81,13 +83,14 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,36) width 12: "3."
         LayoutBlockFlow {IMG} at (12,50) size 0x0 [bgcolor=#008000]
         LayoutBR {BR} at (12,50) size 0x0
-        LayoutText {#text} at (0,54) size 12x18
-          text run at (0,54) width 12: "4."
-        LayoutBlockFlow {IMG} at (12,68) size 0x0
+        LayoutText {#text} at (0,56) size 12x18
+          text run at (0,56) width 12: "4."
+        LayoutBlockFlow {IMG} at (12,54) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 0x0
-        LayoutBR {BR} at (12,68) size 0x0
-    LayoutBlockFlow {DIV} at (0,404) size 180.25x124
+        LayoutBR {BR} at (28,70) size 0x0
+    LayoutBlockFlow {DIV} at (0,408) size 180.25x124
       LayoutBlockFlow {P} at (0,0) size 180.25x36
         LayoutText {#text} at (0,0) size 180x36
           text run at (0,0) width 180: "Different dimensions, no alt"
@@ -115,13 +118,13 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,54) width 12: "4."
         LayoutImage {IMG} at (12,68) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-    LayoutBlockFlow {DIV} at (0,528) size 180.25x124
+    LayoutBlockFlow {DIV} at (0,532) size 180.25x126
       LayoutBlockFlow {P} at (0,0) size 180.25x36
         LayoutText {#text} at (0,0) size 160x36
           text run at (0,0) width 160: "Different dimensions, alt"
           text run at (0,18) width 32: "text, "
           text run at (31,18) width 50: "src = \"\""
-      LayoutBlockFlow (anonymous) at (0,52) size 180.25x72
+      LayoutBlockFlow (anonymous) at (0,52) size 180.25x74
         LayoutText {#text} at (0,0) size 12x18
           text run at (0,0) width 12: "1."
         LayoutBlockFlow {IMG} at (12,14) size 0x0 [bgcolor=#008000]
@@ -140,15 +143,16 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (12,36) size 4x18
           text run at (12,36) width 4: " "
         LayoutBR {BR} at (16,50) size 0x0
-        LayoutText {#text} at (0,54) size 12x18
-          text run at (0,54) width 12: "4."
-        LayoutBlockFlow {IMG} at (12,68) size 0x0
+        LayoutText {#text} at (0,56) size 12x18
+          text run at (0,56) width 12: "4."
+        LayoutBlockFlow {IMG} at (12,54) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 0x0
-        LayoutText {#text} at (12,54) size 4x18
-          text run at (12,54) width 4: " "
-        LayoutBR {BR} at (16,68) size 0x0
-    LayoutBlockFlow {DIV} at (0,668) size 180.25x124
+        LayoutText {#text} at (28,56) size 4x18
+          text run at (28,56) width 4: " "
+        LayoutBR {BR} at (32,70) size 0x0
+    LayoutBlockFlow {DIV} at (0,674) size 180.25x124
       LayoutBlockFlow {P} at (0,0) size 180.25x36
         LayoutText {#text} at (0,0) size 160x36
           text run at (0,0) width 160: "Different dimensions, alt"
@@ -174,21 +178,22 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (16,50) size 0x0
         LayoutText {#text} at (0,54) size 12x18
           text run at (0,54) width 12: "4."
-        LayoutBlockFlow {IMG} at (12,54) size 43.98x18
+        LayoutBlockFlow {IMG} at (12,54) size 59.98x18
           LayoutInline {SPAN} at (0,0) size 44x18
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 44x18
-              LayoutText {#text} at (0,0) size 44x18
-                text run at (0,0) width 44: "alt text"
-        LayoutText {#text} at (55,54) size 5x18
-          text run at (55,54) width 5: " "
-        LayoutBR {BR} at (59,68) size 1x0
-    LayoutBlockFlow {DIV} at (0,792) size 180.25x124
+              LayoutText {#text} at (16,0) size 44x18
+                text run at (16,0) width 44: "alt text"
+        LayoutText {#text} at (71,54) size 5x18
+          text run at (71,54) width 5: " "
+        LayoutBR {BR} at (75,68) size 1x0
+    LayoutBlockFlow {DIV} at (0,798) size 180.25x126
       LayoutBlockFlow {P} at (0,0) size 180.25x36
         LayoutText {#text} at (0,0) size 160x36
           text run at (0,0) width 160: "Different dimensions, alt"
           text run at (0,18) width 32: "text, "
           text run at (31,18) width 33: "src ="
-      LayoutBlockFlow (anonymous) at (0,52) size 180.25x72
+      LayoutBlockFlow (anonymous) at (0,52) size 180.25x74
         LayoutText {#text} at (0,0) size 12x18
           text run at (0,0) width 12: "1."
         LayoutBlockFlow {IMG} at (12,14) size 0x0 [bgcolor=#008000]
@@ -207,14 +212,15 @@ layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (12,36) size 4x18
           text run at (12,36) width 4: " "
         LayoutBR {BR} at (16,50) size 0x0
-        LayoutText {#text} at (0,54) size 12x18
-          text run at (0,54) width 12: "4."
-        LayoutBlockFlow {IMG} at (12,68) size 0x0
+        LayoutText {#text} at (0,56) size 12x18
+          text run at (0,56) width 12: "4."
+        LayoutBlockFlow {IMG} at (12,54) size 16x16
           LayoutInline {SPAN} at (0,0) size 0x0
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 0x0
-        LayoutText {#text} at (12,54) size 4x18
-          text run at (12,54) width 4: " "
-        LayoutBR {BR} at (16,68) size 0x0
+        LayoutText {#text} at (28,56) size 4x18
+          text run at (28,56) width 4: " "
+        LayoutBR {BR} at (32,70) size 0x0
 layer at (20,106) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
@@ -242,64 +248,64 @@ layer at (20,264) size 0x0
 layer at (20,282) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,372) size 0x0
+layer at (20,374) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,390) size 0x0
+layer at (20,392) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,408) size 0x0
+layer at (20,410) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,636) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,640) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,654) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,658) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,672) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,676) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,776) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,782) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,794) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,800) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,812) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,818) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,900) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,906) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,918) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,924) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,936) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (20,942) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36

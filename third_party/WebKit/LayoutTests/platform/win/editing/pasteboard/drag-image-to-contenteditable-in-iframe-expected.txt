@@ -21,7 +21,8 @@ layer at (88,64) size 304x154
       LayoutBlockFlow {HTML} at (0,0) size 300x150
         LayoutBlockFlow {BODY} at (8,8) size 284x134
           LayoutBlockFlow {DIV} at (0,0) size 271.80x129.30 [border: (1px solid #000000)]
-            LayoutBlockFlow {IMG} at (1,104) size 0x0
+            LayoutBlockFlow {IMG} at (1,88) size 16x16
               LayoutInline {SPAN} at (0,0) size 0x0
+                LayoutImage (floating) {IMG} at (0,0) size 16x16
                 LayoutInline {SPAN} at (0,0) size 0x0
-            LayoutImage {IMG} at (1,1) size 76x103
+            LayoutImage {IMG} at (17,1) size 76x103
