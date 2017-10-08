@@ -22,6 +22,23 @@ namespace blink {
 
 using namespace HTMLNames;
 
+static bool NoImageSourceSpecified(const Element& element) {
+  bool no_src_specified =
+      !element.hasAttribute(srcAttr) || element.getAttribute(srcAttr).IsNull();
+  bool no_srcset_specified = !element.hasAttribute(srcsetAttr) ||
+                             element.getAttribute(srcsetAttr).IsNull();
+  return no_src_specified && no_srcset_specified;
+}
+
+static bool ElementRepresentsNothing(const Element& element) {
+  bool alt_is_set = !ToHTMLElement(element).AltText().IsNull();
+  bool alt_is_empty = alt_is_set && ToHTMLElement(element).AltText().IsEmpty();
+  bool src_is_set = !NoImageSourceSpecified(element);
+  if (src_is_set && alt_is_empty)
+    return true;
+  return !src_is_set && (!alt_is_set || alt_is_empty);
+}
+
 static bool ImageSmallerThanAltImage(int pixels_for_alt_image,
                                      const Length width,
                                      const Length height) {
@@ -151,22 +168,33 @@ RefPtr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
                            : "right"));
     }
   } else {
-    // "If the element is an img element that represents nothing and the user
-    // agent does not expect this to change the user agent is expected to treat
-    // the element as an empty inline element."
-    //  - We achieve this by hiding the broken image so that the span is empty.
-    // "If the element is an img element that represents some text and the user
-    // agent does not expect this to change the user agent is expected to treat
-    // the element as a non-replaced phrasing element whose content is the text,
-    // optionally with an icon indicating that an image is missing, so that the
-    // user can request the image be displayed or investigate why it is not
-    // rendering."
-    //  - We opt not to display an icon, like Firefox.
     if (new_style->Display() == EDisplay::kInline) {
       new_style->SetWidth(Length());
       new_style->SetHeight(Length());
     }
-    broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    if (ElementRepresentsNothing(element)) {
+      // "If the element is an img element that represents nothing and the user
+      // agent does not expect this to change the user agent is expected to
+      // treat the element as an empty inline element."
+      //  - We achieve this by hiding the broken image so that the span is
+      //  empty.
+      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    } else {
+      // "If the element is an img element that represents some text and the
+      // user agent does not expect this to change the user agent is expected to
+      // treat the element as a non-replaced phrasing element whose content is
+      // the text, optionally with an icon indicating that an image is missing,
+      // so that the user can request the image be displayed or investigate why
+      // it is not rendering."
+      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueInline);
+      // Make sure the broken image icon appears on the appropriate side of
+      // the image for the element's writing direction.
+      broken_image->SetInlineStyleProperty(
+          CSSPropertyFloat,
+          AtomicString(new_style->Direction() == TextDirection::kLtr
+                           ? "left"
+                           : "right"));
+    }
   }
 
   return new_style;

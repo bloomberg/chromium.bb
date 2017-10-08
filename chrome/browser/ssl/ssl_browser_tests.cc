@@ -2025,7 +2025,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
     int img_width = 99;
     EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
         tab, "window.domAutomationController.send(ImageWidth());", &img_width));
-    EXPECT_EQ(img_width, 0);
+    EXPECT_EQ(img_width, 16);
     // Check that variable |foo| is not set.
     bool js_result = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(

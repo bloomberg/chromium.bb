@@ -9,18 +9,19 @@ layer at (0,0) size 800x600
           text run at (492,0) width 270: "no src attribute. You should see \"Success\""
           text run at (0,18) width 229: "twice, followed by a blue rectangle."
       LayoutBlockFlow {P} at (0,52) size 784x0
-      LayoutBlockFlow {FORM} at (0,52) size 784x90
-        LayoutBlockFlow {INPUT} at (0,0) size 41.38x13
+      LayoutBlockFlow {FORM} at (0,52) size 784x93
+        LayoutBlockFlow {INPUT} at (0,0) size 57.38x16
           LayoutInline {SPAN} at (0,0) size 42x13
+            LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 42x13
-              LayoutText {#text} at (0,0) size 42x13
-                text run at (0,0) width 42: "Success"
-        LayoutBR {BR} at (41,11) size 1x0
-        LayoutBlockFlow {INPUT} at (0,13) size 102x52 [border: (1px solid #000000)]
-        LayoutBR {BR} at (102,64) size 0x0
-        LayoutImage {INPUT} at (0,65) size 75x25
-        LayoutBR {BR} at (75,90) size 0x0
-layer at (9,74) size 100x50 clip at (10,75) size 98x48
+              LayoutText {#text} at (16,0) size 42x13
+                text run at (16,0) width 42: "Success"
+        LayoutBR {BR} at (57,11) size 1x0
+        LayoutBlockFlow {INPUT} at (0,16) size 102x52 [border: (1px solid #000000)]
+        LayoutBR {BR} at (102,67) size 0x0
+        LayoutImage {INPUT} at (0,68) size 75x25
+        LayoutBR {BR} at (75,93) size 0x0
+layer at (9,77) size 100x50 clip at (10,78) size 98x48
   LayoutBlockFlow {SPAN} at (1,1) size 100x50 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
     LayoutInline {SPAN} at (0,0) size 42x13

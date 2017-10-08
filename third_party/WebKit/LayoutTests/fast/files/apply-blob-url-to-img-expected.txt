@@ -1,5 +1,5 @@
  
-Old image: 0 x 0
+Old image: 16 x 16
 New image: 76 x 103
 DONE
 
