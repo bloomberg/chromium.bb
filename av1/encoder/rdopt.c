@@ -7131,7 +7131,10 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     int bhl = b_height_log2_lookup[bsize];
     int tlevel = x->pred_mv_sad[ref] >> (bwl + bhl + 4);
 
-    if (tlevel < 5) step_param += 2;
+    if (tlevel < 5) {
+      step_param += 2;
+      step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 1);
+    }
 
     // prev_mv_sad is not setup for dynamically scaled frames.
     if (cpi->oxcf.resize_mode != RESIZE_RANDOM) {

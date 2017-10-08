@@ -1124,6 +1124,7 @@ static int pattern_search(
   int thissad;
   int k = -1;
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
+  assert(search_param < MAX_MVSEARCH_STEPS);
   int best_init_s = search_param_to_steps[search_param];
   // adjust ref_mv to make sure it is within MV range
   clamp_mv(start_mv, x->mv_limits.col_min, x->mv_limits.col_max,
