@@ -95,7 +95,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_RED_EXT,        // RED_8
       GL_LUMINANCE,      // LUMINANCE_F16
       GL_RGBA,           // RGBA_F16
-      GL_R16_EXT,        // R16_EXT
+      GL_RED_EXT,        // R16_EXT
   };
   static_assert(arraysize(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
@@ -105,6 +105,11 @@ unsigned int GLDataFormat(ResourceFormat format) {
 unsigned int GLInternalFormat(ResourceFormat format) {
   // In GLES2, the internal format must match the texture format. (It no longer
   // is true in GLES3, however it still holds for the BGRA extension.)
+  // GL_EXT_texture_norm16 follows GLES3 semantics and only exposes a sized
+  // internal format (GL_R16_EXT).
+  if (format == R16_EXT)
+    return GL_R16_EXT;
+
   return GLDataFormat(format);
 }
 
