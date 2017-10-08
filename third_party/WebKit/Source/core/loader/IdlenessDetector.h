@@ -27,7 +27,6 @@ class CORE_EXPORT IdlenessDetector
 
  public:
   explicit IdlenessDetector(LocalFrame*);
-  virtual ~IdlenessDetector();
 
   void Shutdown();
   void DomContentLoadedEventFired();
@@ -49,11 +48,11 @@ class CORE_EXPORT IdlenessDetector
   void WillProcessTask(double start_time) override;
   void DidProcessTask(double start_time, double end_time) override;
 
-  void ShutdownIfPossible();
+  void Stop();
   void NetworkQuietTimerFired(TimerBase*);
 
   Member<LocalFrame> local_frame_;
-  bool started_;
+  bool task_observer_added_;
   // Store the accumulated time of network quiet.
   double network_0_quiet_ = 0;
   double network_2_quiet_ = 0;
