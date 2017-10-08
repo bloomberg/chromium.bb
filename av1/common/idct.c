@@ -2571,7 +2571,7 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
 
     for (int r = 0; r < h; ++r) {
       for (int c = 0; c < w; ++c) {
-        dst[r * stride + c] = tmp[r * tmp_stride + c];
+        dst[r * stride + c] = (uint8_t)tmp[r * tmp_stride + c];
       }
     }
   }
