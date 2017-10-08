@@ -44,9 +44,6 @@
 #include "third_party/skia/include/core/SkMilestone.h"
 #include "ui/gl/gpu_switching_manager.h"
 
-#if defined(OS_LINUX) && defined(USE_X11)
-#include <X11/Xlib.h>
-#endif
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #include "ui/gfx/win/physical_size.h"
