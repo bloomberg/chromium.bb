@@ -1522,11 +1522,6 @@ void CompositedLayerMapping::UpdateTransformGeometry(
             transform_origin.Y(),
         transform_origin.Z());
     graphics_layer_->SetTransformOrigin(composited_transform_origin);
-  } else {
-    FloatPoint3D composited_transform_origin(
-        relative_compositing_bounds.Width() * 0.5f,
-        relative_compositing_bounds.Height() * 0.5f, 0.f);
-    graphics_layer_->SetTransformOrigin(composited_transform_origin);
   }
 }
 
