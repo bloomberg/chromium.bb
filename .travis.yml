@@ -14,6 +14,8 @@ env:
   global:
     # COVERITY_SCAN_TOKEN
     - secure: "k2AM90pXF/IqX8CRSUPD3dkMktu9IUtFafDVvA1iC4p7hMfwOM4UIC/0E5Dqxwv4ULc7yqbWVchZwHMqteEqcJX8xbxsGqt4s1LtNosV2xjikbGmXVl3cp0qqv3exVcUaxtzxDs2Ee379sTUpVDK314M9oH5ky4N2L+971c1v84="
+    # GITHUB_TOKEN
+    - secure: "FbDvOO7Nqih9z0S+9RL/cvz/VTM5nlEUgJdUT7MefFjIAh+YCfv5sw6FkQpaiOx4xkd63tLrUvjJXi7fy4oERLDO2Qk4OOsntJUfNZqWlsGHZWUTfvgYkcNyNhXe2P4lKnnFaZbqui9Ec9OdnsR1DmrtIoq24BKTxYXCsxdux04="
 
 matrix:
   include:
@@ -56,7 +58,9 @@ after_failure:
     fi
 
 after_success:
-  - if [ "$BUILD_JS" == yes ]; then
+  - if [ "$BUILD_MINGW" == yes ]; then
+        source .travis/after_success/mingw.sh;
+    elif [ "$BUILD_JS" == yes ]; then
         source .travis/after_success/emscripten.sh;
     fi
 
