@@ -2057,6 +2057,7 @@ _NAMED_TYPE_INFO = {
       'GL_RGB_YCRCB_420_CHROMIUM',
       'GL_RGB_YCBCR_422_CHROMIUM',
       'GL_RGB_YCBCR_420V_CHROMIUM',
+      'GL_R16_EXT',
     ],
   },
   'TextureInternalFormatStorage': {

@@ -337,8 +337,6 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
   float multiplier = 1.0;
 
-  // TODO(riju): We need to pass the texture_norm16 extension from tests to GPU
-  // Till then use LUMINANCE_8. Details : crbug.com/766638
   if (yuv_highbit_resource_format == R16_EXT)
     multiplier = 65535.0f / ((1 << bits_per_channel) - 1);
   else

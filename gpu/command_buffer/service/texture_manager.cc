@@ -350,6 +350,11 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
   if (immutable)
     return true;
 
+  if (feature_info->feature_flags().ext_texture_norm16 &&
+      internal_format == GL_R16_EXT) {
+    return true;
+  }
+
   if ((feature_info->feature_flags().chromium_image_ycbcr_420v &&
        internal_format == GL_RGB_YCBCR_420V_CHROMIUM) ||
       (feature_info->feature_flags().chromium_image_ycbcr_422 &&
