@@ -55,9 +55,9 @@ class TestStream : public QuicSpdyStream {
     data_ += string(buffer, bytes_read);
   }
 
-  using QuicStream::WriteOrBufferData;
-  using QuicStream::CloseWriteSide;
   using QuicSpdyStream::set_ack_listener;
+  using QuicStream::CloseWriteSide;
+  using QuicStream::WriteOrBufferData;
 
   const string& data() const { return data_; }
 
@@ -66,7 +66,7 @@ class TestStream : public QuicSpdyStream {
   string data_;
 };
 
-class QuicSpdyStreamTest : public QuicTestWithParam<QuicVersion> {
+class QuicSpdyStreamTest : public QuicTestWithParam<QuicTransportVersion> {
  public:
   QuicSpdyStreamTest() {
     headers_[":host"] = "www.google.com";
@@ -101,7 +101,7 @@ class QuicSpdyStreamTest : public QuicTestWithParam<QuicVersion> {
   void Initialize(bool stream_should_process_data) {
     connection_ = new testing::StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        SupportedVersions(GetParam()));
+        SupportedTransportVersions(GetParam()));
     session_.reset(new testing::StrictMock<MockQuicSpdySession>(connection_));
     stream_ = new TestStream(GetNthClientInitiatedId(0), session_.get(),
                              stream_should_process_data);
@@ -136,7 +136,7 @@ class QuicSpdyStreamTest : public QuicTestWithParam<QuicVersion> {
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSpdyStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicSpdyStreamTest, ProcessHeaderList) {
   Initialize(kShouldProcessData);
@@ -901,7 +901,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
   // Write non-zero body data.
   const int kBodySize = 1 * 1024;  // 1 MB
   stream_->WriteOrBufferData(string(kBodySize, 'x'), false, nullptr);
-  EXPECT_EQ(0u, stream_->queued_data_bytes());
+  EXPECT_EQ(0u, stream_->BufferedDataBytes());
 
   // Headers and body have been fully written, there is no queued data. Writing
   // trailers marks the end of this stream, and thus the write side is closed.
@@ -927,7 +927,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kBodySize - 1, false)));
   stream_->WriteOrBufferData(string(kBodySize, 'x'), false, nullptr);
-  EXPECT_EQ(1u, stream_->queued_data_bytes());
+  EXPECT_EQ(1u, stream_->BufferedDataBytes());
 
   // Writing trailers will send a FIN, but not close the write side of the
   // stream as there are queued bytes.
@@ -963,9 +963,6 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
 
 TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
   Initialize(kShouldProcessData);
-  if (!session_->use_stream_notifier()) {
-    return;
-  }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
@@ -1011,15 +1008,10 @@ TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {
   QuicStreamPeer::CloseReadSide(stream_);
   // This write causes stream to be closed.
   stream_->WriteOrBufferData("Test1", true, nullptr);
-  if (!session_->use_stream_notifier()) {
-    EXPECT_TRUE(QuicSessionPeer::zombie_streams(session_.get()).empty());
-    EXPECT_FALSE(QuicSessionPeer::closed_streams(session_.get()).empty());
-  } else {
-    // stream_ has unacked data and should become zombie.
-    EXPECT_TRUE(QuicContainsKey(QuicSessionPeer::zombie_streams(session_.get()),
-                                stream_->id()));
-    EXPECT_TRUE(QuicSessionPeer::closed_streams(session_.get()).empty());
-  }
+  // stream_ has unacked data and should become zombie.
+  EXPECT_TRUE(QuicContainsKey(QuicSessionPeer::zombie_streams(session_.get()),
+                              stream_->id()));
+  EXPECT_TRUE(QuicSessionPeer::closed_streams(session_.get()).empty());
 }
 
 }  // namespace

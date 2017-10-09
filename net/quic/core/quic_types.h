@@ -263,6 +263,40 @@ enum StreamSendingState {
   FIN_AND_PADDING,
 };
 
+// Information about a newly acknowledged packet.
+struct AckedPacket {
+  AckedPacket(QuicPacketNumber packet_number,
+              QuicPacketLength bytes_acked,
+              QuicTime receive_timestamp)
+      : packet_number(packet_number),
+        bytes_acked(bytes_acked),
+        receive_timestamp(receive_timestamp) {}
+
+  QuicPacketNumber packet_number;
+  // Number of bytes sent in the packet that was acknowledged.
+  QuicPacketLength bytes_acked;
+  // The time |packet_number| was received by the peer, according to the
+  // optional timestamp the peer included in the ACK frame which acknowledged
+  // |packet_number|. Zero if no timestamp was available for this packet.
+  QuicTime receive_timestamp;
+};
+
+// A vector of acked packets.
+typedef std::vector<AckedPacket> AckedPacketVector;
+
+// Information about a newly lost packet.
+struct LostPacket {
+  LostPacket(QuicPacketNumber packet_number, QuicPacketLength bytes_lost)
+      : packet_number(packet_number), bytes_lost(bytes_lost) {}
+
+  QuicPacketNumber packet_number;
+  // Number of bytes sent in the packet that was lost.
+  QuicPacketLength bytes_lost;
+};
+
+// A vector of lost packets.
+typedef std::vector<LostPacket> LostPacketVector;
+
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_TYPES_H_

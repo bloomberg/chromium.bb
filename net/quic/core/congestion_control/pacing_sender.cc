@@ -25,7 +25,8 @@ PacingSender::PacingSender()
       burst_tokens_(kInitialUnpacedBurst),
       last_delayed_packet_sent_time_(QuicTime::Zero()),
       ideal_next_packet_send_time_(QuicTime::Zero()),
-      was_last_send_delayed_(false) {}
+      was_last_send_delayed_(false),
+      initial_burst_size_(kInitialUnpacedBurst) {}
 
 PacingSender::~PacingSender() {}
 
@@ -34,12 +35,11 @@ void PacingSender::set_sender(SendAlgorithmInterface* sender) {
   sender_ = sender;
 }
 
-void PacingSender::OnCongestionEvent(
-    bool rtt_updated,
-    QuicByteCount bytes_in_flight,
-    QuicTime event_time,
-    const SendAlgorithmInterface::AckedPacketVector& acked_packets,
-    const SendAlgorithmInterface::CongestionVector& lost_packets) {
+void PacingSender::OnCongestionEvent(bool rtt_updated,
+                                     QuicByteCount bytes_in_flight,
+                                     QuicTime event_time,
+                                     const AckedPacketVector& acked_packets,
+                                     const LostPacketVector& lost_packets) {
   DCHECK(sender_ != nullptr);
   if (!lost_packets.empty()) {
     // Clear any burst tokens when entering recovery.
@@ -67,7 +67,7 @@ void PacingSender::OnPacketSent(
     // limit it to the equivalent of a single bulk write, not exceeding the
     // current CWND in packets.
     burst_tokens_ = std::min(
-        kInitialUnpacedBurst,
+        initial_burst_size_,
         static_cast<uint32_t>(sender_->GetCongestionWindow() / kDefaultTCPMSS));
   }
   if (burst_tokens_ > 0) {
@@ -110,17 +110,15 @@ void PacingSender::OnPacketSent(
 QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
                                             QuicByteCount bytes_in_flight) {
   DCHECK(sender_ != nullptr);
-  QuicTime::Delta time_until_send =
-      sender_->TimeUntilSend(now, bytes_in_flight);
-  if (burst_tokens_ > 0 || bytes_in_flight == 0) {
-    // Don't pace if we have burst tokens available or leaving quiescence.
-    return time_until_send;
+
+  if (!sender_->CanSend(bytes_in_flight)) {
+    // The underlying sender prevents sending.
+    return QuicTime::Delta::Infinite();
   }
 
-  if (!time_until_send.IsZero()) {
-    DCHECK(time_until_send.IsInfinite());
-    // The underlying sender prevents sending.
-    return time_until_send;
+  if (burst_tokens_ > 0 || bytes_in_flight == 0) {
+    // Don't pace if we have burst tokens available or leaving quiescence.
+    return QuicTime::Delta::Zero();
   }
 
   // If the next send time is within the alarm granularity, send immediately.

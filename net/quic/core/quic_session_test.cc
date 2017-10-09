@@ -222,10 +222,8 @@ class TestSession : public QuicSpdySession {
     if (stream->id() != kCryptoStreamId) {
       this->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
-    if (save_data_before_consumption()) {
-      QuicStreamPeer::SendBuffer(stream).SaveStreamData(
-          MakeIOVector("not empty", &iov), 0, 9);
-    }
+    QuicStreamPeer::SendBuffer(stream).SaveStreamData(
+        MakeIOVector("not empty", &iov), 0, 9);
     QuicConsumedData consumed = WritevData(
         stream, stream->id(), MakeIOVector("not empty", &iov), 0, FIN, nullptr);
     return consumed;
@@ -250,14 +248,14 @@ class TestSession : public QuicSpdySession {
   bool writev_consumes_all_data_;
 };
 
-class QuicSessionTestBase : public QuicTestWithParam<QuicVersion> {
+class QuicSessionTestBase : public QuicTestWithParam<QuicTransportVersion> {
  protected:
   explicit QuicSessionTestBase(Perspective perspective)
-      : connection_(
-            new StrictMock<MockQuicConnection>(&helper_,
-                                               &alarm_factory_,
-                                               perspective,
-                                               SupportedVersions(GetParam()))),
+      : connection_(new StrictMock<MockQuicConnection>(
+            &helper_,
+            &alarm_factory_,
+            perspective,
+            SupportedTransportVersions(GetParam()))),
         session_(connection_) {
     session_.config()->SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
@@ -309,7 +307,9 @@ class QuicSessionTestBase : public QuicTestWithParam<QuicVersion> {
     closed_streams_.insert(id);
   }
 
-  QuicVersion version() const { return connection_->version(); }
+  QuicTransportVersion transport_version() const {
+    return connection_->transport_version();
+  }
 
   QuicStreamId GetNthClientInitiatedId(int n) {
     return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, n);
@@ -336,7 +336,7 @@ class QuicSessionTestServer : public QuicSessionTestBase {
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSessionTestServer,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicSessionTestServer, PeerAddress) {
   EXPECT_EQ(QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort),
@@ -587,8 +587,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
   session_.MarkConnectionLevelWriteBlocked(stream6->id());
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillRepeatedly(Return(true));
   EXPECT_CALL(*send_algorithm, GetCongestionWindow())
       .WillRepeatedly(Return(kMaxPacketSize * 10));
   EXPECT_CALL(*send_algorithm, InRecovery()).WillRepeatedly(Return(false));
@@ -632,35 +631,30 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
 
   StreamBlocker stream2_blocker(&session_, stream2->id());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillOnce(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(testing::IgnoreResult(
           Invoke(CreateFunctor(&TestSession::SendStreamData,
                                base::Unretained(&session_), stream2))));
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillOnce(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
   EXPECT_CALL(*stream6, OnCanWrite())
       .WillOnce(testing::IgnoreResult(
           Invoke(CreateFunctor(&TestSession::SendStreamData,
                                base::Unretained(&session_), stream6))));
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillOnce(Return(QuicTime::Delta::Infinite()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(false));
   // stream4->OnCanWrite is not called.
 
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // Still congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillOnce(Return(QuicTime::Delta::Infinite()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(false));
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillOnce(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(testing::IgnoreResult(
           Invoke(CreateFunctor(&TestSession::SendStreamData,
@@ -675,8 +669,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteWriterBlocks) {
   // application-limited signaling is handled correctly.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
   QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillRepeatedly(Return(true));
 
   // Drive packet writer manually.
   MockPacketWriter* writer = static_cast<MockPacketWriter*>(
@@ -780,8 +773,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
   // application-limited signaling is handled correctly.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
   QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
-      .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm, CanSend(_)).WillRepeatedly(Return(true));
 
   // Ensure connection level flow control blockage.
   QuicFlowControllerPeer::SetSendWindowOffset(session_.flow_controller(), 0);
@@ -1273,7 +1265,7 @@ class QuicSessionTestClient : public QuicSessionTestBase {
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSessionTestClient,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicSessionTestClient, AvailableStreamsClient) {
   ASSERT_TRUE(session_.GetOrCreateDynamicStream(6) != nullptr);
@@ -1348,11 +1340,6 @@ TEST_P(QuicSessionTestServer, ZombieStreams) {
 
   EXPECT_CALL(*connection_, SendRstStream(2, _, _));
   session_.CloseStream(2);
-  if (!session_.use_stream_notifier()) {
-    EXPECT_TRUE(session_.zombie_streams().empty());
-    EXPECT_FALSE(session_.closed_streams()->empty());
-    return;
-  }
   EXPECT_TRUE(QuicContainsKey(session_.zombie_streams(), 2));
   EXPECT_TRUE(session_.closed_streams()->empty());
   session_.OnStreamDoneWaitingForAcks(2);

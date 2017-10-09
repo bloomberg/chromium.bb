@@ -63,7 +63,7 @@ void GeneralLossAlgorithm::DetectLosses(
     QuicTime time,
     const RttStats& rtt_stats,
     QuicPacketNumber largest_newly_acked,
-    SendAlgorithmInterface::CongestionVector* packets_lost) {
+    LostPacketVector* packets_lost) {
   loss_detection_timeout_ = QuicTime::Zero();
   QuicTime::Delta max_rtt =
       std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
@@ -82,7 +82,7 @@ void GeneralLossAlgorithm::DetectLosses(
       // FACK based loss detection.
       if (largest_newly_acked - packet_number >=
           kNumberOfNacksBeforeRetransmission) {
-        packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
+        packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
         continue;
       }
     } else if (loss_type_ == kLazyFack) {
@@ -92,7 +92,7 @@ void GeneralLossAlgorithm::DetectLosses(
           largest_previously_acked_ > packet_number &&
           largest_previously_acked_ - packet_number >=
               (kNumberOfNacksBeforeRetransmission - 1)) {
-        packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
+        packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
         continue;
       }
     }
@@ -109,14 +109,14 @@ void GeneralLossAlgorithm::DetectLosses(
         loss_detection_timeout_ = when_lost;
         break;
       }
-      packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
+      packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
       continue;
     }
 
     // NACK-based loss detection allows for a max reordering window of 1 RTT.
     if (it->sent_time + rtt_stats.smoothed_rtt() <
         unacked_packets.GetTransmissionInfo(largest_newly_acked).sent_time) {
-      packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
+      packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
       continue;
     }
   }

@@ -55,7 +55,7 @@ void QuicServerSessionBase::OnConfigNegotiated() {
   bandwidth_resumption_enabled_ =
       last_bandwidth_resumption || max_bandwidth_resumption;
 
-  if (connection()->version() < QUIC_VERSION_35) {
+  if (connection()->transport_version() < QUIC_VERSION_35) {
     set_server_push_enabled(
         ContainsQuicTag(config()->ReceivedConnectionOptions(), kSPSH));
   }

@@ -70,7 +70,8 @@ namespace {
 const QuicStreamId kClientDataStreamId1 = kHeadersStreamId + 2;
 }  // namespace
 
-class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicProxyClientSocketTest
+    : public ::testing::TestWithParam<QuicTransportVersion> {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
@@ -80,7 +81,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
 
   static size_t GetStreamFrameDataLengthFromPacketLength(
       QuicByteCount packet_length,
-      QuicVersion version,
+      QuicTransportVersion version,
       bool include_version,
       bool include_diversification_nonce,
       QuicConnectionIdLength connection_id_length,
@@ -145,8 +146,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
         .WillRepeatedly(Return(kMaxPacketSize));
     EXPECT_CALL(*send_algorithm_, PacingRate(_))
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
-        .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
@@ -162,7 +162,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
     QuicConnection* connection = new QuicConnection(
         connection_id_, QuicSocketAddress(QuicSocketAddressImpl(peer_addr_)),
         helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,
-        Perspective::IS_CLIENT, SupportedVersions(GetParam()));
+        Perspective::IS_CLIENT, SupportedTransportVersions(GetParam()));
     connection->set_visitor(&visitor_);
     QuicConnectionPeer::SetSendAlgorithm(connection, send_algorithm_);
 
@@ -465,7 +465,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<QuicVersion> {
     ASSERT_EQ(SpdyString(data, len), SpdyString(read_buf_->data(), len));
   }
 
-  QuicVersion version_;
+  QuicTransportVersion version_;
 
   // order of destruction of these members matter
   MockClock clock_;
@@ -1484,7 +1484,7 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicProxyClientSocketTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 }  // namespace test
 }  // namespace net

@@ -9,6 +9,7 @@
 #include <cstdint>
 
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
@@ -41,10 +42,13 @@ Cubic::Cubic(const QuicClock* clock)
       epoch_(QuicTime::Zero()),
       app_limited_start_time_(QuicTime::Zero()),
       last_update_time_(QuicTime::Zero()),
-      fix_convex_mode_(false),
-      fix_beta_last_max_(false),
-      allow_per_ack_updates_(false) {
+      fix_convex_mode_(FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes),
+      fix_beta_last_max_(fix_convex_mode_),
+      allow_per_ack_updates_(fix_convex_mode_) {
   ResetCubicState();
+  if (fix_convex_mode_) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_cubic_fixes, 1, 2);
+  }
 }
 
 void Cubic::SetNumConnections(int num_connections) {

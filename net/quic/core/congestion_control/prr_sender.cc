@@ -35,13 +35,12 @@ void PrrSender::OnPacketAcked(QuicByteCount acked_bytes) {
   ++ack_count_since_loss_;
 }
 
-QuicTime::Delta PrrSender::TimeUntilSend(
-    QuicByteCount congestion_window,
-    QuicByteCount bytes_in_flight,
-    QuicByteCount slowstart_threshold) const {
+bool PrrSender::CanSend(QuicByteCount congestion_window,
+                        QuicByteCount bytes_in_flight,
+                        QuicByteCount slowstart_threshold) const {
   // Return QuicTime::Zero in order to ensure limited transmit always works.
   if (bytes_sent_since_loss_ == 0 || bytes_in_flight < kMaxSegmentSize) {
-    return QuicTime::Delta::Zero();
+    return true;
   }
   if (congestion_window > bytes_in_flight) {
     // During PRR-SSRB, limit outgoing packets to 1 extra MSS per ack, instead
@@ -50,9 +49,9 @@ QuicTime::Delta PrrSender::TimeUntilSend(
     //   limit = MAX(prr_delivered - prr_out, DeliveredData) + MSS
     if (bytes_delivered_since_loss_ + ack_count_since_loss_ * kMaxSegmentSize <=
         bytes_sent_since_loss_) {
-      return QuicTime::Delta::Infinite();
+      return false;
     }
-    return QuicTime::Delta::Zero();
+    return true;
   }
   // Implement Proportional Rate Reduction (RFC6937).
   // Checks a simplified version of the PRR formula that doesn't use division:
@@ -60,9 +59,9 @@ QuicTime::Delta PrrSender::TimeUntilSend(
   //   CEIL(prr_delivered * ssthresh / BytesInFlightAtLoss) - prr_sent
   if (bytes_delivered_since_loss_ * slowstart_threshold >
       bytes_sent_since_loss_ * bytes_in_flight_before_loss_) {
-    return QuicTime::Delta::Zero();
+    return true;
   }
-  return QuicTime::Delta::Infinite();
+  return false;
 }
 
 }  // namespace net

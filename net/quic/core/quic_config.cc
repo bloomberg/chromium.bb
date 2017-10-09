@@ -180,6 +180,71 @@ QuicErrorCode QuicFixedUint32::ProcessPeerHello(
   return error;
 }
 
+QuicFixedUint128::QuicFixedUint128(QuicTag tag, QuicConfigPresence presence)
+    : QuicConfigValue(tag, presence),
+      has_send_value_(false),
+      has_receive_value_(false) {}
+QuicFixedUint128::~QuicFixedUint128() {}
+
+bool QuicFixedUint128::HasSendValue() const {
+  return has_send_value_;
+}
+
+uint128 QuicFixedUint128::GetSendValue() const {
+  QUIC_BUG_IF(!has_send_value_)
+      << "No send value to get for tag:" << QuicTagToString(tag_);
+  return send_value_;
+}
+
+void QuicFixedUint128::SetSendValue(uint128 value) {
+  has_send_value_ = true;
+  send_value_ = value;
+}
+
+bool QuicFixedUint128::HasReceivedValue() const {
+  return has_receive_value_;
+}
+
+uint128 QuicFixedUint128::GetReceivedValue() const {
+  QUIC_BUG_IF(!has_receive_value_)
+      << "No receive value to get for tag:" << QuicTagToString(tag_);
+  return receive_value_;
+}
+
+void QuicFixedUint128::SetReceivedValue(uint128 value) {
+  has_receive_value_ = true;
+  receive_value_ = value;
+}
+
+void QuicFixedUint128::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
+  if (has_send_value_) {
+    out->SetValue(tag_, send_value_);
+  }
+}
+
+QuicErrorCode QuicFixedUint128::ProcessPeerHello(
+    const CryptoHandshakeMessage& peer_hello,
+    HelloType hello_type,
+    string* error_details) {
+  DCHECK(error_details != nullptr);
+  QuicErrorCode error = peer_hello.GetUint128(tag_, &receive_value_);
+  switch (error) {
+    case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
+      if (presence_ == PRESENCE_OPTIONAL) {
+        return QUIC_NO_ERROR;
+      }
+      *error_details = "Missing " + QuicTagToString(tag_);
+      break;
+    case QUIC_NO_ERROR:
+      has_receive_value_ = true;
+      break;
+    default:
+      *error_details = "Bad " + QuicTagToString(tag_);
+      break;
+  }
+  return error;
+}
+
 QuicFixedTagVector::QuicFixedTagVector(QuicTag name,
                                        QuicConfigPresence presence)
     : QuicConfigValue(name, presence),
@@ -337,7 +402,8 @@ QuicConfig::QuicConfig()
       socket_receive_buffer_(kSRBF, PRESENCE_OPTIONAL),
       connection_migration_disabled_(kNCMR, PRESENCE_OPTIONAL),
       alternate_server_address_(kASAD, PRESENCE_OPTIONAL),
-      support_max_header_list_size_(kSMHL, PRESENCE_OPTIONAL) {
+      support_max_header_list_size_(kSMHL, PRESENCE_OPTIONAL),
+      stateless_reset_token_(kSRST, PRESENCE_OPTIONAL) {
   SetDefaults();
 }
 
@@ -567,6 +633,18 @@ bool QuicConfig::SupportMaxHeaderListSize() const {
   return support_max_header_list_size_.HasReceivedValue();
 }
 
+void QuicConfig::SetStatelessResetTokenToSend(uint128 stateless_reset_token) {
+  stateless_reset_token_.SetSendValue(stateless_reset_token);
+}
+
+bool QuicConfig::HasReceivedStatelessResetToken() const {
+  return stateless_reset_token_.HasReceivedValue();
+}
+
+uint128 QuicConfig::ReceivedStatelessResetToken() const {
+  return stateless_reset_token_.GetReceivedValue();
+}
+
 bool QuicConfig::negotiated() const {
   // TODO(ianswett): Add the negotiated parameters once and iterate over all
   // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
@@ -608,6 +686,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   connection_options_.ToHandshakeMessage(out);
   alternate_server_address_.ToHandshakeMessage(out);
   support_max_header_list_size_.ToHandshakeMessage(out);
+  stateless_reset_token_.ToHandshakeMessage(out);
 }
 
 QuicErrorCode QuicConfig::ProcessPeerHello(
@@ -664,6 +743,10 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   if (error == QUIC_NO_ERROR) {
     error = support_max_header_list_size_.ProcessPeerHello(
         peer_hello, hello_type, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = stateless_reset_token_.ProcessPeerHello(peer_hello, hello_type,
+                                                    error_details);
   }
   return error;
 }

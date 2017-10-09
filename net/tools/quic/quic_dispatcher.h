@@ -122,7 +122,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // destined for the time wait manager.
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnError(QuicFramer* framer) override;
-  bool OnProtocolVersionMismatch(QuicVersion received_version) override;
+  bool OnProtocolVersionMismatch(
+      QuicTransportVersion received_version) override;
 
   // The following methods should never get called because
   // OnUnauthenticatedPublicHeader() or OnUnauthenticatedHeader() (whichever
@@ -213,7 +214,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
     return time_wait_list_manager_.get();
   }
 
-  const QuicVersionVector& GetSupportedVersions();
+  const QuicTransportVersionVector& GetSupportedTransportVersions();
 
   QuicConnectionId current_connection_id() { return current_connection_id_; }
   const QuicSocketAddress& current_server_address() {
@@ -303,7 +304,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // fate which describes what subsequent processing should be performed on the
   // packets, like ValidityChecks, and invokes ProcessUnauthenticatedHeaderFate.
   void MaybeRejectStatelessly(QuicConnectionId connection_id,
-                              QuicVersion version);
+                              QuicTransportVersion version);
 
   // Deliver |packets| to |session| for further processing.
   void DeliverPacketsToSession(
@@ -322,13 +323,13 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       const QuicSocketAddress& current_client_address,
       const QuicSocketAddress& current_server_address,
       std::unique_ptr<QuicReceivedPacket> current_packet,
-      QuicVersion first_version);
+      QuicTransportVersion first_version);
 
   // Examine the state of the rejector and decide what to do with the current
   // packet.
   void ProcessStatelessRejectorState(
       std::unique_ptr<StatelessRejector> rejector,
-      QuicVersion first_version);
+      QuicTransportVersion first_version);
 
   void set_new_sessions_allowed_per_event_loop(
       int16_t new_sessions_allowed_per_event_loop) {

@@ -34,8 +34,8 @@ class StatelessRejector::ValidateCallback
 };
 
 StatelessRejector::StatelessRejector(
-    QuicVersion version,
-    const QuicVersionVector& versions,
+    QuicTransportVersion version,
+    const QuicTransportVersionVector& versions,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache,
     const QuicClock* clock,
@@ -60,7 +60,7 @@ StatelessRejector::StatelessRejector(
 
 StatelessRejector::~StatelessRejector() {}
 
-void StatelessRejector::OnChlo(QuicVersion version,
+void StatelessRejector::OnChlo(QuicTransportVersion version,
                                QuicConnectionId connection_id,
                                QuicConnectionId server_designated_connection_id,
                                const CryptoHandshakeMessage& message) {

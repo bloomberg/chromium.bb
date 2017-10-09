@@ -372,13 +372,10 @@ void QuicSpdySession::Initialize() {
   DCHECK_EQ(kHeadersStreamId, headers_stream_->id());
   static_streams()[kHeadersStreamId] = headers_stream_.get();
 
-  if (FLAGS_quic_restart_flag_quic_header_list_size) {
-    QUIC_FLAG_COUNT_N(quic_restart_flag_quic_header_list_size, 1, 2);
-    set_max_uncompressed_header_bytes(max_inbound_header_list_size_);
+  set_max_uncompressed_header_bytes(max_inbound_header_list_size_);
 
-    // Limit HPACK buffering to 2x header list size limit.
-    set_max_decode_buffer_size_bytes(2 * max_inbound_header_list_size_);
-  }
+  // Limit HPACK buffering to 2x header list size limit.
+  set_max_decode_buffer_size_bytes(2 * max_inbound_header_list_size_);
 }
 
 void QuicSpdySession::OnStreamHeadersPriority(QuicStreamId stream_id,
@@ -519,11 +516,7 @@ void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
   if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size &&
       event == HANDSHAKE_CONFIRMED && config()->SupportMaxHeaderListSize()) {
-    if (FLAGS_quic_restart_flag_quic_header_list_size) {
-      SendMaxHeaderListSize(max_inbound_header_list_size_);
-    } else {
-      SendMaxHeaderListSize(kDefaultMaxUncompressedHeaderSize);
-    }
+    SendMaxHeaderListSize(max_inbound_header_list_size_);
   }
 }
 

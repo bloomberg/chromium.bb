@@ -106,12 +106,13 @@ struct TestParams {
     return os;
   }
 
-  QuicVersion version;
+  QuicTransportVersion version;
 };
 
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
-  QuicVersionVector all_supported_versions = AllSupportedVersions();
+  QuicTransportVersionVector all_supported_versions =
+      AllSupportedTransportVersions();
   for (const auto& version : all_supported_versions)
     params.push_back(TestParams{version});
   return params;
@@ -139,14 +140,15 @@ struct PoolingTestParams {
     return os;
   }
 
-  QuicVersion version;
+  QuicTransportVersion version;
   DestinationType destination_type;
 };
 
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
-  QuicVersionVector all_supported_versions = AllSupportedVersions();
-  for (const QuicVersion version : all_supported_versions) {
+  QuicTransportVersionVector all_supported_versions =
+      AllSupportedTransportVersions();
+  for (const QuicTransportVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST});
     params.push_back(PoolingTestParams{version, SAME_AS_SECOND});
     params.push_back(PoolingTestParams{version, DIFFERENT});
@@ -166,7 +168,7 @@ class QuicHttpStreamPeer {
 
 class QuicStreamFactoryTestBase {
  protected:
-  explicit QuicStreamFactoryTestBase(QuicVersion version)
+  explicit QuicStreamFactoryTestBase(QuicTransportVersion version)
       : ssl_config_service_(new MockSSLConfigService),
         random_generator_(0),
         runner_(new TestTaskRunner(&clock_)),
@@ -695,7 +697,7 @@ class QuicStreamFactoryTestBase {
   MockRandom random_generator_;
   MockClock clock_;
   scoped_refptr<TestTaskRunner> runner_;
-  QuicVersion version_;
+  QuicTransportVersion version_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   HttpServerPropertiesImpl http_server_properties_;

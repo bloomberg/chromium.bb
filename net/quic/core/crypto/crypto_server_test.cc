@@ -57,7 +57,7 @@ const char kOldConfigId[] = "old-config-id";
 struct TestParams {
   TestParams(bool enable_stateless_rejects,
              bool use_stateless_rejects,
-             QuicVersionVector supported_versions)
+             QuicTransportVersionVector supported_versions)
       : enable_stateless_rejects(enable_stateless_rejects),
         use_stateless_rejects(use_stateless_rejects),
         supported_versions(std::move(supported_versions)) {}
@@ -66,8 +66,8 @@ struct TestParams {
     os << "  enable_stateless_rejects: " << p.enable_stateless_rejects
        << std::endl;
     os << "  use_stateless_rejects: " << p.use_stateless_rejects << std::endl;
-    os << "  versions: " << QuicVersionVectorToString(p.supported_versions)
-       << " }";
+    os << "  versions: "
+       << QuicTransportVersionVectorToString(p.supported_versions) << " }";
     return os;
   }
 
@@ -79,7 +79,7 @@ struct TestParams {
   // enable_stateless_rejects is false.
   bool use_stateless_rejects;
   // Versions supported by client and server.
-  QuicVersionVector supported_versions;
+  QuicTransportVersionVector supported_versions;
 };
 
 // Constructs various test permutations.
@@ -89,7 +89,8 @@ std::vector<TestParams> GetTestParams() {
   for (bool enable_stateless_rejects : kTrueFalse) {
     for (bool use_stateless_rejects : kTrueFalse) {
       // Start with all versions, remove highest on each iteration.
-      QuicVersionVector supported_versions = AllSupportedVersions();
+      QuicTransportVersionVector supported_versions =
+          AllSupportedTransportVersions();
       while (!supported_versions.empty()) {
         params.push_back(TestParams(enable_stateless_rejects,
                                     use_stateless_rejects, supported_versions));
@@ -393,8 +394,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   MockRandom rand_for_id_generation_;
   MockClock clock_;
   QuicSocketAddress client_address_;
-  QuicVersionVector supported_versions_;
-  QuicVersion client_version_;
+  QuicTransportVersionVector supported_versions_;
+  QuicTransportVersion client_version_;
   string client_version_string_;
   QuicCryptoServerConfig config_;
   QuicCryptoServerConfigPeer peer_;

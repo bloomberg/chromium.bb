@@ -131,7 +131,7 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
   static AlternativeServiceInfo CreateQuicAlternativeServiceInfo(
       const AlternativeService& alternative_service,
       base::Time expiration,
-      const QuicVersionVector& advertised_versions);
+      const QuicTransportVersionVector& advertised_versions);
 
   AlternativeServiceInfo();
   ~AlternativeServiceInfo();
@@ -170,7 +170,8 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
     expiration_ = expiration;
   }
 
-  void set_advertised_versions(const QuicVersionVector& advertised_versions) {
+  void set_advertised_versions(
+      const QuicTransportVersionVector& advertised_versions) {
     if (alternative_service_.protocol != kProtoQUIC)
       return;
 
@@ -190,14 +191,14 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
 
   base::Time expiration() const { return expiration_; }
 
-  const QuicVersionVector& advertised_versions() const {
+  const QuicTransportVersionVector& advertised_versions() const {
     return advertised_versions_;
   }
 
  private:
   AlternativeServiceInfo(const AlternativeService& alternative_service,
                          base::Time expiration,
-                         const QuicVersionVector& advertised_versions);
+                         const QuicTransportVersionVector& advertised_versions);
 
   AlternativeService alternative_service_;
   base::Time expiration_;
@@ -206,7 +207,7 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
   // by Chrome. If empty, defaults to versions used by the current instance of
   // the netstack.
   // This list MUST be sorted in ascending order.
-  QuicVersionVector advertised_versions_;
+  QuicTransportVersionVector advertised_versions_;
 };
 
 struct NET_EXPORT SupportsQuic {
@@ -328,7 +329,7 @@ class NET_EXPORT HttpServerProperties {
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
       base::Time expiration,
-      const QuicVersionVector& advertised_versions) = 0;
+      const QuicTransportVersionVector& advertised_versions) = 0;
 
   // Set alternative services for |origin|.  Previous alternative services for
   // |origin| are discarded.

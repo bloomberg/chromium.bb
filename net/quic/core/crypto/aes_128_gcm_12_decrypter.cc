@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,8 @@ Aes128Gcm12Decrypter::Aes128Gcm12Decrypter()
     : AeadBaseDecrypter(EVP_aead_aes_128_gcm(),
                         kKeySize,
                         kAuthTagSize,
-                        kNoncePrefixSize) {
+                        kNoncePrefixSize,
+                        /* use_ietf_nonce_construction */ false) {
   static_assert(kKeySize <= kMaxKeySize, "key size too big");
   static_assert(kNoncePrefixSize <= kMaxNoncePrefixSize,
                 "nonce prefix size too big");

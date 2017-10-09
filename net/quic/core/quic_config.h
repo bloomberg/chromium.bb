@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 
+#include "net/base/int128.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -143,6 +144,39 @@ class QUIC_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
   uint32_t send_value_;
   bool has_send_value_;
   uint32_t receive_value_;
+  bool has_receive_value_;
+};
+
+// Stores uint128 from CHLO or SHLO messages that are not negotiated.
+class QUIC_EXPORT_PRIVATE QuicFixedUint128 : public QuicConfigValue {
+ public:
+  QuicFixedUint128(QuicTag tag, QuicConfigPresence presence);
+  ~QuicFixedUint128() override;
+
+  bool HasSendValue() const;
+
+  uint128 GetSendValue() const;
+
+  void SetSendValue(uint128 value);
+
+  bool HasReceivedValue() const;
+
+  uint128 GetReceivedValue() const;
+
+  void SetReceivedValue(uint128 value);
+
+  // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
+  void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
+
+  // Sets |value_| to the corresponding value from |peer_hello_| if it exists.
+  QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
+                                 HelloType hello_type,
+                                 std::string* error_details) override;
+
+ private:
+  uint128 send_value_;
+  bool has_send_value_;
+  uint128 receive_value_;
   bool has_receive_value_;
 };
 
@@ -359,6 +393,12 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   bool SupportMaxHeaderListSize() const;
 
+  void SetStatelessResetTokenToSend(uint128 stateless_reset_token);
+
+  bool HasReceivedStatelessResetToken() const;
+
+  uint128 ReceivedStatelessResetToken() const;
+
   bool negotiated() const;
 
   // ToHandshakeMessage serialises the settings in this object as a series of
@@ -421,6 +461,9 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   // Whether support HTTP/2 SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
   QuicFixedUint32 support_max_header_list_size_;
+
+  // Stateless reset token used in IETF public reset packet.
+  QuicFixedUint128 stateless_reset_token_;
 };
 
 }  // namespace net

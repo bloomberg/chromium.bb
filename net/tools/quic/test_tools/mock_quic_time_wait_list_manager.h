@@ -21,14 +21,14 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
 
   MOCK_METHOD4(AddConnectionIdToTimeWait,
                void(QuicConnectionId connection_id,
-                    QuicVersion version,
+                    QuicTransportVersion version,
                     bool connection_rejected_statelessly,
                     std::vector<std::unique_ptr<QuicEncryptedPacket>>*
                         termination_packets));
 
   void QuicTimeWaitListManager_AddConnectionIdToTimeWait(
       QuicConnectionId connection_id,
-      QuicVersion version,
+      QuicTransportVersion version,
       bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
     QuicTimeWaitListManager::AddConnectionIdToTimeWait(
@@ -43,7 +43,7 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
 
   MOCK_METHOD4(SendVersionNegotiationPacket,
                void(QuicConnectionId connection_id,
-                    const QuicVersionVector& supported_versions,
+                    const QuicTransportVersionVector& supported_versions,
                     const QuicSocketAddress& server_address,
                     const QuicSocketAddress& client_address));
 };

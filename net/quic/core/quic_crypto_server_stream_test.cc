@@ -37,8 +37,8 @@ class QuicStream;
 }  // namespace net
 
 using std::string;
-using testing::_;
 using testing::NiceMock;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -180,7 +180,8 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
   crypto_test_utils::FakeClientOptions client_options_;
 
   // Which QUIC versions the client and server support.
-  QuicVersionVector supported_versions_ = AllSupportedVersions();
+  QuicTransportVersionVector supported_versions_ =
+      AllSupportedTransportVersions();
 };
 
 INSTANTIATE_TEST_CASE_P(Tests, QuicCryptoServerStreamTest, testing::Bool());
@@ -552,7 +553,7 @@ TEST_P(QuicCryptoServerStreamTestWithFakeProofSource, MultipleChlo) {
 
   // Create a minimal CHLO
   MockClock clock;
-  QuicVersion version = AllSupportedVersions().front();
+  QuicTransportVersion version = AllSupportedTransportVersions().front();
   CryptoHandshakeMessage chlo = crypto_test_utils::GenerateDefaultInchoateCHLO(
       &clock, version, &server_crypto_config_);
 

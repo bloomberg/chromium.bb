@@ -77,7 +77,7 @@ const uint16_t kDefaultServerPort = 443;
 
 class TestQuicConnection : public QuicConnection {
  public:
-  TestQuicConnection(const QuicVersionVector& versions,
+  TestQuicConnection(const QuicTransportVersionVector& versions,
                      QuicConnectionId connection_id,
                      IPEndPoint address,
                      QuicChromiumConnectionHelper* helper,
@@ -161,7 +161,8 @@ class QuicHttpStreamPeer {
   }
 };
 
-class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
+class QuicHttpStreamTest
+    : public ::testing::TestWithParam<QuicTransportVersion> {
  public:
   void CloseStream(QuicHttpStream* stream, int /*rv*/) { stream->Close(false); }
 
@@ -263,8 +264,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         .WillRepeatedly(Return(kMaxPacketSize));
     EXPECT_CALL(*send_algorithm_, PacingRate(_))
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
-        .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+    EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
@@ -275,10 +275,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         new QuicChromiumConnectionHelper(&clock_, &random_generator_));
     alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
 
-    connection_ =
-        new TestQuicConnection(SupportedVersions(GetParam()), connection_id_,
-                               peer_addr_, helper_.get(), alarm_factory_.get(),
-                               new QuicChromiumPacketWriter(socket.get()));
+    connection_ = new TestQuicConnection(
+        SupportedTransportVersions(GetParam()), connection_id_, peer_addr_,
+        helper_.get(), alarm_factory_.get(),
+        new QuicChromiumPacketWriter(socket.get()));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
 
@@ -580,7 +580,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicHttpStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
   Initialize();

@@ -134,8 +134,8 @@ class URLRequestQuicTest : public ::testing::Test {
         directory.Append(FILE_PATH_LITERAL("quic_test.example.com.key.sct"))));
     server_.reset(new QuicSimpleServer(
         test::crypto_test_utils::ProofSourceForTesting(), config,
-        net::QuicCryptoServerConfig::ConfigOptions(), AllSupportedVersions(),
-        &response_cache_));
+        net::QuicCryptoServerConfig::ConfigOptions(),
+        AllSupportedTransportVersions(), &response_cache_));
     int rv = server_->Listen(
         net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kTestServerPort));
     EXPECT_GE(rv, 0) << "Quic server fails to start";

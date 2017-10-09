@@ -124,7 +124,7 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // code and sets |error_details|.
   static QuicErrorCode ValidateServerHello(
       const CryptoHandshakeMessage& server_hello,
-      const QuicVersionVector& negotiated_versions,
+      const QuicTransportVersionVector& negotiated_versions,
       std::string* error_details);
 
   // Validates that |client_hello| is actually a CHLO and that this is not part
@@ -135,8 +135,8 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // code and sets |error_details|.
   static QuicErrorCode ValidateClientHello(
       const CryptoHandshakeMessage& client_hello,
-      QuicVersion version,
-      const QuicVersionVector& supported_versions,
+      QuicTransportVersion version,
+      const QuicTransportVersionVector& supported_versions,
       std::string* error_details);
 
   // Returns the name of the HandshakeFailureReason as a char*

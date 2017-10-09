@@ -36,12 +36,11 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
   void SetLossDetectionType(LossDetectionType loss_type);
 
   // Uses |largest_acked| and time to decide when packets are lost.
-  void DetectLosses(
-      const QuicUnackedPacketMap& unacked_packets,
-      QuicTime time,
-      const RttStats& rtt_stats,
-      QuicPacketNumber largest_newly_acked,
-      SendAlgorithmInterface::CongestionVector* packets_lost) override;
+  void DetectLosses(const QuicUnackedPacketMap& unacked_packets,
+                    QuicTime time,
+                    const RttStats& rtt_stats,
+                    QuicPacketNumber largest_newly_acked,
+                    LostPacketVector* packets_lost) override;
 
   // Returns a non-zero value when the early retransmit timer is active.
   QuicTime GetLossTimeout() const override;

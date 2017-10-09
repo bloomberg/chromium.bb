@@ -56,14 +56,14 @@ QuicServer::QuicServer(std::unique_ptr<ProofSource> proof_source,
     : QuicServer(std::move(proof_source),
                  QuicConfig(),
                  QuicCryptoServerConfig::ConfigOptions(),
-                 AllSupportedVersions(),
+                 AllSupportedTransportVersions(),
                  response_cache) {}
 
 QuicServer::QuicServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-    const QuicVersionVector& supported_versions,
+    const QuicTransportVersionVector& supported_versions,
     QuicHttpResponseCache* response_cache)
     : port_(0),
       fd_(-1),

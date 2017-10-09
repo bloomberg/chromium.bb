@@ -379,7 +379,7 @@ class DeleteStreamDelegate : public TestDelegateBase {
 }  // namespace
 
 class BidirectionalStreamQuicImplTest
-    : public ::testing::TestWithParam<QuicVersion> {
+    : public ::testing::TestWithParam<QuicTransportVersion> {
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
@@ -474,7 +474,7 @@ class BidirectionalStreamQuicImplTest
         connection_id_, QuicSocketAddress(QuicSocketAddressImpl(peer_addr_)),
         helper_.get(), alarm_factory_.get(),
         new QuicChromiumPacketWriter(socket.get()), true /* owns_writer */,
-        Perspective::IS_CLIENT, SupportedVersions(GetParam()));
+        Perspective::IS_CLIENT, SupportedTransportVersions(GetParam()));
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
 
@@ -772,7 +772,7 @@ class BidirectionalStreamQuicImplTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         BidirectionalStreamQuicImplTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);

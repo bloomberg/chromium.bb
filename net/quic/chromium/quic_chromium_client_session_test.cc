@@ -81,7 +81,7 @@ class TestingQuicChromiumClientSession : public QuicChromiumClientSession {
 };
 
 class QuicChromiumClientSessionTest
-    : public ::testing::TestWithParam<QuicVersion> {
+    : public ::testing::TestWithParam<QuicTransportVersion> {
  public:
   QuicChromiumClientSessionTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
@@ -126,7 +126,7 @@ class QuicChromiumClientSessionTest
     QuicConnection* connection = new QuicConnection(
         0, QuicSocketAddress(QuicSocketAddressImpl(kIpEndPoint)), &helper_,
         &alarm_factory_, writer, true, Perspective::IS_CLIENT,
-        SupportedVersions(GetParam()));
+        SupportedTransportVersions(GetParam()));
     session_.reset(new TestingQuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
@@ -201,7 +201,7 @@ class QuicChromiumClientSessionTest
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicChromiumClientSessionTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
@@ -1093,7 +1093,6 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
-  FLAGS_quic_reloadable_flag_quic_use_stream_notifier2 = false;
   MockRead old_reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
       client_maker_.MakeInitialSettingsPacket(1, nullptr));
@@ -1150,11 +1149,9 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   struct iovec iov[1];
   iov[0].iov_base = data;
   iov[0].iov_len = 4;
-  if (session_->save_data_before_consumption()) {
-    QuicStreamPeer::SendBuffer(stream).SaveStreamData(
-        QuicIOVector(iov, arraysize(iov), 4), 0, 4);
-    QuicStreamPeer::SetStreamBytesWritten(4, stream);
-  }
+  QuicStreamPeer::SendBuffer(stream).SaveStreamData(
+      QuicIOVector(iov, arraysize(iov), 4), 0, 4);
+  QuicStreamPeer::SetStreamBytesWritten(4, stream);
   session_->WritevData(stream, stream->id(),
                        QuicIOVector(iov, arraysize(iov), 4), 0, NO_FIN,
                        nullptr);

@@ -31,13 +31,13 @@
 #include "net/test/gtest_util.h"
 
 using std::string;
-using testing::_;
 using testing::AtLeast;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -133,7 +133,7 @@ class ForceHolAckListener : public QuicAckListenerInterface {
   DISALLOW_COPY_AND_ASSIGN(ForceHolAckListener);
 };
 
-typedef testing::tuple<QuicVersion, Perspective> TestParamsTuple;
+typedef testing::tuple<QuicTransportVersion, Perspective> TestParamsTuple;
 
 struct TestParams {
   explicit TestParams(TestParamsTuple params)
@@ -142,7 +142,7 @@ struct TestParams {
                    << ", perspective: " << perspective;
   }
 
-  QuicVersion version;
+  QuicTransportVersion version;
   Perspective perspective;
 };
 
@@ -170,7 +170,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
         new SpdyFramer(SpdyFramer::ENABLE_COMPRESSION));
     deframer_ = std::unique_ptr<Http2DecoderAdapter>(new Http2DecoderAdapter());
     deframer_->set_visitor(&visitor_);
-    EXPECT_EQ(version(), session_.connection()->version());
+    EXPECT_EQ(transport_version(), session_.connection()->transport_version());
     EXPECT_TRUE(headers_stream_ != nullptr);
     connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
     client_id_1_ =
@@ -329,11 +329,13 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
 
   Perspective perspective() const { return test_params_.perspective; }
 
-  QuicVersion version() const { return test_params_.version; }
+  QuicTransportVersion transport_version() const {
+    return test_params_.version;
+  }
 
-  QuicVersionVector GetVersion() {
-    QuicVersionVector versions;
-    versions.push_back(version());
+  QuicTransportVersionVector GetVersion() {
+    QuicTransportVersionVector versions;
+    versions.push_back(transport_version());
     return versions;
   }
 
@@ -375,7 +377,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
 INSTANTIATE_TEST_CASE_P(
     Tests,
     QuicHeadersStreamTest,
-    ::testing::Combine(::testing::ValuesIn(AllSupportedVersions()),
+    ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Values(Perspective::IS_CLIENT,
                                          Perspective::IS_SERVER)));
 
@@ -869,9 +871,6 @@ TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
 }
 
 TEST_P(QuicHeadersStreamTest, AckSentData) {
-  if (!session_.use_stream_notifier()) {
-    return;
-  }
   EXPECT_CALL(session_,
               WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
@@ -931,9 +930,6 @@ TEST_P(QuicHeadersStreamTest, AckSentData) {
 
 TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
   // In this test, a stream frame can contain multiple headers.
-  if (!session_.save_data_before_consumption()) {
-    return;
-  }
   EXPECT_CALL(session_,
               WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));

@@ -20,7 +20,8 @@ namespace network_session_configurator {
 // trials and command line.
 
 // Parse serialized QUIC versions string.
-net::QuicVersionVector ParseQuicVersions(const std::string& quic_versions);
+net::QuicTransportVersionVector ParseQuicVersions(
+    const std::string& quic_versions);
 
 // Configure |params| based on field trials and command line,
 // and forcing (policy or other command line) arguments.

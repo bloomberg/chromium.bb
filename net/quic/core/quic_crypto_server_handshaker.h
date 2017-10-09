@@ -146,8 +146,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   // Returns the QuicSession that this stream belongs to.
   QuicSession* session() const { return session_; }
 
-  // Returns the QuicVersion of the connection.
-  QuicVersion version() const { return session_->connection()->version(); }
+  // Returns the QuicTransportVersion of the connection.
+  QuicTransportVersion transport_version() const {
+    return session_->connection()->transport_version();
+  }
 
   QuicCryptoServerStream* stream_;
 

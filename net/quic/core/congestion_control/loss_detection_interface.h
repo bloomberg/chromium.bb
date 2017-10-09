@@ -24,12 +24,11 @@ class QUIC_EXPORT_PRIVATE LossDetectionInterface {
   virtual LossDetectionType GetLossDetectionType() const = 0;
 
   // Called when a new ack arrives or the loss alarm fires.
-  virtual void DetectLosses(
-      const QuicUnackedPacketMap& unacked_packets,
-      QuicTime time,
-      const RttStats& rtt_stats,
-      QuicPacketNumber largest_newly_acked,
-      SendAlgorithmInterface::CongestionVector* packets_lost) = 0;
+  virtual void DetectLosses(const QuicUnackedPacketMap& unacked_packets,
+                            QuicTime time,
+                            const RttStats& rtt_stats,
+                            QuicPacketNumber largest_newly_acked,
+                            LostPacketVector* packets_lost) = 0;
 
   // Get the time the LossDetectionAlgorithm wants to re-evaluate losses.
   // Returns QuicTime::Zero if no alarm needs to be set.

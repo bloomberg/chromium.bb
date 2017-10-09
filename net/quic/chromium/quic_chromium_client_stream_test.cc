@@ -153,14 +153,14 @@ MockQuicClientSessionBase::MockQuicClientSessionBase(
 MockQuicClientSessionBase::~MockQuicClientSessionBase() {}
 
 class QuicChromiumClientStreamTest
-    : public ::testing::TestWithParam<QuicVersion> {
+    : public ::testing::TestWithParam<QuicTransportVersion> {
  public:
   QuicChromiumClientStreamTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting()),
         session_(new MockQuicConnection(&helper_,
                                         &alarm_factory_,
                                         Perspective::IS_CLIENT,
-                                        SupportedVersions(GetParam())),
+                                        SupportedTransportVersions(GetParam())),
                  &push_promise_index_) {
     stream_ = new QuicChromiumClientStream(kTestStreamId, &session_,
                                            NetLogWithSource());
@@ -254,7 +254,7 @@ class QuicChromiumClientStreamTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicChromiumClientStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicChromiumClientStreamTest, Handle) {
   EXPECT_TRUE(handle_->IsOpen());

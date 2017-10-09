@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
       const std::string& hostname,
       const uint16_t port,
       const std::string& server_config,
-      QuicVersion quic_version,
+      QuicTransportVersion quic_version,
       QuicStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,

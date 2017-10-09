@@ -50,8 +50,7 @@ QuicStream::PendingData::PendingData(
 QuicStream::PendingData::~PendingData() {}
 
 QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
-    : queued_data_bytes_(0),
-      sequencer_(this, session->connection()->clock()),
+    : sequencer_(this, session->connection()->clock()),
       id_(id),
       session_(session),
       stream_bytes_read_(0),
@@ -88,8 +87,7 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
 }
 
 QuicStream::~QuicStream() {
-  if (session_ != nullptr && session_->use_stream_notifier() &&
-      IsWaitingForAcks()) {
+  if (session_ != nullptr && IsWaitingForAcks()) {
     QUIC_DVLOG(1)
         << ENDPOINT << "Stream " << id_
         << " gets destroyed while waiting for acks. stream_bytes_outstanding = "
@@ -219,93 +217,35 @@ void QuicStream::WriteOrBufferData(
   QuicConsumedData consumed_data(0, false);
   fin_buffered_ = fin;
 
-  if (session_->save_data_before_consumption()) {
-    bool had_buffered_data = HasBufferedData();
-    // Do not respect buffered data upper limit as WriteOrBufferData guarantees
-    // all data to be consumed.
-    if (data.length() > 0) {
-      struct iovec iov(MakeIovec(data));
-      QuicIOVector quic_iov(&iov, 1, data.length());
-      QuicStreamOffset offset = send_buffer_.stream_offset();
-      send_buffer_.SaveStreamData(quic_iov, 0, data.length());
-      OnDataBuffered(offset, data.length(), ack_listener);
-    }
-    if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
-      // Write data if there is no buffered data before.
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
-                        2, 4);
-      WriteBufferedData();
-    }
-    return;
-  }
-
-  if (queued_data_.empty()) {
+  bool had_buffered_data = HasBufferedData();
+  // Do not respect buffered data upper limit as WriteOrBufferData guarantees
+  // all data to be consumed.
+  if (data.length() > 0) {
     struct iovec iov(MakeIovec(data));
-    consumed_data = WritevData(&iov, 1, fin, ack_listener);
-    DCHECK_LE(consumed_data.bytes_consumed, data.length());
+    QuicIOVector quic_iov(&iov, 1, data.length());
+    QuicStreamOffset offset = send_buffer_.stream_offset();
+    send_buffer_.SaveStreamData(quic_iov, 0, data.length());
+    OnDataBuffered(offset, data.length(), ack_listener);
   }
-
-  // If there's unconsumed data or an unconsumed fin, queue it.
-  if (consumed_data.bytes_consumed < data.length() ||
-      (fin && !consumed_data.fin_consumed)) {
-    QuicStringPiece remainder(data.substr(consumed_data.bytes_consumed));
-    queued_data_bytes_ += remainder.size();
-    queued_data_.emplace_back(remainder.as_string(), ack_listener);
+  if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
+    // Write data if there is no buffered data before.
+    WriteBufferedData();
   }
 }
 
 void QuicStream::OnCanWrite() {
-  if (session_->save_data_before_consumption()) {
-    DCHECK(queued_data_.empty());
-    if (write_side_closed_) {
-      QUIC_DLOG(ERROR) << ENDPOINT << "Stream " << id()
-                       << "attempting to write when the write side is closed";
-      return;
-    }
-    if (HasBufferedData() || (fin_buffered_ && !fin_sent_)) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
-                        3, 4);
-      WriteBufferedData();
-    }
-    if (!fin_buffered_ && !fin_sent_ && CanWriteNewData()) {
-      // Notify upper layer to write new data when buffered data size is below
-      // low water mark.
-      OnCanWriteNewData();
-    }
+  if (write_side_closed_) {
+    QUIC_DLOG(ERROR) << ENDPOINT << "Stream " << id()
+                     << "attempting to write when the write side is closed";
     return;
   }
-
-  bool fin = false;
-  while (!queued_data_.empty()) {
-    PendingData* pending_data = &queued_data_.front();
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener =
-        pending_data->ack_listener;
-    if (queued_data_.size() == 1 && fin_buffered_) {
-      fin = true;
-    }
-    if (pending_data->offset > 0 &&
-        pending_data->offset >= pending_data->data.size()) {
-      // This should be impossible because offset tracks the amount of
-      // pending_data written thus far.
-      QUIC_BUG << "Pending offset is beyond available data. offset: "
-               << pending_data->offset << " vs: " << pending_data->data.size();
-      return;
-    }
-    size_t remaining_len = pending_data->data.size() - pending_data->offset;
-    struct iovec iov = {
-        const_cast<char*>(pending_data->data.data()) + pending_data->offset,
-        remaining_len};
-    QuicConsumedData consumed_data = WritevData(&iov, 1, fin, ack_listener);
-    queued_data_bytes_ -= consumed_data.bytes_consumed;
-    if (consumed_data.bytes_consumed == remaining_len &&
-        fin == consumed_data.fin_consumed) {
-      queued_data_.pop_front();
-    } else {
-      if (consumed_data.bytes_consumed > 0) {
-        pending_data->offset += consumed_data.bytes_consumed;
-      }
-      break;
-    }
+  if (HasBufferedData() || (fin_buffered_ && !fin_sent_)) {
+    WriteBufferedData();
+  }
+  if (!fin_buffered_ && !fin_sent_ && CanWriteNewData()) {
+    // Notify upper layer to write new data when buffered data size is below
+    // low water mark.
+    OnCanWriteNewData();
   }
 }
 
@@ -344,103 +284,32 @@ QuicConsumedData QuicStream::WritevData(
     }
   }
 
-  if (session_->save_data_before_consumption()) {
-    QuicConsumedData consumed_data(0, false);
-    if (fin_buffered_) {
-      QUIC_BUG << "Fin already buffered";
-      return consumed_data;
-    }
-
-    bool had_buffered_data = HasBufferedData();
-    if (CanWriteNewData()) {
-      // Save all data if buffered data size is below low water mark.
-      QuicIOVector quic_iovec(iov, iov_count, write_length);
-      consumed_data.bytes_consumed = write_length;
-      if (consumed_data.bytes_consumed > 0) {
-        QuicStreamOffset offset = send_buffer_.stream_offset();
-        send_buffer_.SaveStreamData(quic_iovec, 0, write_length);
-        OnDataBuffered(offset, write_length, ack_listener);
-      }
-    }
-    consumed_data.fin_consumed =
-        consumed_data.bytes_consumed == write_length && fin;
-    fin_buffered_ = consumed_data.fin_consumed;
-
-    if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
-      // Write data if there is no buffered data before.
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_save_data_before_consumption2,
-                        1, 4);
-      WriteBufferedData();
-    }
-
+  QuicConsumedData consumed_data(0, false);
+  if (fin_buffered_) {
+    QUIC_BUG << "Fin already buffered";
     return consumed_data;
   }
 
-  // A FIN with zero data payload should not be flow control blocked.
-  bool fin_with_zero_data = (fin && write_length == 0);
-
-  // How much data flow control permits to be written.
-  QuicByteCount send_window = flow_controller_.SendWindowSize();
-  if (stream_contributes_to_connection_flow_control_) {
-    send_window =
-        std::min(send_window, connection_flow_controller_->SendWindowSize());
-  }
-
-  if (session_->ShouldYield(id())) {
-    session_->MarkConnectionLevelWriteBlocked(id());
-    return QuicConsumedData(0, false);
-  }
-
-  if (send_window == 0 && !fin_with_zero_data) {
-    // Quick return if nothing can be sent.
-    MaybeSendBlocked();
-    return QuicConsumedData(0, false);
-  }
-
-  if (write_length > send_window) {
-    // Don't send the FIN unless all the data will be sent.
-    fin = false;
-
-    // Writing more data would be a violation of flow control.
-    write_length = static_cast<size_t>(send_window);
-    QUIC_DVLOG(1) << "stream " << id() << " shortens write length to "
-                  << write_length << " due to flow control";
-  }
-
-  QuicConsumedData consumed_data =
-      WritevDataInner(QuicIOVector(iov, iov_count, write_length),
-                      stream_bytes_written_, fin, std::move(ack_listener));
-  stream_bytes_written_ += consumed_data.bytes_consumed;
-  stream_bytes_outstanding_ += consumed_data.bytes_consumed;
-
-  AddBytesSent(consumed_data.bytes_consumed);
-
-  // The write may have generated a write error causing this stream to be
-  // closed. If so, simply return without marking the stream write blocked.
-  if (write_side_closed_) {
-    return consumed_data;
-  }
-
-  if (consumed_data.bytes_consumed == write_length) {
-    if (!fin_with_zero_data) {
-      MaybeSendBlocked();
+  bool had_buffered_data = HasBufferedData();
+  if (CanWriteNewData()) {
+    // Save all data if buffered data size is below low water mark.
+    QuicIOVector quic_iovec(iov, iov_count, write_length);
+    consumed_data.bytes_consumed = write_length;
+    if (consumed_data.bytes_consumed > 0) {
+      QuicStreamOffset offset = send_buffer_.stream_offset();
+      send_buffer_.SaveStreamData(quic_iovec, 0, write_length);
+      OnDataBuffered(offset, write_length, ack_listener);
     }
-    if (fin && consumed_data.fin_consumed) {
-      fin_sent_ = true;
-      fin_outstanding_ = true;
-      if (fin_received_) {
-        session_->StreamDraining(id_);
-      }
-      CloseWriteSide();
-    } else if (fin && !consumed_data.fin_consumed) {
-      session_->MarkConnectionLevelWriteBlocked(id());
-    }
-  } else {
-    session_->MarkConnectionLevelWriteBlocked(id());
   }
-  if (consumed_data.bytes_consumed > 0 || consumed_data.fin_consumed) {
-    busy_counter_ = 0;
+  consumed_data.fin_consumed =
+      consumed_data.bytes_consumed == write_length && fin;
+  fin_buffered_ = consumed_data.fin_consumed;
+
+  if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
+    // Write data if there is no buffered data before.
+    WriteBufferedData();
   }
+
   return consumed_data;
 }
 
@@ -526,16 +395,12 @@ void QuicStream::CloseWriteSide() {
 }
 
 bool QuicStream::HasBufferedData() const {
-  if (session_->save_data_before_consumption()) {
-    DCHECK(queued_data_.empty());
-    DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written_);
-    return send_buffer_.stream_offset() > stream_bytes_written_;
-  }
-  return !queued_data_.empty();
+  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written_);
+  return send_buffer_.stream_offset() > stream_bytes_written_;
 }
 
-QuicVersion QuicStream::version() const {
-  return session_->connection()->version();
+QuicTransportVersion QuicStream::transport_version() const {
+  return session_->connection()->transport_version();
 }
 
 void QuicStream::StopReading() {
@@ -633,14 +498,12 @@ void QuicStream::OnStreamFrameAcked(const QuicStreamFrame& frame,
                                     QuicTime::Delta ack_delay_time) {
   OnStreamFrameDiscarded(frame);
   if (ack_listener_ != nullptr) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_stream_notifier2, 1, 3);
     ack_listener_->OnPacketAcked(frame.data_length, ack_delay_time);
   }
 }
 
 void QuicStream::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
   if (ack_listener_ != nullptr) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_stream_notifier2, 2, 3);
     ack_listener_->OnPacketRetransmitted(frame.data_length);
   }
 }
@@ -657,7 +520,7 @@ void QuicStream::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
   if (frame.fin) {
     fin_outstanding_ = false;
   }
-  if (session_->save_data_before_consumption() && frame.data_length > 0) {
+  if (frame.data_length > 0) {
     send_buffer_.RemoveStreamFrame(frame.offset, frame.data_length);
   }
   if (!IsWaitingForAcks()) {
@@ -677,8 +540,7 @@ bool QuicStream::WriteStreamData(QuicStreamOffset offset,
 }
 
 void QuicStream::WriteBufferedData() {
-  DCHECK(!write_side_closed_ && queued_data_.empty() &&
-         (HasBufferedData() || fin_buffered_));
+  DCHECK(!write_side_closed_ && (HasBufferedData() || fin_buffered_));
 
   if (session_->ShouldYield(id())) {
     session_->MarkConnectionLevelWriteBlocked(id());
@@ -686,7 +548,7 @@ void QuicStream::WriteBufferedData() {
   }
 
   // Size of buffered data.
-  size_t write_length = queued_data_bytes();
+  size_t write_length = BufferedDataBytes();
 
   // A FIN with zero data payload should not be flow control blocked.
   bool fin_with_zero_data = (fin_buffered_ && write_length == 0);
@@ -726,7 +588,7 @@ void QuicStream::WriteBufferedData() {
   AddBytesSent(consumed_data.bytes_consumed);
   QUIC_DVLOG(1) << ENDPOINT << "stream " << id_ << " sends "
                 << stream_bytes_written_ << " bytes "
-                << " and has buffered data " << queued_data_bytes() << " bytes."
+                << " and has buffered data " << BufferedDataBytes() << " bytes."
                 << " fin is sent: " << consumed_data.fin_consumed
                 << " fin is buffered: " << fin_buffered_;
 
@@ -758,17 +620,13 @@ void QuicStream::WriteBufferedData() {
   }
 }
 
-uint64_t QuicStream::queued_data_bytes() const {
-  if (session_->save_data_before_consumption()) {
-    DCHECK_EQ(0u, queued_data_bytes_);
-    DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written_);
-    return send_buffer_.stream_offset() - stream_bytes_written_;
-  }
-  return queued_data_bytes_;
+uint64_t QuicStream::BufferedDataBytes() const {
+  DCHECK_GE(send_buffer_.stream_offset(), stream_bytes_written_);
+  return send_buffer_.stream_offset() - stream_bytes_written_;
 }
 
 bool QuicStream::CanWriteNewData() const {
-  return queued_data_bytes() < buffered_data_threshold_;
+  return BufferedDataBytes() < buffered_data_threshold_;
 }
 
 }  // namespace net

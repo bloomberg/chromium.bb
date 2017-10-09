@@ -404,7 +404,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
                                          quic_hint.port());
     main_context_->http_server_properties()->SetQuicAlternativeService(
         quic_hint_server, alternative_service, base::Time::Max(),
-        net::QuicVersionVector());
+        net::QuicTransportVersionVector());
   }
 
   main_context_->transport_security_state()

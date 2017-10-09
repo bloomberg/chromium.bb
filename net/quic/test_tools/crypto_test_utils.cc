@@ -309,7 +309,8 @@ class FullChloGenerator {
     result_ = result;
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false, /*connection_id=*/1, server_addr_,
-        client_addr_, AllSupportedVersions().front(), AllSupportedVersions(),
+        client_addr_, AllSupportedTransportVersions().front(),
+        AllSupportedTransportVersions(),
         /*use_stateless_rejects=*/true, /*server_designated_connection_id=*/0,
         clock_, QuicRandom::GetInstance(), compressed_certs_cache_, params_,
         signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
@@ -596,7 +597,7 @@ uint64_t LeafCertHashForTesting() {
   // Note: relies on the callback being invoked synchronously
   bool ok = false;
   proof_source->GetProof(
-      server_address, "", "", AllSupportedVersions().front(), "",
+      server_address, "", "", AllSupportedTransportVersions().front(), "",
       QuicTagVector(),
       std::unique_ptr<ProofSource::Callback>(new Callback(&ok, &chain)));
   if (!ok || chain->certs.empty()) {
@@ -949,7 +950,7 @@ void MovePackets(PacketSavingConnection* source_conn,
 
 CryptoHandshakeMessage GenerateDefaultInchoateCHLO(
     const QuicClock* clock,
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicCryptoServerConfig* crypto_config) {
   // clang-format off
   return CreateCHLO(
@@ -998,7 +999,7 @@ void GenerateFullCHLO(const CryptoHandshakeMessage& inchoate_chlo,
                       QuicCryptoServerConfig* crypto_config,
                       QuicSocketAddress server_addr,
                       QuicSocketAddress client_addr,
-                      QuicVersion version,
+                      QuicTransportVersion version,
                       const QuicClock* clock,
                       QuicReferenceCountedPointer<QuicSignedServerConfig> proof,
                       QuicCompressedCertsCache* compressed_certs_cache,

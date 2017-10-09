@@ -335,7 +335,7 @@ class QuicStreamFactory::CertVerifierJob {
 class QuicStreamFactory::Job {
  public:
   Job(QuicStreamFactory* factory,
-      const QuicVersion& quic_version,
+      const QuicTransportVersion& quic_version,
       HostResolver* host_resolver,
       const QuicSessionKey& key,
       bool was_alternative_service_recently_broken,
@@ -392,7 +392,7 @@ class QuicStreamFactory::Job {
   bool in_loop_;  // Temporary to investigate crbug.com/750271.
   IoState io_state_;
   QuicStreamFactory* factory_;
-  QuicVersion quic_version_;
+  QuicTransportVersion quic_version_;
   HostResolver* host_resolver_;
   std::unique_ptr<HostResolver::Request> request_;
   const QuicSessionKey key_;
@@ -412,7 +412,7 @@ class QuicStreamFactory::Job {
 };
 
 QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
-                            const QuicVersion& quic_version,
+                            const QuicTransportVersion& quic_version,
                             HostResolver* host_resolver,
                             const QuicSessionKey& key,
                             bool was_alternative_service_recently_broken,
@@ -504,7 +504,7 @@ void QuicStreamFactory::Job::PopulateNetErrorDetails(
   if (!session_)
     return;
   details->connection_info = QuicHttpStream::ConnectionInfoFromQuicVersion(
-      session_->connection()->version());
+      session_->connection()->transport_version());
   details->quic_connection_error = session_->error();
 }
 
@@ -621,7 +621,7 @@ QuicStreamRequest::~QuicStreamRequest() {
 }
 
 int QuicStreamRequest::Request(const HostPortPair& destination,
-                               QuicVersion quic_version,
+                               QuicTransportVersion quic_version,
                                PrivacyMode privacy_mode,
                                int cert_verify_flags,
                                const GURL& url,
@@ -889,7 +889,7 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
 
 int QuicStreamFactory::Create(const QuicServerId& server_id,
                               const HostPortPair& destination,
-                              QuicVersion quic_version,
+                              QuicTransportVersion quic_version,
                               int cert_verify_flags,
                               const GURL& url,
                               QuicStringPiece method,
@@ -1550,7 +1550,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
 }
 
 int QuicStreamFactory::CreateSession(const QuicSessionKey& key,
-                                     const QuicVersion& quic_version,
+                                     const QuicTransportVersion& quic_version,
                                      int cert_verify_flags,
                                      bool require_confirmation,
                                      const AddressList& address_list,

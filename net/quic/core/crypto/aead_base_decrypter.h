@@ -22,15 +22,17 @@ class QUIC_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
   AeadBaseDecrypter(const EVP_AEAD* aead_alg,
                     size_t key_size,
                     size_t auth_tag_size,
-                    size_t nonce_prefix_size);
+                    size_t nonce_prefix_size,
+                    bool use_ietf_nonce_construction);
   ~AeadBaseDecrypter() override;
 
   // QuicDecrypter implementation
   bool SetKey(QuicStringPiece key) override;
   bool SetNoncePrefix(QuicStringPiece nonce_prefix) override;
+  bool SetIV(QuicStringPiece iv) override;
   bool SetPreliminaryKey(QuicStringPiece key) override;
   bool SetDiversificationNonce(const DiversificationNonce& nonce) override;
-  bool DecryptPacket(QuicVersion version,
+  bool DecryptPacket(QuicTransportVersion version,
                      QuicPacketNumber packet_number,
                      QuicStringPiece associated_data,
                      QuicStringPiece ciphertext,
@@ -46,18 +48,20 @@ class QUIC_EXPORT_PRIVATE AeadBaseDecrypter : public QuicDecrypter {
   // exceed the maximum.
   static const size_t kMaxKeySize = 32;
   static const size_t kMaxNoncePrefixSize = 4;
+  static const size_t kMaxIVSize = 12;
 
  private:
   const EVP_AEAD* const aead_alg_;
   const size_t key_size_;
   const size_t auth_tag_size_;
   const size_t nonce_prefix_size_;
+  const bool use_ietf_nonce_construction_;
   bool have_preliminary_key_;
 
   // The key.
   unsigned char key_[kMaxKeySize];
   // The nonce prefix.
-  unsigned char nonce_prefix_[kMaxNoncePrefixSize];
+  unsigned char iv_[kMaxIVSize];
 
   ScopedEVPAEADCtx ctx_;
 

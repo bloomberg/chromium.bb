@@ -46,16 +46,6 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
  private:
   friend class test::QuicHeadersStreamPeer;
 
-  // Override to store mapping from offset, length to ack_listener. This
-  // ack_listener is notified once data within [offset, offset + length] is
-  // acked or retransmitted.
-  QuicConsumedData WritevDataInner(
-      QuicIOVector iov,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
-      override;
-
   // CompressedHeaderInfo includes simple information of a header, including
   // offset in headers stream, unacked length and ack listener of this header.
   struct QUIC_EXPORT_PRIVATE CompressedHeaderInfo {

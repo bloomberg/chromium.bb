@@ -22,9 +22,9 @@ class QUIC_EXPORT_PRIVATE PrrSender {
   void OnPacketLost(QuicByteCount prior_in_flight);
   void OnPacketSent(QuicByteCount sent_bytes);
   void OnPacketAcked(QuicByteCount acked_bytes);
-  QuicTime::Delta TimeUntilSend(QuicByteCount congestion_window,
-                                QuicByteCount bytes_in_flight,
-                                QuicByteCount slowstart_threshold) const;
+  bool CanSend(QuicByteCount congestion_window,
+               QuicByteCount bytes_in_flight,
+               QuicByteCount slowstart_threshold) const;
 
  private:
   // Bytes sent and acked since the last loss event.

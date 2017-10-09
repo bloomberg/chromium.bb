@@ -10,7 +10,7 @@ namespace test {
 void FailingProofSource::GetProof(const QuicSocketAddress& server_address,
                                   const std::string& hostname,
                                   const std::string& server_config,
-                                  QuicVersion quic_version,
+                                  QuicTransportVersion transport_version,
                                   QuicStringPiece chlo_hash,
                                   const QuicTagVector& connection_options,
                                   std::unique_ptr<Callback> callback) {

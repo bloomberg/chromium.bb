@@ -186,5 +186,19 @@ QuicUnackedPacketMap* QuicSentPacketManagerPeer::GetUnackedPacketMap(
   return &sent_packet_manager->unacked_packets_;
 }
 
+// static
+void QuicSentPacketManagerPeer::DisablePacerBursts(
+    QuicSentPacketManager* sent_packet_manager) {
+  sent_packet_manager->pacing_sender_.burst_tokens_ = 0;
+  sent_packet_manager->pacing_sender_.initial_burst_size_ = 0;
+}
+
+// static
+void QuicSentPacketManagerPeer::SetNextPacedPacketTime(
+    QuicSentPacketManager* sent_packet_manager,
+    QuicTime time) {
+  sent_packet_manager->pacing_sender_.ideal_next_packet_send_time_ = time;
+}
+
 }  // namespace test
 }  // namespace net

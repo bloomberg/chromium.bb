@@ -57,8 +57,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     StreamSendingState state,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener,
-    bool flag_run_fast_path) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   bool has_handshake = (id == kCryptoStreamId);
   bool fin = state != NO_FIN;
   QUIC_BUG_IF(has_handshake && fin)
@@ -82,10 +81,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   }
   // We determine if we can enter the fast path before executing
   // the slow path loop.
-  bool run_fast_path =
-      flag_run_fast_path &&
-      (!has_handshake && state != FIN_AND_PADDING && !HasQueuedFrames() &&
-       iov.total_length - total_bytes_consumed > kMaxPacketSize);
+  bool run_fast_path = !has_handshake && state != FIN_AND_PADDING &&
+                       !HasQueuedFrames() &&
+                       iov.total_length - total_bytes_consumed > kMaxPacketSize;
 
   while (!run_fast_path && delegate_->ShouldGeneratePacket(
                                HAS_RETRANSMITTABLE_DATA,
@@ -126,14 +124,12 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     // TODO(ianswett): Move to having the creator flush itself when it's full.
     packet_creator_.Flush();
 
-    run_fast_path =
-        flag_run_fast_path &&
-        (!has_handshake && state != FIN_AND_PADDING && !HasQueuedFrames() &&
-         iov.total_length - total_bytes_consumed > kMaxPacketSize);
+    run_fast_path = !has_handshake && state != FIN_AND_PADDING &&
+                    !HasQueuedFrames() &&
+                    iov.total_length - total_bytes_consumed > kMaxPacketSize;
   }
 
   if (run_fast_path) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_consuming_data_faster);
     return ConsumeDataFastPath(id, iov, offset, state != NO_FIN,
                                total_bytes_consumed, ack_listener);
   }
@@ -323,7 +319,7 @@ void QuicPacketGenerator::SetMaxPacketLength(QuicByteCount length) {
 
 std::unique_ptr<QuicEncryptedPacket>
 QuicPacketGenerator::SerializeVersionNegotiationPacket(
-    const QuicVersionVector& supported_versions) {
+    const QuicTransportVersionVector& supported_versions) {
   return packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
 }
 

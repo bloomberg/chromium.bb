@@ -27,7 +27,7 @@ namespace test {
 
 class QuicTestPacketMaker {
  public:
-  QuicTestPacketMaker(QuicVersion version,
+  QuicTestPacketMaker(QuicTransportVersion version,
                       QuicConnectionId connection_id,
                       MockClock* clock,
                       const std::string& host,
@@ -257,7 +257,7 @@ class QuicTestPacketMaker {
   void InitializeHeader(QuicPacketNumber packet_number,
                         bool should_include_version);
 
-  QuicVersion version_;
+  QuicTransportVersion version_;
   QuicConnectionId connection_id_;
   MockClock* clock_;  // Owned by QuicStreamFactory.
   std::string host_;

@@ -2236,7 +2236,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 
 class HttpStreamFactoryBidirectionalQuicTest
     : public ::testing::Test,
-      public ::testing::WithParamInterface<QuicVersion> {
+      public ::testing::WithParamInterface<QuicTransportVersion> {
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : default_url_(kDefaultUrl),
@@ -2266,7 +2266,8 @@ class HttpStreamFactoryBidirectionalQuicTest
 
   void Initialize() {
     params_.enable_quic = true;
-    params_.quic_supported_versions = test::SupportedVersions(GetParam());
+    params_.quic_supported_versions =
+        test::SupportedTransportVersions(GetParam());
 
     HttpNetworkSession::Context session_context;
     session_context.http_server_properties = &http_server_properties_;
@@ -2344,7 +2345,7 @@ class HttpStreamFactoryBidirectionalQuicTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         HttpStreamFactoryBidirectionalQuicTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {

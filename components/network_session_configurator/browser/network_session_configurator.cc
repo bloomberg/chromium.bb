@@ -237,7 +237,7 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   return 0;
 }
 
-net::QuicVersionVector GetQuicVersions(
+net::QuicTransportVersionVector GetQuicVersions(
     const VariationParameters& quic_trial_params) {
   return network_session_configurator::ParseQuicVersions(
       GetVariationParam(quic_trial_params, "quic_version"));
@@ -306,7 +306,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->quic_user_agent_id = quic_user_agent_id;
 
-  net::QuicVersionVector supported_versions =
+  net::QuicTransportVersionVector supported_versions =
       GetQuicVersions(quic_trial_params);
   if (!supported_versions.empty())
     params->quic_supported_versions = supported_versions;
@@ -316,9 +316,11 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
 namespace network_session_configurator {
 
-net::QuicVersionVector ParseQuicVersions(const std::string& quic_versions) {
-  net::QuicVersionVector supported_versions;
-  net::QuicVersionVector all_supported_versions = net::AllSupportedVersions();
+net::QuicTransportVersionVector ParseQuicVersions(
+    const std::string& quic_versions) {
+  net::QuicTransportVersionVector supported_versions;
+  net::QuicTransportVersionVector all_supported_versions =
+      net::AllSupportedTransportVersions();
 
   for (const base::StringPiece& version : base::SplitStringPiece(
            quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -385,7 +387,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     }
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
-      net::QuicVersionVector supported_versions =
+      net::QuicTransportVersionVector supported_versions =
           network_session_configurator::ParseQuicVersions(
               command_line.GetSwitchValueASCII(switches::kQuicVersion));
       if (!supported_versions.empty())

@@ -107,6 +107,7 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   QuicIpAddress host;
   host.FromString("127.0.3.1");
   const QuicSocketAddress kTestServerAddress = QuicSocketAddress(host, 1234);
+  const uint128 kTestResetToken = MakeUint128(0, 10111100001);
   QuicConfig server_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
@@ -121,6 +122,7 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.SetInitialSessionFlowControlWindowToSend(
       2 * kInitialSessionFlowControlWindowForTest);
   server_config.SetAlternateServerAddressToSend(kTestServerAddress);
+  server_config.SetStatelessResetTokenToSend(kTestResetToken);
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -139,6 +141,8 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
             2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_TRUE(config_.HasReceivedAlternateServerAddress());
   EXPECT_EQ(kTestServerAddress, config_.ReceivedAlternateServerAddress());
+  EXPECT_TRUE(config_.HasReceivedStatelessResetToken());
+  EXPECT_EQ(kTestResetToken, config_.ReceivedStatelessResetToken());
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {

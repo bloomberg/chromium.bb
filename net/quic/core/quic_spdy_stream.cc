@@ -77,11 +77,11 @@ size_t QuicSpdyStream::WriteTrailers(
   // The header block must contain the final offset for this stream, as the
   // trailers may be processed out of order at the peer.
   QUIC_DLOG(INFO) << "Inserting trailer: (" << kFinalOffsetHeaderKey << ", "
-                  << stream_bytes_written() + queued_data_bytes() << ")";
+                  << stream_bytes_written() + BufferedDataBytes() << ")";
   trailer_block.insert(
       std::make_pair(kFinalOffsetHeaderKey,
                      QuicTextUtils::Uint64ToString(stream_bytes_written() +
-                                                   queued_data_bytes())));
+                                                   BufferedDataBytes())));
 
   // Write the trailing headers with a FIN, and close stream for writing:
   // trailers are the last thing to be sent on a stream.
@@ -92,7 +92,7 @@ size_t QuicSpdyStream::WriteTrailers(
 
   // Trailers are the last thing to be sent on a stream, but if there is still
   // queued data then CloseWriteSide() will cause it never to be sent.
-  if (queued_data_bytes() == 0) {
+  if (BufferedDataBytes() == 0) {
     CloseWriteSide();
   }
 

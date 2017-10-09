@@ -134,7 +134,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     bool SharesSameSession(const Handle& other) const;
 
     // Returns the QUIC version used by the session.
-    QuicVersion GetQuicVersion() const;
+    QuicTransportVersion GetQuicVersion() const;
 
     // Copies the remote udp address into |address| and returns a net error
     // code.
@@ -177,7 +177,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     void OnCryptoHandshakeConfirmed();
 
     // Called when the session is closed with a net error.
-    void OnSessionClosed(QuicVersion quic_version,
+    void OnSessionClosed(QuicTransportVersion quic_version,
                          int net_error,
                          QuicErrorCode quic_error,
                          bool port_migration_detected,
@@ -204,7 +204,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     QuicErrorCode quic_error_;
     bool port_migration_detected_;
     QuicServerId server_id_;
-    QuicVersion quic_version_;
+    QuicTransportVersion quic_version_;
     LoadTimingInfo::ConnectTiming connect_timing_;
     QuicClientPushPromiseIndex* push_promise_index_;
 
@@ -371,7 +371,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnConnectionClosed(QuicErrorCode error,
                           const std::string& error_details,
                           ConnectionCloseSource source) override;
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
+  void OnSuccessfulVersionNegotiation(
+      const QuicTransportVersion& version) override;
   void OnPathDegrading() override;
   bool HasOpenDynamicStreams() const override;
 
@@ -479,7 +480,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   const LoadTimingInfo::ConnectTiming& GetConnectTiming();
 
-  QuicVersion GetQuicVersion() const;
+  QuicTransportVersion GetQuicVersion() const;
 
   // Returns the estimate of dynamically allocated memory in bytes.
   // See base/trace_event/memory_usage_estimator.h.

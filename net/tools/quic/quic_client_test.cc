@@ -53,7 +53,7 @@ QuicClient* CreateAndInitializeQuicClient(EpollServer* eps, uint16_t port) {
   QuicSocketAddress server_address(QuicSocketAddress(TestLoopback(), port));
   QuicServerId server_id("hostname", server_address.port(),
                          PRIVACY_MODE_DISABLED);
-  QuicVersionVector versions = AllSupportedVersions();
+  QuicTransportVersionVector versions = AllSupportedTransportVersions();
   QuicClient* client =
       new QuicClient(server_address, server_id, versions, eps,
                      crypto_test_utils::ProofVerifierForTesting());

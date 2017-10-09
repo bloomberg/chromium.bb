@@ -18,13 +18,14 @@ namespace net {
 
 QuicClientBase::NetworkHelper::~NetworkHelper() {}
 
-QuicClientBase::QuicClientBase(const QuicServerId& server_id,
-                               const QuicVersionVector& supported_versions,
-                               const QuicConfig& config,
-                               QuicConnectionHelperInterface* helper,
-                               QuicAlarmFactory* alarm_factory,
-                               std::unique_ptr<NetworkHelper> network_helper,
-                               std::unique_ptr<ProofVerifier> proof_verifier)
+QuicClientBase::QuicClientBase(
+    const QuicServerId& server_id,
+    const QuicTransportVersionVector& supported_versions,
+    const QuicConfig& config,
+    QuicConnectionHelperInterface* helper,
+    QuicAlarmFactory* alarm_factory,
+    std::unique_ptr<NetworkHelper> network_helper,
+    std::unique_ptr<ProofVerifier> proof_verifier)
     : server_id_(server_id),
       initialized_(false),
       local_port_(0),

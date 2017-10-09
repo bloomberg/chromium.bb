@@ -2170,7 +2170,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
 
   // Set alternative service with no advertised version.
   session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration, QuicVersionVector());
+      server, alternative_service, expiration, QuicTransportVersionVector());
 
   AlternativeServiceInfo alt_svc_info =
       JobControllerPeer::GetAlternativeServiceInfoFor(
@@ -2181,7 +2181,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
 
   // Set alternative service for the same server with the same list of versions
   // that is supported.
-  QuicVersionVector supported_versions =
+  QuicTransportVersionVector supported_versions =
       session_->params().quic_supported_versions;
   ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
       server, alternative_service, expiration, supported_versions));
@@ -2192,9 +2192,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
   std::sort(supported_versions.begin(), supported_versions.end());
   EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
 
-  QuicVersion unsupported_version_1(QUIC_VERSION_UNSUPPORTED);
-  QuicVersion unsupported_version_2(QUIC_VERSION_UNSUPPORTED);
-  for (const QuicVersion& version : AllSupportedVersions()) {
+  QuicTransportVersion unsupported_version_1(QUIC_VERSION_UNSUPPORTED);
+  QuicTransportVersion unsupported_version_2(QUIC_VERSION_UNSUPPORTED);
+  for (const QuicTransportVersion& version : AllSupportedTransportVersions()) {
     if (std::find(supported_versions.begin(), supported_versions.end(),
                   version) != supported_versions.end())
       continue;
@@ -2209,7 +2209,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
   // Set alternative service for the same server with two QUIC versions:
   // - one unsupported version: |unsupported_version_1|,
   // - one supported version: session_->params().quic_supported_versions[0].
-  QuicVersionVector mixed_quic_versions = {
+  QuicTransportVersionVector mixed_quic_versions = {
       unsupported_version_1, session_->params().quic_supported_versions[0]};
   ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
       server, alternative_service, expiration, mixed_quic_versions));

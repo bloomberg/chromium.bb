@@ -179,7 +179,7 @@ uint64_t CryptoUtils::ComputeLeafCertHash(QuicStringPiece cert) {
 
 QuicErrorCode CryptoUtils::ValidateServerHello(
     const CryptoHandshakeMessage& server_hello,
-    const QuicVersionVector& negotiated_versions,
+    const QuicTransportVersionVector& negotiated_versions,
     string* error_details) {
   DCHECK(error_details != nullptr);
 
@@ -214,8 +214,8 @@ QuicErrorCode CryptoUtils::ValidateServerHello(
 
 QuicErrorCode CryptoUtils::ValidateClientHello(
     const CryptoHandshakeMessage& client_hello,
-    QuicVersion version,
-    const QuicVersionVector& supported_versions,
+    QuicTransportVersion version,
+    const QuicTransportVersionVector& supported_versions,
     string* error_details) {
   if (client_hello.tag() != kCHLO) {
     *error_details = "Bad tag";
@@ -232,7 +232,7 @@ QuicErrorCode CryptoUtils::ValidateClientHello(
     *error_details = "client hello missing version list";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
-  QuicVersion client_version =
+  QuicTransportVersion client_version =
       QuicVersionLabelToQuicVersion(client_version_label);
   if (client_version != version) {
     // Just because client_version is a valid version enum doesn't mean that

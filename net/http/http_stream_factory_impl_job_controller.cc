@@ -802,7 +802,7 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
   // Create an alternative job if alternative service is set up for this domain.
   alternative_service_info_ =
       GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_);
-  QuicVersion quic_version = QUIC_VERSION_UNSUPPORTED;
+  QuicTransportVersion quic_version = QUIC_VERSION_UNSUPPORTED;
   if (alternative_service_info_.protocol() == kProtoQUIC) {
     quic_version =
         SelectQuicVersion(alternative_service_info_.advertised_versions());
@@ -1171,15 +1171,15 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
   return first_alternative_service_info;
 }
 
-QuicVersion HttpStreamFactoryImpl::JobController::SelectQuicVersion(
-    const QuicVersionVector& advertised_versions) {
-  const QuicVersionVector& supported_versions =
+QuicTransportVersion HttpStreamFactoryImpl::JobController::SelectQuicVersion(
+    const QuicTransportVersionVector& advertised_versions) {
+  const QuicTransportVersionVector& supported_versions =
       session_->params().quic_supported_versions;
   if (advertised_versions.empty())
     return supported_versions[0];
 
-  for (const QuicVersion& supported : supported_versions) {
-    for (const QuicVersion& advertised : advertised_versions) {
+  for (const QuicTransportVersion& supported : supported_versions) {
+    for (const QuicTransportVersion& advertised : advertised_versions) {
       if (supported == advertised) {
         DCHECK_NE(QUIC_VERSION_UNSUPPORTED, supported);
         return supported;

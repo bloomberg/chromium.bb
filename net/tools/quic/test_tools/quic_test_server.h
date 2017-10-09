@@ -62,7 +62,7 @@ class QuicTestServer : public QuicServer {
                  QuicHttpResponseCache* response_cache);
   QuicTestServer(std::unique_ptr<ProofSource> proof_source,
                  const QuicConfig& config,
-                 const QuicVersionVector& supported_versions,
+                 const QuicTransportVersionVector& supported_versions,
                  QuicHttpResponseCache* response_cache);
 
   // Create a custom dispatcher which creates custom sessions.

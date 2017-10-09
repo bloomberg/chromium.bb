@@ -111,7 +111,7 @@ class FakeProofVerifier : public ProofVerifier {
       const string& hostname,
       const uint16_t port,
       const string& server_config,
-      net::QuicVersion quic_version,
+      net::QuicTransportVersion quic_version,
       QuicStringPiece chlo_hash,
       const std::vector<string>& certs,
       const string& cert_sct,
@@ -252,10 +252,12 @@ int main(int argc, char* argv[]) {
   // Build the client, and try to connect.
   net::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
                               net::PRIVACY_MODE_DISABLED);
-  net::QuicVersionVector versions = net::AllSupportedVersions();
+  net::QuicTransportVersionVector versions =
+      net::AllSupportedTransportVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
-    versions.push_back(static_cast<net::QuicVersion>(FLAGS_quic_version));
+    versions.push_back(
+        static_cast<net::QuicTransportVersion>(FLAGS_quic_version));
   }
   // For secure QUIC we need to verify the cert chain.
   std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
@@ -284,7 +286,8 @@ int main(int argc, char* argv[]) {
     net::QuicErrorCode error = client.session()->error();
     if (FLAGS_version_mismatch_ok && error == net::QUIC_INVALID_VERSION) {
       cout << "Server talks QUIC, but none of the versions supported by "
-           << "this client: " << QuicVersionVectorToString(versions) << endl;
+           << "this client: " << QuicTransportVersionVectorToString(versions)
+           << endl;
       // Version mismatch is not deemed a failure.
       return 0;
     }

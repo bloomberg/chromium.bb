@@ -64,6 +64,12 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
   // caller tries to cancel them, rendering the caller's pointers invalid.
   virtual void CancelStream(QuicStreamId stream_id) = 0;
 
+  // This method verifies if a stream is still open and stream pointer can be
+  // used. When true is returned, the interface pointer is good for making a
+  // call immediately on the same thread, but may be rendered invalid by ANY
+  // other QUIC activity.
+  virtual bool IsOpenStream(QuicStreamId stream_id) = 0;
+
   // Gets stats associated with this Quartc session.
   virtual QuartcSessionStats GetStats() = 0;
 

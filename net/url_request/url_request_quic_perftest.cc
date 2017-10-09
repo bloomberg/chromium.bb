@@ -149,8 +149,8 @@ class URLRequestQuicPerfTest : public ::testing::Test {
                                       kHelloAltSvcResponse);
     quic_server_.reset(new QuicSimpleServer(
         test::crypto_test_utils::ProofSourceForTesting(), config,
-        net::QuicCryptoServerConfig::ConfigOptions(), AllSupportedVersions(),
-        &response_cache_));
+        net::QuicCryptoServerConfig::ConfigOptions(),
+        AllSupportedTransportVersions(), &response_cache_));
     int rv = quic_server_->Listen(
         net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kAltSvcPort));
     ASSERT_GE(rv, 0) << "Quic server fails to start";

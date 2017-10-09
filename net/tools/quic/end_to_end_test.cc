@@ -80,9 +80,9 @@ const float kSessionToStreamRatio = 1.5;
 
 // Run all tests with the cross products of all versions.
 struct TestParams {
-  TestParams(const QuicVersionVector& client_supported_versions,
-             const QuicVersionVector& server_supported_versions,
-             QuicVersion negotiated_version,
+  TestParams(const QuicTransportVersionVector& client_supported_versions,
+             const QuicTransportVersionVector& server_supported_versions,
+             QuicTransportVersion negotiated_version,
              bool client_supports_stateless_rejects,
              bool server_uses_stateless_rejects_if_peer_supported,
              QuicTag congestion_control_tag,
@@ -100,9 +100,9 @@ struct TestParams {
 
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
     os << "{ server_supported_versions: "
-       << QuicVersionVectorToString(p.server_supported_versions);
+       << QuicTransportVersionVectorToString(p.server_supported_versions);
     os << " client_supported_versions: "
-       << QuicVersionVectorToString(p.client_supported_versions);
+       << QuicTransportVersionVectorToString(p.client_supported_versions);
     os << " negotiated_version: " << QuicVersionToString(p.negotiated_version);
     os << " client_supports_stateless_rejects: "
        << p.client_supports_stateless_rejects;
@@ -116,9 +116,9 @@ struct TestParams {
     return os;
   }
 
-  QuicVersionVector client_supported_versions;
-  QuicVersionVector server_supported_versions;
-  QuicVersion negotiated_version;
+  QuicTransportVersionVector client_supported_versions;
+  QuicTransportVersionVector server_supported_versions;
+  QuicTransportVersion negotiated_version;
   bool client_supports_stateless_rejects;
   bool server_uses_stateless_rejects_if_peer_supported;
   QuicTag congestion_control_tag;
@@ -136,12 +136,13 @@ std::vector<TestParams> GetTestParams() {
   // these tests need to ensure that clients are never attempting
   // to do 0-RTT across incompatible versions. Chromium only supports
   // a single version at a time anyway. :)
-  QuicVersionVector all_supported_versions = AllSupportedVersions();
+  QuicTransportVersionVector all_supported_versions =
+      AllSupportedTransportVersions();
   // Even though this currently has one element, it may well get another
   // with future versions of QUIC, so don't remove it.
-  QuicVersionVector version_buckets[1];
+  QuicTransportVersionVector version_buckets[1];
 
-  for (const QuicVersion version : all_supported_versions) {
+  for (const QuicTransportVersion version : all_supported_versions) {
     // Versions: 35+
     // QUIC_VERSION_35 allows endpoints to independently set stream limit.
     version_buckets[0].push_back(version);
@@ -185,9 +186,10 @@ std::vector<TestParams> GetTestParams() {
               continue;
             }
 
-            for (const QuicVersionVector& client_versions : version_buckets) {
+            for (const QuicTransportVersionVector& client_versions :
+                 version_buckets) {
               CHECK(!client_versions.empty());
-              if (FilterSupportedVersions(client_versions).empty()) {
+              if (FilterSupportedTransportVersions(client_versions).empty()) {
                 continue;
               }
               // Add an entry for server and client supporting all
@@ -212,9 +214,9 @@ std::vector<TestParams> GetTestParams() {
               // occur.  Skip the i = 0 case because it is essentially the
               // same as the default case.
               for (size_t i = 1; i < client_versions.size(); ++i) {
-                QuicVersionVector server_supported_versions;
+                QuicTransportVersionVector server_supported_versions;
                 server_supported_versions.push_back(client_versions[i]);
-                if (FilterSupportedVersions(server_supported_versions)
+                if (FilterSupportedTransportVersions(server_supported_versions)
                         .empty()) {
                   continue;
                 }
@@ -585,10 +587,10 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool server_started_;
   QuicConfig client_config_;
   QuicConfig server_config_;
-  QuicVersionVector client_supported_versions_;
-  QuicVersionVector server_supported_versions_;
+  QuicTransportVersionVector client_supported_versions_;
+  QuicTransportVersionVector server_supported_versions_;
   QuicTagVector client_extra_copts_;
-  QuicVersion negotiated_version_;
+  QuicTransportVersion negotiated_version_;
   size_t chlo_multiplier_;
   QuicTestServer::StreamFactory* stream_factory_;
   bool support_server_push_;
@@ -2407,11 +2409,12 @@ class ClientSessionThatDropsBody : public QuicSpdyClientSession {
 
 class MockableQuicClientThatDropsBody : public MockableQuicClient {
  public:
-  MockableQuicClientThatDropsBody(QuicSocketAddress server_address,
-                                  const QuicServerId& server_id,
-                                  const QuicConfig& config,
-                                  const QuicVersionVector& supported_versions,
-                                  EpollServer* epoll_server)
+  MockableQuicClientThatDropsBody(
+      QuicSocketAddress server_address,
+      const QuicServerId& server_id,
+      const QuicConfig& config,
+      const QuicTransportVersionVector& supported_versions,
+      EpollServer* epoll_server)
       : MockableQuicClient(server_address,
                            server_id,
                            config,
@@ -2429,10 +2432,11 @@ class MockableQuicClientThatDropsBody : public MockableQuicClient {
 
 class QuicTestClientThatDropsBody : public QuicTestClient {
  public:
-  QuicTestClientThatDropsBody(QuicSocketAddress server_address,
-                              const string& server_hostname,
-                              const QuicConfig& config,
-                              const QuicVersionVector& supported_versions)
+  QuicTestClientThatDropsBody(
+      QuicSocketAddress server_address,
+      const string& server_hostname,
+      const QuicConfig& config,
+      const QuicTransportVersionVector& supported_versions)
       : QuicTestClient(server_address,
                        server_hostname,
                        config,
@@ -2951,7 +2955,7 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   QuicConnection* client_connection =
       client_->client()->client_session()->connection();
   client_connection->set_debug_visitor(&observer);
-  QuicVersion version = client_connection->version();
+  QuicTransportVersion version = client_connection->transport_version();
   // 100KB body.
   string body(100 * 1024, 'a');
   SpdyHeaderBlock headers;
@@ -2968,6 +2972,17 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   } else {
     EXPECT_EQ(0u, observer.num_window_update_frames());
   }
+}
+
+TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  QuicConfig* config = client_->client()->session()->config();
+  if (FLAGS_quic_reloadable_flag_quic_send_reset_token_in_shlo) {
+    EXPECT_TRUE(config->HasReceivedStatelessResetToken());
+    EXPECT_EQ(1010101u, config->ReceivedStatelessResetToken());
+  }
+  client_->Disconnect();
 }
 
 class EndToEndBufferedPacketsTest : public EndToEndTest {

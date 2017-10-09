@@ -43,17 +43,19 @@ void DLogOpenSslErrors() {
 AeadBaseDecrypter::AeadBaseDecrypter(const EVP_AEAD* aead_alg,
                                      size_t key_size,
                                      size_t auth_tag_size,
-                                     size_t nonce_prefix_size)
+                                     size_t nonce_prefix_size,
+                                     bool use_ietf_nonce_construction)
     : aead_alg_(aead_alg),
       key_size_(key_size),
       auth_tag_size_(auth_tag_size),
       nonce_prefix_size_(nonce_prefix_size),
+      use_ietf_nonce_construction_(use_ietf_nonce_construction),
       have_preliminary_key_(false) {
   DCHECK_GT(256u, key_size);
   DCHECK_GT(256u, auth_tag_size);
   DCHECK_GT(256u, nonce_prefix_size);
   DCHECK_LE(key_size_, sizeof(key_));
-  DCHECK_LE(nonce_prefix_size_, sizeof(nonce_prefix_));
+  DCHECK_LE(nonce_prefix_size_, sizeof(iv_));
 }
 
 AeadBaseDecrypter::~AeadBaseDecrypter() {}
@@ -76,11 +78,28 @@ bool AeadBaseDecrypter::SetKey(QuicStringPiece key) {
 }
 
 bool AeadBaseDecrypter::SetNoncePrefix(QuicStringPiece nonce_prefix) {
+  if (use_ietf_nonce_construction_) {
+    QUIC_BUG << "Attempted to set nonce prefix on IETF QUIC crypter";
+    return false;
+  }
   DCHECK_EQ(nonce_prefix.size(), nonce_prefix_size_);
   if (nonce_prefix.size() != nonce_prefix_size_) {
     return false;
   }
-  memcpy(nonce_prefix_, nonce_prefix.data(), nonce_prefix.size());
+  memcpy(iv_, nonce_prefix.data(), nonce_prefix.size());
+  return true;
+}
+
+bool AeadBaseDecrypter::SetIV(QuicStringPiece iv) {
+  if (!use_ietf_nonce_construction_) {
+    QUIC_BUG << "Attempted to set IV on Google QUIC crypter";
+    return false;
+  }
+  DCHECK_EQ(iv.size(), nonce_prefix_size_ + sizeof(QuicPacketNumber));
+  if (iv.size() != nonce_prefix_size_ + sizeof(QuicPacketNumber)) {
+    return false;
+  }
+  memcpy(iv_, iv.data(), iv.size());
   return true;
 }
 
@@ -101,8 +120,7 @@ bool AeadBaseDecrypter::SetDiversificationNonce(
   string key, nonce_prefix;
   DiversifyPreliminaryKey(
       QuicStringPiece(reinterpret_cast<const char*>(key_), key_size_),
-      QuicStringPiece(reinterpret_cast<const char*>(nonce_prefix_),
-                      nonce_prefix_size_),
+      QuicStringPiece(reinterpret_cast<const char*>(iv_), nonce_prefix_size_),
       nonce, key_size_, nonce_prefix_size_, &key, &nonce_prefix);
 
   if (!SetKey(key) || !SetNoncePrefix(nonce_prefix)) {
@@ -114,7 +132,7 @@ bool AeadBaseDecrypter::SetDiversificationNonce(
   return true;
 }
 
-bool AeadBaseDecrypter::DecryptPacket(QuicVersion /*version*/,
+bool AeadBaseDecrypter::DecryptPacket(QuicTransportVersion /*version*/,
                                       QuicPacketNumber packet_number,
                                       QuicStringPiece associated_data,
                                       QuicStringPiece ciphertext,
@@ -130,10 +148,17 @@ bool AeadBaseDecrypter::DecryptPacket(QuicVersion /*version*/,
     return false;
   }
 
-  uint8_t nonce[sizeof(nonce_prefix_) + sizeof(packet_number)];
+  uint8_t nonce[kMaxIVSize];
   const size_t nonce_size = nonce_prefix_size_ + sizeof(packet_number);
-  memcpy(nonce, nonce_prefix_, nonce_prefix_size_);
-  memcpy(nonce + nonce_prefix_size_, &packet_number, sizeof(packet_number));
+  memcpy(nonce, iv_, nonce_size);
+  if (use_ietf_nonce_construction_) {
+    for (size_t i = 0; i < sizeof(packet_number); ++i) {
+      nonce[nonce_prefix_size_ + i] ^=
+          (packet_number >> ((sizeof(packet_number) - i + 1) * 8)) & 0xff;
+    }
+  } else {
+    memcpy(nonce + nonce_prefix_size_, &packet_number, sizeof(packet_number));
+  }
   if (!EVP_AEAD_CTX_open(
           ctx_.get(), reinterpret_cast<uint8_t*>(output), output_length,
           max_output_length, reinterpret_cast<const uint8_t*>(nonce),
@@ -157,7 +182,7 @@ QuicStringPiece AeadBaseDecrypter::GetNoncePrefix() const {
   if (nonce_prefix_size_ == 0) {
     return QuicStringPiece();
   }
-  return QuicStringPiece(reinterpret_cast<const char*>(nonce_prefix_),
+  return QuicStringPiece(reinterpret_cast<const char*>(iv_),
                          nonce_prefix_size_);
 }
 

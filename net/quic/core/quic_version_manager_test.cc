@@ -20,59 +20,59 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
   FLAGS_quic_reloadable_flag_quic_enable_version_41 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = false;
-  QuicVersionManager manager(AllSupportedVersions());
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
+  QuicVersionManager manager(AllSupportedTransportVersions());
+  EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),
+            manager.GetSupportedTransportVersions());
 
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
-  ASSERT_EQ(2u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[1]);
+  EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),
+            manager.GetSupportedTransportVersions());
+  ASSERT_EQ(2u, manager.GetSupportedTransportVersions().size());
+  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedTransportVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedTransportVersions()[1]);
 
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
-  ASSERT_EQ(3u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[1]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[2]);
+  EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),
+            manager.GetSupportedTransportVersions());
+  ASSERT_EQ(3u, manager.GetSupportedTransportVersions().size());
+  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedTransportVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedTransportVersions()[1]);
+  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedTransportVersions()[2]);
 
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
-  ASSERT_EQ(4u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[1]);
-  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[2]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[3]);
+  EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),
+            manager.GetSupportedTransportVersions());
+  ASSERT_EQ(4u, manager.GetSupportedTransportVersions().size());
+  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedTransportVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedTransportVersions()[1]);
+  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedTransportVersions()[2]);
+  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedTransportVersions()[3]);
 
   FLAGS_quic_reloadable_flag_quic_enable_version_41 = true;
-  ASSERT_EQ(5u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedVersions()[1]);
-  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[2]);
-  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[3]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[4]);
+  ASSERT_EQ(5u, manager.GetSupportedTransportVersions().size());
+  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedTransportVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedTransportVersions()[1]);
+  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedTransportVersions()[2]);
+  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedTransportVersions()[3]);
+  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedTransportVersions()[4]);
 
   SetQuicFlag(&FLAGS_quic_enable_version_42, true);
-  ASSERT_EQ(6u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_42, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedVersions()[1]);
-  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedVersions()[2]);
-  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[3]);
-  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[4]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[5]);
+  ASSERT_EQ(6u, manager.GetSupportedTransportVersions().size());
+  EXPECT_EQ(QUIC_VERSION_42, manager.GetSupportedTransportVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedTransportVersions()[1]);
+  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedTransportVersions()[2]);
+  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedTransportVersions()[3]);
+  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedTransportVersions()[4]);
+  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedTransportVersions()[5]);
 
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
-  ASSERT_EQ(6u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_42, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedVersions()[1]);
-  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedVersions()[2]);
-  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[3]);
-  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[4]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[5]);
+  EXPECT_EQ(FilterSupportedTransportVersions(AllSupportedTransportVersions()),
+            manager.GetSupportedTransportVersions());
+  ASSERT_EQ(6u, manager.GetSupportedTransportVersions().size());
+  EXPECT_EQ(QUIC_VERSION_42, manager.GetSupportedTransportVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedTransportVersions()[1]);
+  EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedTransportVersions()[2]);
+  EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedTransportVersions()[3]);
+  EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedTransportVersions()[4]);
+  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedTransportVersions()[5]);
 }
 
 }  // namespace

@@ -123,7 +123,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // |destination| will be resolved and resulting IPEndPoint used to open a
   // QuicConnection.  This can be different than HostPortPair::FromURL(url).
   int Request(const HostPortPair& destination,
-              QuicVersion quic_version,
+              QuicTransportVersion quic_version,
               PrivacyMode privacy_mode,
               int cert_verify_flags,
               const GURL& url,
@@ -243,7 +243,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // OnRequestComplete asynchronously.
   int Create(const QuicServerId& server_id,
              const HostPortPair& destination,
-             QuicVersion quic_version,
+             QuicTransportVersion quic_version,
              int cert_verify_flags,
              const GURL& url,
              QuicStringPiece method,
@@ -413,7 +413,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool HasActiveJob(const QuicServerId& server_id) const;
   bool HasActiveCertVerifierJob(const QuicServerId& server_id) const;
   int CreateSession(const QuicSessionKey& key,
-                    const QuicVersion& quic_version,
+                    const QuicTransportVersion& quic_version,
                     int cert_verify_flags,
                     bool require_confirmation,
                     const AddressList& address_list,

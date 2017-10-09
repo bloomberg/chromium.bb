@@ -15,7 +15,7 @@ using std::string;
 
 namespace net {
 
-size_t GetPacketHeaderSize(QuicVersion version,
+size_t GetPacketHeaderSize(QuicTransportVersion version,
                            const QuicPacketHeader& header) {
   return GetPacketHeaderSize(version, header.public_header.connection_id_length,
                              header.public_header.version_flag,
@@ -23,7 +23,7 @@ size_t GetPacketHeaderSize(QuicVersion version,
                              header.public_header.packet_number_length);
 }
 
-size_t GetPacketHeaderSize(QuicVersion version,
+size_t GetPacketHeaderSize(QuicTransportVersion version,
                            QuicConnectionIdLength connection_id_length,
                            bool include_version,
                            bool include_diversification_nonce,
@@ -33,12 +33,12 @@ size_t GetPacketHeaderSize(QuicVersion version,
          (include_diversification_nonce ? kDiversificationNonceSize : 0);
 }
 
-size_t GetStartOfEncryptedData(QuicVersion version,
+size_t GetStartOfEncryptedData(QuicTransportVersion version,
                                const QuicPacketHeader& header) {
   return GetPacketHeaderSize(version, header);
 }
 
-size_t GetStartOfEncryptedData(QuicVersion version,
+size_t GetStartOfEncryptedData(QuicTransportVersion version,
                                QuicConnectionIdLength connection_id_length,
                                bool include_version,
                                bool include_diversification_nonce,
@@ -180,14 +180,14 @@ std::ostream& operator<<(std::ostream& os, const QuicReceivedPacket& s) {
   return os;
 }
 
-QuicStringPiece QuicPacket::AssociatedData(QuicVersion version) const {
+QuicStringPiece QuicPacket::AssociatedData(QuicTransportVersion version) const {
   return QuicStringPiece(
       data(), GetStartOfEncryptedData(
                   version, connection_id_length_, includes_version_,
                   includes_diversification_nonce_, packet_number_length_));
 }
 
-QuicStringPiece QuicPacket::Plaintext(QuicVersion version) const {
+QuicStringPiece QuicPacket::Plaintext(QuicTransportVersion version) const {
   const size_t start_of_encrypted_data = GetStartOfEncryptedData(
       version, connection_id_length_, includes_version_,
       includes_diversification_nonce_, packet_number_length_);

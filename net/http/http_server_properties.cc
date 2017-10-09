@@ -86,14 +86,14 @@ AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
     base::Time expiration) {
   DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
   return AlternativeServiceInfo(alternative_service, expiration,
-                                QuicVersionVector());
+                                QuicTransportVersionVector());
 }
 
 // static
 AlternativeServiceInfo AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const QuicVersionVector& advertised_versions) {
+    const QuicTransportVersionVector& advertised_versions) {
   DCHECK_EQ(alternative_service.protocol, kProtoQUIC);
   return AlternativeServiceInfo(alternative_service, expiration,
                                 advertised_versions);
@@ -106,7 +106,7 @@ AlternativeServiceInfo::~AlternativeServiceInfo() {}
 AlternativeServiceInfo::AlternativeServiceInfo(
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const QuicVersionVector& advertised_versions)
+    const QuicTransportVersionVector& advertised_versions)
     : alternative_service_(alternative_service), expiration_(expiration) {
   if (alternative_service_.protocol == kProtoQUIC) {
     advertised_versions_ = advertised_versions;

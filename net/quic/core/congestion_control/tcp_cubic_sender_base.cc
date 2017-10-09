@@ -114,18 +114,18 @@ void TcpCubicSenderBase::OnCongestionEvent(
     QuicByteCount prior_in_flight,
     QuicTime event_time,
     const AckedPacketVector& acked_packets,
-    const CongestionVector& lost_packets) {
+    const LostPacketVector& lost_packets) {
   if (rtt_updated && InSlowStart() &&
       hybrid_slow_start_.ShouldExitSlowStart(
           rtt_stats_->latest_rtt(), rtt_stats_->min_rtt(),
           GetCongestionWindow() / kDefaultTCPMSS)) {
     ExitSlowstart();
   }
-  for (CongestionVector::const_iterator it = lost_packets.begin();
-       it != lost_packets.end(); ++it) {
-    OnPacketLost(it->first, it->second, prior_in_flight);
+  for (const LostPacket& lost_packet : lost_packets) {
+    OnPacketLost(lost_packet.packet_number, lost_packet.bytes_lost,
+                 prior_in_flight);
   }
-  for (const SendAlgorithmInterface::AckedPacket acked_packet : acked_packets) {
+  for (const AckedPacket acked_packet : acked_packets) {
     OnPacketAcked(acked_packet.packet_number, acked_packet.bytes_acked,
                   prior_in_flight, event_time);
   }
@@ -173,21 +173,19 @@ void TcpCubicSenderBase::OnPacketSent(
   hybrid_slow_start_.OnPacketSent(packet_number);
 }
 
-QuicTime::Delta TcpCubicSenderBase::TimeUntilSend(
-    QuicTime /* now */,
-    QuicByteCount bytes_in_flight) {
+bool TcpCubicSenderBase::CanSend(QuicByteCount bytes_in_flight) {
   if (!no_prr_ && InRecovery()) {
     // PRR is used when in recovery.
-    return prr_.TimeUntilSend(GetCongestionWindow(), bytes_in_flight,
-                              GetSlowStartThreshold());
+    return prr_.CanSend(GetCongestionWindow(), bytes_in_flight,
+                        GetSlowStartThreshold());
   }
   if (GetCongestionWindow() > bytes_in_flight) {
-    return QuicTime::Delta::Zero();
+    return true;
   }
   if (min4_mode_ && bytes_in_flight < 4 * kDefaultTCPMSS) {
-    return QuicTime::Delta::Zero();
+    return true;
   }
-  return QuicTime::Delta::Infinite();
+  return false;
 }
 
 QuicBandwidth TcpCubicSenderBase::PacingRate(
