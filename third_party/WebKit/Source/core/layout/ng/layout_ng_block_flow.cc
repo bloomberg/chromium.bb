@@ -176,16 +176,26 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
 
   RefPtr<NGPhysicalBoxFragment> fragment =
       ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
-  DCHECK_GT(fragment->Children().size(), (size_t)0);
-  RefPtr<NGPhysicalFragment> child_fragment = fragment->Children()[0];
-  NGPhysicalOffset child_offset = child_fragment->Offset();
-  if (container_style->IsFlippedBlocksWritingMode()) {
-    SetX(containing_block_logical_height - child_offset.left -
-         child_fragment->Size().width);
-  } else {
-    SetX(child_offset.left);
+  DCHECK_GT(fragment->Children().size(), 0u);
+  // Copy sizes of all child fragments to Legacy.
+  // There could be multiple fragments, when this node has descendants whose
+  // container is this node's container.
+  // Example: fixed descendant of fixed element.
+  for (RefPtr<NGPhysicalFragment> child_fragment : fragment->Children()) {
+    DCHECK(child_fragment->GetLayoutObject()->IsBox());
+    LayoutBox* child_legacy_box =
+        ToLayoutBox(child_fragment->GetLayoutObject());
+    NGPhysicalOffset child_offset = child_fragment->Offset();
+    if (container_style->IsFlippedBlocksWritingMode()) {
+      child_legacy_box->SetX(containing_block_logical_height -
+                             child_offset.left - child_fragment->Size().width);
+    } else {
+      child_legacy_box->SetX(child_offset.left);
+    }
+    child_legacy_box->SetY(child_offset.top);
   }
-  SetY(child_offset.top);
+  RefPtr<NGPhysicalFragment> child_fragment = fragment->Children()[0];
+  DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
   paint_fragment_ = WTF::MakeUnique<NGPaintFragment>(child_fragment.get());
 }
 
