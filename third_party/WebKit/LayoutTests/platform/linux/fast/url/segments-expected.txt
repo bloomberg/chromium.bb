@@ -97,7 +97,7 @@ PASS segments('/a/b/c') is '["http:","example.org","","/a/b/c","",""]'
 PASS segments('/a/ /c') is '["http:","example.org","","/a/%20/c","",""]'
 PASS segments('/a%2fc') is '["http:","example.org","","/a%2fc","",""]'
 PASS segments('/a/%2f/c') is '["http:","example.org","","/a/%2f/c","",""]'
-PASS segments('#β') is '["http:","example.org","","/foo/bar","","#β"]'
+PASS segments('#β') is '["http:","example.org","","/foo/bar","","#%CE%B2"]'
 PASS successfullyParsed is true
 
 TEST COMPLETE

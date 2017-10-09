@@ -61,7 +61,7 @@ TEST(KURLTest, Getters) {
        // shouldn't return it in percent-encoded form.
        "http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http",
        "www.google.com", 0, "", 0, "/foo/blah", "blah", "bar=baz",
-       "\xce\xb1\xce\xb2", true},
+       "%CE%B1%CE%B2", true},
       {"http://foo.com:1234/foo/bar/", "http", "foo.com", 1234, "", 0,
        "/foo/bar/", "bar", 0, 0, false},
       {"http://www.google.com?#", "http", "www.google.com", 0, "", 0, "/", 0,

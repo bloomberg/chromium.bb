@@ -1274,21 +1274,23 @@ TEST(URLCanonTest, Ref) {
   // Refs are trivial, it just checks the encoding.
   DualComponentCase ref_cases[] = {
       // Regular one, we shouldn't escape spaces, et al.
-    {"hello, world", L"hello, world", "#hello, world", Component(1, 12), true},
+      {"hello, world", L"hello, world", "#hello, world", Component(1, 12),
+       true},
       // UTF-8/wide input should be preserved
-    {"\xc2\xa9", L"\xa9", "#\xc2\xa9", Component(1, 2), true},
+      {"\xc2\xa9", L"\xa9", "#%C2%A9", Component(1, 6), true},
       // Test a characer that takes > 16 bits (U+10300 = old italic letter A)
-    {"\xF0\x90\x8C\x80ss", L"\xd800\xdf00ss", "#\xF0\x90\x8C\x80ss", Component(1, 6), true},
+      {"\xF0\x90\x8C\x80ss", L"\xd800\xdf00ss", "#%F0%90%8C%80ss",
+       Component(1, 14), true},
       // Escaping should be preserved unchanged, even invalid ones
-    {"%41%a", L"%41%a", "#%41%a", Component(1, 5), true},
+      {"%41%a", L"%41%a", "#%41%a", Component(1, 5), true},
       // Invalid UTF-8/16 input should be flagged and the input made valid
-    {"\xc2", NULL, "#\xef\xbf\xbd", Component(1, 3), true},
-    {NULL, L"\xd800\x597d", "#\xef\xbf\xbd\xe5\xa5\xbd", Component(1, 6), true},
+      {"\xc2", NULL, "#%EF%BF%BD", Component(1, 9), true},
+      {NULL, L"\xd800\x597d", "#%EF%BF%BD%E5%A5%BD", Component(1, 18), true},
       // Test a Unicode invalid character.
-    {"a\xef\xb7\x90", L"a\xfdd0", "#a\xef\xbf\xbd", Component(1, 4), true},
+      {"a\xef\xb7\x90", L"a\xfdd0", "#a%EF%BF%BD", Component(1, 10), true},
       // Refs can have # signs and we should preserve them.
-    {"asdf#qwer", L"asdf#qwer", "#asdf#qwer", Component(1, 9), true},
-    {"#asdf", L"#asdf", "##asdf", Component(1, 5), true},
+      {"asdf#qwer", L"asdf#qwer", "#asdf#qwer", Component(1, 9), true},
+      {"#asdf", L"#asdf", "##asdf", Component(1, 5), true},
   };
 
   for (size_t i = 0; i < arraysize(ref_cases); i++) {
@@ -1351,49 +1353,56 @@ TEST(URLCanonTest, CanonicalizeStandardURL) {
     const char* expected;
     bool expected_success;
   } cases[] = {
-    {"http://www.google.com/foo?bar=baz#", "http://www.google.com/foo?bar=baz#", true},
-    {"http://[www.google.com]/", "http://[www.google.com]/", false},
-    {"ht\ttp:@www.google.com:80/;p?#", "ht%09tp://www.google.com:80/;p?#", false},
-    {"http:////////user:@google.com:99?foo", "http://user@google.com:99/?foo", true},
-    {"www.google.com", ":www.google.com/", false},
-    {"http://192.0x00A80001", "http://192.168.0.1/", true},
-    {"http://www/foo%2Ehtml", "http://www/foo.html", true},
-    {"http://user:pass@/", "http://user:pass@/", false},
-    {"http://%25DOMAIN:foobar@foodomain.com/", "http://%25DOMAIN:foobar@foodomain.com/", true},
+      {"http://www.google.com/foo?bar=baz#",
+       "http://www.google.com/foo?bar=baz#", true},
+      {"http://[www.google.com]/", "http://[www.google.com]/", false},
+      {"ht\ttp:@www.google.com:80/;p?#", "ht%09tp://www.google.com:80/;p?#",
+       false},
+      {"http:////////user:@google.com:99?foo", "http://user@google.com:99/?foo",
+       true},
+      {"www.google.com", ":www.google.com/", false},
+      {"http://192.0x00A80001", "http://192.168.0.1/", true},
+      {"http://www/foo%2Ehtml", "http://www/foo.html", true},
+      {"http://user:pass@/", "http://user:pass@/", false},
+      {"http://%25DOMAIN:foobar@foodomain.com/",
+       "http://%25DOMAIN:foobar@foodomain.com/", true},
 
       // Backslashes should get converted to forward slashes.
-    {"http:\\\\www.google.com\\foo", "http://www.google.com/foo", true},
+      {"http:\\\\www.google.com\\foo", "http://www.google.com/foo", true},
 
       // Busted refs shouldn't make the whole thing fail.
-    {"http://www.google.com/asdf#\xc2", "http://www.google.com/asdf#\xef\xbf\xbd", true},
+      {"http://www.google.com/asdf#\xc2",
+       "http://www.google.com/asdf#%EF%BF%BD", true},
 
       // Basic port tests.
-    {"http://foo:80/", "http://foo/", true},
-    {"http://foo:81/", "http://foo:81/", true},
-    {"httpa://foo:80/", "httpa://foo:80/", true},
-    {"http://foo:-80/", "http://foo:-80/", false},
+      {"http://foo:80/", "http://foo/", true},
+      {"http://foo:81/", "http://foo:81/", true},
+      {"httpa://foo:80/", "httpa://foo:80/", true},
+      {"http://foo:-80/", "http://foo:-80/", false},
 
-    {"https://foo:443/", "https://foo/", true},
-    {"https://foo:80/", "https://foo:80/", true},
-    {"ftp://foo:21/", "ftp://foo/", true},
-    {"ftp://foo:80/", "ftp://foo:80/", true},
-    {"gopher://foo:70/", "gopher://foo/", true},
-    {"gopher://foo:443/", "gopher://foo:443/", true},
-    {"ws://foo:80/", "ws://foo/", true},
-    {"ws://foo:81/", "ws://foo:81/", true},
-    {"ws://foo:443/", "ws://foo:443/", true},
-    {"ws://foo:815/", "ws://foo:815/", true},
-    {"wss://foo:80/", "wss://foo:80/", true},
-    {"wss://foo:81/", "wss://foo:81/", true},
-    {"wss://foo:443/", "wss://foo/", true},
-    {"wss://foo:815/", "wss://foo:815/", true},
+      {"https://foo:443/", "https://foo/", true},
+      {"https://foo:80/", "https://foo:80/", true},
+      {"ftp://foo:21/", "ftp://foo/", true},
+      {"ftp://foo:80/", "ftp://foo:80/", true},
+      {"gopher://foo:70/", "gopher://foo/", true},
+      {"gopher://foo:443/", "gopher://foo:443/", true},
+      {"ws://foo:80/", "ws://foo/", true},
+      {"ws://foo:81/", "ws://foo:81/", true},
+      {"ws://foo:443/", "ws://foo:443/", true},
+      {"ws://foo:815/", "ws://foo:815/", true},
+      {"wss://foo:80/", "wss://foo:80/", true},
+      {"wss://foo:81/", "wss://foo:81/", true},
+      {"wss://foo:443/", "wss://foo/", true},
+      {"wss://foo:815/", "wss://foo:815/", true},
 
       // This particular code path ends up "backing up" to replace an invalid
       // host ICU generated with an escaped version. Test that in the context
       // of a full URL to make sure the backing up doesn't mess up the non-host
       // parts of the URL. "EF B9 AA" is U+FE6A which is a type of percent that
       // ICU will convert to an ASCII one, generating "%81".
-    {"ws:)W\x1eW\xef\xb9\xaa""81:80/", "ws://%29w%1ew%81/", false},
+      {"ws:)W\x1eW\xef\xb9\xaa"
+       "81:80/",
+       "ws://%29w%1ew%81/", false},
   };
 
   for (size_t i = 0; i < arraysize(cases); i++) {
@@ -1683,41 +1692,57 @@ TEST(URLCanonTest, CanonicalizeFileURL) {
   } cases[] = {
 #ifdef _WIN32
       // Windows-style paths
-    {"file:c:\\foo\\bar.html", "file:///C:/foo/bar.html", true, Component(), Component(7, 16)},
-    {"  File:c|////foo\\bar.html", "file:///C:////foo/bar.html", true, Component(), Component(7, 19)},
-    {"file:", "file:///", true, Component(), Component(7, 1)},
-    {"file:UNChost/path", "file://unchost/path", true, Component(7, 7), Component(14, 5)},
+      {"file:c:\\foo\\bar.html", "file:///C:/foo/bar.html", true, Component(),
+       Component(7, 16)},
+      {"  File:c|////foo\\bar.html", "file:///C:////foo/bar.html", true,
+       Component(), Component(7, 19)},
+      {"file:", "file:///", true, Component(), Component(7, 1)},
+      {"file:UNChost/path", "file://unchost/path", true, Component(7, 7),
+       Component(14, 5)},
       // CanonicalizeFileURL supports absolute Windows style paths for IE
       // compatibility. Note that the caller must decide that this is a file
       // URL itself so it can call the file canonicalizer. This is usually
       // done automatically as part of relative URL resolving.
-    {"c:\\foo\\bar", "file:///C:/foo/bar", true, Component(), Component(7, 11)},
-    {"C|/foo/bar", "file:///C:/foo/bar", true, Component(), Component(7, 11)},
-    {"/C|\\foo\\bar", "file:///C:/foo/bar", true, Component(), Component(7, 11)},
-    {"//C|/foo/bar", "file:///C:/foo/bar", true, Component(), Component(7, 11)},
-    {"//server/file", "file://server/file", true, Component(7, 6), Component(13, 5)},
-    {"\\\\server\\file", "file://server/file", true, Component(7, 6), Component(13, 5)},
-    {"/\\server/file", "file://server/file", true, Component(7, 6), Component(13, 5)},
+      {"c:\\foo\\bar", "file:///C:/foo/bar", true, Component(),
+       Component(7, 11)},
+      {"C|/foo/bar", "file:///C:/foo/bar", true, Component(), Component(7, 11)},
+      {"/C|\\foo\\bar", "file:///C:/foo/bar", true, Component(),
+       Component(7, 11)},
+      {"//C|/foo/bar", "file:///C:/foo/bar", true, Component(),
+       Component(7, 11)},
+      {"//server/file", "file://server/file", true, Component(7, 6),
+       Component(13, 5)},
+      {"\\\\server\\file", "file://server/file", true, Component(7, 6),
+       Component(13, 5)},
+      {"/\\server/file", "file://server/file", true, Component(7, 6),
+       Component(13, 5)},
       // We should preserve the number of slashes after the colon for IE
       // compatibility, except when there is none, in which case we should
       // add one.
-    {"file:c:foo/bar.html", "file:///C:/foo/bar.html", true, Component(), Component(7, 16)},
-    {"file:/\\/\\C:\\\\//foo\\bar.html", "file:///C:////foo/bar.html", true, Component(), Component(7, 19)},
+      {"file:c:foo/bar.html", "file:///C:/foo/bar.html", true, Component(),
+       Component(7, 16)},
+      {"file:/\\/\\C:\\\\//foo\\bar.html", "file:///C:////foo/bar.html", true,
+       Component(), Component(7, 19)},
       // Three slashes should be non-UNC, even if there is no drive spec (IE
       // does this, which makes the resulting request invalid).
-    {"file:///foo/bar.txt", "file:///foo/bar.txt", true, Component(), Component(7, 12)},
+      {"file:///foo/bar.txt", "file:///foo/bar.txt", true, Component(),
+       Component(7, 12)},
       // TODO(brettw) we should probably fail for invalid host names, which
       // would change the expected result on this test. We also currently allow
       // colon even though it's probably invalid, because its currently the
       // "natural" result of the way the canonicalizer is written. There doesn't
       // seem to be a strong argument for why allowing it here would be bad, so
       // we just tolerate it and the load will fail later.
-    {"FILE:/\\/\\7:\\\\//foo\\bar.html", "file://7:////foo/bar.html", false, Component(7, 2), Component(9, 16)},
-    {"file:filer/home\\me", "file://filer/home/me", true, Component(7, 5), Component(12, 8)},
+      {"FILE:/\\/\\7:\\\\//foo\\bar.html", "file://7:////foo/bar.html", false,
+       Component(7, 2), Component(9, 16)},
+      {"file:filer/home\\me", "file://filer/home/me", true, Component(7, 5),
+       Component(12, 8)},
       // Make sure relative paths can't go above the "C:"
-    {"file:///C:/foo/../../../bar.html", "file:///C:/bar.html", true, Component(), Component(7, 12)},
+      {"file:///C:/foo/../../../bar.html", "file:///C:/bar.html", true,
+       Component(), Component(7, 12)},
       // Busted refs shouldn't make the whole thing fail.
-    {"file:///C:/asdf#\xc2", "file:///C:/asdf#\xef\xbf\xbd", true, Component(), Component(7, 8)},
+      {"file:///C:/asdf#\xc2", "file:///C:/asdf#%EF%BF%BD", true, Component(),
+       Component(7, 8)},
 #else
       // Unix-style paths
     {"file:///home/me", "file:///home/me", true, Component(), Component(7, 8)},

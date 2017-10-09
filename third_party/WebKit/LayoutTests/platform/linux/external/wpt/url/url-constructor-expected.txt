@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 513 tests; 398 PASS, 115 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 513 tests; 401 PASS, 112 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL.searchParams getter
 PASS URL.searchParams updating, clearing
 PASS URL.searchParams setter, invalid values
@@ -107,7 +107,7 @@ PASS Parsing: </a/b/c> against <http://example.org/foo/bar>
 PASS Parsing: </a/ /c> against <http://example.org/foo/bar>
 PASS Parsing: </a%2fc> against <http://example.org/foo/bar>
 PASS Parsing: </a/%2f/c> against <http://example.org/foo/bar>
-FAIL Parsing: <#β> against <http://example.org/foo/bar> assert_equals: href expected "http://example.org/foo/bar#%CE%B2" but got "http://example.org/foo/bar#β"
+PASS Parsing: <#β> against <http://example.org/foo/bar>
 PASS Parsing: <data:text/html,test#test> against <http://example.org/foo/bar>
 PASS Parsing: <tel:1234567890> against <http://example.org/foo/bar>
 FAIL Parsing: <file:c:\foo\bar.html> against <file:///tmp/mock/path> assert_equals: href expected "file:///c:/foo/bar.html" but got "file:///tmp/mock/c:/foo/bar.html"
@@ -166,7 +166,7 @@ PASS Parsing: <http://example.com/‥/foo> against <about:blank>
 PASS Parsing: <http://example.com/﻿/foo> against <about:blank>
 PASS Parsing: <http://example.com/‮/foo/‭/bar> against <about:blank>
 PASS Parsing: <http://www.google.com/foo?bar=baz#> against <about:blank>
-FAIL Parsing: <http://www.google.com/foo?bar=baz# »> against <about:blank> assert_equals: href expected "http://www.google.com/foo?bar=baz# %C2%BB" but got "http://www.google.com/foo?bar=baz# »"
+PASS Parsing: <http://www.google.com/foo?bar=baz# »> against <about:blank>
 PASS Parsing: <data:test# »> against <about:blank>
 PASS Parsing: <http://www.google.com> against <about:blank>
 PASS Parsing: <http://192.0x00A80001> against <about:blank>
@@ -272,7 +272,7 @@ PASS Parsing: <http://﷐zyx.com> against <http://other.com/>
 PASS Parsing: <http://%ef%b7%90zyx.com> against <http://other.com/>
 PASS Parsing: <https://�> against <about:blank>
 PASS Parsing: <https://%EF%BF%BD> against <about:blank>
-FAIL Parsing: <https://x/�?�#�> against <about:blank> assert_equals: href expected "https://x/%EF%BF%BD?%EF%BF%BD#%EF%BF%BD" but got "https://x/%EF%BF%BD?%EF%BF%BD#\ufffd"
+PASS Parsing: <https://x/�?�#�> against <about:blank>
 PASS Parsing: <http://Ｇｏ.com> against <http://other.com/>
 FAIL Parsing: <http://％４１.com> against <http://other.com/> assert_throws: function "function () {\n          bURL(expected.input, expected.base)\n        }" did not throw
 FAIL Parsing: <http://%ef%bc%85%ef%bc%94%ef%bc%91.com> against <http://other.com/> assert_throws: function "function () {\n          bURL(expected.input, expected.base)\n        }" did not throw

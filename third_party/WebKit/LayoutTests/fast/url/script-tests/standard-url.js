@@ -2,7 +2,7 @@ description("Canonicalization of standard URLs");
 
 cases = [
   ["http://www.google.com/foo?bar=baz#", "http://www.google.com/foo?bar=baz#"],
-  ["http://www.google.com/foo?bar=baz# \u00bb", "http://www.google.com/foo?bar=baz# \u00bb"],
+  ["http://www.google.com/foo?bar=baz# \u00bb", "http://www.google.com/foo?bar=baz# %C2%BB"],
   ["http://[www.google.com]/", "http://[www.google.com]/"],
   ["http://www.google.com", "http://www.google.com/"],
   // Disabled because whitespace gets treated different in this API.
@@ -17,7 +17,7 @@ cases = [
   // Backslashes should get converted to forward slashes.
   ["http:\\\\\\\\www.google.com\\\\foo", "http://www.google.com/foo"],
   // Busted refs shouldn't make the whole thing fail.
-  ["http://www.google.com/asdf#\\ud800", "http://www.google.com/asdf#\\uFFFD"],
+  ["http://www.google.com/asdf#\\ud800", "http://www.google.com/asdf#%EF%BF%BD"],
   // Basic port tests.
   ["http://foo:80/", "http://foo/"],
   ["http://foo:81/", "http://foo:81/"],

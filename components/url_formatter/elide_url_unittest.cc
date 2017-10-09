@@ -338,13 +338,14 @@ TEST(TextEliderTest, TestElisionSpecialCases) {
 
       // Unescaping.
       {"http://www/%E4%BD%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-       "www/\xe4\xbd\xa0\xe5\xa5\xbd?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
+       "www/\xe4\xbd\xa0\xe5\xa5\xbd?q=\xe4\xbd\xa0\xe5\xa5\xbd#" +
+           kEllipsisStr},
 
       // Invalid unescaping for path. The ref will always be valid UTF-8. We
       // don't bother to do too many edge cases, since these are handled by the
       // escaper unittest.
       {"http://www/%E4%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-       "www/%E4%A0%E5%A5%BD?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
+       "www/%E4%A0%E5%A5%BD?q=\xe4\xbd\xa0\xe5\xa5\xbd#" + kEllipsisStr},
   };
 
   RunElisionTest(testcases);

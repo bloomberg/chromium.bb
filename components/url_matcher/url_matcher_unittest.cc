@@ -168,7 +168,7 @@ TEST(URLMatcherConditionFactoryTest, GURLCharacterSet) {
   EXPECT_TRUE(base::IsStringASCII(url.host()));
   EXPECT_TRUE(base::IsStringASCII(url.path()));
   EXPECT_TRUE(base::IsStringASCII(url.query()));
-  EXPECT_FALSE(base::IsStringASCII(url.ref()));
+  EXPECT_TRUE(base::IsStringASCII(url.ref()));
 }
 
 TEST(URLMatcherConditionFactoryTest, Criteria) {
