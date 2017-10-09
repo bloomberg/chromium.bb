@@ -46,5 +46,4 @@ if (is_debug) {
   ar_service_environment = "prod"
 }
 
-daemon_controller_guid = "655bd819-c08c-4b04-80c2-f160739ff6ef"
 rdp_desktop_session_guid = "6a7699f0-ee43-43e7-aa30-a6738f9bd470"

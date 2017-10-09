@@ -1,7 +1,6 @@
 {
   "defines": {
     "Branding": "@@BRANDING@@",
-    "ControllerClsid": "@@DAEMON_CONTROLLER_CLSID@@",
     "OfficialBuild": "@@OFFICIAL_BUILD@@",
     "RdpDesktopSessionClsid": "@@RDP_DESKTOP_SESSION_CLSID@@",
     "Version": "@@VERSION@@"
