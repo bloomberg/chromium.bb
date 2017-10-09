@@ -3177,7 +3177,7 @@ split_static_library("browser") {
         "service_process/service_process_control.h",
         "service_process/service_process_control_mac.mm",
       ]
-      deps += [ "//chrome/common:service_process_mojom" ]
+      public_deps += [ "//chrome/common:service_process_mojom" ]
     } else {
       # Partial-only printing support.
       sources += [
