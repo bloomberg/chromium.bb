@@ -16,27 +16,12 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_WIN) && defined(COMPILER_MSVC)
-// TODO(meade): Delete the Windows+MSVC-specific code when we stop compiling
-// blink with MSVC. In the meantime, this special implementation is required
-// because MSVC doesn't initialize vtables for objects defined as constexpr.
-// Not using constexpr is considerably slower, however we don't ship any
-// real builds using MSVC, and this is just to avoid crashing bots that
-// still need to use MSVC (e.g. for the dEQP tests, which use exceptions).
-// See http://crbug.com/753010.
-#define STATIC_CONSTEXPR static const
-#define STATIC_CONSTEXPR_CONST static const
-#else
-#define STATIC_CONSTEXPR static constexpr
-#define STATIC_CONSTEXPR_CONST static constexpr const
-#endif
-
 {% for api_class in api_classnames %}
-STATIC_CONSTEXPR {{api_class}} api_{{api_class.lower()}};
+static constexpr {{api_class}} api_{{api_class.lower()}};
 {% endfor %}
 
 const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
-  STATIC_CONSTEXPR_CONST CSSPropertyAPI* const property_apis[] = {
+  static constexpr const CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
     &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
     {% endfor %}
@@ -44,8 +29,6 @@ const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
   // Subtract 1 because CSSPropertyInvalid does not appear in the array.
   return *property_apis[id - 1];
 }
-#undef STATIC_CONSTEXPR
-#undef STATIC_CONSTEXPR_CONST
 
 } // namespace
 

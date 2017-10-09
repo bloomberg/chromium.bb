@@ -24,9 +24,7 @@ class CSSPropertyAPI {
  public:
   CORE_EXPORT static const CSSPropertyAPI& Get(CSSPropertyID);
 
-#if !defined(OS_WIN) || !defined(COMPILER_MSVC)
   constexpr CSSPropertyAPI() {}
-#endif
 
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.
