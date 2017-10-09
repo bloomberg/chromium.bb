@@ -46,6 +46,8 @@ class CSSValue;
 
 class {{api_classname}} : public CSSPropertyAPI {
  public:
+  constexpr {{api_classname}}(CSSPropertyID id) : CSSPropertyAPI(id) {}
+
   {% for api_method in property.api_methods %}
   {{api_method.return_type}} {{api_method.name}}{{api_method.parameters}} const override;
   {% endfor %}
