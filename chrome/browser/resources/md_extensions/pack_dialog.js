@@ -6,32 +6,31 @@ cr.define('extensions', function() {
   'use strict';
 
   /** @interface */
-  function PackDialogDelegate() {}
-
-  PackDialogDelegate.prototype = {
+  class PackDialogDelegate {
     /**
      * Opens a file browser for the user to select the root directory.
      * @return {Promise<string>} A promise that is resolved with the path the
      *     user selected.
      */
-    choosePackRootDirectory: assertNotReached,
+    choosePackRootDirectory() {}
 
     /**
      * Opens a file browser for the user to select the private key file.
      * @return {Promise<string>} A promise that is resolved with the path the
      *     user selected.
      */
-    choosePrivateKeyPath: assertNotReached,
+    choosePrivateKeyPath() {}
 
     /**
      * Packs the extension into a .crx.
      * @param {string} rootPath
      * @param {string} keyPath
      * @param {number=} flag
-     * @param {function(chrome.developerPrivate.PackDirectoryResponse)=} callback
+     * @param {function(chrome.developerPrivate.PackDirectoryResponse)=}
+     *     callback
      */
-    packExtension: assertNotReached,
-  };
+    packExtension(rootPath, keyPath, flag, callback) {}
+  }
 
   const PackDialog = Polymer({
     is: 'extensions-pack-dialog',

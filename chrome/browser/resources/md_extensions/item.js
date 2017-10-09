@@ -4,57 +4,55 @@
 
 cr.define('extensions', function() {
   /** @interface */
-  const ItemDelegate = function() {};
-
-  ItemDelegate.prototype = {
+  class ItemDelegate {
     /** @param {string} id */
-    deleteItem: assertNotReached,
+    deleteItem(id) {}
 
     /**
      * @param {string} id
      * @param {boolean} isEnabled
      */
-    setItemEnabled: assertNotReached,
+    setItemEnabled(id, isEnabled) {}
 
     /**
      * @param {string} id
      * @param {boolean} isAllowedIncognito
      */
-    setItemAllowedIncognito: assertNotReached,
+    setItemAllowedIncognito(id, isAllowedIncognito) {}
 
     /**
      * @param {string} id
      * @param {boolean} isAllowedOnFileUrls
      */
-    setItemAllowedOnFileUrls: assertNotReached,
+    setItemAllowedOnFileUrls(id, isAllowedOnFileUrls) {}
 
     /**
      * @param {string} id
      * @param {boolean} isAllowedOnAllSites
      */
-    setItemAllowedOnAllSites: assertNotReached,
+    setItemAllowedOnAllSites(id, isAllowedOnAllSites) {}
 
     /**
      * @param {string} id
      * @param {boolean} collectsErrors
      */
-    setItemCollectsErrors: assertNotReached,
+    setItemCollectsErrors(id, collectsErrors) {}
 
     /**
      * @param {string} id
      * @param {chrome.developerPrivate.ExtensionView} view
      */
-    inspectItemView: assertNotReached,
+    inspectItemView(id, view) {}
 
     /** @param {string} id */
-    reloadItem: assertNotReached,
+    reloadItem(id) {}
 
     /** @param {string} id */
-    repairItem: assertNotReached,
+    repairItem(id) {}
 
     /** @param {string} id */
-    showItemOptionsPage: assertNotReached,
-  };
+    showItemOptionsPage(id) {}
+  }
 
   const Item = Polymer({
     is: 'extensions-item',

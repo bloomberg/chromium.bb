@@ -173,7 +173,6 @@
     {
       'target_name': 'pack_dialog',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):developer_private',
       ],
@@ -219,7 +218,6 @@
     {
       'target_name': 'toolbar',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
