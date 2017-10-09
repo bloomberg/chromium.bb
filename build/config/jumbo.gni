@@ -64,26 +64,36 @@ template("internal_jumbo_target") {
     excluded_sources += invoker.jumbo_excluded_sources
   }
 
-  invoker_sources = invoker.sources
-  gen_target_dir = get_path_info(invoker_sources[0], "gen_dir")
-  assert(excluded_sources != [] || true)  # Prevent "unused variable".
+  if (defined(invoker.sources)) {
+    invoker_sources = invoker.sources
+  } else {
+    invoker_sources = []
+  }
 
-  # Find the gen_target_dir directory with shortest path. Short paths
-  # are nice in themselves since they mean shorter error messages and
-  # fewer bytes to parse, but the currently deployed version of ninja
-  # also has a limitation where it only allows 32 path components in
-  # Windows.
-  # See https://crbug.com/738186 and
-  # https://github.com/ninja-build/ninja/issues/1161
-  foreach(source_file, invoker.sources) {
-    possibly_better_gen_target_dir = get_path_info(gen_target_dir, "dir")
-    possibly_better_gen_target_dir_2 =
-        get_path_info(possibly_better_gen_target_dir, "dir")
-    alt_gen_target_dir = get_path_info(source_file, "gen_dir")
-    if (alt_gen_target_dir == possibly_better_gen_target_dir ||
-        alt_gen_target_dir == possibly_better_gen_target_dir_2) {
-      gen_target_dir = alt_gen_target_dir
+  if (invoker_sources != []) {
+    gen_target_dir = get_path_info(invoker_sources[0], "gen_dir")
+    assert(excluded_sources != [] || true)  # Prevent "unused variable".
+
+    # Find the gen_target_dir directory with shortest path. Short paths
+    # are nice in themselves since they mean shorter error messages and
+    # fewer bytes to parse, but the currently deployed version of ninja
+    # also has a limitation where it only allows 32 path components in
+    # Windows.
+    # See https://crbug.com/738186 and
+    # https://github.com/ninja-build/ninja/issues/1161
+    foreach(source_file, invoker_sources) {
+      possibly_better_gen_target_dir = get_path_info(gen_target_dir, "dir")
+      possibly_better_gen_target_dir_2 =
+          get_path_info(possibly_better_gen_target_dir, "dir")
+      alt_gen_target_dir = get_path_info(source_file, "gen_dir")
+      if (alt_gen_target_dir == possibly_better_gen_target_dir ||
+          alt_gen_target_dir == possibly_better_gen_target_dir_2) {
+        gen_target_dir = alt_gen_target_dir
+      }
     }
+  } else {
+    gen_target_dir = "<will not be used>"  # Will not result in
+                                           # anything used anyway.
   }
 
   assert(gen_target_dir != "")  # Prevent "unused variable".
@@ -95,7 +105,7 @@ template("internal_jumbo_target") {
     current_file_index = 0
     next_chunk_start = 0
     next_chunk_number = 1
-    foreach(source_file, invoker.sources) {
+    foreach(source_file, invoker_sources) {
       if (get_path_info(source_file, "extension") != "h") {
         if (current_file_index == next_chunk_start) {
           jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_" +
@@ -107,19 +117,20 @@ template("internal_jumbo_target") {
       }
     }
 
-    if (jumbo_files == []) {
-      # Empty sources list or a sources list with only header files.
+    if (jumbo_files == [] || current_file_index == 1) {
+      # Empty sources list or a sources list with only header files or
+      # at most one non-header file.
       use_jumbo_build_for_target = false
-      assert(current_file_index == 0)  # Prevent "unused variable"
-      assert(next_chunk_start == 0)  # Prevent "unused variable"
-      assert(next_chunk_number == 1)  # Prevent "unused variable"
+      assert(current_file_index <= 1)  # Prevent "unused variable"
+      assert(next_chunk_start >= 0)  # Prevent "unused variable"
+      assert(next_chunk_number <= 2)  # Prevent "unused variable"
     }
   }
 
   if (use_jumbo_build_for_target) {
     has_objective_c_file = false
     has_c_file = false
-    foreach(source_file, invoker.sources) {
+    foreach(source_file, invoker_sources) {
       source_ext = get_path_info(source_file, "extension")
       if (source_ext == "c") {
         has_c_file = true
@@ -140,7 +151,7 @@ template("internal_jumbo_target") {
     action(merge_action_name) {
       script = "//build/config/merge_for_jumbo.py"
       response_file_contents =
-          rebase_path(invoker.sources - excluded_sources, gen_target_dir)
+          rebase_path(invoker_sources - excluded_sources, gen_target_dir)
       outputs = jumbo_files
       args = [ "--outputs" ] + rebase_path(outputs, root_build_dir) +
              [ "--file-list={{response_file_name}}" ]
@@ -148,7 +159,7 @@ template("internal_jumbo_target") {
   } else {
     # If the list subtraction triggers a gn error,
     # jumbo_excluded_sources lists a file that is not in sources.
-    sources_after_exclusion = invoker.sources - excluded_sources
+    sources_after_exclusion = invoker_sources - excluded_sources
     assert(sources_after_exclusion != [] || true)  # Prevent "unused variable".
   }
 
@@ -180,7 +191,7 @@ template("internal_jumbo_target") {
 
       # Need to keep the headers in sources so that dependency checks
       # work.
-      foreach(source_file, invoker.sources) {
+      foreach(source_file, invoker_sources) {
         if (get_path_info(source_file, "extension") == "h") {
           sources += [ source_file ]
         }
