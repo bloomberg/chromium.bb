@@ -256,6 +256,10 @@ static bool NeedsScrollOrScrollTranslation(const LayoutObject& object) {
   return !scroll_offset.IsZero() || NeedsScrollNode(object);
 }
 
+static bool NeedsSVGLocalToBorderBoxTransform(const LayoutObject& object) {
+  return object.IsSVGRoot();
+}
+
 static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
@@ -271,6 +275,8 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
     return true;
   }
   if (NeedsScrollOrScrollTranslation(object))
+    return true;
+  if (NeedsSVGLocalToBorderBoxTransform(object))
     return true;
   return false;
 }
@@ -844,8 +850,7 @@ void PaintPropertyTreeBuilder::UpdateLocalBorderBoxContext(
   if (!object.NeedsPaintPropertyUpdate() && !force_subtree_update)
     return;
 
-  // We only need to cache the local border box properties for layered objects.
-  if (!object.HasLayer()) {
+  if (!object.HasLayer() && !NeedsPaintOffsetTranslation(object)) {
     if (fragment_data)
       fragment_data->ClearLocalBorderBoxProperties();
   } else {
@@ -1027,10 +1032,6 @@ void PaintPropertyTreeBuilder::UpdatePerspective(
     context.current.transform = properties.Perspective();
     context.current.should_flatten_inherited_transform = false;
   }
-}
-
-static bool NeedsSVGLocalToBorderBoxTransform(const LayoutObject& object) {
-  return object.IsSVGRoot();
 }
 
 void PaintPropertyTreeBuilder::UpdateSvgLocalToBorderBoxTransform(

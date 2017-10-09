@@ -28,6 +28,10 @@ class ReplacedPainter {
                    const LayoutPoint& adjusted_paint_offset) const;
 
  private:
+  bool ShouldAdjustForPaintOffsetTranslation(
+      const PaintInfo&,
+      const LayoutPoint& paint_offset) const;
+
   const LayoutReplaced& layout_replaced_;
 };
 
