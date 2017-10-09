@@ -765,6 +765,8 @@ class HostResolverImpl::ProcTask
   // mutate.
   void DoLookup(const base::TimeTicks& start_time,
                 const uint32_t attempt_number) {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_heap_context(
+        "net/dns/proctask");
     AddressList results;
     int os_error = 0;
     int error = params_.resolver_proc->Resolve(key_.hostname,
