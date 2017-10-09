@@ -379,8 +379,6 @@ split_static_library("ui") {
     "//components/bubble:bubble",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/content_settings/core/browser",
-    "//components/crash/content/app",
-    "//components/crash/core/browser",
     "//components/crx_file",
     "//components/data_reduction_proxy/core/browser",
     "//components/device_event_log",
@@ -522,6 +520,14 @@ split_static_library("ui") {
     "//v8:v8_version",
   ]
   allow_circular_includes_from = []
+
+  if (!is_fuchsia) {
+    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+    deps += [
+      "//components/crash/content/app",
+      "//components/crash/core/browser",
+    ]
+  }
 
   if (is_android || is_linux) {
     sources += [

@@ -18,7 +18,7 @@ source_set("net") {
     "net_util_cast.h",
   ]
 
-  if (!is_android) {
+  if (is_linux) {
     sources += [
       "network_change_notifier_factory_cast.cc",
       "network_change_notifier_factory_cast.h",

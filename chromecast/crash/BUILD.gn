@@ -5,6 +5,10 @@
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
+# Crash reporting is not support on Fuchsia yet
+# TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+assert(!is_fuchsia)
+
 source_set("crash") {
   sources = [
     "app_state_tracker.cc",

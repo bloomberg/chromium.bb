@@ -871,7 +871,9 @@ if (!is_android) {
       ]
     }
   }
+}
 
+if (!is_android && !is_fuchsia) {
   static_library("sync_integration_test_support") {
     testonly = true
     sources = [
@@ -1539,7 +1541,6 @@ test("browser_tests") {
       "../browser/ui/webui/log_web_ui_url_browsertest.cc",
       "../browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.cc",
       "../browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.h",
-      "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.h",
       "../browser/ui/webui/ntp/new_tab_ui_browsertest.cc",
@@ -1608,7 +1609,6 @@ test("browser_tests") {
     ]
 
     deps += [
-      ":sync_integration_test_support",
       ":test_support_ui",
       "//base:i18n",
       "//base/test:test_support",
@@ -1618,7 +1618,6 @@ test("browser_tests") {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/renderer",
-      "//chrome/test/media_router:media_router_browsertests",
       "//components/autofill/content/browser:risk_proto",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
@@ -1666,6 +1665,10 @@ test("browser_tests") {
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:browser_tests_js_webui" ]
+    }
+
+    if (!is_fuchsia) {
+      deps += [ ":sync_integration_test_support" ]
     }
 
     # Runtime dependencies
@@ -2005,10 +2008,12 @@ test("browser_tests") {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_browsertest_win.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
+        "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc",
       ]
 
       deps += [
         "//chrome/common/extensions/api",
+        "//chrome/test/media_router:media_router_browsertests",
         "//components/guest_view/browser:test_support",
         "//components/keep_alive_registry",
 
@@ -2411,9 +2416,6 @@ test("browser_tests") {
       deps += [ "//content/public/common:feature_h264_with_openh264_ffmpeg" ]
     } else {
       sources -= [
-        "../browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc",
-        "../browser/extensions/api/webrtc_logging_private/webrtc_event_log_apitest.cc",
-        "../browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc",
         "../browser/media/webrtc/webrtc_apprtc_browsertest.cc",
         "../browser/media/webrtc/webrtc_audio_quality_browsertest.cc",
         "../browser/media/webrtc/webrtc_browsertest.cc",
@@ -2426,6 +2428,13 @@ test("browser_tests") {
         "../browser/media/webrtc/webrtc_video_quality_browsertest.cc",
         "../browser/media/webrtc/webrtc_webcam_browsertest.cc",
       ]
+      if (enable_extensions) {
+        sources -= [
+          "../browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc",
+          "../browser/extensions/api/webrtc_logging_private/webrtc_event_log_apitest.cc",
+          "../browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc",
+        ]
+      }
     }
     if (is_win) {
       deps += [
@@ -2692,7 +2701,7 @@ test("browser_tests") {
   }
 }
 
-if (!is_android) {
+if (!is_android && !is_fuchsia) {
   test("sync_integration_tests") {
     sources = [
       "../app/chrome_version.rc.version",
@@ -5114,8 +5123,11 @@ if (!is_android) {
       "//components/crash/core/common",
       "//components/flags_ui:switches",
       "//gpu/config:crash_keys",
-      "//third_party/breakpad:client",
     ]
+    if (!is_fuchsia) {
+      # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+      deps += [ "//third_party/breakpad:client" ]
+    }
   }
 }
 
