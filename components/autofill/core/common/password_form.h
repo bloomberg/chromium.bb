@@ -359,6 +359,10 @@ struct LessThanUniqueKey {
 base::string16 OtherPossibleUsernamesToString(
     const PossibleUsernamesVector& possible_usernames);
 
+// Converts a vector of possible passwords to string.
+base::string16 AllPossiblePasswordsToString(
+    const std::vector<base::string16>& possible_passwords);
+
 // For testing.
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
