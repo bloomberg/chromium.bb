@@ -12,9 +12,8 @@
 #include "components/leveldb/leveldb_database_impl.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
@@ -83,7 +82,7 @@ void LevelDBServiceImpl::OpenInMemory(
   options.max_open_files = 0;  // Use minimum.
 
   std::unique_ptr<leveldb::Env> env(
-      leveldb::NewMemEnv(leveldb::Env::Default()));
+      leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
   options.env = env.get();
 
   std::unique_ptr<leveldb::DB> db;
