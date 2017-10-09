@@ -80,7 +80,7 @@ bool ProofSourceChromium::GetProofInner(
     const QuicSocketAddress& server_addr,
     const string& hostname,
     const string& server_config,
-    QuicVersion quic_version,
+    QuicTransportVersion quic_version,
     QuicStringPiece chlo_hash,
     const QuicTagVector& /* connection_options */,
     QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
@@ -136,7 +136,7 @@ bool ProofSourceChromium::GetProofInner(
 void ProofSourceChromium::GetProof(const QuicSocketAddress& server_addr,
                                    const std::string& hostname,
                                    const std::string& server_config,
-                                   QuicVersion quic_version,
+                                   QuicTransportVersion quic_version,
                                    QuicStringPiece chlo_hash,
                                    const QuicTagVector& connection_options,
                                    std::unique_ptr<Callback> callback) {

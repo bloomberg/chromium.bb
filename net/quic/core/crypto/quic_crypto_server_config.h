@@ -273,7 +273,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const CryptoHandshakeMessage& client_hello,
       const QuicIpAddress& client_ip,
       const QuicSocketAddress& server_address,
-      QuicVersion version,
+      QuicTransportVersion version,
       const QuicClock* clock,
       QuicReferenceCountedPointer<QuicSignedServerConfig> crypto_proof,
       std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const;
@@ -314,8 +314,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicConnectionId connection_id,
       const QuicSocketAddress& server_address,
       const QuicSocketAddress& client_address,
-      QuicVersion version,
-      const QuicVersionVector& supported_versions,
+      QuicTransportVersion version,
+      const QuicTransportVersionVector& supported_versions,
       bool use_stateless_rejects,
       QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,
@@ -335,7 +335,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   //
   // |cached_network_params| is optional, and can be nullptr.
   void BuildServerConfigUpdateMessage(
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicStringPiece chlo_hash,
       const SourceAddressTokens& previous_source_address_tokens,
       const QuicSocketAddress& server_address,
@@ -484,7 +484,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // written to |info|.
   void EvaluateClientHello(
       const QuicSocketAddress& server_address,
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicReferenceCountedPointer<Config> requested_config,
       QuicReferenceCountedPointer<Config> primary_config,
       QuicReferenceCountedPointer<QuicSignedServerConfig> crypto_proof,
@@ -505,7 +505,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   void EvaluateClientHelloAfterGetProof(
       bool found_error,
       const QuicIpAddress& server_ip,
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicReferenceCountedPointer<Config> requested_config,
       QuicReferenceCountedPointer<Config> primary_config,
       QuicReferenceCountedPointer<QuicSignedServerConfig> crypto_proof,
@@ -528,8 +528,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       bool reject_only,
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
-      QuicVersion version,
-      const QuicVersionVector& supported_versions,
+      QuicTransportVersion version,
+      const QuicTransportVersionVector& supported_versions,
       bool use_stateless_rejects,
       QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,
@@ -545,7 +545,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicWallTime now,
       const Config& config,
       const CryptoHandshakeMessage& client_hello,
@@ -655,7 +655,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
         delete;
     BuildServerConfigUpdateMessageProofSourceCallback(
         const QuicCryptoServerConfig* config,
-        QuicVersion version,
+        QuicTransportVersion version,
         QuicCompressedCertsCache* compressed_certs_cache,
         const CommonCertSets* common_cert_sets,
         const QuicCryptoNegotiatedParameters& params,
@@ -669,7 +669,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
    private:
     const QuicCryptoServerConfig* config_;
-    const QuicVersion version_;
+    const QuicTransportVersion version_;
     QuicCompressedCertsCache* compressed_certs_cache_;
     const CommonCertSets* common_cert_sets_;
     const std::string client_common_set_hashes_;
@@ -683,7 +683,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // the proof has been acquired.  Finishes building the server config update
   // message and invokes |cb|.
   void FinishBuildServerConfigUpdateMessage(
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicCompressedCertsCache* compressed_certs_cache,
       const CommonCertSets* common_cert_sets,
       const std::string& client_common_set_hashes,

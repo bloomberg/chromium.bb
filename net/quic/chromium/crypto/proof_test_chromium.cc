@@ -56,7 +56,7 @@ void RunVerification(ProofVerifier* verifier,
                      const string& hostname,
                      const uint16_t port,
                      const string& server_config,
-                     QuicVersion quic_version,
+                     QuicTransportVersion quic_version,
                      QuicStringPiece chlo_hash,
                      const std::vector<string>& certs,
                      const string& proof,
@@ -115,13 +115,13 @@ class TestCallback : public ProofSource::Callback {
   QuicCryptoProof* proof_;
 };
 
-class ProofTest : public ::testing::TestWithParam<QuicVersion> {};
+class ProofTest : public ::testing::TestWithParam<QuicTransportVersion> {};
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(QuicVersion,
+INSTANTIATE_TEST_CASE_P(QuicTransportVersion,
                         ProofTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 // TODO(rtenneti): Enable testing of ProofVerifier. See http://crbug.com/514468.
 TEST_P(ProofTest, DISABLED_Verify) {
@@ -135,7 +135,7 @@ TEST_P(ProofTest, DISABLED_Verify) {
   const uint16_t port = 8443;
   const string first_chlo_hash = "first chlo hash bytes";
   const string second_chlo_hash = "first chlo hash bytes";
-  const QuicVersion quic_version = GetParam();
+  const QuicTransportVersion quic_version = GetParam();
 
   bool called = false;
   bool first_called = false;

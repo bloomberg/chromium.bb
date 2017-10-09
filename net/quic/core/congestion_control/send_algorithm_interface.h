@@ -16,6 +16,7 @@
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/core/quic_types.h"
 #include "net/quic/core/quic_unacked_packet_map.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -29,30 +30,6 @@ const QuicPacketCount kDefaultMaxCongestionWindowPackets = 2000;
 
 class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
-  struct AckedPacket {
-    AckedPacket(QuicPacketNumber packet_number,
-                QuicPacketLength bytes_acked,
-                QuicTime receive_timestamp)
-        : packet_number(packet_number),
-          bytes_acked(bytes_acked),
-          receive_timestamp(receive_timestamp) {}
-
-    QuicPacketNumber packet_number;
-    // Number of bytes sent in the packet that was acknowledged.
-    QuicPacketLength bytes_acked;
-    // The time |packet_number| was received by the peer, according to the
-    // optional timestamp the peer included in the ACK frame which acknowledged
-    // |packet_number|. Zero if no timestamp was available for this packet.
-    QuicTime receive_timestamp;
-  };
-
-  // A vector of acked packets.
-  typedef std::vector<AckedPacket> AckedPacketVector;
-
-  // A sorted vector of packets.
-  typedef std::vector<std::pair<QuicPacketNumber, QuicPacketLength>>
-      CongestionVector;
-
   static SendAlgorithmInterface* Create(
       const QuicClock* clock,
       const RttStats* rtt_stats,
@@ -80,7 +57,7 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
                                  QuicByteCount prior_in_flight,
                                  QuicTime event_time,
                                  const AckedPacketVector& acked_packets,
-                                 const CongestionVector& lost_packets) = 0;
+                                 const LostPacketVector& lost_packets) = 0;
 
   // Inform that we sent |bytes| to the wire, and if the packet is
   // retransmittable.  |bytes_in_flight| is the number of bytes in flight before
@@ -99,9 +76,9 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
   // Called when connection migrates and cwnd needs to be reset.
   virtual void OnConnectionMigration() = 0;
 
-  // Calculate the time until we can send the next packet.
-  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
-                                        QuicByteCount bytes_in_flight) = 0;
+  // Make decision on whether the sender can send right now.  Note that even
+  // when this method returns true, the sending can be delayed due to pacing.
+  virtual bool CanSend(QuicByteCount bytes_in_flight) = 0;
 
   // The pacing rate of the send algorithm.  May be zero if the rate is unknown.
   virtual QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const = 0;

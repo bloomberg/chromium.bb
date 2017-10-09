@@ -9,6 +9,7 @@
 #include <cstdint>
 
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
@@ -41,11 +42,14 @@ CubicBytes::CubicBytes(const QuicClock* clock)
       num_connections_(kDefaultNumConnections),
       epoch_(QuicTime::Zero()),
       last_update_time_(QuicTime::Zero()),
-      fix_convex_mode_(false),
-      fix_cubic_quantization_(false),
-      fix_beta_last_max_(false),
-      allow_per_ack_updates_(false) {
+      fix_convex_mode_(FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes),
+      fix_cubic_quantization_(fix_convex_mode_),
+      fix_beta_last_max_(fix_convex_mode_),
+      allow_per_ack_updates_(fix_convex_mode_) {
   ResetCubicState();
+  if (fix_convex_mode_) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_cubic_fixes, 2, 2);
+  }
 }
 
 void CubicBytes::SetNumConnections(int num_connections) {
@@ -179,6 +183,7 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
       ((event_time + delay_min - epoch_).ToMicroseconds() << 10) /
       kNumMicrosPerSecond;
 
+  // TODO(ianswett): Change to uint64_t once fix_convex_mode_ is always enabled.
   int64_t offset = time_to_origin_point_ - elapsed_time;
   if (fix_convex_mode_) {
     // Right-shifts of negative, signed numbers have

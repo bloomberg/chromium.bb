@@ -717,18 +717,19 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   return true;
 }
 
-SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
-                         HttpServerProperties* http_server_properties,
-                         TransportSecurityState* transport_security_state,
-                         const QuicVersionVector& quic_supported_versions,
-                         bool enable_sending_initial_data,
-                         bool enable_ping_based_connection_checking,
-                         size_t session_max_recv_window_size,
-                         const SettingsMap& initial_settings,
-                         TimeFunc time_func,
-                         ServerPushDelegate* push_delegate,
-                         ProxyDelegate* proxy_delegate,
-                         NetLog* net_log)
+SpdySession::SpdySession(
+    const SpdySessionKey& spdy_session_key,
+    HttpServerProperties* http_server_properties,
+    TransportSecurityState* transport_security_state,
+    const QuicTransportVersionVector& quic_supported_versions,
+    bool enable_sending_initial_data,
+    bool enable_ping_based_connection_checking,
+    size_t session_max_recv_window_size,
+    const SettingsMap& initial_settings,
+    TimeFunc time_func,
+    ServerPushDelegate* push_delegate,
+    ProxyDelegate* proxy_delegate,
+    NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
       pool_(NULL),
@@ -2985,10 +2986,10 @@ void SpdySession::OnAltSvc(
     // HttpStreamFactory::ProcessAlternativeServices
     // could use the the same function.
     // Check if QUIC version is supported. Filter supported QUIC versions.
-    QuicVersionVector advertised_versions;
+    QuicTransportVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !altsvc.version.empty()) {
       bool match_found = false;
-      for (const QuicVersion& supported : quic_supported_versions_) {
+      for (const QuicTransportVersion& supported : quic_supported_versions_) {
         for (const uint16_t& advertised : altsvc.version) {
           if (supported == advertised) {
             match_found = true;

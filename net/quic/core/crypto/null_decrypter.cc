@@ -26,6 +26,10 @@ bool NullDecrypter::SetNoncePrefix(QuicStringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }
 
+bool NullDecrypter::SetIV(QuicStringPiece iv) {
+  return iv.empty();
+}
+
 bool NullDecrypter::SetPreliminaryKey(QuicStringPiece key) {
   QUIC_BUG << "Should not be called";
   return false;
@@ -36,7 +40,7 @@ bool NullDecrypter::SetDiversificationNonce(const DiversificationNonce& nonce) {
   return true;
 }
 
-bool NullDecrypter::DecryptPacket(QuicVersion version,
+bool NullDecrypter::DecryptPacket(QuicTransportVersion version,
                                   QuicPacketNumber /*packet_number*/,
                                   QuicStringPiece associated_data,
                                   QuicStringPiece ciphertext,
@@ -87,7 +91,7 @@ bool NullDecrypter::ReadHash(QuicDataReader* reader, uint128* hash) {
   return true;
 }
 
-uint128 NullDecrypter::ComputeHash(QuicVersion version,
+uint128 NullDecrypter::ComputeHash(QuicTransportVersion version,
                                    const QuicStringPiece data1,
                                    const QuicStringPiece data2) const {
   uint128 correct_hash;

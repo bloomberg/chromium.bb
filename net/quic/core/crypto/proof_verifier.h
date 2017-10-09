@@ -78,7 +78,7 @@ class QUIC_EXPORT_PRIVATE ProofVerifier {
       const std::string& hostname,
       const uint16_t port,
       const std::string& server_config,
-      QuicVersion quic_version,
+      QuicTransportVersion transport_version,
       QuicStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,

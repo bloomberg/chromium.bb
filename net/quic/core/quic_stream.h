@@ -115,9 +115,7 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   bool fin_received() { return fin_received_; }
   bool fin_sent() { return fin_sent_; }
 
-  // TODO(fayang): Rename this function to BufferedDataBytes() when
-  // deprecating quic_reloadable_flag_quic_save_data_before_consumption2.
-  uint64_t queued_data_bytes() const;
+  uint64_t BufferedDataBytes() const;
 
   uint64_t stream_bytes_read() const { return stream_bytes_read_; }
   uint64_t stream_bytes_written() const { return stream_bytes_written_; }
@@ -169,7 +167,7 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   bool HasBufferedData() const;
 
   // Returns the version of QUIC being used for this stream.
-  QuicVersion version() const;
+  QuicTransportVersion transport_version() const;
 
   bool fin_received() const { return fin_received_; }
 
@@ -214,12 +212,10 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   // If |ack_listener| is provided, then it will be notified once all
   // the ACKs for this write have been received.
   // Returns the number of bytes consumed by the connection.
-  // Please note: when quic_reloadable_flag_quic_save_data_before_consumption2
-  // is true, returned consumed data is the amount of data saved in send buffer.
-  // The data is not necessarily consumed by the connection. So write side is
-  // closed when FIN is sent.
-  // TODO(fayang): Let WritevData return boolean when deprecating
-  // quic_reloadable_flag_quic_save_data_before_consumption2.
+  // Please note: Returned consumed data is the amount of data saved in send
+  // buffer. The data is not necessarily consumed by the connection. So write
+  // side is closed when FIN is sent.
+  // TODO(fayang): Let WritevData return boolean.
   QuicConsumedData WritevData(
       const struct iovec* iov,
       int iov_count,
@@ -309,15 +305,8 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   void MaybeSendBlocked();
 
   // Write buffered data in send buffer. TODO(fayang): Consider combine
-  // WriteOrBufferData, Writev and WriteBufferedData when deprecating
-  // quic_reloadable_flag_quic_save_data_before_consumption2.
+  // WriteOrBufferData, Writev and WriteBufferedData.
   void WriteBufferedData();
-
-  std::list<PendingData> queued_data_;
-  // How many bytes are queued?
-  // TODO(fayang): Remove this variable when deprecating
-  // quic_reloadable_flag_quic_save_data_before_consumption2.
-  uint64_t queued_data_bytes_;
 
   QuicStreamSequencer sequencer_;
   QuicStreamId id_;

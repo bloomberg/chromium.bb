@@ -118,7 +118,7 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
       MockQuicConnectionHelper* helper,
       MockAlarmFactory* alarm_factory,
       Perspective perspective,
-      const QuicVersionVector& supported_versions)
+      const QuicTransportVersionVector& supported_versions)
       : MockQuicConnection(helper,
                            alarm_factory,
                            perspective,
@@ -181,7 +181,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                  ack_listener));
 };
 
-class QuicSimpleServerSessionTest : public QuicTestWithParam<QuicVersion> {
+class QuicSimpleServerSessionTest
+    : public QuicTestWithParam<QuicTransportVersion> {
  protected:
   QuicSimpleServerSessionTest()
       : crypto_config_(QuicCryptoServerConfig::TESTING,
@@ -200,7 +201,7 @@ class QuicSimpleServerSessionTest : public QuicTestWithParam<QuicVersion> {
 
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        SupportedVersions(GetParam()));
+        SupportedTransportVersions(GetParam()));
     session_.reset(new MockQuicSimpleServerSession(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &response_cache_));
@@ -238,7 +239,7 @@ class QuicSimpleServerSessionTest : public QuicTestWithParam<QuicVersion> {
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSimpleServerSessionTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicSimpleServerSessionTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
@@ -455,7 +456,7 @@ class QuicSimpleServerSessionServerPushTest
 
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        SupportedVersions(GetParam()));
+        SupportedTransportVersions(GetParam()));
     session_.reset(new MockQuicSimpleServerSession(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &response_cache_));
@@ -523,7 +524,7 @@ class QuicSimpleServerSessionServerPushTest
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSimpleServerSessionServerPushTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicSimpleServerSessionServerPushTest, TestPromisePushResources) {
   // Tests that given more than kMaxOpenStreamForTest resources, all their

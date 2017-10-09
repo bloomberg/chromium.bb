@@ -85,7 +85,8 @@ class QuicEndpoint : public Endpoint,
                           const std::string& error_details,
                           ConnectionCloseSource source) override {}
   void OnWriteBlocked() override {}
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override {}
+  void OnSuccessfulVersionNegotiation(
+      const QuicTransportVersion& version) override {}
   void OnCongestionWindowChange(QuicTime now) override {}
   void OnConnectionMigration(PeerAddressChangeType type) override {}
   void OnPathDegrading() override {}

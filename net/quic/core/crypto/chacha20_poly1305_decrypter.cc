@@ -22,7 +22,8 @@ ChaCha20Poly1305Decrypter::ChaCha20Poly1305Decrypter()
     : AeadBaseDecrypter(EVP_aead_chacha20_poly1305(),
                         kKeySize,
                         kAuthTagSize,
-                        kNoncePrefixSize) {
+                        kNoncePrefixSize,
+                        /* use_ietf_nonce_construction */ false) {
   static_assert(kKeySize <= kMaxKeySize, "key size too big");
   static_assert(kNoncePrefixSize <= kMaxNoncePrefixSize,
                 "nonce prefix size too big");

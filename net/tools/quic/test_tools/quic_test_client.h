@@ -34,19 +34,19 @@ class MockableQuicClient : public QuicClient {
  public:
   MockableQuicClient(QuicSocketAddress server_address,
                      const QuicServerId& server_id,
-                     const QuicVersionVector& supported_versions,
+                     const QuicTransportVersionVector& supported_versions,
                      EpollServer* epoll_server);
 
   MockableQuicClient(QuicSocketAddress server_address,
                      const QuicServerId& server_id,
                      const QuicConfig& config,
-                     const QuicVersionVector& supported_versions,
+                     const QuicTransportVersionVector& supported_versions,
                      EpollServer* epoll_server);
 
   MockableQuicClient(QuicSocketAddress server_address,
                      const QuicServerId& server_id,
                      const QuicConfig& config,
-                     const QuicVersionVector& supported_versions,
+                     const QuicTransportVersionVector& supported_versions,
                      EpollServer* epoll_server,
                      std::unique_ptr<ProofVerifier> proof_verifier);
 
@@ -79,15 +79,15 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
  public:
   QuicTestClient(QuicSocketAddress server_address,
                  const std::string& server_hostname,
-                 const QuicVersionVector& supported_versions);
+                 const QuicTransportVersionVector& supported_versions);
   QuicTestClient(QuicSocketAddress server_address,
                  const std::string& server_hostname,
                  const QuicConfig& config,
-                 const QuicVersionVector& supported_versions);
+                 const QuicTransportVersionVector& supported_versions);
   QuicTestClient(QuicSocketAddress server_address,
                  const std::string& server_hostname,
                  const QuicConfig& config,
-                 const QuicVersionVector& supported_versions,
+                 const QuicTransportVersionVector& supported_versions,
                  std::unique_ptr<ProofVerifier> proof_verifier);
 
   ~QuicTestClient() override;

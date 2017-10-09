@@ -140,7 +140,7 @@ std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
   return std::unique_ptr<QuicConnection>(new QuicConnection(
       dummy_id, dummy_address, this, /*QuicConnectionHelperInterface*/
       this /*QuicAlarmFactory*/, writer.release(), true /*own the writer*/,
-      perspective, AllSupportedVersions()));
+      perspective, AllSupportedTransportVersions()));
 }
 
 QuicAlarm* QuartcFactory::CreateAlarm(QuicAlarm::Delegate* delegate) {

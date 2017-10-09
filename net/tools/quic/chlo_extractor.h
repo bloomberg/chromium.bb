@@ -19,7 +19,7 @@ class ChloExtractor {
     virtual ~Delegate() {}
 
     // Called when a CHLO message is found in the packets.
-    virtual void OnChlo(QuicVersion version,
+    virtual void OnChlo(QuicTransportVersion version,
                         QuicConnectionId connection_id,
                         const CryptoHandshakeMessage& chlo) = 0;
   };
@@ -28,7 +28,7 @@ class ChloExtractor {
   // of |delegate|. Return true if a CHLO message was found, and false
   // otherwise.
   static bool Extract(const QuicEncryptedPacket& packet,
-                      const QuicVersionVector& versions,
+                      const QuicTransportVersionVector& versions,
                       Delegate* delegate);
 
   ChloExtractor(const ChloExtractor&) = delete;

@@ -23,8 +23,8 @@ class StatelessRejector {
     REJECTED,     // The CHLO was rejected.
   };
 
-  StatelessRejector(QuicVersion version,
-                    const QuicVersionVector& versions,
+  StatelessRejector(QuicTransportVersion version,
+                    const QuicTransportVersionVector& versions,
                     const QuicCryptoServerConfig* crypto_config,
                     QuicCompressedCertsCache* compressed_certs_cache,
                     const QuicClock* clock,
@@ -36,7 +36,7 @@ class StatelessRejector {
   ~StatelessRejector();
 
   // Called when |chlo| is received for |connection_id|.
-  void OnChlo(QuicVersion version,
+  void OnChlo(QuicTransportVersion version,
               QuicConnectionId connection_id,
               QuicConnectionId server_designated_connection_id,
               const CryptoHandshakeMessage& chlo);
@@ -93,8 +93,8 @@ class StatelessRejector {
   State state_;
   QuicErrorCode error_;
   std::string error_details_;
-  QuicVersion version_;
-  QuicVersionVector versions_;
+  QuicTransportVersion version_;
+  QuicTransportVersionVector versions_;
   QuicConnectionId connection_id_;
   QuicConnectionId server_designated_connection_id_;
   QuicByteCount chlo_packet_size_;

@@ -262,8 +262,8 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateWithCert) {
   // Note: relies on the callback being invoked synchronously
   bool ok = false;
   crypto_config.BuildServerConfigUpdateMessage(
-      session_->connection()->version(), stream()->chlo_hash(), tokens,
-      QuicSocketAddress(QuicIpAddress::Loopback6(), 1234),
+      session_->connection()->transport_version(), stream()->chlo_hash(),
+      tokens, QuicSocketAddress(QuicIpAddress::Loopback6(), 1234),
       QuicIpAddress::Loopback6(), connection_->clock(),
       QuicRandom::GetInstance(), &cache, stream()->crypto_negotiated_params(),
       &network_params, QuicTagVector(),
@@ -366,7 +366,7 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
     CreateClientSessionForTest(server_id_,
                                /* supports_stateless_rejects= */ true,
                                QuicTime::Delta::FromSeconds(100000),
-                               AllSupportedVersions(), &helper_,
+                               AllSupportedTransportVersions(), &helper_,
                                &alarm_factory_, &client_crypto_config_,
                                &client_connection_, &client_session);
     CHECK(client_session);
@@ -392,7 +392,7 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
   void InitializeFakeStatelessRejectServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
     CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
-                               AllSupportedVersions(), &helper_,
+                               AllSupportedTransportVersions(), &helper_,
                                &alarm_factory_, &server_crypto_config_,
                                &server_compressed_certs_cache_,
                                &server_connection_, &server_session);

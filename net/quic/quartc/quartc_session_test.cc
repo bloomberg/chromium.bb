@@ -155,7 +155,7 @@ class FakeProofSource : public ProofSource {
   void GetProof(const QuicSocketAddress& server_ip,
                 const string& hostname,
                 const string& server_config,
-                QuicVersion quic_version,
+                QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
                 const QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override {
@@ -202,7 +202,7 @@ class FakeProofVerifier : public ProofVerifier {
       const string& hostname,
       const uint16_t port,
       const string& server_config,
-      QuicVersion quic_version,
+      QuicTransportVersion transport_version,
       QuicStringPiece chlo_hash,
       const std::vector<string>& certs,
       const string& cert_sct,
@@ -482,7 +482,7 @@ class QuartcSessionTest : public ::testing::Test,
     return std::unique_ptr<QuicConnection>(new QuicConnection(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), writer, owns_writer, perspective,
-        AllSupportedVersions()));
+        AllSupportedTransportVersions()));
   }
 
   // Runs all tasks scheduled in the next 200 ms.

@@ -16,7 +16,7 @@ TEST(QuicSimpleClientTest, Initialize) {
   QuicSocketAddress server_address(QuicIpAddress::Loopback4(), 80);
   QuicServerId server_id("hostname", server_address.port(),
                          PRIVACY_MODE_DISABLED);
-  QuicVersionVector versions = AllSupportedVersions();
+  QuicTransportVersionVector versions = AllSupportedTransportVersions();
   QuicSimpleClient client(server_address, server_id, versions,
                           crypto_test_utils::ProofVerifierForTesting());
   EXPECT_TRUE(client.Initialize());

@@ -22,6 +22,8 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_pending_retransmission.h"
 #include "net/quic/core/quic_sustained_bandwidth_recorder.h"
+#include "net/quic/core/quic_transmission_info.h"
+#include "net/quic/core/quic_types.h"
 #include "net/quic/core/quic_unacked_packet_map.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -384,8 +386,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   bool conservative_handshake_retransmits_;
 
   // Vectors packets acked and lost as a result of the last congestion event.
-  SendAlgorithmInterface::AckedPacketVector packets_acked_;
-  SendAlgorithmInterface::CongestionVector packets_lost_;
+  AckedPacketVector packets_acked_;
+  LostPacketVector packets_lost_;
   // Largest newly acknowledged packet.
   QuicPacketNumber largest_newly_acked_;
   // Largest packet in bytes ever acknowledged.

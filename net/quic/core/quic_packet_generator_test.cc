@@ -149,9 +149,8 @@ class TestPacketGenerator : public QuicPacketGenerator {
         producer_->SaveStreamData(id, iov, 0, offset, iov.total_length);
       }
     }
-    return QuicPacketGenerator::ConsumeData(
-        id, iov, offset, state, std::move(ack_listener),
-        FLAGS_quic_reloadable_flag_quic_consuming_data_faster);
+    return QuicPacketGenerator::ConsumeData(id, iov, offset, state,
+                                            std::move(ack_listener));
   }
 
   SimpleDataProducer* producer_;
@@ -160,7 +159,7 @@ class TestPacketGenerator : public QuicPacketGenerator {
 class QuicPacketGeneratorTest : public QuicTest {
  public:
   QuicPacketGeneratorTest()
-      : framer_(AllSupportedVersions(),
+      : framer_(AllSupportedTransportVersions(),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
         generator_(42,
@@ -173,9 +172,7 @@ class QuicPacketGeneratorTest : public QuicTest {
     creator_->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                            new NullEncrypter(Perspective::IS_CLIENT));
     creator_->set_encryption_level(ENCRYPTION_FORWARD_SECURE);
-    if (FLAGS_quic_reloadable_flag_quic_save_data_before_consumption2) {
-      framer_.set_data_producer(&producer_);
-    }
+    framer_.set_data_producer(&producer_);
   }
 
   ~QuicPacketGeneratorTest() override {
@@ -537,13 +534,17 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   size_t length =
       NullEncrypter(Perspective::IS_CLIENT).GetCiphertextSize(0) +
       GetPacketHeaderSize(
-          framer_.version(), creator_->connection_id_length(), kIncludeVersion,
-          !kIncludeDiversificationNonce,
+          framer_.transport_version(), creator_->connection_id_length(),
+          kIncludeVersion, !kIncludeDiversificationNonce,
           QuicPacketCreatorPeer::GetPacketNumberLength(creator_)) +
       // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
       // than the GetMinStreamFrameSize.
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, false) + 3 +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), 1, 0, true) + 1;
+      QuicFramer::GetMinStreamFrameSize(framer_.transport_version(), 1, 0,
+                                        false) +
+      3 +
+      QuicFramer::GetMinStreamFrameSize(framer_.transport_version(), 1, 0,
+                                        true) +
+      1;
   generator_.SetMaxPacketLength(length);
   delegate_.SetCanWriteAnything();
   {
@@ -1082,10 +1083,11 @@ TEST_F(QuicPacketGeneratorTest, RandomPaddingAfterFinSingleStreamSinglePacket) {
   size_t length =
       NullEncrypter(Perspective::IS_CLIENT).GetCiphertextSize(0) +
       GetPacketHeaderSize(
-          framer_.version(), creator_->connection_id_length(), kIncludeVersion,
-          !kIncludeDiversificationNonce,
+          framer_.transport_version(), creator_->connection_id_length(),
+          kIncludeVersion, !kIncludeDiversificationNonce,
           QuicPacketCreatorPeer::GetPacketNumberLength(creator_)) +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), kDataStreamId, 0,
+      QuicFramer::GetMinStreamFrameSize(framer_.transport_version(),
+                                        kDataStreamId, 0,
                                         /*last_frame_in_packet=*/false) +
       kStreamFramePayloadSize + kMaxNumRandomPaddingBytes;
   generator_.SetMaxPacketLength(length);
@@ -1121,10 +1123,11 @@ TEST_F(QuicPacketGeneratorTest,
   size_t length =
       NullEncrypter(Perspective::IS_CLIENT).GetCiphertextSize(0) +
       GetPacketHeaderSize(
-          framer_.version(), creator_->connection_id_length(), kIncludeVersion,
-          !kIncludeDiversificationNonce,
+          framer_.transport_version(), creator_->connection_id_length(),
+          kIncludeVersion, !kIncludeDiversificationNonce,
           QuicPacketCreatorPeer::GetPacketNumberLength(creator_)) +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), kDataStreamId, 0,
+      QuicFramer::GetMinStreamFrameSize(framer_.transport_version(),
+                                        kDataStreamId, 0,
                                         /*last_frame_in_packet=*/false) +
       kStreamFramePayloadSize + 1;
   generator_.SetMaxPacketLength(length);
@@ -1168,13 +1171,15 @@ TEST_F(QuicPacketGeneratorTest,
   size_t length =
       NullEncrypter(Perspective::IS_CLIENT).GetCiphertextSize(0) +
       GetPacketHeaderSize(
-          framer_.version(), creator_->connection_id_length(), kIncludeVersion,
-          !kIncludeDiversificationNonce,
+          framer_.transport_version(), creator_->connection_id_length(),
+          kIncludeVersion, !kIncludeDiversificationNonce,
           QuicPacketCreatorPeer::GetPacketNumberLength(creator_)) +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), kDataStreamId1, 0,
+      QuicFramer::GetMinStreamFrameSize(framer_.transport_version(),
+                                        kDataStreamId1, 0,
                                         /*last_frame_in_packet=*/false) +
       kStreamFramePayloadSize +
-      QuicFramer::GetMinStreamFrameSize(framer_.version(), kDataStreamId1, 0,
+      QuicFramer::GetMinStreamFrameSize(framer_.transport_version(),
+                                        kDataStreamId1, 0,
                                         /*last_frame_in_packet=*/false) +
       1;
   generator_.SetMaxPacketLength(length);

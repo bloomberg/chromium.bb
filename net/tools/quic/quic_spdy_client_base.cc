@@ -32,7 +32,7 @@ QuicSpdyClientBase::QuicDataToResend::~QuicDataToResend() {}
 
 QuicSpdyClientBase::QuicSpdyClientBase(
     const QuicServerId& server_id,
-    const QuicVersionVector& supported_versions,
+    const QuicTransportVersionVector& supported_versions,
     const QuicConfig& config,
     QuicConnectionHelperInterface* helper,
     QuicAlarmFactory* alarm_factory,

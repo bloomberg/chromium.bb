@@ -34,11 +34,11 @@ class QuicPacket;
 struct QuicPacketHeader;
 
 // Size in bytes of the data packet header.
-QUIC_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicVersion version,
+QUIC_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicTransportVersion version,
                                                const QuicPacketHeader& header);
 
 QUIC_EXPORT_PRIVATE size_t
-GetPacketHeaderSize(QuicVersion version,
+GetPacketHeaderSize(QuicTransportVersion version,
                     QuicConnectionIdLength connection_id_length,
                     bool include_version,
                     bool include_diversification_nonce,
@@ -46,10 +46,11 @@ GetPacketHeaderSize(QuicVersion version,
 
 // Index of the first byte in a QUIC packet of encrypted data.
 QUIC_EXPORT_PRIVATE size_t
-GetStartOfEncryptedData(QuicVersion version, const QuicPacketHeader& header);
+GetStartOfEncryptedData(QuicTransportVersion version,
+                        const QuicPacketHeader& header);
 
 QUIC_EXPORT_PRIVATE size_t
-GetStartOfEncryptedData(QuicVersion version,
+GetStartOfEncryptedData(QuicTransportVersion version,
                         QuicConnectionIdLength connection_id_length,
                         bool include_version,
                         bool include_diversification_nonce,
@@ -67,7 +68,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketPublicHeader {
   bool reset_flag;
   bool version_flag;
   QuicPacketNumberLength packet_number_length;
-  QuicVersionVector versions;
+  QuicTransportVersionVector versions;
   // nonce contains an optional, 32-byte nonce value. If not included in the
   // packet, |nonce| will be empty.
   DiversificationNonce* nonce;
@@ -132,8 +133,8 @@ class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
              bool includes_diversification_nonce,
              QuicPacketNumberLength packet_number_length);
 
-  QuicStringPiece AssociatedData(QuicVersion version) const;
-  QuicStringPiece Plaintext(QuicVersion version) const;
+  QuicStringPiece AssociatedData(QuicTransportVersion version) const;
+  QuicStringPiece Plaintext(QuicTransportVersion version) const;
 
   char* mutable_data() { return buffer_; }
 

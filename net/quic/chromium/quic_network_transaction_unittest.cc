@@ -124,14 +124,14 @@ struct PoolingTestParams {
     return os;
   }
 
-  QuicVersion version;
+  QuicTransportVersion version;
   DestinationType destination_type;
 };
 
 std::string GenerateQuicVersionsListForAltSvcHeader(
-    const QuicVersionVector& versions) {
+    const QuicTransportVersionVector& versions) {
   std::string result = "";
-  for (const QuicVersion& version : versions) {
+  for (const QuicTransportVersion& version : versions) {
     if (!result.empty())
       result.append(",");
     result.append(base::IntToString(version));
@@ -141,8 +141,9 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
 
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
-  QuicVersionVector all_supported_versions = AllSupportedVersions();
-  for (const QuicVersion version : all_supported_versions) {
+  QuicTransportVersionVector all_supported_versions =
+      AllSupportedTransportVersions();
+  for (const QuicTransportVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST});
     params.push_back(PoolingTestParams{version, SAME_AS_SECOND});
     params.push_back(PoolingTestParams{version, DIFFERENT});
@@ -236,11 +237,11 @@ class TestSocketPerformanceWatcherFactory
 
 class QuicNetworkTransactionTest
     : public PlatformTest,
-      public ::testing::WithParamInterface<QuicVersion> {
+      public ::testing::WithParamInterface<QuicTransportVersion> {
  protected:
   QuicNetworkTransactionTest()
       : version_(GetParam()),
-        supported_versions_(SupportedVersions(version_)),
+        supported_versions_(SupportedTransportVersions(version_)),
         client_maker_(version_,
                       0,
                       &clock_,
@@ -513,7 +514,7 @@ class QuicNetworkTransactionTest
         std::move(headers), offset);
   }
 
-  void CreateSession(const QuicVersionVector& supported_versions) {
+  void CreateSession(const QuicTransportVersionVector& supported_versions) {
     session_params_.enable_quic = true;
     session_params_.quic_supported_versions = supported_versions;
 
@@ -753,8 +754,8 @@ class QuicNetworkTransactionTest
     ASSERT_TRUE(ssl_data->cert);
   }
 
-  const QuicVersion version_;
-  QuicVersionVector supported_versions_;
+  const QuicTransportVersion version_;
+  QuicTransportVersionVector supported_versions_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockClock clock_;
   QuicTestPacketMaker client_maker_;
@@ -806,7 +807,7 @@ class QuicNetworkTransactionTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicNetworkTransactionTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicNetworkTransactionTest, SocketWatcherEnabled) {
   session_params_.origins_to_force_quic_on.insert(
@@ -1198,10 +1199,10 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
-  QuicVersion unsupported_version = QUIC_VERSION_UNSUPPORTED;
+  QuicTransportVersion unsupported_version = QUIC_VERSION_UNSUPPORTED;
   // Add support for another QUIC version besides |version_|. Also find a
   // unsupported version.
-  for (const QuicVersion& version : AllSupportedVersions()) {
+  for (const QuicTransportVersion& version : AllSupportedTransportVersions()) {
     if (version == version_)
       continue;
     if (supported_versions_.size() != 2) {
@@ -1235,7 +1236,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   // the response from the server will advertise new Alt-Svc with supported
   // versions.
   std::string advertised_versions_list_str =
-      GenerateQuicVersionsListForAltSvcHeader(AllSupportedVersions());
+      GenerateQuicVersionsListForAltSvcHeader(AllSupportedTransportVersions());
   std::string altsvc_header =
       base::StringPrintf("Alt-Svc: quic=\":443\"; v=\"%s\"\r\n\r\n",
                          advertised_versions_list_str.c_str());
@@ -1473,8 +1474,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
 
   // Add support for another QUIC version besides |version_| on the client side.
   // Also find a different version advertised by the server.
-  QuicVersion advertised_version_2 = QUIC_VERSION_UNSUPPORTED;
-  for (const QuicVersion& version : AllSupportedVersions()) {
+  QuicTransportVersion advertised_version_2 = QUIC_VERSION_UNSUPPORTED;
+  for (const QuicTransportVersion& version : AllSupportedTransportVersions()) {
     if (version == version_)
       continue;
     if (supported_versions_.size() != 2) {
@@ -1532,8 +1533,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
   // The QuicStreamFactoy will pick the preferred QUIC_VERSION: |version_|,
   // which is verified as the PacketMakers are using |version_|.
 
-  QuicVersion common_version_2 = QUIC_VERSION_UNSUPPORTED;
-  for (const QuicVersion& version : AllSupportedVersions()) {
+  QuicTransportVersion common_version_2 = QUIC_VERSION_UNSUPPORTED;
+  for (const QuicTransportVersion& version : AllSupportedTransportVersions()) {
     if (version == version_)
       continue;
     common_version_2 = version;
@@ -1695,7 +1696,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotGetAltSvcForDifferentOrigin) {
 TEST_P(QuicNetworkTransactionTest,
        StoreMutuallySupportedVersionsWhenProcessAltSvc) {
   // Add support for another QUIC version besides |version_|.
-  for (const QuicVersion& version : AllSupportedVersions()) {
+  for (const QuicTransportVersion& version : AllSupportedTransportVersions()) {
     if (version == version_)
       continue;
     supported_versions_.push_back(version);
@@ -1703,7 +1704,7 @@ TEST_P(QuicNetworkTransactionTest,
   }
 
   std::string advertised_versions_list_str =
-      GenerateQuicVersionsListForAltSvcHeader(AllSupportedVersions());
+      GenerateQuicVersionsListForAltSvcHeader(AllSupportedTransportVersions());
   std::string altsvc_header =
       base::StringPrintf("Alt-Svc: quic=\":443\"; v=\"%s\"\r\n\r\n",
                          advertised_versions_list_str.c_str());
@@ -4846,7 +4847,6 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
-  FLAGS_quic_reloadable_flag_quic_use_stream_notifier2 = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -5066,7 +5066,7 @@ class QuicNetworkTransactionWithDestinationTest
  protected:
   QuicNetworkTransactionWithDestinationTest()
       : version_(GetParam().version),
-        supported_versions_(SupportedVersions(version_)),
+        supported_versions_(SupportedTransportVersions(version_)),
         destination_type_(GetParam().destination_type),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
@@ -5270,8 +5270,8 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   MockClock clock_;
-  QuicVersion version_;
-  QuicVersionVector supported_versions_;
+  QuicTransportVersion version_;
+  QuicTransportVersionVector supported_versions_;
   DestinationType destination_type_;
   std::string origin1_;
   std::string origin2_;

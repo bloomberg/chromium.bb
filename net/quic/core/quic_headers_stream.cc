@@ -57,40 +57,6 @@ void QuicHeadersStream::MaybeReleaseSequencerBuffer() {
   }
 }
 
-QuicConsumedData QuicHeadersStream::WritevDataInner(
-    QuicIOVector iov,
-    QuicStreamOffset offset,
-    bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  if (!session()->use_stream_notifier() ||
-      session()->save_data_before_consumption()) {
-    // If data is saved before consumption, unacked_headers has been populated.
-    return QuicStream::WritevDataInner(iov, offset, fin,
-                                       std::move(ack_listener));
-  }
-  QuicConsumedData consumed =
-      QuicStream::WritevDataInner(iov, offset, fin, nullptr);
-  if (consumed.bytes_consumed == 0 || ack_listener == nullptr) {
-    // No need to update unacked_headers_ if no byte is consumed or there is no
-    // ack listener.
-    return consumed;
-  }
-
-  if (!unacked_headers_.empty() &&
-      (offset == unacked_headers_.back().headers_stream_offset +
-                     unacked_headers_.back().full_length) &&
-      ack_listener == unacked_headers_.back().ack_listener) {
-    // Try to combine with latest inserted entry if they belong to the same
-    // header (i.e., having contiguous offset and the same ack listener).
-    unacked_headers_.back().full_length += consumed.bytes_consumed;
-    unacked_headers_.back().unacked_length += consumed.bytes_consumed;
-  } else {
-    unacked_headers_.push_back(CompressedHeaderInfo(
-        offset, consumed.bytes_consumed, std::move(ack_listener)));
-  }
-  return consumed;
-}
-
 void QuicHeadersStream::OnStreamFrameAcked(const QuicStreamFrame& frame,
                                            QuicTime::Delta ack_delay_time) {
   QuicStreamOffset offset = frame.offset;

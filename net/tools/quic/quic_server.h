@@ -40,7 +40,7 @@ class QuicServer : public EpollCallbackInterface {
   QuicServer(std::unique_ptr<ProofSource> proof_source,
              const QuicConfig& config,
              const QuicCryptoServerConfig::ConfigOptions& server_config_options,
-             const QuicVersionVector& supported_versions,
+             const QuicTransportVersionVector& supported_versions,
              QuicHttpResponseCache* response_cache);
 
   ~QuicServer() override;

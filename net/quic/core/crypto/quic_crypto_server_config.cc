@@ -431,7 +431,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
     const CryptoHandshakeMessage& client_hello,
     const QuicIpAddress& client_ip,
     const QuicSocketAddress& server_address,
-    QuicVersion version,
+    QuicTransportVersion version,
     const QuicClock* clock,
     QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
     std::unique_ptr<ValidateClientHelloResultCallback> done_cb) const {
@@ -528,8 +528,8 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
       bool reject_only,
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
-      QuicVersion version,
-      const QuicVersionVector& supported_versions,
+      QuicTransportVersion version,
+      const QuicTransportVersionVector& supported_versions,
       bool use_stateless_rejects,
       QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,
@@ -588,8 +588,8 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
   const bool reject_only_;
   const QuicConnectionId connection_id_;
   const QuicSocketAddress client_address_;
-  const QuicVersion version_;
-  const QuicVersionVector supported_versions_;
+  const QuicTransportVersion version_;
+  const QuicTransportVersionVector supported_versions_;
   const bool use_stateless_rejects_;
   const QuicConnectionId server_designated_connection_id_;
   const QuicClock* const clock_;
@@ -613,8 +613,8 @@ void QuicCryptoServerConfig::ProcessClientHello(
     QuicConnectionId connection_id,
     const QuicSocketAddress& server_address,
     const QuicSocketAddress& client_address,
-    QuicVersion version,
-    const QuicVersionVector& supported_versions,
+    QuicTransportVersion version,
+    const QuicTransportVersionVector& supported_versions,
     bool use_stateless_rejects,
     QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
@@ -728,8 +728,8 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     bool reject_only,
     QuicConnectionId connection_id,
     const QuicSocketAddress& client_address,
-    QuicVersion version,
-    const QuicVersionVector& supported_versions,
+    QuicTransportVersion version,
+    const QuicTransportVersionVector& supported_versions,
     bool use_stateless_rejects,
     QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
@@ -1120,7 +1120,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
       const QuicCryptoServerConfig& config,
       bool found_error,
       const QuicIpAddress& server_ip,
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
           requested_config,
       QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
@@ -1157,7 +1157,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
   const QuicCryptoServerConfig& config_;
   const bool found_error_;
   const QuicIpAddress& server_ip_;
-  const QuicVersion version_;
+  const QuicTransportVersion version_;
   const QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
       requested_config_;
   const QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
@@ -1170,7 +1170,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
 
 void QuicCryptoServerConfig::EvaluateClientHello(
     const QuicSocketAddress& server_address,
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicReferenceCountedPointer<Config> requested_config,
     QuicReferenceCountedPointer<Config> primary_config,
     QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
@@ -1279,7 +1279,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     bool found_error,
     const QuicIpAddress& server_ip,
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicReferenceCountedPointer<Config> requested_config,
     QuicReferenceCountedPointer<Config> primary_config,
     QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
@@ -1325,7 +1325,7 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
 }
 
 void QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicStringPiece chlo_hash,
     const SourceAddressTokens& previous_source_address_tokens,
     const QuicSocketAddress& server_address,
@@ -1376,7 +1376,7 @@ QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
 QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
     BuildServerConfigUpdateMessageProofSourceCallback(
         const QuicCryptoServerConfig* config,
-        QuicVersion version,
+        QuicTransportVersion version,
         QuicCompressedCertsCache* compressed_certs_cache,
         const CommonCertSets* common_cert_sets,
         const QuicCryptoNegotiatedParameters& params,
@@ -1406,7 +1406,7 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
 }
 
 void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicCompressedCertsCache* compressed_certs_cache,
     const CommonCertSets* common_cert_sets,
     const string& client_common_set_hashes,
@@ -1442,7 +1442,7 @@ void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
 }
 
 void QuicCryptoServerConfig::BuildRejection(
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicWallTime now,
     const Config& config,
     const CryptoHandshakeMessage& client_hello,

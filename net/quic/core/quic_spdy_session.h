@@ -135,18 +135,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   void CloseConnectionWithDetails(QuicErrorCode error,
                                   const std::string& details);
 
-  // Sets how much encoded data the hpack decoder of spdy_framer_ is willing to
-  // buffer.
-  void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
-    h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-        max_decode_buffer_size_bytes);
-  }
-
-  // TODO(dahollings): Move to private upon deprecation of
-  // --quic_restart_flag_quic_header_list_size.
-  void set_max_uncompressed_header_bytes(
-      size_t set_max_uncompressed_header_bytes);
-
   void set_max_inbound_header_list_size(size_t max_inbound_header_list_size) {
     max_inbound_header_list_size_ = max_inbound_header_list_size;
   }
@@ -189,6 +177,16 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   void UpdateEnableServerPush(bool value);
 
   bool IsConnected() { return connection()->connected(); }
+
+  // Sets how much encoded data the hpack decoder of h2_deframer_ is willing to
+  // buffer.
+  void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
+    h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+        max_decode_buffer_size_bytes);
+  }
+
+  void set_max_uncompressed_header_bytes(
+      size_t set_max_uncompressed_header_bytes);
 
  private:
   friend class test::QuicSpdySessionPeer;

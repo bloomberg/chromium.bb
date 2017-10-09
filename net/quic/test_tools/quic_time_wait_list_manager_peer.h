@@ -17,7 +17,7 @@ class QuicTimeWaitListManagerPeer {
 
   static QuicTime::Delta time_wait_period(QuicTimeWaitListManager* manager);
 
-  static QuicVersion GetQuicVersionFromConnectionId(
+  static QuicTransportVersion GetQuicVersionFromConnectionId(
       QuicTimeWaitListManager* manager,
       QuicConnectionId connection_id);
 

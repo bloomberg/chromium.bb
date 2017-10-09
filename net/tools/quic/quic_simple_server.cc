@@ -40,7 +40,7 @@ QuicSimpleServer::QuicSimpleServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-    const QuicVersionVector& supported_versions,
+    const QuicTransportVersionVector& supported_versions,
     QuicHttpResponseCache* response_cache)
     : version_manager_(supported_versions),
       helper_(

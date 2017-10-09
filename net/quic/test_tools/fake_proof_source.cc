@@ -23,7 +23,7 @@ FakeProofSource::GetProofOp::GetProofOp(
     const QuicSocketAddress& server_addr,
     string hostname,
     string server_config,
-    QuicVersion quic_version,
+    QuicTransportVersion transport_version,
     string chlo_hash,
     const QuicTagVector& connection_options,
     std::unique_ptr<ProofSource::Callback> callback,
@@ -31,7 +31,7 @@ FakeProofSource::GetProofOp::GetProofOp(
     : server_address_(server_addr),
       hostname_(std::move(hostname)),
       server_config_(std::move(server_config)),
-      quic_version_(quic_version),
+      transport_version_(transport_version),
       chlo_hash_(std::move(chlo_hash)),
       connection_options_(connection_options),
       callback_(std::move(callback)),
@@ -41,8 +41,9 @@ FakeProofSource::GetProofOp::~GetProofOp() = default;
 
 void FakeProofSource::GetProofOp::Run() {
   // Note: relies on the callback being invoked synchronously
-  delegate_->GetProof(server_address_, hostname_, server_config_, quic_version_,
-                      chlo_hash_, connection_options_, std::move(callback_));
+  delegate_->GetProof(server_address_, hostname_, server_config_,
+                      transport_version_, chlo_hash_, connection_options_,
+                      std::move(callback_));
 }
 
 FakeProofSource::ComputeSignatureOp::ComputeSignatureOp(
@@ -74,19 +75,21 @@ void FakeProofSource::GetProof(
     const QuicSocketAddress& server_address,
     const string& hostname,
     const string& server_config,
-    QuicVersion quic_version,
+    QuicTransportVersion transport_version,
     QuicStringPiece chlo_hash,
     const QuicTagVector& connection_options,
     std::unique_ptr<ProofSource::Callback> callback) {
   if (!active_) {
-    delegate_->GetProof(server_address, hostname, server_config, quic_version,
-                        chlo_hash, connection_options, std::move(callback));
+    delegate_->GetProof(server_address, hostname, server_config,
+                        transport_version, chlo_hash, connection_options,
+                        std::move(callback));
     return;
   }
 
   pending_ops_.push_back(QuicMakeUnique<GetProofOp>(
-      server_address, hostname, server_config, quic_version, string(chlo_hash),
-      connection_options, std::move(callback), delegate_.get()));
+      server_address, hostname, server_config, transport_version,
+      string(chlo_hash), connection_options, std::move(callback),
+      delegate_.get()));
 }
 
 QuicReferenceCountedPointer<ProofSource::Chain> FakeProofSource::GetCertChain(

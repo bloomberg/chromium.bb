@@ -229,7 +229,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // certificate related fields.
   void FillInchoateClientHello(
       const QuicServerId& server_id,
-      const QuicVersion preferred_version,
+      const QuicTransportVersion preferred_version,
       const CachedState* cached,
       QuicRandom* rand,
       bool demand_x509_proof,
@@ -253,7 +253,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode FillClientHello(
       const QuicServerId& server_id,
       QuicConnectionId connection_id,
-      const QuicVersion preferred_version,
+      const QuicTransportVersion preferred_version,
       const CachedState* cached,
       QuicWallTime now,
       QuicRandom* rand,
@@ -271,7 +271,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode ProcessRejection(
       const CryptoHandshakeMessage& rej,
       QuicWallTime now,
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicStringPiece chlo_hash,
       CachedState* cached,
       QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
@@ -289,8 +289,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode ProcessServerHello(
       const CryptoHandshakeMessage& server_hello,
       QuicConnectionId connection_id,
-      QuicVersion version,
-      const QuicVersionVector& negotiated_versions,
+      QuicTransportVersion version,
+      const QuicTransportVersionVector& negotiated_versions,
       CachedState* cached,
       QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       std::string* error_details);
@@ -303,7 +303,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode ProcessServerConfigUpdate(
       const CryptoHandshakeMessage& server_update,
       QuicWallTime now,
-      const QuicVersion version,
+      const QuicTransportVersion version,
       QuicStringPiece chlo_hash,
       CachedState* cached,
       QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
@@ -356,7 +356,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode CacheNewServerConfig(
       const CryptoHandshakeMessage& message,
       QuicWallTime now,
-      const QuicVersion version,
+      const QuicTransportVersion version,
       QuicStringPiece chlo_hash,
       const std::vector<std::string>& cached_certs,
       CachedState* cached,

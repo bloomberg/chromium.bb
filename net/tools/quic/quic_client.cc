@@ -37,7 +37,7 @@ namespace net {
 
 QuicClient::QuicClient(QuicSocketAddress server_address,
                        const QuicServerId& server_id,
-                       const QuicVersionVector& supported_versions,
+                       const QuicTransportVersionVector& supported_versions,
                        EpollServer* epoll_server,
                        std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicClient(
@@ -52,7 +52,7 @@ QuicClient::QuicClient(QuicSocketAddress server_address,
 QuicClient::QuicClient(
     QuicSocketAddress server_address,
     const QuicServerId& server_id,
-    const QuicVersionVector& supported_versions,
+    const QuicTransportVersionVector& supported_versions,
     EpollServer* epoll_server,
     std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
     std::unique_ptr<ProofVerifier> proof_verifier)
@@ -67,7 +67,7 @@ QuicClient::QuicClient(
 QuicClient::QuicClient(
     QuicSocketAddress server_address,
     const QuicServerId& server_id,
-    const QuicVersionVector& supported_versions,
+    const QuicTransportVersionVector& supported_versions,
     const QuicConfig& config,
     EpollServer* epoll_server,
     std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,

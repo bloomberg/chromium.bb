@@ -90,7 +90,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_random_padding, true)
 
 // If true, export a varz mapping QUIC non 0-rtt handshake with corresponding
 // frontend service.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_account_handshake, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_account_handshake, true)
 
 // Allows the 3RTO QUIC connection option to close a QUIC connection after
 // 3RTOs if there are no open streams.
@@ -98,10 +98,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_3rtos, false)
 
 // If true, enable experiment for testing PCC congestion-control.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc, false)
-
-// In QUIC, QuicSession gets notified when stream frames are acked, discarded or
-// retransmitted.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_stream_notifier2, true)
 
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
@@ -124,17 +120,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_frames_deque2, false)
 // If true, enable QUIC v42.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_42, false)
 
-// When true, respect configured limits on header list size.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_header_list_size, true)
-
 // When true, allows the LRTT connection option to cause QUIC BBR to exit
 // STARTUP when in recovery and there has been no bandwidth increase for 1RTT.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_exit_startup_on_loss, true)
-
-// If true, application data is saved before consumption in QUIC.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_save_data_before_consumption2,
-          true)
 
 // If buffered data in QUIC stream is less than this threshold, buffers all
 // provided data or asks upper layer for more data.
@@ -143,12 +131,13 @@ QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
 // Max size of data slice in bytes for QUIC stream send buffer.
 QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 
+// If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
+// protocol.
+QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
+
 // Add 4 new ack decimation modes to QUIC that are entirely time based at 1/4
 // or 1/8 RTT.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_decimation, false)
-
-// Enables using the ConsumeDataFastPath more often for large transfers.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_consuming_data_faster, true)
 
 // If true, in QUIC, set dispatcher framer\'s version to client packet's
 // version in QuicDispatcher::OnStatelessRejectorProcessDone.
@@ -181,3 +170,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_tls13_cipher_suites, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label,
           false)
+
+// If true, send stateless reset token in SHLO. This token is used in IETF
+// public reset packet.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_reset_token_in_shlo, false)
+
+// Default enable all cubic fixes in QUIC Cubic by default.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes, false)

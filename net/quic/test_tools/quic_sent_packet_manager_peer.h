@@ -90,6 +90,11 @@ class QuicSentPacketManagerPeer {
   static QuicUnackedPacketMap* GetUnackedPacketMap(
       QuicSentPacketManager* sent_packet_manager);
 
+  static void DisablePacerBursts(QuicSentPacketManager* sent_packet_manager);
+
+  static void SetNextPacedPacketTime(QuicSentPacketManager* sent_packet_manager,
+                                     QuicTime time);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManagerPeer);
 };

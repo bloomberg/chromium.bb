@@ -287,14 +287,14 @@ TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["quic_version"] =
-      net::QuicVersionToString(net::AllSupportedVersions().back());
+      net::QuicVersionToString(net::AllSupportedTransportVersions().back());
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::AllSupportedVersions().back());
+  net::QuicTransportVersionVector supported_versions;
+  supported_versions.push_back(net::AllSupportedTransportVersions().back());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
@@ -302,8 +302,9 @@ TEST_F(NetworkSessionConfiguratorTest,
        MultipleQuicVersionFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   std::string quic_versions =
-      net::QuicVersionToString(net::AllSupportedVersions().front()) + "," +
-      net::QuicVersionToString(net::AllSupportedVersions().back());
+      net::QuicVersionToString(net::AllSupportedTransportVersions().front()) +
+      "," +
+      net::QuicVersionToString(net::AllSupportedTransportVersions().back());
 
   field_trial_params["quic_version"] = quic_versions;
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
@@ -311,17 +312,18 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::AllSupportedVersions().front());
-  supported_versions.push_back(net::AllSupportedVersions().back());
+  net::QuicTransportVersionVector supported_versions;
+  supported_versions.push_back(net::AllSupportedTransportVersions().front());
+  supported_versions.push_back(net::AllSupportedTransportVersions().back());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   std::string quic_versions =
-      net::QuicVersionToString(net::AllSupportedVersions().front()) + "," +
-      net::QuicVersionToString(net::AllSupportedVersions().front());
+      net::QuicVersionToString(net::AllSupportedTransportVersions().front()) +
+      "," +
+      net::QuicVersionToString(net::AllSupportedTransportVersions().front());
 
   field_trial_params["quic_version"] = quic_versions;
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
@@ -329,8 +331,8 @@ TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
 
   ParseFieldTrials();
 
-  net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::AllSupportedVersions().front());
+  net::QuicTransportVersionVector supported_versions;
+  supported_versions.push_back(net::AllSupportedTransportVersions().front());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
@@ -458,7 +460,8 @@ TEST_F(NetworkSessionConfiguratorTest, QuicMaxPacketLength) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
-  net::QuicVersionVector supported_versions = net::AllSupportedVersions();
+  net::QuicTransportVersionVector supported_versions =
+      net::AllSupportedTransportVersions();
   for (const auto& version : supported_versions) {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     command_line.AppendSwitch(switches::kEnableQuic);

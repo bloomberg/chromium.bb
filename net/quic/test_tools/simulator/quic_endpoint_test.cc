@@ -96,8 +96,7 @@ TEST_F(QuicEndpointTest, WriteBlocked) {
 
   // Will be owned by the sent packet manager.
   auto* sender = new NiceMock<test::MockSendAlgorithm>();
-  EXPECT_CALL(*sender, TimeUntilSend(_, _))
-      .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*sender, CanSend(_)).WillRepeatedly(Return(true));
   EXPECT_CALL(*sender, PacingRate(_))
       .WillRepeatedly(Return(10 * kDefaultBandwidth));
   EXPECT_CALL(*sender, BandwidthEstimate())

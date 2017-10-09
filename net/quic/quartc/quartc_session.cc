@@ -35,7 +35,7 @@ class DummyProofSource : public ProofSource {
   void GetProof(const QuicSocketAddress& server_addr,
                 const string& hostname,
                 const string& server_config,
-                QuicVersion quic_version,
+                QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
                 const QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override {
@@ -78,7 +78,7 @@ class InsecureProofVerifier : public ProofVerifier {
       const string& hostname,
       const uint16_t port,
       const string& server_config,
-      QuicVersion quic_version,
+      QuicTransportVersion transport_version,
       QuicStringPiece chlo_hash,
       const std::vector<string>& certs,
       const string& cert_sct,
@@ -201,6 +201,10 @@ void QuartcSession::ResetStream(QuicStreamId stream_id,
   if (stream) {
     stream->Reset(error);
   }
+}
+
+bool QuartcSession::IsOpenStream(QuicStreamId stream_id) {
+  return QuicSession::IsOpenStream(stream_id);
 }
 
 QuartcSessionStats QuartcSession::GetStats() {

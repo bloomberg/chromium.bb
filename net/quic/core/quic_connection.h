@@ -121,7 +121,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual void OnWriteBlocked() = 0;
 
   // Called once a specific QUIC version is agreed by both endpoints.
-  virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
+  virtual void OnSuccessfulVersionNegotiation(
+      const QuicTransportVersion& version) = 0;
 
   // Called when a blocked socket becomes writable.
   virtual void OnCanWrite() = 0;
@@ -199,7 +200,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the protocol version on the received packet doensn't match
   // current protocol version of the connection.
-  virtual void OnProtocolVersionMismatch(QuicVersion version) {}
+  virtual void OnProtocolVersionMismatch(QuicTransportVersion version) {}
 
   // Called when the complete header of a packet has been parsed.
   virtual void OnPacketHeader(const QuicPacketHeader& header) {}
@@ -248,7 +249,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
                                   ConnectionCloseSource source) {}
 
   // Called when the version negotiation is successful.
-  virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) {}
+  virtual void OnSuccessfulVersionNegotiation(
+      const QuicTransportVersion& version) {}
 
   // Called when a CachedNetworkParameters is sent to the client.
   virtual void OnSendConnectionState(
@@ -317,7 +319,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
                  QuicPacketWriter* writer,
                  bool owns_writer,
                  Perspective perspective,
-                 const QuicVersionVector& supported_versions);
+                 const QuicTransportVersionVector& supported_versions);
   ~QuicConnection() override;
 
   // Sets connection parameters from the supplied |config|.
@@ -425,16 +427,24 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void SetSelfAddress(QuicSocketAddress address) { self_address_ = address; }
 
   // The version of the protocol this connection is using.
-  QuicVersion version() const { return framer_.version(); }
+  QuicTransportVersion transport_version() const {
+    return framer_.transport_version();
+  }
+
+  // The QuicVersionLabel for the version this connection is using.
+  QuicVersionLabel version_label() const {
+    return framer_.last_version_label();
+  }
 
   // The versions of the protocol that this connection supports.
-  const QuicVersionVector& supported_versions() const {
+  const QuicTransportVersionVector& supported_versions() const {
     return framer_.supported_versions();
   }
 
   // From QuicFramerVisitorInterface
   void OnError(QuicFramer* framer) override;
-  bool OnProtocolVersionMismatch(QuicVersion received_version) override;
+  bool OnProtocolVersionMismatch(
+      QuicTransportVersion received_version) override;
   void OnPacket() override;
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
@@ -516,7 +526,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool goaway_received() const { return goaway_received_; }
 
   // Must only be called on client connections.
-  const QuicVersionVector& server_supported_versions() const {
+  const QuicTransportVersionVector& server_supported_versions() const {
     DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
     return server_supported_versions_;
   }
@@ -719,7 +729,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
-  bool SelectMutualVersion(const QuicVersionVector& available_versions);
+  bool SelectMutualVersion(
+      const QuicTransportVersionVector& available_versions);
 
   // Returns the current per-packet options for the connection.
   PerPacketOptions* per_packet_options() { return per_packet_options_; }
@@ -1066,7 +1077,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // If non-empty this contains the set of versions received in a
   // version negotiation packet.
-  QuicVersionVector server_supported_versions_;
+  QuicTransportVersionVector server_supported_versions_;
 
   // The size of the packet we are targeting while doing path MTU discovery.
   QuicByteCount mtu_discovery_target_;

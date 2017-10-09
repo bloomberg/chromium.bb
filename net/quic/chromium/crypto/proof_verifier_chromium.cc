@@ -67,7 +67,7 @@ class ProofVerifierChromium::Job {
       const std::string& hostname,
       const uint16_t port,
       const std::string& server_config,
-      QuicVersion quic_version,
+      QuicTransportVersion quic_version,
       QuicStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
@@ -112,7 +112,7 @@ class ProofVerifierChromium::Job {
   int DoVerifyCertComplete(int result);
 
   bool VerifySignature(const std::string& signed_data,
-                       QuicVersion quic_version,
+                       QuicTransportVersion quic_version,
                        QuicStringPiece chlo_hash,
                        const std::string& signature,
                        const std::string& cert);
@@ -198,7 +198,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const string& hostname,
     const uint16_t port,
     const string& server_config,
-    QuicVersion quic_version,
+    QuicTransportVersion quic_version,
     QuicStringPiece chlo_hash,
     const std::vector<string>& certs,
     const std::string& cert_sct,
@@ -457,11 +457,12 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   return result;
 }
 
-bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
-                                                 QuicVersion quic_version,
-                                                 QuicStringPiece chlo_hash,
-                                                 const string& signature,
-                                                 const string& cert) {
+bool ProofVerifierChromium::Job::VerifySignature(
+    const string& signed_data,
+    QuicTransportVersion quic_version,
+    QuicStringPiece chlo_hash,
+    const string& signature,
+    const string& cert) {
   QuicStringPiece spki;
   if (!asn1::ExtractSPKIFromDERCert(cert, &spki)) {
     DLOG(WARNING) << "ExtractSPKIFromDERCert failed";
@@ -542,7 +543,7 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const std::string& hostname,
     const uint16_t port,
     const std::string& server_config,
-    QuicVersion quic_version,
+    QuicTransportVersion quic_version,
     QuicStringPiece chlo_hash,
     const std::vector<std::string>& certs,
     const std::string& cert_sct,

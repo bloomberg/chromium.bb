@@ -216,6 +216,8 @@ const QuicTag kRCID = TAG('R', 'C', 'I', 'D');   // Server-designated
 const QuicTag kCADR = TAG('C', 'A', 'D', 'R');   // Client IP address and port
 const QuicTag kASAD = TAG('A', 'S', 'A', 'D');   // Alternate Server IP address
                                                  // and port.
+const QuicTag kSRST = TAG('S', 'R', 'S', 'T');   // Stateless reset token used
+                                                 // in IETF public reset packet
 
 // CETV tags
 const QuicTag kCIDK = TAG('C', 'I', 'D', 'K');   // ChannelID key

@@ -39,19 +39,19 @@ class QuicClient : public QuicSpdyClientBase {
   // This will create its own QuicClientEpollNetworkHelper.
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
-             const QuicVersionVector& supported_versions,
+             const QuicTransportVersionVector& supported_versions,
              EpollServer* epoll_server,
              std::unique_ptr<ProofVerifier> proof_verifier);
   // This will take ownership of a passed in network primitive.
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
-             const QuicVersionVector& supported_versions,
+             const QuicTransportVersionVector& supported_versions,
              EpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
              std::unique_ptr<ProofVerifier> proof_verifier);
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
-             const QuicVersionVector& supported_versions,
+             const QuicTransportVersionVector& supported_versions,
              const QuicConfig& config,
              EpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,

@@ -40,7 +40,7 @@ class QuicSimpleClient : public QuicSpdyClientBase {
   // Create a quic client, which will have events managed by the message loop.
   QuicSimpleClient(QuicSocketAddress server_address,
                    const QuicServerId& server_id,
-                   const QuicVersionVector& supported_versions,
+                   const QuicTransportVersionVector& supported_versions,
                    std::unique_ptr<ProofVerifier> proof_verifier);
 
   ~QuicSimpleClient() override;

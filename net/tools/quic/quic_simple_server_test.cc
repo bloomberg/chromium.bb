@@ -26,7 +26,7 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
       : crypto_config_("blah",
                        QuicRandom::GetInstance(),
                        crypto_test_utils::ProofSourceForTesting()),
-        version_manager_(AllSupportedVersions()),
+        version_manager_(AllSupportedTransportVersions()),
         dispatcher_(
             config_,
             &crypto_config_,

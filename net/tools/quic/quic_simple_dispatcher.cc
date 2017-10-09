@@ -51,10 +51,11 @@ QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
     const QuicSocketAddress& client_address,
     QuicStringPiece /*alpn*/) {
   // The QuicServerSessionBase takes ownership of |connection| below.
-  QuicConnection* connection = new QuicConnection(
-      connection_id, client_address, helper(), alarm_factory(),
-      CreatePerConnectionWriter(),
-      /* owns_writer= */ true, Perspective::IS_SERVER, GetSupportedVersions());
+  QuicConnection* connection =
+      new QuicConnection(connection_id, client_address, helper(),
+                         alarm_factory(), CreatePerConnectionWriter(),
+                         /* owns_writer= */ true, Perspective::IS_SERVER,
+                         GetSupportedTransportVersions());
 
   QuicServerSessionBase* session = new QuicSimpleServerSession(
       config(), connection, this, session_helper(), crypto_config(),

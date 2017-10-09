@@ -19,9 +19,10 @@ using std::string;
 
 namespace net {
 
-#define ENDPOINT                                                               \
-  (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client:" \
-                                                                     " ")
+#define ENDPOINT                                                   \
+  (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
+                                                      : "Client:"  \
+                                                        " ")
 
 QuicCryptoStream::QuicCryptoStream(QuicSession* session)
     : QuicStream(kCryptoStreamId, session) {
@@ -33,7 +34,7 @@ QuicCryptoStream::~QuicCryptoStream() {}
 
 // static
 QuicByteCount QuicCryptoStream::CryptoMessageFramingOverhead(
-    QuicVersion version) {
+    QuicTransportVersion version) {
   return QuicPacketCreator::StreamFramePacketOverhead(
       version, PACKET_8BYTE_CONNECTION_ID,
       /*include_version=*/true,

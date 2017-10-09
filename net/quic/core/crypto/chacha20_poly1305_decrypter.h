@@ -14,13 +14,12 @@
 namespace net {
 
 // A ChaCha20Poly1305Decrypter is a QuicDecrypter that implements the
-// AEAD_CHACHA20_POLY1305 algorithm specified in
-// draft-agl-tls-chacha20poly1305-04, except that it truncates the Poly1305
-// authenticator to 12 bytes. Create an instance by calling
-// QuicDecrypter::Create(kCC12).
+// AEAD_CHACHA20_POLY1305 algorithm specified in RFC 7539, except that
+// it truncates the Poly1305 authenticator to 12 bytes. Create an instance
+// by calling QuicDecrypter::Create(kCC20).
 //
-// It uses an authentication tag of 16 bytes (128 bits). There is no
-// fixed nonce prefix.
+// It uses an authentication tag of 12 bytes (96 bits). The fixed prefix of the
+// nonce is four bytes.
 class QUIC_EXPORT_PRIVATE ChaCha20Poly1305Decrypter : public AeadBaseDecrypter {
  public:
   enum {

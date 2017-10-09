@@ -54,11 +54,12 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   static const int kMaxClientHellos = 3;
 
   // QuicCryptoClientStream creates a HandshakerDelegate at construction time
-  // based on the QuicVersion of the connection. Different HandshakerDelegates
-  // provide implementations of different crypto handshake protocols. Currently
-  // QUIC crypto is the only protocol implemented; a future HandshakerDelegate
-  // will use TLS as the handshake protocol. QuicCryptoClientStream delegates
-  // all of its public methods to its HandshakerDelegate.
+  // based on the QuicTransportVersion of the connection. Different
+  // HandshakerDelegates provide implementations of different crypto handshake
+  // protocols. Currently QUIC crypto is the only protocol implemented; a future
+  // HandshakerDelegate will use TLS as the handshake protocol.
+  // QuicCryptoClientStream delegates all of its public methods to its
+  // HandshakerDelegate.
   //
   // This setup of the crypto stream delegating its implementation to the
   // handshaker results in the handshaker reading and writing bytes on the

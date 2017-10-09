@@ -91,8 +91,8 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
 
   g_quic_server = new net::QuicSimpleServer(
       std::move(proof_source), config,
-      net::QuicCryptoServerConfig::ConfigOptions(), net::AllSupportedVersions(),
-      g_quic_response_cache);
+      net::QuicCryptoServerConfig::ConfigOptions(),
+      net::AllSupportedTransportVersions(), g_quic_response_cache);
 
   // Start listening on an unbound port.
   int rv = g_quic_server->Listen(

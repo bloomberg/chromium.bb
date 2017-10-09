@@ -25,7 +25,9 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   void OnError(QuicFramer* framer) override { error_ = framer->error(); }
 
-  bool OnProtocolVersionMismatch(QuicVersion version) override { return false; }
+  bool OnProtocolVersionMismatch(QuicTransportVersion version) override {
+    return false;
+  }
 
   void OnPacket() override {}
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {
@@ -158,15 +160,17 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(AllSupportedVersions(),
+    : framer_(AllSupportedTransportVersions(),
               QuicTime::Zero(),
               Perspective::IS_SERVER) {}
 
-SimpleQuicFramer::SimpleQuicFramer(const QuicVersionVector& supported_versions)
+SimpleQuicFramer::SimpleQuicFramer(
+    const QuicTransportVersionVector& supported_versions)
     : framer_(supported_versions, QuicTime::Zero(), Perspective::IS_SERVER) {}
 
-SimpleQuicFramer::SimpleQuicFramer(const QuicVersionVector& supported_versions,
-                                   Perspective perspective)
+SimpleQuicFramer::SimpleQuicFramer(
+    const QuicTransportVersionVector& supported_versions,
+    Perspective perspective)
     : framer_(supported_versions, QuicTime::Zero(), perspective) {}
 
 SimpleQuicFramer::~SimpleQuicFramer() {}

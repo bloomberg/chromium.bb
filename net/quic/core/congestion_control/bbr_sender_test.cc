@@ -258,9 +258,9 @@ TEST_F(BbrSenderTest, SimpleTransfer) {
   // At startup make sure we are at the default.
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   // At startup make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_->Now(), 0).IsZero());
+  EXPECT_TRUE(sender_->CanSend(0));
   // Make sure we can send.
-  EXPECT_TRUE(sender_->TimeUntilSend(clock_->Now(), 0).IsZero());
+  EXPECT_TRUE(sender_->CanSend(0));
   // And that window is un-affected.
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 

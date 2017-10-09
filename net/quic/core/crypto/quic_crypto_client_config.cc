@@ -421,7 +421,7 @@ void QuicCryptoClientConfig::ClearCachedStates(const ServerIdFilter& filter) {
 
 void QuicCryptoClientConfig::FillInchoateClientHello(
     const QuicServerId& server_id,
-    const QuicVersion preferred_version,
+    const QuicTransportVersion preferred_version,
     const CachedState* cached,
     QuicRandom* rand,
     bool demand_x509_proof,
@@ -498,7 +498,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicServerId& server_id,
     QuicConnectionId connection_id,
-    const QuicVersion preferred_version,
+    const QuicTransportVersion preferred_version,
     const CachedState* cached,
     QuicWallTime now,
     QuicRandom* rand,
@@ -721,7 +721,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
     const CryptoHandshakeMessage& message,
     QuicWallTime now,
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicStringPiece chlo_hash,
     const std::vector<string>& cached_certs,
     CachedState* cached,
@@ -793,7 +793,7 @@ QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
 QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     const CryptoHandshakeMessage& rej,
     QuicWallTime now,
-    const QuicVersion version,
+    const QuicTransportVersion version,
     QuicStringPiece chlo_hash,
     CachedState* cached,
     QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
@@ -837,8 +837,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
     QuicConnectionId connection_id,
-    QuicVersion version,
-    const QuicVersionVector& negotiated_versions,
+    QuicTransportVersion version,
+    const QuicTransportVersionVector& negotiated_versions,
     CachedState* cached,
     QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     string* error_details) {
@@ -900,7 +900,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerConfigUpdate(
     const CryptoHandshakeMessage& server_config_update,
     QuicWallTime now,
-    const QuicVersion version,
+    const QuicTransportVersion version,
     QuicStringPiece chlo_hash,
     CachedState* cached,
     QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,

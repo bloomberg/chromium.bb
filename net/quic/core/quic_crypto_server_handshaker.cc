@@ -134,7 +134,7 @@ void QuicCryptoServerHandshaker::OnHandshakeMessage(
   validate_client_hello_cb_ = cb.get();
   crypto_config_->ValidateClientHello(
       message, GetClientAddress().host(),
-      session()->connection()->self_address(), version(),
+      session()->connection()->self_address(), transport_version(),
       session()->connection()->clock(), signed_config_, std::move(cb));
 }
 
@@ -271,7 +271,7 @@ void QuicCryptoServerHandshaker::SendServerConfigUpdate(
   send_server_config_update_cb_ = cb.get();
 
   crypto_config_->BuildServerConfigUpdateMessage(
-      session()->connection()->version(), chlo_hash_,
+      session()->connection()->transport_version(), chlo_hash_,
       previous_source_address_tokens_, session()->connection()->self_address(),
       GetClientAddress().host(), session()->connection()->clock(),
       session()->connection()->random_generator(), compressed_certs_cache_,
@@ -437,12 +437,12 @@ void QuicCryptoServerHandshaker::ProcessClientHello(
       GenerateConnectionIdForReject(use_stateless_rejects_in_crypto_config);
   crypto_config_->ProcessClientHello(
       result, /*reject_only=*/false, connection->connection_id(),
-      connection->self_address(), GetClientAddress(), version(),
+      connection->self_address(), GetClientAddress(), transport_version(),
       connection->supported_versions(), use_stateless_rejects_in_crypto_config,
       server_designated_connection_id, connection->clock(),
       connection->random_generator(), compressed_certs_cache_,
       crypto_negotiated_params_, signed_config_,
-      QuicCryptoStream::CryptoMessageFramingOverhead(version()),
+      QuicCryptoStream::CryptoMessageFramingOverhead(transport_version()),
       chlo_packet_size_, std::move(done_cb));
 }
 

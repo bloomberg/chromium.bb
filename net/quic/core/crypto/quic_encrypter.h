@@ -26,7 +26,7 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter {
   virtual bool SetKey(QuicStringPiece key) = 0;
 
   // Sets the fixed initial bytes of the nonce. Returns true on success,
-  // false on failure.
+  // false on failure. This method must only be used with Google QUIC crypters.
   //
   // NOTE: The nonce prefix is the client_write_iv or server_write_iv
   // derived from the master secret. A 64-bit packet number will
@@ -42,6 +42,33 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter {
   // packet number, even when retransmitting a lost packet.
   virtual bool SetNoncePrefix(QuicStringPiece nonce_prefix) = 0;
 
+  // Sets |iv| as the initialization vector to use when constructing the nonce.
+  // Returns true on success, false on failure. This method must only be used
+  // with IETF QUIC crypters.
+  //
+  // Google QUIC and IETF QUIC use different nonce constructions. This method
+  // must be used when using IETF QUIC; SetNoncePrefix must be used when using
+  // Google QUIC.
+  //
+  // The nonce is constructed as follows (draft-ietf-quic-tls section 5.3):
+  //
+  //    <---------------- max(8, N_MIN) bytes ----------------->
+  //   +--------------------------------------------------------+
+  //   |                 packet protection IV                   |
+  //   +--------------------------------------------------------+
+  //                             XOR
+  //                          <------------ 64 bits ----------->
+  //   +---------------------+----------------------------------+
+  //   |        zeroes       |   reconstructed packet number    |
+  //   +---------------------+----------------------------------+
+  //
+  // The nonce is the packet protection IV (|iv|) XOR'd with the left-padded
+  // reconstructed packet number.
+  //
+  // The security of the nonce format requires that QUIC never reuse a
+  // packet number, even when retransmitting a lost packet.
+  virtual bool SetIV(QuicStringPiece iv) = 0;
+
   // Writes encrypted |plaintext| and a MAC over |plaintext| and
   // |associated_data| into output. Sets |output_length| to the number of
   // bytes written. Returns true on success or false if there was an error.
@@ -49,7 +76,7 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter {
   // SetNoncePrefix() to form the nonce. |output| must not overlap with
   // |associated_data|. If |output| overlaps with |plaintext| then
   // |plaintext| must be <= |output|.
-  virtual bool EncryptPacket(QuicVersion version,
+  virtual bool EncryptPacket(QuicTransportVersion version,
                              QuicPacketNumber packet_number,
                              QuicStringPiece associated_data,
                              QuicStringPiece plaintext,

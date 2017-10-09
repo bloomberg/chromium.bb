@@ -49,7 +49,7 @@ bool QuicStreamPeer::RstSent(QuicStream* stream) {
 
 // static
 uint32_t QuicStreamPeer::SizeOfQueuedData(QuicStream* stream) {
-  return stream->queued_data_bytes();
+  return stream->BufferedDataBytes();
 }
 
 // static

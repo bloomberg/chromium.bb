@@ -307,8 +307,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
     if (it->in_flight) {
-      packets_acked_.push_back(SendAlgorithmInterface::AckedPacket(
-          packet_number, it->bytes_sent, QuicTime::Zero()));
+      packets_acked_.push_back(
+          AckedPacket(packet_number, it->bytes_sent, QuicTime::Zero()));
     } else {
       // Unackable packets are skipped earlier.
       largest_newly_acked_ = packet_number;
@@ -671,21 +671,22 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   }
   loss_algorithm_->DetectLosses(unacked_packets_, time, rtt_stats_,
                                 largest_newly_acked_, &packets_lost_);
-  for (const auto& pair : packets_lost_) {
+  for (const LostPacket& packet : packets_lost_) {
     ++stats_->packets_lost;
     if (debug_delegate_ != nullptr) {
-      debug_delegate_->OnPacketLoss(pair.first, LOSS_RETRANSMISSION, time);
+      debug_delegate_->OnPacketLoss(packet.packet_number, LOSS_RETRANSMISSION,
+                                    time);
     }
 
     // TODO(ianswett): This could be optimized.
-    if (unacked_packets_.HasRetransmittableFrames(pair.first)) {
-      MarkForRetransmission(pair.first, LOSS_RETRANSMISSION);
+    if (unacked_packets_.HasRetransmittableFrames(packet.packet_number)) {
+      MarkForRetransmission(packet.packet_number, LOSS_RETRANSMISSION);
     } else {
       // Since we will not retransmit this, we need to remove it from
       // unacked_packets_.   This is either the current transmission of
       // a packet whose previous transmission has been acked or a packet that
       // has been TLP retransmitted.
-      unacked_packets_.RemoveFromInFlight(pair.first);
+      unacked_packets_.RemoveFromInFlight(packet.packet_number);
     }
   }
 }
@@ -717,19 +718,20 @@ bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
 }
 
 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(QuicTime now) {
-  QuicTime::Delta delay = QuicTime::Delta::Infinite();
   // The TLP logic is entirely contained within QuicSentPacketManager, so the
   // send algorithm does not need to be consulted.
   if (pending_timer_transmission_count_ > 0) {
-    delay = QuicTime::Delta::Zero();
-  } else if (using_pacing_) {
-    delay =
-        pacing_sender_.TimeUntilSend(now, unacked_packets_.bytes_in_flight());
-  } else {
-    delay =
-        send_algorithm_->TimeUntilSend(now, unacked_packets_.bytes_in_flight());
+    return QuicTime::Delta::Zero();
   }
-  return delay;
+
+  if (using_pacing_) {
+    return pacing_sender_.TimeUntilSend(now,
+                                        unacked_packets_.bytes_in_flight());
+  }
+
+  return send_algorithm_->CanSend(unacked_packets_.bytes_in_flight())
+             ? QuicTime::Delta::Zero()
+             : QuicTime::Delta::Infinite();
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {

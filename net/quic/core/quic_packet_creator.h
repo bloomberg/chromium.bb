@@ -75,7 +75,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
-      QuicVersion version,
+      QuicTransportVersion version,
       QuicConnectionIdLength connection_id_length,
       bool include_version,
       bool include_diversification_nonce,
@@ -162,7 +162,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Creates a version negotiation packet which supports |supported_versions|.
   std::unique_ptr<QuicEncryptedPacket> SerializeVersionNegotiationPacket(
-      const QuicVersionVector& supported_versions);
+      const QuicTransportVersionVector& supported_versions);
 
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();

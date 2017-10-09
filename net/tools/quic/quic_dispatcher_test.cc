@@ -176,7 +176,7 @@ class QuicDispatcherTest : public QuicTest {
   explicit QuicDispatcherTest(std::unique_ptr<ProofSource> proof_source)
       : helper_(&eps_, QuicAllocator::BUFFER_POOL),
         alarm_factory_(&eps_),
-        version_manager_(AllSupportedVersions()),
+        version_manager_(AllSupportedTransportVersions()),
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance(),
                        std::move(proof_source)),
@@ -240,7 +240,7 @@ class QuicDispatcherTest : public QuicTest {
                      QuicPacketNumberLength packet_number_length,
                      QuicPacketNumber packet_number) {
     ProcessPacket(client_address, connection_id, has_version_flag,
-                  CurrentSupportedVersions().front(), data,
+                  CurrentSupportedTransportVersions().front(), data,
                   connection_id_length, packet_number_length, packet_number);
   }
 
@@ -248,12 +248,12 @@ class QuicDispatcherTest : public QuicTest {
   void ProcessPacket(QuicSocketAddress client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
-                     QuicVersion version,
+                     QuicTransportVersion version,
                      const string& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicPacketNumberLength packet_number_length,
                      QuicPacketNumber packet_number) {
-    QuicVersionVector versions(SupportedVersions(version));
+    QuicTransportVersionVector versions(SupportedTransportVersions(version));
     std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
         connection_id, has_version_flag, false, packet_number, data,
         connection_id_length, packet_number_length, &versions));
@@ -386,7 +386,8 @@ TEST_F(QuicDispatcherTest, StatelessVersionNegotiation) {
   EXPECT_CALL(*dispatcher_,
               CreateQuicSession(1, client_address, QuicStringPiece("hq")))
       .Times(0);
-  QuicVersion version = static_cast<QuicVersion>(QuicVersionMin() - 1);
+  QuicTransportVersion version =
+      static_cast<QuicTransportVersion>(QuicVersionMin() - 1);
   ProcessPacket(client_address, 1, true, version, SerializeCHLO(),
                 PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, 1);
 }
@@ -552,8 +553,8 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
                     QuicDispatcher::kMaxReasonableInitialPacketNumber + 1);
 }
 
-TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
-  static_assert(arraysize(kSupportedQuicVersions) == 6u,
+TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
+  static_assert(arraysize(kSupportedTransportVersions) == 6u,
                 "Supported versions out of sync");
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;
@@ -567,8 +568,9 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
                                               QuicStringPiece("hq")))
       .Times(0);
   ProcessPacket(client_address, connection_id, true,
-                static_cast<QuicVersion>(QuicVersionMin() - 1), SerializeCHLO(),
-                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, 1);
+                static_cast<QuicTransportVersion>(QuicVersionMin() - 1),
+                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
+                PACKET_6BYTE_PACKET_NUMBER, 1);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
@@ -1258,7 +1260,7 @@ class BufferedPacketStoreTest
     QuicDispatcherTest::SetUp();
     clock_ = QuicDispatcherPeer::GetHelper(dispatcher_.get())->GetClock();
 
-    QuicVersion version = AllSupportedVersions().front();
+    QuicTransportVersion version = AllSupportedTransportVersions().front();
     CryptoHandshakeMessage chlo =
         crypto_test_utils::GenerateDefaultInchoateCHLO(clock_, version,
                                                        &crypto_config_);
@@ -1667,7 +1669,7 @@ class AsyncGetProofTest : public QuicDispatcherTest {
     QuicDispatcherTest::SetUp();
 
     clock_ = QuicDispatcherPeer::GetHelper(dispatcher_.get())->GetClock();
-    QuicVersion version = AllSupportedVersions().front();
+    QuicTransportVersion version = AllSupportedTransportVersions().front();
     chlo_ = crypto_test_utils::GenerateDefaultInchoateCHLO(clock_, version,
                                                            &crypto_config_);
     chlo_.SetVector(net::kCOPT, net::QuicTagVector{net::kSREJ});

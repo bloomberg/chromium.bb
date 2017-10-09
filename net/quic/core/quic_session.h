@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "net/base/int128.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_packet_creator.h"
@@ -96,7 +97,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                           const std::string& error_details,
                           ConnectionCloseSource source) override;
   void OnWriteBlocked() override;
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
+  void OnSuccessfulVersionNegotiation(
+      const QuicTransportVersion& version) override;
   void OnCanWrite() override;
   void OnCongestionWindowChange(QuicTime /*now*/) override {}
   void OnConnectionMigration(PeerAddressChangeType type) override {}
@@ -273,12 +275,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Returns true if this stream should yield writes to another blocked stream.
   bool ShouldYield(QuicStreamId stream_id);
 
-  bool use_stream_notifier() const { return use_stream_notifier_; }
-
-  bool save_data_before_consumption() const {
-    return save_data_before_consumption_;
-  }
-
   bool can_use_slices() const { return can_use_slices_; }
 
  protected:
@@ -395,6 +391,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   virtual void HandleRstOnValidNonexistentStream(
       const QuicRstStreamFrame& frame);
 
+  // Returns a stateless reset token which will be included in the public reset
+  // packet.
+  virtual uint128 GetStatelessResetToken() const;
+
  private:
   friend class test::QuicSessionPeer;
 
@@ -487,12 +487,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // The stream id which was last popped in OnCanWrite, or 0, if not under the
   // call stack of OnCanWrite.
   QuicStreamId currently_writing_stream_id_;
-
-  // This session is notified on every ack or loss.
-  const bool use_stream_notifier_;
-
-  // Application data is saved before it is actually consumed.
-  const bool save_data_before_consumption_;
 
   // QUIC stream can take ownership of application data provided in reference
   // counted memory to avoid data copy.

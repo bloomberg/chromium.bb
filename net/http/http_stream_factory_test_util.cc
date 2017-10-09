@@ -27,7 +27,7 @@ MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
     HostPortPair destination,
     GURL origin_url,
     NextProto alternative_protocol,
-    QuicVersion quic_version,
+    QuicTransportVersion quic_version,
     const ProxyServer& alternative_proxy_server,
     bool enable_ip_based_pooling,
     NetLog* net_log)
@@ -98,7 +98,7 @@ std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateAltSvcJob(
     HostPortPair destination,
     GURL origin_url,
     NextProto alternative_protocol,
-    QuicVersion quic_version,
+    QuicTransportVersion quic_version,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
   auto alternative_job = std::make_unique<MockHttpStreamFactoryImplJob>(

@@ -238,7 +238,7 @@ void MovePackets(PacketSavingConnection* source_conn,
 // Return an inchoate CHLO with some basic tag value pairs.
 CryptoHandshakeMessage GenerateDefaultInchoateCHLO(
     const QuicClock* clock,
-    QuicVersion version,
+    QuicTransportVersion version,
     QuicCryptoServerConfig* crypto_config);
 
 // Takes a inchoate CHLO, returns a full CHLO in |out| which can pass
@@ -248,7 +248,7 @@ void GenerateFullCHLO(
     QuicCryptoServerConfig* crypto_config,
     QuicSocketAddress server_addr,
     QuicSocketAddress client_addr,
-    QuicVersion version,
+    QuicTransportVersion version,
     const QuicClock* clock,
     QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
     QuicCompressedCertsCache* compressed_certs_cache,

@@ -110,7 +110,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                          QuicByteCount prior_in_flight,
                          QuicTime event_time,
                          const AckedPacketVector& acked_packets,
-                         const CongestionVector& lost_packets) override;
+                         const LostPacketVector& lost_packets) override;
   void OnPacketSent(QuicTime sent_time,
                     QuicByteCount bytes_in_flight,
                     QuicPacketNumber packet_number,
@@ -118,8 +118,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                     HasRetransmittableData is_retransmittable) override;
   void OnRetransmissionTimeout(bool packets_retransmitted) override {}
   void OnConnectionMigration() override {}
-  QuicTime::Delta TimeUntilSend(QuicTime now,
-                                QuicByteCount bytes_in_flight) override;
+  bool CanSend(QuicByteCount bytes_in_flight) override;
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;
   QuicBandwidth BandwidthEstimate() const override;
   QuicByteCount GetCongestionWindow() const override;
@@ -168,7 +167,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void EnterProbeBandwidthMode(QuicTime now);
 
   // Discards the lost packets from BandwidthSampler state.
-  void DiscardLostPackets(const CongestionVector& lost_packets);
+  void DiscardLostPackets(const LostPacketVector& lost_packets);
   // Updates the round-trip counter if a round-trip has passed.  Returns true if
   // the counter has been advanced.
   bool UpdateRoundTripCounter(QuicPacketNumber last_acked_packet);

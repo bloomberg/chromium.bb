@@ -30,29 +30,18 @@ QuicHeaderList& QuicHeaderList::operator=(QuicHeaderList&& other) = default;
 QuicHeaderList::~QuicHeaderList() {}
 
 void QuicHeaderList::OnHeaderBlockStart() {
-  if (FLAGS_quic_restart_flag_quic_header_list_size) {
-    QUIC_BUG_IF(current_header_list_size_ != 0)
-        << "OnHeaderBlockStart called more than once!";
-  } else {
-    QUIC_BUG_IF(uncompressed_header_bytes_ != 0)
-        << "OnHeaderBlockStart called more than once!";
-  }
+  QUIC_BUG_IF(current_header_list_size_ != 0)
+      << "OnHeaderBlockStart called more than once!";
 }
 
 void QuicHeaderList::OnHeader(QuicStringPiece name, QuicStringPiece value) {
   // Avoid infinite buffering of headers. No longer store headers
   // once the current headers are over the limit.
-  if (FLAGS_quic_restart_flag_quic_header_list_size) {
-    if (current_header_list_size_ < max_header_list_size_) {
-      current_header_list_size_ += name.size();
-      current_header_list_size_ += value.size();
-      current_header_list_size_ += kPerHeaderOverhead;
-      header_list_.emplace_back(string(name), string(value));
-    }
-  } else {
-    if (uncompressed_header_bytes_ == 0 || !header_list_.empty()) {
-      header_list_.emplace_back(string(name), string(value));
-    }
+  if (current_header_list_size_ < max_header_list_size_) {
+    current_header_list_size_ += name.size();
+    current_header_list_size_ += value.size();
+    current_header_list_size_ += kPerHeaderOverhead;
+    header_list_.emplace_back(string(name), string(value));
   }
 }
 
@@ -60,14 +49,8 @@ void QuicHeaderList::OnHeaderBlockEnd(size_t uncompressed_header_bytes,
                                       size_t compressed_header_bytes) {
   uncompressed_header_bytes_ = uncompressed_header_bytes;
   compressed_header_bytes_ = compressed_header_bytes;
-  if (FLAGS_quic_restart_flag_quic_header_list_size) {
-    if (current_header_list_size_ > max_header_list_size_) {
-      Clear();
-    }
-  } else {
-    if (uncompressed_header_bytes_ > max_header_list_size_) {
-      Clear();
-    }
+  if (current_header_list_size_ > max_header_list_size_) {
+    Clear();
   }
 }
 

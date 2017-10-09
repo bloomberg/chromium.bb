@@ -74,7 +74,7 @@ QuicHttpStream::~QuicHttpStream() {
 }
 
 HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
-    QuicVersion quic_version) {
+    QuicTransportVersion quic_version) {
   switch (quic_version) {
     case QUIC_VERSION_UNSUPPORTED:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;

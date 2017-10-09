@@ -277,12 +277,13 @@ class HttpStreamFactoryImpl::JobController
       HttpStreamRequest::Delegate* delegate,
       HttpStreamRequest::StreamType stream_type);
 
-  // Returns a QuicVersion that has been advertised in |advertised_versions|
-  // and is supported.  If more than one QuicVersions are supported, the first
-  // matched in the supported versions will be returned.  If no mutually
-  // supported version is found, QUIC_VERSION_UNSUPPORTED_VERSION will be
-  // returned.
-  QuicVersion SelectQuicVersion(const QuicVersionVector& advertised_versions);
+  // Returns a QuicTransportVersion that has been advertised in
+  // |advertised_versions| and is supported.  If more than one
+  // QuicTransportVersions are supported, the first matched in the supported
+  // versions will be returned.  If no mutually supported version is found,
+  // QUIC_VERSION_UNSUPPORTED_VERSION will be returned.
+  QuicTransportVersion SelectQuicVersion(
+      const QuicTransportVersionVector& advertised_versions);
 
   // Remove session from the SpdySessionRequestMap.
   void RemoveRequestFromSpdySessionRequestMap();
