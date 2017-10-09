@@ -52,7 +52,8 @@ var CrContainerShadowBehavior = {
     // the drop shadow flashes once on startup, because of the DOM modifications
     // earlier in this function causing a relayout.
     window.setTimeout(() => {
-      this.intersectionObserver_.observe(intersectionProbe);
+      if (this.intersectionObserver_)  // In case this is already detached.
+        this.intersectionObserver_.observe(intersectionProbe);
     });
   },
 
