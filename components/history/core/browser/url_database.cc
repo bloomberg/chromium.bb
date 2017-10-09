@@ -153,6 +153,27 @@ URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
   return GetDB().GetLastInsertRowId();
 }
 
+bool URLDatabase::URLTableContainsAutoincrement() {
+  // sqlite_master has columns:
+  //   type - "index" or "table".
+  //   name - name of created element.
+  //   tbl_name - name of element, or target table in case of index.
+  //   rootpage - root page of the element in database file.
+  //   sql - SQL to create the element.
+  sql::Statement statement(GetDB().GetUniqueStatement(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'urls'"));
+
+  // urls table does not exist.
+  if (!statement.Step())
+    return false;
+
+  std::string urls_schema = statement.ColumnString(0);
+  // We check if the whole schema contains "AUTOINCREMENT", since
+  // "AUTOINCREMENT" only can be used for "INTEGER PRIMARY KEY", so we assume no
+  // other columns could cantain "AUTOINCREMENT".
+  return urls_schema.find("AUTOINCREMENT") != std::string::npos;
+}
+
 bool URLDatabase::InsertOrUpdateURLRowByID(const URLRow& info) {
   // SQLite does not support INSERT OR UPDATE, however, it does have INSERT OR
   // REPLACE, which is feasible to use, because of the following.
@@ -215,9 +236,7 @@ bool URLDatabase::CommitTemporaryURLTable() {
 
   // Re-create the index over the now permanent URLs table -- this was not there
   // for the temporary table.
-  CreateMainURLIndex();
-
-  return true;
+  return CreateMainURLIndex();
 }
 
 bool URLDatabase::InitURLEnumeratorForEverything(URLEnumerator* enumerator) {
@@ -627,9 +646,7 @@ bool URLDatabase::RecreateURLTableWithAllContents() {
   }
 
   // Rename/commit the tmp table.
-  CommitTemporaryURLTable();
-
-  return true;
+  return CommitTemporaryURLTable();
 }
 
 const int kLowQualityMatchTypedLimit = 1;
