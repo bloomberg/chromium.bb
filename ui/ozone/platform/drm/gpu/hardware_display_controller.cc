@@ -72,6 +72,13 @@ void HardwareDisplayController::Disable() {
   for (const auto& controller : crtc_controllers_)
     controller->Disable();
 
+  for (const auto& planes : owned_hardware_planes_) {
+    DrmDevice* drm = planes.first;
+    HardwareDisplayPlaneList* plane_list = planes.second.get();
+    bool ret = drm->plane_manager()->DisableOverlayPlanes(plane_list);
+    LOG_IF(ERROR, !ret) << "Can't disable overlays when disabling HDC.";
+  }
+
   is_disabled_ = true;
 }
 

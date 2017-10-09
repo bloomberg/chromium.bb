@@ -28,6 +28,8 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
       plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
                         std::vector<drm_format_modifier>(1, linear_modifier),
                         false, true);
+      plane->set_type(i ? HardwareDisplayPlane::kOverlay
+                        : HardwareDisplayPlane::kPrimary);
       planes_.push_back(std::move(plane));
     }
   }
@@ -97,6 +99,18 @@ void MockHardwareDisplayPlaneManager::SetCrtcInfo(
   crtcs_ = crtcs;
   planes_.clear();
   ResetPlaneCount();
+}
+
+bool MockHardwareDisplayPlaneManager::DisableOverlayPlanes(
+    HardwareDisplayPlaneList* plane_list) {
+  for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
+    if (plane->type() != HardwareDisplayPlane::kOverlay)
+      continue;
+    plane->set_in_use(false);
+    plane->set_owning_crtc(0);
+  }
+
+  return true;
 }
 
 bool MockHardwareDisplayPlaneManager::SetPlaneData(

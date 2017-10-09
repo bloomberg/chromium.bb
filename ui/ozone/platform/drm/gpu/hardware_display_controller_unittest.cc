@@ -452,3 +452,33 @@ TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
   EXPECT_EQ(1, page_flips_);
 }
+
+TEST_F(HardwareDisplayControllerTest, Disable) {
+  ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
+      new ui::MockScanoutBuffer(kDefaultModeSize)));
+  EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
+
+  ui::OverlayPlane plane2(new ui::MockScanoutBuffer(kOverlaySize), 1,
+                          gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
+                          gfx::RectF(kDefaultModeSizeF));
+  std::vector<ui::OverlayPlane> planes;
+  planes.push_back(plane1);
+  planes.push_back(plane2);
+
+  controller_->SchedulePageFlip(
+      planes, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
+                         base::Unretained(this)));
+  drm_->RunCallbacks();
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
+  EXPECT_EQ(1, page_flips_);
+
+  controller_->Disable();
+
+  int planes_in_use = 0;
+  for (const auto& plane : drm_->plane_manager()->planes()) {
+    if (plane->in_use())
+      planes_in_use++;
+  }
+  // Only the primary plane is in use.
+  ASSERT_EQ(1, planes_in_use);
+}

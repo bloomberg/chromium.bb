@@ -89,6 +89,10 @@ class HardwareDisplayPlaneManager {
   virtual bool Commit(HardwareDisplayPlaneList* plane_list,
                       bool test_only) = 0;
 
+  // Disable all the overlay planes previously submitted and now stored in
+  // plane_list->old_plane_list.
+  virtual bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) = 0;
+
   const std::vector<std::unique_ptr<HardwareDisplayPlane>>& planes() {
     return planes_;
   }
