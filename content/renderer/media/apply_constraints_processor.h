@@ -51,15 +51,14 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
       MediaStreamVideoSource::RestartResult result);
   void FindNewFormatAndRestart(const media::VideoCaptureFormats& formats);
   void MaybeSourceRestarted(MediaStreamVideoSource::RestartResult result);
-  void FinalizeVideoDeviceRequest();
-  VideoCaptureSettings SelectVideoDeviceSettings(
-      media::VideoCaptureFormats formats);
 
-  // Helpers for video requests.
+  // Helpers for all video requests.
   void ProcessVideoRequest();
   MediaStreamVideoTrack* GetCurrentVideoTrack();
   MediaStreamVideoSource* GetCurrentVideoSource();
   bool AbortIfVideoRequestStateInvalid();  // Returns true if aborted.
+  VideoCaptureSettings SelectVideoSettings(media::VideoCaptureFormats formats);
+  void FinalizeVideoRequest();
 
   // General helpers
   void ApplyConstraintsSucceeded();

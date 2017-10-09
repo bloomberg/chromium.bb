@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/apply_constraints_processor.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "content/renderer/media/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -103,11 +105,13 @@ void ApplyConstraintsProcessor::ProcessVideoRequest() {
   const MediaStreamDevice& device_info = video_source_->device();
   if (device_info.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
     ProcessVideoDeviceRequest();
+  } else if (video_source_->GetCurrentFormat()) {
+    // Non-device capture just requires adjusting track settings.
+    FinalizeVideoRequest();
   } else {
-    // TODO(guidou): Add support for nondevice tracks. http://crbug.com/767064
-    CannotApplyConstraints(
-        "applyConstraints() not supported for this type of track");
-    return;
+    // It is impossible to enforce minimum constraints for sources that do not
+    // provide the video format, so reject applyConstraints() in this case.
+    CannotApplyConstraints("applyConstraints not supported for this track");
   }
 }
 
@@ -119,7 +123,7 @@ void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
   // TODO(guidou): Support restarting the source even if there is more than
   // one track in the source. http://crbug.com/768205
   if (video_source_->NumTracks() > 1U) {
-    FinalizeVideoDeviceRequest();
+    FinalizeVideoRequest();
     return;
   }
 
@@ -140,7 +144,7 @@ void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
   if (AbortIfVideoRequestStateInvalid())
     return;
 
-  VideoCaptureSettings settings = SelectVideoDeviceSettings(formats);
+  VideoCaptureSettings settings = SelectVideoSettings(formats);
   if (!settings.HasValue()) {
     ApplyConstraintsFailed(settings.failed_constraint_name());
     return;
@@ -164,7 +168,7 @@ void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
     return;
 
   if (result == MediaStreamVideoSource::RestartResult::IS_RUNNING) {
-    FinalizeVideoDeviceRequest();
+    FinalizeVideoRequest();
     return;
   }
 
@@ -181,7 +185,7 @@ void ApplyConstraintsProcessor::FindNewFormatAndRestart(
   if (AbortIfVideoRequestStateInvalid())
     return;
 
-  VideoCaptureSettings settings = SelectVideoDeviceSettings(formats);
+  VideoCaptureSettings settings = SelectVideoSettings(formats);
   DCHECK(video_source_->GetCurrentFormat());
   // |settings| should have a value. If it does not due to some unexpected
   // reason (perhaps a race with another renderer process), restart the source
@@ -200,7 +204,7 @@ void ApplyConstraintsProcessor::MaybeSourceRestarted(
     return;
 
   if (result == MediaStreamVideoSource::RestartResult::IS_RUNNING) {
-    FinalizeVideoDeviceRequest();
+    FinalizeVideoRequest();
   } else {
     DCHECK_EQ(result, MediaStreamVideoSource::RestartResult::IS_STOPPED);
     CannotApplyConstraints("Source failed to restart");
@@ -208,14 +212,14 @@ void ApplyConstraintsProcessor::MaybeSourceRestarted(
   }
 }
 
-void ApplyConstraintsProcessor::FinalizeVideoDeviceRequest() {
+void ApplyConstraintsProcessor::FinalizeVideoRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
 
   DCHECK(video_source_->GetCurrentFormat());
   VideoCaptureSettings settings =
-      SelectVideoDeviceSettings({*video_source_->GetCurrentFormat()});
+      SelectVideoSettings({*video_source_->GetCurrentFormat()});
   if (settings.HasValue()) {
     video_source_->ReconfigureTrack(GetCurrentVideoTrack(),
                                     settings.track_adapter_settings());
@@ -225,7 +229,7 @@ void ApplyConstraintsProcessor::FinalizeVideoDeviceRequest() {
   }
 }
 
-VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoDeviceSettings(
+VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
     media::VideoCaptureFormats formats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_request_.IsNull());
@@ -236,7 +240,8 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoDeviceSettings(
 
   ::mojom::VideoInputDeviceCapabilitiesPtr device_capabilities =
       ::mojom::VideoInputDeviceCapabilities::New();
-  device_capabilities->device_id = video_source_->device().id;
+  device_capabilities->device_id =
+      current_request_.Track().Source().Id().Ascii();
   device_capabilities->facing_mode =
       GetMojoFacingMode(GetCurrentVideoTrack()->FacingMode());
   device_capabilities->formats = std::move(formats);

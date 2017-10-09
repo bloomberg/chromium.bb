@@ -851,6 +851,53 @@
         failTest("getUserMedia failed")
       });
   }
+
+  function applyConstraintsNonDevice() {
+    var canvas = document.createElement('canvas');
+    var canvas_stream = canvas.captureStream();
+    var canvas_track = canvas_stream.getVideoTracks()[0];
+    var canvas_width = canvas_track.getSettings().width;
+    var canvas_height = canvas_track.getSettings().height;
+    assertTrue(canvas_width > 1);
+    assertTrue(canvas_height > 1);
+
+    // Paint something on the canvas, so that it produces frames.
+    var ctx = canvas.getContext("2d");
+    ctx.moveTo(0,0);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    var video = document.createElement('video');
+    video.autoplay = true;
+    assertEquals(video.srcObject, null);
+    video.onprogress = () => {
+      assertEquals(video.videoWidth, canvas_width);
+      assertEquals(video.videoHeight, canvas_height);
+      var new_width = canvas_width - 1;
+      var new_height = canvas_height - 1;
+      video.onprogress = () => {
+        assertEquals(video.videoWidth, new_width);
+        assertEquals(video.videoHeight, new_height);
+        canvas_track.applyConstraints({width: {min: canvas_width + 1}})
+          .then(() => {
+            failTest("applyConstraints() should not succeed at setting the " +
+                     "track size to a value greater than the source size.");
+          })
+          .catch(e => {
+            assertEquals(e.name, 'OverconstrainedError');
+            assertEquals(e.constraint, 'width');
+            reportTestSuccess();
+          });
+      }
+      canvas_track.applyConstraints({width: new_width, height: new_height})
+        .then(() => {
+          ctx.lineTo(100,100);
+          ctx.stroke();
+        })
+        .catch(e => failTest("Unexpected error: " + e));
+    }
+    video.srcObject = canvas_stream;
+  }
   </script>
 </head>
 <body>

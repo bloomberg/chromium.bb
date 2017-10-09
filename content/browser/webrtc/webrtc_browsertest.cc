@@ -227,4 +227,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, SetConfigurationErrors) {
   SetConfigurationTest("testSetConfigurationErrors();");
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, ApplyConstraints) {
+  MakeTypicalPeerConnectionCall("testApplyConstraints();");
+}
+
 }  // namespace content

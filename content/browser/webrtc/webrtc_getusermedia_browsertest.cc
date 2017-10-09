@@ -927,4 +927,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("applyConstraintsVideoOverconstrained()");
 }
 
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       ApplyConstraintsNonDevice) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("applyConstraintsNonDevice()");
+}
+
 }  // namespace content
