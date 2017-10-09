@@ -55,7 +55,6 @@ static_library("service") {
     "//base",
     "//chrome:strings",
     "//chrome/common",
-    "//chrome/common:service_process_mojom",
     "//components/cloud_devices/common",
     "//components/data_use_measurement/core",
     "//components/network_session_configurator/browser",
@@ -66,6 +65,10 @@ static_library("service") {
     "//printing",
     "//skia",
     "//third_party/webrtc_overrides",
+  ]
+
+  public_deps = [
+    "//chrome/common:service_process_mojom",
   ]
 
   if (use_cups && !is_chromeos) {
