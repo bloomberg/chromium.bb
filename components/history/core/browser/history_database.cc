@@ -37,7 +37,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 36;
+const int kCurrentVersionNumber = 37;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 const int kMaxHostsInMemory = 10000;
@@ -563,23 +563,8 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   }
 
   if (cur_version == 34) {
-    /*
-    This code is commented out because we suspect the additional disk storage
-    requirements of duplicating the URL table to update the schema cause
-    some devices to run out of storage. Errors during initialization are
-    very disruptive to the user experience.
-
-    TODO(https://crbug.com/736136) figure out how to update users to use
-    AUTOINCREMENT.
-
-    // AUTOINCREMENT is added to urls table PRIMARY KEY(id), need to recreate a
-    // new table and copy all contents over. favicon_id is removed from urls
-    // table since we never use it. Also typed_url_sync_metadata and
-    // autofill_model_type_state tables are introduced, no migration needed for
-    // those two tables.
-    if (!RecreateURLTableWithAllContents())
-      return LogMigrationFailure(34);
-    */
+    // This originally contained an autoincrement migration which was abandoned
+    // and added back in version 36. (see https://crbug.com/736136)
     cur_version++;
     meta_table_.SetVersionNumber(cur_version);
   }
@@ -587,6 +572,20 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 35) {
     if (!MigrateDownloadTransient())
       return LogMigrationFailure(35);
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 36) {
+    // Version 34 added AUTOINCREMENT but was reverted. Since some users will
+    // have been migrated and others not, explicitly check for the AUTOINCREMENT
+    // annotation rather than the version number.
+    if (!URLTableContainsAutoincrement()) {
+      if (!RecreateURLTableWithAllContents())
+        return LogMigrationFailure(36);
+    }
+
+    DCHECK(URLTableContainsAutoincrement());
     cur_version++;
     meta_table_.SetVersionNumber(cur_version);
   }
