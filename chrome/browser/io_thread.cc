@@ -574,7 +574,7 @@ void IOThread::CleanUp() {
 #endif
 
 #if defined(OS_ANDROID)
-  net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
+  net::ShutdownGlobalCertNetFetcher();
 #endif
 
   // Release objects that the net::URLRequestContext could have been pointing
@@ -819,7 +819,7 @@ void IOThread::ConstructSystemRequestContext() {
   net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context);
 #endif
 #if defined(OS_ANDROID)
-  net::CertVerifyProcAndroid::SetCertNetFetcher(
+  net::SetGlobalCertNetFetcher(
       net::CreateCertNetFetcher(globals_->system_request_context));
 #endif
 }

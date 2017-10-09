@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
@@ -29,10 +28,6 @@
 namespace net {
 
 namespace {
-
-// Used to fetch intermediates via AIA if necessary.
-base::LazyInstance<scoped_refptr<CertNetFetcher>>::Leaky g_cert_net_fetcher =
-    LAZY_INSTANCE_INITIALIZER;
 
 // Android ignores the authType parameter to
 // X509TrustManager.checkServerTrusted, so pass in a dummy value. See
@@ -348,26 +343,6 @@ CertVerifyProcAndroid::CertVerifyProcAndroid() {}
 
 CertVerifyProcAndroid::~CertVerifyProcAndroid() {}
 
-// static
-void CertVerifyProcAndroid::SetCertNetFetcher(
-    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-  DCHECK(!g_cert_net_fetcher.Get());
-  g_cert_net_fetcher.Get() = std::move(cert_net_fetcher);
-}
-
-// static
-void CertVerifyProcAndroid::SetCertNetFetcherForTesting(
-    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-  if (g_cert_net_fetcher.Get())
-    g_cert_net_fetcher.Get()->Shutdown();
-  g_cert_net_fetcher.Get() = std::move(cert_net_fetcher);
-}
-
-// static
-void CertVerifyProcAndroid::ShutdownCertNetFetcher() {
-  g_cert_net_fetcher.Get()->Shutdown();
-}
-
 bool CertVerifyProcAndroid::SupportsAdditionalTrustAnchors() const {
   return false;
 }
@@ -387,8 +362,8 @@ int CertVerifyProcAndroid::VerifyInternal(
   std::vector<std::string> cert_bytes;
   if (!GetChainDEREncodedBytes(cert, &cert_bytes))
     return ERR_CERT_INVALID;
-  if (!VerifyFromAndroidTrustManager(cert_bytes, hostname,
-                                     g_cert_net_fetcher.Get(), verify_result)) {
+  if (!VerifyFromAndroidTrustManager(
+          cert_bytes, hostname, GetGlobalCertNetFetcher(), verify_result)) {
     NOTREACHED();
     return ERR_FAILED;
   }

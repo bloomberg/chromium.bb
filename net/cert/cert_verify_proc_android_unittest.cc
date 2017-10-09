@@ -143,11 +143,11 @@ class CertVerifyProcAndroidTestWithAIAFetching : public testing::Test {
  public:
   void SetUp() override {
     fetcher_ = base::MakeRefCounted<MockCertNetFetcher>();
-    CertVerifyProcAndroid::SetCertNetFetcherForTesting(fetcher_);
+    SetGlobalCertNetFetcherForTesting(fetcher_);
   }
 
   void TearDown() override {
-    CertVerifyProcAndroid::ShutdownCertNetFetcher();
+    ShutdownGlobalCertNetFetcher();
     // Ensure that mock expectations are checked, since the CertNetFetcher is
     // global and leaky.
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(fetcher_.get()));

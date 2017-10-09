@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 
@@ -86,6 +87,26 @@ class NET_EXPORT CertNetFetcher
   friend class base::RefCountedThreadSafe<CertNetFetcher>;
   DISALLOW_COPY_AND_ASSIGN(CertNetFetcher);
 };
+
+// TODO(eroman): Remove the need for this global. (Right now the CertVerifyProc
+// implementation is created in a manner that requires this to be global).
+
+// Sets/retrieves a global CertNetFetcher to be used for AIA fetches, OCSP, and
+// CRL by CertVerifyProc implementations.
+NET_EXPORT void SetGlobalCertNetFetcher(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher);
+NET_EXPORT CertNetFetcher* GetGlobalCertNetFetcher();
+
+// Like SetGlobalCertNetFetcher, but allows the global CertNetFetcher to be set
+// more than once. If one has already been set, shuts it down and then sets it
+// to |cert_net_fetcher|.
+NET_EXPORT void SetGlobalCertNetFetcherForTesting(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher);
+
+// Shuts down the global CertNetFetcher. In-progress fetches will be cancelled
+// and subsequent fetches cancelled immediately. Assumes that
+// SetGlobalCertNetFetcher() has been called previously.
+NET_EXPORT void ShutdownGlobalCertNetFetcher();
 
 }  // namespace net
 
