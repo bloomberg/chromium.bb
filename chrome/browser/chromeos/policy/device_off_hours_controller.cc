@@ -193,6 +193,8 @@ std::unique_ptr<em::ChromeDeviceSettingsProto> ApplyOffHoursPolicyToProto(
 }
 
 DeviceOffHoursController::DeviceOffHoursController() {
+  // IsInitialized() check is used for testing. Otherwise it has to be already
+  // initialized.
   if (chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         this);
@@ -200,68 +202,20 @@ DeviceOffHoursController::DeviceOffHoursController() {
 }
 
 DeviceOffHoursController::~DeviceOffHoursController() {
+  // IsInitialized() check is used for testing. Otherwise it has to be already
+  // initialized.
   if (chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
         this);
   }
 }
 
-void DeviceOffHoursController::SuspendDone(
-    const base::TimeDelta& sleep_duration) {
-  // Triggered when device wakes up. "OffHours" state could be changed during
-  // sleep mode and should be updated after that.
-  UpdateOffHoursMode();
+void DeviceOffHoursController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void DeviceOffHoursController::UpdateOffHoursMode() {
-  if (off_hours_intervals_.empty()) {
-    StopOffHoursTimer();
-    SetOffHoursMode(false);
-    return;
-  }
-  off_hours::WeeklyTime current_time =
-      off_hours::WeeklyTime::GetCurrentWeeklyTime();
-  for (const auto& interval : off_hours_intervals_) {
-    if (interval.Contains(current_time)) {
-      SetOffHoursMode(true);
-      StartOffHoursTimer(current_time.GetDurationTo(interval.end()));
-      return;
-    }
-  }
-  StartOffHoursTimer(
-      GetDeltaTillNextOffHours(current_time, off_hours_intervals_));
-  SetOffHoursMode(false);
-}
-
-void DeviceOffHoursController::SetOffHoursMode(bool off_hours_enabled) {
-  if (off_hours_mode_ == off_hours_enabled)
-    return;
-  off_hours_mode_ = off_hours_enabled;
-  DVLOG(1) << "OffHours mode: " << off_hours_mode_;
-  OffHoursModeIsChanged();
-}
-
-void DeviceOffHoursController::StartOffHoursTimer(base::TimeDelta delay) {
-  DCHECK_GT(delay, base::TimeDelta());
-  DVLOG(1) << "OffHours mode timer starts for " << delay;
-  timer_.Start(FROM_HERE, delay,
-               base::Bind(&DeviceOffHoursController::UpdateOffHoursMode,
-                          base::Unretained(this)));
-}
-
-void DeviceOffHoursController::StopOffHoursTimer() {
-  timer_.Stop();
-}
-
-void DeviceOffHoursController::OffHoursModeIsChanged() {
-  DVLOG(1) << "OffHours mode is changed.";
-  // TODO(yakovleva): Get discussion about what is better to user Load() or
-  // LoadImmediately().
-  chromeos::DeviceSettingsService::Get()->Load();
-}
-
-bool DeviceOffHoursController::IsOffHoursMode() {
-  return off_hours_mode_;
+void DeviceOffHoursController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DeviceOffHoursController::UpdateOffHoursPolicy(
@@ -278,6 +232,77 @@ void DeviceOffHoursController::UpdateOffHoursPolicy(
   }
   off_hours_intervals_.swap(off_hours_intervals);
   UpdateOffHoursMode();
+}
+
+void DeviceOffHoursController::SuspendDone(
+    const base::TimeDelta& sleep_duration) {
+  // Triggered when device wakes up. "OffHours" state could be changed during
+  // sleep mode and should be updated after that.
+  UpdateOffHoursMode();
+}
+
+void DeviceOffHoursController::NotifyOffHoursEndTimeChanged() const {
+  VLOG(1) << "OffHours end time is changed to " << off_hours_end_time_;
+  for (auto& observer : observers_)
+    observer.OnOffHoursEndTimeChanged();
+}
+
+void DeviceOffHoursController::OffHoursModeIsChanged() const {
+  VLOG(1) << "OffHours mode is changed to " << off_hours_mode_;
+  chromeos::DeviceSettingsService::Get()->Load();
+}
+
+void DeviceOffHoursController::UpdateOffHoursMode() {
+  if (off_hours_intervals_.empty()) {
+    StopOffHoursTimer();
+    SetOffHoursMode(false);
+    return;
+  }
+  off_hours::WeeklyTime current_time =
+      off_hours::WeeklyTime::GetCurrentWeeklyTime();
+  for (const auto& interval : off_hours_intervals_) {
+    if (interval.Contains(current_time)) {
+      base::TimeDelta remaining_off_hours_duration =
+          current_time.GetDurationTo(interval.end());
+      SetOffHoursEndTime(base::TimeTicks::Now() + remaining_off_hours_duration);
+      StartOffHoursTimer(remaining_off_hours_duration);
+      SetOffHoursMode(true);
+      return;
+    }
+  }
+  StartOffHoursTimer(
+      GetDeltaTillNextOffHours(current_time, off_hours_intervals_));
+  SetOffHoursMode(false);
+}
+
+void DeviceOffHoursController::SetOffHoursEndTime(
+    base::TimeTicks off_hours_end_time) {
+  if (off_hours_end_time == off_hours_end_time_)
+    return;
+  off_hours_end_time_ = off_hours_end_time;
+  NotifyOffHoursEndTimeChanged();
+}
+
+void DeviceOffHoursController::SetOffHoursMode(bool off_hours_enabled) {
+  if (off_hours_mode_ == off_hours_enabled)
+    return;
+  off_hours_mode_ = off_hours_enabled;
+  DVLOG(1) << "OffHours mode: " << off_hours_mode_;
+  if (!off_hours_mode_)
+    SetOffHoursEndTime(base::TimeTicks());
+  OffHoursModeIsChanged();
+}
+
+void DeviceOffHoursController::StartOffHoursTimer(base::TimeDelta delay) {
+  DCHECK_GT(delay, base::TimeDelta());
+  DVLOG(1) << "OffHours mode timer starts for " << delay;
+  timer_.Start(FROM_HERE, delay,
+               base::Bind(&DeviceOffHoursController::UpdateOffHoursMode,
+                          base::Unretained(this)));
+}
+
+void DeviceOffHoursController::StopOffHoursTimer() {
+  timer_.Stop();
 }
 
 }  // namespace policy

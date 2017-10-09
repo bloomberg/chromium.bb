@@ -300,7 +300,7 @@ void DeviceSettingsService::HandleCompletedOperation(
     // reload device policies. (See |DeviceOffHoursController| class
     // description)
     device_off_hours_controller_->UpdateOffHoursPolicy(*device_settings_);
-    if (device_off_hours_controller_->IsOffHoursMode()) {
+    if (device_off_hours_controller_->is_off_hours_mode()) {
       std::unique_ptr<em::ChromeDeviceSettingsProto> off_device_settings =
           policy::ApplyOffHoursPolicyToProto(*device_settings_);
       if (off_device_settings)
