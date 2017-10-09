@@ -76,6 +76,7 @@ void CreateTestPasswordForm(PasswordForm* form) {
       base::ASCIIToUTF16("Jerry_2"), base::ASCIIToUTF16("id2")));
   form->all_possible_passwords.push_back(base::ASCIIToUTF16("pass1"));
   form->all_possible_passwords.push_back(base::ASCIIToUTF16("pass2"));
+  form->form_has_autofilled_value = true;
   form->password_element = base::ASCIIToUTF16("password");
   form->password_value = base::ASCIIToUTF16("test");
   form->password_value_is_default = true;

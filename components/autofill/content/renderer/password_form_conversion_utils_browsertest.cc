@@ -15,6 +15,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/render_view_test.h"
@@ -213,7 +214,8 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
       if (with_user_input) {
         const base::string16 element_value = input_element->Value().Utf16();
         user_input[control_elements[i]] =
-            std::make_pair(base::MakeUnique<base::string16>(element_value), 0U);
+            std::make_pair(base::MakeUnique<base::string16>(element_value),
+                           FieldPropertiesFlags::USER_TYPED);
       }
     }
 
@@ -1436,7 +1438,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, nullptr, false);
-  EXPECT_TRUE(password_form);
+  ASSERT_TRUE(password_form);
+  EXPECT_FALSE(password_form->form_has_autofilled_value);
 
   // Make sure we have all possible passwords along with the username info.
   EXPECT_EQ(base::ASCIIToUTF16("username1"), password_form->username_element);
@@ -1449,6 +1452,44 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   EXPECT_EQ(
       base::ASCIIToUTF16("alpha1, alpha2, alpha3, alpha4"),
       AllPossiblePasswordsToString(password_form->all_possible_passwords));
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       AllPossiblePasswordsIncludeAutofilledValue) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordSelection);
+
+  for (bool autofilled_value_was_modified_by_user : {false, true}) {
+    PasswordFormBuilder builder(kTestFormActionURL);
+    builder.AddTextField("username1", "John", nullptr);
+    builder.AddPasswordField("old-password", "autofilled_value", nullptr);
+    builder.AddPasswordField("new-password", "user_value", nullptr);
+    builder.AddSubmitButton("submit");
+    std::string html = builder.ProduceHTML();
+
+    WebFormElement form;
+    LoadWebFormFromHTML(html, &form, nullptr);
+    WebVector<WebFormControlElement> control_elements;
+    form.GetFormControlElements(control_elements);
+    FieldValueAndPropertiesMaskMap user_input;
+
+    FieldPropertiesMask mask = FieldPropertiesFlags::AUTOFILLED;
+    if (autofilled_value_was_modified_by_user)
+      mask |= FieldPropertiesFlags::USER_TYPED;
+    user_input[control_elements[1]] =
+        std::make_pair(base::MakeUnique<base::string16>(
+                           base::ASCIIToUTF16("autofilled_value")),
+                       mask);
+    user_input[control_elements[2]] = std::make_pair(
+        base::MakeUnique<base::string16>(base::ASCIIToUTF16("user_value")),
+        FieldPropertiesFlags::USER_TYPED);
+
+    std::unique_ptr<PasswordForm> password_form(
+        CreatePasswordFormFromWebForm(form, &user_input, nullptr));
+    ASSERT_TRUE(password_form);
+    EXPECT_TRUE(password_form->form_has_autofilled_value);
+  }
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
