@@ -6,7 +6,7 @@ cr.define('extensions', function() {
   const ItemList = Polymer({
     is: 'extensions-item-list',
 
-    behaviors: [Polymer.IronResizableBehavior, CrContainerShadowBehavior],
+    behaviors: [CrContainerShadowBehavior],
 
     properties: {
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */
@@ -29,22 +29,6 @@ cr.define('extensions', function() {
       }
     },
 
-    listeners: {
-      'list.extension-item-size-changed': 'itemSizeChanged_',
-      'view-enter-start': 'onViewEnterStart_',
-    },
-
-    /**
-     * Updates the size for a given item.
-     * @param {CustomEvent} e
-     * @private
-     * @suppress {checkTypes} Closure doesn't know $.list is an IronList.
-     */
-    itemSizeChanged_: function(e) {
-      this.$.list.updateSizeForItem(e.detail.item);
-      this.fire('resize');
-    },
-
     /**
      * Computes the list of items to be shown.
      * @param {Object} changeRecord The changeRecord for |items|.
@@ -65,11 +49,6 @@ cr.define('extensions', function() {
     shouldShowEmptySearchMessage_: function() {
       return !this.shouldShowEmptyItemsMessage_() &&
           this.shownItems_.length === 0;
-    },
-
-    /** @private */
-    onViewEnterStart_: function() {
-      this.fire('resize');  // This is needed to correctly render iron-list.
     },
   });
 

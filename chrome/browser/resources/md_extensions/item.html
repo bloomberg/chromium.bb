@@ -40,21 +40,18 @@
         display: flex;
         flex-direction: column;
         height: 160px;
-        width: 400px;
+        width: var(--extensions-card-width, 400px);
       }
 
       #card.dev-mode {
         height: 208px;
       }
 
-      #card.disabled {
-        opacity: 0.6;
-      }
-
       #main {
         display: flex;
         flex-grow: 1;
         padding: 16px 20px 17px;
+        position: relative;
       }
 
       #content {
@@ -134,11 +131,15 @@
         color: white;
         display: none;
         margin-top: 8px;
+        max-width: 150px;
         opacity: 0.6;
         padding: 8px 12px;
-        position: absolute;
         transform: translateX(-50%);  /* Move back 50% of width so that the
                                          text and icon share an x-center. */
+      }
+
+      :host-context([dir='rtl']) #source-indicator-text {
+        transform: translateX(50%);
       }
 
       #source-indicator:hover #source-indicator-text {

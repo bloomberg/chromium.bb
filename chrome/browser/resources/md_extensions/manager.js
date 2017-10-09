@@ -321,7 +321,7 @@ cr.define('extensions', function() {
      */
     changePage_: function(newPage) {
       this.$.drawer.closeDrawer();
-      if (this.optionsDialog.open)
+      if (this.optionsDialog && this.optionsDialog.open)
         this.optionsDialog.close();
 
       const fromPage = this.currentPage_ ? this.currentPage_.page : null;

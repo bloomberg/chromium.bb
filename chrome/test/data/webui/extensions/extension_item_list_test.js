@@ -34,32 +34,36 @@ cr.define('extension_item_list_tests', function() {
     });
 
     test(assert(TestNames.Filtering), function() {
-      var ironList = itemList.$.list;
-      assert(ironList);
+      function itemLengthEquals(num) {
+        Polymer.dom.flush();
+        expectEquals(
+            itemList.shadowRoot.querySelectorAll('extensions-item').length,
+            num);
+      }
 
       // We should initially show all the items.
-      expectEquals(3, ironList.items.length);
+      itemLengthEquals(3);
 
       // All items have an 'a'.
       itemList.filter = 'a';
-      expectEquals(3, ironList.items.length);
+      itemLengthEquals(3);
       // Filtering is case-insensitive, so every item should be shown.
       itemList.filter = 'A';
-      expectEquals(3, ironList.items.length);
+      itemLengthEquals(3);
       // Only 'Bravo' has a 'b'.
       itemList.filter = 'b';
-      expectEquals(1, ironList.items.length);
-      expectEquals('Bravo', ironList.items[0].name);
+      itemLengthEquals(1);
+      expectEquals('Bravo', itemList.$$('extensions-item').data.name);
       // Test inner substring (rather than prefix).
       itemList.filter = 'lph';
-      expectEquals(1, ironList.items.length);
-      expectEquals('Alpha', ironList.items[0].name);
+      itemLengthEquals(1);
+      expectEquals('Alpha', itemList.$$('extensions-item').data.name);
       // Test string with no matching items.
       itemList.filter = 'z';
-      expectEquals(0, ironList.items.length);
+      itemLengthEquals(0);
       // A filter of '' should reset to show all items.
       itemList.filter = '';
-      expectEquals(3, ironList.items.length);
+      itemLengthEquals(3);
     });
 
     test(assert(TestNames.NoItemsMsg), function() {

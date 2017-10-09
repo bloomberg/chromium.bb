@@ -3,25 +3,19 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="item.html">
 
 <dom-module id="extensions-item-list">
   <template>
     <style include="cr-shared-style">
-      :host {
-        @apply(--layout-vertical);
+      #items-container,
+      extensions-item {
+        --extensions-card-width: 400px;
       }
 
       #container {
         height: 100%;
         overflow: overlay;
-      }
-
-      iron-list {
-        @apply(--layout-flex);
-        margin-top: 18px;
       }
 
       .empty-list-message {
@@ -32,8 +26,23 @@
         text-align: center;
       }
 
-      .wrapper {
-        padding: 6px;
+      #items-container {
+        --grid-gutter: 12px;
+        --max-columns: 3;
+        display: grid;
+        grid-column-gap: var(--grid-gutter);
+        grid-row-gap: var(--grid-gutter);
+        grid-template-columns: repeat(auto-fill, var(--extensions-card-width));
+        justify-content: center;
+        margin: auto;
+        max-width: calc(var(--extensions-card-width) * var(--max-columns) +
+            var(--grid-gutter) * var(--max-columns));
+        padding: calc(var(--grid-gutter) / 2);
+      }
+
+      extensions-item {
+        grid-column-start: auto;
+        grid-row-start: auto;
       }
     </style>
     <div id="container">
@@ -45,17 +54,13 @@
           hidden$="[[!shouldShowEmptySearchMessage_(shownItems_.length)]]">
         <span>$i18n{noSearchResults}</span>
       </div>
-
-      <iron-list id="list" items="[[shownItems_]]"
-          scroll-target="[[$$('#container')]]" as="item" grid>
-        <template>
-          <div class="wrapper">
-            <extensions-item data="[[item]]" delegate="[[delegate]]"
-                id="[[item.id]]" in-dev-mode="[[inDevMode]]">
-            </extensions-item>
-          </div>
+      <div id="items-container">
+        <template is="dom-repeat" items="[[shownItems_]]">
+          <extensions-item data="[[item]]" delegate="[[delegate]]"
+              in-dev-mode="[[inDevMode]]">
+          </extensions-item>
         </template>
-      </iron-list>
+      </div>
     </div>
   </template>
   <script src="item_list.js"></script>
