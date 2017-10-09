@@ -42,7 +42,6 @@ source_set("omnibox_internal") {
     "image_retriever.h",
     "location_bar_controller_impl.h",
     "location_bar_controller_impl.mm",
-    "omnibox_popup_material_row.h",
     "omnibox_popup_mediator.h",
     "omnibox_popup_mediator.mm",
     "omnibox_popup_positioner.h",
