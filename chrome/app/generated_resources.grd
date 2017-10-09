@@ -3070,6 +3070,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
             Memory
           </message>
+          <message name="IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN" desc="Task manager process memory footprint column. This is the amount of memory used by the process.">
+            Memory footprint
+          </message>
           <message name="IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN" desc="Task manager process private memory column. This is the allocated size that cannot be shared with other processes">
             Private memory
           </message>
@@ -3146,6 +3149,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           </message>
           <message name="IDS_TASK_MANAGER_CPU_TIME_COLUMN" desc="The text of the CPU time column. This is the time that this process actually occupies the CPU.">
             CPU Time
+          </message>
+          <message name="IDS_TASK_MANAGER_MEM_FOOTPRINT_COLUMN" desc="Task manager process memory footprint column. This is the amount of memory used by the process.">
+            Memory Footprint
           </message>
           <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
             Memory
