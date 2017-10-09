@@ -168,7 +168,7 @@ class CORE_EXPORT InspectorPageAgent final
   void DidRunJavaScriptDialog();
   void DidResizeMainFrame();
   void DidChangeViewport();
-  void LifecycleEvent(const char* name, double timestamp);
+  void LifecycleEvent(LocalFrame*, const char* name, double timestamp);
   void PaintTiming(Document*, const char* name, double timestamp);
   void Will(const probe::UpdateLayout&);
   void Did(const probe::UpdateLayout&);
