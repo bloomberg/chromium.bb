@@ -7,12 +7,12 @@
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -172,7 +172,8 @@ bool ImmersiveModeControllerAsh::ShouldStayImmersiveAfterExitingFullscreen() {
     return false;
 
   return !browser_view_->IsBrowserTypeNormal() &&
-         ash::Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars();
+         TabletModeClient::Get()->tablet_mode_enabled() &&
+         TabletModeClient::Get()->auto_hide_title_bars();
 }
 
 views::Widget* ImmersiveModeControllerAsh::GetRevealWidget() {
@@ -187,7 +188,8 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 
   // TODO(crbug.com/760811): Support tablet mode in mash.
   if (ash_util::IsRunningInMash() ||
-      !ash::Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars()) {
+      !(TabletModeClient::Get()->tablet_mode_enabled() &&
+        TabletModeClient::Get()->auto_hide_title_bars())) {
     return;
   }
 
