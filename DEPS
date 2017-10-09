@@ -45,7 +45,7 @@ vars = {
 
   # By default, do not check out src-internal. This can be overridden e.g. with
   # custom_vars.
-  'checkout_src_internal': 'False',
+  'checkout_src_internal': False,
 
   # TODO(dpranke): change to != "small" once != is supported.
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
