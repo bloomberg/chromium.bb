@@ -47,6 +47,12 @@ class PLATFORM_EXPORT RasterInvalidationTracking {
  public:
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
+  // When RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() and
+  // simulateRasterUnderInvalidation(true) is called, all changed pixels will
+  // be reported as raster under-invalidations. Used to visually test raster
+  // under-invalidation checking feature.
+  static void SimulateRasterUnderInvalidations(bool enable);
+
   void AddInvalidation(const DisplayItemClient*,
                        const String& debug_name,
                        const IntRect&,

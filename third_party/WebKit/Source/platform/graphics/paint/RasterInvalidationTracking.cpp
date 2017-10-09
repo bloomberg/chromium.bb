@@ -13,6 +13,12 @@
 
 namespace blink {
 
+static bool g_simulate_raster_under_invalidations = false;
+
+void RasterInvalidationTracking::SimulateRasterUnderInvalidations(bool enable) {
+  g_simulate_raster_under_invalidations = enable;
+}
+
 void RasterInvalidationTracking::AddInvalidation(
     const DisplayItemClient* client,
     const String& debug_name,
@@ -119,7 +125,9 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
     sk_sp<PaintRecord> new_record,
     const IntRect& new_interest_rect) {
   auto old_interest_rect = last_interest_rect_;
-  auto invalidation_region = invalidation_region_since_last_paint_;
+  Region invalidation_region;
+  if (!g_simulate_raster_under_invalidations)
+    invalidation_region = invalidation_region_since_last_paint_;
   auto old_record = std::move(last_painted_record_);
 
   last_painted_record_ = new_record;
@@ -131,7 +139,7 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
 
   IntRect rect = Intersection(old_interest_rect, new_interest_rect);
   // Avoid too big area as the following code is slow.
-  rect.Intersect(IntRect(0, 0, 1200, 1200));
+  rect.Intersect(IntRect(rect.X(), rect.Y(), 1200, 6000));
   if (rect.IsEmpty())
     return;
 

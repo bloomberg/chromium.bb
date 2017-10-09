@@ -396,4 +396,9 @@ enum EffectiveConnectionType {
     boolean isLowEndDevice();
 
     sequence<DOMString> supportedTextEncodingLabels();
+
+    // When RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() and
+    // simulateRasterUnderInvalidation(true) is called, all changed pixels will
+    // be reported as raster under-invalidations.
+    void simulateRasterUnderInvalidations(boolean enable);
 };
