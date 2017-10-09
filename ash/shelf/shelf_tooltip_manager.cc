@@ -257,7 +257,8 @@ void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
 
 bool ShelfTooltipManager::ShouldShowTooltipForView(views::View* view) {
   Shelf* shelf = shelf_view_ ? shelf_view_->shelf() : nullptr;
-  return shelf && shelf_view_->ShouldShowTooltipForView(view) &&
+  return shelf && shelf_view_->visible() &&
+         shelf_view_->ShouldShowTooltipForView(view) &&
          (shelf->GetVisibilityState() == SHELF_VISIBLE ||
           (shelf->GetVisibilityState() == SHELF_AUTO_HIDE &&
            shelf->GetAutoHideState() == SHELF_AUTO_HIDE_SHOWN));
