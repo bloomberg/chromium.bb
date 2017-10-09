@@ -340,15 +340,22 @@ base::TimeDelta CrossFadeAnimation(
     old_layer->GetAnimator()->StopAnimating();
     old_layer->SetTransform(old_transform);
     ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
-
     // Animation observer owns the old layer and deletes itself.
     settings.AddObserver(
         new CrossFadeObserver(window, std::move(old_layer_owner)));
-    settings.CacheRenderSurface();
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
     // Only add reporter to |old_layer|.
     settings.SetAnimationMetricsReporter(g_reporter_cross_fade.Pointer());
+    if (old_on_top) {
+      // Only caching render surface when there is an opacity animation and
+      // multiple layers.
+      if (!old_layer->children().empty())
+        settings.CacheRenderSurface();
+      // The old layer is on top, and should fade out.  The new layer below will
+      // stay opaque to block the desktop.
+      old_layer->SetOpacity(kWindowAnimation_HideOpacity);
+    }
     gfx::Transform out_transform;
     float scale_x = static_cast<float>(new_bounds.width()) /
                     static_cast<float>(old_bounds.width());
@@ -358,11 +365,6 @@ base::TimeDelta CrossFadeAnimation(
                             new_bounds.y() - old_bounds.y());
     out_transform.Scale(scale_x, scale_y);
     old_layer->SetTransform(out_transform);
-    if (old_on_top) {
-      // The old layer is on top, and should fade out.  The new layer below will
-      // stay opaque to block the desktop.
-      old_layer->SetOpacity(kWindowAnimation_HideOpacity);
-    }
     // In tests |old_layer| is deleted here, as animations have zero duration.
     old_layer = NULL;
   }
@@ -387,14 +389,17 @@ base::TimeDelta CrossFadeAnimation(
     // Animate the new layer to the identity transform, so the window goes to
     // its newly set bounds.
     ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
-    settings.CacheRenderSurface();
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
-    new_layer->SetTransform(gfx::Transform());
     if (!old_on_top) {
+      // Only caching render surface when there is an opacity animation and
+      // multiple layers.
+      if (!new_layer->children().empty())
+        settings.CacheRenderSurface();
       // New layer is on top, fade it in.
       new_layer->SetOpacity(kWindowAnimation_ShowOpacity);
     }
+    new_layer->SetTransform(gfx::Transform());
   }
   return duration;
 }
