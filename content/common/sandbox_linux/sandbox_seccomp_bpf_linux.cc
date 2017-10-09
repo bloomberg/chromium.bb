@@ -226,23 +226,14 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
 
 // Is seccomp BPF globally enabled?
 bool SandboxSeccompBPF::IsSeccompBPFDesired() {
+#if BUILDFLAG(USE_SECCOMP_BPF)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   return !command_line.HasSwitch(switches::kNoSandbox) &&
          !command_line.HasSwitch(switches::kDisableSeccompFilterSandbox);
-}
-
-#if !defined(OS_NACL_NONSFI)
-bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
-    const std::string& process_type) {
-#if BUILDFLAG(USE_SECCOMP_BPF)
-  return process_type != switches::kGpuProcess ||
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableGpuSandbox);
 #endif  // USE_SECCOMP_BPF
   return false;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::SupportsSandbox() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
@@ -253,6 +244,7 @@ bool SandboxSeccompBPF::SupportsSandbox() {
 }
 
 #if !defined(OS_NACL_NONSFI)
+
 bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   return SandboxBPF::SupportsSeccompSandbox(
@@ -261,23 +253,22 @@ bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
   return false;
 }
 
-bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
+bool SandboxSeccompBPF::StartSandbox(service_manager::SandboxType sandbox_type,
                                      base::ScopedFD proc_fd,
                                      const Options& options) {
 #if BUILDFLAG(USE_SECCOMP_BPF)
-  if (IsSeccompBPFDesired() &&  // Global switches policy.
-      ShouldEnableSeccompBPF(process_type) &&  // Process-specific policy.
+  if (!IsUnsandboxedSandboxType(sandbox_type) &&
+      IsSeccompBPFDesired() &&  // Global switches policy.
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    CHECK(StartBPFSandbox(service_manager::SandboxTypeFromCommandLine(
-                              *base::CommandLine::ForCurrentProcess()),
-                          std::move(proc_fd), options));
+    CHECK(StartBPFSandbox(sandbox_type, std::move(proc_fd), options));
     return true;
   }
 #endif
   return false;
 }
+
 #endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(

@@ -15,6 +15,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/sandbox_linux.h"
 #include "gpu/config/gpu_info.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
     defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -121,7 +122,7 @@ class LinuxSandbox {
   // Check the policy and eventually start the seccomp-bpf sandbox. This should
   // never be called with threads started. If we detect that threads have
   // started we will crash.
-  bool StartSeccompBPF(const std::string& process_type,
+  bool StartSeccompBPF(service_manager::SandboxType sandbox_type,
                        const gpu::GPUInfo* gpu_info);
 
   // Limit the address space of the current process (and its children).
@@ -163,7 +164,7 @@ class LinuxSandbox {
   void SealSandbox();
   // GetStatus() makes promises as to how the sandbox will behave. This
   // checks that no promises have been broken.
-  void CheckForBrokenPromises(const std::string& process_type);
+  void CheckForBrokenPromises(service_manager::SandboxType sandbox_type);
   // Stop |thread| and make sure it does not appear in /proc/self/tasks/
   // anymore.
   void StopThreadAndEnsureNotCounted(base::Thread* thread) const;
