@@ -5,10 +5,11 @@
 #ifndef UI_GFX_HARFBUZZ_FONT_SKIA_H_
 #define UI_GFX_HARFBUZZ_FONT_SKIA_H_
 
-#include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/font_render_params.h"
+
+#include <hb.h>
 
 class SkTypeface;
 

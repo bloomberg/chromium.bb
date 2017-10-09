@@ -302,7 +302,7 @@ component("gfx") {
   } else {
     deps += [
       "//cc/paint",
-      "//third_party/harfbuzz-ng",
+      "//third_party:freetype_harfbuzz",
     ]
   }
 
@@ -712,10 +712,6 @@ test("gfx_unittests") {
     sources += [ "paint_vector_icon_unittest.cc" ]
   }
 
-  if (!is_android && !is_ios) {
-    sources += [ "render_text_unittest.cc" ]
-  }
-
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -735,6 +731,11 @@ test("gfx_unittests") {
     "//ui/gfx/range",
     "//ui/resources:ui_test_pak",
   ]
+
+  if (!is_android && !is_ios) {
+    sources += [ "render_text_unittest.cc" ]
+    deps += [ "//third_party:freetype_harfbuzz" ]
+  }
 
   data_deps = [
     "//ui/resources:ui_test_pak",

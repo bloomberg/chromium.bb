@@ -10,7 +10,7 @@ group("freetype") {
     public_configs = [ "//build/linux:freetype_from_pkgconfig" ]
   } else {
     public_deps = [
-      "//third_party/freetype",
+      "//third_party:freetype_harfbuzz",
     ]
   }
 }

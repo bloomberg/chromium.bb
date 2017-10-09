@@ -97,10 +97,10 @@ template("libgtkui") {
              "//printing",
              "//skia",
 
-             # GTK pulls pangoft2, which requires HarfBuzz symbols. Since we
-             # link our own HarfBuzz, avoid mixing symbols from system HarfBuzz
-             # and own ones, hence the dependency to harfbuzz-ng here.
-             "//third_party/harfbuzz-ng",
+             # GTK pulls pangoft2, which requires HarfBuzz symbols. When linking
+             # our own HarfBuzz avoid mixing symbols from system HarfBuzz and
+             # our own through the indirect dependency to harfbuzz-ng here.
+             "//third_party:freetype_harfbuzz",
              "//ui/aura",
              "//ui/base",
              "//ui/base/ime",

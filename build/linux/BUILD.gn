@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/freetype/freetype.gni")
 import("//build/config/linux/pkg_config.gni")
 
 if (use_gio) {
@@ -33,11 +34,16 @@ if (use_gio) {
 
 # Looking for libspeechd? Use //third_party/speech-dispatcher
 
-if (!is_chromecast) {
+if (use_system_freetype) {
+  assert(!is_chromecast)
+
   # Only provided for distributions which prefer to keep linking to FreeType on
   # the system, use with caution,for details see build/config/freetype/BUILD.gn.
   pkg_config("freetype_from_pkgconfig") {
-    visibility = [ ":freetype2" ]
+    visibility = [
+      "//third_party:freetype_harfbuzz",
+      "//third_party/harfbuzz-ng:harfbuzz_source",
+    ]
     packages = [ "freetype2" ]
   }
 }
