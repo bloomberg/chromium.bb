@@ -18,7 +18,7 @@ import time
 
 from download_from_google_storage import get_sha1
 from download_from_google_storage import Gsutil
-from download_from_google_storage import printer_worker
+from download_from_google_storage import PrinterThread
 from download_from_google_storage import GSUTIL_DEFAULT_PATH
 
 USAGE_STRING = """%prog [options] target [target2 ...].
@@ -145,7 +145,7 @@ def upload_to_google_storage(
   upload_queue = Queue.Queue()
   upload_timer = time.time()
   stdout_queue = Queue.Queue()
-  printer_thread = threading.Thread(target=printer_worker, args=[stdout_queue])
+  printer_thread = PrinterThread(stdout_queue)
   printer_thread.daemon = True
   printer_thread.start()
   for thread_num in range(num_threads):

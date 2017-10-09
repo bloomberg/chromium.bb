@@ -215,7 +215,7 @@ def _validate_tar_file(tar, prefix):
   return all(map(_validate, tar.getmembers()))
 
 def _downloader_worker_thread(thread_num, q, force, base_url,
-                              gsutil, out_q, ret_codes, verbose, extract,
+                              gsutil, out_q, ret_codes, extract,
                               delete=True):
   while True:
     input_sha1_sum, output_filename = q.get()
@@ -232,10 +232,6 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     if os.path.exists(output_filename) and not force:
       if not extract or os.path.exists(extract_dir):
         if get_sha1(output_filename) == input_sha1_sum:
-          if verbose:
-            out_q.put(
-                '%d> File %s exists and SHA1 matches. Skipping.' % (
-                    thread_num, output_filename))
           continue
     # Check if file exists.
     file_url = '%s/%s' % (base_url, input_sha1_sum)
@@ -326,18 +322,26 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         st = os.stat(output_filename)
         os.chmod(output_filename, st.st_mode | stat.S_IEXEC)
 
-def printer_worker(output_queue):
-  while True:
-    line = output_queue.get()
-    # Its plausible we want to print empty lines.
-    if line is None:
-      break
-    print line
+
+class PrinterThread(threading.Thread):
+  def __init__(self, output_queue):
+    super(PrinterThread, self).__init__()
+    self.output_queue = output_queue
+    self.did_print_anything = False
+
+  def run(self):
+    while True:
+      line = self.output_queue.get()
+      # It's plausible we want to print empty lines: Explicit `is None`.
+      if line is None:
+        break
+      self.did_print_anything = True
+      print line
 
 
 def download_from_google_storage(
     input_filename, base_url, gsutil, num_threads, directory, recursive,
-    force, output, ignore_errors, sha1_file, verbose, auto_platform, extract):
+    force, output, ignore_errors, sha1_file, auto_platform, extract):
   # Start up all the worker threads.
   all_threads = []
   download_start = time.time()
@@ -349,11 +353,11 @@ def download_from_google_storage(
     t = threading.Thread(
         target=_downloader_worker_thread,
         args=[thread_num, work_queue, force, base_url,
-              gsutil, stdout_queue, ret_codes, verbose, extract])
+              gsutil, stdout_queue, ret_codes, extract])
     t.daemon = True
     t.start()
     all_threads.append(t)
-  printer_thread = threading.Thread(target=printer_worker, args=[stdout_queue])
+  printer_thread = PrinterThread(stdout_queue)
   printer_thread.daemon = True
   printer_thread.start()
 
@@ -376,10 +380,9 @@ def download_from_google_storage(
     max_ret_code = max(ret_code, max_ret_code)
     if message:
       print >> sys.stderr, message
-  if verbose and not max_ret_code:
-    print 'Success!'
 
-  if verbose:
+  # Only print summary if any work was done.
+  if printer_thread.did_print_anything:
     print 'Downloading %d files took %1f second(s)' % (
         work_queue_size, time.time() - download_start)
   return max_ret_code
@@ -535,7 +538,7 @@ def main(args):
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
       options.recursive, options.force, options.output, options.ignore_errors,
-      options.sha1_file, options.verbose, options.auto_platform,
+      options.sha1_file, options.auto_platform,
       options.extract)
 
 

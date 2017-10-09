@@ -230,7 +230,7 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True, False)
+        stdout_queue, self.ret_codes, True)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -256,7 +256,7 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True, False)
+        stdout_queue, self.ret_codes, True)
     expected_output = [
         '0> File %s exists and SHA1 matches. Skipping.' % output_filename
     ]
@@ -278,7 +278,7 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, True, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True, True, delete=False)
+        stdout_queue, self.ret_codes, True, delete=False)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -311,7 +311,7 @@ class DownloadTests(unittest.TestCase):
     self.gsutil.add_expected(1, '', '')  # Return error when 'ls' is called.
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True, False)
+        stdout_queue, self.ret_codes, True)
     expected_output = [
         '0> Failed to fetch file %s for %s, skipping. [Err: ]' % (
             input_filename, output_filename),
@@ -345,7 +345,6 @@ class DownloadTests(unittest.TestCase):
         output=output_filename,
         ignore_errors=False,
         sha1_file=False,
-        verbose=True,
         auto_platform=False,
         extract=False)
     expected_calls = [
@@ -377,7 +376,7 @@ class DownloadTests(unittest.TestCase):
     self.gsutil.add_expected(0, '', '')
     self.gsutil.add_expected(0, '', '', _write_bad_file)
     download_from_google_storage._downloader_worker_thread(
-        1, q, True, self.base_url, self.gsutil, out_q, ret_codes, True, False)
+        1, q, True, self.base_url, self.gsutil, out_q, ret_codes, True)
     self.assertTrue(q.empty())
     msg = ('1> ERROR remote sha1 (%s) does not match expected sha1 (%s).' %
            ('8843d7f92416211de9ebb963ff4ce28125932878', sha1_hash))
@@ -403,7 +402,6 @@ class DownloadTests(unittest.TestCase):
         output=None,
         ignore_errors=False,
         sha1_file=False,
-        verbose=True,
         auto_platform=False,
         extract=False)
     expected_calls = [
