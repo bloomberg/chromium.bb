@@ -5130,7 +5130,6 @@ crbug.com/591099 fast/multicol/border-radius-clipped-layer-second-column.html [ 
 crbug.com/591099 fast/multicol/border-radius-clipped-layer.html [ Failure ]
 crbug.com/591099 fast/multicol/break-after-always-bottom-margin.html [ Failure Timeout ]
 crbug.com/591099 fast/multicol/break-before-first-line-in-first-child.html [ Failure ]
-crbug.com/591099 fast/multicol/break-properties.html [ Failure Timeout ]
 crbug.com/591099 fast/multicol/caret-range-anonymous-block-rtl.html [ Failure ]
 crbug.com/591099 fast/multicol/caret-range-anonymous-block.html [ Failure ]
 crbug.com/757767 fast/multicol/caret-range-outside-columns-rtl.html [ Failure Timeout ]

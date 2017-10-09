@@ -59,6 +59,7 @@ void UpdateLegacyMultiColumnFlowThread(
 
   NGWritingMode writing_mode = constraint_space.WritingMode();
   LayoutUnit flow_end;
+  LayoutUnit column_block_size;
   bool has_processed_first_child = false;
 
   // Stitch the columns together.
@@ -74,6 +75,7 @@ void UpdateLegacyMultiColumnFlowThread(
       flow_thread->SetX(child->Offset().left);
       flow_thread->SetY(child->Offset().top);
       flow_thread->SetLogicalWidth(child_fragment.InlineSize());
+      column_block_size = child_fragment.BlockSize();
       has_processed_first_child = true;
     }
   }
@@ -87,8 +89,7 @@ void UpdateLegacyMultiColumnFlowThread(
     column_set->SetLogicalTop(border_scrollbar_padding.block_start);
     column_set->SetLogicalWidth(logical_fragment.InlineSize() -
                                 border_scrollbar_padding.InlineSum());
-    column_set->SetLogicalHeight(logical_fragment.BlockSize() -
-                                 border_scrollbar_padding.BlockSum());
+    column_set->SetLogicalHeight(column_block_size);
     column_set->EndFlow(flow_end);
     column_set->UpdateFromNG();
   }
