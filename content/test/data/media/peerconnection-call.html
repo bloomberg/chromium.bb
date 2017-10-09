@@ -614,6 +614,30 @@
     remoteVideo.src = remoteStreamUrl;
   }
 
+  // Check that applyConstraints() fails on remote tracks because there is
+  // currently no mechanism to make their video format known to the track, so
+  // it is impossible to enforce the user-provided constraints.
+  // TODO(guidou): Make the video format for remote sources known
+  // http://crbug.com/772400
+  function testApplyConstraints() {
+    createConnections(null);
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+      .then(addStreamToBothConnectionsAndNegotiate)
+      .catch(printGetUserMediaError);
+
+    detectVideoPlaying('remote-view-1', () => {
+      var track = gFirstConnection.getRemoteStreams()[0].getVideoTracks()[0];
+      track.applyConstraints({width: {min: 1000}})
+        .then(()=>{
+          failTest('applyConstraints should fail for remote tracks');
+        })
+        .catch(e => {
+          assertEquals(e.name, 'OverconstrainedError');
+          reportTestSuccess();
+        });
+    });
+  }
+
   </script>
 </head>
 <body>
