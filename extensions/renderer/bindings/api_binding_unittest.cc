@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/renderer/bindings/api_binding.h"
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "extensions/renderer/bindings/api_binding.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_hooks_test_delegate.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
@@ -719,6 +721,25 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
       FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
   v8::Local<v8::Value> argv[] = {binding_object};
   DisposeContext(context);
+  RunFunction(func, context, arraysize(argv), argv);
+  EXPECT_FALSE(HandlerWasInvoked());
+  // This test passes if this does not crash, even under AddressSanitizer
+  // builds.
+}
+
+TEST_F(APIBindingUnittest, TestInvalidatedContext) {
+  SetFunctions(kFunctions);
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(context);
+
+  v8::Local<v8::Function> func =
+      FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
+  v8::Local<v8::Value> argv[] = {binding_object};
+  binding::InvalidateContext(context);
   RunFunction(func, context, arraysize(argv), argv);
   EXPECT_FALSE(HandlerWasInvoked());
   // This test passes if this does not crash, even under AddressSanitizer

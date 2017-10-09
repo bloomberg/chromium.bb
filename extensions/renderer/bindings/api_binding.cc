@@ -62,17 +62,9 @@ std::string GetJSEnumEntryName(const std::string& original) {
   return result;
 }
 
-bool IsContextValid(v8::Local<v8::Context> context) {
-  // If the given context has been disposed, the per-context data has been
-  // deleted, and the context is no longer valid. The APIBinding (which owns
-  // various necessary pieces) should outlive all contexts, so if the context
-  // is valid, associated callbacks should be safe.
-  return gin::PerContextData::From(context) != nullptr;
-}
-
 void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
-  if (!IsContextValid(args.isolate()->GetCurrentContext()))
+  if (!binding::IsContextValid(args.isolate()->GetCurrentContext()))
     return;
 
   v8::Local<v8::External> external;
@@ -343,7 +335,7 @@ APIBinding::~APIBinding() {}
 
 v8::Local<v8::Object> APIBinding::CreateInstance(
     v8::Local<v8::Context> context) {
-  DCHECK(IsContextValid(context));
+  DCHECK(binding::IsContextValid(context));
   v8::Isolate* isolate = context->GetIsolate();
   if (object_template_.IsEmpty())
     InitializeTemplate(isolate);
@@ -513,7 +505,7 @@ void APIBinding::GetEventObject(
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
-  if (!IsContextValid(context))
+  if (!binding::IsContextValid(context))
     return;
 
   CHECK(info.Data()->IsExternal());
@@ -545,7 +537,7 @@ void APIBinding::GetCustomPropertyObject(
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
-  if (!IsContextValid(context))
+  if (!binding::IsContextValid(context))
     return;
 
   v8::Context::Scope context_scope(context);
