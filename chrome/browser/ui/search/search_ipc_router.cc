@@ -241,24 +241,24 @@ void SearchIPCRouter::ChromeIdentityCheck(
     int page_seq_no,
     const base::string16& identity,
     ChromeIdentityCheckCallback callback) {
-  if (page_seq_no != commit_counter_)
-    return;
+  bool result = false;
+  if (page_seq_no == commit_counter_ &&
+      policy_->ShouldProcessChromeIdentityCheck()) {
+    result = delegate_->ChromeIdentityCheck(identity);
+  }
 
-  if (!policy_->ShouldProcessChromeIdentityCheck())
-    return;
-
-  std::move(callback).Run(delegate_->ChromeIdentityCheck(identity));
+  std::move(callback).Run(result);
 }
 
 void SearchIPCRouter::HistorySyncCheck(int page_seq_no,
                                        HistorySyncCheckCallback callback) {
-  if (page_seq_no != commit_counter_)
-    return;
+  bool result = false;
+  if (page_seq_no == commit_counter_ &&
+      policy_->ShouldProcessHistorySyncCheck()) {
+    result = delegate_->HistorySyncCheck();
+  }
 
-  if (!policy_->ShouldProcessHistorySyncCheck())
-    return;
-
-  std::move(callback).Run(delegate_->HistorySyncCheck());
+  std::move(callback).Run(result);
 }
 
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
