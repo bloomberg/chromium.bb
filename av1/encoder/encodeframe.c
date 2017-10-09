@@ -6061,10 +6061,6 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
 static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
                                       BLOCK_SIZE plane_bsize, int mi_row,
                                       int mi_col, FRAME_COUNTS *td_counts) {
-#if CONFIG_INTRABC
-  // Intrabc doesn't support var-tx yet. So no need to update tx partition info.
-  if (is_intrabc_block(&x->e_mbd.mi[0]->mbmi)) return;
-#endif  // CONFIG_INTRABC
   MACROBLOCKD *xd = &x->e_mbd;
   const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
@@ -6074,6 +6070,16 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
   int idx, idy;
   int init_depth =
       (mi_height != mi_width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
+
+#if CONFIG_INTRABC
+  // Intrabc doesn't support var-tx yet. So no need to update tx partition
+  // info., except for the split count (otherwise common->tx_mode may be
+  // modified, causing mismatch).
+  if (is_intrabc_block(&x->e_mbd.mi[0]->mbmi)) {
+    if (x->e_mbd.mi[0]->mbmi.tx_size != max_tx_size) ++x->txb_split_count;
+    return;
+  }
+#endif  // CONFIG_INTRABC
 
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
