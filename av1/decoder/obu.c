@@ -315,7 +315,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   // decode frame as a series of OBUs
   while (!frame_decoding_finished && !cm->error.error_code) {
     struct aom_read_bit_buffer rb;
-    size_t obu_payload_size = 0;
+    size_t payload_size = 0;
+    size_t decoded_payload_size = 0;
     const size_t bytes_available = data_end - data;
 
     if (bytes_available < 1) {
@@ -353,14 +354,15 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 
 #if CONFIG_OBU_SIZE_AFTER_HEADER
-    size_t obu_size;
     if (read_obu_size(data + obu_header.size, bytes_available - obu_header.size,
-                      &obu_size, &length_field_size) != AOM_CODEC_OK) {
+                      &payload_size, &length_field_size) != AOM_CODEC_OK) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
     }
     av1_init_read_bit_buffer(
         pbi, &rb, data + length_field_size + obu_header.size, data_end);
+#else
+    payload_size = obu_size - obu_header.size;
 #endif  // CONFIG_OBU_SIZE_AFTER_HEADER
 
     data += length_field_size + obu_header.size;
@@ -376,21 +378,21 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 
     switch (obu_header.type) {
       case OBU_TEMPORAL_DELIMITER:
-        obu_payload_size = read_temporal_delimiter_obu();
+        decoded_payload_size = read_temporal_delimiter_obu();
         break;
       case OBU_SEQUENCE_HEADER:
         if (!seq_header_received) {
-          obu_payload_size = read_sequence_header_obu(pbi, &rb);
-          seq_header_size = obu_payload_size;
+          decoded_payload_size = read_sequence_header_obu(pbi, &rb);
+          seq_header_size = decoded_payload_size;
           seq_header_received = 1;
         } else {
           // Seeing another sequence header, skip as all sequence headers
           // are requred to be identical.
-          if (obu_size - obu_header.size != seq_header_size) {
+          if (payload_size != seq_header_size) {
             cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
             return;
           }
-          obu_payload_size = seq_header_size;
+          decoded_payload_size = seq_header_size;
         }
         break;
       case OBU_FRAME_HEADER:
@@ -400,7 +402,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
               read_frame_header_obu(pbi, data, data_end, p_data_end);
           frame_header_received = 1;
         }
-        obu_payload_size = frame_header_size;
+        decoded_payload_size = frame_header_size;
         if (cm->show_existing_frame) frame_decoding_finished = 1;
         break;
       case OBU_TILE_GROUP:
@@ -408,28 +410,28 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
         }
-#if CONFIG_OBU_SIZE_AFTER_HEADER
-        // In this case, obu_size is already excluding the header size.
-        const size_t payload_offset = obu_size;
-#else
-        const size_t payload_offset = obu_size - obu_header.size;
-#endif  // CONFIG_OBU_SIZE_AFTER_HEADER
-        obu_payload_size = read_one_tile_group_obu(
-            pbi, &rb, is_first_tg_obu_received, data, data + payload_offset,
+        decoded_payload_size = read_one_tile_group_obu(
+            pbi, &rb, is_first_tg_obu_received, data, data + payload_size,
             p_data_end, &frame_decoding_finished);
         is_first_tg_obu_received = 0;
         break;
       case OBU_METADATA:
-        obu_payload_size = read_metadata(data, obu_size);
+        decoded_payload_size = read_metadata(data, payload_size);
         break;
       case OBU_PADDING:
       default:
-        // Skip padding and unknown obus for now.
-        obu_payload_size = obu_size;
+        // Skip unrecognized OBUs
+        decoded_payload_size = payload_size;
         break;
     }
 
-    data += obu_payload_size;
+    // Check that the signalled OBU size matches the actual amount of data read
+    if (decoded_payload_size != payload_size) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return;
+    }
+
+    data += payload_size;
     if (data_end < data) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
