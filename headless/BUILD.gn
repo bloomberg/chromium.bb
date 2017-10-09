@@ -245,8 +245,8 @@ if (headless_fontconfig_utils && !is_fuchsia) {
     ]
 
     deps = [
+      "//build/config/freetype",
       "//third_party/fontconfig",
-      "//third_party/freetype",
     ]
 
     configs += [ ":headless_implementation" ]

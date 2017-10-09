@@ -38,10 +38,10 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
-#include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/ots/include/ots-memory-stream.h"
 #include "third_party/skia/include/core/SkStream.h"
 
+#include <hb.h>
 #include <stdarg.h>
 
 namespace blink {

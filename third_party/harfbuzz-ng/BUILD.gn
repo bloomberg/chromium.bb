@@ -5,31 +5,21 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
-import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/harfbuzz-ng/harfbuzz.gni")
 
 if (use_system_harfbuzz) {
   import("//build/config/linux/pkg_config.gni")
-  pkg_config("harfbuzz_pkgconfig") {
+  pkg_config("harfbuzz_from_pkgconfig") {
+    visibility = [
+      "//third_party:freetype_harfbuzz",
+      "//third_party/freetype:freetype_source",
+    ]
     packages = [ "harfbuzz" ]
   }
-  group("harfbuzz-ng") {
-    public_configs = [ ":harfbuzz_pkgconfig" ]
-  }
 } else {
-  # The :harfbuzz-ng target combines the staged build steps required to resolve
-  # the cyclic dependency between parts of FreeType and HarfBuzz.
-  group("harfbuzz-ng") {
-    public_deps = [
-      ":harfbuzz-ng-ft",
-      ":harfbuzz-ng-without-freetype",
-      "//build/config/freetype",
-    ]
-  }
-
-  config("harfbuzz-ng_config") {
+  config("harfbuzz_config") {
     include_dirs = [ "src" ]
   }
 
@@ -51,7 +41,9 @@ if (use_system_harfbuzz) {
     }
   }
 
-  static_library("harfbuzz-ng-without-freetype") {
+  source_set("harfbuzz_source") {
+    visibility = [ "//third_party:freetype_harfbuzz" ]
+
     sources = [
       "src/hb-atomic-private.hh",
       "src/hb-blob.cc",
@@ -72,6 +64,8 @@ if (use_system_harfbuzz) {
       "src/hb-font-private.hh",
       "src/hb-font.cc",
       "src/hb-font.h",
+      "src/hb-ft.cc",
+      "src/hb-ft.h",
       "src/hb-icu.cc",
       "src/hb-icu.h",
       "src/hb-mutex-private.hh",
@@ -156,11 +150,6 @@ if (use_system_harfbuzz) {
       "src/hb.h",
     ]
 
-    if (is_component_build && !is_win) {
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-      configs += [ "//build/config/gcc:symbol_visibility_default" ]
-    }
-
     defines = [
       "HAVE_OT",
       "HAVE_ICU",
@@ -168,6 +157,20 @@ if (use_system_harfbuzz) {
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
     ]
 
+    if (is_component_build) {
+      if (is_win) {
+        defines += [ "HB_EXTERN=__declspec (dllexport) extern" ]
+      } else {
+        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+        configs += [ "//build/config/gcc:symbol_visibility_default" ]
+      }
+    }
+
+    if (use_system_freetype) {
+      configs += [ "//build/linux:freetype_from_pkgconfig" ]
+    } else {
+      configs += [ "//third_party/freetype:freetype_config" ]
+    }
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       "//build/config/compiler:no_chromium_code",
@@ -176,7 +179,7 @@ if (use_system_harfbuzz) {
       # correctly.
       ":harfbuzz_warnings",
     ]
-    public_configs = [ ":harfbuzz-ng_config" ]
+    public_configs = [ ":harfbuzz_config" ]
 
     deps = [
       "//third_party/icu:icuuc",
@@ -203,45 +206,6 @@ if (use_system_harfbuzz) {
       ]
     }
   }
-
-  static_library("harfbuzz-ng-ft") {
-    sources = [
-      "src/hb-ft.cc",
-      "src/hb-ft.h",
-    ]
-
-    if (is_component_build && !is_win) {
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-      configs += [ "//build/config/gcc:symbol_visibility_default" ]
-    }
-
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      "//build/config/compiler:no_chromium_code",
-
-      # Must be after no_chromium_code for warning flags to be ordered
-      # correctly.
-      ":harfbuzz_warnings",
-    ]
-    public_configs = [ ":harfbuzz-ng_config" ]
-
-    defines = [
-      "HAVE_OT",
-      "HAVE_ICU",
-      "HAVE_ICU_BUILTIN",
-      "HAVE_INTEL_ATOMIC_PRIMITIVES",
-    ]
-
-    if (use_system_freetype) {
-      deps = [
-        "//build/config/freetype:freetype",
-      ]
-    } else {
-      deps = [
-        "//third_party/freetype:bootstrap_freetype_for_harfbuzz",
-      ]
-    }
-  }
 }
 
 fuzzer_test("harfbuzz_fuzzer") {
@@ -249,7 +213,7 @@ fuzzer_test("harfbuzz_fuzzer") {
     "fuzz/harfbuzz_fuzzer.cc",
   ]
   deps = [
-    ":harfbuzz-ng",
+    "//third_party:freetype_harfbuzz",
   ]
   libfuzzer_options = [ "max_len=16800" ]
   seed_corpus = "fuzz/seed_corpus"

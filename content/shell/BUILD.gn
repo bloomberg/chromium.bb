@@ -386,7 +386,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_linux) {
-    deps += [ "//third_party/freetype" ]
+    deps += [ "//build/config/freetype" ]
   }
 
   if (!enable_plugins) {

@@ -12,10 +12,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/gfx/render_text.h"
+
+#include <hb.h>
 
 namespace base {
 namespace i18n {
