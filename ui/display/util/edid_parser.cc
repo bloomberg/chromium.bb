@@ -81,7 +81,7 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
 
   if (manufacturer_id) {
     if (edid.size() < kManufacturerOffset + kManufacturerLength) {
-      LOG(ERROR) << "too short EDID data: manufacturer id";
+      LOG(ERROR) << "Too short EDID data: manufacturer id";
       return false;
     }
 
@@ -93,7 +93,7 @@ bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
 
   if (product_code) {
     if (edid.size() < kProductCodeOffset + kProductCodeLength) {
-      LOG(ERROR) << "too short EDID data: manufacturer product code";
+      LOG(ERROR) << "Too short EDID data: manufacturer product code";
       return false;
     }
 
@@ -294,7 +294,7 @@ bool ParseChromaticityCoordinates(const std::vector<uint8_t>& edid,
       "EDID Parameter section length error");
 
   if (edid.size() < kChromaticityOffset + kChromaticityLength) {
-    LOG(ERROR) << "too short EDID data: chromaticity coordinates";
+    LOG(ERROR) << "Too short EDID data: chromaticity coordinates";
     return false;
   }
 
@@ -331,6 +331,56 @@ bool ParseChromaticityCoordinates(const std::vector<uint8_t>& edid,
   // TODO(mcasas): Up to two additional White Point coordinates can be provided
   // in a Display Descriptor.Read them if we are not satisfied with |fWX| or
   // |FWy|. https://crbug.com/771345.
+  return true;
+}
+
+DISPLAY_UTIL_EXPORT bool ParseGammaValue(const std::vector<uint8_t>& edid,
+                                         double* gamma) {
+  // Constants are taken from "VESA Enhanced EDID Standard" Release A, Revision
+  // 2, Sep 2006, Sec. 3.6.3 "Display Transfer Characteristics (GAMMA ): 1 Byte"
+  const size_t kGammaOffset = 23;
+  const double kGammaMultiplier = 100.0;
+  const double kGammaBias = 100.0;
+
+  if (edid.size() < kGammaOffset + 1) {
+    LOG(ERROR) << "Too short EDID data: gamma";
+    return false;
+  }
+  if (edid[kGammaOffset] == 0xFF)  // Gamma is stored elsewhere.
+    return false;
+  DCHECK(gamma);
+  *gamma = (edid[kGammaOffset] + kGammaBias) / kGammaMultiplier;
+  return true;
+}
+
+DISPLAY_UTIL_EXPORT bool ParseBitsPerChannel(const std::vector<uint8_t>& edid,
+                                             int* bits_per_channel) {
+  // Constants are taken from "VESA Enhanced EDID Standard" Release A, Revision
+  // 1, Feb 2000, Sec 3.6 "Basic Display Parameters and Features: 5 bytes"
+  static const int kBitsPerChannelTable[] = {0, 6, 8, 10, 12, 14, 16, 0};
+
+  const size_t kEDIDRevisionNumberOffset = 19;
+  const uint8_t kEDIDRevision4Value = 4;
+
+  const size_t kVideoInputDefinitionOffset = 20;
+  const uint8_t kDigitalInfoMask = 0x80;
+  const uint8_t kColorBitDepthMask = 0x70;
+  const uint8_t kColorBitDepthOffset = 4;
+
+  if (edid.size() < kVideoInputDefinitionOffset + 1) {
+    LOG(ERROR) << "Too short EDID data: gamma";
+    return false;
+  }
+  // EDID needs to be revision 4 at least, and kDigitalInfoMask be set for
+  // the Video Input Definition entry to describe a digital interface.
+  if (edid[kEDIDRevisionNumberOffset] < kEDIDRevision4Value ||
+      !(edid[kVideoInputDefinitionOffset] & kDigitalInfoMask)) {
+    return false;
+  }
+  DCHECK(bits_per_channel);
+  *bits_per_channel = kBitsPerChannelTable[(
+      (edid[kVideoInputDefinitionOffset] & kColorBitDepthMask) >>
+      kColorBitDepthOffset)];
   return true;
 }
 

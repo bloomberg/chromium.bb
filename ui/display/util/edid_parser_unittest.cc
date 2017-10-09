@@ -399,4 +399,65 @@ TEST(EDIDParserTest, ParseChromaticityCoordinates) {
                       kEvePrimaries);
 }
 
+TEST(EDIDParserTest, ParseGammaValue) {
+  const std::vector<uint8_t> edid_normal_display(
+      kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
+  double edid_normal_display_gamma = 0.0;
+  EXPECT_TRUE(ParseGammaValue(edid_normal_display, &edid_normal_display_gamma));
+  EXPECT_DOUBLE_EQ(2.2, edid_normal_display_gamma);
+
+  const std::vector<uint8_t> edid_internal_display(
+      kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  double edid_internal_display_gamma = 0.0;
+  EXPECT_TRUE(
+      ParseGammaValue(edid_internal_display, &edid_internal_display_gamma));
+  EXPECT_DOUBLE_EQ(2.2, edid_internal_display_gamma);
+
+  const std::vector<uint8_t> edid_hpz32x(kHPz32x, kHPz32x + charsize(kHPz32x));
+  double edid_hpz32x_gamma = 0.0;
+  EXPECT_TRUE(ParseGammaValue(edid_hpz32x, &edid_hpz32x_gamma));
+  EXPECT_DOUBLE_EQ(2.2, edid_hpz32x_gamma);
+
+  const std::vector<uint8_t> edid_samus(kSamus, kSamus + charsize(kSamus));
+  double edid_samus_gamma = 0.0;
+  EXPECT_TRUE(ParseGammaValue(edid_samus, &edid_samus_gamma));
+  EXPECT_DOUBLE_EQ(2.5, edid_samus_gamma);
+
+  const std::vector<uint8_t> edid_eve(kEve, kEve + charsize(kEve));
+  double edid_eve_gamma = 0.0;
+  EXPECT_TRUE(ParseGammaValue(edid_eve, &edid_eve_gamma));
+  EXPECT_DOUBLE_EQ(2.2, edid_eve_gamma);
+}
+
+TEST(EDIDParserTest, ParseBitsPerChannel) {
+  const std::vector<uint8_t> edid_normal_display(
+      kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
+  int edid_normal_display_bits_per_channel = 0;
+  EXPECT_TRUE(ParseBitsPerChannel(edid_normal_display,
+                                  &edid_normal_display_bits_per_channel));
+  EXPECT_EQ(10, edid_normal_display_bits_per_channel);
+
+  const std::vector<uint8_t> edid_internal_display(
+      kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
+  int edid_internal_display_bits_per_channel = 0;
+  // |kInternalDisplay| doesn't have bits per channel information.
+  EXPECT_FALSE(ParseBitsPerChannel(edid_internal_display,
+                                   &edid_internal_display_bits_per_channel));
+
+  const std::vector<uint8_t> edid_hpz32x(kHPz32x, kHPz32x + charsize(kHPz32x));
+  int edid_hpz32x_bits_per_channel = 0;
+  EXPECT_TRUE(ParseBitsPerChannel(edid_hpz32x, &edid_hpz32x_bits_per_channel));
+  EXPECT_EQ(10, edid_hpz32x_bits_per_channel);
+
+  const std::vector<uint8_t> edid_samus(kSamus, kSamus + charsize(kSamus));
+  int edid_samus_bits_per_channel = 0;
+  EXPECT_TRUE(ParseBitsPerChannel(edid_samus, &edid_samus_bits_per_channel));
+  EXPECT_EQ(8, edid_samus_bits_per_channel);
+
+  const std::vector<uint8_t> edid_eve(kEve, kEve + charsize(kEve));
+  int edid_eve_bits_per_channel = 0;
+  EXPECT_TRUE(ParseBitsPerChannel(edid_eve, &edid_eve_bits_per_channel));
+  EXPECT_EQ(8, edid_eve_bits_per_channel);
+}
+
 }  // namespace display
