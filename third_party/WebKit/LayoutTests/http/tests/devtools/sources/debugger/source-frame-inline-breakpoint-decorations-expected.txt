@@ -3,59 +3,59 @@ Checks that JavaScriptSourceFrame show inline breakpoints correctly
 
 Running: testAddRemoveBreakpoint
 Setting breakpoint
-breakpoint at 3
-  inline breakpoint at (3, 12)
-  inline breakpoint at (3, 20) disabled
-  inline breakpoint at (3, 30) disabled
-  inline breakpoint at (3, 49) disabled
-  inline breakpoint at (3, 56) disabled
+breakpoint at 11
+  inline breakpoint at (11, 18)
+  inline breakpoint at (11, 26) disabled
+  inline breakpoint at (11, 36) disabled
+  inline breakpoint at (11, 55) disabled
+  inline breakpoint at (11, 62) disabled
 Toggle breakpoint
 
 Running: testAddRemoveBreakpointInLineWithOneLocation
 Setting breakpoint
-breakpoint at 5
+breakpoint at 13
 Toggle breakpoint
 
 Running: clickByInlineBreakpoint
 Setting breakpoint
-breakpoint at 3
-  inline breakpoint at (3, 12)
-  inline breakpoint at (3, 20) disabled
-  inline breakpoint at (3, 30) disabled
-  inline breakpoint at (3, 49) disabled
-  inline breakpoint at (3, 56) disabled
+breakpoint at 11
+  inline breakpoint at (11, 18)
+  inline breakpoint at (11, 26) disabled
+  inline breakpoint at (11, 36) disabled
+  inline breakpoint at (11, 55) disabled
+  inline breakpoint at (11, 62) disabled
 Click by second breakpoint
-breakpoint at 3
-  inline breakpoint at (3, 12)
-  inline breakpoint at (3, 20)
-  inline breakpoint at (3, 30) disabled
-  inline breakpoint at (3, 49) disabled
-  inline breakpoint at (3, 56) disabled
+breakpoint at 11
+  inline breakpoint at (11, 18)
+  inline breakpoint at (11, 26)
+  inline breakpoint at (11, 36) disabled
+  inline breakpoint at (11, 55) disabled
+  inline breakpoint at (11, 62) disabled
 Click by first breakpoint
-breakpoint at 3
-  inline breakpoint at (3, 12) disabled
-  inline breakpoint at (3, 20)
-  inline breakpoint at (3, 30) disabled
-  inline breakpoint at (3, 49) disabled
-  inline breakpoint at (3, 56) disabled
+breakpoint at 11
+  inline breakpoint at (11, 18) disabled
+  inline breakpoint at (11, 26)
+  inline breakpoint at (11, 36) disabled
+  inline breakpoint at (11, 55) disabled
+  inline breakpoint at (11, 62) disabled
 Click by second breakpoint
 
 Running: toggleBreakpointInAnotherLineWontRemoveExisting
 Setting breakpoint in line 4
-breakpoint at 4
-  inline breakpoint at (4, 9)
-  inline breakpoint at (4, 28) disabled
-  inline breakpoint at (4, 36) disabled
+breakpoint at 12
+  inline breakpoint at (12, 15)
+  inline breakpoint at (12, 34) disabled
+  inline breakpoint at (12, 42) disabled
 Setting breakpoint in line 3
-breakpoint at 3
-  inline breakpoint at (3, 12)
-  inline breakpoint at (3, 20) disabled
-  inline breakpoint at (3, 30) disabled
-  inline breakpoint at (3, 49) disabled
-  inline breakpoint at (3, 56) disabled
-breakpoint at 4
-  inline breakpoint at (4, 9)
-  inline breakpoint at (4, 28) disabled
-  inline breakpoint at (4, 36) disabled
+breakpoint at 11
+  inline breakpoint at (11, 18)
+  inline breakpoint at (11, 26) disabled
+  inline breakpoint at (11, 36) disabled
+  inline breakpoint at (11, 55) disabled
+  inline breakpoint at (11, 62) disabled
+breakpoint at 12
+  inline breakpoint at (12, 15)
+  inline breakpoint at (12, 34) disabled
+  inline breakpoint at (12, 42) disabled
 Click by first inline breakpoints
 

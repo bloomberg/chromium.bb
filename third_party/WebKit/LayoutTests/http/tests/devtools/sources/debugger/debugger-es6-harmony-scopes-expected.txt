@@ -1,4 +1,3 @@
-
 Tests ES6 harmony scope sections.
 
 Set timer for test function.

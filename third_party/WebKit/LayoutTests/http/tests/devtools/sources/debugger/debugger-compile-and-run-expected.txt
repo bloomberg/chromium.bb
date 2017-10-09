@@ -1,6 +1,5 @@
 Tests separate compilation and run.
 
-Bug 89646.
 
 Running: testSuccessfulCompileAndRun
 Compiling script

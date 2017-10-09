@@ -1,6 +1,5 @@
 Tests ResourceScriptMapping class.
 
-
 Waiting for scripts
 Script arrived
 Script arrived
