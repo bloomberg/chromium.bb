@@ -68,6 +68,7 @@ void test_cdef(int bsize, int iterations, cdef_filter_block_func cdef,
 
   for (boundary = 0; boundary < 16; boundary++) {
     for (depth = 8; depth <= 12; depth += 2) {
+      const unsigned int max_pos = size * size >> (depth == 8);
       for (pridamping = 3 + depth - 8;
            pridamping < 7 - 3 * !!boundary + depth - 8; pridamping++) {
         for (secdamping = 3 + depth - 8;
@@ -124,10 +125,7 @@ void test_cdef(int bsize, int iterations, cdef_filter_block_func cdef,
                                  pristrength, secstrength, dir, pridamping,
                                  secdamping, bsize, (1 << depth) - 1));
                       if (ref_cdef != cdef) {
-                        for (pos = 0;
-                             pos<sizeof(d) / sizeof(*d)>> (depth == 8) &&
-                             !error;
-                             pos++) {
+                        for (pos = 0; pos < max_pos && !error; pos++) {
                           error = ref_d[pos] != d[pos];
                           errdepth = depth;
                           errpristrength = pristrength;
