@@ -2335,6 +2335,15 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                                    has_rows, has_cols, bsize);
   subsize = subsize_lookup[partition][bsize];  // get_subsize(bsize, partition);
 
+  // Check the bitstream is conformant: if there is subsampling on the
+  // chroma planes, subsize must subsample to a valid block size.
+  const struct macroblockd_plane *const pd_u = &xd->plane[1];
+  if (get_plane_block_size(subsize, pd_u) == BLOCK_INVALID) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Block size %dx%d invalid with this subsampling mode",
+                       block_size_wide[subsize], block_size_high[subsize]);
+  }
+
 #if CONFIG_PVQ
   assert(partition < PARTITION_TYPES);
   assert(subsize < BLOCK_SIZES_ALL);
