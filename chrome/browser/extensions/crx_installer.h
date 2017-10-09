@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -231,11 +232,13 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // SandboxedUnpackerClient
   void OnUnpackFailure(const CrxInstallError& error) override;
-  void OnUnpackSuccess(const base::FilePath& temp_dir,
-                       const base::FilePath& extension_dir,
-                       std::unique_ptr<base::DictionaryValue> original_manifest,
-                       const Extension* extension,
-                       const SkBitmap& install_icon) override;
+  void OnUnpackSuccess(
+      const base::FilePath& temp_dir,
+      const base::FilePath& extension_dir,
+      std::unique_ptr<base::DictionaryValue> original_manifest,
+      const Extension* extension,
+      const SkBitmap& install_icon,
+      const base::Optional<int>& dnr_ruleset_checksum) override;
 
   // Called on the UI thread to start the requirements, policy and blacklist
   // checks on the extension.
@@ -439,6 +442,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
+
+  // The checksum for the indexed ruleset corresponding to the Declarative Net
+  // Request API.
+  base::Optional<int> dnr_ruleset_checksum_;
 
   // Checks that may run before installing the extension.
   std::unique_ptr<PreloadCheck> policy_check_;
