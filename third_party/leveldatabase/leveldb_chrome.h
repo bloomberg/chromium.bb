@@ -18,6 +18,9 @@ extern leveldb::Cache* GetSharedWebBlockCache();
 // *does not* own the returned instance.
 extern leveldb::Cache* GetSharedBrowserBlockCache();
 
+// Determine if a leveldb::Env stores the file data in RAM.
+extern bool IsMemEnv(const leveldb::Env* env);
+
 // Creates an in-memory Env for which all files are stored in the heap.
 extern leveldb::Env* NewMemEnv(leveldb::Env* base_env);
 
