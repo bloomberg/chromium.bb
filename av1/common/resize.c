@@ -1168,33 +1168,45 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
   }
 }
 
-void av1_calculate_scaled_size(int *width, int *height, int denom) {
+// Calculates scaled dimensions given original dimensions and the scale
+// denominator. If 'scale_height' is 1, both width and height are scaled;
+// otherwise, only the width is scaled.
+static void calculate_scaled_size_helper(int *width, int *height, int denom,
+                                         int scale_height) {
   if (denom != SCALE_NUMERATOR) {
     *width = *width * SCALE_NUMERATOR / denom;
     *width += *width & 1;  // Make it even.
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-    (void)height;
-#else
-    *height = *height * SCALE_NUMERATOR / denom;
-    *height += *height & 1;  // Make it even.
-#endif  // !CONFIG_HORZONLY_FRAME_SUPERRES
+    if (scale_height) {
+      *height = *height * SCALE_NUMERATOR / denom;
+      *height += *height & 1;  // Make it even.
+    }
   }
 }
 
-void av1_calculate_unscaled_size(int *width, int *height, int denom) {
+void av1_calculate_scaled_size(int *width, int *height, int resize_denom) {
+  calculate_scaled_size_helper(width, height, resize_denom, 1);
+}
+
+#if CONFIG_FRAME_SUPERRES
+void av1_calculate_scaled_superres_size(int *width, int *height,
+                                        int superres_denom) {
+  calculate_scaled_size_helper(width, height, superres_denom,
+                               !CONFIG_HORZONLY_FRAME_SUPERRES);
+}
+
+void av1_calculate_unscaled_superres_size(int *width, int *height, int denom) {
   if (denom != SCALE_NUMERATOR) {
-    // Note: av1_calculate_scaled_size() rounds *up* after division when the
-    // resulting dimensions are odd. So here, we round *down*.
+    // Note: av1_calculate_scaled_superres_size() rounds *up* after division
+    // when the resulting dimensions are odd. So here, we round *down*.
     *width = *width * denom / SCALE_NUMERATOR;
 #if CONFIG_HORZONLY_FRAME_SUPERRES
     (void)height;
 #else
     *height = *height * denom / SCALE_NUMERATOR;
-#endif  // !CONFIG_HORZONLY_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   }
 }
 
-#if CONFIG_FRAME_SUPERRES
 // TODO(afergs): Look for in-place upscaling
 // TODO(afergs): aom_ vs av1_ functions? Which can I use?
 // Upscale decoded image.
@@ -1268,7 +1280,8 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
 
   // Scale up and back into frame_to_show.
   assert(frame_to_show->y_crop_width != cm->width);
-  assert(frame_to_show->y_crop_height != cm->height);
+  assert(IMPLIES(!CONFIG_HORZONLY_FRAME_SUPERRES,
+                 frame_to_show->y_crop_height != cm->height));
 #if CONFIG_HIGHBITDEPTH
   av1_upscale_normative_and_extend_frame(&copy_buffer, frame_to_show,
                                          (int)cm->bit_depth);

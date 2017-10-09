@@ -4489,6 +4489,7 @@ static int dimension_is_ok(int orig_dim, int resized_dim, int denom) {
   return (resized_dim * SCALE_NUMERATOR >= orig_dim * denom / 2);
 }
 
+// TODO(now): Fix?
 static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
   return dimension_is_ok(owidth, rsz->resize_width, rsz->superres_denom) &&
          (CONFIG_HORZONLY_FRAME_SUPERRES ||
@@ -4504,15 +4505,10 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
     return 1;
   }
 
-// Calculate current resize scale.
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-  int resize_denom =
-      DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width);
-#else
+  // Calculate current resize scale.
   int resize_denom =
       AOMMAX(DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width),
              DIVIDE_AND_ROUND(oheight * SCALE_NUMERATOR, rsz->resize_height));
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
     // Alter superres scale as needed to enforce conformity.
@@ -4601,7 +4597,8 @@ static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
   cm->superres_scale_denominator = rsz->superres_denom;
-  av1_calculate_scaled_size(&encode_width, &encode_height, rsz->superres_denom);
+  av1_calculate_scaled_superres_size(&encode_width, &encode_height,
+                                     rsz->superres_denom);
 #endif  // CONFIG_FRAME_SUPERRES
   set_frame_size(cpi, encode_width, encode_height);
 }
