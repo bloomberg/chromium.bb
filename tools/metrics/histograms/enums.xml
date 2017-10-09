@@ -39979,12 +39979,13 @@ Called by update_traffic_annotation_histograms.py.-->
 
 <enum name="VideoPersistenceEndReason">
   <int value="0" label="Resume"/>
-  <int value="1" label="Navigation"/>
+  <int value="1" label="(Obsolete) Navigation"/>
   <int value="2" label="Close"/>
   <int value="3" label="Crash"/>
   <int value="4" label="New tab"/>
   <int value="5" label="Reparent"/>
   <int value="6" label="Left fullscreen"/>
+  <int value="7" label="Left fullscreen (webcontents)"/>
 </enum>
 
 <enum name="VideoPixelFormat">
