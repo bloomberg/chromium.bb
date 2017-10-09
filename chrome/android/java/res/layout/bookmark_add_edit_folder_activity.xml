@@ -61,7 +61,8 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_height_no_shadow"
-        style="@style/ModernToolbar" />
+        style="@style/ModernToolbar"
+        android:background="@color/modern_toolbar_bg" />
 
     <View
         android:id="@+id/shadow"
