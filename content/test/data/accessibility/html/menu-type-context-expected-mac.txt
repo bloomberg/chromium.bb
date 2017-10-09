@@ -1,4 +1,1 @@
 #<skip -- crbug.com/87553>
-AXWebArea
-++AXGroup
-++++AXStaticText AXValue='Right-click inside this box to see the context menu!'

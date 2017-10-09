@@ -1,4 +1,1 @@
 #<skip -- crbug.com/87553>
-ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-++IA2_ROLE_PARAGRAPH
-++++ROLE_SYSTEM_STATICTEXT name='Right-click inside this box to see the context menu!'

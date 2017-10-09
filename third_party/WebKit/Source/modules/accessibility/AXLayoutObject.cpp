@@ -571,6 +571,13 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (IsInPageLinkTarget())
     return false;
 
+  // A click handler might be placed on an otherwise ignored non-empty block
+  // element, e.g. a div. We shouldn't ignore such elements because if an AT
+  // sees the |AXDefaultActionVerb::kClickAncestor|, it will look for the
+  // clickable ancestor and it expects to find one.
+  if (IsClickable())
+    return false;
+
   if (layout_object_->IsText()) {
     if (CanIgnoreTextAsEmpty()) {
       if (ignored_reasons)

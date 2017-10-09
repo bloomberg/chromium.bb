@@ -31,6 +31,7 @@ PASS isAXElementClickable('keydown-listener') is false
 PASS isAXElementClickable('click-listener') is true
 PASS isAXElementClickable('mousedown-listener') is true
 PASS isAXElementClickable('click-listener-on-ancestor') is false
+PASS axRole('ancestor-with-click-listener') is 'AXRole: AXGenericContainer'
 PASS axRole('empty-anchor') is 'AXRole: AXAnchor'
 PASS axRole('href-anchor') is 'AXRole: AXLink'
 PASS axRole('onclick-anchor') is 'AXRole: AXLink'
