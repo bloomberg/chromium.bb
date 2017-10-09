@@ -19,6 +19,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -266,6 +267,8 @@ class DnsConfigServicePosix::Watcher {
   }
 
   void OnConfigChangedDelayed(bool succeeded) {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_heap_context(
+        "net/dns/configchanged");
     service_->OnConfigChanged(succeeded);
   }
 
@@ -297,6 +300,8 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   }
 
   void DoWork() override {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_heap_context(
+        "net/dns/configreader");
     base::TimeTicks start_time = base::TimeTicks::Now();
     ConfigParsePosixResult result = ReadDnsConfig(&dns_config_);
     if (dns_config_for_testing_) {
@@ -323,6 +328,8 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
 
   void OnWorkFinished() override {
     DCHECK(!IsCancelled());
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_heap_context(
+        "net/dns/configreaderfinished");
     if (success_) {
       service_->OnConfigRead(dns_config_);
     } else {
@@ -358,6 +365,8 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
   ~HostsReader() override {}
 
   void DoWork() override {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_heap_context(
+        "net/dns/hostsreader");
     base::TimeTicks start_time = base::TimeTicks::Now();
     base::ScopedBlockingCall scoped_blocking_call(
         base::BlockingType::MAY_BLOCK);
@@ -368,6 +377,8 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
   }
 
   void OnWorkFinished() override {
+    TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION scoped_heap_context(
+        "net/dns/hostsreaderfinished");
     if (success_) {
       service_->OnHostsRead(hosts_);
     } else {
