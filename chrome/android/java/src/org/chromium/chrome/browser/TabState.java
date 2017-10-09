@@ -318,8 +318,8 @@ public class TabState {
             if (encrypted) {
                 Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
                 if (cipher != null) {
-                    dataOutputStream = new DataOutputStream(new CipherOutputStream(
-                            fileOutputStream, cipher));
+                    dataOutputStream = new DataOutputStream(new BufferedOutputStream(
+                            new CipherOutputStream(fileOutputStream, cipher)));
                 } else {
                     // If cipher is null, getRandomBytes failed, which means encryption is
                     // meaningless. Therefore, do not save anything. This will cause users
