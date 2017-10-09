@@ -388,11 +388,10 @@ def VeryifyVersionOfBuiltClangMatchesVERSION():
 
 
 def UpdateClang(args):
-  print 'Updating Clang to %s...' % PACKAGE_VERSION
-
   if ReadStampFile() == PACKAGE_VERSION and not args.force_local_build:
-    print 'Clang is already up to date.'
     return 0
+
+  print 'Updating Clang to %s...' % PACKAGE_VERSION
 
   # Reset the stamp file in case the build is unsuccessful.
   WriteStampFile('')
