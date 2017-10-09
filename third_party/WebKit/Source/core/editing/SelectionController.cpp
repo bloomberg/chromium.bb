@@ -40,7 +40,6 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/suggestion/TextSuggestionController.h"
@@ -307,17 +306,8 @@ bool SelectionController::HandleSingleClick(
       if (!event.Event().FromTouch())
         return false;
 
-      if (!this->Selection().IsHandleVisible()) {
-        const bool did_select =
-            UpdateSelectionForMouseDownDispatchingSelectStart(
-                inner_node, selection.AsSelection(),
-                TextGranularity::kCharacter, HandleVisibility::kVisible);
-        if (did_select) {
-          frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
-                                                              kMenuSourceTouch);
-        }
+      if (HandleTapInsideSelection(event, selection.AsSelection()))
         return false;
-      }
     }
   }
 
@@ -397,6 +387,34 @@ bool SelectionController::HandleSingleClick(
   }
 
   return false;
+}
+
+// Returns true if the tap is processed.
+bool SelectionController::HandleTapInsideSelection(
+    const MouseEventWithHitTestResults& event,
+    const SelectionInFlatTree& selection) {
+  if (Selection().ShouldShrinkNextTap()) {
+    const bool did_select = SelectClosestWordFromHitTestResult(
+        event.GetHitTestResult(), AppendTrailingWhitespace::kDontAppend,
+        SelectInputEventType::kTouch);
+    if (did_select) {
+      frame_->GetEventHandler().ShowNonLocatedContextMenu(
+          nullptr, kMenuSourceAdjustSelectionReset);
+    }
+    return true;
+  }
+
+  if (Selection().IsHandleVisible())
+    return false;
+
+  const bool did_select = UpdateSelectionForMouseDownDispatchingSelectStart(
+      event.InnerNode(), selection, TextGranularity::kCharacter,
+      HandleVisibility::kVisible);
+  if (did_select) {
+    frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                        kMenuSourceTouch);
+  }
+  return true;
 }
 
 // Returns true if selection starts from |SVGText| node and |target_node| is

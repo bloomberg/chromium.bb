@@ -130,6 +130,9 @@ class CORE_EXPORT SelectionController final
   bool HandleDoubleClick(const MouseEventWithHitTestResults&);
   bool HandleTripleClick(const MouseEventWithHitTestResults&);
 
+  bool HandleTapInsideSelection(const MouseEventWithHitTestResults&,
+                                const SelectionInFlatTree&);
+
   Member<LocalFrame> const frame_;
   // Used to store base before the adjustment at bidi boundary
   PositionInFlatTreeWithAffinity original_base_in_flat_tree_;
