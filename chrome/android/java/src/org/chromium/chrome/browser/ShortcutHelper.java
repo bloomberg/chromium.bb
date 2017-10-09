@@ -160,8 +160,9 @@ public class ShortcutHelper {
     @CalledByNative
     private static void addWebapp(final String id, final String url, final String scopeUrl,
             final String userTitle, final String name, final String shortName, final String iconUrl,
-            final Bitmap icon, final int displayMode, final int orientation, final int source,
-            final long themeColor, final long backgroundColor, final long callbackPointer) {
+            final Bitmap icon, @WebDisplayMode final int displayMode, final int orientation,
+            final int source, final long themeColor, final long backgroundColor,
+            final long callbackPointer) {
         new AsyncTask<Void, Void, Intent>() {
             @Override
             protected Intent doInBackground(Void... args0) {
@@ -355,7 +356,7 @@ public class ShortcutHelper {
      */
     public static Intent createWebappShortcutIntent(String id, String action, String url,
             String scope, String name, String shortName, String encodedIcon, int version,
-            int displayMode, int orientation, long themeColor, long backgroundColor,
+            @WebDisplayMode int displayMode, int orientation, long themeColor, long backgroundColor,
             boolean isIconGenerated) {
         // Create an intent as a launcher icon for a full-screen Activity.
         Intent shortcutIntent = new Intent();

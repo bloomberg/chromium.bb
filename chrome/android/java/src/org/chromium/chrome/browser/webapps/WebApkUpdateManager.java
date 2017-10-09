@@ -19,6 +19,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
@@ -401,7 +402,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private static native void nativeStoreWebApkUpdateRequestToFile(String updateRequestPath,
             String startUrl, String scope, String name, String shortName, String primaryIconUrl,
             Bitmap primaryIcon, String badgeIconUrl, Bitmap badgeIcon, String[] iconUrls,
-            String[] iconHashes, int displayMode, int orientation, long themeColor,
+            String[] iconHashes, @WebDisplayMode int displayMode, int orientation, long themeColor,
             long backgroundColor, String manifestUrl, String webApkPackage, int webApkVersion,
             boolean isManifestStale, Callback<Boolean> callback);
     private static native void nativeUpdateWebApkFromFile(

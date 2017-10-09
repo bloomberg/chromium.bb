@@ -236,7 +236,7 @@ public class WebappDataStorageTest {
         final String name = "name";
         final String shortName = "shortName";
         final String encodedIcon = ShortcutHelper.encodeBitmapAsString(createBitmap());
-        final int displayMode = WebDisplayMode.STANDALONE;
+        final @WebDisplayMode int displayMode = WebDisplayMode.STANDALONE;
         final int orientation = 1;
         final long themeColor = 2;
         final long backgroundColor = 3;
