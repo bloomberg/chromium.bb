@@ -36,7 +36,7 @@ class JavaScriptDialogTabHelper
   explicit JavaScriptDialogTabHelper(content::WebContents* web_contents);
   ~JavaScriptDialogTabHelper() override;
 
-  void SetDialogShownCallbackForTesting(base::Closure callback);
+  void SetDialogShownCallbackForTesting(base::OnceClosure callback);
   bool IsShowingDialogForTesting() const;
 
   // JavaScriptDialogManager:
@@ -89,7 +89,7 @@ class JavaScriptDialogTabHelper
   // user's input but by a call to |CloseDialog|, this class will call it.
   content::JavaScriptDialogManager::DialogClosedCallback dialog_callback_;
 
-  base::Closure dialog_shown_;
+  base::OnceClosure dialog_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogTabHelper);
 };
