@@ -71,7 +71,7 @@ static INLINE int read_nz_map(aom_reader *r, tran_low_t *tcoeffs, int plane,
   int c;
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
-    int coeff_ctx = get_nz_map_ctx(tcoeffs, scan[c], bwl, height, tx_type);
+    int coeff_ctx = get_nz_map_ctx(tcoeffs, c, scan, bwl, height, tx_type);
     int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx, tx_type);
 
     if (c < seg_eob - 1) {
@@ -113,9 +113,10 @@ static INLINE int read_nz_map(aom_reader *r, tran_low_t *tcoeffs, int plane,
 
 #if CONFIG_CTX1D
 static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
-                                   int plane, const int16_t *iscan,
-                                   TX_SIZE tx_size, TX_TYPE tx_type,
-                                   FRAME_CONTEXT *fc, FRAME_COUNTS *counts) {
+                                   int plane, const int16_t *scan,
+                                   const int16_t *iscan, TX_SIZE tx_size,
+                                   TX_TYPE tx_type, FRAME_CONTEXT *fc,
+                                   FRAME_COUNTS *counts) {
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_CLASS tx_class = get_tx_class(tx_type);
@@ -142,10 +143,11 @@ static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
     if (!empty_line) {
       int row;
       for (row = 0; row < height; ++row) {
-        int coeff_idx = row * width + col;
-        int coeff_ctx =
-            get_nz_map_ctx(tcoeffs, coeff_idx, bwl, height, tx_type);
         if (row + 1 != height) {
+          int coeff_idx = row * width + col;
+          int scan_idx = iscan[coeff_idx];
+          int coeff_ctx =
+              get_nz_map_ctx(tcoeffs, scan_idx, scan, bwl, height, tx_type);
 #if LV_MAP_PROB
           int is_nz = av1_read_record_bin(
               counts, r, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
@@ -176,6 +178,7 @@ static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
             }
           }
         } else {
+          int coeff_idx = row * width + col;
           tcoeffs[coeff_idx] = 1;
           eob = AOMMAX(eob, iscan[coeff_idx] + 1);
         }
@@ -189,9 +192,10 @@ static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
 }
 
 static INLINE int read_nz_map_horiz(aom_reader *r, tran_low_t *tcoeffs,
-                                    int plane, const int16_t *iscan,
-                                    TX_SIZE tx_size, TX_TYPE tx_type,
-                                    FRAME_CONTEXT *fc, FRAME_COUNTS *counts) {
+                                    int plane, const int16_t *scan,
+                                    const int16_t *iscan, TX_SIZE tx_size,
+                                    TX_TYPE tx_type, FRAME_CONTEXT *fc,
+                                    FRAME_COUNTS *counts) {
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_CLASS tx_class = get_tx_class(tx_type);
@@ -218,10 +222,11 @@ static INLINE int read_nz_map_horiz(aom_reader *r, tran_low_t *tcoeffs,
     if (!empty_line) {
       int col;
       for (col = 0; col < width; ++col) {
-        int coeff_idx = row * width + col;
-        int coeff_ctx =
-            get_nz_map_ctx(tcoeffs, coeff_idx, bwl, height, tx_type);
         if (col + 1 != width) {
+          int coeff_idx = row * width + col;
+          int scan_idx = iscan[coeff_idx];
+          int coeff_ctx =
+              get_nz_map_ctx(tcoeffs, scan_idx, scan, bwl, height, tx_type);
 #if LV_MAP_PROB
           int is_nz = av1_read_record_bin(
               counts, r, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
@@ -249,6 +254,7 @@ static INLINE int read_nz_map_horiz(aom_reader *r, tran_low_t *tcoeffs,
             if (is_eob) break;
           }
         } else {
+          int coeff_idx = row * width + col;
           tcoeffs[coeff_idx] = 1;
           eob = AOMMAX(eob, iscan[coeff_idx] + 1);
         }
@@ -338,11 +344,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     } else {
       assert(tx_class == TX_CLASS_VERT || tx_class == TX_CLASS_HORIZ);
       if (tx_class == TX_CLASS_VERT)
-        *eob = read_nz_map_vert(r, tcoeffs, plane, iscan, tx_size, tx_type,
-                                ec_ctx, counts);
+        *eob = read_nz_map_vert(r, tcoeffs, plane, scan, iscan, tx_size,
+                                tx_type, ec_ctx, counts);
       else
-        *eob = read_nz_map_horiz(r, tcoeffs, plane, iscan, tx_size, tx_type,
-                                 ec_ctx, counts);
+        *eob = read_nz_map_horiz(r, tcoeffs, plane, scan, iscan, tx_size,
+                                 tx_type, ec_ctx, counts);
     }
   }
 #else

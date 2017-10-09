@@ -353,10 +353,10 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   return offset + 12 + ctx;
 }
 
-static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
-                                 const int coeff_idx,  // raster order
-                                 const int bwl, const int height,
-                                 TX_TYPE tx_type) {
+static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs, const int scan_idx,
+                                 const int16_t *scan, const int bwl,
+                                 const int height, TX_TYPE tx_type) {
+  const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int count = get_nz_count(tcoeffs, bwl, height, row, col);
