@@ -115,6 +115,53 @@ suite('SiteDetails', function() {
     return siteDetailsElement;
   };
 
+  test('all site settings are shown', function() {
+    // Add ContentsSettingsTypes which are not supposed to be shown on the Site
+    // Details page here.
+    var nonSiteDetailsContentSettingsTypes = [
+      settings.ContentSettingsTypes.ADS,
+      settings.ContentSettingsTypes.COOKIES,
+      settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
+      settings.ContentSettingsTypes.USB_DEVICES,
+      settings.ContentSettingsTypes.ZOOM_LEVELS,
+    ];
+    if (!cr.isChromeOS)
+      nonSiteDetailsContentSettingsTypes.push(
+          settings.ContentSettingsTypes.PROTECTED_CONTENT);
+
+    // A list of optionally shown content settings mapped to their loadTimeData
+    // flag string.
+    var optionalSiteDetailsContentSettingsTypes =
+        /** @type {!settings.ContentSettingsType : string} */ ({});
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .SOUND] =
+        'enableSoundContentSetting';
+
+    browserProxy.setPrefs(prefs);
+
+    // Iterate over each flag in on / off state, assuming that the on state
+    // means the content setting will show, and off hides it.
+    for (contentSetting in optionalSiteDetailsContentSettingsTypes) {
+      var numContentSettings =
+          Object.keys(settings.ContentSettingsTypes).length -
+          nonSiteDetailsContentSettingsTypes.length -
+          Object.keys(optionalSiteDetailsContentSettingsTypes).length;
+
+      var loadTimeDataOverride = {};
+      loadTimeDataOverride
+          [optionalSiteDetailsContentSettingsTypes[contentSetting]] = false;
+      loadTimeData.overrideValues(loadTimeDataOverride);
+      testElement = createSiteDetails('https://foo.com:443');
+      assertEquals(numContentSettings, testElement.getCategoryList_().length);
+
+      loadTimeDataOverride
+          [optionalSiteDetailsContentSettingsTypes[contentSetting]] = true;
+      loadTimeData.overrideValues(loadTimeDataOverride);
+      testElement = createSiteDetails('https://foo.com:443');
+      assertEquals(++numContentSettings, testElement.getCategoryList_().length);
+    }
+  });
+
   test('usage heading shows when site settings enabled', function() {
     browserProxy.setPrefs(prefs);
     // Expect usage to be hidden when Site Settings is disabled.
@@ -144,6 +191,8 @@ suite('SiteDetails', function() {
 
   test('correct pref settings are shown', function() {
     browserProxy.setPrefs(prefs);
+    // Make sure all the possible content settings are shown for this test.
+    loadTimeData.overrideValues({enableSoundContentSetting: true});
     testElement = createSiteDetails('https://foo.com:443');
 
     return browserProxy.whenCalled('isOriginValid')

@@ -111,12 +111,11 @@
           icon="settings:sync" id="backgroundSync"
           label="$i18n{siteSettingsBackgroundSync}">
       </site-details-permission>
-      <template is="dom-if" if="[[enableSoundContentSetting_]]" no-search>
-        <site-details-permission category="{{ContentSettingsTypes.SOUND}}"
-            icon="settings:volume-up" id="sound"
-            label="$i18n{siteSettingsSound}">
-        </site-details-permission>
-      </template>
+      <site-details-permission category="{{ContentSettingsTypes.SOUND}}"
+          icon="settings:volume-up" id="sound"
+          label="$i18n{siteSettingsSound}"
+          hidden$="[[!enableSoundContentSetting_]]">
+      </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}"
           icon="cr:file-download" id="automaticDownloads"

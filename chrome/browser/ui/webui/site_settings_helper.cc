@@ -50,6 +50,10 @@ typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
     AllOriginObjects;
 
 const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
+    // The following ContentSettingsTypes have UI in Content Settings
+    // and require a mapping from their Javascript string representation in
+    // chrome/browser/resources/settings/site_settings/constants.js to their C++
+    // ContentSettingsType provided here.
     {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
     {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
@@ -58,20 +62,47 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
     {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
-    {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
     {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
     {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
     {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
-    {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, "ssl-cert-decisions"},
-#if defined(OS_CHROMEOS)
     {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
-#endif
     {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
     {CONTENT_SETTINGS_TYPE_ADS, "ads"},
+
+    // Add new content settings here if a corresponding Javascript string
+    // representation for it is not required. Note some exceptions, such as
+    // USB_CHOOSER_DATA, do have UI in Content Settings but do not require a
+    // separate string.
+    {CONTENT_SETTINGS_TYPE_DEFAULT, nullptr},
+    {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, nullptr},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, nullptr},
+    {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, nullptr},
+    {CONTENT_SETTINGS_TYPE_APP_BANNER, nullptr},
+    {CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, nullptr},
+    {CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, nullptr},
+    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, nullptr},
+    {CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, nullptr},
+    {CONTENT_SETTINGS_TYPE_AUTOPLAY, nullptr},
+    {CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT, nullptr},
+    {CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, nullptr},
+    {CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA, nullptr},
+    {CONTENT_SETTINGS_TYPE_ADS_DATA, nullptr},
+    {CONTENT_SETTINGS_TYPE_MIDI, nullptr},
+    {CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, nullptr},
+    {CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, nullptr},
+    {CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, nullptr},
+    {CONTENT_SETTINGS_TYPE_SOUND, nullptr},
+    {CONTENT_SETTINGS_TYPE_CLIENT_HINTS, nullptr},
+    {CONTENT_SETTINGS_TYPE_SENSORS, nullptr},
 };
+static_assert(arraysize(kContentSettingsTypeGroupNames) ==
+                  // ContentSettingsType starts at -1, so add 1 here.
+                  static_cast<int>(CONTENT_SETTINGS_NUM_TYPES) + 1,
+              "kContentSettingsTypeGroupNames should have "
+              "CONTENT_SETTINGS_NUM_TYPES elements");
 
 struct SiteSettingSourceStringMapping {
   SiteSettingSource source;
@@ -159,8 +190,10 @@ SiteSettingSource CalculateSiteSettingSource(
 
 bool HasRegisteredGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
-    if (type == kContentSettingsTypeGroupNames[i].type)
+    if (type == kContentSettingsTypeGroupNames[i].type &&
+        kContentSettingsTypeGroupNames[i].name != nullptr) {
       return true;
+    }
   }
   return false;
 }
@@ -177,8 +210,12 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
 
 std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
-    if (type == kContentSettingsTypeGroupNames[i].type)
-      return kContentSettingsTypeGroupNames[i].name;
+    if (type == kContentSettingsTypeGroupNames[i].type) {
+      const char* name = kContentSettingsTypeGroupNames[i].name;
+      if (name != nullptr)
+        return name;
+      break;
+    }
   }
 
   NOTREACHED() << type << " is not a recognized content settings type.";
