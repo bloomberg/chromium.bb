@@ -22,11 +22,17 @@ class DISPLAY_MANAGER_EXPORT DisplayLayoutStore {
   DisplayLayoutStore();
   ~DisplayLayoutStore();
 
+  // Set true to force mirror mode.
+  void set_forced_mirror_mode(bool forced) { forced_mirror_mode_ = forced; }
+
   void SetDefaultDisplayPlacement(const DisplayPlacement& placement);
 
   // Registers the display layout info for the specified display(s).
   void RegisterLayoutForDisplayIdList(const DisplayIdList& list,
                                       std::unique_ptr<DisplayLayout> layout);
+
+  // Returns true if it should enter mirror mode for given display |list|.
+  bool GetMirrorMode(const DisplayIdList& list);
 
   // If no layout is registered, it creatas new layout using
   // |default_display_layout_|.
@@ -45,6 +51,8 @@ class DISPLAY_MANAGER_EXPORT DisplayLayoutStore {
 
   // The default display placement.
   DisplayPlacement default_display_placement_;
+
+  bool forced_mirror_mode_ = false;
 
   // Display layout per list of devices.
   std::map<DisplayIdList, std::unique_ptr<DisplayLayout>> layouts_;

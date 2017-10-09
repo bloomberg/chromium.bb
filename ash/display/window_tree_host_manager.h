@@ -53,6 +53,8 @@ class ASH_EXPORT WindowTreeHostManager
   // TODO(oshima): Consider moving this to display::DisplayObserver.
   class ASH_EXPORT Observer {
    public:
+    virtual ~Observer() {}
+
     // Invoked only once after all displays are initialized
     // after startup.
     virtual void OnDisplaysInitialized() {}
@@ -86,9 +88,6 @@ class ASH_EXPORT WindowTreeHostManager
     // the deletion).
     virtual void OnWindowTreeHostsSwappedDisplays(AshWindowTreeHost* host1,
                                                   AshWindowTreeHost* host2) {}
-
-   protected:
-    virtual ~Observer() {}
   };
 
   WindowTreeHostManager();

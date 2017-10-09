@@ -86,6 +86,12 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
   layouts_[list] = std::move(layout);
 }
 
+bool DisplayLayoutStore::GetMirrorMode(const DisplayIdList& list) {
+  if (forced_mirror_mode_)
+    return true;
+  return GetRegisteredDisplayLayout(list).mirrored;
+}
+
 const DisplayLayout& DisplayLayoutStore::GetRegisteredDisplayLayout(
     const DisplayIdList& list) {
   DCHECK_GT(list.size(), 1u);
