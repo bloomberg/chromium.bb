@@ -310,10 +310,15 @@ class DBTracker {
   DISALLOW_COPY_AND_ASSIGN(DBTracker);
 };
 
-// Opens a database and exposes it to Chrome's tracing (see DBTracker for
-// details). The function guarantees that:
+// Opens a database with the specified "name" and "options" (see note) and
+// exposes it to Chrome's tracing (see DBTracker for details). The function
+// guarantees that:
 //   1. |dbptr| is not touched on failure
 //   2. |dbptr| is not NULL on success
+//
+// Note: All |options| values are honored, except if options.env is an in-memory
+// Env. In this case the block cache is disabled and a minimum write buffer size
+// is used to conserve memory with all other values honored.
 leveldb::Status OpenDB(const leveldb_env::Options& options,
                        const std::string& name,
                        std::unique_ptr<leveldb::DB>* dbptr);

@@ -435,9 +435,13 @@ TEST_F(ChromiumEnvDBTrackerTest, IsTrackedDB) {
   delete untracked_db;
 }
 
-TEST_F(ChromiumEnvDBTrackerTest, CreateMemEnv) {
-  std::unique_ptr<leveldb::Env> env(leveldb_chrome::NewMemEnv(Env::Default()));
-  EXPECT_TRUE(env.get());
+TEST_F(ChromiumEnvDBTrackerTest, CheckMemEnv) {
+  Env* env = leveldb::Env::Default();
+  ASSERT_TRUE(env != nullptr);
+  EXPECT_FALSE(leveldb_chrome::IsMemEnv(env));
+
+  std::unique_ptr<leveldb::Env> memenv(leveldb_chrome::NewMemEnv(env));
+  EXPECT_TRUE(leveldb_chrome::IsMemEnv(memenv.get()));
 }
 
 }  // namespace leveldb_env
