@@ -34,7 +34,8 @@ static INLINE void foreach_overlappable_nb_above(const AV1_COMMON *cm,
   for (int above_mi_col = mi_col; above_mi_col < end_col && nb_count < nb_max;
        above_mi_col += mi_step) {
     MODE_INFO **above_mi = prev_row_mi + above_mi_col;
-    mi_step = mi_size_wide[above_mi[0]->mbmi.sb_type];
+    mi_step = AOMMIN(mi_size_wide[above_mi[0]->mbmi.sb_type],
+                     mi_size_wide[BLOCK_64X64]);
 #if CONFIG_CHROMA_SUB8X8
     // If we're considering a block with width 4, it should be treated as
     // half of a pair of blocks with chroma information in the second. Move
@@ -73,7 +74,8 @@ static INLINE void foreach_overlappable_nb_left(const AV1_COMMON *cm,
   for (int left_mi_row = mi_row; left_mi_row < end_row && nb_count < nb_max;
        left_mi_row += mi_step) {
     MODE_INFO **left_mi = prev_col_mi + left_mi_row * xd->mi_stride;
-    mi_step = mi_size_high[left_mi[0]->mbmi.sb_type];
+    mi_step = AOMMIN(mi_size_high[left_mi[0]->mbmi.sb_type],
+                     mi_size_high[BLOCK_64X64]);
 #if CONFIG_CHROMA_SUB8X8
     if (mi_step == 1) {
       left_mi_row &= ~1;
