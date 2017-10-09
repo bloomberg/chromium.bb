@@ -34,7 +34,7 @@ PanelTest.prototype = {
     while (!panelWindow) {
       panelWindow = chrome.extension.getViews().find(function(view) {
         return view.location.href.indexOf('background/panel.html') > 0;
-      });    
+      });
     }
     return panelWindow;
   },
@@ -65,7 +65,7 @@ PanelTest.prototype = {
   */}
 };
 
-TEST_F('PanelTest', 'ActivateMenu', function() {
+TEST_F('PanelTest', 'DISABLED_ActivateMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
@@ -81,7 +81,7 @@ TEST_F('PanelTest', 'ActivateMenu', function() {
   });
 });
 
-TEST_F('PanelTest', 'LinkMenu', function() {
+TEST_F('PanelTest', 'DISABLED_LinkMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
