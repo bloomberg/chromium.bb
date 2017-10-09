@@ -87,11 +87,14 @@ std::unique_ptr<SearchController> CreateSearchController(
   const bool is_fullscreen_app_list_enabled =
       features::IsFullscreenAppListEnabled();
 
-  size_t answer_card_group_id = controller->AddGroup(1, 1.0, 10.0);
+  // For fullscreen app list, apps should be at top, answer card in the middle
+  // and other search results in the bottom. So set boost 10.0, 5.0, 0.0
+  // respectively.
+  size_t answer_card_group_id = controller->AddGroup(1, 1.0, 5.0);
   size_t apps_group_id = controller->AddGroup(
       is_fullscreen_app_list_enabled ? kMaxAppsGroupResultsFullscreen
                                      : kMaxAppsGroupResults,
-      1.0, is_fullscreen_app_list_enabled ? 5.0 : 0.0);
+      1.0, is_fullscreen_app_list_enabled ? 10.0 : 0.0);
   size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
   size_t webstore_group_id =
       controller->AddGroup(kMaxWebstoreResults, 0.4, 0.0);
@@ -137,10 +140,10 @@ std::unique_ptr<SearchController> CreateSearchController(
 
 #if defined(OS_CHROMEOS)
   if (features::IsPlayStoreAppSearchEnabled()) {
-    // Set same boost 5.0 as apps group since Play store results are placed with
-    // apps.
+    // Set same boost 10.0 as apps group since Play store results are placed
+    // with apps.
     size_t playstore_api_group_id =
-        controller->AddGroup(kMaxPlayStoreResults, 1.0, 5.0);
+        controller->AddGroup(kMaxPlayStoreResults, 1.0, 10.0);
     controller->AddProvider(
         playstore_api_group_id,
         base::MakeUnique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
