@@ -83,6 +83,14 @@ CreateX509CertificateFromCERTCertificate(
     CERTCertificate* cert,
     const std::vector<CERTCertificate*>& chain);
 
+// Creates an X509Certificate with non-standard parsing options.
+// Do not use without consulting //net owners.
+NET_EXPORT scoped_refptr<X509Certificate>
+CreateX509CertificateFromCERTCertificate(
+    CERTCertificate* cert,
+    const std::vector<CERTCertificate*>& chain,
+    X509Certificate::UnsafeCreateOptions options);
+
 // Creates an X509Certificate from |cert|, with no intermediates.
 // Returns NULL on failure.
 NET_EXPORT scoped_refptr<X509Certificate>

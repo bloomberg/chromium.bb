@@ -255,6 +255,13 @@ ScopedCERTCertificateList DupCERTCertificateList(
 scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
     CERTCertificate* nss_cert,
     const std::vector<CERTCertificate*>& nss_chain) {
+  return CreateX509CertificateFromCERTCertificate(nss_cert, nss_chain, {});
+}
+
+scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
+    CERTCertificate* nss_cert,
+    const std::vector<CERTCertificate*>& nss_chain,
+    X509Certificate::UnsafeCreateOptions options) {
 #if BUILDFLAG(USE_BYTE_CERTS)
   if (!nss_cert || !nss_cert->derCert.len)
     return nullptr;
@@ -282,10 +289,12 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
     intermediates.push_back(std::move(intermediate_cert_handle));
   }
   scoped_refptr<X509Certificate> result(
-      X509Certificate::CreateFromHandle(cert_handle.get(), intermediates_raw));
+      X509Certificate::CreateFromHandleUnsafeOptions(
+          cert_handle.get(), intermediates_raw, options));
   return result;
 #else
-  return X509Certificate::CreateFromHandle(nss_cert, nss_chain);
+  return X509Certificate::CreateFromHandleUnsafeOptions(nss_cert, nss_chain,
+                                                        options);
 #endif
 }
 

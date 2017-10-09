@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/pickle.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +18,8 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/pem_tokenizer.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
@@ -261,6 +264,39 @@ TEST(X509CertificateTest, UnescapedSpecialCharacters) {
   EXPECT_EQ("Chromium", subject.organization_unit_names[1]);
   EXPECT_EQ(0U, subject.domain_components.size());
 }
+
+#if BUILDFLAG(USE_BYTE_CERTS)
+TEST(X509CertificateTest, InvalidPrintableStringIsUtf8) {
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
+
+  std::string file_data;
+  ASSERT_TRUE(base::ReadFileToString(
+      certs_dir.AppendASCII(
+          "subject_printable_string_containing_utf8_client_cert.pem"),
+      &file_data));
+
+  net::PEMTokenizer pem_tokenizer(file_data, {"CERTIFICATE"});
+  ASSERT_TRUE(pem_tokenizer.GetNext());
+  std::string cert_der(pem_tokenizer.data());
+  ASSERT_FALSE(pem_tokenizer.GetNext());
+
+  bssl::UniquePtr<CRYPTO_BUFFER> cert_handle =
+      x509_util::CreateCryptoBuffer(cert_der);
+  ASSERT_TRUE(cert_handle);
+
+  EXPECT_FALSE(X509Certificate::CreateFromHandle(cert_handle.get(), {}));
+
+  X509Certificate::UnsafeCreateOptions options;
+  options.printable_string_is_utf8 = true;
+  scoped_refptr<X509Certificate> cert =
+      X509Certificate::CreateFromHandleUnsafeOptions(cert_handle.get(), {},
+                                                     options);
+
+  const CertPrincipal& subject = cert->subject();
+  EXPECT_EQ("Foo@#_ Clïênt Cërt", subject.common_name);
+}
+#endif
 
 TEST(X509CertificateTest, TeletexStringIsLatin1) {
   base::FilePath certs_dir =

@@ -43,10 +43,25 @@ struct NET_EXPORT X509NameAttribute {
                     der::Input in_value)
       : type(in_type), value_tag(in_value_tag), value(in_value) {}
 
+  // Configures handling of PrintableString in the attribute value. Do
+  // not use non-default handling without consulting //net owners. With
+  // kAsUTF8Hack, PrintableStrings are interpreted as UTF-8 strings.
+  enum class PrintableStringHandling { kDefault, kAsUTF8Hack };
+
   // Attempts to convert the value represented by this struct into a
   // UTF-8 string and store it in |out|, returning whether the conversion
   // was successful.
   bool ValueAsString(std::string* out) const WARN_UNUSED_RESULT;
+
+  // Attempts to convert the value represented by this struct into a
+  // UTF-8 string and store it in |out|, returning whether the conversion
+  // was successful. Allows configuring some non-standard string handling
+  // options.
+  //
+  // Do not use without consulting //net owners.
+  bool ValueAsStringWithUnsafeOptions(
+      PrintableStringHandling printable_string_handling,
+      std::string* out) const WARN_UNUSED_RESULT;
 
   // Attempts to convert the value represented by this struct into a
   // std::string and store it in |out|, returning whether the conversion was

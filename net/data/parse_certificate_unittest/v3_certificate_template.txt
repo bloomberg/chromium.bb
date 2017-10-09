@@ -43,10 +43,12 @@ SEQUENCE {
         }
       }
     }
+#-----BEGIN VALIDITY-----
     SEQUENCE {
       UTCTime { "140423205040Z" }
       UTCTime { "170422205040Z" }
     }
+#-----END VALIDITY-----
 #-----BEGIN SUBJECT-----
     SEQUENCE {
       SET {

@@ -128,7 +128,7 @@ void CreateOSCertHandlesFromPKCS7Bytes(
 
 }  // namespace
 
-bool X509Certificate::Initialize() {
+bool X509Certificate::Initialize(UnsafeCreateOptions options) {
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
@@ -146,10 +146,16 @@ bool X509Certificate::Initialize() {
                            nullptr))
     return false;
 
+  CertPrincipal::PrintableStringHandling printable_string_handling =
+      options.printable_string_is_utf8
+          ? CertPrincipal::PrintableStringHandling::kAsUTF8Hack
+          : CertPrincipal::PrintableStringHandling::kDefault;
   if (!subject_.ParseDistinguishedName(tbs.subject_tlv.UnsafeData(),
-                                       tbs.subject_tlv.Length()) ||
+                                       tbs.subject_tlv.Length(),
+                                       printable_string_handling) ||
       !issuer_.ParseDistinguishedName(tbs.issuer_tlv.UnsafeData(),
-                                      tbs.issuer_tlv.Length())) {
+                                      tbs.issuer_tlv.Length(),
+                                      printable_string_handling)) {
     return false;
   }
 

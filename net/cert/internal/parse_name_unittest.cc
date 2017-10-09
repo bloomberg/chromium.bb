@@ -82,6 +82,19 @@ TEST(ParseNameTest, PrintableUnsafeStringValue) {
   ASSERT_FALSE(value.ValueAsString(&result));
 }
 
+TEST(ParseNameTest, PrintableStringUnsafeOptions) {
+  const uint8_t der[] = {
+      0x46, 0x6f, 0x5f, 0x20, 0x62, 0x61, 0x72,
+  };
+  X509NameAttribute value(der::Input(), der::kPrintableString, der::Input(der));
+  std::string result;
+  ASSERT_FALSE(value.ValueAsStringWithUnsafeOptions(
+      X509NameAttribute::PrintableStringHandling::kDefault, &result));
+  ASSERT_TRUE(value.ValueAsStringWithUnsafeOptions(
+      X509NameAttribute::PrintableStringHandling::kAsUTF8Hack, &result));
+  ASSERT_EQ("Fo_ bar", result);
+}
+
 TEST(ParseNameTest, TeletexSafeStringValue) {
   const uint8_t der[] = {
       0x46, 0x6f, 0x6f, 0x20, 0x62, 0x61, 0x72,

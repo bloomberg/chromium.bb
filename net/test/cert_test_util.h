@@ -37,6 +37,8 @@ bool ImportSensitiveKeyFromFile(const base::FilePath& dir,
                                 const std::string& key_filename,
                                 PK11SlotInfo* slot);
 
+bool ImportClientCertToSlot(CERTCertificate* cert, PK11SlotInfo* slot);
+
 ScopedCERTCertificate ImportClientCertToSlot(
     const scoped_refptr<X509Certificate>& cert,
     PK11SlotInfo* slot);
