@@ -379,7 +379,7 @@ bool FrameProcessor::ProcessFrames(
 
 void FrameProcessor::SetGroupStartTimestampIfInSequenceMode(
     base::TimeDelta timestamp_offset) {
-  DVLOG(2) << __func__ << "(" << timestamp_offset.InSecondsF() << ")";
+  DVLOG(2) << __func__ << "(" << timestamp_offset.InMicroseconds() << "us)";
   DCHECK(kNoTimestamp != timestamp_offset);
   if (sequence_mode_)
     group_start_timestamp_ = timestamp_offset;
@@ -485,8 +485,8 @@ MseTrackBuffer* FrameProcessor::FindTrack(StreamParser::TrackId id) {
 
 void FrameProcessor::NotifyStartOfCodedFrameGroup(DecodeTimestamp start_dts,
                                                   base::TimeDelta start_pts) {
-  DVLOG(2) << __func__ << "(dts " << start_dts.InSecondsF() << ", pts "
-           << start_pts.InSecondsF() << ")";
+  DVLOG(2) << __func__ << "(dts " << start_dts.InMicroseconds() << "us, pts "
+           << start_pts.InMicroseconds() << "us)";
 
   for (auto itr = track_buffers_.begin(); itr != track_buffers_.end(); ++itr) {
     itr->second->NotifyStartOfCodedFrameGroup(start_dts, start_pts);
@@ -544,10 +544,11 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
             .InMicroseconds();
     if (std::abs(delta) < sample_duration_.InMicroseconds()) {
       DVLOG(1) << "Attaching audio preroll buffer ["
-               << audio_preroll_buffer_->timestamp().InSecondsF() << ", "
+               << audio_preroll_buffer_->timestamp().InMicroseconds() << "us, "
                << (audio_preroll_buffer_->timestamp() +
-                   audio_preroll_buffer_->duration()).InSecondsF() << ") to "
-               << buffer->timestamp().InSecondsF();
+                   audio_preroll_buffer_->duration())
+                      .InMicroseconds()
+               << "us) to " << buffer->timestamp().InMicroseconds() << "us";
       buffer->SetPrerollBuffer(audio_preroll_buffer_);
       processed_buffer = true;
     } else {
@@ -566,9 +567,12 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
   // See if a partial discard can be done around |append_window_start|.
   if (buffer->timestamp() < append_window_start) {
     DVLOG(1) << "Truncating buffer which overlaps append window start."
-             << " presentation_timestamp " << buffer->timestamp().InSecondsF()
-             << " frame_end_timestamp " << frame_end_timestamp.InSecondsF()
-             << " append_window_start " << append_window_start.InSecondsF();
+             << " presentation_timestamp "
+             << buffer->timestamp().InMicroseconds()
+             << "us frame_end_timestamp "
+             << frame_end_timestamp.InMicroseconds()
+             << "us append_window_start "
+             << append_window_start.InMicroseconds() << "us";
 
     // Mark the overlapping portion of the buffer for discard.
     buffer->set_discard_padding(std::make_pair(
@@ -587,9 +591,11 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
   // See if a partial discard can be done around |append_window_end|.
   if (frame_end_timestamp > append_window_end) {
     DVLOG(1) << "Truncating buffer which overlaps append window end."
-             << " presentation_timestamp " << buffer->timestamp().InSecondsF()
-             << " frame_end_timestamp " << frame_end_timestamp.InSecondsF()
-             << " append_window_end " << append_window_end.InSecondsF();
+             << " presentation_timestamp "
+             << buffer->timestamp().InMicroseconds()
+             << "us frame_end_timestamp "
+             << frame_end_timestamp.InMicroseconds() << "us append_window_end "
+             << append_window_end.InMicroseconds() << "us";
 
     // Mark the overlapping portion of the buffer for discard.
     buffer->set_discard_padding(
@@ -631,10 +637,10 @@ bool FrameProcessor::ProcessFrame(
 
     DVLOG(3) << __func__ << ": Processing frame Type=" << frame->type()
              << ", TrackID=" << frame->track_id()
-             << ", PTS=" << presentation_timestamp.InSecondsF()
-             << ", DTS=" << decode_timestamp.InSecondsF()
-             << ", DUR=" << frame_duration.InSecondsF()
-             << ", RAP=" << frame->is_key_frame();
+             << ", PTS=" << presentation_timestamp.InMicroseconds()
+             << "us, DTS=" << decode_timestamp.InMicroseconds()
+             << "us, DUR=" << frame_duration.InMicroseconds()
+             << "us, RAP=" << frame->is_key_frame();
 
     // Buffering, splicing, append window trimming, etc., all depend on the
     // assumption that all audio coded frames are key frames. Metadata in the
@@ -672,9 +678,9 @@ bool FrameProcessor::ProcessFrame(
           << "us, which is after the frame's PTS "
           << presentation_timestamp.InMicroseconds() << "us";
       DVLOG(2) << __func__ << ": WARNING: Frame DTS("
-               << decode_timestamp.InSecondsF() << ") > PTS("
-               << presentation_timestamp.InSecondsF()
-               << "), frame type=" << frame->GetTypeName();
+               << decode_timestamp.InMicroseconds() << "us) > PTS("
+               << presentation_timestamp.InMicroseconds()
+               << "us), frame type=" << frame->GetTypeName();
     }
 
     // All stream parsers must emit valid (non-negative) frame durations.
@@ -701,7 +707,7 @@ bool FrameProcessor::ProcessFrame(
       *timestamp_offset = group_start_timestamp_ - presentation_timestamp;
 
       DVLOG(3) << __func__ << ": updated timestampOffset is now "
-               << timestamp_offset->InSecondsF();
+               << timestamp_offset->InMicroseconds() << "us";
 
       // 3.2. Set group end timestamp equal to group start timestamp.
       group_end_timestamp_ = group_start_timestamp_;
@@ -770,7 +776,7 @@ bool FrameProcessor::ProcessFrame(
           // in Reset(), below, for "segments" mode.
         } else {
           DVLOG(3) << __func__ << " : Sequence mode discontinuity, GETS: "
-                   << group_end_timestamp_.InSecondsF();
+                   << group_end_timestamp_.InMicroseconds() << "us";
           // Reset(), below, performs the "Set group start timestamp equal to
           // the group end timestamp" operation for "sequence" mode.
         }
@@ -903,8 +909,8 @@ bool FrameProcessor::ProcessFrame(
     }
 
     DVLOG(3) << __func__ << ": Sending processed frame to stream, "
-             << "PTS=" << presentation_timestamp.InSecondsF()
-             << ", DTS=" << decode_timestamp.InSecondsF();
+             << "PTS=" << presentation_timestamp.InMicroseconds()
+             << "us, DTS=" << decode_timestamp.InMicroseconds() << "us";
 
     // Steps 11-16: Note, we optimize by appending groups of contiguous
     // processed frames for each track buffer at end of ProcessFrames() or prior
