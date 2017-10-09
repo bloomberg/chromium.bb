@@ -4,11 +4,11 @@
 
 #include "ash/host/ash_window_tree_host_unified.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/host/root_window_transformer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
@@ -70,7 +70,7 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
     AshWindowTreeHost* mirroring_ash_host) {
   aura::Window* src_root = mirroring_ash_host->AsWindowTreeHost()->window();
   src_root->SetEventTargeter(
-      base::MakeUnique<UnifiedEventTargeter>(src_root, window()));
+      std::make_unique<UnifiedEventTargeter>(src_root, window()));
   DCHECK(std::find(mirroring_hosts_.begin(), mirroring_hosts_.end(),
                    mirroring_ash_host) == mirroring_hosts_.end());
   mirroring_hosts_.push_back(mirroring_ash_host);

@@ -6,8 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
-
-#include "base/memory/ptr_util.h"
+#include <memory>
 
 namespace ash {
 namespace {
@@ -123,19 +122,19 @@ MagnetismMatcher::MagnetismMatcher(const gfx::Rect& bounds, uint32_t edges)
     : edges_(edges) {
   if (edges & MAGNETISM_EDGE_TOP) {
     matchers_.push_back(
-        base::MakeUnique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_TOP));
+        std::make_unique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_TOP));
   }
   if (edges & MAGNETISM_EDGE_LEFT) {
     matchers_.push_back(
-        base::MakeUnique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_LEFT));
+        std::make_unique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_LEFT));
   }
   if (edges & MAGNETISM_EDGE_BOTTOM) {
     matchers_.push_back(
-        base::MakeUnique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_BOTTOM));
+        std::make_unique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_BOTTOM));
   }
   if (edges & MAGNETISM_EDGE_RIGHT) {
     matchers_.push_back(
-        base::MakeUnique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_RIGHT));
+        std::make_unique<MagnetismEdgeMatcher>(bounds, MAGNETISM_EDGE_RIGHT));
   }
 }
 

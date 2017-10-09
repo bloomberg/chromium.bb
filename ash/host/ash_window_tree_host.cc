@@ -4,11 +4,12 @@
 
 #include "ash/host/ash_window_tree_host.h"
 
+#include <memory>
+
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/shell_port.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -60,10 +61,10 @@ std::unique_ptr<AshWindowTreeHost> AshWindowTreeHost::Create(
     return ash_window_tree_host;
 
   if (init_params.offscreen) {
-    return base::MakeUnique<AshWindowTreeHostUnified>(
+    return std::make_unique<AshWindowTreeHostUnified>(
         init_params.initial_bounds);
   }
-  return base::MakeUnique<AshWindowTreeHostPlatform>(
+  return std::make_unique<AshWindowTreeHostPlatform>(
       init_params.initial_bounds);
 }
 

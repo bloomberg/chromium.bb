@@ -498,7 +498,7 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
         GetNotificationIcon(being_enabled),
         message_center::SystemNotificationWarningLevel::NORMAL);
   } else {
-    notification = base::MakeUnique<message_center::Notification>(
+    notification = std::make_unique<message_center::Notification>(
         message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title, text,
         gfx::Image(gfx::CreateVectorIcon(GetNotificationIcon(being_enabled),
                                          kMenuIconSize, kMenuIconColor)),

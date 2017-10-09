@@ -86,7 +86,7 @@ class AppListPresenterDelegateTest : public AshTestBase,
     // Make the display big enough to hold the app list.
     UpdateDisplay("1024x768");
 
-    app_list_presenter_impl_ = base::MakeUnique<TestAppListPresenterImpl>();
+    app_list_presenter_impl_ = std::make_unique<TestAppListPresenterImpl>();
   }
 
   void EnableFullscreenAppList() {
@@ -124,7 +124,7 @@ class FullscreenAppListPresenterDelegateTest
     // Make the display big enough to hold the app list.
     UpdateDisplay("1024x768");
 
-    app_list_presenter_impl_ = base::MakeUnique<TestAppListPresenterImpl>();
+    app_list_presenter_impl_ = std::make_unique<TestAppListPresenterImpl>();
   }
 
   // Whether to run the test with mouse or gesture events.

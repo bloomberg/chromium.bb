@@ -12,7 +12,6 @@
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 
 using ash::mojom::TrayActionState;
@@ -69,7 +68,7 @@ TEST_F(TrayActionTest, NoTrayActionClient) {
   EXPECT_EQ(0u, observer.observed_states().size());
 
   std::unique_ptr<TestTrayActionClient> action_client =
-      base::MakeUnique<TestTrayActionClient>();
+      std::make_unique<TestTrayActionClient>();
   tray_action->SetClient(action_client->CreateInterfacePtrAndBind(),
                          TrayActionState::kLaunching);
 

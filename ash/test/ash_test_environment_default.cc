@@ -4,8 +4,9 @@
 
 #include "ash/test/ash_test_environment.h"
 
+#include <memory>
+
 #include "ash/test/ash_test_views_delegate.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 
@@ -24,7 +25,7 @@ class AshTestEnvironmentDefault : public AshTestEnvironment {
 
   // AshTestEnvironment:
   std::unique_ptr<AshTestViewsDelegate> CreateViewsDelegate() override {
-    return base::MakeUnique<AshTestViewsDelegate>();
+    return std::make_unique<AshTestViewsDelegate>();
   }
 
  private:
@@ -37,7 +38,7 @@ class AshTestEnvironmentDefault : public AshTestEnvironment {
 
 // static
 std::unique_ptr<AshTestEnvironment> AshTestEnvironment::Create() {
-  return base::MakeUnique<AshTestEnvironmentDefault>();
+  return std::make_unique<AshTestEnvironmentDefault>();
 }
 
 // static

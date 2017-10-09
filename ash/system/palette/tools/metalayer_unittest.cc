@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/shell.h"
@@ -32,11 +34,11 @@ class MetalayerToolTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    ShellTestApi().SetPaletteDelegate(base::MakeUnique<TestPaletteDelegate>());
+    ShellTestApi().SetPaletteDelegate(std::make_unique<TestPaletteDelegate>());
 
-    palette_tool_delegate_ = base::MakeUnique<MockPaletteToolDelegate>();
-    tool_ = base::MakeUnique<MetalayerMode>(palette_tool_delegate_.get());
-    highlighter_test_api_ = base::MakeUnique<HighlighterControllerTestApi>(
+    palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
+    tool_ = std::make_unique<MetalayerMode>(palette_tool_delegate_.get());
+    highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
         Shell::Get()->highlighter_controller());
   }
 

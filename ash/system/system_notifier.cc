@@ -4,8 +4,9 @@
 
 #include "ash/system/system_notifier.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace ash {
@@ -110,7 +111,7 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
         type, id, title, message, gfx::Image(), display_source, origin_url,
         notifier_id, optional_fields, delegate, small_image, color_type);
   }
-  return base::MakeUnique<message_center::Notification>(
+  return std::make_unique<message_center::Notification>(
       type, id, title, message, icon, display_source, origin_url, notifier_id,
       optional_fields, delegate);
 }

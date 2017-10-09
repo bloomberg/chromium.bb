@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_background_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/ash_constants.h"
 #include "ash/focus_cycler.h"
@@ -20,7 +21,6 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -299,7 +299,7 @@ void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
 
 std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
     const {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetBackgroundInsets(), GetInkDropCenterBasedOnLastEvent(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
@@ -474,7 +474,7 @@ aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
     if (!clipping_window_.get()) {
-      clipping_window_ = base::MakeUnique<aura::Window>(nullptr);
+      clipping_window_ = std::make_unique<aura::Window>(nullptr);
       clipping_window_->Init(ui::LAYER_NOT_DRAWN);
       clipping_window_->layer()->SetMasksToBounds(true);
       container->AddChild(clipping_window_.get());
@@ -511,7 +511,7 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
 
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
     const {
-  return base::MakeUnique<views::RoundRectInkDropMask>(
+  return std::make_unique<views::RoundRectInkDropMask>(
       size(), GetBackgroundInsets(), kTrayRoundedBorderRadius);
 }
 

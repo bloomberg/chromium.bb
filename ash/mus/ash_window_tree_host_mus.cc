@@ -4,11 +4,12 @@
 
 #include "ash/mus/ash_window_tree_host_mus.h"
 
+#include <memory>
+
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
@@ -20,7 +21,7 @@ namespace ash {
 AshWindowTreeHostMus::AshWindowTreeHostMus(
     aura::WindowTreeHostMusInitParams init_params)
     : aura::WindowTreeHostMus(std::move(init_params)),
-      transformer_helper_(base::MakeUnique<TransformerHelper>(this)) {
+      transformer_helper_(std::make_unique<TransformerHelper>(this)) {
   transformer_helper_->Init();
 }
 
@@ -54,7 +55,7 @@ void AshWindowTreeHostMus::PrepareForShutdown() {
   // doesn't attempt to process events while in this state, which would likely
   // crash.
   std::unique_ptr<ui::NullEventTargeter> null_event_targeter =
-      base::MakeUnique<ui::NullEventTargeter>();
+      std::make_unique<ui::NullEventTargeter>();
   window()->SetEventTargeter(std::move(null_event_targeter));
 }
 

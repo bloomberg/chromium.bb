@@ -4,6 +4,7 @@
 
 #include "ash/login/ui/lock_screen.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/login/ui/lock_contents_view.h"
@@ -18,7 +19,6 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -66,7 +66,7 @@ void LockScreen::Show() {
   CHECK(!instance_);
   instance_ = new LockScreen();
 
-  auto data_dispatcher = base::MakeUnique<LoginDataDispatcher>();
+  auto data_dispatcher = std::make_unique<LoginDataDispatcher>();
   auto* contents = BuildContentsView(
       ash::Shell::Get()->tray_action()->GetLockScreenNoteState(),
       data_dispatcher.get());

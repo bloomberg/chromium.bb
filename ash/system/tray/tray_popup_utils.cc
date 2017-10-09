@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/ash_constants.h"
@@ -16,7 +17,6 @@
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -49,7 +49,7 @@ namespace {
 // stretched horizontally and centered vertically.
 std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
   // TODO(bruthig): Use constants instead of magic numbers.
-  auto box_layout = base::MakeUnique<views::BoxLayout>(
+  auto box_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       gfx::Insets(8, kTrayPopupLabelHorizontalPadding));
   box_layout->set_main_axis_alignment(
@@ -63,7 +63,7 @@ std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
 // centered along the horizontal and vertical axis.
 std::unique_ptr<views::LayoutManager> CreateDefaultEndsLayoutManager() {
   auto box_layout =
-      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
@@ -197,11 +197,11 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::END);
 
   tri_view->SetContainerLayout(TriView::Container::START,
-                               base::MakeUnique<views::FillLayout>());
+                               std::make_unique<views::FillLayout>());
   tri_view->SetContainerLayout(TriView::Container::CENTER,
-                               base::MakeUnique<views::FillLayout>());
+                               std::make_unique<views::FillLayout>());
   tri_view->SetContainerLayout(TriView::Container::END,
-                               base::MakeUnique<views::FillLayout>());
+                               std::make_unique<views::FillLayout>());
 
   return tri_view;
 }
@@ -325,7 +325,7 @@ std::unique_ptr<views::InkDrop> TrayPopupUtils::CreateInkDrop(
     TrayPopupInkDropStyle ink_drop_style,
     views::InkDropHostView* host) {
   std::unique_ptr<views::InkDropImpl> ink_drop =
-      base::MakeUnique<views::InkDropImpl>(host, host->size());
+      std::make_unique<views::InkDropImpl>(host, host->size());
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
   ink_drop->SetShowHighlightOnHover(false);
@@ -338,7 +338,7 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
     const views::View* host,
     const gfx::Point& center_point,
     SkColor color) {
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       host->size(), TrayPopupUtils::GetInkDropInsets(ink_drop_style),
       center_point, color, kTrayPopupInkDropRippleOpacity);
 }
@@ -369,13 +369,13 @@ std::unique_ptr<views::InkDropMask> TrayPopupUtils::CreateInkDropMask(
           GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, host);
       const int radius =
           std::min(mask_bounds.width(), mask_bounds.height()) / 2;
-      return base::MakeUnique<views::CircleInkDropMask>(
+      return std::make_unique<views::CircleInkDropMask>(
           layer_size, mask_bounds.CenterPoint(), radius);
     }
     case TrayPopupInkDropStyle::INSET_BOUNDS: {
       const gfx::Insets mask_insets =
           GetInkDropInsets(TrayPopupInkDropStyle::INSET_BOUNDS);
-      return base::MakeUnique<views::RoundRectInkDropMask>(
+      return std::make_unique<views::RoundRectInkDropMask>(
           layer_size, mask_insets, kTrayPopupInkDropCornerRadius);
     }
     case TrayPopupInkDropStyle::FILL_BOUNDS:

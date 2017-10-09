@@ -4,10 +4,11 @@
 
 #include "ash/display/touch_calibrator_view.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -309,7 +310,7 @@ class HintBox : public views::View {
 
 HintBox::HintBox(const gfx::Rect& bounds, int border_radius)
     : border_radius_(border_radius) {
-  SetBorder(base::MakeUnique<views::BubbleBorder>(
+  SetBorder(std::make_unique<views::BubbleBorder>(
       base::i18n::IsRTL() ? views::BubbleBorder::RIGHT_CENTER
                           : views::BubbleBorder::LEFT_CENTER,
       views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER, SK_ColorWHITE));

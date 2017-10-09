@@ -4,10 +4,10 @@
 
 #include "ash/shelf/shelf_application_menu_model.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"

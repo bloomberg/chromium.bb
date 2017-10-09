@@ -5,6 +5,7 @@
 #include "ash/shell.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -565,7 +566,7 @@ TEST_F(ShellLocalStateTest, LocalState) {
 
   // Prefs service wrapper code creates a PrefService.
   std::unique_ptr<TestingPrefServiceSimple> local_state =
-      base::MakeUnique<TestingPrefServiceSimple>();
+      std::make_unique<TestingPrefServiceSimple>();
   Shell::RegisterLocalStatePrefs(local_state->registry());
   TestingPrefServiceSimple* local_state_ptr = local_state.get();
   ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));

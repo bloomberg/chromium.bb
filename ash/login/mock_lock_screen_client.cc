@@ -4,6 +4,8 @@
 
 #include "ash/login/mock_lock_screen_client.h"
 
+#include <memory>
+
 #include "ash/login/lock_screen_controller.h"
 #include "ash/shell.h"
 
@@ -30,7 +32,7 @@ void MockLockScreenClient::AuthenticateUser(const AccountId& account_id,
 std::unique_ptr<MockLockScreenClient> BindMockLockScreenClient() {
   LockScreenController* lock_screen_controller =
       Shell::Get()->lock_screen_controller();
-  auto lock_screen_client = base::MakeUnique<MockLockScreenClient>();
+  auto lock_screen_client = std::make_unique<MockLockScreenClient>();
   lock_screen_controller->SetClient(
       lock_screen_client->CreateInterfacePtrAndBind());
   return lock_screen_client;

@@ -11,7 +11,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/window_user_data.h"
 #include "ash/wm/window_dimmer.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/layer.h"
 
@@ -24,7 +23,7 @@ class ScreenDimmerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    dimmer_ = base::MakeUnique<ScreenDimmer>(ScreenDimmer::Container::ROOT);
+    dimmer_ = std::make_unique<ScreenDimmer>(ScreenDimmer::Container::ROOT);
   }
 
   void TearDown() override {

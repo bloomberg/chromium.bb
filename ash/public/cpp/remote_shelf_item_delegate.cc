@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
 
+#include <memory>
+
 namespace ash {
 
 RemoteShelfItemDelegate::RemoteShelfItemDelegate(
@@ -20,9 +22,9 @@ void RemoteShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
   // Mojo requires conversion of mouse and touch events to pointer events.
   if (event && ui::PointerEvent::CanConvertFrom(*event.get())) {
     if (event->IsMouseEvent())
-      event = base::MakeUnique<ui::PointerEvent>(*event->AsMouseEvent());
+      event = std::make_unique<ui::PointerEvent>(*event->AsMouseEvent());
     else if (event->IsTouchEvent())
-      event = base::MakeUnique<ui::PointerEvent>(*event->AsTouchEvent());
+      event = std::make_unique<ui::PointerEvent>(*event->AsTouchEvent());
     else
       NOTREACHED() << "Need conversion of event to pointer event.";
   }

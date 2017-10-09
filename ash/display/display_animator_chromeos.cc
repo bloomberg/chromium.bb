@@ -4,6 +4,8 @@
 
 #include "ash/display/display_animator_chromeos.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -32,7 +34,7 @@ class CallbackRunningObserver {
       : completed_counter_(0), animation_aborted_(false), callback_(callback) {}
 
   void AddNewAnimator(ui::LayerAnimator* animator) {
-    auto observer = base::MakeUnique<Observer>(animator, this);
+    auto observer = std::make_unique<Observer>(animator, this);
     animator->AddObserver(observer.get());
     observer_list_.push_back(std::move(observer));
   }
@@ -111,7 +113,7 @@ void DisplayAnimatorChromeOS::StartFadeOutAnimation(base::Closure callback) {
   // after the animation of OnDisplayModeChanged().
   for (aura::Window* root_window : Shell::Get()->GetAllRootWindows()) {
     std::unique_ptr<ui::Layer> hiding_layer =
-        base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+        std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
     hiding_layer->SetColor(SK_ColorBLACK);
     hiding_layer->SetBounds(root_window->bounds());
     ui::Layer* parent = ash::Shell::GetContainer(

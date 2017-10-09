@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_button.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/ash_constants.h"
 #include "ash/shelf/ink_drop_button_listener.h"
@@ -12,7 +13,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -507,7 +507,7 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 std::unique_ptr<views::InkDropRipple> ShelfButton::CreateInkDropRipple() const {
-  return base::MakeUnique<views::SquareInkDropRipple>(
+  return std::make_unique<views::SquareInkDropRipple>(
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       kInkDropLargeCornerRadius,
       gfx::Size(kInkDropSmallSize, kInkDropSmallSize),

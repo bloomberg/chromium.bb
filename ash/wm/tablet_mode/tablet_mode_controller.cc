@@ -107,7 +107,7 @@ TabletModeController::UiMode GetTabletMode() {
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
 CreateScopedDisableInternalMouseAndKeyboard() {
-  return base::MakeUnique<ScopedDisableInternalMouseAndKeyboardOzone>();
+  return std::make_unique<ScopedDisableInternalMouseAndKeyboardOzone>();
 }
 
 }  // namespace

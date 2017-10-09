@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "ash/login_status.h"
@@ -275,11 +276,11 @@ void SystemTray::Shutdown() {
 }
 
 void SystemTray::CreateItems() {
-  AddTrayItem(base::MakeUnique<TrayUser>(this));
+  AddTrayItem(std::make_unique<TrayUser>(this));
 
   // Crucially, this trailing padding has to be inside the user item(s).
   // Otherwise it could be a main axis margin on the tray's box layout.
-  AddTrayItem(base::MakeUnique<PaddingTrayItem>());
+  AddTrayItem(std::make_unique<PaddingTrayItem>());
 
   tray_session_length_limit_ = new TraySessionLengthLimit(this);
   AddTrayItem(base::WrapUnique(tray_session_length_limit_));
@@ -287,30 +288,30 @@ void SystemTray::CreateItems() {
   AddTrayItem(base::WrapUnique(tray_enterprise_));
   tray_supervised_user_ = new TraySupervisedUser(this);
   AddTrayItem(base::WrapUnique(tray_supervised_user_));
-  AddTrayItem(base::MakeUnique<TrayIME>(this));
+  AddTrayItem(std::make_unique<TrayIME>(this));
   tray_accessibility_ = new TrayAccessibility(this);
   AddTrayItem(base::WrapUnique(tray_accessibility_));
   tray_tracing_ = new TrayTracing(this);
   AddTrayItem(base::WrapUnique(tray_tracing_));
   AddTrayItem(
-      base::MakeUnique<TrayPower>(this, message_center::MessageCenter::Get()));
+      std::make_unique<TrayPower>(this, message_center::MessageCenter::Get()));
   tray_network_ = new TrayNetwork(this);
   AddTrayItem(base::WrapUnique(tray_network_));
-  AddTrayItem(base::MakeUnique<TrayVPN>(this));
-  AddTrayItem(base::MakeUnique<TrayBluetooth>(this));
+  AddTrayItem(std::make_unique<TrayVPN>(this));
+  AddTrayItem(std::make_unique<TrayBluetooth>(this));
   tray_cast_ = new TrayCast(this);
   AddTrayItem(base::WrapUnique(tray_cast_));
   screen_capture_tray_item_ = new ScreenCaptureTrayItem(this);
   AddTrayItem(base::WrapUnique(screen_capture_tray_item_));
   screen_share_tray_item_ = new ScreenShareTrayItem(this);
   AddTrayItem(base::WrapUnique(screen_share_tray_item_));
-  AddTrayItem(base::MakeUnique<MultiProfileMediaTrayItem>(this));
+  AddTrayItem(std::make_unique<MultiProfileMediaTrayItem>(this));
   tray_audio_ = new TrayAudio(this);
   AddTrayItem(base::WrapUnique(tray_audio_));
   tray_scale_ = new TrayScale(this);
   AddTrayItem(base::WrapUnique(tray_scale_));
-  AddTrayItem(base::MakeUnique<TrayBrightness>(this));
-  AddTrayItem(base::MakeUnique<TrayKeyboardBrightness>(this));
+  AddTrayItem(std::make_unique<TrayBrightness>(this));
+  AddTrayItem(std::make_unique<TrayKeyboardBrightness>(this));
   tray_caps_lock_ = new TrayCapsLock(this);
   AddTrayItem(base::WrapUnique(tray_caps_lock_));
   if (NightLightController::IsFeatureEnabled()) {
@@ -320,7 +321,7 @@ void SystemTray::CreateItems() {
   // TODO(jamescook): Remove this when mash has support for display management
   // and we have a DisplayManager equivalent. See http://crbug.com/548429
   if (Shell::GetAshConfig() != Config::MASH)
-    AddTrayItem(base::MakeUnique<TrayRotationLock>(this));
+    AddTrayItem(std::make_unique<TrayRotationLock>(this));
   tray_update_ = new TrayUpdate(this);
   AddTrayItem(base::WrapUnique(tray_update_));
   tray_tiles_ = new TrayTiles(this);
@@ -328,7 +329,7 @@ void SystemTray::CreateItems() {
   tray_system_info_ = new TraySystemInfo(this);
   AddTrayItem(base::WrapUnique(tray_system_info_));
   // Leading padding.
-  AddTrayItem(base::MakeUnique<PaddingTrayItem>());
+  AddTrayItem(std::make_unique<PaddingTrayItem>());
 }
 
 void SystemTray::AddTrayItem(std::unique_ptr<SystemTrayItem> item) {

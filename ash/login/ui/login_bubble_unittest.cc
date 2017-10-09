@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +56,7 @@ class LoginBubbleTest : public LoginTestBase {
     container_->AddChildView(other_view_);
     SetWidget(CreateWidgetWithContent(container_));
 
-    bubble_ = base::MakeUnique<LoginBubble>();
+    bubble_ = std::make_unique<LoginBubble>();
   }
 
   void TearDown() override {

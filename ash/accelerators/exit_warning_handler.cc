@@ -4,11 +4,12 @@
 
 #include "ash/accelerators/exit_warning_handler.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -153,7 +154,7 @@ void ExitWarningHandler::Show() {
   params.name = "ExitWarningWindow";
   params.parent =
       root_window->GetChildById(kShellWindowId_SettingBubbleContainer);
-  widget_ = base::MakeUnique<views::Widget>();
+  widget_ = std::make_unique<views::Widget>();
   widget_->Init(params);
   widget_->Show();
 

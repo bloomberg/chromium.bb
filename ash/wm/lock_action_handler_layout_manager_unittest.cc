@@ -20,6 +20,7 @@
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -81,7 +82,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
     widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
     lock_window_ =
         CreateTestingWindow(widget_params, kShellWindowId_LockScreenContainer,
-                            base::MakeUnique<TestWindowDelegate>());
+                            std::make_unique<TestWindowDelegate>());
   }
 
   void TearDown() override {
@@ -181,7 +182,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizedWindowBounds) {
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
       widget_params, kShellWindowId_LockActionHandlerContainer,
-      base::MakeUnique<TestWindowDelegate>());
+      std::make_unique<TestWindowDelegate>());
 
   // Verify that the window bounds are equal to work area for the bottom shelf
   // alignment, which matches how the shelf is aligned on the lock screen,
@@ -211,7 +212,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, FullscreenWindowBounds) {
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
       widget_params, kShellWindowId_LockActionHandlerContainer,
-      base::MakeUnique<TestWindowDelegate>());
+      std::make_unique<TestWindowDelegate>());
 
   // Verify that the window bounds are equal to work area for the bottom shelf
   // alignment, which matches how the shelf is aligned on the lock screen,
@@ -235,7 +236,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizeResizableWindow) {
       views::Widget::InitParams::TYPE_WINDOW);
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
       widget_params, kShellWindowId_LockActionHandlerContainer,
-      base::MakeUnique<TestWindowDelegate>());
+      std::make_unique<TestWindowDelegate>());
 
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
@@ -263,7 +264,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
       widget_params, kShellWindowId_LockActionHandlerContainer,
-      base::MakeUnique<TestWindowDelegate>());
+      std::make_unique<TestWindowDelegate>());
   ASSERT_EQ(initial_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   ShowKeyboard(true);
@@ -422,7 +423,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MultipleMonitors) {
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
       widget_params, kShellWindowId_LockActionHandlerContainer,
-      base::MakeUnique<TestWindowDelegate>());
+      std::make_unique<TestWindowDelegate>());
 
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();

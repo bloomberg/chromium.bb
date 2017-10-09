@@ -4,6 +4,8 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 
+#include <memory>
+
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
@@ -115,7 +117,7 @@ void AccessibilityController::SetPrefServiceForTest(PrefService* prefs) {
 
 void AccessibilityController::ObservePrefs(PrefService* prefs) {
   // Watch for pref updates from webui settings and policy.
-  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(
       prefs::kAccessibilityLargeCursorEnabled,

@@ -4,7 +4,8 @@
 
 #include "ash/test/child_modal_window.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -103,7 +104,7 @@ ui::ModalType ChildModalWindow::GetModalType() const {
 }
 
 ChildModalParent::ChildModalParent(aura::Window* context)
-    : widget_(base::MakeUnique<Widget>()),
+    : widget_(std::make_unique<Widget>()),
       button_(new views::LabelButton(
           this,
           base::ASCIIToUTF16("Show/Hide Child Modal Window"))),

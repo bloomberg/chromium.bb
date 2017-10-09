@@ -4,6 +4,7 @@
 
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -35,7 +35,7 @@ class AshPopupAlignmentDelegateTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     SetAlignmentDelegate(
-        base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
+        std::make_unique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
   }
 
   void TearDown() override {
@@ -206,7 +206,7 @@ TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
 TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(
-      base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
+      std::make_unique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
   display::Display second_display = GetSecondaryDisplay();
   Shelf* second_shelf =
@@ -232,7 +232,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(
-      base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
+      std::make_unique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
   EXPECT_GT(600,
             alignment_delegate()->GetToastOriginX(gfx::Rect(0, 0, 10, 10)));

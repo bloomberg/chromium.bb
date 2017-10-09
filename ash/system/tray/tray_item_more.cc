@@ -4,12 +4,13 @@
 
 #include "ash/system/tray/tray_item_more.h"
 
+#include <memory>
+
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
@@ -55,7 +56,7 @@ std::unique_ptr<TrayPopupItemStyle> TrayItemMore::CreateStyle() const {
 }
 
 std::unique_ptr<TrayPopupItemStyle> TrayItemMore::HandleCreateStyle() const {
-  return base::MakeUnique<TrayPopupItemStyle>(
+  return std::make_unique<TrayPopupItemStyle>(
       TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
 }
 

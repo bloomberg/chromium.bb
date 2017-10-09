@@ -4,8 +4,9 @@
 
 #include "ash/display/display_color_manager_chromeos.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -114,7 +115,7 @@ class DisplayColorManagerTest : public testing::Test {
             native_display_delegate_));
 
     color_manager_ =
-        base::MakeUnique<DisplayColorManagerForTest>(&configurator_);
+        std::make_unique<DisplayColorManagerForTest>(&configurator_);
 
     EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &color_path_));
 

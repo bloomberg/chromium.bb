@@ -4,10 +4,11 @@
 
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
 
+#include <memory>
+
 #include "ash/public/cpp/immersive/immersive_focus_watcher.h"
 #include "ash/public/cpp/immersive/immersive_gesture_handler.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace ash {
 namespace mus {

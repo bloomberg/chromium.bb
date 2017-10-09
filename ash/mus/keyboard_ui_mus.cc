@@ -4,8 +4,9 @@
 
 #include "ash/mus/keyboard_ui_mus.h"
 
+#include <memory>
+
 #include "ash/keyboard/keyboard_ui_observer.h"
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
@@ -21,7 +22,7 @@ KeyboardUIMus::~KeyboardUIMus() {}
 // static
 std::unique_ptr<KeyboardUI> KeyboardUIMus::Create(
     service_manager::Connector* connector) {
-  return base::MakeUnique<KeyboardUIMus>(connector);
+  return std::make_unique<KeyboardUIMus>(connector);
 }
 
 void KeyboardUIMus::Hide() {

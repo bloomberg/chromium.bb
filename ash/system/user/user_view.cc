@@ -5,6 +5,7 @@
 #include "ash/system/user/user_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/metrics/user_metrics_recorder.h"
@@ -24,7 +25,6 @@
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "ash/system/user/user_card_view.h"
-#include "base/memory/ptr_util.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_info.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -225,7 +225,7 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login) : owner_(owner) {
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   layout->SetFlexForView(user_card_container_, 1);
 
-  SetBorder(base::MakeUnique<ActiveUserBorder>());
+  SetBorder(std::make_unique<ActiveUserBorder>());
 }
 
 UserView::~UserView() {

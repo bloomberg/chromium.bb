@@ -4,6 +4,7 @@
 
 #include "ash/mus/bridge/shell_port_mash.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
@@ -69,13 +70,13 @@ ShellPortMash::ShellPortMash(
     views::PointerWatcherEventRouter* pointer_watcher_event_router)
     : window_manager_(window_manager) {
   if (GetAshConfig() == Config::MASH) {
-    mash_state_ = base::MakeUnique<MashSpecificState>();
+    mash_state_ = std::make_unique<MashSpecificState>();
     mash_state_->pointer_watcher_event_router = pointer_watcher_event_router;
     mash_state_->immersive_handler_factory =
-        base::MakeUnique<ImmersiveHandlerFactoryMus>();
+        std::make_unique<ImmersiveHandlerFactoryMus>();
   } else {
     DCHECK_EQ(Config::MUS, GetAshConfig());
-    mus_state_ = base::MakeUnique<MusSpecificState>();
+    mus_state_ = std::make_unique<MusSpecificState>();
   }
 }
 
@@ -120,7 +121,7 @@ Config ShellPortMash::GetAshConfig() const {
 
 std::unique_ptr<display::TouchTransformSetter>
 ShellPortMash::CreateTouchTransformDelegate() {
-  return base::MakeUnique<TouchTransformSetterMus>(
+  return std::make_unique<TouchTransformSetterMus>(
       window_manager_->connector());
 }
 
@@ -194,14 +195,14 @@ std::unique_ptr<WindowResizer> ShellPortMash::CreateDragWindowResizer(
     return base::WrapUnique(ash::DragWindowResizer::Create(
         next_window_resizer.release(), window_state));
   }
-  return base::MakeUnique<ash::mus::DragWindowResizer>(
+  return std::make_unique<ash::mus::DragWindowResizer>(
       std::move(next_window_resizer), window_state);
 }
 
 std::unique_ptr<WindowCycleEventFilter>
 ShellPortMash::CreateWindowCycleEventFilter() {
   if (GetAshConfig() == Config::MUS)
-    return base::MakeUnique<WindowCycleEventFilterClassic>();
+    return std::make_unique<WindowCycleEventFilterClassic>();
 
   // TODO: implement me, http://crbug.com/629191.
   return nullptr;
@@ -210,7 +211,7 @@ ShellPortMash::CreateWindowCycleEventFilter() {
 std::unique_ptr<wm::TabletModeEventHandler>
 ShellPortMash::CreateTabletModeEventHandler() {
   if (GetAshConfig() == Config::MUS)
-    return base::MakeUnique<wm::TabletModeEventHandlerClassic>();
+    return std::make_unique<wm::TabletModeEventHandlerClassic>();
 
   // TODO: need support for window manager to get events before client:
   // http://crbug.com/624157.
@@ -221,14 +222,14 @@ ShellPortMash::CreateTabletModeEventHandler() {
 std::unique_ptr<WorkspaceEventHandler>
 ShellPortMash::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
   if (GetAshConfig() == Config::MUS)
-    return base::MakeUnique<WorkspaceEventHandlerClassic>(workspace_window);
+    return std::make_unique<WorkspaceEventHandlerClassic>(workspace_window);
 
-  return base::MakeUnique<WorkspaceEventHandlerMus>(workspace_window);
+  return std::make_unique<WorkspaceEventHandlerMus>(workspace_window);
 }
 
 std::unique_ptr<ImmersiveFullscreenController>
 ShellPortMash::CreateImmersiveFullscreenController() {
-  return base::MakeUnique<ImmersiveFullscreenController>();
+  return std::make_unique<ImmersiveFullscreenController>();
 }
 
 std::unique_ptr<KeyboardUI> ShellPortMash::CreateKeyboardUI() {
@@ -302,14 +303,14 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
   // Config::MASH.
   if (GetAshConfig() == Config::MUS) {
     mus_state_->pointer_watcher_adapter =
-        base::MakeUnique<PointerWatcherAdapterClassic>();
+        std::make_unique<PointerWatcherAdapterClassic>();
   }
 }
 
 std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
     const AshWindowTreeHostInitParams& init_params) {
   std::unique_ptr<aura::DisplayInitParams> display_params =
-      base::MakeUnique<aura::DisplayInitParams>();
+      std::make_unique<aura::DisplayInitParams>();
   display_params->viewport_metrics.bounds_in_pixels =
       init_params.initial_bounds;
   display_params->viewport_metrics.device_scale_factor =
@@ -321,7 +322,7 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
           init_params.display_id);
   if (mirrored_display.is_valid()) {
     display_params->display =
-        base::MakeUnique<display::Display>(mirrored_display);
+        std::make_unique<display::Display>(mirrored_display);
   }
   display_params->is_primary_display = true;
   aura::WindowTreeHostMusInitParams aura_init_params =
@@ -329,7 +330,7 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
   aura_init_params.display_id = init_params.display_id;
   aura_init_params.display_init_params = std::move(display_params);
   aura_init_params.use_classic_ime = !Shell::ShouldUseIMEService();
-  return base::MakeUnique<AshWindowTreeHostMus>(std::move(aura_init_params));
+  return std::make_unique<AshWindowTreeHostMus>(std::move(aura_init_params));
 }
 
 void ShellPortMash::OnCreatedRootWindowContainers(
@@ -361,7 +362,7 @@ void ShellPortMash::UpdateSystemModalAndBlockingContainers() {
 }
 
 void ShellPortMash::OnHostsInitialized() {
-  display_synchronizer_ = base::MakeUnique<DisplaySynchronizer>(
+  display_synchronizer_ = std::make_unique<DisplaySynchronizer>(
       window_manager_->window_manager_client());
 }
 
@@ -372,7 +373,7 @@ ShellPortMash::CreateNativeDisplayDelegate() {
     window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
                                                 &native_display_delegate);
   }
-  return base::MakeUnique<display::ForwardingDisplayDelegate>(
+  return std::make_unique<display::ForwardingDisplayDelegate>(
       std::move(native_display_delegate));
 }
 
@@ -381,8 +382,8 @@ ShellPortMash::CreateAcceleratorController() {
   if (GetAshConfig() == Config::MUS) {
     DCHECK(!mus_state_->accelerator_controller_delegate);
     mus_state_->accelerator_controller_delegate =
-        base::MakeUnique<AcceleratorControllerDelegateClassic>();
-    return base::MakeUnique<AcceleratorController>(
+        std::make_unique<AcceleratorControllerDelegateClassic>();
+    return std::make_unique<AcceleratorController>(
         mus_state_->accelerator_controller_delegate.get(), nullptr);
   }
 
@@ -396,11 +397,11 @@ ShellPortMash::CreateAcceleratorController() {
   DCHECK(add_result);
 
   mash_state_->accelerator_controller_delegate =
-      base::MakeUnique<AcceleratorControllerDelegateMus>(window_manager_);
+      std::make_unique<AcceleratorControllerDelegateMus>(window_manager_);
   mash_state_->accelerator_controller_registrar =
       base ::MakeUnique<AcceleratorControllerRegistrar>(
           window_manager_, accelerator_namespace_id);
-  return base::MakeUnique<AcceleratorController>(
+  return std::make_unique<AcceleratorController>(
       mash_state_->accelerator_controller_delegate.get(),
       mash_state_->accelerator_controller_registrar.get());
 }

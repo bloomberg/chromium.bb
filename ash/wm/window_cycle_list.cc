@@ -6,6 +6,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -14,7 +15,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -247,7 +247,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     // The background needs to be painted to fill the layer, not the View,
     // because the layer animates bounds changes but the View's bounds change
     // immediately.
-    highlight_view_->SetBackground(base::MakeUnique<LayerFillBackgroundPainter>(
+    highlight_view_->SetBackground(std::make_unique<LayerFillBackgroundPainter>(
         views::Painter::CreateRoundRectWith1PxBorderPainter(
             SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
             kBackgroundCornerRadius)));

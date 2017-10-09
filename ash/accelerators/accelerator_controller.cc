@@ -373,7 +373,7 @@ void HandleRotateActiveWindow() {
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   active_window->layer()->GetAnimator()->StartAnimation(
       new ui::LayerAnimationSequence(
-          base::MakeUnique<WindowRotation>(360, active_window->layer())));
+          std::make_unique<WindowRotation>(360, active_window->layer())));
 }
 
 void HandleShowKeyboardOverlay() {

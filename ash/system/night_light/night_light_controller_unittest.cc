@@ -21,6 +21,7 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 

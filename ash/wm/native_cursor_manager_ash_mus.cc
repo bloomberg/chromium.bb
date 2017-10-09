@@ -4,6 +4,8 @@
 
 #include "ash/wm/native_cursor_manager_ash_mus.h"
 
+#include <memory>
+
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
@@ -89,8 +91,8 @@ NativeCursorManagerAshMus::NativeCursorManagerAshMus() {
   // CursorFactoryOzone instance. Partially initialize the ozone cursor
   // internals here, like we partially initialize other ozone subsystems in
   // ChromeBrowserMainExtraPartsViews.
-  cursor_factory_ozone_ = base::MakeUnique<ui::CursorDataFactoryOzone>();
-  image_cursors_ = base::MakeUnique<ui::ImageCursors>();
+  cursor_factory_ozone_ = std::make_unique<ui::CursorDataFactoryOzone>();
+  image_cursors_ = std::make_unique<ui::ImageCursors>();
 }
 
 NativeCursorManagerAshMus::~NativeCursorManagerAshMus() = default;

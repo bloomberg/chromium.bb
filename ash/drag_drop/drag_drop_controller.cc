@@ -4,13 +4,13 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
@@ -207,7 +207,7 @@ int DragDropController::StartDragAndDrop(
       gfx::Rect(start_location - provider->GetDragImageOffset(),
                 provider->GetDragImage().size());
   drag_image_ =
-      base::MakeUnique<DragImageView>(source_window->GetRootWindow(), source);
+      std::make_unique<DragImageView>(source_window->GetRootWindow(), source);
   drag_image_->SetImage(provider->GetDragImage());
   drag_image_offset_ = provider->GetDragImageOffset();
   gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());

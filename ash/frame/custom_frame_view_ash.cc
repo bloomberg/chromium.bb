@@ -5,6 +5,7 @@
 #include "ash/frame/custom_frame_view_ash.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -21,7 +22,6 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -306,7 +306,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(
       overlay_view_(new OverlayView(header_view_)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
                                              : header_view_),
-      avatar_observer_(base::MakeUnique<AvatarObserver>(frame_, header_view_)) {
+      avatar_observer_(std::make_unique<AvatarObserver>(frame_, header_view_)) {
   aura::Window* frame_window = frame->GetNativeWindow();
   wm::InstallResizeHandleWindowTargeterForWindow(frame_window, nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can

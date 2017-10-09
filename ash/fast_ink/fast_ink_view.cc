@@ -8,6 +8,8 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -300,7 +302,7 @@ void FastInkView::UpdateSurface() {
 
   // Create new resource if needed.
   if (!resource)
-    resource = base::MakeUnique<Resource>();
+    resource = std::make_unique<Resource>();
 
   // Acquire context provider for resource if needed.
   // Note: We make no attempts to recover if the context provider is later

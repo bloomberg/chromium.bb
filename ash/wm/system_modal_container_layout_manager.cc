@@ -5,6 +5,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 
 #include <cmath>
+#include <memory>
 
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -13,7 +14,6 @@
 #include "ash/shell_port.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -158,7 +158,7 @@ bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
 
 void SystemModalContainerLayoutManager::CreateModalBackground() {
   if (!window_dimmer_) {
-    window_dimmer_ = base::MakeUnique<WindowDimmer>(container_);
+    window_dimmer_ = std::make_unique<WindowDimmer>(container_);
     window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     // There isn't always a keyboard controller.

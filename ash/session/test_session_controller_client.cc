@@ -65,7 +65,7 @@ void TestSessionControllerClient::Reset() {
   controller_->SetSessionInfo(session_info_->Clone());
 
   if (!controller_->GetSigninScreenPrefService()) {
-    auto pref_service = base::MakeUnique<TestingPrefServiceSimple>();
+    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
     controller_->SetSigninScreenPrefServiceForTest(std::move(pref_service));
   }
@@ -134,7 +134,7 @@ void TestSessionControllerClient::AddUserSession(
 
   if (provide_pref_service &&
       !controller_->GetUserPrefServiceForUser(account_id)) {
-    auto pref_service = base::MakeUnique<TestingPrefServiceSimple>();
+    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
     controller_->ProvideUserPrefServiceForTest(account_id,
                                                std::move(pref_service));

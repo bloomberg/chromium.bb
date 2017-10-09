@@ -4,12 +4,13 @@
 
 #include "ash/login/ui/login_pin_view.h"
 
+#include <memory>
+
 #include "ash/ash_constants.h"
 #include "ash/login/ui/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -107,7 +108,7 @@ class BasePinButton : public views::Button, public views::ButtonListener {
 
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     std::unique_ptr<views::InkDropImpl> ink_drop =
-        base::MakeUnique<views::InkDropImpl>(this, size());
+        std::make_unique<views::InkDropImpl>(this, size());
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     ink_drop->SetAutoHighlightMode(
@@ -116,7 +117,7 @@ class BasePinButton : public views::Button, public views::ButtonListener {
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return base::MakeUnique<views::CircleInkDropMask>(
+    return std::make_unique<views::CircleInkDropMask>(
         size(), GetLocalBounds().CenterPoint(),
         LoginPinView::kButtonSizeDp / 2);
   }
@@ -127,7 +128,7 @@ class BasePinButton : public views::Button, public views::ButtonListener {
                      center.y() - LoginPinView::kButtonSizeDp / 2,
                      LoginPinView::kButtonSizeDp, LoginPinView::kButtonSizeDp);
 
-    return base::MakeUnique<views::FloodFillInkDropRipple>(
+    return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor,
         1.f /*visible_opacity*/);
@@ -135,9 +136,9 @@ class BasePinButton : public views::Button, public views::ButtonListener {
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return base::MakeUnique<views::InkDropHighlight>(
+    return std::make_unique<views::InkDropHighlight>(
         gfx::PointF(GetLocalBounds().CenterPoint()),
-        base::MakeUnique<views::CircleLayerDelegate>(
+        std::make_unique<views::CircleLayerDelegate>(
             kInkDropHighlightColor, LoginPinView::kButtonSizeDp / 2));
   }
 
@@ -197,8 +198,8 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
  public:
   BackspacePinButton(const base::Closure& on_press)
       : BasePinButton(on_press),
-        delay_timer_(base::MakeUnique<base::OneShotTimer>()),
-        repeat_timer_(base::MakeUnique<base::RepeatingTimer>()) {
+        delay_timer_(std::make_unique<base::OneShotTimer>()),
+        repeat_timer_(std::make_unique<base::RepeatingTimer>()) {
     image_ = new views::ImageView();
     AddChildView(image_);
 

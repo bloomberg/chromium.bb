@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_util.h"
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_constants.h"
@@ -174,7 +175,7 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
   // frame. Mus needs to support an api for the WindowManager that enables
   // events to be dispatched to windows outside the windows bounds that this
   // function calls into. http://crbug.com/679056.
-  window->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
+  window->SetEventTargeter(std::make_unique<::wm::EasyResizeWindowTargeter>(
       window, mouse_extend, touch_extend));
 }
 
@@ -211,7 +212,7 @@ void RemoveLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
 void InstallResizeHandleWindowTargeterForWindow(
     aura::Window* window,
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
-  window->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
+  window->SetEventTargeter(std::make_unique<ResizeHandleWindowTargeter>(
       window, immersive_fullscreen_controller));
 }
 

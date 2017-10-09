@@ -4,6 +4,8 @@
 
 #include "ash/shell/shell_delegate_impl.h"
 
+#include <memory>
+
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/default_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
@@ -16,7 +18,6 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/window_state.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/aura/window.h"
@@ -80,7 +81,7 @@ void ShellDelegateImpl::PreInit() {}
 void ShellDelegateImpl::PreShutdown() {}
 
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
-  return base::MakeUnique<TestKeyboardUI>();
+  return std::make_unique<TestKeyboardUI>();
 }
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
@@ -91,7 +92,7 @@ NetworkingConfigDelegate* ShellDelegateImpl::GetNetworkingConfigDelegate() {
 
 std::unique_ptr<WallpaperDelegate>
 ShellDelegateImpl::CreateWallpaperDelegate() {
-  return base::MakeUnique<DefaultWallpaperDelegate>();
+  return std::make_unique<DefaultWallpaperDelegate>();
 }
 
 AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
@@ -99,7 +100,7 @@ AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
 }
 
 std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
-  return base::MakeUnique<PaletteDelegateImpl>();
+  return std::make_unique<PaletteDelegateImpl>();
 }
 
 GPUSupport* ShellDelegateImpl::CreateGPUSupport() {

@@ -5,6 +5,7 @@
 #include "ash/system/night_light/night_light_controller.h"
 
 #include <cmath>
+#include <memory>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -121,7 +122,7 @@ void ApplyColorTemperatureToLayers(float layer_temperature,
 }  // namespace
 
 NightLightController::NightLightController()
-    : delegate_(base::MakeUnique<NightLightControllerDelegateImpl>()),
+    : delegate_(std::make_unique<NightLightControllerDelegateImpl>()),
       binding_(this) {
   Shell::Get()->session_controller()->AddObserver(this);
 }
@@ -300,7 +301,7 @@ void NightLightController::RefreshLayersTemperature() {
 void NightLightController::StartWatchingPrefsChanges() {
   DCHECK(active_user_pref_service_);
 
-  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(active_user_pref_service_);
   pref_change_registrar_->Add(
       prefs::kNightLightEnabled,
