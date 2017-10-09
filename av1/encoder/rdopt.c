@@ -12200,7 +12200,10 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->mode = ZEROMV;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   mbmi->uv_mode = UV_DC_PRED;
-  mbmi->ref_frame[0] = LAST_FRAME;
+  if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME))
+    mbmi->ref_frame[0] = get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
+  else
+    mbmi->ref_frame[0] = LAST_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
 #if CONFIG_GLOBAL_MOTION
   mbmi->mv[0].as_int =

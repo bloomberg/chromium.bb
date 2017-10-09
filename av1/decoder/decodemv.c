@@ -1518,6 +1518,16 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     ref_frame[0] = (MV_REFERENCE_FRAME)get_segdata(&cm->seg, segment_id,
                                                    SEG_LVL_REF_FRAME);
     ref_frame[1] = NONE_FRAME;
+  }
+#if CONFIG_SEGMENT_ZEROMV
+  else if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP) ||
+           segfeature_active(&cm->seg, segment_id, SEG_LVL_ZEROMV))
+#else
+  else if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP))
+#endif
+  {
+    ref_frame[0] = LAST_FRAME;
+    ref_frame[1] = NONE_FRAME;
   } else {
     const REFERENCE_MODE mode = read_block_reference_mode(cm, xd, r);
     // FIXME(rbultje) I'm pretty sure this breaks segmentation ref frame coding
@@ -2435,10 +2445,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_SEGMENT_ZEROMV
   if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP) ||
-      segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_ZEROMV)) {
+      segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_ZEROMV))
 #else
-  if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+  if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP))
 #endif
+  {
     mbmi->mode = ZEROMV;
     if (bsize < BLOCK_8X8 && !unify_bsize) {
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
