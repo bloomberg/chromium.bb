@@ -944,6 +944,10 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
   // feature and then cache the timestamps supported by the underlying
   // implementation. EGL_DISPLAY_PRESENT_TIME_ANDROID support, in particular,
   // is spotty.
+  // Clear the supported timestamps here to protect against Initialize() being
+  // called twice.
+  supported_egl_timestamps_.clear();
+  supported_event_names_.clear();
   if (g_driver_egl.ext.b_EGL_ANDROID_get_frame_timestamps) {
     eglSurfaceAttrib(GetDisplay(), surface_, EGL_TIMESTAMPS_ANDROID, EGL_TRUE);
 
@@ -962,6 +966,8 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
         {EGL_READS_DONE_TIME_ANDROID, "ReadsDone"},
     };
 
+    supported_egl_timestamps_.reserve(kMaxTimestampsSupportable);
+    supported_event_names_.reserve(kMaxTimestampsSupportable);
     for (const auto& ts : all_timestamps) {
       if (!eglGetFrameTimestampSupportedANDROID(GetDisplay(), surface_,
                                                 ts.egl_name))
@@ -1049,15 +1055,19 @@ void NativeViewGLSurfaceEGL::UpdateSwapEvents(EGLuint64KHR newFrameId,
 }
 
 void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
-  // Get the timestamps.
+  // Protect against unexpected stack overflow.
   DCHECK_LE(supported_egl_timestamps_.size(), kMaxTimestampsSupportable);
+  size_t supported_count =
+      std::min(supported_egl_timestamps_.size(), kMaxTimestampsSupportable);
+
+  // Get the timestamps.
   EGLnsecsANDROID egl_timestamps[kMaxTimestampsSupportable];
-  std::fill(egl_timestamps, egl_timestamps + supported_egl_timestamps_.size(),
+  std::fill(egl_timestamps, egl_timestamps + supported_count,
             EGL_TIMESTAMP_INVALID_ANDROID);
-  if (!eglGetFrameTimestampsANDROID(
-          GetDisplay(), surface_, oldFrameId,
-          static_cast<EGLint>(supported_egl_timestamps_.size()),
-          supported_egl_timestamps_.data(), egl_timestamps)) {
+  if (!eglGetFrameTimestampsANDROID(GetDisplay(), surface_, oldFrameId,
+                                    static_cast<EGLint>(supported_count),
+                                    supported_egl_timestamps_.data(),
+                                    egl_timestamps)) {
     TRACE_EVENT_INSTANT0("gpu", "eglGetFrameTimestamps:Failed",
                          TRACE_EVENT_SCOPE_THREAD);
     return;
@@ -1071,7 +1081,7 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
 
   TimeNamePair tracePairs[kMaxTimestampsSupportable];
   size_t valid_pairs = 0;
-  for (size_t i = 0; i < supported_egl_timestamps_.size(); i++) {
+  for (size_t i = 0; i < supported_count; i++) {
     if (egl_timestamps[i] == EGL_TIMESTAMP_INVALID_ANDROID ||
         egl_timestamps[i] == EGL_TIMESTAMP_PENDING_ANDROID) {
       continue;
