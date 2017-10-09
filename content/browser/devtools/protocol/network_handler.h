@@ -87,7 +87,8 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   DispatchResponse SetRequestInterceptionEnabled(
       bool enabled,
-      Maybe<protocol::Array<std::string>> patterns) override;
+      Maybe<protocol::Array<std::string>> patterns,
+      Maybe<protocol::Array<std::string>> resource_types) override;
   void ContinueInterceptedRequest(
       const std::string& request_id,
       Maybe<std::string> error_reason,

@@ -488,6 +488,57 @@ net::Error NetErrorFromString(const std::string& error, bool* ok) {
   return net::ERR_FAILED;
 }
 
+bool AddInterceptedResourceType(
+    const std::string& resource_type,
+    base::flat_set<ResourceType>* intercepted_resource_types) {
+  if (resource_type == protocol::Page::ResourceTypeEnum::Document) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_MAIN_FRAME);
+    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_FRAME);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Stylesheet) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_STYLESHEET);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Image) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_IMAGE);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Media) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_MEDIA);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Font) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_FONT_RESOURCE);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Script) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_SCRIPT);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::XHR) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_XHR);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Fetch) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Other) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
+    intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
+    intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
+    intercepted_resource_types->insert(RESOURCE_TYPE_SHARED_WORKER);
+    intercepted_resource_types->insert(RESOURCE_TYPE_FAVICON);
+    intercepted_resource_types->insert(RESOURCE_TYPE_PING);
+    intercepted_resource_types->insert(RESOURCE_TYPE_SERVICE_WORKER);
+    intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
+    intercepted_resource_types->insert(RESOURCE_TYPE_PLUGIN_RESOURCE);
+    return true;
+  }
+  return false;
+}
+
 double timeDelta(base::TimeTicks time,
                  base::TimeTicks start,
                  double invalid_value = -1) {
@@ -636,7 +687,8 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 Response NetworkHandler::Disable() {
   enabled_ = false;
   user_agent_ = std::string();
-  SetRequestInterceptionEnabled(false, Maybe<protocol::Array<String>>());
+  SetRequestInterceptionEnabled(false, Maybe<protocol::Array<String>>(),
+                                Maybe<protocol::Array<String>>());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DevToolsNetworkController::SetNetworkState, host_id_,
@@ -982,7 +1034,8 @@ std::string NetworkHandler::UserAgentOverride() const {
 
 DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(
     bool enabled,
-    Maybe<protocol::Array<std::string>> patterns) {
+    Maybe<protocol::Array<std::string>> patterns,
+    Maybe<protocol::Array<std::string>> resource_types) {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (!web_contents)
     return Response::InternalError();
@@ -1004,9 +1057,21 @@ DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(
   }
   interception_enabled_ = new_patterns.size();
 
+  base::flat_set<ResourceType> intercepted_resource_types;
+  if (resource_types.isJust()) {
+    for (size_t i = 0; i < resource_types.fromJust()->length(); i++) {
+      if (!AddInterceptedResourceType(resource_types.fromJust()->get(i),
+                                      &intercepted_resource_types))
+        return Response::Error(
+            base::StringPrintf("Cannot intercept resources of type '%s'",
+                               resource_types.fromJust()->get(i).c_str()));
+    }
+  }
+
   if (interception_enabled_) {
     devtools_url_request_interceptor->state()->StartInterceptingRequests(
-        web_contents, weak_factory_.GetWeakPtr(), new_patterns);
+        web_contents, weak_factory_.GetWeakPtr(), std::move(new_patterns),
+        std::move(intercepted_resource_types));
   } else {
     devtools_url_request_interceptor->state()->StopInterceptingRequests(
         web_contents);

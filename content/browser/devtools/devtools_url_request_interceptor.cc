@@ -175,8 +175,17 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
   if (sub_requests_.find(request) != sub_requests_.end())
     return nullptr;
 
+  // If we are only intercepting certain resource types then bail out if the
+  // request is for the wrong type.
+  if (!intercepted_page.intercepted_resource_types.empty() &&
+      intercepted_page.intercepted_resource_types.find(
+          resource_request_info->GetResourceType()) ==
+          intercepted_page.intercepted_resource_types.end()) {
+    return nullptr;
+  }
+
   bool matchFound = false;
-  for (const std::string& pattern : intercepted_page.patterns) {
+  for (const std::string& pattern : intercepted_page.intercepted_url_patterns) {
     if (base::MatchPattern(request->url().spec(), pattern)) {
       matchFound = true;
       break;
@@ -289,7 +298,8 @@ void DevToolsURLRequestInterceptor::State::
 void DevToolsURLRequestInterceptor::State::StartInterceptingRequests(
     WebContents* web_contents,
     base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::vector<std::string> patterns) {
+    std::vector<std::string> intercepted_url_patterns,
+    base::flat_set<ResourceType> intercepted_resource_types) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<RenderFrameHostInfo> host_info_list;
@@ -297,7 +307,8 @@ void DevToolsURLRequestInterceptor::State::StartInterceptingRequests(
     host_info_list.push_back(RenderFrameHostInfo(render_frame_host));
 
   std::unique_ptr<InterceptedPage> intercepted_page(
-      new InterceptedPage(network_handler, std::move(patterns)));
+      new InterceptedPage(network_handler, std::move(intercepted_url_patterns),
+                          std::move(intercepted_resource_types)));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
@@ -443,8 +454,11 @@ DevToolsURLRequestInterceptor::Modifications::~Modifications() {}
 
 DevToolsURLRequestInterceptor::State::InterceptedPage::InterceptedPage(
     base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::vector<std::string> patterns)
-    : network_handler(network_handler), patterns(std::move(patterns)) {}
+    std::vector<std::string> intercepted_url_patterns,
+    base::flat_set<ResourceType> intercepted_resource_types)
+    : network_handler(network_handler),
+      intercepted_url_patterns(std::move(intercepted_url_patterns)),
+      intercepted_resource_types(std::move(intercepted_resource_types)) {}
 
 DevToolsURLRequestInterceptor::State::InterceptedPage::~InterceptedPage() =
     default;
