@@ -194,19 +194,6 @@ FindEqualOrLargerBitmapAndSourceVector(
   return bitmap_vector.end();
 }
 
-void ValidateWebApplicationInfo(base::Closure callback,
-                                const WebApplicationInfo& original,
-                                const WebApplicationInfo& newly_made) {
-  EXPECT_EQ(original.title, newly_made.title);
-  EXPECT_EQ(original.description, newly_made.description);
-  EXPECT_EQ(original.app_url, newly_made.app_url);
-  EXPECT_EQ(original.scope, newly_made.scope);
-  // There should be 6 icons, as there are three sizes which need to be
-  // generated, and each will generate a 1x and 2x icon.
-  EXPECT_EQ(6u, newly_made.icons.size());
-  callback.Run();
-}
-
 void ValidateIconsGeneratedAndResizedCorrectly(
     std::vector<BookmarkAppHelper::BitmapAndSource> downloaded,
     std::map<int, BookmarkAppHelper::BitmapAndSource> size_map,
@@ -538,25 +525,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
                      extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
   }
-}
-
-TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL(kAppUrl);
-  web_app_info.title = base::UTF8ToUTF16(kAppTitle);
-  web_app_info.description = base::UTF8ToUTF16(kAppDescription);
-  web_app_info.scope = GURL(kAppScope);
-
-  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
-  content::RunAllTasksUntilIdle();
-
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  base::RunLoop run_loop;
-  extensions::GetWebApplicationInfoFromApp(
-      profile_.get(), registry()->enabled_extensions().begin()->get(),
-      base::Bind(&ValidateWebApplicationInfo, run_loop.QuitClosure(),
-                 web_app_info));
-  run_loop.Run();
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, LinkedAppIconsAreNotChanged) {
