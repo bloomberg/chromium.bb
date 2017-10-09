@@ -5478,7 +5478,7 @@ def CMDtry(parser, args):
       help=('Buildbucket bucket to send the try requests.'))
   group.add_option(
       '-m', '--master', default='',
-      help=('Specify a try master where to run the tries.'))
+      help=('DEPRECATED, use -B. The try master where to run the builds.'))
   group.add_option(
       '-r', '--revision',
       help='Revision to use for the try job; default: the revision will '
@@ -5508,6 +5508,9 @@ def CMDtry(parser, args):
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
 
+  if options.master and options.master.startswith('luci.'):
+    parser.error(
+        '-m option does not support LUCI. Please pass -B %s' % options.master)
   # Make sure that all properties are prop=value pairs.
   bad_params = [x for x in options.properties if '=' not in x]
   if bad_params:
