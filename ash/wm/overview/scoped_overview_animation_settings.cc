@@ -169,6 +169,10 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       GetMetricsReporter(animation_type));
 }
 
+void ScopedOverviewAnimationSettings::DeferPaint() {
+  animation_settings_->DeferPaint();
+}
+
 ScopedOverviewAnimationSettings::~ScopedOverviewAnimationSettings() {}
 
 void ScopedOverviewAnimationSettings::AddObserver(
