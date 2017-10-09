@@ -27,6 +27,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer
         .OnEvaluateJavaScriptResultHelper;
@@ -825,6 +827,70 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
 
         mActivityTestRule.pollUiThread(() -> AwContents.getNativeInstanceCount() == 0);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCallStopAndLoadJsInCallback() throws Throwable {
+        final String globalJsVar = "window.testCallStopAndLoadJsInCallback";
+        class StopInCallbackClient extends TestAwContentsClient {
+            @Override
+            public boolean shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest request) {
+                mAwContents.stopLoading();
+                mAwContents.loadUrl("javascript:" + globalJsVar + "= 1;");
+                return super.shouldOverrideUrlLoading(request);
+            }
+        }
+
+        setupWithProvidedContentsClient(new StopInCallbackClient());
+        mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
+
+        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                CommonResources.makeHtmlPageWithSimpleLinkTo("http://foo.com"), "text/html", false);
+
+        int shouldOverrideUrlLoadingCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(true);
+        clickOnLinkUsingJs();
+        mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
+
+        // clang-format off
+        CriteriaHelper.pollInstrumentationThread(
+            Criteria.equals("1", () -> JSUtils.executeJavaScriptAndWaitForResult(
+                 InstrumentationRegistry.getInstrumentation(), mAwContents,
+                 mContentsClient.getOnEvaluateJavaScriptResultHelper(), globalJsVar)));
+        // clang-format on
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCallLoadInCallback() throws Throwable {
+        final String httpPath = "/page_with_about_blank_navigation";
+        final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
+        addPageToTestServer(httpPath,
+                CommonResources.makeHtmlPageWithSimpleLinkTo(
+                        getTestPageCommonHeaders(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
+        class StopInCallbackClient extends TestAwContentsClient {
+            @Override
+            public boolean shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest request) {
+                mAwContents.loadUrl(httpPathOnServer);
+                return super.shouldOverrideUrlLoading(request);
+            }
+        }
+        setupWithProvidedContentsClient(new StopInCallbackClient());
+        mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
+        mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                CommonResources.makeHtmlPageWithSimpleLinkTo("http://foo.com"), "text/html", false);
+        int shouldOverrideUrlLoadingCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
+        int onPageFinishedCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(true);
+        clickOnLinkUsingJs();
+        mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(TITLE, () -> mActivityTestRule.getTitleOnUiThread(mAwContents)));
     }
 
     @Test
