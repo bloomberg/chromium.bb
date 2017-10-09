@@ -151,14 +151,14 @@ TEST_F(DisplayTest, CreateRemoteShellSurface) {
   std::unique_ptr<ShellSurface> shell_surface1 =
       display->CreateRemoteShellSurface(
           surface1.get(), ash::kShellWindowId_SystemModalContainer,
-          true /* scale_by_default_scale_factor */);
+          2.0 /* default_scale_factor */);
   EXPECT_TRUE(shell_surface1);
 
   // Create a remote shell surface for surface2.
   std::unique_ptr<ShellSurface> shell_surface2 =
-      display->CreateRemoteShellSurface(
-          surface2.get(), ash::kShellWindowId_DefaultContainer,
-          false /* scale_by_default_scale_factor */);
+      display->CreateRemoteShellSurface(surface2.get(),
+                                        ash::kShellWindowId_DefaultContainer,
+                                        1.0 /* default_scale_factor */);
   EXPECT_TRUE(shell_surface2);
 }
 

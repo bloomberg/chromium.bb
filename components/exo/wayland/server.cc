@@ -43,12 +43,14 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -115,6 +117,11 @@ DECLARE_UI_CLASS_PROPERTY_TYPE(wl_resource*);
 
 namespace exo {
 namespace wayland {
+namespace switches {
+
+constexpr char kForceRemoteShellScaleSwitch[] = "force-remote-shell-scale";
+}
+
 namespace {
 
 // We don't send configure immediately after tablet mode switch
@@ -150,6 +157,20 @@ void SetImplementation(wl_resource* resource,
                        std::unique_ptr<T> user_data) {
   wl_resource_set_implementation(resource, implementation, user_data.release(),
                                  DestroyUserData<T>);
+}
+
+// Returns the scale factor to be used by remote shell clients.
+double GetDefaultDeviceScaleFactor() {
+  // A flag used by VM to emulate a device scale for a partiular board.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceRemoteShellScaleSwitch)) {
+    std::string value = command_line->GetSwitchValueASCII(
+        switches::kForceRemoteShellScaleSwitch);
+    double scale = 1.0;
+    if (base::StringToDouble(value, &scale))
+      return std::max(1.0, scale);
+  }
+  return WMHelper::GetInstance()->GetDefaultDeviceScaleFactor();
 }
 
 // Convert a timestamp to a time value that can be used when interfacing
@@ -2164,8 +2185,7 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
                        : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
     if (wl_resource_get_version(remote_shell_resource_) >= 8) {
-      float scale_factor =
-          WMHelper::GetInstance()->GetDefaultDeviceScaleFactor();
+      double scale_factor = GetDefaultDeviceScaleFactor();
       // Send using 16.16 fixed point.
       const int kDecimalBits = 24;
       int32_t fixed_scale =
@@ -2191,9 +2211,9 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
   std::unique_ptr<ShellSurface> CreateShellSurface(
       Surface* surface,
       int container,
-      bool scale_by_default_device_scale_factor) {
-    return display_->CreateRemoteShellSurface(
-        surface, container, scale_by_default_device_scale_factor);
+      double default_device_scale_factor) {
+    return display_->CreateRemoteShellSurface(surface, container,
+                                              default_device_scale_factor);
   }
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -2438,11 +2458,13 @@ void remote_shell_get_remote_surface(wl_client* client,
                                      wl_resource* surface,
                                      uint32_t container) {
   WaylandRemoteShell* shell = GetUserDataAs<WaylandRemoteShell>(resource);
-  bool scale_by_default_scale_factor = wl_resource_get_version(resource) >= 8;
+  double default_scale_factor = wl_resource_get_version(resource) >= 8
+                                    ? GetDefaultDeviceScaleFactor()
+                                    : 1.0;
 
   std::unique_ptr<ShellSurface> shell_surface = shell->CreateShellSurface(
       GetUserDataAs<Surface>(surface), RemoteSurfaceContainer(container),
-      scale_by_default_scale_factor);
+      default_scale_factor);
   if (!shell_surface) {
     wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
                            "surface has already been assigned a role");
