@@ -5,7 +5,7 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(t => {
+promise_test(t => {
   return promise_rejects(t, new TypeError(), requestDeviceWithKeyDown());
 }, 'requestDevice() requires an argument.');
 </script>

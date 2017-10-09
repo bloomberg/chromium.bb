@@ -2,8 +2,10 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
-bluetooth_test(() => {
+promise_test(() => {
   let device_name = 'LE Device';
   return setUpPreconnectedDevice({name: device_name})
     .then(() => requestDeviceWithKeyDown({acceptAllDevices: true}))

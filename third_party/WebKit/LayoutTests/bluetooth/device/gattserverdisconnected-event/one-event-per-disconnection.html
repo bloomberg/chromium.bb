@@ -2,6 +2,8 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 let test_desc = 'If a site disconnects from a device while the platform is ' +
@@ -9,7 +11,7 @@ let test_desc = 'If a site disconnects from a device while the platform is ' +
     'fire.';
 let device, fake_peripheral;
 let num_events = 0;
-bluetooth_test(() => getHealthThermometerDevice()
+promise_test(() => getHealthThermometerDevice()
   .then(_ => ({device, fake_peripheral} = _))
   // 1. Listen for disconnections.
   .then(() =>

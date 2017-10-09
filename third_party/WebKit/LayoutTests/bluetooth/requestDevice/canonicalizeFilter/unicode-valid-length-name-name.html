@@ -2,8 +2,10 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
-bluetooth_test(() => {
+promise_test(() => {
   // \u2764's UTF-8 representation is 3 bytes long.
   // 9 chars * 3 bytes/char = 27 bytes
   let valid_unicode_name = '\u2764'.repeat(9);

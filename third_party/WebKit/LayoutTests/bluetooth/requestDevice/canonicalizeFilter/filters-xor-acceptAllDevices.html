@@ -11,7 +11,7 @@ let test_specs = [
   {filters: [], acceptAllDevices: true, optionalServices: ['heart_rate']}
 ];
 
-bluetooth_test(t => {
+promise_test(t => {
   let test_promises = Promise.resolve();
   test_specs.forEach(args => {
     test_promises = test_promises
