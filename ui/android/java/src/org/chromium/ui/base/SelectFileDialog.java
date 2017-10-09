@@ -450,8 +450,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
             // http://crbug.com/423338.
             String path = ContentResolver.SCHEME_FILE.equals(mCameraOutputUri.getScheme())
                     ? mCameraOutputUri.getPath() : mCameraOutputUri.toString();
-            nativeOnFileSelected(mNativeSelectFileDialog, path,
-                    mCameraOutputUri.getLastPathSegment());
+            onFileSelected(mNativeSelectFileDialog, path, mCameraOutputUri.getLastPathSegment());
             // Broadcast to the media scanner that there's a new photo on the device so it will
             // show up right away in the gallery (rather than waiting until the next time the media
             // scanner runs).
@@ -484,8 +483,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
         }
 
         if (ContentResolver.SCHEME_FILE.equals(results.getData().getScheme())) {
-            nativeOnFileSelected(
-                    mNativeSelectFileDialog, results.getData().getSchemeSpecificPart(), "");
+            onFileSelected(mNativeSelectFileDialog, results.getData().getSchemeSpecificPart(), "");
             return;
         }
 
@@ -512,7 +510,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
     }
 
     private void onFileNotSelected() {
-        nativeOnFileNotSelected(mNativeSelectFileDialog);
+        onFileNotSelected(mNativeSelectFileDialog);
     }
 
     // Determines the scope of the requested select file dialog for use in a UMA histogram. Right
@@ -657,9 +655,9 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                 return;
             }
             if (mIsMultiple) {
-                nativeOnMultipleFilesSelected(mNativeSelectFileDialog, mFilePaths, result);
+                onMultipleFilesSelected(mNativeSelectFileDialog, mFilePaths, result);
             } else {
-                nativeOnFileSelected(mNativeSelectFileDialog, mFilePaths[0], result[0]);
+                onFileSelected(mNativeSelectFileDialog, mFilePaths[0], result[0]);
             }
         }
     }
@@ -688,6 +686,31 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
                 }
             }
         });
+    }
+
+    private boolean eligibleForPhotoPicker() {
+        return convertToImageMimeTypes(mFileTypes) != null;
+    }
+
+    private void onFileSelected(
+            long nativeSelectFileDialogImpl, String filePath, String displayName) {
+        if (eligibleForPhotoPicker()) recordImageCountHistogram(1);
+        nativeOnFileSelected(nativeSelectFileDialogImpl, filePath, displayName);
+    }
+
+    private void onMultipleFilesSelected(
+            long nativeSelectFileDialogImpl, String[] filePathArray, String[] displayNameArray) {
+        if (eligibleForPhotoPicker()) recordImageCountHistogram(filePathArray.length);
+        nativeOnMultipleFilesSelected(nativeSelectFileDialogImpl, filePathArray, displayNameArray);
+    }
+
+    private void onFileNotSelected(long nativeSelectFileDialogImpl) {
+        if (eligibleForPhotoPicker()) recordImageCountHistogram(0);
+        nativeOnFileNotSelected(nativeSelectFileDialogImpl);
+    }
+
+    private void recordImageCountHistogram(int count) {
+        RecordHistogram.recordCount100Histogram("Android.SelectFileDialogImgCount", count);
     }
 
     @VisibleForTesting
