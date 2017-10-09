@@ -61,9 +61,14 @@ If you were previously listening to SigninManagerBase::GoogleSigninSucceeded()
 or OAuth2TokenService::OnRefreshTokenIsAvailable() to determine when the primary
 account is available, you should call
 IdentityManager::GetPrimaryAccountWhenAvailable(). This method will fire when
-the authenticated account is signed in and has a refresh token available. Here
-is an [example CL](https://chromium-review.googlesource.com/c/539637/)
-illustrating this pattern.
+the authenticated account is signed in, has a refresh token available, and the
+refresh token is not in an error state. This method can be used in the context
+where the user is not yet signed in, as well as in the context where the user is
+signed in but in an auth error state, and the client wants to kick off a
+re-authentication flow and get notified when the re-authentication is complete
+and the user is no long in an auth error state. Here is an [example
+CL](https://chromium-review.googlesource.com/c/539637/) illustrating this
+pattern.
 
 ## Determining if an Account Has a Refresh Token Available
 

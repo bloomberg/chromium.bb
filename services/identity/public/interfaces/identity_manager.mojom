@@ -22,9 +22,10 @@ interface IdentityManager {
 
   // Returns the AccountInfo for the Google account that serves as the user's
   // primary account once this account is available (i.e., the user is signed
-  // in and a refresh token is available). |account_state| gives the current
-  // state of the account. Overlapping requests are permitted; all pending
-  // requests will be called back when the primary account is available.
+  // in, a refresh token is available, and the refresh token is in a non-error
+  // state). |account_state| gives the current state of the account.
+  // Overlapping requests are permitted; all pending requests will be called
+  // back when the primary account is available.
   GetPrimaryAccountWhenAvailable() => (AccountInfo account_info,
                                        AccountState account_state);
 
