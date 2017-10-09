@@ -640,9 +640,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY_USED,
       minimal_heap_size));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), ColumnSpecifier::MEMORY_FOOTPRINT,
-      minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
@@ -894,9 +891,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, HistoryNavigationInNewTab) {
       MatchTab("title1.html"), ColumnSpecifier::PROCESS_ID,
       base::kNullProcessId));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), ColumnSpecifier::MEMORY_FOOTPRINT, 1000));
+      MatchTab("title1.html"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("About Version"), ColumnSpecifier::MEMORY_FOOTPRINT, 1000));
+      MatchTab("About Version"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
 }
 
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
@@ -969,9 +966,9 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
 
   // Subframe processes should report some amount of physical memory usage.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchSubframe("http://d.com/"), ColumnSpecifier::MEMORY_FOOTPRINT, 1000));
+      MatchSubframe("http://d.com/"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchSubframe("http://e.com/"), ColumnSpecifier::MEMORY_FOOTPRINT, 1000));
+      MatchSubframe("http://e.com/"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
 }
 
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {

@@ -24,7 +24,6 @@
 #include "chrome/browser/task_manager/sampling/task_manager_io_thread_helper.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "gpu/ipc/common/memory_stats.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace task_manager {
 
@@ -45,7 +44,6 @@ class TaskManagerImpl : public TaskManagerInterface,
   double GetPlatformIndependentCPUUsage(TaskId task_id) const override;
   base::Time GetStartTime(TaskId task_id) const override;
   base::TimeDelta GetCpuTime(TaskId task_id) const override;
-  int64_t GetMemoryFootprintUsage(TaskId task_id) const override;
   int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;
   int64_t GetPrivateMemoryUsage(TaskId task_id) const override;
   int64_t GetSharedMemoryUsage(TaskId task_id) const override;
@@ -110,9 +108,6 @@ class TaskManagerImpl : public TaskManagerInterface,
 
   void OnVideoMemoryUsageStatsUpdate(
       const gpu::VideoMemoryUsageStats& gpu_memory_stats);
-  void OnReceivedMemoryDump(
-      bool success,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr);
 
   // task_manager::TaskManagerInterface:
   void Refresh() override;
@@ -174,10 +169,6 @@ class TaskManagerImpl : public TaskManagerInterface,
   // This will be set to true while there are observers and the task manager is
   // running.
   bool is_running_;
-
-  // This is set to true while waiting for a global memory dump from
-  // memory_instrumentation.
-  bool waiting_for_memory_dump_;
 
   base::WeakPtrFactory<TaskManagerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(TaskManagerImpl);

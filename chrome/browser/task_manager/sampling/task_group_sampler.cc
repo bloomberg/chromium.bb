@@ -71,8 +71,8 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
         on_cpu_refresh_callback_);
   }
 
-  if (TaskManagerObserver::IsResourceRefreshEnabled(
-          REFRESH_TYPE_MEMORY_NON_MEMORY_INSTRUMENTATION, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,
