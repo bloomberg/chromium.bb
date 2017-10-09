@@ -38,7 +38,7 @@ static_library("qcms") {
       sources += [ "src/transform-sse2.c" ]
     }
 
-    if (use_libfuzzer) {
+    if (use_fuzzing_engine) {
       defines += [ "USE_LIBFUZZER" ]
     }
   }

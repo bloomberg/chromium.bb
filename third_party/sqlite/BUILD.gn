@@ -145,7 +145,7 @@ if (!use_system_sqlite) {
       # To avoid hitting those irrelevant OOMs, we limit max number of memory
       # pages, so fuzzer will not crash when reaching the limit.
       # Apply this for fuzzing builds only, not for all builds with sanitizers.
-      if (use_libfuzzer || use_afl) {
+      if (use_fuzzing_engine) {
         defines += [ "SQLITE_MAX_PAGE_COUNT=16384" ]
       }
     }
