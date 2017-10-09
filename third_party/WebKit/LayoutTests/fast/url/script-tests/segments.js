@@ -98,7 +98,7 @@ cases = [
   ["/a%2fc",                                  ["http:","example.org","","/a%2fc","",""]],
   ["/a/%2f/c",                                ["http:","example.org","","/a/%2f/c","",""]],
 
-  ["#\u03B2",                                 ["http:","example.org","","/foo/bar","","#\u03B2"]],
+  ["#\u03B2",                                 ["http:","example.org","","/foo/bar","","#%CE%B2"]],
 ];
 
 var originalBaseURL = canonicalize(".");

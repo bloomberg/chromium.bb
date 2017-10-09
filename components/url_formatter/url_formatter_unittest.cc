@@ -762,7 +762,7 @@ TEST(UrlFormatterTest, FormatUrl) {
 
       {"With a port number and a reference",
        "http://www.google.com:8080/#\xE3\x82\xB0", default_format_type,
-       net::UnescapeRule::NORMAL, L"http://www.google.com:8080/#\x30B0", 7},
+       net::UnescapeRule::NORMAL, L"http://www.google.com:8080/#%E3%82%B0", 7},
 
       // -------- IDN tests --------
       {"Japanese IDN with ja", "http://xn--l8jvb1ey91xtjb.jp",
@@ -1027,9 +1027,10 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
                      "%E3%82%B0/?q=%E3%82%B0#\xE3\x82\xB0"),
                 kFormatUrlOmitNothing, net::UnescapeRule::NONE,
                 &parsed, nullptr, nullptr);
-  EXPECT_EQ(WideToUTF16(
-      L"http://%E3%82%B0:%E3%83%BC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
-      L"/%E3%82%B0/?q=%E3%82%B0#\x30B0"), formatted);
+  EXPECT_EQ(
+      WideToUTF16(L"http://%E3%82%B0:%E3%83%BC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
+                  L"/%E3%82%B0/?q=%E3%82%B0#%E3%82%B0"),
+      formatted);
   EXPECT_EQ(WideToUTF16(L"%E3%82%B0"),
       formatted.substr(parsed.username.begin, parsed.username.len));
   EXPECT_EQ(WideToUTF16(L"%E3%83%BC"),
@@ -1042,8 +1043,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
       formatted.substr(parsed.path.begin, parsed.path.len));
   EXPECT_EQ(WideToUTF16(L"q=%E3%82%B0"),
       formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0"),
-      formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(WideToUTF16(L"%E3%82%B0"),
+            formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // Unescape case.
   formatted =
@@ -1052,7 +1053,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
                 kFormatUrlOmitNothing, net::UnescapeRule::NORMAL, &parsed,
                 nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"http://\x30B0:\x30FC@\x30B0\x30FC\x30B0\x30EB.jp:8080"
-      L"/\x30B0/?q=\x30B0#\x30B0"), formatted);
+                        L"/\x30B0/?q=\x30B0#%E3%82%B0"),
+            formatted);
   EXPECT_EQ(WideToUTF16(L"\x30B0"),
       formatted.substr(parsed.username.begin, parsed.username.len));
   EXPECT_EQ(WideToUTF16(L"\x30FC"),
@@ -1065,8 +1067,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
       formatted.substr(parsed.path.begin, parsed.path.len));
   EXPECT_EQ(WideToUTF16(L"q=\x30B0"),
       formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0"),
-      formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(WideToUTF16(L"%E3%82%B0"),
+            formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // Omit_username_password + unescape case.
   formatted =
@@ -1075,7 +1077,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
                 kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL,
                 &parsed, nullptr, nullptr);
   EXPECT_EQ(WideToUTF16(L"http://\x30B0\x30FC\x30B0\x30EB.jp:8080"
-      L"/\x30B0/?q=\x30B0#\x30B0"), formatted);
+                        L"/\x30B0/?q=\x30B0#%E3%82%B0"),
+            formatted);
   EXPECT_FALSE(parsed.username.is_valid());
   EXPECT_FALSE(parsed.password.is_valid());
   EXPECT_EQ(WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB.jp"),
@@ -1086,8 +1089,8 @@ TEST(UrlFormatterTest, FormatUrlParsed) {
       formatted.substr(parsed.path.begin, parsed.path.len));
   EXPECT_EQ(WideToUTF16(L"q=\x30B0"),
       formatted.substr(parsed.query.begin, parsed.query.len));
-  EXPECT_EQ(WideToUTF16(L"\x30B0"),
-      formatted.substr(parsed.ref.begin, parsed.ref.len));
+  EXPECT_EQ(WideToUTF16(L"%E3%82%B0"),
+            formatted.substr(parsed.ref.begin, parsed.ref.len));
 
   // View-source case.
   formatted =
@@ -1320,14 +1323,13 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
       kFormatUrlOmitNothing, net::UnescapeRule::SPACES, unescape_offsets);
 
   const size_t ref_offsets[] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, kNpos, kNpos, 32, kNpos, kNpos,
-    33
-  };
+      0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
+      17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+      34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49};
   // Unescape to "http://www.google.com/foo.html#\x30B0\x30B0z".
-  CheckAdjustedOffsets(
-      "http://www.google.com/foo.html#\xE3\x82\xB0\xE3\x82\xB0z",
-      kFormatUrlOmitNothing, net::UnescapeRule::NORMAL, ref_offsets);
+  CheckAdjustedOffsets("http://www.google.com/foo.html#%E3%82%B0%E3%82%B0z",
+                       kFormatUrlOmitNothing, net::UnescapeRule::NORMAL,
+                       ref_offsets);
 
   const size_t omit_http_offsets[] = {
     0, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,

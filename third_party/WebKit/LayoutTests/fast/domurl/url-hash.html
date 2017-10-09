@@ -55,7 +55,7 @@ test(function() {
     assert_equals(url.hash, '');
 
     url.hash = '\udc01\ud802a';
-    assert_equals(url.hash, '#\ufffd\ufffda');
+    assert_equals(url.hash, '#%EF%BF%BD%EF%BF%BDa');
 }, 'hash with unmatched surrogates');
 
 </script>

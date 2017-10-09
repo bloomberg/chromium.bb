@@ -20,8 +20,8 @@ PASS canonicalize('file:///foo/bar.txt') is 'file:///foo/bar.txt'
 PASS canonicalize('FILE:/\\/\\7:\\\\//foo\\bar.html') is 'file://7:////foo/bar.html'
 PASS canonicalize('file:filer/home\\me') is 'file://filer/home/me'
 PASS canonicalize('file:///C:/foo/../../../bar.html') is 'file:///C:/bar.html'
-PASS canonicalize('file:///C:/asdf#\xc2') is 'file:///C:/asdf#\xc2'
-PASS canonicalize('file:///C:/asdf#Â') is 'file:///C:/asdf#Â'
+PASS canonicalize('file:///C:/asdf#\xc2') is 'file:///C:/asdf#%C3%82'
+PASS canonicalize('file:///C:/asdf#Â') is 'file:///C:/asdf#%C3%82'
 PASS canonicalize('file:///home/me') is 'file:///home/me'
 FAIL canonicalize('file:c:\\foo\\bar.html') should be file:///c:/foo/bar.html. Was file:///C:/foo/bar.html.
 FAIL canonicalize('file:c|//foo\\bar.html') should be file:///c%7C//foo/bar.html. Was file:///C://foo/bar.html.

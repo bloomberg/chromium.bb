@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 574 tests; 275 PASS, 299 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 574 tests; 278 PASS, 296 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS URL: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged.
 PASS <a>: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged.
@@ -568,9 +568,9 @@ PASS <area>: Setting <https://example.net?lang=en-US#nav>.hash = ''
 FAIL URL: Setting <a:/>.hash = '\0	\n\r !"#$%&'()*+,-./09:;<=>?@AZ[\]^_`az{|}~Éé' Simple percent-encoding; nuls, tabs, and newlines are removed assert_equals: expected "a:/#%01%1F !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~%7F%C2%80%C2%81%C3%89%C3%A9" but got "a:/#%00%01%09%0A%0D%1F !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~%C2%80%C2%81%C3%89%C3%A9"
 FAIL <a>: Setting <a:/>.hash = '\0	\n\r !"#$%&'()*+,-./09:;<=>?@AZ[\]^_`az{|}~Éé' Simple percent-encoding; nuls, tabs, and newlines are removed assert_equals: expected "a:/#%01%1F !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~%7F%C2%80%C2%81%C3%89%C3%A9" but got "a:/#%00%01%09%0A%0D%1F !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~%C2%80%C2%81%C3%89%C3%A9"
 FAIL <area>: Setting <a:/>.hash = '\0	\n\r !"#$%&'()*+,-./09:;<=>?@AZ[\]^_`az{|}~Éé' Simple percent-encoding; nuls, tabs, and newlines are removed assert_equals: expected "a:/#%01%1F !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~%7F%C2%80%C2%81%C3%89%C3%A9" but got "a:/#%00%01%09%0A%0D%1F !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~%C2%80%C2%81%C3%89%C3%A9"
-FAIL URL: Setting <http://example.net>.hash = '%c3%89té' Bytes already percent-encoded are left as-is assert_equals: expected "http://example.net/#%c3%89t%C3%A9" but got "http://example.net/#%c3%89té"
-FAIL <a>: Setting <http://example.net>.hash = '%c3%89té' Bytes already percent-encoded are left as-is assert_equals: expected "http://example.net/#%c3%89t%C3%A9" but got "http://example.net/#%c3%89té"
-FAIL <area>: Setting <http://example.net>.hash = '%c3%89té' Bytes already percent-encoded are left as-is assert_equals: expected "http://example.net/#%c3%89t%C3%A9" but got "http://example.net/#%c3%89té"
+PASS URL: Setting <http://example.net>.hash = '%c3%89té' Bytes already percent-encoded are left as-is
+PASS <a>: Setting <http://example.net>.hash = '%c3%89té' Bytes already percent-encoded are left as-is
+PASS <area>: Setting <http://example.net>.hash = '%c3%89té' Bytes already percent-encoded are left as-is
 PASS URL: Setting <javascript:alert(1)>.hash = 'castle'
 PASS <a>: Setting <javascript:alert(1)>.hash = 'castle'
 PASS <area>: Setting <javascript:alert(1)>.hash = 'castle'
