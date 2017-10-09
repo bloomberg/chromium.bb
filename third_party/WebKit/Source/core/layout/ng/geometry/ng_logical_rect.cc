@@ -51,7 +51,7 @@ void NGLogicalRect::Unite(const NGLogicalRect& other) {
 
   NGLogicalOffset new_end_offset(Max(EndOffset(), other.EndOffset()));
   offset = Min(offset, other.offset);
-  size = new_end_offset.DistanceTo(offset);
+  size = new_end_offset - offset;
 }
 
 String NGLogicalRect::ToString() const {

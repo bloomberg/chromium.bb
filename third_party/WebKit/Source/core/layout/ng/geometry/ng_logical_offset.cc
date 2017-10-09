@@ -97,19 +97,13 @@ bool NGLogicalOffset::operator<=(const NGLogicalOffset& other) const {
          block_offset <= other.block_offset;
 }
 
-NGLogicalSize NGLogicalOffset::DistanceTo(const NGLogicalOffset& other) const {
-  return {inline_offset - other.inline_offset,
-          block_offset - other.block_offset};
-}
-
-NGLogicalOffset NGLogicalOffset::RelativeTo(
-    const NGLogicalOffset& other) const {
+NGLogicalDelta NGLogicalOffset::operator-(const NGLogicalOffset& other) const {
   return {inline_offset - other.inline_offset,
           block_offset - other.block_offset};
 }
 
 NGLogicalOffset& NGLogicalOffset::operator-=(const NGLogicalOffset& other) {
-  *this = RelativeTo(other);
+  *this = *this - other;
   return *this;
 }
 
