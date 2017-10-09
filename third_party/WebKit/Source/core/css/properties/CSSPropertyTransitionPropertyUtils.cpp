@@ -27,8 +27,10 @@ CSSValue* CSSPropertyTransitionPropertyUtils::ConsumeTransitionProperty(
   CSSPropertyID unresolved_property = token.ParseAsUnresolvedCSSPropertyID();
   if (unresolved_property != CSSPropertyInvalid &&
       unresolved_property != CSSPropertyVariable) {
+#if DCHECK_IS_ON()
     DCHECK(CSSPropertyAPI::Get(resolveCSSPropertyID(unresolved_property))
                .IsEnabled());
+#endif
     range.ConsumeIncludingWhitespace();
     return CSSCustomIdentValue::Create(unresolved_property);
   }
