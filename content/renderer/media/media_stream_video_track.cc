@@ -213,6 +213,18 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 
 // static
 blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
+    const blink::WebString& id,
+    MediaStreamVideoSource* source,
+    const MediaStreamVideoSource::ConstraintsCallback& callback,
+    bool enabled) {
+  blink::WebMediaStreamTrack track;
+  track.Initialize(id, source->Owner());
+  track.SetTrackData(new MediaStreamVideoTrack(source, callback, enabled));
+  return track;
+}
+
+// static
+blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     const VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,
