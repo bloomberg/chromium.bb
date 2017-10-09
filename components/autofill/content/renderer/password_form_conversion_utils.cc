@@ -307,13 +307,14 @@ base::string16 FieldName(const WebInputElement& input_field,
   return field_name.empty() ? base::ASCIIToUTF16(dummy_name) : field_name;
 }
 
-bool FieldHasNonscriptModifiedValue(
-    const FieldValueAndPropertiesMaskMap* field_map,
-    const blink::WebFormControlElement& element) {
+// Returns true iff the properties mask of |element| intersects with |mask|.
+bool FieldHasPropertiesMask(const FieldValueAndPropertiesMaskMap* field_map,
+                            const blink::WebFormControlElement& element,
+                            FieldPropertiesMask mask) {
   if (!field_map)
     return false;
   FieldValueAndPropertiesMaskMap::const_iterator it = field_map->find(element);
-  return it != field_map->end() && it->second.first.get();
+  return it != field_map->end() && (it->second.second & mask);
 }
 
 // Helper function that checks the presence of visible password and username
@@ -414,8 +415,10 @@ bool GetPasswordForm(
           continue;
         layout_sequence.push_back('P');
       } else {
-        if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
-                                           *input_element)) {
+        if (FieldHasPropertiesMask(field_value_and_properties_map,
+                                   *input_element,
+                                   FieldPropertiesFlags::USER_TYPED |
+                                       FieldPropertiesFlags::AUTOFILLED)) {
           ++number_of_non_empty_text_non_password_fields;
         }
         if (element_is_invisible && ignore_invisible_usernames)
@@ -437,8 +440,9 @@ bool GetPasswordForm(
     // checking whether password element was updated not from JavaScript.
     if (input_element->IsPasswordField() &&
         (!input_element->IsReadOnly() ||
-         FieldHasNonscriptModifiedValue(field_value_and_properties_map,
-                                        *input_element) ||
+         FieldHasPropertiesMask(field_value_and_properties_map, *input_element,
+                                FieldPropertiesFlags::USER_TYPED |
+                                    FieldPropertiesFlags::AUTOFILLED) ||
          password_marked_by_autocomplete_attribute)) {
       // We add the field to the list of password fields if it was not flagged
       // as a special NOT_PASSWORD prediction by Autofill. The NOT_PASSWORD
@@ -515,23 +519,26 @@ bool GetPasswordForm(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordSelection)) {
+    bool form_has_autofilled_value = false;
     // Add non-empty unique possible passwords to the vector.
     std::vector<base::string16> all_possible_passwords;
     for (const WebInputElement& password_element : passwords) {
-      base::string16 element = password_element.Value().Utf16();
-      if (!element.empty() &&
-          find(all_possible_passwords.begin(), all_possible_passwords.end(),
-               element) == all_possible_passwords.end()) {
-        all_possible_passwords.push_back(std::move(element));
+      const base::string16 value = password_element.Value().Utf16();
+      if (value.empty())
+        continue;
+      bool element_has_autofilled_value = FieldHasPropertiesMask(
+          field_value_and_properties_map, password_element,
+          FieldPropertiesFlags::AUTOFILLED);
+      form_has_autofilled_value |= element_has_autofilled_value;
+      if (find(all_possible_passwords.begin(), all_possible_passwords.end(),
+               value) == all_possible_passwords.end()) {
+        all_possible_passwords.push_back(std::move(value));
       }
     }
 
-    DCHECK(!new_password.IsNull() || !password.IsNull());
-    base::string16 password_to_save =
-        (new_password.IsNull() ? password : new_password).Value().Utf16();
-
     if (!all_possible_passwords.empty()) {
       password_form->all_possible_passwords = std::move(all_possible_passwords);
+      password_form->form_has_autofilled_value = form_has_autofilled_value;
     }
   }
 
@@ -563,8 +570,9 @@ bool GetPasswordForm(
     password_form->username_element =
         FieldName(username_element, "anonymous_username");
     base::string16 username_value = username_element.Value().Utf16();
-    if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
-                                       username_element)) {
+    if (FieldHasPropertiesMask(field_value_and_properties_map, username_element,
+                               FieldPropertiesFlags::USER_TYPED |
+                                   FieldPropertiesFlags::AUTOFILLED)) {
       base::string16 typed_username_value =
           *field_value_and_properties_map->at(username_element).first;
       if (!base::StartsWith(base::i18n::ToLower(username_value),
@@ -602,8 +610,9 @@ bool GetPasswordForm(
   if (!password.IsNull()) {
     password_form->password_element = FieldName(password, "anonymous_password");
     blink::WebString password_value = password.Value();
-    if (FieldHasNonscriptModifiedValue(field_value_and_properties_map,
-                                       password)) {
+    if (FieldHasPropertiesMask(field_value_and_properties_map, password,
+                               FieldPropertiesFlags::USER_TYPED |
+                                   FieldPropertiesFlags::AUTOFILLED)) {
       password_value = blink::WebString::FromUTF16(
           *field_value_and_properties_map->at(password).first);
     }

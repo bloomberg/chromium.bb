@@ -80,6 +80,7 @@ void PasswordFormToJSON(const PasswordForm& form,
 PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
       username_marked_by_site(false),
+      form_has_autofilled_value(false),
       password_value_is_default(false),
       new_password_value_is_default(false),
       new_password_marked_by_site(false),
@@ -124,6 +125,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          username_value == form.username_value &&
          other_possible_usernames == form.other_possible_usernames &&
          all_possible_passwords == form.all_possible_passwords &&
+         form_has_autofilled_value == form.form_has_autofilled_value &&
          password_element == form.password_element &&
          password_value == form.password_value &&
          new_password_element == form.new_password_element &&
