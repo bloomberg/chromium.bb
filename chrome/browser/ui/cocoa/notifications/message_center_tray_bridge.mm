@@ -51,10 +51,6 @@ bool MessageCenterTrayBridge::ShowNotifierSettings() {
   return false;
 }
 
-bool MessageCenterTrayBridge::IsContextMenuEnabled() const {
-  return false;
-}
-
 message_center::MessageCenterTray*
 MessageCenterTrayBridge::GetMessageCenterTray() {
   return tray_.get();

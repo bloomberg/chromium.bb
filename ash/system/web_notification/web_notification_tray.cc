@@ -473,10 +473,6 @@ bool WebNotificationTray::ShowNotifierSettings() {
                                    false /* show_by_click */);
 }
 
-bool WebNotificationTray::IsContextMenuEnabled() const {
-  return ShouldShowMessageCenter();
-}
-
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
   return message_center_tray_.get();
 }

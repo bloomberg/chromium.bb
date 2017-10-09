@@ -77,7 +77,10 @@ bool NotificationMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool NotificationMenuModel::IsCommandIdEnabled(int command_id) const {
-  return tray_->delegate()->IsContextMenuEnabled();
+  // TODO(estade): commands shouldn't always be enabled. For example, a
+  // notification's enabled state might be controlled by policy. See
+  // http://crbug.com/771269
+  return true;
 }
 
 void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {
