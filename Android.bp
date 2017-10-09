@@ -15,6 +15,9 @@ cc_library_static {
 
     export_include_dirs: ["include"],
 
-    cflags: ["-DJSON_USE_EXCEPTION=0"],
-
+    cflags: [
+        "-DJSON_USE_EXCEPTION=0",
+        "-Wall",
+        "-Werror",
+    ],
 }
