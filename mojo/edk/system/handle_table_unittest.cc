@@ -12,7 +12,14 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "mojo/edk/system/dispatcher.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::trace_event::MemoryAllocatorDump;
+using testing::Contains;
+using testing::Eq;
+using testing::Contains;
+using testing::ByRef;
 
 namespace mojo {
 namespace edk {
@@ -33,23 +40,13 @@ class FakeMessagePipeDispatcher : public Dispatcher {
 
 void CheckNameAndValue(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& name,
-                       const std::string& value) {
+                       uint64_t value) {
   base::trace_event::MemoryAllocatorDump* mad = pmd->GetAllocatorDump(name);
   ASSERT_TRUE(mad);
 
-  std::unique_ptr<base::Value> dict_value =
-      mad->attributes_for_testing()->ToBaseValue();
-  ASSERT_TRUE(dict_value->is_dict());
-
-  base::DictionaryValue* dict;
-  ASSERT_TRUE(dict_value->GetAsDictionary(&dict));
-
-  base::DictionaryValue* inner_dict;
-  ASSERT_TRUE(dict->GetDictionary("object_count", &inner_dict));
-
-  std::string output;
-  ASSERT_TRUE(inner_dict->GetString("value", &output));
-  EXPECT_EQ(value, output);
+  MemoryAllocatorDump::Entry expected(
+      "object_count", MemoryAllocatorDump::kUnitsObjects, value);
+  EXPECT_THAT(mad->entries(), Contains(Eq(ByRef(expected))));
 }
 
 }  // namespace
@@ -69,8 +66,8 @@ TEST(HandleTableTest, OnMemoryDump) {
   base::trace_event::ProcessMemoryDump pmd(nullptr, args);
   ht.OnMemoryDump(args, &pmd);
 
-  CheckNameAndValue(&pmd, "mojo/message_pipe", "1");
-  CheckNameAndValue(&pmd, "mojo/data_pipe_consumer", "0");
+  CheckNameAndValue(&pmd, "mojo/message_pipe", 1);
+  CheckNameAndValue(&pmd, "mojo/data_pipe_consumer", 0);
 }
 
 }  // namespace edk

@@ -31,8 +31,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::trace_event::MemoryAllocatorDump;
 using net::test::IsError;
 using net::test::IsOk;
+using testing::Contains;
+using testing::Eq;
+using testing::Contains;
+using testing::ByRef;
 
 namespace net {
 
@@ -848,18 +853,9 @@ TEST_P(SpdySessionMemoryDumpTest, DumpMemoryStats) {
     const SpdyString& dump_name = pair.first;
     if (dump_name.find("spdy_session_pool") == SpdyString::npos)
       continue;
-    std::unique_ptr<base::Value> raw_attrs =
-        pair.second->attributes_for_testing()->ToBaseValue();
-    base::DictionaryValue* attrs;
-    ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-    base::DictionaryValue* active_session_count_attr;
-    ASSERT_TRUE(attrs->GetDictionary("active_session_count",
-                                     &active_session_count_attr));
-    SpdyString active_session_count;
-    ASSERT_TRUE(
-        active_session_count_attr->GetString("value", &active_session_count));
-    // No created stream so the session should be idle.
-    ASSERT_EQ("0", active_session_count);
+    MemoryAllocatorDump::Entry expected("active_session_count",
+                                        MemoryAllocatorDump::kUnitsObjects, 0);
+    ASSERT_THAT(pair.second->entries(), Contains(Eq(ByRef(expected))));
     did_dump = true;
   }
   EXPECT_TRUE(did_dump);

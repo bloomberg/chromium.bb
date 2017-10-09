@@ -67,6 +67,13 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using testing::Gt;
+using testing::AllOf;
+using testing::Contains;
+using testing::Eq;
+using testing::Field;
+using testing::Contains;
+using testing::ByRef;
 
 using base::Time;
 
@@ -9584,18 +9591,14 @@ TEST_P(HttpCacheMemoryDumpTest, DumpMemoryStats) {
       process_memory_dump->GetAllocatorDump(
           "net/url_request_context/main/0x123/http_cache");
   ASSERT_NE(nullptr, dump);
-  std::unique_ptr<base::Value> raw_attrs =
-      dump->attributes_for_testing()->ToBaseValue();
-  base::DictionaryValue* attrs;
-  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-  base::DictionaryValue* size_attrs;
-  ASSERT_TRUE(attrs->GetDictionary(
-      base::trace_event::MemoryAllocatorDump::kNameSize, &size_attrs));
-  std::string size;
-  ASSERT_TRUE(size_attrs->GetString("value", &size));
-  int actual_size = 0;
-  ASSERT_TRUE(base::HexStringToInt(size, &actual_size));
-  ASSERT_LT(0, actual_size);
+
+  using Entry = base::trace_event::MemoryAllocatorDump::Entry;
+  const std::vector<Entry>& entries = dump->entries();
+  ASSERT_THAT(entries,
+              Contains(AllOf(
+                  Field(&Entry::name,
+                        Eq(base::trace_event::MemoryAllocatorDump::kNameSize)),
+                  Field(&Entry::value_uint64, Gt(0UL)))));
 }
 
 }  // namespace net

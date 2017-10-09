@@ -46,6 +46,9 @@
 
 using testing::_;
 using testing::Invoke;
+using testing::Contains;
+using testing::Eq;
+using testing::ByRef;
 using base::trace_event::MemoryAllocatorDump;
 
 namespace net {
@@ -185,22 +188,8 @@ void CheckScalarInDump(const MemoryAllocatorDump* dump,
                        const std::string& name,
                        const char* expected_units,
                        uint64_t expected_value) {
-  std::string attr_str_value;
-  std::unique_ptr<base::Value> raw_attrs =
-      dump->attributes_for_testing()->ToBaseValue();
-  base::DictionaryValue* args = nullptr;
-  base::DictionaryValue* arg = nullptr;
-  std::string arg_value;
-  EXPECT_TRUE(raw_attrs->GetAsDictionary(&args));
-  EXPECT_TRUE(args->GetDictionary(name, &arg));
-  EXPECT_TRUE(arg->GetString("type", &arg_value));
-  EXPECT_EQ(MemoryAllocatorDump::kTypeScalar, arg_value);
-  EXPECT_TRUE(arg->GetString("units", &arg_value));
-  EXPECT_EQ(expected_units, arg_value);
-  const base::Value* attr_value = nullptr;
-  EXPECT_TRUE(arg->Get("value", &attr_value));
-  EXPECT_TRUE(attr_value->GetAsString(&attr_str_value));
-  EXPECT_EQ(base::StringPrintf("%" PRIx64, expected_value), attr_str_value);
+  MemoryAllocatorDump::Entry expected(name, expected_units, expected_value);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(expected))));
 }
 
 }  // namespace

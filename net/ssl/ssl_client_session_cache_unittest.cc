@@ -12,8 +12,14 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+
+using testing::Contains;
+using testing::Eq;
+using testing::Field;
+using testing::ByRef;
 
 namespace net {
 
@@ -474,18 +480,21 @@ TEST_P(SSLClientSessionCacheMemoryDumpTest, TestDumpMemoryStats) {
       new base::trace_event::ProcessMemoryDump(nullptr, dump_args));
   cache.DumpMemoryStats(process_memory_dump.get());
 
+  using Entry = base::trace_event::MemoryAllocatorDump::Entry;
   const base::trace_event::MemoryAllocatorDump* dump =
       process_memory_dump->GetAllocatorDump("net/ssl_session_cache");
   ASSERT_NE(nullptr, dump);
-  std::unique_ptr<base::Value> raw_attrs =
-      dump->attributes_for_testing()->ToBaseValue();
-  base::DictionaryValue* attrs;
-  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-  ASSERT_TRUE(attrs->HasKey("cert_count"));
-  ASSERT_TRUE(attrs->HasKey("cert_size"));
-  ASSERT_TRUE(attrs->HasKey("undeduped_cert_size"));
-  ASSERT_TRUE(attrs->HasKey("undeduped_cert_count"));
-  ASSERT_TRUE(attrs->HasKey(base::trace_event::MemoryAllocatorDump::kNameSize));
+  const std::vector<Entry>& entries = dump->entries();
+  EXPECT_THAT(entries, Contains(Field(&Entry::name, Eq("cert_count"))));
+  EXPECT_THAT(entries, Contains(Field(&Entry::name, Eq("cert_size"))));
+  EXPECT_THAT(entries,
+              Contains(Field(&Entry::name, Eq("undeduped_cert_size"))));
+  EXPECT_THAT(entries,
+              Contains(Field(&Entry::name, Eq("undeduped_cert_count"))));
+  EXPECT_THAT(
+      entries,
+      Contains(Field(&Entry::name,
+                     Eq(base::trace_event::MemoryAllocatorDump::kNameSize))));
 }
 
 }  // namespace net

@@ -21,6 +21,8 @@
 using testing::ElementsAre;
 using testing::Eq;
 using testing::ByRef;
+using testing::IsEmpty;
+using testing::Contains;
 
 namespace base {
 namespace trace_event {
@@ -56,43 +58,20 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
   }
 };
 
-std::unique_ptr<Value> CheckAttribute(const MemoryAllocatorDump* dump,
-                                      const std::string& name,
-                                      const char* expected_type,
-                                      const char* expected_units) {
-  std::unique_ptr<Value> raw_attrs =
-      dump->attributes_for_testing()->ToBaseValue();
-  DictionaryValue* args = nullptr;
-  DictionaryValue* arg = nullptr;
-  std::string arg_value;
-  const Value* out_value = nullptr;
-  EXPECT_TRUE(raw_attrs->GetAsDictionary(&args));
-  EXPECT_TRUE(args->GetDictionary(name, &arg));
-  EXPECT_TRUE(arg->GetString("type", &arg_value));
-  EXPECT_EQ(expected_type, arg_value);
-  EXPECT_TRUE(arg->GetString("units", &arg_value));
-  EXPECT_EQ(expected_units, arg_value);
-  EXPECT_TRUE(arg->Get("value", &out_value));
-  return out_value ? out_value->CreateDeepCopy() : std::unique_ptr<Value>();
-}
-
 void CheckString(const MemoryAllocatorDump* dump,
                  const std::string& name,
-                 const char* expected_type,
                  const char* expected_units,
                  const std::string& expected_value) {
-  std::string attr_str_value;
-  auto attr_value = CheckAttribute(dump, name, expected_type, expected_units);
-  EXPECT_TRUE(attr_value->GetAsString(&attr_str_value));
-  EXPECT_EQ(expected_value, attr_str_value);
+  MemoryAllocatorDump::Entry expected(name, expected_units, expected_value);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(expected))));
 }
 
 void CheckScalar(const MemoryAllocatorDump* dump,
                  const std::string& name,
                  const char* expected_units,
                  uint64_t expected_value) {
-  CheckString(dump, name, MemoryAllocatorDump::kTypeScalar, expected_units,
-              StringPrintf("%" PRIx64, expected_value));
+  MemoryAllocatorDump::Entry expected(name, expected_units, expected_value);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(expected))));
 }
 
 }  // namespace
@@ -139,8 +118,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   CheckScalar(root_heap, MemoryAllocatorDump::kNameObjectCount,
               MemoryAllocatorDump::kUnitsObjects, 42);
   CheckScalar(root_heap, "attr1", "units1", 1234);
-  CheckString(root_heap, "attr2", MemoryAllocatorDump::kTypeString, "units2",
-              "string_value");
+  CheckString(root_heap, "attr2", "units2", "string_value");
 
   const MemoryAllocatorDump* sub_heap =
       pmd.GetAllocatorDump("foobar_allocator/sub_heap");
@@ -155,11 +133,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   ASSERT_NE(nullptr, empty_sub_heap);
   EXPECT_EQ("foobar_allocator/sub_heap/empty", empty_sub_heap->absolute_name());
 
-  auto raw_attrs = empty_sub_heap->attributes_for_testing()->ToBaseValue();
-  DictionaryValue* attrs = nullptr;
-  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-  ASSERT_FALSE(attrs->HasKey(MemoryAllocatorDump::kNameSize));
-  ASSERT_FALSE(attrs->HasKey(MemoryAllocatorDump::kNameObjectCount));
+  EXPECT_THAT(empty_sub_heap->entries(), IsEmpty());
 
   // Check that the AsValueInfo doesn't hit any DCHECK.
   std::unique_ptr<TracedValue> traced_value(new TracedValue);

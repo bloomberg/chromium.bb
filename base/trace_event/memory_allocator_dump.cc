@@ -88,8 +88,11 @@ void MemoryAllocatorDump::AddString(const char* name,
   entries_.emplace_back(name, units, value);
 }
 
-void MemoryAllocatorDump::DumpAttributes(TracedValue* value) const {
+void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
   std::string string_conversion_buffer;
+  value->BeginDictionaryWithCopiedName(absolute_name_);
+  value->SetString("guid", guid_.ToString());
+  value->BeginDictionary("attrs");
 
   for (const Entry& entry : entries_) {
     value->BeginDictionaryWithCopiedName(entry.name);
@@ -109,13 +112,6 @@ void MemoryAllocatorDump::DumpAttributes(TracedValue* value) const {
     }
     value->EndDictionary();
   }
-}
-
-void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
-  value->BeginDictionaryWithCopiedName(absolute_name_);
-  value->SetString("guid", guid_.ToString());
-  value->BeginDictionary("attrs");
-  DumpAttributes(value);
   value->EndDictionary();  // "attrs": { ... }
   if (flags_)
     value->SetInteger("flags", flags_);
@@ -135,19 +131,11 @@ uint64_t MemoryAllocatorDump::GetSizeInternal() const {
   return 0;
 };
 
-std::unique_ptr<TracedValue> MemoryAllocatorDump::attributes_for_testing()
-    const {
-  std::unique_ptr<TracedValue> attributes = MakeUnique<TracedValue>();
-  DumpAttributes(attributes.get());
-  return attributes;
-}
-
 MemoryAllocatorDump::Entry::Entry() : entry_type(kString), value_uint64() {}
 MemoryAllocatorDump::Entry::Entry(MemoryAllocatorDump::Entry&&) noexcept =
     default;
 MemoryAllocatorDump::Entry& MemoryAllocatorDump::Entry::operator=(
     MemoryAllocatorDump::Entry&&) = default;
-
 MemoryAllocatorDump::Entry::Entry(std::string name,
                                   std::string units,
                                   uint64_t value)
