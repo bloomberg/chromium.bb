@@ -13,6 +13,10 @@ cr.define('extensions', function() {
       },
     },
 
+    hostAttributes: {
+      role: 'navigation',
+    },
+
     /** @private */
     onExtensionsTap_: function() {
       extensions.navigation.navigateTo(
