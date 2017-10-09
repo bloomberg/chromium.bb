@@ -92,10 +92,12 @@ class Symbolizer(object):
     if self._enable_relocation_packing and self._apk_libs:
       for apk_lib in self._apk_libs:
         cmd.extend(['--packed-lib', apk_lib])
+    env = dict(os.environ)
+    env['PYTHONDONTWRITEBYTECODE'] = '1'
     with tempfile.NamedTemporaryFile() as f:
       f.write('\n'.join(data_to_symbolize))
       f.flush()
-      _, output = cmd_helper.GetCmdStatusAndOutput(cmd + [f.name])
+      _, output = cmd_helper.GetCmdStatusAndOutput(cmd + [f.name], env=env)
     for line in output.splitlines():
       if not include_stack and 'Stack Data:' in line:
         break
