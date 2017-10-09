@@ -102,6 +102,7 @@ detail below.
     by notifying about events, and checking whether In-Product Help should be
     displayed.
 *   [Configure UMA](#Configuring-UMA).
+*   [Add a local field trial testing configuration](#Adding-a-local-field-trial-testing-configuration).
 
 ### Declaring your feature
 
@@ -236,6 +237,43 @@ configuration:
         *   `<action name="InProductHelp.ShouldTriggerHelpUI.IPH_MyFunFeature">`
         *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_MyFunFeature">`
         *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_MyFunFeature">`
+
+### Adding a local field trial testing configuration
+
+For each in-product help feature, it is required to also configure the expected
+launch configuration as the main testing configuration. See
+[Field Trial Testing Configuration][field-trial-testing-configuration] for
+details.
+
+Basically this requires you to add a new section to
+`//testing/variations/fieldtrial_testing_config.json` for your feature. The
+format is described in the documentation linked above, but it will probably
+look something like this:
+
+```javascript
+{
+  "MyFunFeatureStudy": [
+    {
+      "platforms": ["android"],
+      "experiments": [
+        {
+          "name": "MyFunFeatureLaunchConfig",
+          "params": {
+            "availability": ">=30",
+            "session_rate": "<1",
+            "event_used": "name:fun_event_happened;comparator:any;window:360;storage:360",
+            "event_trigger": "name:fun_feature_iph_triggered;comparator:any;window:360;storage:360",
+            "event_1": "name:related_fun_thing_happened;comparator:>=1;window:360;storage:360"
+          },
+          "enable_features": ["IPH_MyFunFeature"],
+          "disable_features": []
+        }
+      ]
+    }
+  ],
+  ...
+}
+```
 
 ## Demo mode
 
@@ -519,3 +557,5 @@ ninja -C out/Debug components_unittests ;
 
 When adding new test suites, also remember to add the suite to the filter file:
 `//components/feature_engagement/components_unittests.filter`.
+
+[field-trial-testing-configuration]: https://chromium.googlesource.com/chromium/src/+/master/testing/variations/README.md
