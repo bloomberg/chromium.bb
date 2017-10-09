@@ -76,7 +76,7 @@ public class WebappDisplayModeTest {
                 activity.findViewById(R.id.close_button).getVisibility());
     }
 
-    private WebappActivity startActivity(int displayMode) throws Exception {
+    private WebappActivity startActivity(@WebDisplayMode int displayMode) throws Exception {
         mActivityTestRule.startWebappActivity(
                 mActivityTestRule.createIntent()
                         .putExtra(ShortcutHelper.EXTRA_URL,

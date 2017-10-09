@@ -79,7 +79,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     private FindMatchRectsListener mFindMatchRectsListener;
 
-    private int mDisplayMode = WebDisplayMode.BROWSER;
+    private @WebDisplayMode int mDisplayMode = WebDisplayMode.BROWSER;
 
     protected Handler mHandler;
 
@@ -118,14 +118,13 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     /**
      * Sets the current display mode which can be queried using media queries.
-     * @param displayMode A value from {@link org.chromium.blink_public.platform.WebDisplayMode}.
      */
-    public void setDisplayMode(int displayMode) {
+    public void setDisplayMode(@WebDisplayMode int displayMode) {
         mDisplayMode = displayMode;
     }
 
     @CalledByNative
-    private int getDisplayMode() {
+    private @WebDisplayMode int getDisplayMode() {
         return mDisplayMode;
     }
 

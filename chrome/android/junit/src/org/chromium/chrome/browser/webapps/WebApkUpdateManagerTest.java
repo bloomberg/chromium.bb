@@ -64,7 +64,7 @@ public class WebApkUpdateManagerTest {
     private static final String PRIMARY_ICON_MURMUR2_HASH = "3";
     private static final String BADGE_ICON_URL = "/badge.png";
     private static final String BADGE_ICON_MURMUR2_HASH = "4";
-    private static final int DISPLAY_MODE = WebDisplayMode.UNDEFINED;
+    private static final @WebDisplayMode int DISPLAY_MODE = WebDisplayMode.UNDEFINED;
     private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
     private static final long THEME_COLOR = 1L;
     private static final long BACKGROUND_COLOR = 2L;
@@ -191,7 +191,7 @@ public class WebApkUpdateManagerTest {
         public Bitmap primaryIcon;
         public String badgeIconUrl;
         public Bitmap badgeIcon;
-        public int displayMode;
+        public @WebDisplayMode int displayMode;
         public int orientation;
         public long themeColor;
         public long backgroundColor;

@@ -71,7 +71,7 @@ public class WebappVisibilityTest {
         Assert.assertFalse(canAutoHideBrowserControls(type, ConnectionSecurityLevel.DANGEROUS));
     }
 
-    private static void testShouldShowBrowserControls(Type type, int displayMode) {
+    private static void testShouldShowBrowserControls(Type type, @WebDisplayMode int displayMode) {
         // Show browser controls for out-of-domain URLs.
         Assert.assertTrue(shouldShowBrowserControls(WEBAPP_URL, "http://notoriginalwebsite.com",
                 ConnectionSecurityLevel.NONE, type, displayMode));
@@ -118,7 +118,7 @@ public class WebappVisibilityTest {
     }
 
     private static boolean shouldShowBrowserControls(String webappStartUrlOrScopeUrl, String url,
-            int securityLevel, Type type, int displayMode) {
+            int securityLevel, Type type, @WebDisplayMode int displayMode) {
         return createDelegate(type).shouldShowBrowserControls(
                 createWebappInfo(webappStartUrlOrScopeUrl, type, displayMode), url, securityLevel);
     }
@@ -134,7 +134,7 @@ public class WebappVisibilityTest {
     }
 
     private static WebappInfo createWebappInfo(
-            String webappStartUrlOrScopeUrl, Type type, int displayMode) {
+            String webappStartUrlOrScopeUrl, Type type, @WebDisplayMode int displayMode) {
         return type == Type.WEBAPP
                 ? WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null,
                           displayMode, 0, 0, 0, 0, false /* isIconGenerated */,
