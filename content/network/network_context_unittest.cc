@@ -506,8 +506,8 @@ TEST_F(NetworkContextTest, CookieManager) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(mojom::NetworkContextParams::New());
 
-  mojom::CookieManagerPtr cookie_manager_ptr;
-  mojom::CookieManagerRequest cookie_manager_request(
+  network::mojom::CookieManagerPtr cookie_manager_ptr;
+  network::mojom::CookieManagerRequest cookie_manager_request(
       mojo::MakeRequest(&cookie_manager_ptr));
   network_context->GetCookieManager(std::move(cookie_manager_request));
 

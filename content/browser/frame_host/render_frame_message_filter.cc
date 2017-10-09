@@ -217,7 +217,7 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
       render_process_id_(render_process_id) {
-  mojom::CookieManagerPtr cookie_manager;
+  network::mojom::CookieManagerPtr cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
       ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
@@ -239,7 +239,7 @@ RenderFrameMessageFilter::~RenderFrameMessageFilter() {
 }
 
 void RenderFrameMessageFilter::InitializeOnIO(
-    mojom::CookieManagerPtrInfo cookie_manager) {
+    network::mojom::CookieManagerPtrInfo cookie_manager) {
   cookie_manager_.Bind(std::move(cookie_manager));
 }
 

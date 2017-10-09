@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//content/public/common/cookie_manager.typemap",
   "//content/public/common/manifest.typemap",
   "//content/public/common/mutable_network_traffic_annotation_tag.typemap",
   "//content/public/common/referrer.typemap",
