@@ -78,9 +78,8 @@ void AccessibilityExtensionLoader::UnloadExtensionFromProfile(
   extension_service->component_loader()->Remove(extension_path_);
 }
 
-void AccessibilityExtensionLoader::LoadExtension(
-    Profile* profile,
-    base::Closure done_cb) {
+void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
+                                                 base::Closure done_cb) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 

@@ -61,10 +61,8 @@ const char kTestSupervisedUserName[] = "test@locally-managed.localhost";
 
 class MockAccessibilityObserver {
  public:
-  MockAccessibilityObserver() : observed_(false),
-                                observed_enabled_(false),
-                                observed_type_(-1)
-  {
+  MockAccessibilityObserver()
+      : observed_(false), observed_enabled_(false), observed_type_(-1) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
     accessibility_subscription_ = accessibility_manager->RegisterCallback(
@@ -250,8 +248,7 @@ bool IsBrailleImeActive() {
   std::unique_ptr<InputMethodDescriptors> descriptors =
       imm->GetActiveIMEState()->GetActiveInputMethods();
   for (InputMethodDescriptors::const_iterator i = descriptors->begin();
-       i != descriptors->end();
-       ++i) {
+       i != descriptors->end(); ++i) {
     if (i->id() == extension_ime_util::kBrailleImeEngineId)
       return true;
   }
@@ -283,8 +280,8 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     // Sets the login-screen profile.
-    AccessibilityManager::Get()->
-        SetProfileForTest(ProfileHelper::GetSigninProfile());
+    AccessibilityManager::Get()->SetProfileForTest(
+        ProfileHelper::GetSigninProfile());
     default_autoclick_delay_ = GetAutoclickDelay();
   }
 
@@ -520,64 +517,56 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   SetSpokenFeedbackEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetSpokenFeedbackEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetHighContrastEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
   SetHighContrastEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetMonoAudioEnabled(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
   EXPECT_TRUE(IsMonoAudioEnabled());
 
   observer.reset();
   SetMonoAudioEnabled(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
   EXPECT_FALSE(IsMonoAudioEnabled());
 }
 
@@ -596,64 +585,56 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   SetSpokenFeedbackEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetSpokenFeedbackEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
   SetHighContrastEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
   SetHighContrastEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetVirtualKeyboardEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 
   observer.reset();
   SetMonoAudioEnabledPref(true);
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
   EXPECT_TRUE(IsMonoAudioEnabled());
 
   observer.reset();
   SetMonoAudioEnabledPref(false);
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
-  EXPECT_EQ(observer.observed_type(),
-            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_EQ(observer.observed_type(), ACCESSIBILITY_TOGGLE_MONO_AUDIO);
   EXPECT_FALSE(IsMonoAudioEnabled());
 }
 

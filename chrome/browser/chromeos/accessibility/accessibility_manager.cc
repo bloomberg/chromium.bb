@@ -155,9 +155,7 @@ AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     AccessibilityNotificationType notification_type,
     bool enabled,
     ash::AccessibilityNotificationVisibility notify)
-    : notification_type(notification_type),
-      enabled(enabled),
-      notify(notify) {}
+    : notification_type(notification_type), enabled(enabled), notify(notify) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // AccessibilityManager::PrefHandler
@@ -168,25 +166,25 @@ AccessibilityManager::PrefHandler::PrefHandler(const char* pref_path)
 AccessibilityManager::PrefHandler::~PrefHandler() {}
 
 void AccessibilityManager::PrefHandler::HandleProfileChanged(
-    Profile* previous_profile, Profile* current_profile) {
+    Profile* previous_profile,
+    Profile* current_profile) {
   // Returns if the current profile is null.
   if (!current_profile)
     return;
 
   // If the user set a pref value on the login screen and is now starting a
   // session with a new profile, copy the pref value to the profile.
-  if ((previous_profile &&
-       ProfileHelper::IsSigninProfile(previous_profile) &&
+  if ((previous_profile && ProfileHelper::IsSigninProfile(previous_profile) &&
        current_profile->IsNewProfile() &&
        !ProfileHelper::IsSigninProfile(current_profile)) ||
       // Special case for Guest mode:
       // Guest mode launches a guest-mode browser process before session starts,
       // so the previous profile is null.
-      (!previous_profile &&
-       current_profile->IsGuestSession())) {
+      (!previous_profile && current_profile->IsGuestSession())) {
     // Returns if the pref has not been set by the user.
-    const PrefService::Preference* pref = ProfileHelper::GetSigninProfile()->
-        GetPrefs()->FindPreference(pref_path_);
+    const PrefService::Preference* pref =
+        ProfileHelper::GetSigninProfile()->GetPrefs()->FindPreference(
+            pref_path_);
     if (!pref || !pref->IsUserControlled())
       return;
 
@@ -268,11 +266,9 @@ AccessibilityManager::AccessibilityManager()
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                               content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_SESSION_STARTED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                               content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_DESTROYED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
 
   input_method::InputMethodManager::Get()->AddObserver(this);
@@ -344,8 +340,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (std::vector<Profile*>::iterator it = profiles.begin();
-       it != profiles.end();
-       ++it) {
+       it != profiles.end(); ++it) {
     PrefService* prefs = (*it)->GetPrefs();
     if (prefs->GetBoolean(ash::prefs::kAccessibilityStickyKeysEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled) ||
@@ -470,10 +465,9 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
 
   spoken_feedback_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-      enabled,
-      spoken_feedback_notification_);
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+                                          enabled,
+                                          spoken_feedback_notification_);
 
   NotifyAccessibilityStatusChanged(details);
 
@@ -1042,8 +1036,7 @@ void AccessibilityManager::CheckBrailleState() {
   if (!scoped_braille_observer_.IsObserving(braille_controller))
     scoped_braille_observer_.Add(braille_controller);
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&BrailleController::GetDisplayState,
                  base::Unretained(braille_controller)),
       base::Bind(&AccessibilityManager::ReceiveBrailleDisplayState,
@@ -1201,9 +1194,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
 
     content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
-        base::Bind(
-            &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
-            base::Unretained(this)));
+        base::Bind(&AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
+                   base::Unretained(this)));
 
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);

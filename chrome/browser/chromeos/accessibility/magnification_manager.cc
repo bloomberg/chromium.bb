@@ -50,14 +50,11 @@ class MagnificationManagerImpl
         enabled_(false),
         keep_focus_centered_(false),
         observing_focus_change_in_page_(false) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SESSION_STARTED,
+    registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_PROFILE_DESTROYED,
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::NotificationService::AllSources());
   }
 
@@ -148,8 +145,8 @@ class MagnificationManagerImpl
 
     keep_focus_centered_ = keep_focus_centered;
 
-      ash::Shell::Get()->magnification_controller()->SetKeepFocusCentered(
-          keep_focus_centered_);
+    ash::Shell::Get()->magnification_controller()->SetKeepFocusCentered(
+        keep_focus_centered_);
   }
 
   void UpdateMagnifierFromPrefs() {

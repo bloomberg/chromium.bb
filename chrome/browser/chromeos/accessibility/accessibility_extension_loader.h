@@ -23,8 +23,7 @@ class AccessibilityExtensionLoader {
   void SetProfile(Profile* profile, const base::Closure& done_callback);
   void Load(Profile* profile, const base::Closure& done_cb);
   void Unload();
-  void LoadExtension(Profile* profile,
-                     base::Closure done_cb);
+  void LoadExtension(Profile* profile, base::Closure done_cb);
 
  private:
   void UnloadExtensionFromProfile(Profile* profile);
