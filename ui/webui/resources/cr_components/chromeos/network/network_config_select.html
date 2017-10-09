@@ -5,6 +5,10 @@
 <dom-module id="network-config-select">
   <template>
     <style include="network-shared md-select">
+      .md-select {
+        -webkit-margin-end: calc(
+            var(--network-control-margin) - var(--cr-icon-ripple-padding) * 2);
+      }
     </style>
 
     <div class="property-box hr">

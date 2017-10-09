@@ -11,6 +11,10 @@
 <dom-module id="network-config">
   <template>
     <style include="network-shared">
+      paper-toggle-button {
+        -webkit-margin-end: calc(
+          var(--network-control-margin) - var(--cr-icon-ripple-padding));
+      }
     </style>
 
     <!-- Share (WiFi and WiMAX) -->
@@ -28,7 +32,7 @@
     <!-- SSID (WiFi) -->
     <template is="dom-if" if="[[isType_(NetworkType_.WI_FI, type)]]">
       <network-config-input id="ssid" label="[[i18n('OncWiFi-SSID')]]"
-          value="{{configProperties_.WiFi.SSID}}" disabled="[[guid]]">
+          value="{{configProperties_.WiFi.SSID}}" disabled="[[hasGuid_(guid)]]">
       </network-config-input>
     </template>
 
@@ -45,7 +49,7 @@
     <!-- Passphrase (WiFi) -->
     <template is="dom-if" if="[[configRequiresPassphrase_(type, security_)]]">
       <network-config-input label="[[i18n('OncWiFi-Passphrase')]]"
-          value="{{configProperties_.WiFi.Passphrase}}">
+          value="{{configProperties_.WiFi.Passphrase}}" password>
       </network-config-input>
     </template>
 
@@ -66,14 +70,14 @@
             value="{{configProperties_.VPN.L2TP.Username}}">
         </network-config-input>
         <network-config-input label="[[i18n('OncVPN-Password')]]"
-            value="{{configProperties_.VPN.L2TP.Password}}">
+            value="{{configProperties_.VPN.L2TP.Password}}" password>
         </network-config-input>
         <network-config-input label="[[i18n('OncVPN-IPsec-Group')]]"
             value="{{configProperties_.VPN.IPsec.Group}}">
         </network-config-input>
         <template is="dom-if" if="[[!showVpn_.Cert]]">
           <network-config-input label="[[i18n('OncVPN-IPsec-PSK')]]"
-              value="{{configProperties_.VPN.IPsec.PSK}}">
+              value="{{configProperties_.VPN.IPsec.PSK}}" password>
           </network-config-input>
         </template>
       </template>
@@ -82,7 +86,7 @@
             value="{{configProperties_.VPN.OpenVPN.Username}}">
         </network-config-input>
         <network-config-input label="[[i18n('OncVPN-Password')]]"
-            value="{{configProperties_.VPN.OpenVPN.Password}}">
+            value="{{configProperties_.VPN.OpenVPN.Password}}" password>
         </network-config-input>
         <network-config-input label="[[i18n('OncVPN-OpenVPN-OTP')]]"
             value="{{configProperties_.VPN.OpenVPN.OTP}}">
@@ -137,7 +141,8 @@
           value="{{eapProperties_.Identity}}" hidden="[[!showEap_.Identity]]">
       </network-config-input>
       <network-config-input label="[[i18n('OncEAP-Password')]]"
-          value="{{eapProperties_.Password}}" hidden="[[!showEap_.Password]]">
+          value="{{eapProperties_.Password}}" hidden="[[!showEap_.Password]]"
+          password>
       </network-config-input>
       <network-config-input label="[[i18n('OncEAP-AnonymousIdentity')]]"
           value="{{eapProperties_.AnonymousIdentity}}"

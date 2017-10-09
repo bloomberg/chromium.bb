@@ -39,6 +39,10 @@
            file="images/icon_search.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_ARROW_DROPDOWN"
            file="images/icon_arrow_dropdown.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY"
+           file="images/icon_visibility.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY_OFF"
+           file="images/icon_visibility_off.svg" type="BINDATA" />
   <if expr="chromeos">
     <include name="IDR_CR_ELEMENTS_CAMERA_ALT_ICON_SVG"
              file="cr_elements/chromeos/cr_picture/camera_alt_icon.svg"
