@@ -34,7 +34,6 @@ const char kTestGCMID[] = "Test GCM ID";
 const int kTestMaxBundleSize = 100000;
 const char kTestBodyName[] = "body_name";
 const int64_t kTestBodyLength = 12345678LL;
-const char kTestMethodName[] = "Test name";
 const char kErrorMessage[] = "Invalid parameter";
 }  // namespace
 
@@ -67,7 +66,7 @@ class GetOperationRequestBuilder : public RequestBuilder {
  public:
   void CreateRequest(net::URLRequestContextGetter* request_context_getter,
                      const PrefetchRequestFinishedCallback& callback) override {
-    fetcher_.reset(new GetOperationRequest(kTestMethodName, kTestChannel,
+    fetcher_.reset(new GetOperationRequest(kTestOperationName, kTestChannel,
                                            request_context_getter, callback));
   }
 
@@ -173,9 +172,15 @@ class PrefetchRequestOperationResponseTestBuilder {
     return operation_builder_->BuildFromError(error_code, error_message);
   }
 
+  // Return the operation_name that we expect when this has been processed.
+  virtual std::string expected_operation_name() {
+    return expected_operation_name_;
+  }
+
  protected:
   std::unique_ptr<RequestBuilder> request_builder_;
   std::unique_ptr<OperationBuilder> operation_builder_;
+  std::string expected_operation_name_;
 };
 
 class GeneratePageBundleRequestDoneOperationBuilder
@@ -202,6 +207,7 @@ class GetOperationRequestDoneOperationBuilder
   GetOperationRequestDoneOperationBuilder() {
     request_builder_.reset(new GetOperationRequestBuilder);
     operation_builder_.reset(new DoneOperationBuilder);
+    expected_operation_name_ = std::string(kTestOperationName);
   }
 };
 
@@ -211,6 +217,7 @@ class GetOperationRequestPendingOperationBuilder
   GetOperationRequestPendingOperationBuilder() {
     request_builder_.reset(new GetOperationRequestBuilder);
     operation_builder_.reset(new PendingOperationBuilder);
+    expected_operation_name_ = std::string(kTestOperationName);
   }
 };
 
@@ -238,6 +245,9 @@ class PrefetchRequestOperationResponseTest : public PrefetchRequestTestBase {
 
   const std::string& operation_name() const { return operation_name_; }
   const std::vector<RenderPageInfo>& pages() const { return pages_; }
+  const std::string expected_operation_name() {
+    return builder_.expected_operation_name();
+  }
 
  private:
   PrefetchRequestStatus SendWithResponse(const std::string& response_data) {
@@ -272,28 +282,28 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
             // No error is set for OK. Thus this will cause the operation
             // being filled with only done flag.
             this->SendWithErrorResponse(proto::OK, ""));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, ErrorValue) {
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithErrorResponse(proto::UNKNOWN, kErrorMessage));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidTypeUrl) {
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithAnyResponse("foo", ""));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidValue) {
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithAnyResponse(kPageBundleTypeURL, "foo"));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
@@ -301,7 +311,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyPageBundle) {
   proto::PageBundle bundle;
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithPageBundleResponse(bundle));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
@@ -310,7 +320,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyArchive) {
   bundle.add_archives();
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithPageBundleResponse(bundle));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
@@ -321,7 +331,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, NoPageInfo) {
   archive->set_body_length(kTestBodyLength);
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithPageBundleResponse(bundle));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
@@ -332,7 +342,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, MissingPageInfoUrl) {
   page_info->set_redirect_url(kTestURL);
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
             this->SendWithPageBundleResponse(bundle));
-  EXPECT_TRUE(this->operation_name().empty());
+  EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
