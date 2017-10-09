@@ -64,18 +64,9 @@ class BASE_EXPORT Location {
   // nullptr.
   const void* program_counter() const { return program_counter_; }
 
-  // See Write().
+  // Converts to the most user-readable form possible. If function and filename
+  // are not available, this will return "pc:<hex address>".
   std::string ToString() const;
-
-  // Translate the some of the state in this instance into a human readable
-  // string with HTML characters in the function names escaped, and append that
-  // string to |output|. Inclusion of the file_name_ and function_name_ are
-  // optional, and controlled by the boolean arguments.
-  //
-  // If the function and file names are null, the program counter will be
-  // written.
-  void Write(bool display_filename, bool display_function_name,
-             std::string* output) const;
 
   static Location CreateFromHere(const char* file_name);
   static Location CreateFromHere(const char* function_name,

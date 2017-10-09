@@ -230,8 +230,7 @@ class FFmpegDemuxerTest : public testing::Test {
                   const ReadExpectation& read_expectation,
                   DemuxerStream::Status status,
                   const scoped_refptr<DecoderBuffer>& buffer) {
-    std::string location_str;
-    location.Write(true, false, &location_str);
+    std::string location_str = location.ToString();
     location_str += "\n";
     SCOPED_TRACE(location_str);
     EXPECT_EQ(read_expectation.status, status);

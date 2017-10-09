@@ -584,11 +584,9 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
                          service->HasUnrecoverableError());
 
   if (service->HasUnrecoverableError()) {
-    base::Location loc(service->unrecoverable_error_location());
-    std::string location_str;
-    loc.Write(true, true, &location_str);
     std::string unrecoverable_error_message =
-        "Unrecoverable error detected at " + location_str + ": " +
+        "Unrecoverable error detected at " +
+        service->unrecoverable_error_location().ToString() + ": " +
         service->unrecoverable_error_message();
     about_info->SetString("unrecoverable_error_message",
                           unrecoverable_error_message);

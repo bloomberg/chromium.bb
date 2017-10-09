@@ -827,9 +827,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   UMA_HISTOGRAM_ENUMERATION(kSyncUnrecoverableErrorHistogram,
                             unrecoverable_error_reason_, ERROR_REASON_LIMIT);
-  std::string location;
-  from_here.Write(true, true, &location);
-  LOG(ERROR) << "Unrecoverable error detected at " << location
+  LOG(ERROR) << "Unrecoverable error detected at " << from_here.ToString()
              << " -- ProfileSyncService unusable: " << message;
 
   // Shut all data types down.

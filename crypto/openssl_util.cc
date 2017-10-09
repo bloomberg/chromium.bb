@@ -45,9 +45,7 @@ void ClearOpenSSLERRStack(const base::Location& location) {
     if (error_num == 0)
       return;
 
-    std::string message;
-    location.Write(true, true, &message);
-    DVLOG(1) << "OpenSSL ERR_get_error stack from " << message;
+    DVLOG(1) << "OpenSSL ERR_get_error stack from " << location.ToString();
     ERR_print_errors_cb(&OpenSSLErrorCallback, NULL);
   } else {
     ERR_clear_error();

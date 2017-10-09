@@ -48,24 +48,6 @@ std::string Location::ToString() const {
   return StringPrintf("pc:%p", program_counter_);
 }
 
-// TODO(brettw) if chrome://profiler is removed, this function can probably
-// be removed or merged with ToString.
-void Location::Write(bool display_filename, bool display_function_name,
-                     std::string* output) const {
-  if (has_source_info()) {
-    StringAppendF(output, "%s[%d] ",
-                  display_filename && file_name_ ? file_name_ : "line",
-                  line_number_);
-
-    if (display_function_name && function_name_) {
-      output->append(function_name_);
-      output->push_back(' ');
-    }
-  } else {
-    *output = ToString();
-  }
-}
-
 LocationSnapshot::LocationSnapshot() = default;
 
 LocationSnapshot::LocationSnapshot(const Location& location)
