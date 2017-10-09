@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/md_feedback/md_feedback_dialog_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
@@ -38,11 +37,6 @@ void ShowFeedbackPage(Browser* browser,
   // Record an UMA histogram to know the most frequent feedback request source.
   UMA_HISTOGRAM_ENUMERATION("Feedback.RequestSource", source,
                             kFeedbackSourceCount);
-
-  if (::switches::MdFeedbackEnabled()) {
-    MdFeedbackDialogController::GetInstance()->Show(profile);
-    return;
-  }
 
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);

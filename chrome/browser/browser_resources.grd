@@ -176,12 +176,6 @@
         <include name="IDR_EXTENSIONS_SHORTCUT_UTIL_JS" file="resources\extensions\shortcut_util.js" type="BINDATA" />
       </if>
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
-      <if expr="not is_android">
-        <include name="IDR_MD_FEEDBACK_FEEDBACK_HTML" file="resources\md_feedback\feedback.html" type="BINDATA" />
-        <include name="IDR_MD_FEEDBACK_FEEDBACK_JS" file="resources\md_feedback\feedback.js" type="BINDATA" />
-        <include name="IDR_MD_FEEDBACK_FEEDBACK_CONTAINER_HTML" file="resources\md_feedback\feedback_container.html" type="BINDATA" />
-        <include name="IDR_MD_FEEDBACK_FEEDBACK_CONTAINER_JS" file="resources\md_feedback\feedback_container.js" type="BINDATA" />
-      </if>
       <if expr="is_android">
         <include name="IDR_OFFLINE_INTERNALS_HTML" file="resources\offline_pages\offline_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_OFFLINE_INTERNALS_CSS" file="resources\offline_pages\offline_internals.css" type="BINDATA" compress="gzip" />
