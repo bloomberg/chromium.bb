@@ -92,7 +92,7 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
       }
     } else {
       DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
-      parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+      parsed_options.color_params.SetCanvasColorSpace(kLegacyCanvasColorSpace);
     }
   }
 

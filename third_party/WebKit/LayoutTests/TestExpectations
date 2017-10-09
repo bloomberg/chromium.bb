@@ -382,6 +382,17 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-004
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-006.xht [ Skip ]
 
+# Canvas color extensions are incomplete.
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-createImageBitmap-linear-rgb.html [ Crash ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Crash ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Crash ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-createPutGetImageData-colorManaged.html [ Crash ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-getImageData-linear-rgb.html [ Crash ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/imageData-colorManagedBehavior.html [ Crash ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-colorspace-arguments.html [ Failure ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/canvas-drawImage-linear-rgb.html [ Failure ]
+crbug.com/772189 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Failure ]
+
 # Tables.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-006.xht [ Failure ]
