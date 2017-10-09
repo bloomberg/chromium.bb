@@ -1159,7 +1159,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     if not input_api.change.issue:
       return [output_api.PresubmitError(
           "DEPS approval by OWNERS check failed: this change has "
-          "no Rietveld issue number, so we can't check it for approvals.")]
+          "no change number, so we can't check it for approvals.")]
     output = output_api.PresubmitError
   else:
     output = output_api.PresubmitNotifyResult
