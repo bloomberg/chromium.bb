@@ -9,6 +9,7 @@
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
@@ -70,7 +71,8 @@ void TestNavigationURLLoader::CallOnResponseStarted(
   static int request_id = 1000;
   int child_id =
       WebContents::FromFrameTreeNodeId(request_info_->frame_tree_node_id)
-          ->GetRenderProcessHost()
+          ->GetMainFrame()
+          ->GetProcess()
           ->GetID();
   GlobalRequestID global_id(child_id, ++request_id);
   delegate_->OnResponseStarted(
