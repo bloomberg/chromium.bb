@@ -143,6 +143,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/MemoryCache.h"
@@ -3490,6 +3491,10 @@ bool Internals::isLowEndDevice() const {
 
 Vector<String> Internals::supportedTextEncodingLabels() const {
   return WTF::TextEncodingAliasesForTesting();
+}
+
+void Internals::simulateRasterUnderInvalidations(bool enable) {
+  RasterInvalidationTracking::SimulateRasterUnderInvalidations(enable);
 }
 
 }  // namespace blink
