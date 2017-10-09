@@ -26,6 +26,7 @@ IntersectionObserverController::IntersectionObserverController(
 IntersectionObserverController::~IntersectionObserverController() {}
 
 void IntersectionObserverController::PostTaskToDeliverObservations() {
+  DCHECK(GetExecutionContext());
   // TODO(ojan): These tasks decide whether to throttle a subframe, so they
   // need to be unthrottled, but we should throttle all the other tasks
   // (e.g. ones coming from the web page).
@@ -69,6 +70,8 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
 }
 
 void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
+  if (!GetExecutionContext())
+    return;
   TRACE_EVENT0(
       "blink",
       "IntersectionObserverController::computeTrackedIntersectionObservations");
