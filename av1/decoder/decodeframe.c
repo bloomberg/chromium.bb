@@ -5230,7 +5230,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   return sz;
 }
 
-#if CONFIG_SUPERTX
+#if CONFIG_SUPERTX && !CONFIG_RESTRICT_COMPRESSED_HDR
 static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j;
   if (aom_read(r, GROUP_DIFF_UPDATE_PROB, ACCT_STR)) {
@@ -5256,9 +5256,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   MACROBLOCKD *const xd = &pbi->mb;
 #endif
   aom_reader r;
-#if !CONFIG_NEW_MULTISYMBOL
+
+#if ((CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)) || \
+     (!CONFIG_NEW_MULTISYMBOL || CONFIG_LV_MAP) ||               \
+     (CONFIG_COMPOUND_SINGLEREF || CONFIG_SUPERTX))
   FRAME_CONTEXT *const fc = cm->fc;
-  int i;
 #endif
 
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
@@ -5281,10 +5283,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if !CONFIG_NEW_MULTISYMBOL
 #if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT)
-    for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
+    for (int i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
       av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
 #endif  // CONFIG_VAR_TX
-  for (i = 0; i < SKIP_CONTEXTS; ++i)
+  for (int i = 0; i < SKIP_CONTEXTS; ++i)
     av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);
 #endif
 
@@ -5297,7 +5299,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
 #if !CONFIG_NEW_MULTISYMBOL
-      for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
+      for (int i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_diff_update_prob(&r, &fc->interintra_prob[i], ACCT_STR);
         }
@@ -5309,7 +5311,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #else
       int block_sizes_to_update = BLOCK_SIZES;
 #endif
-      for (i = 0; i < block_sizes_to_update; i++) {
+      for (int i = 0; i < block_sizes_to_update; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i)) {
           av1_diff_update_prob(&r, &fc->wedge_interintra_prob[i], ACCT_STR);
         }
@@ -5319,7 +5321,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_INTERINTRA
 
 #if !CONFIG_NEW_MULTISYMBOL
-    for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
+    for (int i = 0; i < INTRA_INTER_CONTEXTS; i++)
       av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
 #endif
 
@@ -5328,7 +5330,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
 #if CONFIG_COMPOUND_SINGLEREF
-    for (i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
+    for (int i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
       av1_diff_update_prob(&r, &fc->comp_inter_mode_prob[i], ACCT_STR);
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
@@ -5336,7 +5338,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_AMVR
     if (cm->cur_frame_mv_precision_level == 0) {
 #endif
-      for (i = 0; i < NMV_CONTEXTS; ++i)
+      for (int i = 0; i < NMV_CONTEXTS; ++i)
         read_mv_probs(&fc->nmvc[i], cm->allow_high_precision_mv, &r);
 #if CONFIG_AMVR
     }
