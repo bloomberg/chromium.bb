@@ -137,6 +137,11 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     min_declared_size =
         sizeof(CrossCallParams) + ((param_count + 1) * sizeof(ParamInfo));
 
+    // Initial check for the buffer being big enough to determine the actual
+    // buffer size.
+    if (buffer_size < min_declared_size)
+      return nullptr;
+
     // Retrieve the declared size which if it fails returns 0.
     declared_size = GetActualBufferSize(param_count, buffer_base);
 
