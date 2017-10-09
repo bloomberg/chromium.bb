@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/hash.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
@@ -31,18 +32,36 @@ namespace {
 
 namespace dnr_api = extensions::api::declarative_net_request;
 
+// Returns the checksum of the given serialized |data|.
+int GetChecksum(const FlatRulesetIndexer::SerializedData& data) {
+  uint32_t hash = base::PersistentHash(data.first, data.second);
+
+  // Strip off the sign bit since this needs to be persisted in preferences
+  // which don't support unsigned ints.
+  return static_cast<int>(hash & 0x7fffffff);
+}
+
 // Helper function to persist the indexed ruleset |data| for |extension|.
 bool PersistRuleset(const Extension& extension,
-                    const FlatRulesetIndexer::SerializedData& data) {
+                    const FlatRulesetIndexer::SerializedData& data,
+                    int* ruleset_checksum) {
+  DCHECK(ruleset_checksum);
+
   const base::FilePath path =
       file_util::GetIndexedRulesetPath(extension.path());
 
   // Create the directory corresponding to |path| if it does not exist and then
   // persist the ruleset.
   const int data_size = base::checked_cast<int>(data.second);
-  return base::CreateDirectory(path.DirName()) &&
-         base::WriteFile(path, reinterpret_cast<const char*>(data.first),
-                         data_size) == data_size;
+  const bool success =
+      base::CreateDirectory(path.DirName()) &&
+      base::WriteFile(path, reinterpret_cast<const char*>(data.first),
+                      data_size) == data_size;
+
+  if (success)
+    *ruleset_checksum = GetChecksum(data);
+
+  return success;
 }
 
 // Helper to retrieve the ruleset ExtensionResource for |extension|.
@@ -61,7 +80,8 @@ std::string GetJSONRulesetFilename(const Extension& extension) {
 // |indexed_ruleset_path|.
 ParseInfo IndexAndPersistRulesImpl(const base::ListValue& rules,
                                    const Extension& extension,
-                                   std::vector<InstallWarning>* warnings) {
+                                   std::vector<InstallWarning>* warnings,
+                                   int* ruleset_checksum) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   FlatRulesetIndexer indexer;
@@ -100,7 +120,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::ListValue& rules,
 
   // The actual data buffer is still owned by |indexer|.
   const FlatRulesetIndexer::SerializedData data = indexer.GetData();
-  if (!PersistRuleset(extension, data))
+  if (!PersistRuleset(extension, data, ruleset_checksum))
     return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET);
 
   if (!all_rules_parsed && warnings) {
@@ -121,23 +141,25 @@ ParseInfo IndexAndPersistRulesImpl(const base::ListValue& rules,
 bool IndexAndPersistRules(const base::ListValue& rules,
                           const Extension& extension,
                           std::string* error,
-                          std::vector<InstallWarning>* warnings) {
+                          std::vector<InstallWarning>* warnings,
+                          int* ruleset_checksum) {
   DCHECK(IsAPIAvailable());
   DCHECK(GetRulesetResource(extension));
+  DCHECK(ruleset_checksum);
   base::ThreadRestrictions::AssertIOAllowed();
 
-  // TODO(crbug.com/696822): While persisting the ruleset, store the ruleset
-  // checksum, probably as part of preferences. This would help in verifying the
-  // ruleset while loading and help us ascertain quickly whether a ruleset
-  // corresponding to an extension exists.
-
-  const ParseInfo info = IndexAndPersistRulesImpl(rules, extension, warnings);
+  const ParseInfo info =
+      IndexAndPersistRulesImpl(rules, extension, warnings, ruleset_checksum);
   if (info.result() == ParseResult::SUCCESS)
     return true;
 
   if (error)
     *error = info.GetErrorDescription(GetJSONRulesetFilename(extension));
   return false;
+}
+
+int GetRulesetChecksumForTesting(const uint8_t* data, size_t size) {
+  return GetChecksum(FlatRulesetIndexer::SerializedData(data, size));
 }
 
 }  // namespace declarative_net_request
