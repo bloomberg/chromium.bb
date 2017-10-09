@@ -529,6 +529,7 @@ component("net") {
       "cert/cert_database_mac.cc",
       "cert/cert_database_nss.cc",
       "cert/cert_database_win.cc",
+      "cert/cert_net_fetcher.cc",
       "cert/cert_net_fetcher.h",
       "cert/cert_verify_proc.cc",
       "cert/cert_verify_proc.h",
