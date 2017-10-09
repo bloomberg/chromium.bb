@@ -160,8 +160,11 @@
       <message name="IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK" desc="This appears in the Page Info bubble when a HTTPS site is loaded with an invalid certificate, e.g. https://wrong.host.badssl.com/. Text of the link that launches the Certificate Viewer.">
         Invalid
       </message>
-      <message name="IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_CERTIFICATE_VALID_LINK">
-        Issued by <ph name="ISSUER">$1<ex>Let's Encrypt X3</ex></ph>
+      <message name="IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_CERTIFICATE_VALID_LINK.">
+        Show certificate (issued by <ph name="ISSUER">$1<ex>Let's Encrypt X3</ex></ph>)
+      </message>
+      <message name="IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK.">
+        Show certificate
       </message>
     </if>
 
