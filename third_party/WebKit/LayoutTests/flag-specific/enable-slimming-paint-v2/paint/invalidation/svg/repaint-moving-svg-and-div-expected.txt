@@ -99,92 +99,92 @@
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [250, 350, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [235, 325, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [235, 325, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [220, 300, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [220, 300, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [205, 275, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [205, 275, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [190, 250, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [190, 250, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [175, 225, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [175, 225, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [160, 200, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [160, 200, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [145, 175, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [145, 175, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [130, 150, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [130, 150, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [100, 100, 150, 150],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow div class='innerBox'",
@@ -371,7 +371,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
       "reason": "geometry"
     },
     {
@@ -383,7 +387,11 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
       "reason": "geometry"
     },
     {
@@ -395,7 +403,11 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
+      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow div class='innerBox'",
       "reason": "geometry"
     },
     {
@@ -407,10 +419,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
       "reason": "geometry"
     },
@@ -419,55 +427,11 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
       "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow div class='innerBox'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRoot (positioned) svg id='svg'",
       "reason": "geometry"
     },
     {

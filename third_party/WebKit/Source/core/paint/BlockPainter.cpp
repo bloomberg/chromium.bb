@@ -30,8 +30,8 @@
 namespace blink {
 
 bool BlockPainter::ShouldAdjustForPaintOffsetTranslation(
-    PaintInfo& paint_info,
-    LayoutPoint& paint_offset) {
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) const {
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return false;
   if (!layout_block_.HasLayer() || layout_block_.HasSelfPaintingLayer())
