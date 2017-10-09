@@ -324,9 +324,6 @@ static_library("test_support") {
     "//chrome/gpu",
     "//chrome/renderer",
     "//chrome/utility",
-    "//components/crash/content/app",
-    "//components/crash/content/app:lib",
-    "//components/crash/content/app:test_support",
     "//components/nacl/common:features",
     "//components/startup_metric_utils/browser:lib",
     "//content/public/app:both",
@@ -339,6 +336,15 @@ static_library("test_support") {
     "//ui/base",
     "//v8:v8_headers",
   ]
+
+  if (!is_fuchsia) {
+    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+    deps += [
+      "//components/crash/content/app",
+      "//components/crash/content/app:lib",
+      "//components/crash/content/app:test_support",
+    ]
+  }
 
   if (is_mac) {
     sources += [ "chrome_main_mac.mm" ]
