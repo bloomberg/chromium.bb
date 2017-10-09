@@ -68,7 +68,7 @@ const base::Feature kCaptivePortalInterstitial{
     "CaptivePortalInterstitial", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCaptivePortalCertificateList{
-    "CaptivePortalCertificateList", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CaptivePortalCertificateList", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSSLCommonNameMismatchHandling{
     "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};

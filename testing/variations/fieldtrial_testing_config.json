@@ -656,40 +656,6 @@
             ]
         }
     ],
-    "CaptivePortalCertificateList": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CaptivePortalCertificateList"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CaptivePortalInterstitial": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "CheckerImaging": [
         {
             "platforms": [
