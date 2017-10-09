@@ -11,9 +11,15 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+using testing::Contains;
+using testing::Eq;
+using testing::ByRef;
+using base::trace_event::MemoryAllocatorDump;
 
 // Tests that the Chromium<>Blink plumbing that exposes the MemoryInfra classes
 // behaves correctly, performs the right transfers of memory ownerships and
@@ -46,20 +52,12 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   wmad->AddScalar("attr_name", "bytes", 42);
   ASSERT_EQ(1u, wpmd2->process_memory_dump()->allocator_dumps().size());
   auto mad = wpmd2->process_memory_dump()->GetAllocatorDump("2/new");
-  ASSERT_NE(static_cast<base::trace_event::MemoryAllocatorDump*>(nullptr), mad);
+  ASSERT_NE(static_cast<MemoryAllocatorDump*>(nullptr), mad);
   ASSERT_EQ(wmad, wpmd2->GetMemoryAllocatorDump("2/new"));
 
   // Check that the attributes are propagated correctly.
-  auto raw_attrs = mad->attributes_for_testing()->ToBaseValue();
-  base::DictionaryValue* attrs = nullptr;
-  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-  base::DictionaryValue* attr = nullptr;
-  ASSERT_TRUE(attrs->GetDictionary("attr_name", &attr));
-  std::string attr_value;
-  ASSERT_TRUE(attr->GetString("type", &attr_value));
-  ASSERT_EQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_value);
-  ASSERT_TRUE(attr->GetString("units", &attr_value));
-  ASSERT_EQ("bytes", attr_value);
+  MemoryAllocatorDump::Entry expected("attr_name", "bytes", 42);
+  ASSERT_THAT(mad->entries(), Contains(Eq(ByRef(expected))));
 
   // Check that AsValueInto() doesn't cause a crash.
   wpmd2->process_memory_dump()->AsValueInto(traced_value.get());

@@ -48,6 +48,11 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using testing::Contains;
+using testing::Eq;
+using testing::Field;
+using testing::Contains;
+using testing::ByRef;
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -671,17 +676,16 @@ TEST_F(DiskCacheBackendTest, MemCacheMemoryDump) {
       pmd.GetAllocatorDump(parent->absolute_name() + "/memory_backend");
   ASSERT_NE(nullptr, sub_dump);
 
-  // Verify that the appropriate attributes were set.
-  std::unique_ptr<base::Value> raw_attrs =
-      sub_dump->attributes_for_testing()->ToBaseValue();
-  base::DictionaryValue* attrs;
-  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-  EXPECT_EQ(3u, attrs->size());
-  base::DictionaryValue* size_attrs;
-  ASSERT_TRUE(attrs->GetDictionary(
-      base::trace_event::MemoryAllocatorDump::kNameSize, &size_attrs));
-  ASSERT_TRUE(attrs->GetDictionary("mem_backend_size", &size_attrs));
-  ASSERT_TRUE(attrs->GetDictionary("mem_backend_max_size", &size_attrs));
+  using MADEntry = base::trace_event::MemoryAllocatorDump::Entry;
+  const std::vector<MADEntry>& entries = sub_dump->entries();
+  ASSERT_THAT(
+      entries,
+      Contains(Field(&MADEntry::name,
+                     Eq(base::trace_event::MemoryAllocatorDump::kNameSize))));
+  ASSERT_THAT(entries,
+              Contains(Field(&MADEntry::name, Eq("mem_backend_max_size"))));
+  ASSERT_THAT(entries,
+              Contains(Field(&MADEntry::name, Eq("mem_backend_size"))));
 }
 
 TEST_F(DiskCacheBackendTest, SimpleCacheMemoryDump) {
@@ -699,15 +703,12 @@ TEST_F(DiskCacheBackendTest, SimpleCacheMemoryDump) {
       pmd.GetAllocatorDump(parent->absolute_name() + "/simple_backend");
   ASSERT_NE(nullptr, sub_dump);
 
-  // Verify that the appropriate attributes were set.
-  std::unique_ptr<base::Value> raw_attrs =
-      sub_dump->attributes_for_testing()->ToBaseValue();
-  base::DictionaryValue* attrs;
-  ASSERT_TRUE(raw_attrs->GetAsDictionary(&attrs));
-  EXPECT_EQ(1u, attrs->size());
-  base::DictionaryValue* size_attrs;
-  ASSERT_TRUE(attrs->GetDictionary(
-      base::trace_event::MemoryAllocatorDump::kNameSize, &size_attrs));
+  using MADEntry = base::trace_event::MemoryAllocatorDump::Entry;
+  const std::vector<MADEntry>& entries = sub_dump->entries();
+  ASSERT_THAT(entries,
+              ElementsAre(Field(
+                  &MADEntry::name,
+                  Eq(base::trace_event::MemoryAllocatorDump::kNameSize))));
 }
 
 TEST_F(DiskCacheBackendTest, BlockFileCacheMemoryDump) {

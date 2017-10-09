@@ -144,14 +144,7 @@ class BASE_EXPORT MemoryAllocatorDump {
     return const_cast<std::vector<Entry>*>(&entries_);
   }
 
-  // Decprecated testing method. Use |entries()| instead.
-  // TODO(hjd): Remove this and refactor callers to use |entries()| then
-  // inline DumpAttributes.
-  std::unique_ptr<TracedValue> attributes_for_testing() const;
-
  private:
-  void DumpAttributes(TracedValue* value) const;
-
   const std::string absolute_name_;
   MemoryAllocatorDumpGuid guid_;
   MemoryDumpLevelOfDetail level_of_detail_;
