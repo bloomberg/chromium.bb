@@ -22,8 +22,7 @@ WebFileUtilitiesImpl::WebFileUtilitiesImpl()
     : sandbox_enabled_(true) {
 }
 
-WebFileUtilitiesImpl::~WebFileUtilitiesImpl() {
-}
+WebFileUtilitiesImpl::~WebFileUtilitiesImpl() = default;
 
 bool WebFileUtilitiesImpl::GetFileInfo(const WebString& path,
                                        blink::WebFileInfo& web_file_info) {
@@ -32,8 +31,7 @@ bool WebFileUtilitiesImpl::GetFileInfo(const WebString& path,
     return false;
   }
   base::File::Info file_info;
-  if (!base::GetFileInfo(blink::WebStringToFilePath(path),
-                         reinterpret_cast<base::File::Info*>(&file_info)))
+  if (!base::GetFileInfo(blink::WebStringToFilePath(path), &file_info))
     return false;
 
   FileInfoToWebFileInfo(file_info, &web_file_info);
