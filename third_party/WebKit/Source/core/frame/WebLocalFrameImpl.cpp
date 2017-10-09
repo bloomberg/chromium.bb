@@ -246,13 +246,17 @@ namespace blink {
 
 static int g_frame_count = 0;
 
-static HeapVector<ScriptSourceCode> CreateSourcesVector(
+namespace {
+
+HeapVector<ScriptSourceCode> CreateSourcesVector(
     const WebScriptSource* sources_in,
     unsigned num_sources) {
   HeapVector<ScriptSourceCode> sources;
   sources.Append(sources_in, num_sources);
   return sources;
 }
+
+}  // namespace
 
 // Simple class to override some of PrintContext behavior. Some of the methods
 // made virtual so that they can be overridden by ChromePluginPrintContext.
@@ -1207,15 +1211,20 @@ void WebLocalFrameImpl::SelectRange(
       handle_visibility_behavior == kShowSelectionHandle ||
       (handle_visibility_behavior == kPreserveHandleVisibility &&
        selection.IsHandleVisible());
+  using blink::mojom::SelectionMenuBehavior;
   selection.SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(range)
           .SetAffinity(TextAffinity::kDefault)
           .SetIsDirectional(false)
           .Build(),
-      SetSelectionOptions::Builder().SetShouldShowHandle(show_handles).Build());
+      SetSelectionOptions::Builder()
+          .SetShouldShowHandle(show_handles)
+          .SetShouldShrinkNextTap(selection_menu_behavior ==
+                                  SelectionMenuBehavior::kShow)
+          .Build());
 
-  if (selection_menu_behavior == blink::mojom::SelectionMenuBehavior::kShow) {
+  if (selection_menu_behavior == SelectionMenuBehavior::kShow) {
     ContextMenuAllowedScope scope;
     GetFrame()->GetEventHandler().ShowNonLocatedContextMenu(
         nullptr, kMenuSourceAdjustSelection);
