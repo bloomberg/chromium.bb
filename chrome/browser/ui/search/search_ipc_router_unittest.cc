@@ -330,6 +330,7 @@ TEST_F(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg) {
       .WillOnce(Return(false));
 
   base::MockCallback<SearchIPCRouter::ChromeIdentityCheckCallback> callback;
+  EXPECT_CALL(callback, Run(false));
   GetSearchIPCRouter().ChromeIdentityCheck(GetSearchIPCRouterSeqNo(),
                                            test_identity, callback.Get());
 }
@@ -362,6 +363,7 @@ TEST_F(SearchIPCRouterTest, IgnoreHistorySyncCheckMsg) {
       .WillOnce(Return(false));
 
   base::MockCallback<SearchIPCRouter::ChromeIdentityCheckCallback> callback;
+  EXPECT_CALL(callback, Run(false));
   GetSearchIPCRouter().HistorySyncCheck(GetSearchIPCRouterSeqNo(),
                                         callback.Get());
 }
