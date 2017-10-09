@@ -1222,6 +1222,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.SelectFileDialogImgCount" units="images">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the number of images selected in either the new Photo Picker or the
+    standard Android file picker. Note: Only recorded in situations determined
+    to warrant the new Photo Picker (not, for example, if mixed content, like
+    images and text files, was requested).
+  </summary>
+</histogram>
+
 <histogram name="Android.SelectFileDialogScope" enum="SelectFileDialogScope">
   <owner>peter@chromium.org</owner>
   <summary>
