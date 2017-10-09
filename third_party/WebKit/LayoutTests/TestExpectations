@@ -1736,6 +1736,7 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/771729 [ Win Debug ] external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/039.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-method-basic-card/empty-data-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_003-manual.htm [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_004-manual.htm [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_006-manual.htm [ Skip ]
