@@ -833,7 +833,7 @@ public class ContextualSearchManagerTest {
                 if (mPanel == null) return false;
                 updateFailureReason("Panel did not enter " + state + " state. "
                         + "Instead, the current state is " + mPanel.getPanelState() + ".");
-                return mPanel.getPanelState() == state;
+                return mPanel.getPanelState() == state && !mPanel.isHeightAnimationRunning();
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }

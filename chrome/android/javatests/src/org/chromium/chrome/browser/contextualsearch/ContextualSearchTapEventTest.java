@@ -269,7 +269,8 @@ public class ContextualSearchTapEventTest {
                 mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
                 mContextualSearchManager = new ContextualSearchManagerWrapper(activity);
-                mPanel = new ContextualSearchPanelWrapper(activity, null, mPanelManager);
+                mPanel = new ContextualSearchPanelWrapper(activity,
+                        activity.getCompositorViewHolder().getLayoutManager(), mPanelManager);
                 mPanel.setManagementDelegate(mContextualSearchManager);
                 mContextualSearchManager.setContextualSearchPanel(mPanel);
 
