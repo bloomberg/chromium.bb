@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -40,6 +41,7 @@ void ActionRunner::WaitForCommand(base::Process process) {
   const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
   const bool succeeded =
       process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
+  base::DeleteFile(unpack_path_, true);
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(run_complete_, succeeded, exit_code, 0));
 }

@@ -568,6 +568,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
 
   const int error_to_report = SUCCEEDED(error) ? 0 : error;
 
+  DCHECK(static_cast<bool>(error_to_report) == !base::PathExists(response_));
+
   DownloadMetrics download_metrics;
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kBits;
@@ -578,7 +580,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
 
   Result result;
   result.error = error_to_report;
-  result.response = response_;
+  if (!result.error)
+    result.response = response_;
   result.downloaded_bytes = downloaded_bytes;
   result.total_bytes = total_bytes;
   main_task_runner()->PostTask(

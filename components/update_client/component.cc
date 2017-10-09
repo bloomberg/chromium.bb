@@ -506,6 +506,7 @@ void Component::StateDownloadingDiff::DownloadComplete(
   crx_downloader_.reset();
 
   if (download_result.error) {
+    DCHECK(download_result.response.empty());
     component.diff_error_category_ =
         static_cast<int>(ErrorCategory::kNetworkError);
     component.diff_error_code_ = download_result.error;
@@ -572,6 +573,7 @@ void Component::StateDownloading::DownloadComplete(
   crx_downloader_.reset();
 
   if (download_result.error) {
+    DCHECK(download_result.response.empty());
     component.error_category_ = static_cast<int>(ErrorCategory::kNetworkError);
     component.error_code_ = download_result.error;
 
