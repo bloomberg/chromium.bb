@@ -97,7 +97,7 @@ void AddDeferredPaintObserverRecursive(
     ui::ScopedLayerAnimationSettings* settings) {
   auto observer = base::MakeUnique<DeferredPaintObserver>(layer);
   settings->AddObserver(observer.get());
-  layer->GetAnimator()->AddOwnedObserver(std::move(observer));
+  settings->GetAnimator()->AddOwnedObserver(std::move(observer));
   for (auto* child : layer->children())
     AddDeferredPaintObserverRecursive(child, settings);
 }

@@ -38,6 +38,7 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   // request will be removed at the end of the animation.
   void DeferPaint();
   base::TimeDelta GetTransitionDuration() const;
+  LayerAnimator* GetAnimator() { return animator_.get(); }
 
   // Locks transition duration in |animator_|. When transition duration
   // is locked any subsequent changes to it are ignored until the
