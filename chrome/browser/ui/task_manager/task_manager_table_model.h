@@ -60,7 +60,7 @@ class TaskManagerTableModel
     : public TaskManagerObserver,
       public ui::TableModel {
  public:
-  TaskManagerTableModel(int64_t refresh_flags, TableViewDelegate* delegate);
+  explicit TaskManagerTableModel(TableViewDelegate* delegate);
   ~TaskManagerTableModel() override;
 
   // ui::TableModel:

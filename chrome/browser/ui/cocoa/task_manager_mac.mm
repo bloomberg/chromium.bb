@@ -540,14 +540,12 @@ namespace task_manager {
 // TaskManagerMac implementation:
 
 TaskManagerMac::TaskManagerMac()
-    : table_model_(new TaskManagerTableModel(
-          REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY | REFRESH_TYPE_NETWORK_USAGE,
-          this)),
+    : table_model_(this),
       window_controller_([[TaskManagerWindowController alloc]
           initWithTaskManagerMac:this
-                      tableModel:table_model_.get()]) {
-  table_model_->SetObserver(this);  // Hook up the ui::TableModelObserver.
-  table_model_->RetrieveSavedColumnsSettingsAndUpdateTable();
+                      tableModel:&table_model_]) {
+  table_model_.SetObserver(this);  // Hook up the ui::TableModelObserver.
+  table_model_.RetrieveSavedColumnsSettingsAndUpdateTable();
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -557,7 +555,7 @@ TaskManagerMac::TaskManagerMac()
 TaskManagerMac* TaskManagerMac::instance_ = nullptr;
 
 TaskManagerMac::~TaskManagerMac() {
-  table_model_->SetObserver(nullptr);
+  table_model_.SetObserver(nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -613,7 +611,7 @@ void TaskManagerMac::WindowWasClosed() {
 
 NSImage* TaskManagerMac::GetImageForRow(int row) {
   const NSSize kImageSize = NSMakeSize(16.0, 16.0);
-  NSImage* image = gfx::NSImageFromImageSkia(table_model_->GetIcon(row));
+  NSImage* image = gfx::NSImageFromImageSkia(table_model_.GetIcon(row));
   if (image)
     image.size = kImageSize;
   else
@@ -638,7 +636,7 @@ TaskManagerTableModel* TaskManagerMac::Show() {
     instance_ = new TaskManagerMac();
   }
 
-  return instance_->table_model_.get();
+  return &instance_->table_model_;
 }
 
 // static

@@ -324,9 +324,7 @@ void TaskManagerView::Init() {
   // Create the table view.
   tab_table_ =
       new views::TableView(nullptr, columns_, views::ICON_AND_TEXT, false);
-  table_model_.reset(new TaskManagerTableModel(
-      REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY | REFRESH_TYPE_NETWORK_USAGE,
-      this));
+  table_model_.reset(new TaskManagerTableModel(this));
   tab_table_->SetModel(table_model_.get());
   tab_table_->SetGrouper(this);
   tab_table_->set_observer(this);
