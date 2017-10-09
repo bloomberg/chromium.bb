@@ -7,11 +7,13 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 
 namespace blink {
 
+struct NGLogicalOffset;
 struct NGPhysicalSize;
 #define NGSizeIndefinite LayoutUnit(-1)
 
@@ -42,6 +44,20 @@ inline NGLogicalSize& operator-=(NGLogicalSize& a, const NGBoxStrut& b) {
 }
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGLogicalSize&);
+
+// NGLogicalDelta resolves the ambiguity of subtractions.
+//
+// "offset - offset" is ambiguous because both of below are true:
+//   offset + offset = offset
+//   offset + size = offset
+//
+// NGLogicalDelta resolves this ambiguity by allowing implicit conversions both
+// to NGLogicalOffset and to NGLogicalSize.
+struct CORE_EXPORT NGLogicalDelta : public NGLogicalSize {
+ public:
+  using NGLogicalSize::NGLogicalSize;
+  operator NGLogicalOffset() const { return {inline_size, block_size}; }
+};
 
 }  // namespace blink
 
