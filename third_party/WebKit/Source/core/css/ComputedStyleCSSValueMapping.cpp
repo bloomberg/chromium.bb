@@ -2224,15 +2224,13 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) {
-  if (property_id == CSSPropertyInvalid)
-    return nullptr;
   const SVGComputedStyle& svg_style = style.SvgStyle();
-  property_id = CSSPropertyAPI::Get(property_id)
-                    .ResolveDirectionAwareProperty(style.Direction(),
-                                                   style.GetWritingMode())
-                    .PropertyID();
-  DCHECK_NE(property_id, CSSPropertyInvalid);
+  property_id = CSSProperty::ResolveDirectionAwareProperty(
+      property_id, style.Direction(), style.GetWritingMode());
   switch (property_id) {
+    case CSSPropertyInvalid:
+      return nullptr;
+
     case CSSPropertyBackgroundColor:
       return allow_visited_style
                  ? CSSColorValue::Create(
