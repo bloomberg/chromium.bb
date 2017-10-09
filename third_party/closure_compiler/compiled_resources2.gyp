@@ -29,7 +29,6 @@
         '<(DEPTH)/chrome/browser/resources/md_bookmarks/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_downloads/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_extensions/compiled_resources2.gyp:*',
-        '<(DEPTH)/chrome/browser/resources/md_feedback/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_history/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_user_manager/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/media_router/compiled_resources2.gyp:*',
