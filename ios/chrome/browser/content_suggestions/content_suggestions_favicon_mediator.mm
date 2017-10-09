@@ -9,6 +9,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_tiles/metrics.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
@@ -181,7 +182,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     ntp_tiles::NTPTile& ntpTile = _mostVisitedDataForLogging[i];
     if (ntpTile.url == item.URL) {
       ntp_tiles::metrics::RecordTileImpression(
-          i, ntpTile.title_source, ntpTile.source, [item tileType], item.URL,
+          ntp_tiles::NTPTileImpression(i, ntpTile.source, ntpTile.title_source,
+                                       [item tileType], item.URL),
           GetApplicationContext()->GetRapporServiceImpl());
       // Reset the URL to be sure to log the impression only once.
       ntpTile.url = GURL();

@@ -22,6 +22,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
 #include "content/public/renderer/render_frame.h"
@@ -877,15 +878,15 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
           static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
       args[2]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
       args[3]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
-    auto tile_title_source =
-        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value());
-    auto tile_source =
-        static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value());
-    auto tile_type =
-        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value());
-    SearchBox::Get(render_frame)
-        ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_title_source,
-                                   tile_source, tile_type);
+    const ntp_tiles::NTPTileImpression impression(
+        /*index=*/args[0]->IntegerValue(),
+        /*source=*/static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value()),
+        /*title_source=*/
+        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value()),
+        /*visual_type=*/
+        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value()),
+        /*url_for_rappor=*/GURL());
+    SearchBox::Get(render_frame)->LogMostVisitedImpression(impression);
   }
 }
 
@@ -909,15 +910,15 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
           static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
       args[2]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
       args[3]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
-    auto tile_title_source =
-        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value());
-    auto tile_source =
-        static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value());
-    auto tile_type =
-        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value());
-    SearchBox::Get(render_frame)
-        ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_title_source,
-                                   tile_source, tile_type);
+    const ntp_tiles::NTPTileImpression impression(
+        /*index=*/args[0]->IntegerValue(),
+        /*source=*/static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value()),
+        /*title_source=*/
+        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value()),
+        /*visual_type=*/
+        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value()),
+        /*url_for_rappor=*/GURL());
+    SearchBox::Get(render_frame)->LogMostVisitedNavigation(impression);
   }
 }
 

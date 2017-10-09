@@ -278,26 +278,17 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
 }
 
 void NTPUserDataLogger::LogMostVisitedImpression(
-    int position,
-    ntp_tiles::TileTitleSource tile_title_source,
-    ntp_tiles::TileSource tile_source,
-    ntp_tiles::TileVisualType tile_type) {
-  if ((position >= kNumMostVisited) || impression_was_logged_[position]) {
+    const ntp_tiles::NTPTileImpression& impression) {
+  if ((impression.index >= kNumMostVisited) ||
+      logged_impressions_[impression.index].has_value()) {
     return;
   }
-  impression_was_logged_[position] = true;
-  impression_tile_source_[position] = tile_source;
-  impression_tile_type_[position] = tile_type;
-  impression_tile_title_source_[position] = tile_title_source;
+  logged_impressions_[impression.index] = impression;
 }
 
 void NTPUserDataLogger::LogMostVisitedNavigation(
-    int position,
-    ntp_tiles::TileTitleSource tile_title_source,
-    ntp_tiles::TileSource tile_source,
-    ntp_tiles::TileVisualType tile_type) {
-  ntp_tiles::metrics::RecordTileClick(position, tile_title_source, tile_source,
-                                      tile_type);
+    const ntp_tiles::NTPTileImpression& impression) {
+  ntp_tiles::metrics::RecordTileClick(impression);
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
@@ -306,9 +297,6 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
 
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      impression_tile_title_source_(kNumMostVisited),
-      impression_tile_source_(kNumMostVisited),
-      impression_tile_type_(kNumMostVisited),
       has_emitted_(false),
       should_record_doodle_load_time_(true),
       during_startup_(!AfterStartupTaskUtils::IsBrowserStartupComplete()) {
@@ -331,7 +319,7 @@ void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
   // User is returning to NTP, probably via the back button; reset stats.
   if (from.is_valid() && to.is_valid() && (to == ntp_url_)) {
     DVLOG(1) << "Returning to New Tab Page";
-    impression_was_logged_.reset();
+    logged_impressions_.fill(base::nullopt);
     tiles_received_time_ = base::TimeDelta();
     has_emitted_ = false;
     should_record_doodle_load_time_ = true;
@@ -350,28 +338,26 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     return;
   }
 
-  DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
-           << "number of tiles: " << impression_was_logged_.count();
-
   bool has_server_side_suggestions = false;
   int tiles_count = 0;
-  for (int i = 0; i < kNumMostVisited; i++) {
-    if (!impression_was_logged_[i]) {
+  for (const base::Optional<ntp_tiles::NTPTileImpression>& impression :
+       logged_impressions_) {
+    if (!impression.has_value()) {
       break;
     }
-    if (impression_tile_source_[i] ==
-        ntp_tiles::TileSource::SUGGESTIONS_SERVICE) {
+    if (impression->source == ntp_tiles::TileSource::SUGGESTIONS_SERVICE) {
       has_server_side_suggestions = true;
     }
     // No URL and rappor service passed - not interested in favicon-related
     // Rappor metrics.
-    ntp_tiles::metrics::RecordTileImpression(
-        i, impression_tile_title_source_[i], impression_tile_source_[i],
-        impression_tile_type_[i], GURL(),
-        /*rappor_service=*/nullptr);
+    ntp_tiles::metrics::RecordTileImpression(*impression,
+                                             /*rappor_service=*/nullptr);
     ++tiles_count;
   }
   ntp_tiles::metrics::RecordPageImpression(tiles_count);
+
+  DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
+           << "number of tiles: " << tiles_count;
 
   UMA_HISTOGRAM_LOAD_TIME("NewTabPage.TilesReceivedTime", tiles_received_time_);
   UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime", load_time);

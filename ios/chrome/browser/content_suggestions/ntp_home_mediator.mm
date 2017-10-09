@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_tiles/metrics.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
@@ -348,8 +349,9 @@ const char kRateThisAppCommand[] = "ratethisapp";
       recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
   base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
 
-  ntp_tiles::metrics::RecordTileClick(mostVisitedIndex, item.titleSource,
-                                      item.source, [item tileType]);
+  ntp_tiles::metrics::RecordTileClick(
+      ntp_tiles::NTPTileImpression(mostVisitedIndex, item.source,
+                                   item.titleSource, [item tileType], GURL()));
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
