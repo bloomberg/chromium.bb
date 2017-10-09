@@ -931,11 +931,6 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
   }
 }
 
-RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
-  RenderViewHostImpl* host = GetRenderManager()->current_host();
-  return host ? host->GetProcess() : NULL;
-}
-
 RenderFrameHostImpl* WebContentsImpl::GetMainFrame() const {
   return frame_tree_.root()->current_frame_host();
 }
