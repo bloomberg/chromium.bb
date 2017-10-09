@@ -36,8 +36,7 @@ OAuth2TokenFetcher::OAuth2TokenFetcher(
   DCHECK(delegate);
 }
 
-OAuth2TokenFetcher::~OAuth2TokenFetcher() {
-}
+OAuth2TokenFetcher::~OAuth2TokenFetcher() {}
 
 void OAuth2TokenFetcher::StartExchangeFromCookies(
     const std::string& session_index,

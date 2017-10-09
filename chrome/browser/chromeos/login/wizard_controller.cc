@@ -173,10 +173,8 @@ void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreen screen,
   // can not be used here, because |histogram_name| is calculated dynamically
   // and changes from call to call.
   base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-      histogram_name,
-      base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMinutes(3),
-      50,
+      histogram_name, base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMinutes(3), 50,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTime(step_time);
 }
@@ -897,10 +895,11 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
   // Check whether the device is disabled. OnDeviceDisabledChecked() will be
   // invoked when the result of this check is known. Until then, the current
   // screen will remain visible and will continue showing a spinner.
-  g_browser_process->platform_part()->device_disabling_manager()->
-      CheckWhetherDeviceDisabledDuringOOBE(base::Bind(
-          &WizardController::OnDeviceDisabledChecked,
-          weak_factory_.GetWeakPtr()));
+  g_browser_process->platform_part()
+      ->device_disabling_manager()
+      ->CheckWhetherDeviceDisabledDuringOOBE(
+          base::Bind(&WizardController::OnDeviceDisabledChecked,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void WizardController::OnOobeFlowFinished() {
@@ -1069,11 +1068,9 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
   oobe_ui_->UpdateLocalizedStringsIfNeeded();
 
   if (use_smoothing) {
-    smooth_show_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kShowDelayMs),
-        this,
-        &WizardController::ShowCurrentScreen);
+    smooth_show_timer_.Start(FROM_HERE,
+                             base::TimeDelta::FromMilliseconds(kShowDelayMs),
+                             this, &WizardController::ShowCurrentScreen);
   } else {
     ShowCurrentScreen();
   }
@@ -1170,9 +1167,9 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
         ShowHostPairingScreen();
       } else if (CanShowHIDDetectionScreen()) {
         hid_screen_ = GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
-        base::Callback<void(bool)> on_check = base::Bind(
-            &WizardController::OnHIDScreenNecessityCheck,
-            weak_factory_.GetWeakPtr());
+        base::Callback<void(bool)> on_check =
+            base::Bind(&WizardController::OnHIDScreenNecessityCheck,
+                       weak_factory_.GetWeakPtr());
         oobe_ui_->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
       } else {
         ShowNetworkScreen();
@@ -1370,8 +1367,9 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
         network_handler::ErrorCallback());
   } else {
     network_screen->CreateAndConnectNetworkFromOnc(
-        onc_spec, base::Bind(&WizardController::OnSetHostNetworkSuccessful,
-                             weak_factory_.GetWeakPtr()),
+        onc_spec,
+        base::Bind(&WizardController::OnSetHostNetworkSuccessful,
+                   weak_factory_.GetWeakPtr()),
         base::Bind(&WizardController::OnSetHostNetworkFailed,
                    weak_factory_.GetWeakPtr()));
   }
@@ -1415,8 +1413,7 @@ void WizardController::AutoLaunchKioskApp() {
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
       CrosSettings::Get()->PrepareTrustedValues(base::Bind(
-          &WizardController::AutoLaunchKioskApp,
-          weak_factory_.GetWeakPtr()));
+          &WizardController::AutoLaunchKioskApp, weak_factory_.GetWeakPtr()));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -1574,8 +1571,7 @@ void WizardController::OnLocationResolved(const Geoposition& position,
   // WizardController owns TimezoneProvider, so timezone request is silently
   // cancelled on destruction.
   GetTimezoneProvider()->RequestTimezone(
-      position,
-      timeout - elapsed,
+      position, timeout - elapsed,
       base::Bind(&WizardController::OnTimezoneResolved,
                  base::Unretained(this)));
 }

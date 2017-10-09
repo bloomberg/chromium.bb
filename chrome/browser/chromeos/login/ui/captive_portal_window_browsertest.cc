@@ -36,8 +36,7 @@ namespace {
 class CaptivePortalWindowProxyStubDelegate
     : public CaptivePortalWindowProxyDelegate {
  public:
-  CaptivePortalWindowProxyStubDelegate(): num_portal_notifications_(0) {
-  }
+  CaptivePortalWindowProxyStubDelegate() : num_portal_notifications_(0) {}
 
   ~CaptivePortalWindowProxyStubDelegate() override {}
 
@@ -53,21 +52,13 @@ class CaptivePortalWindowProxyStubDelegate
 
 class CaptivePortalWindowTest : public InProcessBrowserTest {
  protected:
-  void ShowIfRedirected() {
-    captive_portal_window_proxy_->ShowIfRedirected();
-  }
+  void ShowIfRedirected() { captive_portal_window_proxy_->ShowIfRedirected(); }
 
-  void Show() {
-    captive_portal_window_proxy_->Show();
-  }
+  void Show() { captive_portal_window_proxy_->Show(); }
 
-  void Close() {
-    captive_portal_window_proxy_->Close();
-  }
+  void Close() { captive_portal_window_proxy_->Close(); }
 
-  void OnRedirected() {
-    captive_portal_window_proxy_->OnRedirected();
-  }
+  void OnRedirected() { captive_portal_window_proxy_->OnRedirected(); }
 
   void OnOriginalURLLoaded() {
     captive_portal_window_proxy_->OnOriginalURLLoaded();
@@ -181,8 +172,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, MultipleCalls) {
 
 class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
  public:
-  CaptivePortalWindowCtorDtorTest()
-      : LoginManagerTest(false) {}
+  CaptivePortalWindowCtorDtorTest() : LoginManagerTest(false) {}
   ~CaptivePortalWindowCtorDtorTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -196,8 +186,7 @@ class CaptivePortalWindowCtorDtorTest : public LoginManagerTest {
     network_portal_detector_->SetDefaultNetworkForTesting(
         FakeShillManagerClient::kFakeEthernetNetworkGuid);
     network_portal_detector_->SetDetectionResultsForTesting(
-        FakeShillManagerClient::kFakeEthernetNetworkGuid,
-        portal_state);
+        FakeShillManagerClient::kFakeEthernetNetworkGuid, portal_state);
   }
 
  protected:

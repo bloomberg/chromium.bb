@@ -95,7 +95,6 @@ class WebUILoginDisplay : public LoginDisplay,
   void OnUserActivity(const ui::Event* event) override;
 
  private:
-
   // Whether to show guest login.
   bool show_guest_ = false;
 

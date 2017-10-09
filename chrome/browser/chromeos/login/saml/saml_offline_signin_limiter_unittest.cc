@@ -659,4 +659,4 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInOfflineWithExpiredLimit) {
   EXPECT_EQ(gaia_signin_time, last_gaia_signin_time);
 }
 
-} //  namespace chromeos
+}  //  namespace chromeos

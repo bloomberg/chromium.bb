@@ -180,11 +180,9 @@ class FakeSamlIdp {
   DISALLOW_COPY_AND_ASSIGN(FakeSamlIdp);
 };
 
-FakeSamlIdp::FakeSamlIdp() {
-}
+FakeSamlIdp::FakeSamlIdp() {}
 
-FakeSamlIdp::~FakeSamlIdp() {
-}
+FakeSamlIdp::~FakeSamlIdp() {}
 
 void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
   base::FilePath test_data_dir;
@@ -197,15 +195,13 @@ void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
 }
 
 void FakeSamlIdp::SetLoginHTMLTemplate(const std::string& template_file) {
-  EXPECT_TRUE(base::ReadFileToString(
-      html_template_dir_.Append(template_file),
-      &login_html_template_));
+  EXPECT_TRUE(base::ReadFileToString(html_template_dir_.Append(template_file),
+                                     &login_html_template_));
 }
 
 void FakeSamlIdp::SetLoginAuthHTMLTemplate(const std::string& template_file) {
-  EXPECT_TRUE(base::ReadFileToString(
-      html_template_dir_.Append(template_file),
-      &login_auth_html_template_));
+  EXPECT_TRUE(base::ReadFileToString(html_template_dir_.Append(template_file),
+                                     &login_auth_html_template_));
 }
 
 void FakeSamlIdp::SetRefreshURL(const GURL& refresh_url) {
@@ -226,8 +222,7 @@ std::unique_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   if (request_path == login_path_) {
     std::string relay_state;
     net::GetValueForKeyInQuery(request_url, kRelayState, &relay_state);
-    return BuildHTMLResponse(login_html_template_,
-                             relay_state,
+    return BuildHTMLResponse(login_html_template_, relay_state,
                              login_auth_path_);
   }
 
@@ -241,22 +236,20 @@ std::unique_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   GURL redirect_url = gaia_assertion_url_;
 
   if (!login_auth_html_template_.empty()) {
-    return BuildHTMLResponse(login_auth_html_template_,
-                             relay_state,
+    return BuildHTMLResponse(login_auth_html_template_, relay_state,
                              redirect_url.spec());
   }
 
-  redirect_url = net::AppendQueryParameter(
-      redirect_url, "SAMLResponse", "fake_response");
-  redirect_url = net::AppendQueryParameter(
-      redirect_url, kRelayState, relay_state);
+  redirect_url =
+      net::AppendQueryParameter(redirect_url, "SAMLResponse", "fake_response");
+  redirect_url =
+      net::AppendQueryParameter(redirect_url, kRelayState, relay_state);
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url.spec());
   http_response->AddCustomHeader(
-      "Set-cookie",
-      base::StringPrintf("saml=%s", cookie_value_.c_str()));
+      "Set-cookie", base::StringPrintf("saml=%s", cookie_value_.c_str()));
   return std::move(http_response);
 }
 
@@ -265,12 +258,11 @@ std::unique_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
     const std::string& relay_state,
     const std::string& next_path) {
   std::string response_html = html_template;
-  base::ReplaceSubstringsAfterOffset(
-      &response_html, 0, "$RelayState", relay_state);
-  base::ReplaceSubstringsAfterOffset(
-      &response_html, 0, "$Post", next_path);
-  base::ReplaceSubstringsAfterOffset(
-      &response_html, 0, "$Refresh", refresh_url_.spec());
+  base::ReplaceSubstringsAfterOffset(&response_html, 0, "$RelayState",
+                                     relay_state);
+  base::ReplaceSubstringsAfterOffset(&response_html, 0, "$Post", next_path);
+  base::ReplaceSubstringsAfterOffset(&response_html, 0, "$Refresh",
+                                     refresh_url_.spec());
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   http_response->set_code(net::HTTP_OK);
@@ -300,8 +292,7 @@ class SecretInterceptingFakeCryptohomeClient : public FakeCryptohomeClient {
 };
 
 SecretInterceptingFakeCryptohomeClient::
-    SecretInterceptingFakeCryptohomeClient() {
-}
+    SecretInterceptingFakeCryptohomeClient() {}
 
 void SecretInterceptingFakeCryptohomeClient::MountEx(
     const cryptohome::Identification& id,
@@ -386,8 +377,8 @@ class SamlTest : public OobeBaseTest {
     std::string js =
         "$('saml-confirm-password').$.passwordInput.value='$Password';"
         "$('saml-confirm-password').$.inputForm.submit();";
-    base::ReplaceSubstringsAfterOffset(
-        &js, 0, "$Password", password_to_confirm);
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$Password",
+                                       password_to_confirm);
     ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
   }
 
@@ -549,13 +540,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   ExecuteJsInSigninFrame(
-    "(function() {"
-      "var newPassInput = document.createElement('input');"
-      "newPassInput.id = 'DynamicallyCreatedPassword';"
-      "newPassInput.type = 'password';"
-      "newPassInput.name = 'Password';"
-      "document.forms[0].appendChild(newPassInput);"
-    "})();");
+      "(function() {"
+      "  var newPassInput = document.createElement('input');"
+      "  newPassInput.id = 'DynamicallyCreatedPassword';"
+      "  newPassInput.type = 'password';"
+      "  newPassInput.name = 'Password';"
+      "  document.forms[0].appendChild(newPassInput);"
+      "})();");
 
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
@@ -753,9 +744,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
   GetLoginDisplay()->ShowSigninScreenForCreds(kHTTPSAMLUserEmail, "");
 
   const GURL url = embedded_test_server()->base_url().Resolve("/SAML");
-  EXPECT_EQ(l10n_util::GetStringFUTF8(
-                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
-                base::UTF8ToUTF16(url.spec())),
+  EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
+                                      base::UTF8ToUTF16(url.spec())),
             WaitForAndGetFatalErrorMessage());
 }
 
@@ -770,9 +760,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
   WaitForSigninScreen();
   GetLoginDisplay()->ShowSigninScreenForCreds(kFirstSAMLUserEmail, "");
 
-  EXPECT_EQ(l10n_util::GetStringFUTF8(
-                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
-                base::UTF8ToUTF16(url.spec())),
+  EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
+                                      base::UTF8ToUTF16(url.spec())),
             WaitForAndGetFatalErrorMessage());
 }
 
@@ -813,8 +802,7 @@ SAMLEnrollmentTest::SAMLEnrollmentTest() {
   gaia_frame_parent_ = "oauth-enroll-auth-view";
 }
 
-SAMLEnrollmentTest::~SAMLEnrollmentTest() {
-}
+SAMLEnrollmentTest::~SAMLEnrollmentTest() {}
 
 void SAMLEnrollmentTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -1010,11 +998,9 @@ class SAMLPolicyTest : public SamlTest {
 
 SAMLPolicyTest::SAMLPolicyTest()
     : fake_session_manager_client_(new FakeSessionManagerClient),
-      device_policy_(test_helper_.device_policy()) {
-}
+      device_policy_(test_helper_.device_policy()) {}
 
-SAMLPolicyTest::~SAMLPolicyTest() {
-}
+SAMLPolicyTest::~SAMLPolicyTest() {}
 
 void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
   DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -1142,15 +1128,15 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
 
 void SAMLPolicyTest::ShowSAMLInterstitial() {
   login_screen_load_observer_->Wait();
-  ASSERT_TRUE(content::ExecuteScript(
-      GetLoginUI()->GetWebContents(),
-      "$('saml-interstitial').addEventListener("
-      "    'samlInterstitialPageReady',"
-      "    function() {"
-      "        window.domAutomationController.send("
-      "            'samlInterstitialPageReady');"
-      "    });"
-      "$('add-user-button').click();"));
+  ASSERT_TRUE(
+      content::ExecuteScript(GetLoginUI()->GetWebContents(),
+                             "$('saml-interstitial').addEventListener("
+                             "    'samlInterstitialPageReady',"
+                             "    function() {"
+                             "        window.domAutomationController.send("
+                             "            'samlInterstitialPageReady');"
+                             "    });"
+                             "$('add-user-button').click();"));
 
   content::DOMMessageQueue message_queue;
   std::string message;
@@ -1242,12 +1228,10 @@ void SAMLPolicyTest::GetCookiesOnIOThread(
                      callback));
 }
 
-void SAMLPolicyTest::StoreCookieList(
-    const base::Closure& callback,
-    const net::CookieList& cookie_list) {
+void SAMLPolicyTest::StoreCookieList(const base::Closure& callback,
+                                     const net::CookieList& cookie_list) {
   cookie_list_ = cookie_list;
-  content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                   FROM_HERE,
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    callback);
 }
 
@@ -1265,8 +1249,9 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
   GetLoginDisplay()->ShowSigninScreenForCreds(kNonSAMLUserEmail, "password");
 
   content::WindowedNotificationObserver(
-    chrome::NOTIFICATION_SESSION_STARTED,
-    content::NotificationService::AllSources()).Wait();
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources())
+      .Wait();
 }
 
 // Verifies that the offline login time limit does not affect a user who
@@ -1371,8 +1356,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TransferCookiesAffiliated) {
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, MAYBE_PRE_TransferCookiesUnaffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
-  LogInWithSAML(kDifferentDomainSAMLUserEmail,
-                kTestAuthSIDCookie1,
+  LogInWithSAML(kDifferentDomainSAMLUserEmail, kTestAuthSIDCookie1,
                 kTestAuthLSIDCookie1);
 
   GetCookies();
@@ -1391,8 +1375,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, MAYBE_TransferCookiesUnaffiliated) {
   ShowGAIALoginForm();
 
   EnableTransferSAMLCookiesPolicy();
-  LogInWithSAML(kDifferentDomainSAMLUserEmail,
-                kTestAuthSIDCookie1,
+  LogInWithSAML(kDifferentDomainSAMLUserEmail, kTestAuthSIDCookie1,
                 kTestAuthLSIDCookie1);
 
   GetCookies();

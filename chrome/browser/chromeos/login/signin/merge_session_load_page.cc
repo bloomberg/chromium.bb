@@ -94,11 +94,11 @@ std::string MergeSessionLoadPage::GetHTMLContents() {
 }
 
 void MergeSessionLoadPage::OverrideRendererPrefs(
-      content::RendererPreferences* prefs) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents_->GetBrowserContext());
-  renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, profile, web_contents_);
+    content::RendererPreferences* prefs) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile,
+                                                      web_contents_);
 }
 
 void MergeSessionLoadPage::OnProceed() {
@@ -153,15 +153,14 @@ OAuth2LoginManager* MergeSessionLoadPage::GetOAuth2LoginManager() {
 }
 
 void MergeSessionLoadPage::OnSessionRestoreStateChanged(
-    Profile* user_profile, OAuth2LoginManager::SessionRestoreState state) {
+    Profile* user_profile,
+    OAuth2LoginManager::SessionRestoreState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   OAuth2LoginManager* manager = GetOAuth2LoginManager();
   DVLOG(1) << "Merge session should "
-           << (!manager->ShouldBlockTabLoading() ?
-                  " NOT " : "")
-           << " be blocking now, "
-           << state;
+           << (!manager->ShouldBlockTabLoading() ? " NOT " : "")
+           << " be blocking now, " << state;
   if (!manager->ShouldBlockTabLoading()) {
     manager->RemoveObserver(this);
     interstitial_page_->Proceed();

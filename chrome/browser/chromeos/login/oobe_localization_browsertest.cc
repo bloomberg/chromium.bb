@@ -259,7 +259,8 @@ bool OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
       "  if (%d && correct)\n"
       "    correct = select.children[values.length].tagName === 'OPTGROUP';\n"
       "  return correct;\n"
-      "})()", select_id, values, check_separator);
+      "})()",
+      select_id, values, check_separator);
   const bool execute_status = checker.GetBool(expression);
   EXPECT_TRUE(execute_status) << expression;
   return execute_status;
@@ -277,7 +278,8 @@ bool OobeLocalizationTest::VerifyOptionExists(const char* select_id,
       "      return true;\n"
       "  }\n"
       "  return false;\n"
-      "})()", select_id, value);
+      "})()",
+      select_id, value);
   const bool execute_status = checker.GetBool(expression);
   EXPECT_TRUE(execute_status) << expression;
   return execute_status;
@@ -337,8 +339,7 @@ std::string TranslateXKB2Extension(const std::string& src) {
   // extension based xkb id.
   size_t pos = 0;
   std::string repl_old = "xkb:";
-  std::string repl_new =
-      extension_ime_util::GetInputMethodIDByEngineID("xkb:");
+  std::string repl_new = extension_ime_util::GetInputMethodIDByEngineID("xkb:");
   while ((pos = result.find(repl_old, pos)) != std::string::npos) {
     result.replace(pos, repl_old.length(), repl_new);
     pos += repl_new.length();
@@ -396,16 +397,15 @@ void OobeLocalizationTest::RunLocalizationTest() {
   }
   if (!VerifyInitialOptions(
           kKeyboardSelect,
-          TranslateXKB2Extension(expected_keyboard_layout).c_str(),
-          false)) {
+          TranslateXKB2Extension(expected_keyboard_layout).c_str(), false)) {
     LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
                << DumpOptions(kKeyboardSelect);
   }
 
   // Make sure we have a fallback keyboard.
-  if (!VerifyOptionExists(kKeyboardSelect,
-                          extension_ime_util::GetInputMethodIDByEngineID(
-                              kUSLayout).c_str())) {
+  if (!VerifyOptionExists(
+          kKeyboardSelect,
+          extension_ime_util::GetInputMethodIDByEngineID(kUSLayout).c_str())) {
     LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
                << DumpOptions(kKeyboardSelect);
   }

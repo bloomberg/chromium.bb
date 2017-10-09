@@ -86,8 +86,7 @@ IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
 
   gfx::NativeWindow login_window = GetLoginWindowWidget()->GetNativeWindow();
 
-  ui_controls::SendKeyPress(login_window,
-                            ui::VKEY_E,
+  ui_controls::SendKeyPress(login_window, ui::VKEY_E,
                             true,    // control
                             false,   // shift
                             true,    // alt

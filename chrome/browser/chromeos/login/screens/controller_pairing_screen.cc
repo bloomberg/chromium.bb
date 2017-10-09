@@ -132,8 +132,8 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
   context_.SetString(kContextKeyPage, desired_page);
   context_.SetBoolean(kContextKeyControlsDisabled, false);
   CommitContextChanges();
-  VLOG(1) << "PairingStageChanged " << desired_page
-          << ", current stage " << current_stage_;
+  VLOG(1) << "PairingStageChanged " << desired_page << ", current stage "
+          << current_stage_;
 }
 
 void ControllerPairingScreen::DiscoveredDevicesListChanged() {
@@ -143,9 +143,8 @@ void ControllerPairingScreen::DiscoveredDevicesListChanged() {
       shark_controller_->GetDiscoveredDevices();
   std::sort(devices.begin(), devices.end());
   context_.SetStringList(kContextKeyDevices, devices);
-  context_.SetString(
-      kContextKeyPage,
-      devices.empty() ? kPageDevicesDiscovery : kPageDeviceSelect);
+  context_.SetString(kContextKeyPage, devices.empty() ? kPageDevicesDiscovery
+                                                      : kPageDeviceSelect);
   std::string selected_device = context_.GetString(kContextKeySelectedDevice);
   if (!base::ContainsValue(devices, selected_device))
     selected_device.clear();
@@ -205,8 +204,7 @@ void ControllerPairingScreen::OnScreenContextChanged(
   std::vector<std::string> changedKeys;
   context_.ApplyChanges(diff, &changedKeys);
   for (std::vector<std::string>::const_iterator key = changedKeys.begin();
-       key != changedKeys.end();
-       ++key) {
+       key != changedKeys.end(); ++key) {
     if (*key == kContextKeySelectedDevice) {
       context_.SetBoolean(kContextKeyControlsDisabled,
                           context_.GetString(*key).empty());

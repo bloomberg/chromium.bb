@@ -25,8 +25,7 @@ namespace test {
 JSChecker::JSChecker() : web_contents_(NULL) {}
 
 JSChecker::JSChecker(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
-}
+    : web_contents_(web_contents) {}
 
 void JSChecker::Evaluate(const std::string& expression) {
   CHECK(web_contents_);
@@ -92,17 +91,15 @@ void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
 
 void JSChecker::GetIntImpl(const std::string& expression, int* result) {
   CHECK(web_contents_);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(web_contents_,
-                                                  WrapSend(expression),
-                                                  result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      web_contents_, WrapSend(expression), result));
 }
 
 void JSChecker::GetStringImpl(const std::string& expression,
                               std::string* result) {
   CHECK(web_contents_);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(web_contents_,
-                                                     WrapSend(expression),
-                                                     result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents_, WrapSend(expression), result));
 }
 
 }  // namespace test

@@ -11,8 +11,7 @@
 namespace chromeos {
 
 BaseScreen::ContextEditor::ContextEditor(BaseScreen& screen)
-    : screen_(screen), context_(screen.context_) {
-}
+    : screen_(screen), context_(screen.context_) {}
 
 BaseScreen::ContextEditor::~ContextEditor() {
   screen_.CommitContextChanges();

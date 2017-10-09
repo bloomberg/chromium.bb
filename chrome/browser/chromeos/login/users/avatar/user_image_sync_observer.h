@@ -112,4 +112,3 @@ class UserImageSyncObserver
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_USER_IMAGE_SYNC_OBSERVER_H_
-

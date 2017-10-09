@@ -9,9 +9,9 @@
 
 namespace {
 
-const char * const kMetricEnrollment = "Enterprise.Enrollment";
-const char * const kMetricEnrollmentForced = "Enterprise.EnrollmentForced";
-const char * const kMetricEnrollmentRecovery = "Enterprise.EnrollmentRecovery";
+const char* const kMetricEnrollment = "Enterprise.Enrollment";
+const char* const kMetricEnrollmentForced = "Enterprise.EnrollmentForced";
+const char* const kMetricEnrollmentRecovery = "Enterprise.EnrollmentRecovery";
 
 }  // namespace
 

@@ -54,11 +54,9 @@ EasyUnlockTpmKeyManager* EasyUnlockTpmKeyManagerFactory::GetForUser(
 EasyUnlockTpmKeyManagerFactory::EasyUnlockTpmKeyManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "EasyUnlockTpmKeyManager",
-          BrowserContextDependencyManager::GetInstance()) {
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
-EasyUnlockTpmKeyManagerFactory::~EasyUnlockTpmKeyManagerFactory() {
-}
+EasyUnlockTpmKeyManagerFactory::~EasyUnlockTpmKeyManagerFactory() {}
 
 KeyedService* EasyUnlockTpmKeyManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
@@ -74,6 +72,6 @@ KeyedService* EasyUnlockTpmKeyManagerFactory::BuildServiceInstanceFor(
 }
 
 content::BrowserContext* EasyUnlockTpmKeyManagerFactory::GetBrowserContextToUse(
-      content::BrowserContext* context) const {
+    content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }

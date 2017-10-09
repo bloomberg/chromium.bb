@@ -19,11 +19,9 @@ namespace chromeos {
 
 ChromeCryptohomeAuthenticator::ChromeCryptohomeAuthenticator(
     AuthStatusConsumer* consumer)
-    : CryptohomeAuthenticator(base::ThreadTaskRunnerHandle::Get(), consumer) {
-}
+    : CryptohomeAuthenticator(base::ThreadTaskRunnerHandle::Get(), consumer) {}
 
-ChromeCryptohomeAuthenticator::~ChromeCryptohomeAuthenticator() {
-}
+ChromeCryptohomeAuthenticator::~ChromeCryptohomeAuthenticator() {}
 
 bool ChromeCryptohomeAuthenticator::IsKnownUser(const UserContext& context) {
   return user_manager::UserManager::Get()->IsKnownUser(context.GetAccountId());

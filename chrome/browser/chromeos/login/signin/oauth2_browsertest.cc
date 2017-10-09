@@ -91,16 +91,15 @@ std::string PickAccountId(Profile* profile,
 class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
  public:
   explicit OAuth2LoginManagerStateWaiter(Profile* profile)
-     : profile_(profile),
-       waiting_for_state_(false),
-       final_state_(OAuth2LoginManager::SESSION_RESTORE_NOT_STARTED) {
-  }
+      : profile_(profile),
+        waiting_for_state_(false),
+        final_state_(OAuth2LoginManager::SESSION_RESTORE_NOT_STARTED) {}
 
   void WaitForStates(
       const std::set<OAuth2LoginManager::SessionRestoreState>& states) {
     DCHECK(!waiting_for_state_);
     OAuth2LoginManager* login_manager =
-         OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile_);
+        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile_);
     states_ = states;
     if (states_.find(login_manager->state()) != states_.end()) {
       final_state_ = login_manager->state();
@@ -260,8 +259,9 @@ class OAuth2Test : public OobeBaseTest {
 
   void LoginAsExistingUser() {
     content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources()).Wait();
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+        content::NotificationService::AllSources())
+        .Wait();
 
     JsExpect("!!document.querySelector('#account-picker')");
     JsExpect("!!document.querySelector('#pod-row')");
@@ -283,7 +283,7 @@ class OAuth2Test : public OobeBaseTest {
 
     // Check for existence of refresh token.
     ProfileOAuth2TokenService* token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
 
     EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
@@ -341,12 +341,12 @@ class OAuth2Test : public OobeBaseTest {
     controller->Login(user_context, SigninSpecifics());
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources()).Wait();
+        content::NotificationService::AllSources())
+        .Wait();
     const user_manager::UserList& logged_users =
         user_manager::UserManager::Get()->GetLoggedInUsers();
     for (user_manager::UserList::const_iterator it = logged_users.begin();
-         it != logged_users.end();
-         ++it) {
+         it != logged_users.end(); ++it) {
       if ((*it)->GetAccountId() == account_id)
         return true;
     }
@@ -355,8 +355,7 @@ class OAuth2Test : public OobeBaseTest {
 
   void CheckSessionState(OAuth2LoginManager::SessionRestoreState state) {
     OAuth2LoginManager* login_manager =
-         OAuth2LoginManagerFactory::GetInstance()->GetForProfile(
-             profile());
+        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile());
     ASSERT_EQ(state, login_manager->state());
   }
 
@@ -423,8 +422,7 @@ class OAuth2Test : public OobeBaseTest {
 
 class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
  public:
-  CookieReader() {
-  }
+  CookieReader() {}
 
   void ReadCookies(Profile* profile) {
     context_ = profile->GetRequestContext();
@@ -438,8 +436,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
   std::string GetCookieValue(const std::string& name) {
     for (std::vector<net::CanonicalCookie>::const_iterator iter =
              cookie_list_.begin();
-        iter != cookie_list_.end();
-        ++iter) {
+         iter != cookie_list_.end(); ++iter) {
       if (iter->Name() == name) {
         return iter->Value();
       }
@@ -450,8 +447,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
  private:
   friend class base::RefCountedThreadSafe<CookieReader>;
 
-  virtual ~CookieReader() {
-  }
+  virtual ~CookieReader() {}
 
   void ReadCookiesOnIOThread() {
     context_->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
@@ -480,8 +476,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
   // Check for existence of refresh token.
   std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
   ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(
-            profile());
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
   EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
 
   EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
@@ -532,8 +527,9 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_MergeSession) {
   SimulateNetworkOnline();
 
   content::WindowedNotificationObserver(
-    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-    content::NotificationService::AllSources()).Wait();
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources())
+      .Wait();
 
   JsExpect("!!document.querySelector('#account-picker')");
   JsExpect("!!document.querySelector('#pod-row')");
@@ -803,13 +799,12 @@ class MergeSessionTest : public OAuth2Test {
     merge_session_deferer_.WaitForRequestToStart();
   }
 
-  void JsExpect(content::WebContents* contents,
-                const std::string& expression) {
+  void JsExpect(content::WebContents* contents, const std::string& expression) {
     bool result;
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
         contents,
         "window.domAutomationController.send(!!(" + expression + "));",
-         &result));
+        &result));
     ASSERT_TRUE(result) << expression;
   }
 
@@ -919,16 +914,15 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
 
   // Load extension with a background page. The background page will
   // attempt to load |fake_google_page_url_| via XHR.
-  const extensions::Extension* ext = LoadExtension(
-      test_data_dir_.AppendASCII("merge_session"));
+  const extensions::Extension* ext =
+      LoadExtension(test_data_dir_.AppendASCII("merge_session"));
   ASSERT_TRUE(ext);
 
   // Kick off XHR request from the extension.
   JsExpectOnBackgroundPage(
-      ext->id(),
-      base::StringPrintf("startThrottledTests('%s', '%s')",
-                         fake_google_page_url_.spec().c_str(),
-                         non_google_page_url_.spec().c_str()));
+      ext->id(), base::StringPrintf("startThrottledTests('%s', '%s')",
+                                    fake_google_page_url_.spec().c_str(),
+                                    non_google_page_url_.spec().c_str()));
 
   // Verify that we've sent XHR request form the extension side...
   JsExpectOnBackgroundPage(ext->id(),

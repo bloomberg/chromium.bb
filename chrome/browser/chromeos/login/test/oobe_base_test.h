@@ -23,7 +23,7 @@
 namespace content {
 class WebUI;
 class WindowedNotificationObserver;
-}
+}  // namespace content
 
 namespace extensions {
 class ScopedCurrentChannel;

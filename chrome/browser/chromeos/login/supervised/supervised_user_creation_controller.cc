@@ -27,4 +27,3 @@ SupervisedUserCreationController::~SupervisedUserCreationController() {
 }
 
 }  // namespace chromeos
-

@@ -59,8 +59,7 @@ class UserSessionManagerDelegate {
   // Called after profile is loaded and prepared for the session.
   // |browser_launched| will be true is browser has been launched, otherwise
   // it will return false and client is responsible on launching browser.
-  virtual void OnProfilePrepared(Profile* profile,
-                                 bool browser_launched) = 0;
+  virtual void OnProfilePrepared(Profile* profile, bool browser_launched) = 0;
 
  protected:
   virtual ~UserSessionManagerDelegate();
@@ -181,12 +180,10 @@ class UserSessionManager
 
   // Gets/sets Chrome OAuth client id and secret for kiosk app mode. The default
   // values can be overridden with kiosk auth file.
-  bool GetAppModeChromeClientOAuthInfo(
-      std::string* chrome_client_id,
-      std::string* chrome_client_secret);
-  void SetAppModeChromeClientOAuthInfo(
-      const std::string& chrome_client_id,
-      const std::string& chrome_client_secret);
+  bool GetAppModeChromeClientOAuthInfo(std::string* chrome_client_id,
+                                       std::string* chrome_client_secret);
+  void SetAppModeChromeClientOAuthInfo(const std::string& chrome_client_id,
+                                       const std::string& chrome_client_secret);
 
   // Thin wrapper around StartupBrowserCreator::LaunchBrowser().  Meant to be
   // used in a Task posted to the UI thread.  Once the browser is launched the
@@ -346,8 +343,7 @@ class UserSessionManager
   void InitSessionRestoreStrategy();
 
   // Restores GAIA auth cookies for the created user profile from OAuth2 token.
-  void RestoreAuthSessionImpl(Profile* profile,
-                              bool restore_from_auth_cookies);
+  void RestoreAuthSessionImpl(Profile* profile, bool restore_from_auth_cookies);
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, bool disabled);
@@ -379,8 +375,7 @@ class UserSessionManager
   void AttemptRestart(Profile* profile);
 
   // Callback invoked when Easy unlock key operations are finished.
-  void OnEasyUnlockKeyOpsFinished(const std::string& user_id,
-                                  bool success);
+  void OnEasyUnlockKeyOpsFinished(const std::string& user_id, bool success);
 
   // Internal implementation of DoBrowserLaunch. Initially should be called with
   // |locale_pref_checked| set to false which will result in postponing browser
@@ -491,8 +486,10 @@ class UserSessionManager
   std::string chrome_client_secret_;
 
   // Per-user-session Input Methods states.
-  std::map<Profile*, scoped_refptr<input_method::InputMethodManager::State>,
-      ProfileCompare> default_ime_states_;
+  std::map<Profile*,
+           scoped_refptr<input_method::InputMethodManager::State>,
+           ProfileCompare>
+      default_ime_states_;
 
   // Per-user-session EndofLife Notification
   std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>

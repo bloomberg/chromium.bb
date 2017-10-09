@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/user_flow.h"
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -23,8 +24,7 @@ void UserFlow::SetHost(LoginDisplayHost* host) {
 
 DefaultUserFlow::~DefaultUserFlow() {}
 
-void DefaultUserFlow::AppendAdditionalCommandLineSwitches() {
-}
+void DefaultUserFlow::AppendAdditionalCommandLineSwitches() {}
 
 bool DefaultUserFlow::CanLockScreen() {
   return true;
@@ -69,20 +69,16 @@ bool DefaultUserFlow::HandlePasswordChangeDetected() {
 }
 
 void DefaultUserFlow::HandleOAuthTokenStatusChange(
-    user_manager::User::OAuthTokenStatus status) {
-}
+    user_manager::User::OAuthTokenStatus status) {}
 
-void DefaultUserFlow::LaunchExtraSteps(Profile* profile) {
-}
+void DefaultUserFlow::LaunchExtraSteps(Profile* profile) {}
 
 ExtendedUserFlow::ExtendedUserFlow(const AccountId& account_id)
     : account_id_(account_id) {}
 
-ExtendedUserFlow::~ExtendedUserFlow() {
-}
+ExtendedUserFlow::~ExtendedUserFlow() {}
 
-void ExtendedUserFlow::AppendAdditionalCommandLineSwitches() {
-}
+void ExtendedUserFlow::AppendAdditionalCommandLineSwitches() {}
 
 bool ExtendedUserFlow::ShouldEnableSettings() {
   return true;
@@ -97,8 +93,7 @@ bool ExtendedUserFlow::AllowsNotificationBalloons() {
 }
 
 void ExtendedUserFlow::HandleOAuthTokenStatusChange(
-    user_manager::User::OAuthTokenStatus status) {
-}
+    user_manager::User::OAuthTokenStatus status) {}
 
 void ExtendedUserFlow::UnregisterFlowSoon() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -56,7 +56,7 @@ const char kCurrentPage[] = "$('supervised-user-creation').currentPage_";
 
 const char kStubEthernetGuid[] = "eth0";
 
-}
+}  // namespace
 
 SupervisedUsersSyncTestAdapter::SupervisedUsersSyncTestAdapter(Profile* profile)
     : processor_(), next_sync_data_id_(0) {
@@ -89,10 +89,7 @@ void SupervisedUsersSyncTestAdapter::AddChange(
   specifics.mutable_managed_user()->CopyFrom(proto);
 
   syncer::SyncData change_data = syncer::SyncData::CreateRemoteData(
-      ++next_sync_data_id_,
-      specifics,
-      base::Time(),
-      syncer::AttachmentIdList(),
+      ++next_sync_data_id_, specifics, base::Time(), syncer::AttachmentIdList(),
       syncer::AttachmentServiceProxyForTest::Create());
   syncer::SyncChange change(FROM_HERE,
                             update ? syncer::SyncChange::ACTION_UPDATE
@@ -138,10 +135,7 @@ void SupervisedUsersSharedSettingsSyncTestAdapter::AddChange(
   specifics.mutable_managed_user_shared_setting()->CopyFrom(proto);
 
   syncer::SyncData change_data = syncer::SyncData::CreateRemoteData(
-      ++next_sync_data_id_,
-      specifics,
-      base::Time(),
-      syncer::AttachmentIdList(),
+      ++next_sync_data_id_, specifics, base::Time(), syncer::AttachmentIdList(),
       syncer::AttachmentServiceProxyForTest::Create());
   syncer::SyncChange change(FROM_HERE,
                             update ? syncer::SyncChange::ACTION_UPDATE
@@ -171,11 +165,9 @@ SupervisedUserTestBase::SupervisedUserTestBase()
       mock_async_method_caller_(NULL),
       mock_homedir_methods_(NULL),
       network_portal_detector_(NULL),
-      registration_utility_stub_(NULL) {
-}
+      registration_utility_stub_(NULL) {}
 
-SupervisedUserTestBase::~SupervisedUserTestBase() {
-}
+SupervisedUserTestBase::~SupervisedUserTestBase() {}
 
 void SupervisedUserTestBase::SetUpInProcessBrowserTestFixture() {
   LoginManagerTest::SetUpInProcessBrowserTestFixture();
@@ -232,16 +224,16 @@ void SupervisedUserTestBase::JSExpectAsync(const std::string& function) {
       StringPrintf(
           "(%s)(function() { window.domAutomationController.send(true); });",
           function.c_str()),
-      &result)) << function;
+      &result))
+      << function;
   EXPECT_TRUE(result);
 }
 
 void SupervisedUserTestBase::JSSetTextField(const std::string& element_selector,
-                                         const std::string& value) {
+                                            const std::string& value) {
   std::string function =
       StringPrintf("document.querySelector('%s').value = '%s'",
-                   element_selector.c_str(),
-                   value.c_str());
+                   element_selector.c_str(), value.c_str());
   JSEval(function);
 }
 
@@ -278,12 +270,10 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
   JSExpect(StringPrintf(
       "$('supervised-user-creation').managerList_.pods.length == %d",
       managers_on_device));
-  JSExpect(StringPrintf(
-      "%s.length == %d", manager_pods.c_str(), managers_on_device));
+  JSExpect(StringPrintf("%s.length == %d", manager_pods.c_str(),
+                        managers_on_device));
   JSExpect(StringPrintf("%s[%d].user.emailAddress == '%s'",
-                        manager_pods.c_str(),
-                        0,
-                        kTestManager));
+                        manager_pods.c_str(), 0, kTestManager));
 
   // Select the first user as manager, and enter password.
   JSExpect("$('supervised-user-creation-next-button').disabled");
@@ -393,8 +383,7 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
       new SupervisedUsersSharedSettingsSyncTestAdapter(profile));
 
   // Check ChromeOS preference is initialized.
-  EXPECT_TRUE(
-      static_cast<ProfileImpl*>(profile)->chromeos_preferences_);
+  EXPECT_TRUE(static_cast<ProfileImpl*>(profile)->chromeos_preferences_);
 }
 
 void SupervisedUserTestBase::SigninAsManager(int user_index) {

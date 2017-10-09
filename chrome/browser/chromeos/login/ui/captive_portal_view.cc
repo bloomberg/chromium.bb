@@ -27,13 +27,9 @@ namespace chromeos {
 
 CaptivePortalView::CaptivePortalView(Profile* profile,
                                      CaptivePortalWindowProxy* proxy)
-    : SimpleWebViewDialog(profile),
-      proxy_(proxy),
-      redirected_(false) {
-}
+    : SimpleWebViewDialog(profile), proxy_(proxy), redirected_(false) {}
 
-CaptivePortalView::~CaptivePortalView() {
-}
+CaptivePortalView::~CaptivePortalView() {}
 
 void CaptivePortalView::StartLoad() {
   SimpleWebViewDialog::StartLoad(GURL(CaptivePortalStartURL()));
@@ -77,7 +73,7 @@ void CaptivePortalView::NavigationStateChanged(
   // detection will be done on the Chrome side.
   GURL url = source->GetLastCommittedURL();
   // Note, |url| will be empty for "client3.google.com/generate_204" page.
-  if (!redirected_  && url != GURL::EmptyGURL() &&
+  if (!redirected_ && url != GURL::EmptyGURL() &&
       url != GURL(CaptivePortalStartURL())) {
     redirected_ = true;
     proxy_->OnRedirected();
@@ -85,7 +81,7 @@ void CaptivePortalView::NavigationStateChanged(
 }
 
 void CaptivePortalView::LoadingStateChanged(content::WebContents* source,
-    bool to_different_document) {
+                                            bool to_different_document) {
   SimpleWebViewDialog::LoadingStateChanged(source, to_different_document);
   // TODO(nkostylev): Fix case of no connectivity, check HTTP code returned.
   // Disable this heuristic as it has false positives.

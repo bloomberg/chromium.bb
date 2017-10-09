@@ -64,7 +64,8 @@ const char kRandomAvatarKey[] = "randomAvatar";
 const char kNameOfIntroScreen[] = "intro";
 const char kNameOfNewUserParametersScreen[] = "username";
 
-void ConfigureErrorScreen(ErrorScreen* screen,
+void ConfigureErrorScreen(
+    ErrorScreen* screen,
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
   switch (status) {
@@ -89,7 +90,7 @@ void ConfigureErrorScreen(ErrorScreen* screen,
   }
 }
 
-} // namespace
+}  // namespace
 
 // static
 SupervisedUserCreationScreen* SupervisedUserCreationScreen::Get(
@@ -150,7 +151,7 @@ void SupervisedUserCreationScreen::OnPageSelected(const std::string& page) {
 
 void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
     const NetworkState* network,
-    const NetworkPortalDetector::CaptivePortalState& state)  {
+    const NetworkPortalDetector::CaptivePortalState& state) {
   if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
     get_base_screen_delegate()->HideErrorScreen(this);
     histogram_helper_->OnErrorHide();
@@ -293,13 +294,8 @@ void SupervisedUserCreationScreen::ImportSupervisedUser(
                              !password_data->empty();
 
   if (password_right_here) {
-    controller_->StartImport(display_name,
-                             avatar_index,
-                             user_id,
-                             master_key,
-                             password_data,
-                             encryption_key,
-                             signature_key);
+    controller_->StartImport(display_name, avatar_index, user_id, master_key,
+                             password_data, encryption_key, signature_key);
   } else {
     NOTREACHED() << " Oops, no password";
   }
@@ -341,10 +337,7 @@ void SupervisedUserCreationScreen::ImportSupervisedUserWithPassword(
 
   SupervisedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
 
-  controller_->StartImport(display_name,
-                           password,
-                           avatar_index,
-                           user_id,
+  controller_->StartImport(display_name, password, avatar_index, user_id,
                            master_key);
 }
 
@@ -368,8 +361,8 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
 
   last_page_ = kNameOfNewUserParametersScreen;
   CHECK(!sync_service_);
-  sync_service_ = SupervisedUserSyncServiceFactory::GetForProfile(
-      manager_profile);
+  sync_service_ =
+      SupervisedUserSyncServiceFactory::GetForProfile(manager_profile);
   sync_service_->AddObserver(this);
   OnSupervisedUsersChanged();
 }
@@ -417,8 +410,8 @@ void SupervisedUserCreationScreen::OnCreationError(
     case SupervisedUserCreationController::TOKEN_WRITE_FAILED:
       title = l10n_util::GetStringUTF16(
           IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE);
-      message = l10n_util::GetStringUTF16(
-          IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR);
+      message =
+          l10n_util::GetStringUTF16(IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR);
       button = l10n_util::GetStringUTF16(
           IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON);
       break;
@@ -449,7 +442,7 @@ void SupervisedUserCreationScreen::OnLongCreationWarning() {
 
 bool SupervisedUserCreationScreen::FindUserByDisplayName(
     const base::string16& display_name,
-    std::string *out_id) const {
+    std::string* out_id) const {
   if (!existing_users_.get())
     return false;
   for (base::DictionaryValue::Iterator it(*existing_users_.get());
@@ -533,15 +526,14 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
     if (local_copy->GetString(SupervisedUserSyncService::kChromeOsAvatar,
                               &chromeos_avatar) &&
         !chromeos_avatar.empty() &&
-        SupervisedUserSyncService::GetAvatarIndex(
-            chromeos_avatar, &avatar_index)) {
+        SupervisedUserSyncService::GetAvatarIndex(chromeos_avatar,
+                                                  &avatar_index)) {
       ui_copy->SetString(kAvatarURLKey,
                          default_user_image::GetDefaultImageUrl(avatar_index));
     } else {
       int i = default_user_image::GetRandomDefaultImageIndex();
-      local_copy->SetString(
-          SupervisedUserSyncService::kChromeOsAvatar,
-          SupervisedUserSyncService::BuildAvatarString(i));
+      local_copy->SetString(SupervisedUserSyncService::kChromeOsAvatar,
+                            SupervisedUserSyncService::BuildAvatarString(i));
       local_copy->SetBoolean(kRandomAvatarKey, true);
       ui_copy->SetString(kAvatarURLKey,
                          default_user_image::GetDefaultImageUrl(i));
@@ -611,8 +603,7 @@ void SupervisedUserCreationScreen::UpdateSecureModuleMessages(
     view_->ShowErrorPage(title, message, button);
 }
 
-void SupervisedUserCreationScreen::OnPhotoTaken(
-    const std::string& raw_data) {
+void SupervisedUserCreationScreen::OnPhotoTaken(const std::string& raw_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   user_photo_ = gfx::ImageSkia();
   ImageDecoder::Cancel(this);
@@ -648,7 +639,6 @@ void SupervisedUserCreationScreen::OnImageSelected(
   }
 }
 
-void SupervisedUserCreationScreen::OnImageAccepted() {
-}
+void SupervisedUserCreationScreen::OnImageAccepted() {}
 
 }  // namespace chromeos

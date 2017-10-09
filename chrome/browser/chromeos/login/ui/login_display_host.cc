@@ -8,4 +8,5 @@ namespace chromeos {
 
 // static
 LoginDisplayHost* LoginDisplayHost::default_host_ = nullptr;
-}
+
+}  // namespace chromeos

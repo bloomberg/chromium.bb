@@ -306,13 +306,9 @@ class UserImageManagerImpl::Job {
 };
 
 UserImageManagerImpl::Job::Job(UserImageManagerImpl* parent)
-    : parent_(parent),
-      run_(false),
-      weak_factory_(this) {
-}
+    : parent_(parent), run_(false), weak_factory_(this) {}
 
-UserImageManagerImpl::Job::~Job() {
-}
+UserImageManagerImpl::Job::~Job() {}
 
 void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
                                           const int image_index,
@@ -634,8 +630,7 @@ void UserImageManagerImpl::LoadUserImage() {
   job_->LoadImage(base::FilePath(image_path), image_index, image_url);
 }
 
-void UserImageManagerImpl::UserLoggedIn(bool user_is_new,
-                                        bool user_is_local) {
+void UserImageManagerImpl::UserLoggedIn(bool user_is_new, bool user_is_local) {
   const user_manager::User* user = GetUser();
   if (user_is_new) {
     if (!user_is_local)
@@ -663,19 +658,16 @@ void UserImageManagerImpl::UserProfileCreated() {
     // optionally image).
     profile_download_one_shot_timer_.Start(
         FROM_HERE,
-        g_ignore_profile_data_download_delay_ ?
-            base::TimeDelta() :
-            base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
+        g_ignore_profile_data_download_delay_
+            ? base::TimeDelta()
+            : base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
         base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this),
-                   kProfileDownloadReasonLoggedIn));
+                   base::Unretained(this), kProfileDownloadReasonLoggedIn));
     // Schedule periodic refreshes of the profile data.
     profile_download_periodic_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
+        FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
         base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this),
-                   kProfileDownloadReasonScheduled));
+                   base::Unretained(this), kProfileDownloadReasonScheduled));
   } else {
     profile_download_one_shot_timer_.Stop();
     profile_download_periodic_timer_.Stop();
@@ -838,13 +830,11 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
       NOTREACHED();
   }
 
-  UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                            result,
+  UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult", result,
                             kDownloadResultsCount);
   DCHECK(!profile_image_load_start_time_.is_null());
   AddProfileImageTimeHistogram(
-      result,
-      profile_image_download_reason_,
+      result, profile_image_download_reason_,
       base::TimeTicks::Now() - profile_image_load_start_time_);
 
   // Ignore the image if it is no longer needed.
@@ -863,15 +853,14 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
   if (result != kDownloadSuccess)
     return;
 
-  downloaded_profile_image_ = gfx::ImageSkia::CreateFrom1xBitmap(
-      downloader->GetProfilePicture());
+  downloaded_profile_image_ =
+      gfx::ImageSkia::CreateFrom1xBitmap(downloader->GetProfilePicture());
   profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
   if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE) {
     VLOG(1) << "Updating profile image for logged-in user.";
     UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                              kDownloadSuccessChanged,
-                              kDownloadResultsCount);
+                              kDownloadSuccessChanged, kDownloadResultsCount);
     // This will persist |downloaded_profile_image_| to disk.
     SaveUserImageFromProfileImage();
   }
@@ -888,12 +877,10 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
 
   if (downloading_profile_image_) {
     UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
-                              kDownloadFailure,
-                              kDownloadResultsCount);
+                              kDownloadFailure, kDownloadResultsCount);
     DCHECK(!profile_image_load_start_time_.is_null());
     AddProfileImageTimeHistogram(
-        kDownloadFailure,
-        profile_image_download_reason_,
+        kDownloadFailure, profile_image_download_reason_,
         base::TimeTicks::Now() - profile_image_load_start_time_);
   }
 
@@ -903,8 +890,7 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
         FROM_HERE,
         base::TimeDelta::FromSeconds(kProfileDataDownloadRetryIntervalSec),
         base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this),
-                   kProfileDownloadReasonRetry));
+                   base::Unretained(this), kProfileDownloadReasonRetry));
   }
 
   user_manager_->NotifyUserProfileImageUpdateFailed(*GetUser());
@@ -995,8 +981,7 @@ void UserImageManagerImpl::TryToCreateImageSyncObserver() {
   const user_manager::User* user = GetUser();
   // If the currently logged-in user's user image is managed, the sync observer
   // must not be started so that the policy-set image does not get synced out.
-  if (!user_image_sync_observer_ &&
-      user && user->CanSyncImage() &&
+  if (!user_image_sync_observer_ && user && user->CanSyncImage() &&
       !IsUserImageManaged()) {
     user_image_sync_observer_.reset(new UserImageSyncObserver(user));
   }

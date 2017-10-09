@@ -20,7 +20,7 @@ namespace chromeos {
 namespace {
 // Duration of user inactivity before running the preload function.
 constexpr int kIdleSecondsBeforePreloadingLockScreen = 8;
-}
+}  // namespace
 
 PreloadedWebView::PreloadedWebView(Profile* profile)
     : profile_(profile), weak_factory_(this) {
@@ -46,11 +46,10 @@ std::unique_ptr<views::WebView> PreloadedWebView::TryTake() {
 
   // Clear cached reference if it is no longer valid (ie, destroyed in task
   // manager).
-  if (preloaded_instance_ &&
-      !preloaded_instance_->GetWebContents()
-           ->GetRenderViewHost()
-           ->GetWidget()
-           ->GetView()) {
+  if (preloaded_instance_ && !preloaded_instance_->GetWebContents()
+                                  ->GetRenderViewHost()
+                                  ->GetWidget()
+                                  ->GetView()) {
     preloaded_instance_.reset();
   }
 

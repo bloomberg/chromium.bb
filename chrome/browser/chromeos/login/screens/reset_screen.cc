@@ -112,9 +112,10 @@ void ResetScreen::Show() {
     context_editor.SetBoolean(kContextKeyIsRollbackAvailable, false);
     dialog_type = reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE;
   } else {
-    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
-        CanRollbackCheck(base::Bind(&ResetScreen::OnRollbackCheck,
-        weak_ptr_factory_.GetWeakPtr()));
+    chromeos::DBusThreadManager::Get()
+        ->GetUpdateEngineClient()
+        ->CanRollbackCheck(base::Bind(&ResetScreen::OnRollbackCheck,
+                                      weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Set availability of TPM firmware update.
@@ -124,8 +125,7 @@ void ResetScreen::Show() {
 
   if (dialog_type < reset::DIALOG_VIEW_TYPE_SIZE) {
     UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown",
-                              dialog_type,
-                              reset::DIALOG_VIEW_TYPE_SIZE);
+                              dialog_type, reset::DIALOG_VIEW_TYPE_SIZE);
   }
 
   PrefService* prefs = g_browser_process->local_state();
@@ -175,8 +175,8 @@ void ResetScreen::OnUserAction(const std::string& action_id) {
 }
 
 void ResetScreen::OnCancel() {
-  if (context_.GetInteger(
-      kContextKeyScreenState, STATE_RESTART_REQUIRED) == STATE_REVERT_PROMISE)
+  if (context_.GetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED) ==
+      STATE_REVERT_PROMISE)
     return;
   // Hide Rollback view for the next show.
   if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
@@ -236,8 +236,8 @@ void ResetScreen::OnToggleRollback() {
   }
 
   // Show Rollback if available.
-  VLOG(1) << "Requested rollback availability" <<
-             context_.GetBoolean(kContextKeyIsRollbackAvailable);
+  VLOG(1) << "Requested rollback availability"
+          << context_.GetBoolean(kContextKeyIsRollbackAvailable);
   if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
       !context_.GetBoolean(kContextKeyIsRollbackChecked)) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -253,10 +253,8 @@ void ResetScreen::OnShowConfirm() {
       context_.GetBoolean(kContextKeyIsRollbackChecked)
           ? reset::DIALOG_SHORTCUT_CONFIRMING_POWERWASH_AND_ROLLBACK
           : reset::DIALOG_SHORTCUT_CONFIRMING_POWERWASH_ONLY;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Reset.ChromeOS.PowerwashDialogShown",
-      dialog_type,
-      reset::DIALOG_VIEW_TYPE_SIZE);
+  UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown", dialog_type,
+                            reset::DIALOG_VIEW_TYPE_SIZE);
 
   GetContextEditor().SetBoolean(kContextKeyIsConfirmational, true);
 }
@@ -287,7 +285,7 @@ void ResetScreen::UpdateStatusChanged(
     GetErrorScreen()->SetUIState(NetworkError::UI_STATE_ROLLBACK_ERROR);
     get_base_screen_delegate()->ShowErrorScreen();
   } else if (status.status ==
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+             UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
         power_manager::REQUEST_RESTART_FOR_UPDATE, "login reset screen update");
   }
@@ -299,8 +297,7 @@ void ResetScreen::OnRollbackCheck(bool can_rollback) {
   reset::DialogViewType dialog_type =
       can_rollback ? reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE
                    : reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE;
-  UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown",
-                            dialog_type,
+  UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown", dialog_type,
                             reset::DIALOG_VIEW_TYPE_SIZE);
 
   GetContextEditor().SetBoolean(kContextKeyIsRollbackAvailable, can_rollback);

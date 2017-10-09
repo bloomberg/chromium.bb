@@ -112,10 +112,9 @@ class SupervisedUserAuthentication {
   // Target schema version. Affects migration process and new user creation.
   Schema stable_schema_;
 
-
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserAuthentication);
 };
 
-} // namespace chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATION_H_

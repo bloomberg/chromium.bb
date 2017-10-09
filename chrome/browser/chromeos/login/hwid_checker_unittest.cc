@@ -268,4 +268,3 @@ TEST(MachineHWIDCheckerTest, NonGoogleBuild) {
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }  // namespace chromeos
-

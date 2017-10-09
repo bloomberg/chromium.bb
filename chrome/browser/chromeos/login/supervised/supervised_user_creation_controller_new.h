@@ -111,7 +111,11 @@ class SupervisedUserCreationControllerNew
   };
 
   // Indicates if we create new user, or import an existing one.
-  enum CreationType { NEW_USER, USER_IMPORT_OLD, USER_IMPORT_NEW, };
+  enum CreationType {
+    NEW_USER,
+    USER_IMPORT_OLD,
+    USER_IMPORT_NEW,
+  };
 
   // Contains information necessary for new user creation.
   struct UserCreationContext {

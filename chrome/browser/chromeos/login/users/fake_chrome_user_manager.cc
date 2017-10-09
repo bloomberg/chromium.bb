@@ -138,9 +138,10 @@ bool FakeChromeUserManager::AreEphemeralUsersEnabled() const {
 }
 
 void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
-  UserLoggedIn(account_id, ProfileHelper::GetUserIdHashByUserIdForTesting(
-                               account_id.GetUserEmail()),
-               false /* browser_restart */);
+  UserLoggedIn(
+      account_id,
+      ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail()),
+      false /* browser_restart */);
 
   // NOTE: This does not match production. See function comment.
   for (auto* user : users_) {

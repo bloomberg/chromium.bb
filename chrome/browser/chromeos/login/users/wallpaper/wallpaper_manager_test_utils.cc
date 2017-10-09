@@ -192,27 +192,19 @@ void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
                     chromeos::switches::kChildWallpaperLarge + "=" +
                     child_large_file.value());
 
-  ASSERT_TRUE(WriteJPEGFile(
-      small_file, kWallpaperSize, kWallpaperSize, kSmallDefaultWallpaperColor));
-  ASSERT_TRUE(WriteJPEGFile(
-      large_file, kWallpaperSize, kWallpaperSize, kLargeDefaultWallpaperColor));
+  ASSERT_TRUE(WriteJPEGFile(small_file, kWallpaperSize, kWallpaperSize,
+                            kSmallDefaultWallpaperColor));
+  ASSERT_TRUE(WriteJPEGFile(large_file, kWallpaperSize, kWallpaperSize,
+                            kLargeDefaultWallpaperColor));
 
-  ASSERT_TRUE(WriteJPEGFile(guest_small_file,
-                            kWallpaperSize,
-                            kWallpaperSize,
+  ASSERT_TRUE(WriteJPEGFile(guest_small_file, kWallpaperSize, kWallpaperSize,
                             kSmallGuestWallpaperColor));
-  ASSERT_TRUE(WriteJPEGFile(guest_large_file,
-                            kWallpaperSize,
-                            kWallpaperSize,
+  ASSERT_TRUE(WriteJPEGFile(guest_large_file, kWallpaperSize, kWallpaperSize,
                             kLargeGuestWallpaperColor));
 
-  ASSERT_TRUE(WriteJPEGFile(child_small_file,
-                            kWallpaperSize,
-                            kWallpaperSize,
+  ASSERT_TRUE(WriteJPEGFile(child_small_file, kWallpaperSize, kWallpaperSize,
                             kSmallChildWallpaperColor));
-  ASSERT_TRUE(WriteJPEGFile(child_large_file,
-                            kWallpaperSize,
-                            kWallpaperSize,
+  ASSERT_TRUE(WriteJPEGFile(child_large_file, kWallpaperSize, kWallpaperSize,
                             kLargeChildWallpaperColor));
 
   command_line->reset(new base::CommandLine(options));

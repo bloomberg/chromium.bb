@@ -12,11 +12,9 @@ using ::testing::_;
 MockEulaScreen::MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
                                Delegate* delegate,
                                EulaView* view)
-    : EulaScreen(base_screen_delegate, delegate, view) {
-}
+    : EulaScreen(base_screen_delegate, delegate, view) {}
 
-MockEulaScreen::~MockEulaScreen() {
-}
+MockEulaScreen::~MockEulaScreen() {}
 
 MockEulaView::MockEulaView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));

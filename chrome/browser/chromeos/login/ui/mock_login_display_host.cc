@@ -6,10 +6,8 @@
 
 namespace chromeos {
 
-MockLoginDisplayHost::MockLoginDisplayHost() {
-}
+MockLoginDisplayHost::MockLoginDisplayHost() {}
 
-MockLoginDisplayHost::~MockLoginDisplayHost() {
-}
+MockLoginDisplayHost::~MockLoginDisplayHost() {}
 
 }  // namespace chromeos

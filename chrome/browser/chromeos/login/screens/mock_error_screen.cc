@@ -11,11 +11,9 @@ namespace chromeos {
 
 MockErrorScreen::MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
                                  NetworkErrorView* view)
-    : ErrorScreen(base_screen_delegate, view) {
-}
+    : ErrorScreen(base_screen_delegate, view) {}
 
-MockErrorScreen::~MockErrorScreen() {
-}
+MockErrorScreen::~MockErrorScreen() {}
 
 void MockErrorScreen::FixCaptivePortal() {
   ErrorScreen::FixCaptivePortal();

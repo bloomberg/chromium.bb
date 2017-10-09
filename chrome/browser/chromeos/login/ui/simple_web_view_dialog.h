@@ -26,7 +26,7 @@ class ToolbarModel;
 namespace views {
 class WebView;
 class Widget;
-}
+}  // namespace views
 
 namespace chromeos {
 

@@ -24,7 +24,7 @@ class AccountId;
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
+}  // namespace base
 
 namespace chromeos {
 

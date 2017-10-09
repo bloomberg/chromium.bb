@@ -38,8 +38,10 @@ ChromeUserSelectionScreen::ChromeUserSelectionScreen(
     : UserSelectionScreen(display_type),
       handler_initialized_(false),
       weak_factory_(this) {
-  device_local_account_policy_service_ = g_browser_process->platform_part()->
-      browser_policy_connector_chromeos()->GetDeviceLocalAccountPolicyService();
+  device_local_account_policy_service_ =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceLocalAccountPolicyService();
   if (device_local_account_policy_service_) {
     device_local_account_policy_service_->AddObserver(this);
   }
@@ -124,10 +126,8 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
   // Parse the list of recommended locales set by policy.
   std::vector<std::string> new_recommended_locales;
   base::ListValue const* list = NULL;
-  if (entry &&
-      entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-      entry->value &&
-      entry->value->GetAsList(&list)) {
+  if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
+      entry->value && entry->value->GetAsList(&list)) {
     for (base::ListValue::const_iterator it = list->begin(); it != list->end();
          ++it) {
       std::string locale;
@@ -176,10 +176,9 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
 
   // Set the initially selected locale to the first recommended locale that is
   // actually available or the current UI locale if none of them are available.
-  const std::string default_locale = FindMostRelevantLocale(
-      recommended_locales,
-      *available_locales.get(),
-      g_browser_process->GetApplicationLocale());
+  const std::string default_locale =
+      FindMostRelevantLocale(recommended_locales, *available_locales.get(),
+                             g_browser_process->GetApplicationLocale());
 
   // Set a flag to indicate whether the list of recommended locales contains at
   // least two entries. This is used to decide whether the public session pod

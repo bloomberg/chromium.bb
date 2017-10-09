@@ -20,7 +20,7 @@
 namespace base {
 class Timer;
 class Value;
-}
+}  // namespace base
 
 namespace policy {
 class PolicyChangeRegistrar;

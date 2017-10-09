@@ -35,8 +35,7 @@ namespace chromeos {
 // HelpApp, public:
 
 HelpAppLauncher::HelpAppLauncher(gfx::NativeWindow parent_window)
-    : parent_window_(parent_window) {
-}
+    : parent_window_(parent_window) {}
 
 void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
   Profile* profile = ProfileHelper::GetSigninProfile();
@@ -46,8 +45,7 @@ void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
   if (!registry)
     return;
 
-  GURL url(base::StringPrintf(kHelpAppFormat,
-                              static_cast<int>(help_topic_id)));
+  GURL url(base::StringPrintf(kHelpAppFormat, static_cast<int>(help_topic_id)));
   // HelpApp component extension presents only in official builds so we can
   // show help only when the extensions is installed.
   if (registry->enabled_extensions().GetByID(url.host()))
@@ -66,11 +64,8 @@ void HelpAppLauncher::ShowHelpTopicDialog(Profile* profile,
                                           const GURL& topic_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LoginWebDialog* dialog = new LoginWebDialog(
-      profile,
-      NULL,
-      parent_window_,
-      l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
-      topic_url);
+      profile, NULL, parent_window_,
+      l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE), topic_url);
   dialog->SetDialogSize(l10n_util::GetLocalizedContentsWidthInPixels(
                             IDS_HELP_APP_DIALOG_WIDTH_PIXELS),
                         l10n_util::GetLocalizedContentsWidthInPixels(

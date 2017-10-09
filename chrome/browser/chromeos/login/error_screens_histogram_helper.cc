@@ -43,10 +43,7 @@ void StoreErrorScreenToHistogram(const std::string& screen_name,
   // This comes from UMA_HISTOGRAM_ENUMERATION macros. Can't use it because of
   // non const histogram name.
   base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      histogram_name,
-      1,
-      boundary,
-      boundary + 1,
+      histogram_name, 1, boundary, boundary + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(error);
 }
@@ -76,8 +73,7 @@ ErrorScreensHistogramHelper::ErrorScreensHistogramHelper(
     const std::string& screen_name)
     : screen_name_(screen_name),
       was_shown_(false),
-      last_error_shown_(NetworkError::ERROR_STATE_NONE) {
-}
+      last_error_shown_(NetworkError::ERROR_STATE_NONE) {}
 
 void ErrorScreensHistogramHelper::OnScreenShow() {
   was_shown_ = true;
@@ -116,8 +112,8 @@ ErrorScreensHistogramHelper::~ErrorScreensHistogramHelper() {
         time_on_error_screens_ += base::Time::Now() - error_screen_start_time_;
         error_screen_start_time_ = base::Time();
       }
-      StoreTimeOnErrorScreenToHistogram(
-          screen_name_, last_error_shown_, time_on_error_screens_);
+      StoreTimeOnErrorScreenToHistogram(screen_name_, last_error_shown_,
+                                        time_on_error_screens_);
     }
   }
 }

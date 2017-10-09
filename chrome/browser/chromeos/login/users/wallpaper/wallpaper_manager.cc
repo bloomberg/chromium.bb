@@ -128,8 +128,8 @@ base::FilePath GetCustomizedWallpaperDefaultRescaledFileName(
 bool ShouldUseCustomizedDefaultWallpaper() {
   PrefService* pref_service = g_browser_process->local_state();
 
-  return !(pref_service->FindPreference(
-      prefs::kCustomizationDefaultWallpaperURL)->IsDefaultValue());
+  return !pref_service->FindPreference(
+      prefs::kCustomizationDefaultWallpaperURL)->IsDefaultValue();
 }
 
 // Returns index of the first public session user found in |users|
@@ -138,8 +138,7 @@ int FindPublicSession(const user_manager::UserList& users) {
   int index = -1;
   int i = 0;
   for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it, ++i) {
+       it != users.end(); ++it, ++i) {
     if ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
       index = i;
       break;
@@ -254,8 +253,8 @@ bool CheckDeviceWallpaperMatchHash(const base::FilePath& device_wallpaper_file,
 // PendingWallpaper is owned by WallpaperManager, but reference to this object
 // is passed to other threads by PostTask() calls, therefore it is
 // RefCountedThreadSafe.
-class WallpaperManager::PendingWallpaper :
-    public base::RefCountedThreadSafe<PendingWallpaper> {
+class WallpaperManager::PendingWallpaper
+    : public base::RefCountedThreadSafe<PendingWallpaper> {
  public:
   // Do LoadWallpaper() - image not found in cache.
   PendingWallpaper(const base::TimeDelta delay, const AccountId& account_id)
@@ -265,8 +264,7 @@ class WallpaperManager::PendingWallpaper :
             base::Bind(&WallpaperManager::PendingWallpaper::OnWallpaperSet,
                        this))) {
     timer.Start(
-        FROM_HERE,
-        delay,
+        FROM_HERE, delay,
         base::Bind(&WallpaperManager::PendingWallpaper::ProcessRequest, this));
   }
 
@@ -669,12 +667,8 @@ void WallpaperManager::SetCustomWallpaper(
       base::FilePath(wallpaper_files_id.id()).Append(file).value();
   // User's custom wallpaper path is determined by relative path and the
   // appropriate wallpaper resolution in GetCustomWallpaperInternal.
-  WallpaperInfo info = {
-      relative_path,
-      layout,
-      type,
-      base::Time::Now().LocalMidnight()
-  };
+  WallpaperInfo info = {relative_path, layout, type,
+                        base::Time::Now().LocalMidnight()};
   SetUserWallpaperInfo(account_id, info, is_persistent);
   if (update_wallpaper) {
     GetPendingWallpaper(account_id, false)->ResetSetWallpaperImage(image, info);
@@ -770,7 +764,8 @@ void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
                                         wallpaper::kUsersWallpaperInfo);
 
   auto wallpaper_info_dict = base::MakeUnique<base::DictionaryValue>();
-  wallpaper_info_dict->SetString(kNewWallpaperDateNodeName,
+  wallpaper_info_dict->SetString(
+      kNewWallpaperDateNodeName,
       base::Int64ToString(info.date.ToInternalValue()));
   wallpaper_info_dict->SetString(kNewWallpaperLocationNodeName, info.location);
   wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
@@ -995,8 +990,7 @@ void WallpaperManager::RemovePendingWallpaperFromList(
     PendingWallpaper* pending) {
   DCHECK(loading_.size() > 0);
   for (WallpaperManager::PendingList::iterator i = loading_.begin();
-       i != loading_.end();
-       ++i) {
+       i != loading_.end(); ++i) {
     if (i->get() == pending) {
       loading_.erase(i);
       break;

@@ -277,8 +277,8 @@ void ErrorScreen::DefaultHideCallback() {
 void ErrorScreen::OnConfigureCerts() {
   gfx::NativeWindow native_window =
       LoginDisplayHost::default_host()->GetNativeWindow();
-  CertificateManagerDialog* dialog = new CertificateManagerDialog(
-      GetAppProfile(), NULL, native_window);
+  CertificateManagerDialog* dialog =
+      new CertificateManagerDialog(GetAppProfile(), NULL, native_window);
   dialog->Show();
 }
 
@@ -325,13 +325,11 @@ void ErrorScreen::OnConnectRequested() {
 
 void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
     DeviceSettingsService::OwnershipStatus ownership_status) {
-
   // Make sure to disallow guest login if it's explicitly disabled.
   CrosSettingsProvider::TrustedStatus trust_status =
       CrosSettings::Get()->PrepareTrustedValues(
           base::Bind(&ErrorScreen::StartGuestSessionAfterOwnershipCheck,
-                     weak_factory_.GetWeakPtr(),
-                     ownership_status));
+                     weak_factory_.GetWeakPtr(), ownership_status));
   switch (trust_status) {
     case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
       // Wait for a callback.

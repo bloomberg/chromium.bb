@@ -16,7 +16,7 @@ class GoogleServiceAuthError;
 namespace policy {
 struct EnrollmentConfig;
 class EnrollmentStatus;
-}
+}  // namespace policy
 
 namespace chromeos {
 

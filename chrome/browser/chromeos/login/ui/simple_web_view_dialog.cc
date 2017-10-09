@@ -192,8 +192,8 @@ void SimpleWebViewDialog::Init() {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Location bar.
-  location_bar_ = new LocationBarView(NULL, profile_, command_updater_.get(),
-                                      this, true);
+  location_bar_ =
+      new LocationBarView(NULL, profile_, command_updater_.get(), this, true);
 
   // Reload button.
   reload_ = new ReloadButton(profile_, command_updater_.get());
@@ -273,7 +273,7 @@ void SimpleWebViewDialog::NavigationStateChanged(
 }
 
 void SimpleWebViewDialog::LoadingStateChanged(WebContents* source,
-    bool to_different_document) {
+                                              bool to_different_document) {
   bool is_loading = source->IsLoading();
   UpdateReload(is_loading && to_different_document, false);
   command_updater_->UpdateCommandEnabled(IDC_STOP, is_loading);
@@ -300,9 +300,8 @@ content::WebContents* SimpleWebViewDialog::GetActiveWebContents() const {
   return web_view_->web_contents();
 }
 
-void SimpleWebViewDialog::ExecuteCommandWithDisposition(
-    int id,
-    WindowOpenDisposition) {
+void SimpleWebViewDialog::ExecuteCommandWithDisposition(int id,
+                                                        WindowOpenDisposition) {
   WebContents* web_contents = web_view_->web_contents();
   switch (id) {
     case IDC_BACK:

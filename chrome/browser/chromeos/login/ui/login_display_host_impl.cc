@@ -436,20 +436,17 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
   // browser instance that will block the shutdown.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+  registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                  content::NotificationService::AllSources());
 
   // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
   // not shown yet. Lock window has to be closed at this point so that
   // a browser window exists and the window can acquire input focus.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_OPENED,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllSources());
 
   // Login screen is moved to lock screen container when user logs in.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());
 
   DCHECK(default_host() == nullptr);
@@ -468,8 +465,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableBootAnimation);
 
-  waiting_for_wallpaper_load_ = !zero_delay_enabled &&
-                                (!is_registered || !disable_boot_animation);
+  waiting_for_wallpaper_load_ =
+      !zero_delay_enabled && (!is_registered || !disable_boot_animation);
 
   // For slower hardware we have boot animation disabled so
   // we'll be initializing WebUI hidden, waiting for user pods to load and then
@@ -501,8 +498,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
     initialize_webui_hidden_ = false;
 
   if (waiting_for_wallpaper_load_) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+    registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                    content::NotificationService::AllSources());
   }
 
@@ -510,11 +506,9 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
   // these notifications.
   if ((waiting_for_user_pods_ || waiting_for_wallpaper_load_) &&
       initialize_webui_hidden_) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                    content::NotificationService::AllSources());
   }
   VLOG(1) << "Login WebUI >> "
@@ -570,8 +564,8 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   // TODO(tengs): This should be refactored. See crbug.com/314934.
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // DriveOptInController will delete itself when finished.
-    (new DriveFirstRunController(
-        ProfileManager::GetActiveUserProfile()))->EnableOfflineMode();
+    (new DriveFirstRunController(ProfileManager::GetActiveUserProfile()))
+        ->EnableOfflineMode();
   }
 }
 
@@ -729,8 +723,7 @@ void LoginDisplayHostImpl::StartUserAdding(
   existing_user_controller_->Init(
       user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
   CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(LoginScreenContext(),
-                                webui_login_display_,
+  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), webui_login_display_,
                                 webui_login_display_);
 }
 
@@ -763,8 +756,8 @@ void LoginDisplayHostImpl::StartSignInScreen(
 
   if (!login_window_) {
     TRACE_EVENT_ASYNC_BEGIN0("ui", "ShowLoginWebUI", kShowLoginWebUIid);
-    TRACE_EVENT_ASYNC_STEP_INTO0(
-        "ui", "ShowLoginWebUI", kShowLoginWebUIid, "StartSignInScreen");
+    TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
+                                 "StartSignInScreen");
     BootTimesRecorder::Get()->RecordCurrentStats("login-start-signin-screen");
     LoadURL(GURL(kLoginURL));
   }
@@ -805,12 +798,9 @@ void LoginDisplayHostImpl::StartSignInScreen(
       kPolicyServiceInitializationDelayMilliseconds);
 
   CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(context,
-                                webui_login_display_,
+  GetOobeUI()->ShowSigninScreen(context, webui_login_display_,
                                 webui_login_display_);
-  TRACE_EVENT_ASYNC_STEP_INTO0("ui",
-                               "ShowLoginWebUI",
-                               kShowLoginWebUIid,
+  TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
   BootTimesRecorder::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
@@ -823,9 +813,8 @@ void LoginDisplayHostImpl::OnPreferencesChanged() {
 
 void LoginDisplayHostImpl::PrewarmAuthentication() {
   auth_prewarmer_.reset(new AuthPrewarmer());
-  auth_prewarmer_->PrewarmAuthentication(
-      base::Bind(&LoginDisplayHostImpl::OnAuthPrewarmDone,
-                 pointer_factory_.GetWeakPtr()));
+  auth_prewarmer_->PrewarmAuthentication(base::Bind(
+      &LoginDisplayHostImpl::OnAuthPrewarmDone, pointer_factory_.GetWeakPtr()));
 }
 
 void LoginDisplayHostImpl::StartDemoAppLaunch() {
@@ -846,11 +835,8 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
       CrosSettings::Get()->PrepareTrustedValues(base::Bind(
-          &LoginDisplayHostImpl::StartAppLaunch,
-          pointer_factory_.GetWeakPtr(),
-          app_id,
-          diagnostic_mode,
-          auto_launch));
+          &LoginDisplayHostImpl::StartAppLaunch, pointer_factory_.GetWeakPtr(),
+          app_id, diagnostic_mode, auto_launch));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -879,8 +865,8 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
 
   login_view_->set_should_emit_login_prompt_visible(false);
 
-  app_launch_controller_.reset(new AppLaunchController(
-      app_id, diagnostic_mode, this, GetOobeUI()));
+  app_launch_controller_.reset(
+      new AppLaunchController(app_id, diagnostic_mode, this, GetOobeUI()));
 
   app_launch_controller_->StartAppLaunch(auto_launch);
 }
@@ -947,11 +933,9 @@ void LoginDisplayHostImpl::Observe(
       waiting_for_wallpaper_load_ = false;
       ShowWebUI();
     }
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                       content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST) {
     ShutdownDisplayHost(true);
@@ -959,16 +943,13 @@ void LoginDisplayHostImpl::Observe(
     // Browsers created before session start (windows opened by extensions, for
     // example) are ignored.
     OnBrowserCreated();
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+    registrar_.Remove(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
                       content::NotificationService::AllSources());
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_BROWSER_OPENED,
+    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
                       content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
              user_manager::UserManager::Get()->IsCurrentUserNew()) {
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                       content::NotificationService::AllSources());
   } else if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
     VLOG(1) << "Login WebUI >> wp animation done";
@@ -995,8 +976,7 @@ void LoginDisplayHostImpl::Observe(
         StartPostponedWebUI();
       }
     }
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+    registrar_.Remove(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                       content::NotificationService::AllSources());
   }
 }
@@ -1126,8 +1106,7 @@ void LoginDisplayHostImpl::ScheduleFadeOutAnimation(int animation_speed_ms) {
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.AddObserver(new AnimationObserver(
       base::Bind(&LoginDisplayHostImpl::ShutdownDisplayHost,
-                 animation_weak_ptr_factory_.GetWeakPtr(),
-                 false)));
+                 animation_weak_ptr_factory_.GetWeakPtr(), false)));
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animation_speed_ms));
   layer->SetOpacity(0);
@@ -1383,8 +1362,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
         KioskAppManager::Get()->GetAutoLaunchApp();
     const bool diagnostic_mode = false;
     const bool auto_launch = true;
-    display_host->StartAppLaunch(auto_launch_app_id,
-                                 diagnostic_mode,
+    display_host->StartAppLaunch(auto_launch_app_id, diagnostic_mode,
                                  auto_launch);
     return;
   }

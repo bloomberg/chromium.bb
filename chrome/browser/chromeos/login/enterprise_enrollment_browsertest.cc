@@ -46,16 +46,17 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
       : LoginManagerTest(true /*should_launch_browser*/) {
     enrollment_setup_functions_.clear();
 
-    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock([](
-        EnterpriseEnrollmentHelper::EnrollmentStatusConsumer* status_consumer,
-        const policy::EnrollmentConfig& enrollment_config,
-        const std::string& enrolling_user_domain) {
+    EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+        [](EnterpriseEnrollmentHelper::EnrollmentStatusConsumer*
+               status_consumer,
+           const policy::EnrollmentConfig& enrollment_config,
+           const std::string& enrolling_user_domain) {
 
-      auto* mock = new EnterpriseEnrollmentHelperMock(status_consumer);
-      for (OnSetupEnrollmentHelper fn : enrollment_setup_functions_)
-        fn(mock);
-      return (EnterpriseEnrollmentHelper*)mock;
-    });
+          auto* mock = new EnterpriseEnrollmentHelperMock(status_consumer);
+          for (OnSetupEnrollmentHelper fn : enrollment_setup_functions_)
+            fn(mock);
+          return (EnterpriseEnrollmentHelper*)mock;
+        });
   }
 
   using OnSetupEnrollmentHelper =
@@ -69,19 +70,21 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   // Set up expectations for enrollment credentials.
   void ExpectEnrollmentCredentials() {
-    AddEnrollmentSetupFunction([](
-        EnterpriseEnrollmentHelperMock* enrollment_helper) {
-      EXPECT_CALL(*enrollment_helper, EnrollUsingAuthCode("test_auth_code", _));
+    AddEnrollmentSetupFunction(
+        [](EnterpriseEnrollmentHelperMock* enrollment_helper) {
+          EXPECT_CALL(*enrollment_helper,
+                      EnrollUsingAuthCode("test_auth_code", _));
 
-      ON_CALL(*enrollment_helper, ClearAuth(_))
-          .WillByDefault(
-              Invoke([](const base::Closure& callback) { callback.Run(); }));
-    });
+          ON_CALL(*enrollment_helper, ClearAuth(_))
+              .WillByDefault(Invoke(
+                  [](const base::Closure& callback) { callback.Run(); }));
+        });
   }
 
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
     // Trigger an authCompleted event from the authenticator.
+    // clang-format off
     js_checker().Evaluate(
       "$('oauth-enrollment').authenticator_.dispatchEvent("
           "new CustomEvent('authCompleted',"
@@ -91,6 +94,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
                               "authCode: 'test_auth_code'"
                             "}"
                           "}));");
+    // clang-format on
   }
 
   // Submits Active Directory domain join credentials.
@@ -146,15 +150,18 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
 
   // Forces the Active Directory domain join flow during enterprise enrollment.
   void SetupActiveDirectoryJoin() {
-    AddEnrollmentSetupFunction([this](
-        EnterpriseEnrollmentHelperMock* enrollment_helper) {
-      // Causes the attribute-prompt flow to activate.
-      EXPECT_CALL(*enrollment_helper, EnrollUsingAuthCode("test_auth_code", _))
-          .WillOnce(InvokeWithoutArgs([this]() {
-            this->enrollment_screen()->JoinDomain(base::BindOnce([](
-                const std::string& realm) { EXPECT_EQ(kAdTestRealm, realm); }));
-          }));
-    });
+    AddEnrollmentSetupFunction(
+        [this](EnterpriseEnrollmentHelperMock* enrollment_helper) {
+          // Causes the attribute-prompt flow to activate.
+          EXPECT_CALL(*enrollment_helper,
+                      EnrollUsingAuthCode("test_auth_code", _))
+              .WillOnce(InvokeWithoutArgs([this]() {
+                this->enrollment_screen()->JoinDomain(
+                    base::BindOnce([](const std::string& realm) {
+                      EXPECT_EQ(kAdTestRealm, realm);
+                    }));
+              }));
+        });
     static_cast<FakeAuthPolicyClient*>(
         DBusThreadManager::Get()->GetAuthPolicyClient())
         ->DisableOperationDelayForTesting();

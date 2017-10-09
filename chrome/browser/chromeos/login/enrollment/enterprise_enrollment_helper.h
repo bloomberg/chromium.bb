@@ -19,7 +19,7 @@ class GoogleServiceAuthError;
 namespace policy {
 struct EnrollmentConfig;
 class EnrollmentStatus;
-}
+}  // namespace policy
 
 namespace chromeos {
 
@@ -85,10 +85,11 @@ class EnterpriseEnrollmentHelper {
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain);
 
-  using CreateMockEnrollmentHelper = EnterpriseEnrollmentHelper* (*)(
-      EnrollmentStatusConsumer* status_consumer,
-      const policy::EnrollmentConfig& enrollment_config,
-      const std::string& enrolling_user_domain);
+  using CreateMockEnrollmentHelper =
+      EnterpriseEnrollmentHelper* (*)(EnrollmentStatusConsumer* status_consumer,
+                                      const policy::EnrollmentConfig&
+                                          enrollment_config,
+                                      const std::string& enrolling_user_domain);
 
   // Use |creator| instead of the default enrollment helper allocator. This
   // allows tests to substitute in a mock enrollment helper. This function will

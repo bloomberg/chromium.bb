@@ -37,7 +37,7 @@ const int64_t kSessionMergeTimeout = 60;
 namespace chromeos {
 
 // An MergeSessionLoadPage class that does not create windows.
-class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
+class TestMergeSessionLoadPage : public MergeSessionLoadPage {
  public:
   TestMergeSessionLoadPage(WebContents* web_contents, const GURL& url)
       : MergeSessionLoadPage(
@@ -53,9 +53,7 @@ class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
 
 class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  protected:
-  void TearDown() override {
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
+  void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
   void ShowInterstitial(const char* url) {
     (new TestMergeSessionLoadPage(web_contents(), GURL(url)))->Show();
@@ -78,8 +76,7 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
       return NULL;
 
     OAuth2LoginManager* login_manager =
-        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(
-            profile);
+        OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
     return login_manager;
   }
 
@@ -118,9 +115,8 @@ TEST_F(MergeSessionLoadPageTest, MergeSessionPageNotShown) {
 
 TEST_F(MergeSessionLoadPageTest, MergeSessionPageNotShownOnTimeout) {
   SetMergeSessionState(OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS);
-  SetSessionRestoreStart(
-      base::Time::Now() +
-      base::TimeDelta::FromSeconds(kSessionMergeTimeout + 1));
+  SetSessionRestoreStart(base::Time::Now() + base::TimeDelta::FromSeconds(
+                                                 kSessionMergeTimeout + 1));
 
   // Start a load.
   NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),

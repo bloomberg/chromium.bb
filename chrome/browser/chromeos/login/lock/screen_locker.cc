@@ -112,8 +112,7 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
                            public UserAddingScreen::Observer {
  public:
   ScreenLockObserver() : session_started_(false) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SESSION_STARTED,
+    registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
     DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(this);
   }
@@ -339,8 +338,8 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
 void ScreenLocker::UnlockOnLoginSuccess() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   if (!authentication_capture_.get()) {
-    LOG(WARNING) << "Call to UnlockOnLoginSuccess without previous " <<
-      "authentication success.";
+    LOG(WARNING) << "Call to UnlockOnLoginSuccess without previous "
+                 << "authentication success.";
     return;
   }
 
@@ -535,8 +534,9 @@ void ScreenLocker::Show() {
   } else {
     VLOG(1) << "ScreenLocker " << screen_locker_ << " already exists; "
             << " calling session manager's HandleLockScreenShown D-Bus method";
-    DBusThreadManager::Get()->GetSessionManagerClient()->
-        NotifyLockScreenShown();
+    DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->NotifyLockScreenShown();
   }
 }
 
@@ -584,12 +584,12 @@ ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::Source<ScreenLocker>(this),
-      content::Details<bool>(&state));
+      content::Source<ScreenLocker>(this), content::Details<bool>(&state));
 
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
-  DBusThreadManager::Get()->GetSessionManagerClient()->
-      NotifyLockScreenDismissed();
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->NotifyLockScreenDismissed();
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::ACTIVE);
@@ -606,16 +606,15 @@ void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
 void ScreenLocker::ScreenLockReady() {
   locked_ = true;
   base::TimeDelta delta = base::Time::Now() - start_time_;
-  VLOG(1) << "ScreenLocker " << this << " is ready after "
-          << delta.InSecondsF() << " second(s)";
+  VLOG(1) << "ScreenLocker " << this << " is ready after " << delta.InSecondsF()
+          << " second(s)";
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::Source<ScreenLocker>(this),
-      content::Details<bool>(&state));
+      content::Source<ScreenLocker>(this), content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
 

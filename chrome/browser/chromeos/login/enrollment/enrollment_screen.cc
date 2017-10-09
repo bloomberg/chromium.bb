@@ -32,14 +32,12 @@ using namespace pairing_chromeos;
 using policy::EnrollmentConfig;
 
 // Do not change the UMA histogram parameters without renaming the histograms!
-#define UMA_ENROLLMENT_TIME(histogram_name, elapsed_timer) \
-  do {                                                     \
-    UMA_HISTOGRAM_CUSTOM_TIMES(                            \
-      (histogram_name),                                    \
-      (elapsed_timer)->Elapsed(),                          \
-      base::TimeDelta::FromMilliseconds(100) /* min */,    \
-      base::TimeDelta::FromMinutes(15) /* max */,          \
-      100 /* bucket_count */);                             \
+#define UMA_ENROLLMENT_TIME(histogram_name, elapsed_timer)                   \
+  do {                                                                       \
+    UMA_HISTOGRAM_CUSTOM_TIMES(                                              \
+        (histogram_name), (elapsed_timer)->Elapsed(),                        \
+        base::TimeDelta::FromMilliseconds(100) /* min */,                    \
+        base::TimeDelta::FromMinutes(15) /* max */, 100 /* bucket_count */); \
   } while (0)
 
 namespace {
@@ -364,7 +362,6 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
         base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
                        weak_ptr_factory_.GetWeakPtr()));
   }
-
 }
 
 void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {

@@ -15,7 +15,6 @@ bool IsHWIDCorrect(const std::string& hwid);
 // Checks if current machine has correct HWID.
 bool IsMachineHWIDCorrect();
 
-} // namespace chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_HWID_CHECKER_H_
-

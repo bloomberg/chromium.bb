@@ -144,8 +144,8 @@ void OnLocaleSwitched(SwitchLanguageTestData* self,
 }
 
 void RunSwitchLanguageTest(const std::string& locale,
-                                  const std::string& expected_locale,
-                                  const bool expect_success) {
+                           const std::string& expected_locale,
+                           const bool expect_success) {
   SwitchLanguageTestData data;
   locale_util::SwitchLanguageCallback callback(
       base::Bind(&OnLocaleSwitched, base::Unretained(&data)));
@@ -191,7 +191,8 @@ using ::testing::_;
 template <class T, class H>
 class MockOutShowHide : public T {
  public:
-  template <class P> explicit  MockOutShowHide(P p) : T(p) {}
+  template <class P>
+  explicit MockOutShowHide(P p) : T(p) {}
   template <class P>
   MockOutShowHide(P p, H* view) : T(p, view), view_(view) {}
   template <class P, class Q>
@@ -202,13 +203,9 @@ class MockOutShowHide : public T {
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
 
-  void RealShow() {
-    T::Show();
-  }
+  void RealShow() { T::Show(); }
 
-  void RealHide() {
-    T::Hide();
-  }
+  void RealHide() { T::Hide(); }
 
  private:
   std::unique_ptr<H> view_;
@@ -240,14 +237,15 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
   ~WizardControllerTest() override {}
 
   void SetUpOnMainThread() override {
-    AccessibilityManager::Get()->
-        SetProfileForTest(ProfileHelper::GetSigninProfile());
+    AccessibilityManager::Get()->SetProfileForTest(
+        ProfileHelper::GetSigninProfile());
     WizardInProcessBrowserTest::SetUpOnMainThread();
   }
 
   ErrorScreen* GetErrorScreen() {
     return static_cast<BaseScreenDelegate*>(
-               WizardController::default_controller())->GetErrorScreen();
+               WizardController::default_controller())
+        ->GetErrorScreen();
   }
 
   OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
@@ -483,8 +481,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     network_portal_detector_->SetDefaultNetworkForTesting(
         default_network->guid());
     network_portal_detector_->SetDetectionResultsForTesting(
-        default_network->guid(),
-        online_state);
+        default_network->guid(), online_state);
   }
 
   void OnExit(BaseScreen& screen, ScreenExitCode exit_code) {
@@ -691,9 +688,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   content::RunAllPendingInMessageLoop();
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-  EXPECT_EQ("ethernet,wifi,cellular",
-            NetworkHandler::Get()->network_state_handler()
-            ->GetCheckPortalListForTest());
+  EXPECT_EQ("ethernet,wifi,cellular", NetworkHandler::Get()
+                                          ->network_state_handler()
+                                          ->GetCheckPortalListForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
@@ -813,10 +810,10 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
   WizardControllerDeviceStateTest()
       : install_attributes_(ScopedStubInstallAttributes::CreateUnset()) {
-    fake_statistics_provider_.SetMachineStatistic(
-        system::kSerialNumberKey, "test");
-    fake_statistics_provider_.SetMachineStatistic(
-        system::kActivateDateKey, "2000-01");
+    fake_statistics_provider_.SetMachineStatistic(system::kSerialNumberKey,
+                                                  "test");
+    fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
+                                                  "2000-01");
   }
 
   static void WaitForAutoEnrollmentState(policy::AutoEnrollmentState state) {
@@ -839,8 +836,8 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
         chromeos::AutoEnrollmentController::kForcedReEnrollmentAlways);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnrollmentInitialModulus, "1");
-    command_line->AppendSwitchASCII(
-        switches::kEnterpriseEnrollmentModulusLimit, "2");
+    command_line->AppendSwitchASCII(switches::kEnterpriseEnrollmentModulusLimit,
+                                    "2");
   }
 
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
@@ -996,9 +993,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
  protected:
-  WizardControllerBrokenLocalStateTest()
-      : fake_session_manager_client_(NULL) {
-  }
+  WizardControllerBrokenLocalStateTest() : fake_session_manager_client_(NULL) {}
 
   ~WizardControllerBrokenLocalStateTest() override {}
 
@@ -1113,7 +1108,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
-                    "app_mode", "kiosk_manifest", &test_data_dir));
+        "app_mode", "kiosk_manifest", &test_data_dir));
     command_line->AppendSwitchPath(
         switches::kAppOemManifestFile,
         test_data_dir.AppendASCII("kiosk_manifest.json"));
@@ -1209,7 +1204,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 }
-
 
 class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
  protected:

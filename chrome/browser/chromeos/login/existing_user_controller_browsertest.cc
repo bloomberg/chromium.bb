@@ -89,9 +89,8 @@ const int kAutoLoginLongDelay = 10000;
 void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
   while (true) {
     const CrosSettingsProvider::TrustedStatus status =
-        CrosSettings::Get()->PrepareTrustedValues(base::Bind(
-            &WaitForPermanentlyUntrustedStatusAndRun,
-            callback));
+        CrosSettings::Get()->PrepareTrustedValues(
+            base::Bind(&WaitForPermanentlyUntrustedStatusAndRun, callback));
     switch (status) {
       case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
         callback.Run();
@@ -137,8 +136,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     SetUpLoginDisplay();
   }
 
-  virtual void SetUpSessionManager() {
-  }
+  virtual void SetUpSessionManager() {}
 
   virtual void SetUpLoginDisplay() {
     EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
@@ -149,8 +147,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         .WillOnce(ReturnNull());
     EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
         .Times(1);
-    EXPECT_CALL(*mock_login_display_, Init(_, false, true, true))
-        .Times(1);
+    EXPECT_CALL(*mock_login_display_, Init(_, false, true, true)).Times(1);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -186,15 +183,12 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   void ExpectLoginFailure() {
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-        .Times(1);
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(1);
     EXPECT_CALL(*mock_login_display_,
-                ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST,
-                          1,
+                ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
                           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT))
         .Times(1);
-    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
-        .Times(1);
+    EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
 
   void RegisterUser(const std::string& user_id) {
@@ -244,16 +238,14 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, PRE_ExistingUserLogin) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_ExistingUserLogin) {
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-      .Times(2);
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
   UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(gaia_account_id_.GetUserEmail());
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
   session_manager_test_api.InjectStubUserContext(user_context);
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
-      .Times(1);
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE))
       .Times(0);
@@ -284,8 +276,7 @@ class ExistingUserControllerUntrustedTest : public ExistingUserControllerTest {
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerUntrustedTest);
 };
 
-ExistingUserControllerUntrustedTest::ExistingUserControllerUntrustedTest() {
-}
+ExistingUserControllerUntrustedTest::ExistingUserControllerUntrustedTest() {}
 
 void ExistingUserControllerUntrustedTest::SetUpInProcessBrowserTestFixture() {
   ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
@@ -420,12 +411,11 @@ class ExistingUserControllerPublicSessionTest
         .Times(1)
         .WillOnce(Return(mock_login_display_));
     EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
-      .Times(AnyNumber())
-      .WillRepeatedly(ReturnNull());
+        .Times(AnyNumber())
+        .WillRepeatedly(ReturnNull());
     EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
-      .Times(AnyNumber());
-    EXPECT_CALL(*mock_login_display_, Init(_, _, _, _))
-      .Times(AnyNumber());
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_login_display_, Init(_, _, _, _)).Times(AnyNumber());
   }
 
   void TearDownOnMainThread() override {
@@ -633,8 +623,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                        GuestModeLoginStopsAutoLogin) {
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-      .Times(2);
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
   UserContext user_context(gaia_account_id_);
   user_context.SetKey(Key(kPassword));
   test::UserSessionManagerTestApi session_manager_test_api(

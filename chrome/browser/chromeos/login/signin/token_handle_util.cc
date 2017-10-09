@@ -120,8 +120,7 @@ TokenHandleUtil::TokenDelegate::TokenDelegate(
       tokeninfo_response_start_time_(base::TimeTicks::Now()),
       callback_(callback) {}
 
-TokenHandleUtil::TokenDelegate::~TokenDelegate() {
-}
+TokenHandleUtil::TokenDelegate::~TokenDelegate() {}
 
 void TokenHandleUtil::TokenDelegate::OnOAuthError() {
   callback_.Run(account_id_, INVALID);
@@ -131,7 +130,7 @@ void TokenHandleUtil::TokenDelegate::OnOAuthError() {
 // Warning: NotifyDone() deletes |this|
 void TokenHandleUtil::TokenDelegate::NotifyDone() {
   if (owner_)
-      owner_->OnValidationComplete(token_);
+    owner_->OnValidationComplete(token_);
 }
 
 void TokenHandleUtil::TokenDelegate::OnNetworkError(int response_code) {

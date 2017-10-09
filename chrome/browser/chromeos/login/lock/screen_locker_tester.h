@@ -7,7 +7,6 @@
 
 #include <string>
 
-
 namespace views {
 class Widget;
 }  // namespace views

@@ -28,8 +28,7 @@ class MountManager {
   virtual bool IsMounted(const std::string& user_id);
   virtual base::FilePath GetPath(const std::string& user_id);
 
-  virtual void SetPath(const std::string& user_id,
-                       const base::FilePath& path);
+  virtual void SetPath(const std::string& user_id, const base::FilePath& path);
   virtual void DeletePath(const std::string& user_id);
 
  private:

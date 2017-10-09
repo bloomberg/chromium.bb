@@ -79,10 +79,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void StartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
-  void StartAppLaunch(
-      const std::string& app_id,
-      bool diagnostic_mode,
-      bool auto_launch) override;
+  void StartAppLaunch(const std::string& app_id,
+                      bool diagnostic_mode,
+                      bool auto_launch) override;
   void StartDemoAppLaunch() override;
   void StartArcKiosk(const AccountId& account_id) override;
   bool IsVoiceInteractionOobe() override;
