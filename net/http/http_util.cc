@@ -127,7 +127,8 @@ void HttpUtil::ParseContentType(const std::string& content_type_str,
     charset_val = content_type_str.find_first_not_of(HTTP_LWS, charset_val);
     charset_val = std::min(charset_val, charset_end);
     char first_char = content_type_str[charset_val];
-    if (first_char == '"' || first_char == '\'') {
+    // RFC 7231 Section 3.1.1.1 allows double quotes around charset.
+    if (first_char == '"') {
       charset_end = FindStringEnd(content_type_str, charset_val, first_char);
       ++charset_val;
       DCHECK(charset_end >= charset_val);
