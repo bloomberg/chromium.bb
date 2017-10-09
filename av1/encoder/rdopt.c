@@ -5321,6 +5321,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     prune = prune_tx_types(cpi, bsize, x, xd, 0);
 #endif  // CONFIG_EXT_TX
 
+  int found = 0;
+
   for (tx_type = txk_start; tx_type < txk_end; ++tx_type) {
     RD_STATS this_rd_stats;
     av1_init_rd_stats(&this_rd_stats);
@@ -5365,12 +5367,21 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       best_tx = mbmi->tx_size;
       best_min_tx_size = mbmi->min_tx_size;
       memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
+      found = 1;
       for (idy = 0; idy < xd->n8_h; ++idy)
         for (idx = 0; idx < xd->n8_w; ++idx)
           best_tx_size[idy][idx] = mbmi->inter_tx_size[idy][idx];
     }
   }
 
+  // We should always find at least one candidate unless ref_best_rd is less
+  // than INT64_MAX (in which case, all the calls to select_tx_size_fix_type
+  // might have failed to find something better)
+  assert(IMPLIES(!found, ref_best_rd != INT64_MAX));
+  if (!found) return;
+
+  // We found a candidate transform to use. Copy our results from the "best"
+  // array into mbmi.
   mbmi->tx_type = best_tx_type;
   for (idy = 0; idy < xd->n8_h; ++idy)
     for (idx = 0; idx < xd->n8_w; ++idx)
