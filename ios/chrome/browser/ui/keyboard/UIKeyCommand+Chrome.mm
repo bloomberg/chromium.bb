@@ -6,20 +6,9 @@
 
 #import <objc/runtime.h>
 
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-ChromeCommandBlock ChromeCommandBlockWithResponder(UIResponder* responder) {
-  __weak UIResponder* weakResponder = responder;
-  return [^(NSInteger tag) {
-    [weakResponder
-        chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];
-  } copy];
-}
 
 UIKeyModifierFlags Cr_UIKeyModifierNone = 0;
 

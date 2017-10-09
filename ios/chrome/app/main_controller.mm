@@ -1483,6 +1483,26 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   }
 }
 
+- (void)showAddAccount {
+  if (_signinInteractionController) {
+    // Avoid showing the sign in screen if there is already a sign-in operation
+    // in progress.
+    return;
+  }
+
+  _signinInteractionController = [[SigninInteractionController alloc]
+          initWithBrowserState:_mainBrowserState
+      presentingViewController:[self topPresentedViewController]
+                   accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN
+                   promoAction:signin_metrics::PromoAction::
+                                   PROMO_ACTION_NO_SIGNIN_PROMO
+                    dispatcher:self.mainBVC.dispatcher];
+
+  [_signinInteractionController addAccountWithCompletion:^(BOOL success) {
+    _signinInteractionController = nil;
+  }];
+}
+
 #pragma mark - ApplicationSettingsCommands
 
 - (void)showAccountsSettings {
@@ -2028,26 +2048,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                             completion:completion];
       break;
   }
-}
-
-- (void)showAddAccount {
-  if (_signinInteractionController) {
-    // Avoid showing the sign in screen if there is already a sign-in operation
-    // in progress.
-    return;
-  }
-
-  _signinInteractionController = [[SigninInteractionController alloc]
-          initWithBrowserState:_mainBrowserState
-      presentingViewController:[self topPresentedViewController]
-                   accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NO_SIGNIN_PROMO
-                    dispatcher:self.mainBVC.dispatcher];
-
-  [_signinInteractionController addAccountWithCompletion:^(BOOL success) {
-    _signinInteractionController = nil;
-  }];
 }
 
 - (void)dismissSigninInteractionController {

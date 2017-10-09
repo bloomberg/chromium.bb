@@ -83,6 +83,9 @@
 // Shows the signin UI.
 - (void)showSignin:(ShowSigninCommand*)command;
 
+// Shows the Add Account UI
+- (void)showAddAccount;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_
