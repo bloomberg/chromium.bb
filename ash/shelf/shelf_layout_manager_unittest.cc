@@ -830,8 +830,16 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
 
-  // Move mouse back up.
+  // Tap the system tray when shelf is shown should open the system tray menu.
+  generator.GestureTapAt(GetPrimarySystemTray()
+                             ->GetWidget()
+                             ->GetWindowBoundsInScreen()
+                             .CenterPoint());
+  EXPECT_TRUE(GetPrimarySystemTray()->HasSystemBubble());
+
+  // Move mouse back up and click to dismiss the opened system tray menu.
   generator.MoveMouseTo(0, 0);
+  generator.ClickLeftButton();
   SetState(layout_manager, SHELF_AUTO_HIDE);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   layout_manager->LayoutShelf();

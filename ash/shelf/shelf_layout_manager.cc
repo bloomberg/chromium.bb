@@ -927,8 +927,9 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 
   if (shelf_widget_->IsActive() ||
       (shelf_widget_->status_area_widget() &&
-       shelf_widget_->status_area_widget()->IsActive()))
+       shelf_widget_->status_area_widget()->IsActive())) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   // If there are no visible windows do not hide the shelf.
   if (!HasVisibleWindow())
@@ -939,10 +940,6 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 
   // Don't show if the user is dragging the mouse.
   if (in_mouse_drag_)
-    return SHELF_AUTO_HIDE_HIDDEN;
-
-  // Ignore the mouse position if mouse events are disabled.
-  if (!shelf_widget_->IsMouseEventsEnabled())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   gfx::Rect shelf_region = shelf_widget_->GetWindowBoundsInScreen();
