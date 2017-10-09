@@ -354,8 +354,11 @@ def SynthesizeCommandTypes(json_api):
             SynthesizeEnumType(domain, type['id'], property)
 
     for command in domain.get('commands', []):
+      parameters_required = False
       if 'parameters' in command:
         for parameter in command['parameters']:
+          if not 'optional' in parameter:
+            parameters_required = True
           if 'enum' in parameter and not '$ref' in parameter:
             SynthesizeEnumType(domain, command['name'], parameter)
         parameters_type = {
@@ -378,6 +381,7 @@ def SynthesizeCommandTypes(json_api):
             'properties': command['returns']
         }
         domain['types'].append(result_type)
+      command['parameters_required'] = parameters_required
 
 
 def SynthesizeEventTypes(json_api):
