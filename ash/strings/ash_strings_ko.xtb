@@ -96,7 +96,7 @@
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3294437725009624529">손님</translation>
-<translation id="332587331255250389">배터리를 교체하세요.</translation>
+<translation id="332587331255250389">배터리를 교체해 주세요.</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
 <translation id="3368922792935385530">연결됨</translation>
 <translation id="3371140690572404006">USB-C 기기(우측 전면 포트)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C 기기</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
-<translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE" />'(으)로 다시 변경(다시 시작해야 함)</translation>
 <translation id="3582792037806681688">이 세션의 사용자에게 멀티 로그인이 허용되지 않습니다.</translation>
 <translation id="3595596368722241419">배터리 충전 완료</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 활성화 중...</translation>
+<translation id="6284232397434400372">해상도가 변경됨</translation>
 <translation id="6297287540776456956">스타일러스를 사용하여 영역을 선택하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
 <translation id="632744581670418035">키보드 오버레이</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
-<translation id="7135556860107312402">다음 항목에 알림 허용:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
+<translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
 <translation id="7647488630410863958">기기를 잠금 해제하여 알림 보기</translation>
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7658239707568436148">취소</translation>

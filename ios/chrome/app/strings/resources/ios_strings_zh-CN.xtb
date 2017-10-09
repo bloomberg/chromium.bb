@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2435457462613246316">显示密码</translation>
+<translation id="2529021024822217800">全部打开</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
 <translation id="2584132361465095047">添加帐号…</translation>
 <translation id="2593774076813182497">此页面无法打印。</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">地址第2行</translation>
 <translation id="3329904751041170572">无法连接到服务器。</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
-<translation id="3387752218061326363">目前显示的是您已登录帐号的设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="3393920035788932672">允许显示弹出式窗口</translation>
 <translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">语音搜索</translation>
 <translation id="6807889908376551050">全部显示...</translation>
 <translation id="681368974849482173">书签已创建</translation>
+<translation id="6871663519944855400">在无痕模式下打开</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6903907808598579934">开启同步功能</translation>
 <translation id="6945221475159498467">选择</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">同步到</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7108338896283013870">隐藏</translation>
-<translation id="7131892264600713844">目前显示的是这台设备的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="7133798577887235672">全称</translation>
 <translation id="7136892417564438900">无法使用相机</translation>
 <translation id="7159472599653637159">请求移动版网站</translation>

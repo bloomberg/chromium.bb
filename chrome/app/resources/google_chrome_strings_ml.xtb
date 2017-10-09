@@ -26,6 +26,7 @@
 <translation id="1628000112320670027">Chrome ഉപയോഗിക്കുന്നതിനുള്ള സഹായം തേടുക</translation>
 <translation id="163860049029591106">Chrome OS-നൊപ്പം ആരംഭിക്കുക</translation>
 <translation id="1653828314016431939">ശരി - ഇപ്പോൾ പുനഃരാരംഭിക്കുക</translation>
+<translation id="1674870198290878346">Chrome ആൾ&amp;മാറാട്ട വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="1682634494516646069">Google Chrome-ന് ഇതിന്റെ ഡാറ്റാ ഡയറക്‌ടറി വായിക്കാനും അതിൽ എഴുതാനും കഴിയില്ല:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -63,6 +64,7 @@
 <translation id="2580411288591421699">നിലവില്‍‌ പ്രവര്‍‌ത്തിക്കുന്ന സമാന Google Chrome പതിപ്പ് ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യാന്‍‌ കഴിയില്ല. ദയവായി Google Chrome അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2586406160782125153">ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ ബ്രൗസിംഗ് വിവരങ്ങൾ ഇല്ലാതാക്കും. പിന്നീട് വിവരങ്ങൾ വീണ്ടെടുക്കാൻ, <ph name="USER_EMAIL" /> എന്നയാളായി Chrome‌-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="2588322182880276190">Chrome ലോഗോ</translation>
+<translation id="2652691236519827073">പുതിയ Chrome &amp;ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="2664962310688259219">Chrome OS ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
 <translation id="2665296953892887393">Google-ലേക്ക് ക്രാഷ് റിപ്പോർട്ടുകളും <ph name="UMA_LINK" /> എന്നതും അയയ്‌ക്കുന്നതിലൂടെ Google Chrome മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
 <translation id="2689103672227170538">നിങ്ങൾ Chrome ആരംഭിക്കുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ ഈ വിപുലീകരണം മാറ്റി.</translation>
@@ -100,11 +102,12 @@
 <translation id="3738139272394829648">തിരയാൻ സ്‌പർശിക്കുക</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome-ൽ നിന്ന് നീക്കംചെയ്യുക...</translation>
-<translation id="3847841918622877581">നിങ്ങളുടെ ബ്രൌസിംഗ് അനുഭവം മെച്ചപ്പെടുത്താനായി Google Chrome വെബ് സേവനങ്ങള്‍ ഉപയോഗിക്കാം.</translation>
 <translation id="386202838227397562">ദയവായി എല്ലാ Google Chrome വിന്‍‌ഡോകളും അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Chrome ആൾ&amp;മാറാട്ട വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="3889417619312448367">Google Chrome അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്യുക</translation>
 <translation id="4028693306634653894">വേഗതയേറിയ Chrome സ്വന്തമാക്കുക</translation>
+<translation id="4031074602479304239">നിങ്ങളെ ഇനിപ്പറയുന്ന ഇടത്തേക്ക് കൊണ്ടുപോകുന്നതിൽ നിന്ന് ഈ സൈറ്റിനെ Chrome തടഞ്ഞു:</translation>
 <translation id="4042449298237264661">Windows XP അല്ലെങ്കിൽ Windows Vista-യെ ഇനി പിന്തുണയ്‌ക്കാത്തതിനാൽ ഈ കമ്പ്യൂട്ടറിന് ഇനി Google Chrome അപ്‌ഡേറ്റുകൾ സ്വീകരിക്കാനാകില്ല.</translation>
 <translation id="4050175100176540509">ഏറ്റവും പുതിയ പതിപ്പിൽ പ്രധാനപ്പെട്ട സുരക്ഷ മെച്ചപ്പെടുത്തലുകളും പുതിയ ഫീച്ചറുകളും ലഭ്യമാണ്.</translation>
 <translation id="4053720452172726777">Google Chrome ഇഷ്‌ടാനുസൃതമാക്കുക, നിയന്ത്രിക്കുക</translation>
@@ -133,6 +136,7 @@
 <translation id="4794050651896644714">Chrome-ൽ വിശദാംശങ്ങൾ സംരക്ഷിക്കുക</translation>
 <translation id="4804732725083176494">Chrome-ലേക്കുള്ള സൈൻ ഇൻ ചെയ്യൽ, ഈ ഉപകരണത്തിന്‍റെ അഡ്‌മിനി‌സ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="4891791193823137474">പശ്ചാത്തലത്തില്‍ Google Chrome പ്രവര്‍ത്തിക്കാന്‍ അനുവദിക്കുക</translation>
+<translation id="4895437082222824641">പുതിയ Chrome &amp;ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="4921569541910214635">ഒരു കമ്പ്യൂട്ടർ പങ്കിടണോ? ഇപ്പോൾ നിങ്ങൾക്ക് ഇഷ്‌ടപ്പെട്ട രീതിയിൽ Chrome സജ്ജീകരിക്കാനാകും.</translation>
 <translation id="4953650215774548573">Google Chrome-നെ നിങ്ങളുടെ സ്ഥിര ബ്രൗസറായി സജ്ജീകരിക്കുക</translation>
 <translation id="495931528404527476">Chrome-ൽ</translation>
@@ -158,6 +162,7 @@
 നിങ്ങളുടെ ക്രമീകരണം വീണ്ടെടുക്കാൻ Google Chrome-ന് കഴിയില്ല.</translation>
 <translation id="5453904507266736060">പശ്ചാത്തലത്തില്‍ Google Chrome പ്രവര്‍ത്തിക്കാന്‍ അനുവദിക്കുക</translation>
 <translation id="5495581687705680288">മൊഡ്യൂളുകള്‍ Google Chrome ലേയ്ക്ക് ലോഡുചെയ്തു</translation>
+<translation id="5524843473235508879">റീഡയറക്ട് ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തു.</translation>
 <translation id="556024056938947818">Google Chrome പാസ്‌വേഡുകൾ ദൃശ്യമാക്കാൻ ശ്രമിക്കുന്നു.</translation>
 <translation id="5563479599352954471">ഒരു സ്പർശനത്തിലൂടെ തിരയുക</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -217,7 +222,6 @@
 <translation id="7339898014177206373">പുതിയ വിന്‍ഡോ</translation>
 <translation id="7369650938475876456">Chrome സൃഷ്‌ടിച്ച ശക്തമായ പാസ്‌വേഡ് ഉപയോഗിക്കുക</translation>
 <translation id="7398801000654795464">നിങ്ങൾ Chrome-ൽ <ph name="USER_EMAIL_ADDRESS" /> എന്നായി സൈൻ ഇൻ ചെയ്‌തു. വീണ്ടും സൈൻ ഇൻ ചെയ്യുന്നതിന് സമാന അക്കൗണ്ട് ഉപയോഗിക്കുക.</translation>
-<translation id="7400722733683201933">Google Chrome നെ കുറിച്ച്</translation>
 <translation id="7408085963519505752">Chrome OS നിബന്ധനകൾ</translation>
 <translation id="7419046106786626209">നിങ്ങളുടെ ഡൊമെയ്‌‌നിനായി സമന്വയം ലഭ്യമല്ലാത്തതിനാൽ Chrome OS-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല.</translation>
 <translation id="7437998757836447326">Chrome-ൽ നിന്നും സൈൻ ഔട്ട് ചെയ്യുക</translation>

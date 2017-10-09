@@ -13,6 +13,7 @@
 <translation id="1396446129537741364">Chromium покушава да прикаже лозинке.</translation>
 <translation id="1403254041219632970">Будуће верзије Chromium-а више неће подржавати Mac OS X 10.6, 10.7 или 10.8.</translation>
 <translation id="1414495520565016063">Пријављени сте на Chromium!</translation>
+<translation id="1440917365206527807">Chromium је спречио да вас овај сајт одведе на</translation>
 <translation id="1444754455097148408">Лиценце отвореног кода за Chromium</translation>
 <translation id="1502360822835740515">Подесите Chromium за подразумевани прегледач</translation>
 <translation id="151962892725702025">Chromium ОС не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
@@ -64,6 +65,7 @@
 <translation id="3103660991484857065">Програм за инсталацију није успео да декомпримује архиву. Преузмите Chromium поново.</translation>
 <translation id="3130323860337406239">Chromium користи микрофон.</translation>
 <translation id="3155163173539279776">Поново покрени Chromium</translation>
+<translation id="3179665906251668410">Отвори линк у Chromium прозору без архи&amp;вирања</translation>
 <translation id="3190315855212034486">Опа! Chromium је отказао. Желите ли да га одмах поново покренете?</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чита податке из директоријума са подацима нити да их уписује у њега:
@@ -79,6 +81,7 @@
 <translation id="3549345495227188780">Почетни кораци за Chromium ОС</translation>
 <translation id="3582788516608077514">Ажурирање Chromium-а...</translation>
 <translation id="358997566136285270">Chromium логотип</translation>
+<translation id="3713809861844741608">Отвори линк у новој Chromium &amp;картици</translation>
 <translation id="3738139272394829648">Додирни за претрагу</translation>
 <translation id="3762167353400286894">Chromium ОС се приказује на овом језику</translation>
 <translation id="378917192836375108">Chromium вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
@@ -131,6 +134,7 @@
 <translation id="5466153949126434691">Chromium се аутоматски ажурира, па увек имате најновију верзију. Када ово преузимање буде довршено, Chromium ће се поново покренути и бићете спремни.</translation>
 <translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
+<translation id="5524843473235508879">Преусмеравање је блокирано.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>
@@ -178,11 +182,11 @@
 <translation id="6883876366448858277">шаље реч и околни контекст Google претрази, а приказује дефиниције, слике и друге резултате претраге.</translation>
 <translation id="6893813176749746474">Chromium је ажуриран, али га нисте користили најмање 30 дана.</translation>
 <translation id="6944967875980567883">Модули који су учитани у Chromium</translation>
+<translation id="6964305034639999644">Отвори линк у Chromium прозору без архи&amp;вирања</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>
 <translation id="705851970750939768">Ажурирај Chromium</translation>
 <translation id="7066436765290594559">Chromium ОС не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
 <translation id="707471633328071618">Google Payments (копирано у Chromium)</translation>
-<translation id="7138853919861947730">Chromium може да користи веб услуге да би побољшао доживљај прегледања.</translation>
 <translation id="7162152143154757523">Chromium може да пружи паметнију проверу правописа слањем текста који уносите у прегледач на Google сервере, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
 <translation id="7205698830395646142">Сакриј у Chromium менију</translation>
 <translation id="7223968959479464213">Менаџер задатака – Chromium</translation>
@@ -257,6 +261,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="9022552996538154597">Пријављивање на Chromium</translation>
 <translation id="9036189287518468038">Покретач Chromium апликација</translation>
 <translation id="9089354809943900324">Chromium је застарео</translation>
+<translation id="91086099826398415">Отвори линк у новој Chromium &amp;картици</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="918373042641772655">Ако прекинете везу са <ph name="USERNAME" />, обрисаћете историју, обележиваче, подешавања и друге Chromium податке сачуване на овом уређају. Подаци сачувани на Google налогу неће бити обрисани и можете њима да управљате на <ph name="GOOGLE_DASHBOARD_LINK" />Google контролној табли<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

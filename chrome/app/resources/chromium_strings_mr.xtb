@@ -12,6 +12,7 @@
 <translation id="1396446129537741364">Chromium संकेतशब्द दर्शविण्याचा प्रयत्न करत आहे.</translation>
 <translation id="1403254041219632970">Chromium च्या भविष्‍यातील आवृत्त्या यापुढे Mac OS X 10.6, 10.7 किंवा 10.8 ला समर्थन देणार नाहीत.</translation>
 <translation id="1414495520565016063">आपण Chromium मध्ये साइन इन केले आहे!</translation>
+<translation id="1440917365206527807">Chromium ने या साइटला तुम्हाला यावर नेण्यापासून थांबवले</translation>
 <translation id="1444754455097148408">Chromium खुला स्त्रोत परवाने</translation>
 <translation id="1502360822835740515">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
 <translation id="151962892725702025">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
@@ -63,6 +64,7 @@
 <translation id="3103660991484857065">संग्रहण असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
 <translation id="3130323860337406239">Chromium आपला मायक्रोफोन वापरत आहे.</translation>
 <translation id="3155163173539279776">Chromium पुन्हा लाँच करा</translation>
+<translation id="3179665906251668410">लिंक Chromium गु&amp;प्त विंडो मध्ये उघडा</translation>
 <translation id="3190315855212034486">ओहो! Chromium क्रॅश झाले आहे. आता पुन्हा लाँच करायचे?</translation>
 <translation id="3256316712990552818">Chromium वर कॉपी केले</translation>
 <translation id="3258596308407688501">Chromium त्याची डेटा निर्देशिका वाचू किंवा लिहू शकत नाही:
@@ -78,6 +80,7 @@
 <translation id="3549345495227188780">Chromium OS सह प्रारंभ करा</translation>
 <translation id="3582788516608077514">Chromium अपडेट करीत आहे...</translation>
 <translation id="358997566136285270">Chromium लोगो</translation>
+<translation id="3713809861844741608">लिंक नवीन Chromium &amp;टॅबमध्ये उघडा</translation>
 <translation id="3738139272394829648">शोधण्यासाठी स्विच करा</translation>
 <translation id="3762167353400286894">Chromium OS या भाषेत प्रदर्शित केले आहे</translation>
 <translation id="378917192836375108">Chromium आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
@@ -130,6 +133,7 @@
 <translation id="5466153949126434691">Chromium स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chromium रीस्टार्ट होईल आणि आपण आपल्या मार्गावर असाल.</translation>
 <translation id="5479196819031988440">Chromium OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टम अपडेट इंस्टॉल करेपर्यंत प्रतीक्षा करा.</translation>
+<translation id="5524843473235508879">रीडिरेक्‍ट ब्लॉक केले.</translation>
 <translation id="5563479599352954471">एका स्पर्शाने शोधा</translation>
 <translation id="5620765574781326016">पृष्ठ न सोडता वेबसाइटवरील विषयांबद्दल जाणून घ्या.</translation>
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
@@ -177,11 +181,11 @@
 <translation id="6883876366448858277">Google शोध वर, परत करणार्‍या परिभाषा, चित्रे, शोध परिणाम आणि इतर शोध परिणामांना शब्द आणि त्याच्या आसपासचा संदर्भ पाठविते.</translation>
 <translation id="6893813176749746474">Chromium अपडेट केले गेले, परंतु आपण ते किमान 30 दिवसांपासून वापरलेले नाही.</translation>
 <translation id="6944967875980567883">Chromium मध्ये लोड केलेली मॉड्यूल</translation>
+<translation id="6964305034639999644">लिंक Chromium गु&amp;प्त विंडो मध्ये उघडा</translation>
 <translation id="6970811910055250180">आपले डिव्हाइस अपडेट करीत आहे...</translation>
 <translation id="705851970750939768">Chromium अपडेट करा</translation>
 <translation id="7066436765290594559">Chromium OS आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन सांकेतिक वाक्यांश अपडेट करा.</translation>
 <translation id="707471633328071618">Google Payments (Chromium वर कॉपी केले)</translation>
-<translation id="7138853919861947730">आपला ब्राउझिंग अनुभव सुधारण्यासाठी Chromium वेब सेवा वापरू शकते.</translation>
 <translation id="7162152143154757523">आपण ब्राउझरमध्‍ये जे टाइप करता ते Google सर्व्हरला पाठवून, आपल्याला Google शोध द्वारे वापरलेल्या शब्दलेखन-तंत्रज्ञानासारखेच तंत्रज्ञान वापरण्याची अनुमती देऊन Chromium चाणाक्ष शब्दलेखन-तपासणी प्रदान करु शकते.</translation>
 <translation id="7205698830395646142">Chromium मेनूमध्‍ये लपवा</translation>
 <translation id="7223968959479464213">कार्य व्यवस्थापक- Chromium </translation>
@@ -255,6 +259,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="9022552996538154597">Chromium वर साइन इन करा</translation>
 <translation id="9036189287518468038">Chromium App लाँचर</translation>
 <translation id="9089354809943900324">Chromium कालबाह्य आहे</translation>
+<translation id="91086099826398415">लिंक नवीन Chromium &amp;टॅबमध्ये उघडा</translation>
 <translation id="911206726377975832">आपला ब्राउझिंग डेटा देखील हटवायचा?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> डिस्कनेक्ट केल्याने, या डिव्हाइसवर संचयित केलेला आपला इतिहास, बुकमार्क, सेटिंग्ज आणि अन्य Chromium डेटा साफ होईल. आपल्या Google खात्यामध्ये संचयित केलेला डेटा साफ केला जाणार नाही आणि हा <ph name="GOOGLE_DASHBOARD_LINK" />Google डॅशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> वर व्यवस्थापित केला जाऊ शकतो.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-मध्ये)</translation>

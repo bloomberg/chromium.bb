@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Zariadenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Zvýrazniť ukazovateľ myši</translation>
-<translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
 <translation id="3582792037806681688">Pre používateľa v tejto relácii bolo viacnásobné prihlásenie zakázané</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
@@ -233,7 +232,6 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7066646422045619941">Táto sieť je zakázaná správcom.</translation>
 <translation id="7067196344162293536">Automatické otáčanie</translation>
 <translation id="7098389117866926363">Zariadenie USB-C (ľavý port vzadu)</translation>
-<translation id="7135556860107312402">Povoliť prijímanie upozornení od:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadný mikrofóm</translation>
@@ -250,6 +248,7 @@ Túto funkciu používajte iba s dôveryhodnými účtami.</translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7569509451529460200">Funkcie Braille a ChromeVox sú povolené</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Ak si chcete zobraziť upozornenia, odomknite zariadenie</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>

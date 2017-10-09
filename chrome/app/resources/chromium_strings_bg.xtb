@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium опитва да покаже паролите.</translation>
 <translation id="1403254041219632970">Бъдещите версии на Chromium вече няма да поддържат Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1414495520565016063">Влязохте в Chromium!</translation>
+<translation id="1440917365206527807">Chromium спря пренасочването ви от този сайт към</translation>
 <translation id="1444754455097148408">Лицензи за отворен код за Chromium</translation>
 <translation id="1502360822835740515">Задаване на Chromium като браузър по подразбиране</translation>
 <translation id="151962892725702025">Chromium OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете отново Chromium.</translation>
 <translation id="3130323860337406239">Chromium използва микрофона ви.</translation>
 <translation id="3155163173539279776">Рестартиране на Chromium</translation>
+<translation id="3179665906251668410">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="3190315855212034486">О, не! Chromium претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="3256316712990552818">Копирано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чете и записва в директорията си за данни: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -75,6 +77,7 @@
 <translation id="3549345495227188780">Първи стъпки с Chromium OS</translation>
 <translation id="3582788516608077514">Chromium се актуализира...</translation>
 <translation id="358997566136285270">Лого на Chromium</translation>
+<translation id="3713809861844741608">Отваряне на връзката в нов &amp;раздел на Chromium</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3762167353400286894">Chromium OS се показва на този език</translation>
 <translation id="378917192836375108">Chromium ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
@@ -127,6 +130,7 @@
 <translation id="5466153949126434691">Chromium се актуализира автоматично, така че винаги да имате най-новата версия. Когато това изтегляне завърши, Chromium ще се рестартира и ще можете да започнете работа.</translation>
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="549669000822060376">Моля, изчакайте, докато Chromium инсталира най-новите системни актуализации.</translation>
+<translation id="5524843473235508879">Блокирано бе пренасочване.</translation>
 <translation id="5563479599352954471">Търсене с едно докосване</translation>
 <translation id="5620765574781326016">Научете за темите в уебсайтовете, без да излизате от страницата.</translation>
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>
@@ -172,11 +176,11 @@
 <translation id="6883876366448858277">изпраща дума и текста около нея до Google Търсене, извеждайки определения, снимки и други резултати от търсенето.</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="6944967875980567883">Модули, заредени в Chromium</translation>
+<translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="6970811910055250180">Устройството ви се актуализира...</translation>
 <translation id="705851970750939768">Актуализиране на Chromium</translation>
 <translation id="7066436765290594559">Chromium OS не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="707471633328071618">Google Payments (копирано в Chromium)</translation>
-<translation id="7138853919861947730">Chromium може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="7162152143154757523">Chromium може да предоставя по-интелигентна проверка на правописа, като изпраща до сървърите ни въвежданото от вас в браузъра, позволявайки ви да използвате същата технология за проверка на правописа, както при търсенето с Google.</translation>
 <translation id="7205698830395646142">Скриване в менюто на Chromium</translation>
 <translation id="7223968959479464213">Диспечер на задачите – Chromium</translation>
@@ -249,6 +253,7 @@
 <translation id="9022552996538154597">Вход в Chromium</translation>
 <translation id="9036189287518468038">Стартов панел с приложения за Chromium</translation>
 <translation id="9089354809943900324">Chromium не е актуален</translation>
+<translation id="91086099826398415">Отваряне на връзката в нов &amp;раздел на Chromium</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="918373042641772655">Прекратяването на връзката с/ъс <ph name="USERNAME" /> ще изчисти историята, отметките, настройките и другите данни в Chromium, съхранени на това устройство. Данните в профила ви в Google няма да бъдат изчистени и могат да се управляват в <ph name="GOOGLE_DASHBOARD_LINK" />Google Табло за управление<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (входящ трафик за mDNS)</translation>

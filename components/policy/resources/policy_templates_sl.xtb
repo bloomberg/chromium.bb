@@ -1185,7 +1185,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="5307432759655324440">Razpoložljivost načina brez beleženja zgodovine</translation>
 <translation id="5318185076587284965">Gostitelju oddaljenega dostopa omogoči uporabo posredovalnih strežnikov</translation>
-<translation id="5323128137188992869">Omogočanje predvajanja predstavnosti v napravi z napravo <ph name="PRODUCT_NAME" />.
+<translation id="5323128137188992869">Omogočanje predvajanja vsebine v napravi z napravo <ph name="PRODUCT_NAME" />.
 
           Če je ta pravilnik onemogočen, uporabniki ne bodo mogli predvajati vsebine v tej napravi. Če je pravilnik omogočen, je uporabnikom dovoljeno predvajanje vsebine. Če ta pravilnik ni nastavljen, uporabnikom ni dovoljeno predvajati vsebine v včlanjenih napravah OS Chrome, vendar jo lahko predvajajo v napravah, ki niso včlanjene.</translation>
 <translation id="5330684698007383292">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
@@ -1366,6 +1366,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če pravilnik nastavite, ga lahko uporabniki začasno preglasijo tako, da omogočijo ali onemogočijo velik kazalec, vendar ta nastavitev ni trajna, pri čemer se privzeta nastavitev obnovi vsakič, ko je ponovno prikazan prijavni zaslon ali kadar je uporabnik eno minuto nedejaven na prijavnem zaslonu.
 
           Če pravilnika ne nastavite, je velik kazalec onemogočen, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo velik kazalec, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
+<translation id="5932767795525445337">Ta pravilnik je prav tako mogoče uporabiti za pripenjanje aplikacij za Android.</translation>
 <translation id="5936622343001856595">Uveljavi izvajanje poizvedb v Google Spletnem iskanju z aktiviranim Google Varnim iskanjem in uporabnikom prepreči spreminjanje te nastavitve.
 
       Če to nastavitev omogočite, je Google Varno iskanje v Iskanju Google vedno aktivno.
@@ -1418,7 +1419,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6111936128861357925">Dovoli skrito igro z dinozavrom</translation>
 <translation id="6114416803310251055">zastarelo</translation>
 <translation id="6133088669883929098">Vsem spletnim mestom dovoli uporabo ustvarjanja ključev</translation>
-<translation id="6139485614509308022">Če je nastavljen pravilnik »OffHours«, so določeni pravilniki za naprave prezrti (uporabite privzete nastavitve teh pravilnikov) med določenimi časovnimi intervali. Chrome znova uporabi pravilnike za naprave pri vsakem dogodku, ko se začne ali konča obdobje »OffHours«. Uporabnik bo obveščen in prisiljen, da se odjavi, ko bodo spremenjeni konec obdobja »OffHours« in nastavitve pravilnikov za naprave (tj. če je uporabnik prijavljen z nedovoljenim računom).</translation>
 <translation id="6145799962557135888">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo izvajati JavaScript.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>

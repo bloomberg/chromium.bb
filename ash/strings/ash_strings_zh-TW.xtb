@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="3510164367642747937">醒目顯示滑鼠游標</translation>
-<translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE" />」(需要重新啟動)</translation>
 <translation id="3582792037806681688">這個工作階段的使用者已遭禁用多重登入</translation>
 <translation id="3595596368722241419">電池已充滿</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在啟用...</translation>
+<translation id="6284232397434400372">解析度已變更</translation>
 <translation id="6297287540776456956">使用觸控筆選取擷取範圍</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到<ph name="ROTATION" /></translation>
 <translation id="632744581670418035">鍵盤自訂快速鍵</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
-<translation id="7135556860107312402">允許接收下列來源發出的通知：</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
+<translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7377169924702866686">大寫鍵已啟用。</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">表情符號面板</translation>
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
 <translation id="7647488630410863958">解鎖裝置即可查看通知</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>

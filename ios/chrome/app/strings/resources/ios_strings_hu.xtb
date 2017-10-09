@@ -79,6 +79,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2381405137052800939">Alapok</translation>
 <translation id="2386793615875593361">1 kijelölve</translation>
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
+<translation id="2529021024822217800">Az összes megnyitása</translation>
 <translation id="2572712655377361602">Egy eszközszabályzat letiltotta a fényképeihez való hozzáférést</translation>
 <translation id="2584132361465095047">Fiók hozzáadása...</translation>
 <translation id="2593774076813182497">Az oldal nem nyomtatható.</translation>
@@ -128,7 +129,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3324193307694657476">Cím 2. sora</translation>
 <translation id="3329904751041170572">Nem lehet kapcsolódni a szerverhez.</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
-<translation id="3387752218061326363">Előzmények megjelenítése bejelentkezett eszközeiről. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-up megengedett</translation>
 <translation id="3414292259312108062">A Chrome eltárolja ezt a jelszót a <ph name="BEGIN_LINK" />mentett Google-jelszavak<ph name="END_LINK" /> közé, és szükség esetén automatikusan beilleszti, így Önnek nem kell megjegyeznie.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
@@ -312,6 +312,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6797885426782475225">Hangalapú keresés</translation>
 <translation id="6807889908376551050">Összes megjelenítése...</translation>
 <translation id="681368974849482173">Elem létrehozva</translation>
+<translation id="6871663519944855400">Megnyitás inkognitómódban</translation>
 <translation id="6896758677409633944">Másolás</translation>
 <translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
@@ -321,7 +322,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7031882061095297553">Szinkronizálás a következőknél</translation>
 <translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
 <translation id="7108338896283013870">Elrejtés</translation>
-<translation id="7131892264600713844">Előzmények megjelenítése erről az eszközről. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Teljes név</translation>
 <translation id="7136892417564438900">A kamera nem áll rendelkezésre</translation>
 <translation id="7159472599653637159">Mobilwebhely kérése</translation>

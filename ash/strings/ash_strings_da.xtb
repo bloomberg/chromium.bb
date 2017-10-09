@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C-enhed</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="3510164367642747937">Fremhæv musemarkør</translation>
-<translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
 <translation id="3582792037806681688">Samlet login fra flere konti er blevet deaktiveret for en bruger i denne session</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiverer...</translation>
+<translation id="6284232397434400372">Opløsningen blev ændret</translation>
 <translation id="6297287540776456956">Brug pennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastaturoverlejring</translation>
@@ -232,10 +232,10 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
 <translation id="7067196344162293536">Automatisk rotering</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
-<translation id="7135556860107312402">Tillad underretninger fra følgende:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
+<translation id="726276584504105859">Træk hertil for at bruge delt skærm</translation>
 <translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7377169924702866686">Caps Lock er slået til.</translation>
@@ -248,6 +248,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7562368315689366235">Emojipalet</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine underretninger</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>

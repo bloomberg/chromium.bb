@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">‏Chromium می‌خواهد گذرواژه‌ها را نشان دهد.</translation>
 <translation id="1403254041219632970">‏نسخه‌های آینده Chromium دیگر از Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ یا ۱۰٫۸ پشتیبانی نمی‌کند.</translation>
 <translation id="1414495520565016063">‏شما وارد سیستم Chromium شدید!</translation>
+<translation id="1440917365206527807">‏Chromium مانع هدایت شما توسط این سایت به اینجا شده است</translation>
 <translation id="1444754455097148408">‏مجوزهای منبع باز Chromium</translation>
 <translation id="1502360822835740515">‏Chromium مرورگر پیش‌فرض شود</translation>
 <translation id="151962892725702025">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">‏نصب‌کننده در خارج کردن بایگانی از حالت فشرده ناموفق بود. لطفاً دوباره Chromium را بارگیری کنید.</translation>
 <translation id="3130323860337406239">‏Chromium درحال استفاده از میکروفون شما است.</translation>
 <translation id="3155163173539279776">‏اجرای مجدد Chromium</translation>
+<translation id="3179665906251668410">‏باز کردن پیوند در پنجره &amp;ناشناس Chromium</translation>
 <translation id="3190315855212034486">‏اوه! Chromium خراب شده است. دوباره راه‌اندازی شود؟</translation>
 <translation id="3256316712990552818">‏به Chromium کپی شد</translation>
 <translation id="3258596308407688501">‏Chromium نمی‌تواند مسیر داده‌های خود را بخواند یا در آن بنویسد:
@@ -76,6 +78,7 @@
 <translation id="3549345495227188780">‏شروع به کار با سیستم عامل Chromium</translation>
 <translation id="3582788516608077514">‏در حال به‌روزرسانی Chromium…</translation>
 <translation id="358997566136285270">‏نشان‌واره Chromium</translation>
+<translation id="3713809861844741608">‏باز کردن پیوند در &amp;برگه جدید Chromium</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3762167353400286894">‏سیستم عامل Chromium به این زبان نشان داده می‌شود</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
@@ -128,6 +131,7 @@
 <translation id="5466153949126434691">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید. وقتی این بارگیری تمام شد، Chromium دوباره شروع به کار می‌کند و می‌توانید کارتان را ادامه دهید.</translation>
 <translation id="5479196819031988440">‏Chromium OS نمی‌تواند این صفحه را باز کند.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
+<translation id="5524843473235508879">هدایت کردن مسدود شد.</translation>
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
@@ -175,11 +179,11 @@
 <translation id="6883876366448858277">‏کلمه و نوشتار اطرافش را به جستجوی Google ارسال می‌کند و معانی، تصاویر و نتایج جستجوی دیگر را برمی‌گرداند.</translation>
 <translation id="6893813176749746474">‏Chromium به‌روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="6944967875980567883">‏مدول‌ها در Chromium بارگیری شدند</translation>
+<translation id="6964305034639999644">‏باز کردن پیوند در پنجره &amp;ناشناس Chromium</translation>
 <translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
 <translation id="705851970750939768">‏به‌روزرسانی Chromium</translation>
 <translation id="7066436765290594559">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود. لطفاً رمز عبارتی همگام‌سازی خود را به‌روز کنید.</translation>
 <translation id="707471633328071618">‏Google Payments (در Chromium کپی شد)</translation>
-<translation id="7138853919861947730">‏Chromium ممکن است از سرویس‌های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="7162152143154757523">‏Chromium می‌تواند با ارسال مواردی که در مرورگر تایپ‌ می‌کنید به سرورهای Google، غلط گیر املایی هوشمندانه‌تری به شما ارائه دهد و به شما امکان دهد از همان فناوری غلط گیر املایی استفاده شده در جستجوی Google استفاده کنید.</translation>
 <translation id="7205698830395646142">‏پنهان در منوی Chromium</translation>
 <translation id="7223968959479464213">‏مدیر فعالیت‌ها - Chromium</translation>
@@ -253,6 +257,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="9022552996538154597">‏ورود به سیستم Chromium</translation>
 <translation id="9036189287518468038">‏راه‌انداز برنامه Chromium</translation>
 <translation id="9089354809943900324">‏نسخه Chromium قدیمی است</translation>
+<translation id="91086099826398415">‏باز کردن پیوند در &amp;برگه جدید Chromium</translation>
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
 <translation id="918373042641772655">‏قطع اتصال <ph name="USERNAME" />، سابقه، نشانک‌ها، تنظیمات و سایر داده‌های Chromium شما را که در این دستگاه ذخیره شدند، پاک می‌کند. داده‌های ذخیره شده در حساب Google شما پاک نمی‌شود و می‌توان آنها را در <ph name="GOOGLE_DASHBOARD_LINK" />داشبورد Google<ph name="END_GOOGLE_DASHBOARD_LINK" /> مدیریت کرد.</translation>
 <translation id="9190841055450128916">‏Chromium‏ (mDNS ورودی)</translation>

@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 Tag her}other{# Tage her}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Vor 1 Minute}other{Vor # Minuten}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
-<translation id="1190609913194133056">Benachrichtigungscenter</translation>
 <translation id="1243314992276662751">Hochladen</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">EMPFOHLENE APPS</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(leer)</translation>
 <translation id="219905428774326614">Launcher, alle Apps</translation>
 <translation id="2289052229480071835">Tippen Sie auf die Zielelemente auf dem Bildschirm.</translation>
+<translation id="2295140143284145483">Umfrage</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Benachrichtigung erweitern</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 Stunde}other{# Stunden}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Alle Apps</translation>
+<translation id="6012623610530968780">Seite <ph name="SELECTED_PAGE" /> von <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Text im Suchfeld löschen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6119846243427417423">aktivieren</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 Sek. her}other{# Sek. her}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Vor 1 Sekunde}other{Vor # Sekunden}}</translation>
+<translation id="6567071839949112727">Auf Vorgängerelement klicken</translation>
 <translation id="6612467943526193239">Zum Abbrechen der Kalibrierung ESC drücken.</translation>
 <translation id="6620110761915583480">Datei speichern</translation>
 <translation id="6699343763173986273">Medien – nächster Titel</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">HOHE WAHRSCHEINLICHKEIT</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 Min. übrig}other{# Min. übrig}}</translation>
+<translation id="7319740667687257810">Übersicht, Teilansicht</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{vor 1 Min.}other{vor # Min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 Minute übrig}other{# Minuten übrig}}</translation>

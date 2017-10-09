@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
 <translation id="1403254041219632970">Versiunile Chromium ulterioare nu vor mai accepta Mac OS X 10.6, 10.7 sau 10.8.</translation>
 <translation id="1414495520565016063">V-ați conectat la Chromium!</translation>
+<translation id="1440917365206527807">Chromium a oprit acest site să te direcționeze către</translation>
 <translation id="1444754455097148408">Licențe open source Chromium</translation>
 <translation id="1502360822835740515">Setează Chromium ca browser prestabilit</translation>
 <translation id="151962892725702025">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">Programul de instalare nu a putut decomprima arhiva. Descărcați din nou Chromium.</translation>
 <translation id="3130323860337406239">Chromium utilizează microfonul.</translation>
 <translation id="3155163173539279776">Reporniți Chromium</translation>
+<translation id="3179665906251668410">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
 <translation id="3190315855212034486">Hopa! Chromium s-a închis cu eroare. Reporniți acum?</translation>
 <translation id="3256316712990552818">Copiat în Chromium</translation>
 <translation id="3258596308407688501">Chromium nu poate citi și scrie în directorul propriu de date:
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">Noțiuni introductive despre sistemul de operare Chromium</translation>
 <translation id="3582788516608077514">Se actualizează Chromium...</translation>
 <translation id="358997566136285270">Sigla Chromium</translation>
+<translation id="3713809861844741608">Deschide linkul într-o &amp;filă Chromium nouă</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3762167353400286894">Sistemul de operare Chromium este afișat în această limbă</translation>
 <translation id="378917192836375108">Chromium vă permite să dați clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
 <translation id="5479196819031988440">Sistemul de operare Chromium nu poate deschide pagina.</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
+<translation id="5524843473235508879">Redirecționarea a fost blocată.</translation>
 <translation id="5563479599352954471">Caută cu o atingere</translation>
 <translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
 <translation id="5634636535844844681">Chromium necesită Windows 7 sau o versiune ulterioară.</translation>
@@ -176,11 +180,11 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
+<translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="705851970750939768">Actualizează Chromium</translation>
 <translation id="7066436765290594559">Sistemul de operare Chromium nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
 <translation id="707471633328071618">Google Payments (copiat în Chromium)</translation>
-<translation id="7138853919861947730">Chromium poate utiliza servicii web pentru îmbunătățirea experienței de navigare.</translation>
 <translation id="7162152143154757523">Chromium poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-ți să folosești aceeași tehnologie de verificare a ortografiei folosită de Căutare Google.</translation>
 <translation id="7205698830395646142">Ascunde în meniul Chromium</translation>
 <translation id="7223968959479464213">Manager de activități - Chromium</translation>
@@ -255,6 +259,7 @@ Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istori
 <translation id="9022552996538154597">Conectați-vă la Chromium</translation>
 <translation id="9036189287518468038">Lansatorul de aplicații Chromium</translation>
 <translation id="9089354809943900324">Chromium nu este actualizat</translation>
+<translation id="91086099826398415">Deschide linkul într-o &amp;filă Chromium nouă</translation>
 <translation id="911206726377975832">Ștergi și datele de navigare?</translation>
 <translation id="918373042641772655">Dacă deconectați utilizatorul <ph name="USERNAME" />, vor fi șterse istoricul, marcajele, setările și alte date Chromium salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK" />Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

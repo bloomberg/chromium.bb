@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Hilfe für Chrome aufrufen</translation>
 <translation id="163860049029591106">Einführung mit Chrome OS</translation>
 <translation id="1653828314016431939">OK - jetzt neu starten</translation>
+<translation id="1674870198290878346">Link in Chrome-Inkognito-Fenster öffnen</translation>
 <translation id="1682634494516646069">Google Chrome kann im folgenden Datenverzeichnis weder lesen noch schreiben: <ph name="USER_DATA_DIRECTORY" />.</translation>
 <translation id="1698376642261615901">Google Chrome ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="1718131156967340976">Wählen Sie <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> aus</translation>
@@ -59,6 +60,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="2586406160782125153">Dadurch werden Ihre Browserdaten von diesem Gerät gelöscht. Wenn Sie Ihre Daten später abrufen möchten, melden Sie sich als <ph name="USER_EMAIL" /> in Chrome an.</translation>
 <translation id="2588322182880276190">Chrome-Logo</translation>
+<translation id="2652691236519827073">Link in neuem Chrome-Tab öffnen</translation>
 <translation id="2664962310688259219">Open-Source-Lizenzen für Chrome OS</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
@@ -96,11 +98,12 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Aus Chrome entfernen...</translation>
-<translation id="3847841918622877581">Google Chrome kann das Browserverhalten mithilfe von Webdiensten verbessern.</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Link in Chrome-Inkognito-Fenster öffnen</translation>
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
 <translation id="4028693306634653894">Schneller Zugriff auf Chrome</translation>
+<translation id="4031074602479304239">Chrome hat verhindert, dass diese Website Sie weiterleitet zu:</translation>
 <translation id="4042449298237264661">Dieser Computer erhält keine Google Chrome-Updates mehr, da Windows XP und Windows Vista nicht mehr unterstützt werden.</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="4053720452172726777">Google Chrome anpassen und einstellen</translation>
@@ -129,6 +132,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4794050651896644714">Details in Chrome speichern</translation>
 <translation id="4804732725083176494">Die Anmeldung in Chrome wurde vom Administrator dieses Geräts deaktiviert.</translation>
 <translation id="4891791193823137474">Google Chrome im Hintergrund ausführen</translation>
+<translation id="4895437082222824641">Link in neuem Chrome-Tab öffnen</translation>
 <translation id="4921569541910214635">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chrome nach Ihren Wünschen einrichten.</translation>
 <translation id="4953650215774548573">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="495931528404527476">In Chrome</translation>
@@ -150,6 +154,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5430073640787465221">Ihre Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="5453904507266736060">Google Chrome im Hintergrund ausführen</translation>
 <translation id="5495581687705680288">Module in Google Chrome geladen</translation>
+<translation id="5524843473235508879">Weiterleitung blockiert.</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -209,7 +214,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="7369650938475876456">Starkes, von Chrome generiertes Passwort verwenden</translation>
 <translation id="7398801000654795464">Sie waren in Chrome als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
-<translation id="7400722733683201933">Über Google Chrome</translation>
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>
 <translation id="7419046106786626209">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>

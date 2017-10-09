@@ -37,6 +37,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
 <translation id="1303671224831497365">Fant ingen Bluetooth-enheter</translation>
+<translation id="1320663236730331991">Sveip opp for enkel tilgang til populære nettsteder og artikler, nedlastinger med mer</translation>
 <translation id="1326317727527857210">For å få fanene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
@@ -48,7 +49,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1389236224998445076">Data spart:</translation>
 <translation id="1389974829397082527">Det er ingen bokmerker her</translation>
 <translation id="1397811292916898096">Søk med <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome-forslag</translation>
 <translation id="1404122904123200417">Innbygd i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">«Ingen sporing»</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
@@ -138,7 +138,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2283599456633275070">Reise</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
-<translation id="2301209717432756327">Lagt til på startsiden.</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
@@ -231,6 +230,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3259831549858767975">Gjør alt på siden mindre</translation>
 <translation id="3269093882174072735">Last inn bildet</translation>
 <translation id="3269956123044984603">For å få fanene dine fra de andre enhetene du bruker, slå på «Synkroniser data automatisk» i kontoinnstillingene for Android.</translation>
+<translation id="3274105979672092244">Du bruker Chrome Home</translation>
 <translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3295602654194328831">Skjul informasjonen</translation>
 <translation id="3303414029551471755">Vil du gå videre med å laste ned innholdet?</translation>
@@ -259,7 +259,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3549657413697417275">Søk i loggen</translation>
 <translation id="3552151358455404883">Administrer Chrome-synkronisering og personlig tilpasning i <ph name="BEGIN_LINK1" />Innstillinger<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Legg til i kontakter</translation>
-<translation id="3583454905526475291">Kunne ikke starte appen</translation>
 <translation id="3587482841069643663">Alle</translation>
 <translation id="3590487821116122040">Nettstedslagring Chrome ikke tror er viktig (for eksempel områder uten lagrede innstillinger eller som du ikke besøker ofte)</translation>
 <translation id="3599863153486145794">Tømmer loggen på alle påloggede enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +340,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tillatt</translation>
-<translation id="42981349822642051">Utvid</translation>
 <translation id="4307992518367153382">Generelt</translation>
 <translation id="4351244548802238354">Lukk dialogboks</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -429,6 +427,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE" /> fra dette nettstedet neste gang?</translation>
 <translation id="5168917394043976756">Åpne uttrekksmenyen</translation>
 <translation id="5184329579814168207">Åpne i Chrome</translation>
+<translation id="519793908071017925">Bruk Chrome Home</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
 <translation id="5209320130288484488">Finner ingen enheter</translation>
 <translation id="5210286577605176222">Gå til den forrige fanen</translation>
@@ -524,6 +523,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5942872142862698679">Bruker Google til å søke</translation>
 <translation id="5956665950594638604">Åpne brukerstøtten for Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Du finner filene og sidene dine under Nedlastinger</translation>
+<translation id="5958994127112619898">Forenkle siden</translation>
 <translation id="5962718611393537961">Trykk for å skjule</translation>
 <translation id="6000066717592683814">Behold Google</translation>
 <translation id="6023914116273780353">Personlig tilpasset</translation>
@@ -595,6 +595,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6583199322650523874">Sett den aktive siden som bokmerke</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
+<translation id="6619166911218440149">Dette er Chrome Home</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> til}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> til}}</translation>
@@ -705,6 +706,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7607552448134703340">Skriv inn hva du ser etter</translation>
 <translation id="7612619742409846846">Logget på Google som</translation>
 <translation id="7619072057915878432">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av nettverksproblemer.</translation>
+<translation id="7620146066550602128">Prøv en <ph name="BEGIN_LINK" />enklere måte å surfe nettet på<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjelp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />skann på nytt<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
@@ -797,7 +799,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8523928698583292556">Slett lagrede passord</translation>
 <translation id="854522910157234410">Åpne denne siden</translation>
 <translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
-<translation id="856481929701340285">Bruk skrivebordsversjon</translation>
 <translation id="8569404424186215731">siden <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Siste 4 uker</translation>
 <translation id="857509777403223202">Flere artikler kommer snart. Ha en fin kveld.</translation>

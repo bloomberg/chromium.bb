@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">‏دستگاه USB-C</translation>
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
 <translation id="3510164367642747937">برجسته کردن نشانگر موشواره</translation>
-<translation id="3547954654003013442">تنظیمات پروکسی</translation>
 <translation id="3573179567135747900">به "<ph name="FROM_LOCALE" />" تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
 <translation id="3582792037806681688">ورود چندگانه به سیستم برای یک کاربر در این جلسه مجاز نیست</translation>
 <translation id="3595596368722241419">باتری پر است</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
+<translation id="6284232397434400372">وضوح تغییر کرد</translation>
 <translation id="6297287540776456956">از قلم برای انتخاب منطقه استفاده کنید</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
 <translation id="632744581670418035">هم‌پوشانی صفحه‌کلید</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
 <translation id="7067196344162293536">چرخش خودکار</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
-<translation id="7135556860107312402">اعلان موارد زیر مجاز باشد:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
+<translation id="726276584504105859">برای استفاده از تقسیم صفحه، به اینجا بکشید</translation>
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7377169924702866686">‏Caps Lock روشن است.</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (مالک)</translation>
 <translation id="7647488630410863958">برای مشاهده اعلان‌هایتان، قفل دستگاه را باز کنید</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>

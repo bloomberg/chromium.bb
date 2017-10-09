@@ -37,6 +37,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1291207594882862231">Borrar el historial, las cookies, los datos de sitios web, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1303671224831497365">No se han encontrado dispositivos Bluetooth</translation>
+<translation id="1320663236730331991">Desliza el dedo hacia arriba para acceder fácilmente a descargas, artículos y sitios web populares, y mucho más</translation>
 <translation id="1326317727527857210">Inicia sesión en Chrome para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="1332501820983677155">Combinaciones de teclas de funciones de Google Chrome</translation>
 <translation id="1369915414381695676">Se ha añadido el sitio <ph name="SITE_NAME" /></translation>
@@ -48,7 +49,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1389236224998445076">Datos ahorrados:</translation>
 <translation id="1389974829397082527">Ningún marcador incluido</translation>
 <translation id="1397811292916898096">Buscar con <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> sugerencias de Chrome</translation>
 <translation id="1404122904123200417">Insertado en <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">No realizar seguimiento</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
@@ -138,7 +138,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2268044343513325586">Restringir</translation>
 <translation id="2283599456633275070">Viajes</translation>
 <translation id="2286841657746966508">Dirección de facturación</translation>
-<translation id="2301209717432756327">Se ha añadido a la pantalla de inicio.</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados de cliente.</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer cómodamente. El texto debe tener al menos este tamaño después de tocar un párrafo dos veces.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio web</translation>
@@ -231,6 +230,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3259831549858767975">Reduce todo el contenido de la página</translation>
 <translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="3269956123044984603">Para ver las pestañas de tus otros dispositivos, activa la opción Sincronización automática en la configuración de la cuenta de Android.</translation>
+<translation id="3274105979672092244">Estás utilizando Chrome Home</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3295602654194328831">Ocultar información</translation>
 <translation id="3303414029551471755">¿Quieres continuar para descargar el contenido?</translation>
@@ -259,7 +259,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="3549657413697417275">Buscar en el historial</translation>
 <translation id="3552151358455404883">Administrar la personalización y la sincronización de Chrome en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Añadir a contactos</translation>
-<translation id="3583454905526475291">No se ha podido iniciar la aplicación</translation>
 <translation id="3587482841069643663">Todo</translation>
 <translation id="3590487821116122040">Almacenamiento del sitio web que Chrome no considera importante (p. ej., los sitios web sin configuración guardada o aquellos que no visitas a menudo)</translation>
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que hayas iniciado sesión. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +340,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="42981349822642051">Ampliar</translation>
 <translation id="4307992518367153382">Básica</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
 <translation id="4378154925671717803">Teléfono</translation>
@@ -429,6 +427,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca la opción de traducir las páginas escritas en <ph name="LANGUAGE" /> de este sitio la próxima vez?</translation>
 <translation id="5168917394043976756">Abrir panel de navegación</translation>
 <translation id="5184329579814168207">Abrir en Chrome</translation>
+<translation id="519793908071017925">Usar Chrome Home</translation>
 <translation id="5199929503336119739">Perfil de trabajo</translation>
 <translation id="5209320130288484488">No se ha encontrado ningún dispositivo.</translation>
 <translation id="5210286577605176222">Te dirige a la pestaña anterior</translation>
@@ -524,6 +523,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5942872142862698679">Google se ha establecido como motor de búsqueda predeterminado</translation>
 <translation id="5956665950594638604">Abre la Ayuda de Chrome en una pestaña nueva</translation>
 <translation id="5958275228015807058">Encuentra tus archivos y páginas en la sección Descargas</translation>
+<translation id="5958994127112619898">Simplificar página</translation>
 <translation id="5962718611393537961">Toca para ocultar</translation>
 <translation id="6000066717592683814">Mantener Google como motor de búsqueda predeterminado</translation>
 <translation id="6023914116273780353">Personalizadas</translation>
@@ -595,6 +595,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6583199322650523874">Añade la página actual a marcadores</translation>
 <translation id="6600954340915313787">Copiada a Chrome</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
+<translation id="6619166911218440149">Presentamos Chrome Home</translation>
 <translation id="6627583120233659107">Editar carpeta</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}other{<ph name="CONTACT_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}}</translation>
@@ -705,6 +706,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7607552448134703340">Escribe lo que quieras buscar</translation>
 <translation id="7612619742409846846">Has iniciado sesión en Google como</translation>
 <translation id="7619072057915878432">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas de la red.</translation>
+<translation id="7620146066550602128">Prueba una <ph name="BEGIN_LINK" />forma más sencilla de navegar por la Web<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obtener ayuda<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />volver a buscar<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7638584964844754484">Frase de contraseña incorrecta</translation>
@@ -797,7 +799,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8523928698583292556">Eliminar contraseña guardada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
-<translation id="856481929701340285">Ver como ordenador</translation>
 <translation id="8569404424186215731">desde el <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas cuatro semanas</translation>
 <translation id="857509777403223202">Próximamente se mostrarán más artículos. Disfruta de la noche.</translation>

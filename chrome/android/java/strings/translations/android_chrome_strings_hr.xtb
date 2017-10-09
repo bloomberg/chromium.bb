@@ -48,7 +48,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1389236224998445076">Spremljeni podaci:</translation>
 <translation id="1389974829397082527">Nema nijedne oznake</translation>
 <translation id="1397811292916898096">Pretraživanje pomoću usluge <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974">Chromeovih prijedloga: <ph name="NUMBER_OF_SUGGESTIONS" /></translation>
 <translation id="1404122904123200417">Ugrađeno u <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Nemoj pratiti"</translation>
 <translation id="1407135791313364759">Otvori sve</translation>
@@ -138,7 +137,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2268044343513325586">Pročišćavanje</translation>
 <translation id="2283599456633275070">Putovanja</translation>
 <translation id="2286841657746966508">Adresa za naplatu</translation>
-<translation id="2301209717432756327">Dodano na početni zaslon.</translation>
 <translation id="2315043854645842844">Operativni sustav ne podržava odabir klijentskog certifikata.</translation>
 <translation id="2321958826496381788">Pomičite klizač dok ne budete mogli čitati ovaj tekst bez poteškoća. Tekst bi trebao biti barem ovoliko velik nakon što dvaput dodirnete odlomak.</translation>
 <translation id="2323763861024343754">Pohrana web-lokacije</translation>
@@ -259,7 +257,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="3549657413697417275">Pretraži povijest</translation>
 <translation id="3552151358455404883">Sinkronizacijom Chromea i prilagodbom možete upravljati na stranici <ph name="BEGIN_LINK1" />Postavke<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Dodaj u kontakte</translation>
-<translation id="3583454905526475291">Aplikacija nije pokrenuta</translation>
 <translation id="3587482841069643663">Sve</translation>
 <translation id="3590487821116122040">Pohrana web-lokacije koju Chrome ne smatra važnom (primjerice web-lokacije koje nemaju spremljene postavke ili koje ne posjećujete često)</translation>
 <translation id="3599863153486145794">Briše povijest na svim uređajima na kojima ste prijavljeni. Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +338,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4269820728363426813">Kopiraj adresu veze</translation>
 <translation id="4275663329226226506">Mediji</translation>
 <translation id="4278390842282768270">Dopušteno</translation>
-<translation id="42981349822642051">Proširi</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4351244548802238354">Zatvori dijaloški okvir</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -524,6 +520,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5942872142862698679">Za pretraživanje se upotrebljava Google</translation>
 <translation id="5956665950594638604">Otvaranje Chromeovog centra za pomoć na novoj kartici</translation>
 <translation id="5958275228015807058">Pronađite svoje datoteke i stranice u Preuzimanjima</translation>
+<translation id="5958994127112619898">Pojednostavi stranicu</translation>
 <translation id="5962718611393537961">Dodirnite da biste saželi</translation>
 <translation id="6000066717592683814">Zadrži Google</translation>
 <translation id="6023914116273780353">Prilagođeno</translation>
@@ -797,7 +794,6 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="8523928698583292556">Izbriši pohranjenu zaporku</translation>
 <translation id="854522910157234410">Otvori tu stranicu:</translation>
 <translation id="8562452229998620586">Ovdje će se pojaviti spremljene zaporke.</translation>
-<translation id="856481929701340285">Traži klasičnu stranicu</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Protekla 4 tjedna</translation>
 <translation id="857509777403223202">Uskoro će se prikazati više članaka. Želimo vam ugodnu večer!</translation>

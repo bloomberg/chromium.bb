@@ -74,6 +74,7 @@
 <translation id="2509394361235492552">เชื่อมต่อกับ <ph name="HOSTNAME" /> แล้ว</translation>
 <translation id="2512228156274966424">หมายเหตุ: เพื่อให้มั่นใจว่าทุกแป้นพิมพ์ลัดพร้อมใช้งาน คุณสามารถกำหนดค่า Chrome Remote Desktop เป็น "เปิดเป็นหน้าต่าง"</translation>
 <translation id="2540992418118313681">คุณต้องการจะแชร์คอมพิวเตอร์เครื่องนี้เพื่อให้ผู้ใช้อื่นเห็นและควบคุมไหม</translation>
+<translation id="2579271889603567289">โฮสต์ขัดข้องหรือเริ่มต้นไม่สำเร็จ</translation>
 <translation id="2599300881200251572">บริการนี้จะช่วยให้สามารถใช้การเชื่อมต่อขาเข้าจากไคลเอ็นต์ Chrome Remote Desktop</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
 <translation id="2676780859508944670">กำลังทำงาน…</translation>
@@ -174,6 +175,7 @@
 <translation id="4736223761657662401">ประวัติการเชื่อมต่อ</translation>
 <translation id="4741792197137897469">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome อีกครั้ง</translation>
 <translation id="477305884757156764">แอปพลิเคชันทำงานช้าเกินไป</translation>
+<translation id="4784508858340177375">เซิร์ฟเวอร์ X ขัดข้องหรือเริ่มต้นไม่สำเร็จ</translation>
 <translation id="4795786176190567663">คุณไม่มีสิทธิ์ในการทำงานนี้</translation>
 <translation id="4798680868612952294">ตัวเลือกเมาส์</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
@@ -248,6 +250,7 @@
 <translation id="6572345186230665992">สำหรับ Mac (OS X Mavericks 10.9 ขึ้นไป)</translation>
 <translation id="6583902294974160967">การสนับสนุน</translation>
 <translation id="6612717000975622067">ส่ง Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">แชร์</translation>
 <translation id="6668065415969892472">PIN ของคุณได้รับการอัปเดตแล้ว</translation>
 <translation id="6681800064886881394">ลิขสิทธิ์ 2013 Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="6705482892455291412">หลังจากที่ป้อนรหัสแล้ว ระบบจะขอให้คุณยอมรับการเชื่อมต่อและเริ่มการแชร์เซสชัน</translation>

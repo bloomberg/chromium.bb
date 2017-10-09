@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Справка Google Chrome</translation>
 <translation id="163860049029591106">Начало работы с Chrome OS</translation>
 <translation id="1653828314016431939">ОК, перезапустить сейчас</translation>
+<translation id="1674870198290878346">Открыть ссылку в режиме инкогнито браузера Chrome</translation>
 <translation id="1682634494516646069">Браузеру Google Chrome не может выполнять операции чтения и записи в каталоге данных <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, положившись на систему защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
 <translation id="1718131156967340976">Выберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
@@ -59,6 +60,7 @@
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
+<translation id="2652691236519827073">Открыть ссылку в новой вкладке браузера Chrome</translation>
 <translation id="2664962310688259219">Лицензии Chrome OS на ПО с открытым исходным кодом</translation>
 <translation id="2665296953892887393">Отправлять в Google такие данные, как отчеты о сбоях и <ph name="UMA_LINK" />, чтобы помочь улучшить Google Chrome</translation>
 <translation id="2689103672227170538">Расширение изменило стартовую страницу Chrome.</translation>
@@ -96,11 +98,12 @@
 <translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Удалить из Chrome</translation>
-<translation id="3847841918622877581">Браузер Google Chrome может использовать различные веб-службы, которые делают работу в Интернете более удобной и приятной.</translation>
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Открыть ссылку в режиме инкогнито браузера Chrome</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="4028693306634653894">Открывайте Chrome ещё быстрее</translation>
+<translation id="4031074602479304239">Chrome заблокировал попытку перенаправить вас на следующую страницу:</translation>
 <translation id="4042449298237264661">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
@@ -129,6 +132,7 @@
 <translation id="4794050651896644714">Сохранять данные в Chrome</translation>
 <translation id="4804732725083176494">Вход в Chrome отключен администратором устройства.</translation>
 <translation id="4891791193823137474">Разрешить работу Google Chrome в фоновом режиме</translation>
+<translation id="4895437082222824641">Открыть ссылку в новой вкладке браузера Chrome</translation>
 <translation id="4921569541910214635">Пользуетесь компьютером вместе с коллегой или другом? Теперь каждый из вас сможет настроить Chrome по своему вкусу.</translation>
 <translation id="4953650215774548573">Сделать Google Chrome браузером по умолчанию</translation>
 <translation id="495931528404527476">В Chrome</translation>
@@ -150,6 +154,7 @@
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="5453904507266736060">Разрешить работу Google Chrome в фоновом режиме</translation>
 <translation id="5495581687705680288">Модули, загруженные в Google Chrome</translation>
+<translation id="5524843473235508879">Попытка переадресации заблокирована.</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5563479599352954471">Поиск в одно касание</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -209,7 +214,6 @@
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7369650938475876456">Используйте надежный пароль, сгенерированный Chrome.</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
-<translation id="7400722733683201933">О браузере Google Chrome</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
 <translation id="7419046106786626209">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="7437998757836447326">Выход из Chrome</translation>

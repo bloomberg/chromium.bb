@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3236488194889173876">Không có mạng di động nào</translation>
 <translation id="3294437725009624529">Khách</translation>
-<translation id="332587331255250389">Vui lòng thay thế pin</translation>
+<translation id="332587331255250389">Vui lòng thay pin</translation>
 <translation id="3364721542077212959">Công cụ bút cảm ứng</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Thiết bị USB-C</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="3510164367642747937">Đánh dấu con trỏ chuột</translation>
-<translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
 <translation id="3582792037806681688">Đã bỏ cho phép đăng nhập nhiều tài khoản đối với người dùng trong phiên này</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
+<translation id="6284232397434400372">Đã thay đổi độ phân giải</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Lớp phủ bàn phím</translation>
@@ -232,10 +232,10 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
-<translation id="7135556860107312402">Cho phép thông báo từ:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
+<translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
 <translation id="7377169924702866686">Caps Lock đang bật.</translation>
@@ -248,6 +248,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (chủ sở hữu)</translation>
 <translation id="7647488630410863958">Mở khóa thiết bị để xem thông báo của bạn</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>

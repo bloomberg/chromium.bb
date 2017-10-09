@@ -79,6 +79,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2381405137052800939">Pagrindiniai</translation>
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
+<translation id="2529021024822217800">Atidaryti viską</translation>
 <translation id="2572712655377361602">Pagal įrenginio politiką prieiga prie nuotraukų buvo užblokuota</translation>
 <translation id="2584132361465095047">Pridėti paskyrą...</translation>
 <translation id="2593774076813182497">Šio psl. atsp. negalima.</translation>
@@ -128,7 +129,6 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="3324193307694657476">2 adreso eil.</translation>
 <translation id="3329904751041170572">Nepavyko prisijungti prie serverio.</translation>
 <translation id="3335947283844343239">Iš naujo atidarykite uždarytą skirtuką</translation>
-<translation id="3387752218061326363">Rodoma įrenginių, kuriuose esate prisijungę, istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Iššok. l. leidžiami</translation>
 <translation id="3414292259312108062">„Chrome“ išsaugos šį slaptažodį <ph name="BEGIN_LINK" />„Google“ išsaugotuose slaptažodžiuose<ph name="END_LINK" /> ir jis bus automatiškai įvestas už jus, kad jums nereikėtų jo įsiminti.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
@@ -312,6 +312,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6797885426782475225">Paieška balsu</translation>
 <translation id="6807889908376551050">Rodyti viską...</translation>
 <translation id="681368974849482173">Elementas sukurtas</translation>
+<translation id="6871663519944855400">Atidaryti inkognito režimu</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
@@ -321,7 +322,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7031882061095297553">Sinchronizavimas su</translation>
 <translation id="7062545763355031412">Sutikti ir perjungti paskyras</translation>
 <translation id="7108338896283013870">Slėpti</translation>
-<translation id="7131892264600713844">Rodoma šio įrenginio istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Vardas ir pav.</translation>
 <translation id="7136892417564438900">Fotoaparatas nepasiekiamas</translation>
 <translation id="7159472599653637159">Užkl. dėl svet. v. mobil.</translation>

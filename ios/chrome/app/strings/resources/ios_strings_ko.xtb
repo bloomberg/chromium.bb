@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">기본설정</translation>
 <translation id="2386793615875593361">1장 선택됨</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
+<translation id="2529021024822217800">모두 열기</translation>
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
 <translation id="2584132361465095047">계정 추가...</translation>
 <translation id="2593774076813182497">이 페이지는 인쇄할 수 없습니다.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">주소 2</translation>
 <translation id="3329904751041170572">서버에 연결하지 못했습니다.</translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
-<translation id="3387752218061326363">로그인한 기기의 방문 기록을 표시합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">팝업 허용</translation>
 <translation id="3414292259312108062">Chrome은 이 비밀번호를 <ph name="BEGIN_LINK" />Google에 저장된 비밀번호<ph name="END_LINK" />에 저장하고 자동완성 기능을 지원하므로 직접 기억할 필요가 없습니다.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">음성검색</translation>
 <translation id="6807889908376551050">모두 표시...</translation>
 <translation id="681368974849482173">북마크가 생성되었습니다.</translation>
+<translation id="6871663519944855400">시크릿 모드에서 열기</translation>
 <translation id="6896758677409633944">복사</translation>
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6945221475159498467">선택</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
 <translation id="7108338896283013870">숨기기</translation>
-<translation id="7131892264600713844">이 기기의 방문 기록을 표시합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">이름</translation>
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
@@ -418,7 +418,7 @@
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
 <translation id="914898748153555155">Chrome 설정에서 언제든지 이 환경설정을 변경할 수 있습니다.</translation>
-<translation id="91549621916703028">여러 개의 탭에서 한꺼번에 작업을 하세요.</translation>
+<translation id="91549621916703028">여러 개의 탭을 만들어 다양한 작업을 동시에 진행하세요.</translation>
 <translation id="9157836665414082580">대화상자 숨기기</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9203116392574189331">Handoff</translation>

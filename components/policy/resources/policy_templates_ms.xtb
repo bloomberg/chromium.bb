@@ -1107,48 +1107,6 @@
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Benarkan pemalam yang lapuk dijalankan</translation>
 <translation id="4988291787868618635">Tindakan yang perlu diambil apabila kelewatan melahu dicapai</translation>
-<translation id="5010252829147312914">Menentukan set dasar yang akan diserahkan kepada waktu jalan ARC. Nilainya mestilah JSON sah.
-
-      Dasar ini boleh digunakan untuk mengkonfigurasikan apl Android yang akan dipasang pada peranti secara automatik:
-
-      {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "packageName": {
-              "description": "Pengecam apl Android, mis. "com.google.android.gm" untuk Gmail",
-              "type": "string"
-            },
-            "installType": {
-              "description": "Menentukan cara apl dipasang. OPTIONAL: Apl tidak dipasang secara automatik, tetapi pengguna boleh memasangnya. Ini merupakan nilai lalai jika dasar ini tidak ditentukan. PRELOAD: Apl dipasang secara automatik, tetapi pengguna boleh menyahpasangnya. FORCE_INSTALLED: Apl dipasang secara automatik dan pengguna tidak boleh menyahpasangnya. BLOCKED: Apl disekat dan tidak boleh dipasang. Jika apl dipasang di bawah dasar sebelumnya, apl itu akan dinyahpasang.",
-              "type": "string",
-              "enum": [
-                "OPTIONAL"
-                "PRELOAD",
-                "FORCE_INSTALLED",
-                "BLOCKED"
-              ]
-            },
-            "defaultPermissionPolicy": {
-              "description": "Dasar untuk meluluskan permintaan kebenaran kepada apl. PERMISSION_POLICY_UNSPECIFIED: Dasar tidak ditentukan. Jika tiada dasar ditentukan bagi kebenaran pada mana-mana tahap, maka tingkah laku `PROMPT` akan digunakan secara lalai. PROMPT: Gesa pengguna supaya memberikan kebenaran. GRANT: Berikan kebenaran secara automatik. DENY: Nafikan kebenaran secara automatik.",
-              "type": "string",
-              "enum": [
-                "PERMISSION_POLICY_UNSPECIFIED",
-                "PROMPT",
-                "GRANT",
-                "DENY"
-              ]
-            },
-            "managedConfiguration": {
-              "description": "Rentetan konfigurasi JSON khusus apl. Kunci ditakrifkan dalam manifes apl. Biasanya kelihatan seperti '{ "key" : value }'.",
-              "type": "string"
-            }
-          }
-        }
-      }
-
-      Untuk menyemat apl pada pelancar, lihat PinnedLauncherApps.</translation>
 <translation id="5047604665028708335">Benarkan akses ke tapak di luar pek kandungan</translation>
 <translation id="5052081091120171147">Jika didayakan, dasar ini memaksa sejarah penyemakan imbas diimport dari penyemak imbas lalai semasa. Jika didayakan, dasar ini juga memberikan kesan terhadap dialog import.
 
@@ -1456,7 +1414,6 @@
 <translation id="6111936128861357925">Benarkan Permainan Telur Easter Dinosaur</translation>
 <translation id="6114416803310251055">dikecam</translation>
 <translation id="6133088669883929098">Benarkan semua tapak untuk menggunakan penghasilan kunci</translation>
-<translation id="6139485614509308022">Jika dasar "OffHours" ditetapkan, maka dasar peranti yang ditetapkan akan diabaikan (gunakan tetapan lalai dasar ini) semasa selang masa yang dinyatakan. Dasar peranti akan dilaksanakan semula oleh Chrome pada setiap acara apabila tempoh "OffHours" bermula atau berakhir. Pengguna akan diberitahu dan dipaksa log keluar apabila masa "OffHours" berakhir dan tetapan dasar peranti diubah (iaitu apabila pengguna log masuk menggunakan akaun yang tidak dibenarkan).</translation>
 <translation id="6145799962557135888">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>

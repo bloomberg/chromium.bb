@@ -74,6 +74,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2509394361235492552">Csatlakozva a következőhöz: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
 <translation id="2540992418118313681">Meg szeretné osztani a számítógép megtekintését és vezérlését egy másik felhasználóval?</translation>
+<translation id="2579271889603567289">A gazdagép rendszere összeomlott vagy nem tudott elindulni.</translation>
 <translation id="2599300881200251572">Ez a szolgáltatás engedélyezi a bejövő kapcsolatokat a Chrome távoliasztal-szolgáltatás klienseitől.</translation>
 <translation id="2647232381348739934">Chromoting szolgáltatás</translation>
 <translation id="2676780859508944670">Feldolgozás…</translation>
@@ -174,6 +175,7 @@ PC</translation>
 <translation id="4736223761657662401">Kapcsolatelőzmények</translation>
 <translation id="4741792197137897469">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chrome-ba.</translation>
 <translation id="477305884757156764">Az alkalmazás túl lassú.</translation>
+<translation id="4784508858340177375">Az X szerver rendszere összeomlott vagy nem tudott elindulni.</translation>
 <translation id="4795786176190567663">Nincs engedélye a művelet elvégzésére.</translation>
 <translation id="4798680868612952294">Az egér beállításai</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
@@ -248,6 +250,7 @@ PC</translation>
 <translation id="6572345186230665992">Mac típusú számítógépekhez (OS X Mavericks 10.9 és újabb)</translation>
 <translation id="6583902294974160967">Támogatás</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del küldése</translation>
+<translation id="6654753848497929428">Megosztás</translation>
 <translation id="6668065415969892472">A PIN-kód frissült.</translation>
 <translation id="6681800064886881394">Copyright 2013 – Google Inc. Minden jog fenntartva.</translation>
 <translation id="6705482892455291412">Miután az illető megadta a kódot, a rendszer a kapcsolat elfogadására kéri, majd megkezdi a megosztási munkamenetet.</translation>

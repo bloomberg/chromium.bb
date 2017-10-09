@@ -79,6 +79,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="2381405137052800939">Dasar-Dasar</translation>
 <translation id="2386793615875593361">1 dipilih</translation>
 <translation id="2435457462613246316">Tampilkan sandi</translation>
+<translation id="2529021024822217800">Buka Semua</translation>
 <translation id="2572712655377361602">Kebijakan perangkat memblokir akses ke foto Anda</translation>
 <translation id="2584132361465095047">Tambahkan Akun…</translation>
 <translation id="2593774076813182497">Laman ini tidak dapat dicetak.</translation>
@@ -128,7 +129,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3324193307694657476">Alamat 2</translation>
 <translation id="3329904751041170572">Tidak dapat tersambung ke server.</translation>
 <translation id="3335947283844343239">Buka Kembali Tab yang Tertutup</translation>
-<translation id="3387752218061326363">Menampilkan riwayat dari perangkat yang Anda gunakan untuk login. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-up Diizinkan</translation>
 <translation id="3414292259312108062">Chrome akan menyimpan sandi ini pada <ph name="BEGIN_LINK" />sandi tersimpan Google<ph name="END_LINK" /> dan melengkapinya secara otomatis sehingga Anda tidak perlu mengingatnya.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
@@ -145,7 +145,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3567664240939803299">Ingin Google Smart Lock menyimpan sandi untuk situs ini?</translation>
 <translation id="3588820906588687999">Buka Gambar di Tab Baru</translation>
 <translation id="3603009562372709545">Salin URL Tautan</translation>
-<translation id="360480449234699036">Pelajari tentang topik di situs web tanpa meninggalkan laman. Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, serta detail lainnya.
+<translation id="360480449234699036">Pelajari tentang topik di situs web tanpa meninggalkan halaman. Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, serta detail lainnya.
 
 Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyaring penelusuran, geser panel ke atas kemudian sentuh kotak telusur.</translation>
 <translation id="3607167657931203000">Data Isi-Otomatis</translation>
@@ -240,7 +240,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5728700505257787410">Maaf, terjadi masalah saat masuk ke akun Anda.</translation>
 <translation id="5737974891429562743">Detail proses masuk akun sudah tidak berlaku lagi. Perbarui untuk memulai sinkronisasi.</translation>
-<translation id="5738887413654608789">Hal ini memungkinkan Anda menemukan laman web yang relevan berdasarkan berbagai hal di sekitar.</translation>
+<translation id="5738887413654608789">Hal ini memungkinkan Anda menemukan halaman web yang relevan berdasarkan berbagai hal di sekitar.</translation>
 <translation id="5771816112378578655">Penyiapan sedang berlangsung...</translation>
 <translation id="5816228676161003208">Hal ini memungkinkan Anda menelusuri lebih cepat menggunakan suara.</translation>
 <translation id="5846482154967366008">Mesin Telusur</translation>
@@ -312,6 +312,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="6797885426782475225">Penelusuran Suara</translation>
 <translation id="6807889908376551050">Tampilkan Semua...</translation>
 <translation id="681368974849482173">Item dibuat</translation>
+<translation id="6871663519944855400">Buka di penyamaran</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6903907808598579934">Aktifkan sinkronisasi</translation>
 <translation id="6945221475159498467">Pilih</translation>
@@ -321,7 +322,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7031882061095297553">Sinkronkan ke</translation>
 <translation id="7062545763355031412">Terima dan beralih akun</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
-<translation id="7131892264600713844">Menampilkan riwayat dari perangkat ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nama Lengkap</translation>
 <translation id="7136892417564438900">Kamera tidak tersedia</translation>
 <translation id="7159472599653637159">Minta Situs Seluler</translation>
@@ -370,7 +370,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="806745655614357130">Tetap pisahkan data saya</translation>
 <translation id="8076014560081431679">Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tutup Semua Tab</translation>
-<translation id="8137558756159375272">Sentuh untuk Menelusuri mengirimkan kata yang dipilih dan laman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
+<translation id="8137558756159375272">Sentuh untuk Menelusuri mengirimkan kata yang dipilih dan halaman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Gambar &amp; File dalam Cache</translation>
 <translation id="8261506727792406068">Hapus</translation>

@@ -1365,6 +1365,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja iestatāt šo politiku, lietotāji var īslaicīgi to ignorēt, iespējojot vai atspējojot lielo kursoru. Tomēr lietotāja izvēle nav paliekoša, un noklusējuma vērtība tiek atjaunota, kad tiek atkārtoti parādīts pieteikšanās ekrāns vai kad lietotājs minūti nav aktīvs pieteikšanās ekrānā.
 
           Ja politika nav iestatīta, lielais kursors tiek atspējots, kad pirmo reizi tiek parādīts pieteikšanās ekrāns. Lietotāji var jebkurā brīdī iespējot vai atspējot lielo kursoru, un tā statuss pieteikšanās ekrānā tiek saglabāts visiem lietotājiem.</translation>
+<translation id="5932767795525445337">Šo politiku var izmantot arī Android lietotņu piespraušanai.</translation>
 <translation id="5936622343001856595">Pakalpojumā Google tīmekļa meklēšana ievadītajiem vaicājumiem vienmēr tiek aktivizēts filtrs Droša meklēšana, un lietotāji nevar mainīt šo iestatījumu.
 
       Ja iespējosiet šo iestatījumu, filtrs Droša meklēšana pakalpojumā Google meklēšana vienmēr būs aktīvs.
@@ -1417,7 +1418,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6111936128861357925">Dinozauru spēles atļaušana</translation>
 <translation id="6114416803310251055">novecojis</translation>
 <translation id="6133088669883929098">Atļaut izmantot atslēgu ģenerēšanu visās vietnēs</translation>
-<translation id="6139485614509308022">Ja politika OffHours ir iestatīta, noteiktajos laika intervālos konkrētās ierīču politikas tiek ignorētas (tiek izmantoti šo politiku noklusējuma iestatījumi). Ierīču politikas tiek atkārtoti izmantotas pārlūkā Chrome katru reizi, kad sākas vai beidzas OffHours periods. Lietotājam tiks parādīts paziņojums un viņam būs jāizrakstās piespiedu kārtā, kad tiks mainīti OffHours laika un ierīču politikas iestatījumi (t.i., ja lietotājs būs pieteicies, izmantojot neatļautu kontu).</translation>
 <translation id="6145799962557135888">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt JavaScript.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>

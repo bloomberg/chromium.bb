@@ -79,6 +79,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2381405137052800939">Grundlæggende</translation>
 <translation id="2386793615875593361">1 valgt</translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
+<translation id="2529021024822217800">Åbn alle</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2593774076813182497">Denne side kan ikke udskrives.</translation>
@@ -128,7 +129,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Der kunne ikke oprettes forbindelse til serveren.</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
-<translation id="3387752218061326363">Viser historik fra de enheder, hvor du er logget ind. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop op-vinduer tilladt</translation>
 <translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
@@ -312,6 +312,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6797885426782475225">Talesøgning</translation>
 <translation id="6807889908376551050">Vis alle...</translation>
 <translation id="681368974849482173">Elementet blev oprettet</translation>
+<translation id="6871663519944855400">Åbn i inkognito</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6945221475159498467">Vælg</translation>
@@ -321,7 +322,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7031882061095297553">Synkroniser til</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7108338896283013870">Skjul</translation>
-<translation id="7131892264600713844">Viser historik fra denne enhed. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Fulde navn</translation>
 <translation id="7136892417564438900">Kameraet er ikke tilgængeligt</translation>
 <translation id="7159472599653637159">Anmod om mobilversion</translation>

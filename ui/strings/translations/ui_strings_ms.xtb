@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 hari yang lalu}other{# hari yang lalu}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Seminit yang lalu}other{# minit yang lalu}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1m}other{#m}}</translation>
-<translation id="1190609913194133056">Pusat Pemberitahuan</translation>
 <translation id="1243314992276662751">Muat naik</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APL YANG DISYORKAN</translation>
@@ -105,7 +104,7 @@
 <translation id="6394627529324717982">Koma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 saat yang lalu}other{# saat yang lalu}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Sesaat yang lalu}other{# saat yang lalu}}</translation>
-<translation id="6567071839949112727">klik leluhur</translation>
+<translation id="6567071839949112727">klik pewaris</translation>
 <translation id="6612467943526193239">Untuk keluar daripada penentukuran, tekan Esc.</translation>
 <translation id="6620110761915583480">Simpan Fail</translation>
 <translation id="6699343763173986273">Lagu Media Seterusnya</translation>

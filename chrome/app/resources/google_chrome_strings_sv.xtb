@@ -26,6 +26,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1628000112320670027">Få hjälp med Chrome</translation>
 <translation id="163860049029591106">Komma igång med Chrome OS</translation>
 <translation id="1653828314016431939">OK - starta om nu</translation>
+<translation id="1674870198290878346">Öppna länken i ett inko&amp;gnitofönster i Chrome</translation>
 <translation id="1682634494516646069">Google Chrome kan inte läsa och skriva till datakatalogen:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -63,6 +64,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="2586406160782125153">Webbinformationen raderas från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2588322182880276190">Logotypen för Chrome</translation>
+<translation id="2652691236519827073">Öppna länkar i en ny flik i Chrome</translation>
 <translation id="2664962310688259219">Licenser för öppen källkod för Chrome OS</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google.</translation>
 <translation id="2689103672227170538">Det här tillägget har ändrat vilken sida som visas när du startar Chrome.</translation>
@@ -100,11 +102,12 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Ta bort från Chrome …</translation>
-<translation id="3847841918622877581">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="386202838227397562">Stäng alla Google Chrome-fönster och försök igen.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Öppna länken i ett inko&amp;gnitofönster i Chrome</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="4028693306634653894">Öppna Chrome snabbare</translation>
+<translation id="4031074602479304239">Chrome förhindrade att webbplatsen omdirigerade dig till</translation>
 <translation id="4042449298237264661">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Windows XP och Windows Vista inte längre stöds.</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
@@ -133,6 +136,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4794050651896644714">Spara information i Chrome</translation>
 <translation id="4804732725083176494">Inloggning i Chrome har inaktiverats av enhetens administratör.</translation>
 <translation id="4891791193823137474">Låt Google Chrome köras i bakgrunden</translation>
+<translation id="4895437082222824641">Öppna länkar i en ny flik i Chrome</translation>
 <translation id="4921569541910214635">Delar du dator? Nu kan du konfigurera Chrome precis som du vill.</translation>
 <translation id="4953650215774548573">Ange Google Chrome som standardwebbläsare</translation>
 <translation id="495931528404527476">I Chrome</translation>
@@ -158,6 +162,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="5453904507266736060">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="5495581687705680288">Moduler som är inlästa i Google Chrome</translation>
+<translation id="5524843473235508879">Omdirigeringen blockerades.</translation>
 <translation id="556024056938947818">Google Chrome försöker visa lösenord.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -217,7 +222,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="7369650938475876456">Använd ett starkt lösenord som genererats av Chrome</translation>
 <translation id="7398801000654795464">Du var inloggad i Chrome som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
-<translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7408085963519505752">Villkor för Chrome OS</translation>
 <translation id="7419046106786626209">Det gick inte att synkronisera data med Chrome OS eftersom synkronisering inte är tillgängligt för din domän.</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>

@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{ഒരു ദിവസം മുമ്പ്}other{# ദിവസം മുമ്പ്}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{ഒരു മിനിറ്റിന് മുമ്പ്}other{# മിനിറ്റ് മുമ്പ്}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{ 1 മീറ്റര്‍}other{# മീറ്റർ}}</translation>
-<translation id="1190609913194133056">അറിയിപ്പ് കേന്ദ്രം</translation>
 <translation id="1243314992276662751">അപ്‌ലോഡുചെയ്യുക</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ശുപാർശിത ആപ്പുകൾ</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(ശൂന്യം)</translation>
 <translation id="219905428774326614">ലോഞ്ചർ, എല്ലാ ആപ്പുകളും</translation>
 <translation id="2289052229480071835">സ്‌ക്രീനിലുള്ള 'ടാർഗെറ്റുകൾ സ്‌പർശിക്കുക' ടാപ്പുചെയ്യുക.</translation>
+<translation id="2295140143284145483">സർവ്വേ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">അറിയിപ്പ് വികസിപ്പിക്കുക</translation>
 <translation id="2497284189126895209">എല്ലാ ഫയലുകളും</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{ഒരു മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">എല്ലാ ആപ്സും</translation>
+<translation id="6012623610530968780">പേജ് <ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">തിരയൽ ബോക്‌സ് ടെക്‌സ്‌റ്റ് മായ്‌ക്കുക</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6119846243427417423">ആക്റ്റിവേറ്റ് ചെയ്യുക</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">കോമ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
+<translation id="6567071839949112727">ആൻസിസ്റ്ററിൽ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="6612467943526193239">കാലിബറേഷനിൽ നിന്ന് പുറത്തുകടക്കാൻ Esc അമർത്തുക.</translation>
 <translation id="6620110761915583480">ഫയല്‍‌ സംരക്ഷിക്കുക</translation>
 <translation id="6699343763173986273">അടുത്ത മീഡിയ ട്രാക്ക്</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">ഏറ്റവും കൂടുതൽ പേർ ലൈക്കുചെയ്‌‌തത്</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{ഒരു മിനിറ്റ് ശേഷിക്കുന്നു}other{# മിനിറ്റ് ശേഷിക്കുന്നു}}</translation>
+<translation id="7319740667687257810">ലോഞ്ചർ, ഭാഗിക കാഴ്ച</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{ഒരു മിനിറ്റ് മുമ്പ്}other{# മിനിറ്റ് മുമ്പ്}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{ഒരു മിനിറ്റ് ശേഷിക്കുന്നു}other{# മിനിറ്റ് ശേഷിക്കുന്നു}}</translation>

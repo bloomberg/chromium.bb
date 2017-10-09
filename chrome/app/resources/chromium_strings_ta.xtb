@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium ஆனது கடவுச்சொற்களைக் காட்ட முயற்சிக்கிறது.</translation>
 <translation id="1403254041219632970">Chromium இன் எதிர்காலப் பதிப்புகள் இனி Mac OS X 10.6, 10.7 அல்லது 10.8 ஆகியவற்றை ஆதரிக்காது.</translation>
 <translation id="1414495520565016063">Chromium இல் உள்நுழைந்துள்ளீர்கள்!</translation>
+<translation id="1440917365206527807">இந்தத் தளமானது உங்களை இங்கு திசைதிருப்புவதை Chromium நிறுத்தியது</translation>
 <translation id="1444754455097148408">Chromium ஓப்பன் சோர்ஸ் உரிமங்கள்</translation>
 <translation id="1502360822835740515">Chromiumஐ இயல்பு உலாவியாக அமைக்கவும்</translation>
 <translation id="151962892725702025">உங்கள் களத்திற்கு ஒத்திசைவு கிடைக்கவில்லை என்பதால், Chromium OS ஆல் உங்கள் தரவை ஒத்திசைக்க முடியவில்லை.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">காப்பகத்தைச் சுருக்குவதில் நிறுவி தோல்வியடைந்தது. Chromium ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="3130323860337406239">Chromium உங்கள் மைக்ரோஃபோனைப் பயன்படுத்துகிறது.</translation>
 <translation id="3155163173539279776">Chromium ஐ மீண்டும் தொடங்கு</translation>
+<translation id="3179665906251668410">Chromium மறை&amp;நிலை சாளரத்தில் இணைப்பைத் திற</translation>
 <translation id="3190315855212034486">ஓ! Chromium செயலிழந்தது. இப்போது மீண்டும் தொடங்கவா?</translation>
 <translation id="3256316712990552818">Chromium இல் நகலெடுக்கப்பட்டது</translation>
 <translation id="3258596308407688501">தன்னுடைய தரவுக் கோப்பகத்தில் Chromium படிக்கவும் எழுதவும் செய்யாது:
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">Chromium OS பயன்படுத்தி தொடங்குக</translation>
 <translation id="3582788516608077514">Chromium புதுப்பிக்கப்படுகிறது...</translation>
 <translation id="358997566136285270">Chromium லோகோ</translation>
+<translation id="3713809861844741608">புதிய Chromium &amp;தாவலில் இணைப்பைத் திற</translation>
 <translation id="3738139272394829648">தேடத் தொடவும்</translation>
 <translation id="3762167353400286894">Chromium OS இந்த மொழியில் காட்டப்படுகிறது</translation>
 <translation id="378917192836375108">வலையில் ஒரு தொலைபேசி எண்ணைக் கிளிக் செய்து, அதனை Skype மூலமாக அழைப்பதற்கு உங்களை Chromium அனுமதிக்கிறது!</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">Chromium தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள். இந்தப் பதிவிறக்கம் முடியும்போது, Chromium மறுதொடக்கம் செய்யும், பிறகு உங்கள் பணியைத் தொடரலாம்.</translation>
 <translation id="5479196819031988440">Chromium OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="549669000822060376">சமீபத்திய முறைமை புதுப்பிப்புகளை Chromium நிறுவும் வரை காத்திருக்கவும்.</translation>
+<translation id="5524843473235508879">திசைதிருப்புவது தடுக்கப்பட்டது.</translation>
 <translation id="5563479599352954471">ஒரே தொடுதலில் தேடவும்</translation>
 <translation id="5620765574781326016">பக்கத்தை விட்டு வெளியேறாமலே, இணையதளங்களில் தலைப்புகளைப் பற்றி அறியலாம்.</translation>
 <translation id="5634636535844844681">Windows 7 அல்லது அதற்குப் பிந்தைய பதிப்புகளில் மட்டுமே Chromium இயங்கும்.</translation>
@@ -176,11 +180,11 @@
 <translation id="6883876366448858277">Google தேடலுக்கு வார்த்தையையும் அதனுடன் தொடர்புடைய சூழலையும் அனுப்பி விளக்கங்கள், படங்கள் மற்றும் தேடல் முடிவுகளைப் பெறலாம்.</translation>
 <translation id="6893813176749746474">Chromium புதுப்பிக்கப்பட்டது. ஆனால், அதை நீங்கள் 30 நாட்களாக பயன்படுத்தவில்லை.</translation>
 <translation id="6944967875980567883">Chromium இல் தொகுதிக்கூறுகள் ஏற்றப்பட்டன</translation>
+<translation id="6964305034639999644">Chromium மறை&amp;நிலை சாளரத்தில் இணைப்பைத் திற</translation>
 <translation id="6970811910055250180">உங்கள் சாதனம் புதுப்பிக்கப்படுகிறது...</translation>
 <translation id="705851970750939768">Chromiumஐப் புதுப்பி</translation>
 <translation id="7066436765290594559">Chromium OS ஆல் உங்கள் தரவை ஒத்திசைக்க முடியவில்லை. உங்கள் ஒத்திசைவு கடவுச்சொற்றொடரைப் புதுப்பிக்கவும்.</translation>
 <translation id="707471633328071618">Google Payments (Chromiumக்கு நகலெடுக்கப்பட்டது)</translation>
-<translation id="7138853919861947730">உங்கள் உலாவல் அனுபவத்தை மேம்படுத்த Chromium, வலை சேவைகளைப் பயன்படுத்தலாம்.</translation>
 <translation id="7162152143154757523">நீங்கள் உலாவியில் தட்டச்சு செய்ததை Google சேவையகங்களுக்கு அனுப்புவதன் மூலம் விரைவான எழுத்துப்பிழைச் சரிப்பார்த்தலை Chromium வழங்குகிறது, Google தேடல் பயன்படுத்தும் அதே எழுத்துப்பிழைச் சரிபார்த்தல் தொழில்நுட்பத்தை நீங்கள் பயன்படுத்த அனுமதிக்கிறது.</translation>
 <translation id="7205698830395646142">Chromium மெனுவில் மறை</translation>
 <translation id="7223968959479464213">பணி நிர்வாகி - Chromium</translation>
@@ -255,6 +259,7 @@
 <translation id="9022552996538154597">Chromium இல் உள்நுழைக</translation>
 <translation id="9036189287518468038">Chromium பயன்பாட்டுத் துவக்கி</translation>
 <translation id="9089354809943900324">Chromium காலாவதியானது</translation>
+<translation id="91086099826398415">புதிய Chromium &amp;தாவலில் இணைப்பைத் திற</translation>
 <translation id="911206726377975832">உங்கள் உலாவுதல் தரவையும் நீக்க வேண்டுமா?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> ஐத் துண்டிப்பது, இந்தச் சாதனத்தில் உள்ள உங்கள் வரலாறு, புத்தகக்குறிகள், அமைப்புகள் மற்றும் பிற Chromium தரவை அழிக்கும். உங்கள் Google கணக்கில் சேமிக்கப்பட்ட தரவு அழிக்கப்படாது, மேலும் <ph name="GOOGLE_DASHBOARD_LINK" />Google டாஷ்போர்டில்<ph name="END_GOOGLE_DASHBOARD_LINK" /> நிர்வகிக்கலாம்.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

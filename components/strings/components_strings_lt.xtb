@@ -169,7 +169,6 @@
 <translation id="225207911366869382">Pagal šią politiką ši vertė nepatvirtinta.</translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
 <translation id="2270484714375784793">Telefono numeris</translation>
-<translation id="2282872951544483773">Nepasiekiami eksperimentai</translation>
 <translation id="2292556288342944218">Interneto prieiga užblokuota</translation>
 <translation id="230155334948463882">Nauja kortelė?</translation>
 <translation id="2316887270356262533">Atlaisvina mažiau nei 1 MB. Per kitą jūsų apsilankymą kai kurios svetainės gali būti įkeliamos lėčiau.</translation>
@@ -309,6 +308,7 @@
 <translation id="3282497668470633863">Ant kortelės pateikto vardo pridėjimas</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
 <translation id="3287510313208355388">Atsisiųsti prisijungus</translation>
+<translation id="3293642807462928945">Sužinokite daugiau apie „<ph name="POLICY_NAME" />“ politiką</translation>
 <translation id="3303855915957856445">Nerasta jokių paieškos rezultatų</translation>
 <translation id="3305707030755673451"><ph name="TIME" /> duomenys buvo užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="3320021301628644560">Atsiskaitymo adreso pridėjimas</translation>
@@ -367,7 +367,6 @@
 <translation id="3623476034248543066">Rodyti vertę</translation>
 <translation id="3630155396527302611">Jei ji nurodyta kaip programa, kuriai leidžiama pasiekti tinklą, pabandykite
       ją pašalinti iš sąrašo ir vėl pridėti.</translation>
-<translation id="3648607100222897006">Šios eksperimentinės funkcijos gali bet kada pasikeisti, neveikti ar išnykti. Negarantuojame, kas nutiks, kai įjungsite šiuo eksperimentus. Jūsų naršyklė gali netgi savaime sudegti. Kalbant rimtai, naršyklė gali ištrinti visus duomenis arba jūsų saugumas ir privatumas gali būti pažeisti netikėtais būdais. Visi eksperimentai, kuriuos įgalinsite, bus įgalinti visiems naudotojams. Elkitės atsargiai.</translation>
 <translation id="3650584904733503804">Tikrinimas sėkmingas</translation>
 <translation id="3655670868607891010">Jei tai rodoma dažnai, išbandykite <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Peržiūrėtas ir pataisytas leidimas</translation>
@@ -383,6 +382,7 @@
 <translation id="3714780639079136834">Įjungti mobiliojo ryšio duomenis arba „Wi-Fi“</translation>
 <translation id="3715597595485130451">Prisijungimas prie „Wi-Fi“</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Patikrinti tarpinio serverio, užkardos ir DNS konfigūraciją<ph name="END_LINK" /></translation>
+<translation id="372429172604983730">Ši klaida galėjo įvykti dėl antivirusinės, užkardos ar žiniatinklio filtravimo programos arba tarpinio serverio programinės įrangos.</translation>
 <translation id="3736520371357197498">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje nesaugioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos pavojingos programos.</translation>
 <translation id="3739623965217189342">Nukopijuota nuoroda</translation>
 <translation id="3744899669254331632">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes ji atsiuntė užšifruotus prisijungimo duomenis, kurių „Chromium“ negali apdoroti. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
@@ -413,7 +413,6 @@
 <translation id="3987940399970879459">Mažiau nei 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 tinklalapis netoliese}one{# tinklalapis netoliese}few{# tinklalapiai netoliese}many{# tinklalapio netoliese}other{# tinklalapių netoliese}}</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
-<translation id="404928562651467259">ĮSPĖJIMAS</translation>
 <translation id="4058922952496707368">Raktas „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
 <translation id="4067947977115446013">Tinkamo adreso pridėjimas</translation>
 <translation id="4072486802667267160">Apdorojant jūsų užsakymą įvyko klaida. Bandykite dar kartą.</translation>
@@ -449,7 +448,6 @@
 <translation id="4269787794583293679">(Nėra naudotojo vardo)</translation>
 <translation id="4275830172053184480">Iš naujo paleisti įrenginį</translation>
 <translation id="4280429058323657511">, gal. pab. <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4300246636397505754">Pasiūlymai tėvams</translation>
 <translation id="4304224509867189079">Prisijungti</translation>
 <translation id="4312866146174492540">Užblokuoti (numatytoji parinktis)</translation>
 <translation id="4325863107915753736">Nepavyko rasti straipsnio</translation>
@@ -564,7 +562,6 @@
     <ph name="LIST_ITEM" />Spustelėkite <ph name="BEGIN_BOLD" />Taikyti<ph name="END_BOLD" />, tada – <ph name="BEGIN_BOLD" />Gerai<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />Apsilankykite <ph name="BEGIN_LEARN_MORE_LINK" />„Chrome“ pagalbos centre<ph name="END_LEARN_MORE_LINK" />, kad sužinotumėte, kaip visam laikui pašalinti programinę įrangą iš kompiuterio
     <ph name="END_LIST" /></translation>
-<translation id="5297526204711817721">Ryšys su šia svetaine nėra privatus. Kad galėtumėte bet kada išeiti iš virtualiosios realybės režimo, pašalinkite ausines ir paspauskite „Atgal“.</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
 <translation id="5308689395849655368">Strigčių ataskaitų teikimas neleidžiamas.</translation>
@@ -637,10 +634,10 @@
 <translation id="5866257070973731571">Telefono numerio pridėjimas</translation>
 <translation id="5869405914158311789">Nepavyksta pasiekti šios svetainės</translation>
 <translation id="5869522115854928033">Išsaugoti slaptažodžiai</translation>
-<translation id="5872918882028971132">Pasiūlymai tėvams</translation>
 <translation id="5893752035575986141">Kredito kortelės tinkamos.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinchronizuota)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Naudojamas 1 slapukas}one{Naudojamas # slapukas}few{Naudojami # slapukai}many{Naudojama # slapuko}other{Naudojama # slapukų}}</translation>
+<translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="5959728338436674663">Automatiškai siųsti tam tikrą <ph name="BEGIN_WHITEPAPER_LINK" />sistemos informaciją ir puslapio turinį<ph name="END_WHITEPAPER_LINK" /> į sistemą „Google“ siekiant padėti aptikti pavojingas programas ir svetaines. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">Kontaktinės informacijos redagavimas</translation>
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
@@ -658,7 +655,6 @@
 <translation id="6047233362582046994">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos kenkėjiškos programos.</translation>
 <translation id="6047927260846328439">Šiuo turiniu gali būti bandoma apgaule priversti jus įdiegti programinę įrangą arba atskleisti asmens informaciją. <ph name="BEGIN_LINK" />Rodyti vis tiek<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Šiuo metu negalite apsilankyti <ph name="SITE" />, nes svetainėje naudojamas sertifikatų prisegimas. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
-<translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (sinchronizuotas)}one{# slaptažodis (sinchronizuotas)}few{# slaptažodžiai (sinchronizuoti)}many{# slaptažodžio (sinchronizuota)}other{# slaptažodžių (sinchronizuota)}}</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
@@ -694,7 +690,6 @@
 <translation id="6355080345576803305">Viešosios sesijos nepaisymas</translation>
 <translation id="6358450015545214790">Ką tai reiškia?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Dar 1 pasiūlymas}one{Dar # pasiūlymas}few{Dar # pasiūlymai}many{Dar # pasiūlymo}other{Dar # pasiūlymų}}</translation>
-<translation id="6387478394221739770">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų beta kanalą adresu chrome.com/beta.</translation>
 <translation id="6397451950548600259">Programinė įranga jūsų kompiuteryje neleidžia „Chrome“ saugiai prisijungti prie žiniatinklio</translation>
 <translation id="6404511346730675251">Redaguoti žymę</translation>
 <translation id="6410264514553301377">įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC)</translation>
@@ -740,7 +735,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Nepavyko įkelti regionų duomenų</translation>
 <translation id="6825578344716086703">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kuris pasirašytas naudojant nesudėtingą parašo algoritmą (pvz., SHA-1). Tai reiškia, kad serverio pateikti saugos prisijungimo duomenys galėjo būti suklastoti ir serveris gali būti ne tas, kurio tikėjotės (gali būti, kad bendraujate su užpuoliku).</translation>
-<translation id="6830728435402077660">Nesaugu</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
 <translation id="6839929833149231406">Sritis</translation>
 <translation id="6874604403660855544">&amp;Pridėti dar kartą</translation>
@@ -842,7 +836,6 @@
 <translation id="7667346355482952095">Sugrąžintas politikos prieigos raktas yra tuščias arba neatitinka dabartinio prieigos rakto</translation>
 <translation id="7668654391829183341">Nežinomas įrenginys</translation>
 <translation id="7669271284792375604">Šios svetainės užgrobėjai gali bandyti apgaule priversti jus įdiegti naršymo funkcijas trikdančių programų (pvz., pakeitę pagrindinį puslapį ar rodydami papildomų skelbimų svetainėse, kuriose lankotės).</translation>
-<translation id="7674629440242451245">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų kuriamą kanalą adresu chrome.com/dev.</translation>
 <translation id="7682287625158474539">Pristatymas</translation>
 <translation id="7699293099605015246">Straipsniai šiuo metu negalimi</translation>
 <translation id="7701040980221191251">Nieko</translation>
@@ -954,6 +947,7 @@
 <translation id="8620436878122366504">Jūsų tėvai dar jos nepatvirtino</translation>
 <translation id="8647750283161643317">Viską nustatyti į numatytuosius nustatymus</translation>
 <translation id="8660471606262461360">Iš „Google Payments“</translation>
+<translation id="8688672835843460752">Galima</translation>
 <translation id="8703575177326907206">Jūsų ryšys su <ph name="DOMAIN" /> nekoduotas.</translation>
 <translation id="8718314106902482036">Mokėjimas neužbaigtas</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
@@ -976,7 +970,6 @@
 <translation id="8874824191258364635">Įveskite tinkamą kortelės numerį</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
-<translation id="889901481107108152">Deja, šis eksperimentas negalimas platformoje.</translation>
 <translation id="8903921497873541725">Artinti</translation>
 <translation id="8931333241327730545">Ar norite išsaugoti šios kortelės informaciją „Google“ paskyroje?</translation>
 <translation id="8932102934695377596">Jūsų laikrodis atsilieka</translation>

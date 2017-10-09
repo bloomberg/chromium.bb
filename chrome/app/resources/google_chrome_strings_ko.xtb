@@ -26,6 +26,7 @@
 <translation id="1628000112320670027">Chrome 도움말 보기</translation>
 <translation id="163860049029591106">Chrome OS 시작하기</translation>
 <translation id="1653828314016431939">확인 - 지금 다시 시작</translation>
+<translation id="1674870198290878346">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="1682634494516646069">Chrome에서 다음 데이터 디렉토리를 읽고 쓸 수 없습니다.
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -63,6 +64,7 @@
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="2586406160782125153">인터넷 사용 기록이 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2588322182880276190">Chrome 로고</translation>
+<translation id="2652691236519827073">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
 <translation id="2664962310688259219">Chrome OS 오픈소스 라이선스</translation>
 <translation id="2665296953892887393">비정상 종료 보고서와 <ph name="UMA_LINK" />을(를) Google로 전송하여 Chrome 개선에 참여합니다.</translation>
 <translation id="2689103672227170538">Chrome을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
@@ -100,11 +102,12 @@
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome에서 삭제...</translation>
-<translation id="3847841918622877581">Chrome은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
 <translation id="4028693306634653894">Chrome을 더 빠르게 사용해 보세요.</translation>
+<translation id="4031074602479304239">Chrome에서 이 사이트가 사용자를 다음 주소로 리디렉션하지 못하도록 차단했습니다.</translation>
 <translation id="4042449298237264661">Windows XP와 Windows Vista가 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
@@ -133,6 +136,7 @@
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
 <translation id="4804732725083176494">이 기기의 관리자에 의해 Chrome 로그인이 사용 중지되었습니다.</translation>
 <translation id="4891791193823137474">백그라운드에서 Chrome을 실행</translation>
+<translation id="4895437082222824641">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
 <translation id="4921569541910214635">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="4953650215774548573">Chrome을 기본 브라우저로 설정</translation>
 <translation id="495931528404527476">Chrome</translation>
@@ -158,6 +162,7 @@
 Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5453904507266736060">백그라운드에서 Chrome을 실행</translation>
 <translation id="5495581687705680288">Chrome에 로드된 모듈</translation>
+<translation id="5524843473235508879">리디렉션이 차단되었습니다.</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
@@ -217,7 +222,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7339898014177206373">새 창</translation>
 <translation id="7369650938475876456">Chrome에서 생성한 안전한 비밀번호를 사용하세요.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
-<translation id="7400722733683201933">Chrome 정보</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
 <translation id="7419046106786626209">내 도메인에서 동기화를 사용할 수 없으므로 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>

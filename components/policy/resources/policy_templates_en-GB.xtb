@@ -49,6 +49,12 @@
 
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
+<translation id="1166377463685560145">Specifies the printers which a user cannot use.
+
+      This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      If this policy is used, all printers are provided to the user except for the IDs listed in this policy.
+      </translation>
 <translation id="1198465924256827162">How frequently device status uploads are sent, in milliseconds.
 
       If this policy is unset, the default frequency is 3 hours. The minimum
@@ -81,6 +87,12 @@
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="1420281424655200442">Controls which printers from the <ph name="DEVICE_PRINTERS_POLICY" /> are available to users.
+
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="DEVICE_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. f <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="DEVICE_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
+
+      If this policy is not set, <ph name="PRINTERS_BLACKLIST" /> is assumed.
+      </translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
@@ -143,6 +155,19 @@
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
+<translation id="1603058613431276040">Provides configurations for enterprise printers bound to devices.
+
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices. The size of the file must not exceed 5 MB and must be encoded in JSON. The format is the same as the NativePrinters dictionary. It is estimated that a file containing approximately 21,000 printers will encode as a 5 MB file. The cryptographic hash is used to verify the integrity of the download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> and <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
+
+      This policy is additive to the <ph name="BULK_PRINTERS_POLICY" />.
+
+      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> policies will be ignored.</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
@@ -249,6 +274,12 @@
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Disabled enterprise printers</translation>
+<translation id="2063380907529983889">Controls which printers from the <ph name="BULK_PRINTERS_POLICY" /> are available to users.
+
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="BULK_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. If <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="BULK_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
+
+      If this policy is not set, <ph name="PRINTERS_BLACKLIST" /> is assumed.
+      </translation>
 <translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
@@ -510,6 +541,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2762164719979766599">Specifies the list of device-local accounts to be shown on the login screen.
 
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
+<translation id="2766302473082018239">Specifies the printers which a user can use.
+
+      This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      If this policy is used, only the printers with IDs matching the values in this policy are available to the user. The IDs must correspond to the entries in the file specified in <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
@@ -669,6 +706,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="3395348522300156660">Specifies the printers which a user can use.
+
+      This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      If this policy is used, only the printers with IDs matching the values in this policy are available to the user. The IDs must correspond to the entries in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not allow guest sessions to be started.</translation>
@@ -885,6 +928,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The policy value should be specified in milliseconds.</translation>
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
+<translation id="4133144443101280166">Off hours intervals when device OffHours |ignored_policy_proto_tags| are released</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
@@ -1110,48 +1154,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4980635395568992380">Data Types</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
-<translation id="5010252829147312914">Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
-
-      This policy can be used to configure which Android apps are automatically installed on the device:
-
-      {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "packageName": {
-              "description": "Android app identifier, e.g. "com.google.android.gm" for Gmail",
-              "type": "string"
-            },
-            "installType": {
-              "description": "Specifies how an app is installed. OPTIONAL: The app is not installed automatically, but the user can install it. This is the default if this policy is not specified. PRELOAD: The app is installed automatically, but the user can uninstall it. FORCE_INSTALLED: The app is installed automatically and the user cannot uninstall it. BLOCKED: The app is blocked and cannot be installed. If the app was installed under a previous policy it will be uninstalled.",
-              "type": "string",
-              "enum": [
-                "OPTIONAL"
-                "PRELOAD",
-                "FORCE_INSTALLED",
-                "BLOCKED"
-              ]
-            },
-            "defaultPermissionPolicy": {
-              "description": "Policy for granting permission requests to apps. PERMISSION_POLICY_UNSPECIFIED: Policy not specified. If no policy is specified for a permission at any level, then the `PROMPT` behaviour is used by default. PROMPT: Prompt the user to grant a permission. GRANT: Automatically grant a permission. DENY: Automatically deny a permission.",
-              "type": "string",
-              "enum": [
-                "PERMISSION_POLICY_UNSPECIFIED",
-                "PROMPT",
-                "GRANT",
-                "DENY"
-              ]
-            },
-            "managedConfiguration": {
-              "description": "App-specific JSON configuration string. The keys are defined in the app manifest. Typically looks like '{ "key" : value }'.",
-              "type": "string"
-            }
-          }
-        }
-      }
-
-      To pin apps to the launcher, see PinnedLauncherApps.</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -1162,6 +1164,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
+<translation id="5090209345759901501">Extend Flash content setting to all content</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
@@ -1463,7 +1466,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6133088669883929098">Allow all sites to use key generation</translation>
-<translation id="6139485614509308022">If 'OffHours' policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when 'OffHours' period starts or ends. User will be notified and forced to sign out when 'OffHours' time end and device policy settings are changed, (i.e. when user is logged in not with an allowed account).</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1549,6 +1551,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you choose to use a .pac proxy script, the script URL is provided to Android apps.</translation>
 <translation id="6491139795995924304">Allow bluetooth on device</translation>
 <translation id="6520802717075138474">Import search engines from default browser on first run</translation>
+<translation id="6525955212636890608">If you enable this setting, all Flash content embedded on websites that have been set to allow Flash in content settings – either by the user or by enterprise policy – will be run, including content from other origins or small content.
+
+      To control which websites are allowed to run Flash, see the 'DefaultPluginsSetting', 'PluginsAllowedForURLs' and 'PluginsBlockedForURLs' policies.
+
+      If this setting is disabled or not set, Flash content from other origins or small content might be blocked.</translation>
 <translation id="653608967792832033">Specifies the length of time without user input after which the screen is locked when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> locks the screen.
@@ -2129,6 +2136,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
+<translation id="8527932539502116028">Specifies the printers which a user cannot use.
+
+      This policy is only used if <ph name="PRINTERS_BLACKLIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      If this policy is used, all printers are provided to the user except for the IDs listed in this policy.
+      </translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
@@ -2208,6 +2221,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="891435090623616439">encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8927384992072706174">Provides configurations for enterprise printers.
+
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME" /> devices. The size of the file must not exceed 5 MB and must be encoded in JSON. The format is the same as the NativePrinters dictionary. It is estimated that a file containing approximately 21,000 printers will encode as a 5 MB file. The cryptographic hash is used to verify the integrity of the download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download the file for printer configurations and make printers available in accordance with <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> and <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      If you set this policy, users cannot change or override it.
+
+      This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
+      </translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="8952317565138994125">Disables data synchronisation in <ph name="PRODUCT_NAME" /> using Google-hosted synchronisation services and prevents users from changing this setting.

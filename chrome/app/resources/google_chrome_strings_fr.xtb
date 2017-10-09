@@ -25,6 +25,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1628000112320670027">Obtenir de l'aide avec Chrome</translation>
 <translation id="163860049029591106">Premiers pas avec Google Chrome OS</translation>
 <translation id="1653828314016431939">OK – Redémarrer maintenant</translation>
+<translation id="1674870198290878346">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="1682634494516646069">Google Chrome ne peut pas lire et écrire dans son répertoire de données : 
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -62,6 +63,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="2586406160782125153">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Google Chrome</translation>
+<translation id="2652691236519827073">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="2664962310688259219">Licences Chrome OS Open Source</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
@@ -99,11 +101,12 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Supprimer de Chrome</translation>
-<translation id="3847841918622877581">Google Chrome utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="386202838227397562">Veuillez fermer toutes les fenêtres de Google Chrome et réessayer.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
 <translation id="4028693306634653894">Accédez à Chrome plus rapidement</translation>
+<translation id="4031074602479304239">Chrome a empêché ce site de vous rediriger vers</translation>
 <translation id="4042449298237264661">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
@@ -133,6 +136,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="4794050651896644714">Enregistrer les détails dans Google Chrome</translation>
 <translation id="4804732725083176494">L'option de connexion à Chrome a été désactivée par l'administrateur de cet appareil.</translation>
 <translation id="4891791193823137474">Laisser Google Chrome s'exécuter en arrière-plan</translation>
+<translation id="4895437082222824641">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="4921569541910214635">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chrome selon vos besoins.</translation>
 <translation id="4953650215774548573">Définir Google Chrome en tant que navigateur par défaut</translation>
 <translation id="495931528404527476">Dans Chrome</translation>
@@ -158,6 +162,7 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
 Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5453904507266736060">Laisser Google Chrome s'exécuter en arrière-plan</translation>
 <translation id="5495581687705680288">Modules chargés dans Google Chrome</translation>
+<translation id="5524843473235508879">Redirection bloquée.</translation>
 <translation id="556024056938947818">Tentative d'affichage des mots de passe dans Google Chrome</translation>
 <translation id="5563479599352954471">Rechercher en un clic</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -217,7 +222,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="7369650938475876456">Utiliser un mot de passe sécurisé, généré par Chrome</translation>
 <translation id="7398801000654795464">Vous étiez connecté à Google Chrome en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
-<translation id="7400722733683201933">À propos de Google Chrome</translation>
 <translation id="7408085963519505752">Conditions d'utilisation de Chrome OS</translation>
 <translation id="7419046106786626209">Impossible de synchroniser vos données dans Chrome OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>

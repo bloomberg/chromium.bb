@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Το Chromium επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="1403254041219632970">Οι μελλοντικές εκδόσεις του Chromium δεν θα υποστηρίζουν πλέον τις εκδόσεις Mac OS X 10.6, 10.7 και 10.8.</translation>
 <translation id="1414495520565016063">Έχετε συνδεθεί στο Chromium!</translation>
+<translation id="1440917365206527807">Το Chromium διέκοψε την ανακατεύθυνσή σας από αυτόν τον ιστότοπο στο</translation>
 <translation id="1444754455097148408">Άδειες λογισμικού ανοικτού κώδικα του Chromium</translation>
 <translation id="1502360822835740515">Ορίστε το Chromium ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="151962892725702025">Το Chromium OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας, επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="3130323860337406239">Το Chromium χρησιμοποιεί το μικρόφωνό σας.</translation>
 <translation id="3155163173539279776">Επανεκκίνηση Chromium</translation>
+<translation id="3179665906251668410">Άνοιγμα Συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chromium</translation>
 <translation id="3190315855212034486">Το Chromium παρουσίασε σφάλμα. Να γίνει επανεκκίνηση τώρα;</translation>
 <translation id="3256316712990552818">Αντιγράφηκε στο Chromium</translation>
 <translation id="3258596308407688501">Το Chromium δεν έχει δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">Έναρξη χρήσης του Chromium OS</translation>
 <translation id="3582788516608077514">Ενημέρωση του Chromium…</translation>
 <translation id="358997566136285270">Λογότυπο Chromium</translation>
+<translation id="3713809861844741608">Άνοιγμα συνδέσμου σε νέα καρτέ&amp;λα Chromium</translation>
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
 <translation id="3762167353400286894">Το Chromium OS εμφανίζεται σε αυτήν τη γλώσσα</translation>
 <translation id="378917192836375108">Το Chromium σάς επιτρέπει να κάνετε κλικ σε έναν τηλεφωνικό αριθμό στον ιστό και να τον καλέσετε με το Skype!</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">Το Chromium ενημερώνεται αυτόματα, προκειμένου να έχετε πάντα στη διάθεσή σας τη νεότερη έκδοση. Όταν ολοκληρωθεί αυτή η λήψη, θα γίνει επανεκκίνηση του Chromium και θα είστε έτοιμοι.</translation>
 <translation id="5479196819031988440">Το Chromium OS δεν μπορεί να ανοίξει αυτήν τη σελίδα.</translation>
 <translation id="549669000822060376">Περιμένετε μέχρι να γίνει εγκατάσταση των πιο πρόσφατων ενημερώσεων συστήματος από το Chromium.</translation>
+<translation id="5524843473235508879">Η ανακατεύθυνση αποκλείστηκε.</translation>
 <translation id="5563479599352954471">Αναζήτηση με ένα μόνο άγγιγμα</translation>
 <translation id="5620765574781326016">Μάθετε πληροφορίες σχετικά με θέματα σε ιστότοπους, χωρίς να απομακρυνθείτε από τη σελίδα.</translation>
 <translation id="5634636535844844681">Το Chromium απαιτεί Windows 7 ή νεότερη έκδοση.</translation>
@@ -176,11 +180,11 @@
 <translation id="6883876366448858277">στέλνει μια λέξη και το συγκείμενό της στην Αναζήτηση Google και φέρνει ως αποτέλεσμα ορισμούς, εικόνες και άλλα αποτελέσματα αναζήτησης.</translation>
 <translation id="6893813176749746474">Το Chromium έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
 <translation id="6944967875980567883">Στο Chromium φορτώθηκαν λειτουργικές μονάδες</translation>
+<translation id="6964305034639999644">Άνοιγμα συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chromium</translation>
 <translation id="6970811910055250180">Ενημέρωση της συσκευής σας...</translation>
 <translation id="705851970750939768">Ενημέρωση Chromium</translation>
 <translation id="7066436765290594559">Το Chromium OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="707471633328071618">Google Payments (αντιγράφηκε στο Chromium)</translation>
-<translation id="7138853919861947730">Το Chromium μπορεί να χρησιμοποιήσει υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας.</translation>
 <translation id="7162152143154757523">Το Chromium μπορεί να παρέχει πιο έξυπνο ορθογραφικό έλεγχο, αποστέλλοντας ό,τι πληκτρολογείτε στο πρόγραμμα περιήγησης, στους διακομιστές της Google, επιτρέποντάς σας να χρησιμοποιείτε την ίδια τεχνολογία ορθογραφικού ελέγχου που χρησιμοποιείται από την αναζήτηση Google.</translation>
 <translation id="7205698830395646142">Απόκρυψη στο μενού του Chromium</translation>
 <translation id="7223968959479464213">Διαχείριση Εργασιών - Chromium</translation>
@@ -255,6 +259,7 @@
 <translation id="9022552996538154597">Σύνδεση στο Chromium</translation>
 <translation id="9036189287518468038">Λειτουργία εκκίνησης εφαρμογών Chromium</translation>
 <translation id="9089354809943900324">Το Chromium δεν είναι ενημερωμένο</translation>
+<translation id="91086099826398415">Άνοιγμα Συνδέσμου σε Νέα καρτέ&amp;λα Chromium</translation>
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="918373042641772655">Με την αποσύνδεση του λογαριασμού <ph name="USERNAME" />, θα διαγραφεί το ιστορικό, οι σελιδοδείκτες, οι ρυθμίσεις σας και άλλα δεδομένα Chromium που έχουν αποθηκευτεί σε αυτήν τη συσκευή. Τα δεδομένα που έχουν αποθηκευτεί στον Λογαριασμό σας Google δεν θα διαγραφούν και μπορείτε να τα διαχειριστείτε μέσω του <ph name="GOOGLE_DASHBOARD_LINK" />Πίνακα ελέγχου Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

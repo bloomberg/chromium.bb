@@ -37,6 +37,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="1303671224831497365">No Bluetooth devices found</translation>
+<translation id="1320663236730331991">Swipe up for easy access to popular sites and articles, downloads and more</translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
@@ -48,7 +49,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1389236224998445076">Data saved:</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome suggestions</translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">Open all</translation>
@@ -138,7 +138,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2283599456633275070">Travel</translation>
 <translation id="2286841657746966508">Billing address</translation>
-<translation id="2301209717432756327">Added to home screen.</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2323763861024343754">Site storage</translation>
@@ -149,6 +148,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2369533728426058518">open tabs</translation>
+<translation id="2372491353676110880">Automatically download pages</translation>
 <translation id="2385560268894525395">past week</translation>
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="2414886740292270097">Dark</translation>
@@ -158,6 +158,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
 <translation id="2476578072172137802">Site Settings</translation>
 <translation id="2482878487686419369">Notifications</translation>
+<translation id="2490674006498621843">Pull up the toolbar to find your files and pages in downloads</translation>
 <translation id="2496180316473517155">Browsing history</translation>
 <translation id="2498359688066513246">Help &amp; feedback</translation>
 <translation id="2501278716633472235">Go back</translation>
@@ -176,6 +177,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2625189173221582860">Password copied</translation>
 <translation id="2631006050119455616">Saved</translation>
 <translation id="2653659639078652383">Submit</translation>
+<translation id="2671100504997899381">Load pages more quickly and save popular pages for offline reading</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2707726405694321444">Refresh page</translation>
@@ -231,6 +233,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3259831549858767975">Make everything on the page smaller</translation>
 <translation id="3269093882174072735">Load image</translation>
 <translation id="3269956123044984603">To get your tabs from your other devices, turn on “Auto-sync data” in Android account settings.</translation>
+<translation id="3274105979672092244">You're using Chrome Home</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3295602654194328831">Hide info</translation>
 <translation id="3303414029551471755">Proceed to download the content?</translation>
@@ -259,7 +262,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3549657413697417275">Search your history</translation>
 <translation id="3552151358455404883">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Add to contacts</translation>
-<translation id="3583454905526475291">Could not launch app</translation>
 <translation id="3587482841069643663">All</translation>
 <translation id="3590487821116122040">Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
 <translation id="3599863153486145794">Clears history from all signed-in devices. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +343,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
-<translation id="42981349822642051">Expand</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4378154925671717803">Phone</translation>
@@ -429,6 +430,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5164482624172255778">Would you like Google Chrome to offer to translate <ph name="LANGUAGE" /> pages from this site next time?</translation>
 <translation id="5168917394043976756">Open navigation drawer</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
+<translation id="519793908071017925">Use Chrome Home</translation>
 <translation id="5199929503336119739">Work profile</translation>
 <translation id="5209320130288484488">No devices found</translation>
 <translation id="5210286577605176222">Jump to the previous tab</translation>
@@ -524,6 +526,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5942872142862698679">Using Google for search</translation>
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
+<translation id="5958994127112619898">Simplify page</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
 <translation id="6000066717592683814">Keep Google</translation>
 <translation id="6023914116273780353">Personalised</translation>
@@ -595,6 +598,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6583199322650523874">Bookmark the current page</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6612358246767739896">Protected content</translation>
+<translation id="6619166911218440149">Introducing Chrome Home</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}}</translation>
@@ -604,6 +608,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666731172850799929">Open in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
+<translation id="6689700624704789898">Double tap the expand button to find your files and pages in downloads</translation>
 <translation id="6697947395630195233">Chrome needs access to your location to share your location with this site.</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
 <translation id="6701279291835318271">Security Reports</translation>
@@ -680,6 +685,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="7445411102860286510">Allow sites to automatically play muted videos (recommended)</translation>
+<translation id="7453466007315252115">Unable to get suggestions</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7455923816558154057">Tap to view</translation>
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
@@ -705,6 +711,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7607552448134703340">Type what you’re looking for</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
+<translation id="7620146066550602128">Try an <ph name="BEGIN_LINK" />easier way to browse<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Get help<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />re-scan<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
@@ -797,7 +804,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8523928698583292556">Delete stored password</translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
-<translation id="856481929701340285">Request desktop site</translation>
 <translation id="8569404424186215731">since <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Last 4 weeks</translation>
 <translation id="857509777403223202">More articles will appear soon. Enjoy your evening!</translation>

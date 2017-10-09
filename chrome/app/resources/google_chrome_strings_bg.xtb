@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
 <translation id="1653828314016431939">OK – Рестартиране сега</translation>
+<translation id="1674870198290878346">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може да чете и записва в директорията си за данни:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -61,6 +62,7 @@
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="2586406160782125153">Данните за сърфирането ви ще се изтрият от това устройство. За да ги извлечете по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Лого на Chrome</translation>
+<translation id="2652691236519827073">Отваряне на връзката в нов &amp;раздел на Chrome</translation>
 <translation id="2664962310688259219">Лицензи за отворен код за Chrome OS</translation>
 <translation id="2665296953892887393">Помогнете ни да подобрим Google Chrome, като ни изпращате <ph name="UMA_LINK" /> му и сигнали за сривове</translation>
 <translation id="2689103672227170538">Това разширение промени страницата, която се показва при стартиране на Chrome.</translation>
@@ -98,11 +100,12 @@
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Премахване от Chrome...</translation>
-<translation id="3847841918622877581">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="4028693306634653894">Стартирайте Chrome по-бързо</translation>
+<translation id="4031074602479304239">Chrome спря пренасочването ви от този сайт към</translation>
 <translation id="4042449298237264661">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Windows XP и Windows Vista вече не се поддържат.</translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
 <translation id="4053720452172726777">Персонализиране и контролиране на Google Chrome</translation>
@@ -131,6 +134,7 @@
 <translation id="4794050651896644714">Подробностите да се запазват в Chrome</translation>
 <translation id="4804732725083176494">Функцията за влизане в Chrome е деактивирана от администратора на това устройство.</translation>
 <translation id="4891791193823137474">Google Chrome да се изпълнява на заден план</translation>
+<translation id="4895437082222824641">Отваряне на връзката в нов &amp;раздел на Chrome</translation>
 <translation id="4921569541910214635">Споделяте компютър? Вече можете да настроите Chrome точно по свой вкус.</translation>
 <translation id="4953650215774548573">Задаване на Google Chrome като браузър по подразбиране</translation>
 <translation id="495931528404527476">В Chrome</translation>
@@ -152,6 +156,7 @@
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
 <translation id="5453904507266736060">Нека Google Chrome да се изпълнява на заден план</translation>
 <translation id="5495581687705680288">Модули, заредени в Google Chrome</translation>
+<translation id="5524843473235508879">Блокирано бе пренасочване.</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5563479599352954471">Търсене с едно докосване</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
@@ -211,7 +216,6 @@
 <translation id="7339898014177206373">Нов прозорец</translation>
 <translation id="7369650938475876456">Използвайте надеждна парола, генерирана от Chrome</translation>
 <translation id="7398801000654795464">Бяхте влезли в Chrome като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
-<translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="7408085963519505752">Общи условия на Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>

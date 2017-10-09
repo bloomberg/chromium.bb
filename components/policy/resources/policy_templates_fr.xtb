@@ -1379,6 +1379,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
           Si vous définissez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant le grand curseur. Toutefois, cette option n'est pas définitive, et la valeur par défaut est restaurée dès que l'écran de connexion est affiché de nouveau ou que l'utilisateur reste inactif pendant une minute sur l'écran de connexion.
 
           Si vous ne définissez pas cette règle, le grand curseur est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
+<translation id="5932767795525445337">Ces règles peuvent également être utilisées pour épingler des applications Android.</translation>
 <translation id="5936622343001856595">SafeSearch est obligatoirement activé pour les recherches sur le Web Google et ce paramètre ne peut être modifié par l'utilisateur.
 
      Si vous activez ce paramètre, SafeSearch est toujours activé dans la recherche Google.
@@ -1430,7 +1431,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
 <translation id="6133088669883929098">Autoriser tous les sites à utiliser la génération de clé</translation>
-<translation id="6139485614509308022">Si la règle de désactivation "OffHours" est définie, les règles spécifiées de l'appareil sont ignorées (utilisation des paramètres par défaut de ces règles) pendant la période définie. Les règles relatives à l'appareil sont de nouveau appliquées par Chrome à chaque événement lorsque la période de désactivation OffHours commence ou se termine. L'utilisateur reçoit une notification et est obligé de se déconnecter à la fin de la période de désactivation OffHours et lorsque les paramètres des règles relatives à l'appareil sont modifiés (par exemple, si l'utilisateur est connecté avec un compte non autorisé).</translation>
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>

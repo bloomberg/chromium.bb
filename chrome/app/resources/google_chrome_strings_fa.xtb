@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">‏دریافت کمک برای Chrome</translation>
 <translation id="163860049029591106">‏شروع به کار با سیستم عامل Chrome</translation>
 <translation id="1653828314016431939">تأیید - اکنون راه‌اندازی شود</translation>
+<translation id="1674870198290878346">‏باز کردن پیوند در پنجره &amp;ناشناس Chrome</translation>
 <translation id="1682634494516646069">‏Google Chrome نمی‌تواند مسیر داده‌های خود را بخواند یا در آن بنویسد: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏Google Chrome یک مرورگر وب است که برنامه‌های کاربردی و صفحات وب را در یک چشم به هم زدن اجرا و باز می‌کند. استفاده از آن سریع و آسان است و همیشه در دسترس است. با برنامه‌های حفاظت در برابر فیشینگ و بدافزار تعبیه شده در Google Chrome، وب را با امنیت بیشتر مرور کنید.</translation>
 <translation id="1718131156967340976">‏انتخاب <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
@@ -59,6 +60,7 @@
 <translation id="2580411288591421699">‏نمی‌توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
 <translation id="2586406160782125153">‏این کار داده‌های محصول مرورتان را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با <ph name="USER_EMAIL" /> وارد سیستم Chrome شوید.</translation>
 <translation id="2588322182880276190">‏نشان‌واره Chrome</translation>
+<translation id="2652691236519827073">‏باز کردن پیوند در &amp;برگه جدید Chrome</translation>
 <translation id="2664962310688259219">‏مجوزهای منبع باز سیستم عامل Chrome</translation>
 <translation id="2665296953892887393">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK" /> به Google، به بهبود Google Chrome کمک کنید.</translation>
 <translation id="2689103672227170538">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chrome نشان داده می‌شود.</translation>
@@ -96,11 +98,12 @@
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">‏حذف از Chrome...</translation>
-<translation id="3847841918622877581">‏Google Chrome ممکن است از سرویس‌های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="386202838227397562">‏لطفاً همه پنجره‌های Google Chrome را ببندید و دوباره امتحان کنید.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">‏باز کردن پیوند در پنجره &amp;ناشناس Chrome</translation>
 <translation id="3889417619312448367">‏حذف نصب Google Chrome</translation>
 <translation id="4028693306634653894">‏دسترسی سریع‌تر به Chrome</translation>
+<translation id="4031074602479304239">‏Chrome مانع هدایت شما توسط این سایت به اینجا شده است</translation>
 <translation id="4042449298237264661">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Windows XP و Windows Vista دیگر پشتیبانی نمی‌شوند.</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
@@ -130,6 +133,7 @@
 <translation id="4794050651896644714">‏ذخیره جزئیات در Chrome</translation>
 <translation id="4804732725083176494">‏سرپرست این دستگاه ورود به سیستم Chrome را غیرفعال کرده است.</translation>
 <translation id="4891791193823137474">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
+<translation id="4895437082222824641">‏باز کردن پیوند در &amp;برگه جدید Chrome</translation>
 <translation id="4921569541910214635">‏از رایانه به‌طور مشترک استفاده می‌کنید؟ اکنون می‌توانید Chrome را هر طور که دوست دارید، تنظیم کنید.</translation>
 <translation id="4953650215774548573">‏تنظیم Google Chrome به عنوان مرورگر پیش‌فرضتان</translation>
 <translation id="495931528404527476">‏در Chrome</translation>
@@ -151,6 +155,7 @@
 <translation id="5430073640787465221">‏فایل تنظیمات برگزیده شما خراب یا نامعتبر است. Google Chrome نمی‌تواند تنظیمات شما را بازیابی کند.</translation>
 <translation id="5453904507266736060">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="5495581687705680288">‏مدول های بارگیری شده در Google Chrome</translation>
+<translation id="5524843473235508879">هدایت کردن مسدود شد.</translation>
 <translation id="556024056938947818">‏Google Chrome می‌خواهد گذرواژه‌ها را نمایش دهد.</translation>
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
@@ -210,7 +215,6 @@
 <translation id="7339898014177206373">پنجرهٔ جدید</translation>
 <translation id="7369650938475876456">‏استفاده از گذرواژه قوی ایجادشده توسط Chrome</translation>
 <translation id="7398801000654795464">‏شما بعنوان <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم Chrome شدید. لطفاً برای ورود به سیستم مجدد از همان حساب استفاده کنید.</translation>
-<translation id="7400722733683201933">‏درباره Google Chrome</translation>
 <translation id="7408085963519505752">‏شرایط Chrome OS</translation>
 <translation id="7419046106786626209">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>

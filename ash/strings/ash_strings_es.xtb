@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Resaltar el cursor del ratón</translation>
-<translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3573179567135747900">Cambiar de nuevo por "<ph name="FROM_LOCALE" />" (requiere reiniciar)</translation>
 <translation id="3582792037806681688">Se ha inhabilitado el inicio de sesión múltiple para un usuario en esta sesión</translation>
 <translation id="3595596368722241419">Batería al máximo</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
+<translation id="6284232397434400372">Se ha cambiado la resolución</translation>
 <translation id="6297287540776456956">Usa el lápiz óptico para seleccionar una parte de la pantalla</translation>
 <translation id="6310121235600822547">Se ha modificado la rotación de <ph name="DISPLAY_NAME" /> a <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Superposición de teclado</translation>
@@ -232,10 +232,10 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
-<translation id="7135556860107312402">Permitir notificaciones de:</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
+<translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">El bloqueo de mayúsculas está activado.</translation>
@@ -248,6 +248,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7569509451529460200">Braille y ChromeVox están habilitados</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario)</translation>
 <translation id="7647488630410863958">Desbloquear el dispositivo para ver las notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

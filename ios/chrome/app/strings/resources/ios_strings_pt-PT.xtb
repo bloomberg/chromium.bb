@@ -79,6 +79,7 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="2381405137052800939">Noções básicas</translation>
 <translation id="2386793615875593361">1 selecionada</translation>
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
+<translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta...</translation>
 <translation id="2593774076813182497">Não é pos. impr. página.</translation>
@@ -128,7 +129,6 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="3324193307694657476">Morada 2</translation>
 <translation id="3329904751041170572">Não foi possível ligar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
-<translation id="3387752218061326363">A mostrar o histórico dos seus dispositivos com sessão iniciada... <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-ups Permitidos</translation>
 <translation id="3414292259312108062">O Chrome armazena esta informação nas suas <ph name="BEGIN_LINK" />palavras-passe guardadas do Google<ph name="END_LINK" /> e preenche-a automaticamente por si para que não a tenha de memorizar.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
@@ -312,6 +312,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6797885426782475225">Pesquisa por voz</translation>
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
+<translation id="6871663519944855400">Abrir no modo de navegação anónima</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6945221475159498467">Selecionar</translation>
@@ -321,7 +322,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7062545763355031412">Aceitar e mudar de contas</translation>
 <translation id="7108338896283013870">Ocultar</translation>
-<translation id="7131892264600713844">A mostrar o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmara não está disponível</translation>
 <translation id="7159472599653637159">Pedir site para dispositivos móveis</translation>

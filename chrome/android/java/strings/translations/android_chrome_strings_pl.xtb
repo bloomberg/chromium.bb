@@ -37,6 +37,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
 <translation id="1303671224831497365">Nie znaleziono urządzeń Bluetooth</translation>
+<translation id="1320663236730331991">Przesuń palcem w górę, by łatwo uzyskać dostęp do popularnych stron i artykułów, pobranych plików oraz innych elementów</translation>
 <translation id="1326317727527857210">Aby korzystać z kart ze swoich innych urządzeń, zaloguj się w Chrome.</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
@@ -48,7 +49,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1389236224998445076">Zaoszczędzone dane:</translation>
 <translation id="1389974829397082527">Tu nie ma zakładek</translation>
 <translation id="1397811292916898096">Szukaj w <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974">Podpowiedzi Chrome: <ph name="NUMBER_OF_SUGGESTIONS" /></translation>
 <translation id="1404122904123200417">Umieszczone na <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Bez śledzenia”</translation>
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
@@ -138,7 +138,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2268044343513325586">Zawęź</translation>
 <translation id="2283599456633275070">Podróże</translation>
 <translation id="2286841657746966508">Adres rozliczeniowy</translation>
-<translation id="2301209717432756327">Dodano do ekranu głównego.</translation>
 <translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2323763861024343754">Dane witryn:</translation>
@@ -231,6 +230,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3259831549858767975">Pomniejsz całą zawartość strony</translation>
 <translation id="3269093882174072735">Wczytaj obraz</translation>
 <translation id="3269956123044984603">Aby korzystać z kart ze swoich pozostałych urządzeń, włącz opcję „Autosynchronizacja danych” w ustawieniach konta na urządzeniu z Androidem.</translation>
+<translation id="3274105979672092244">Korzystasz z Chrome Home</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3295602654194328831">Ukryj informacje</translation>
 <translation id="3303414029551471755">Przejść do pobrania treści?</translation>
@@ -259,7 +259,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3549657413697417275">Przeszukaj historię</translation>
 <translation id="3552151358455404883">Zarządzaj synchronizacją Chrome i personalizacją w <ph name="BEGIN_LINK1" />Ustawieniach<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Dodaj do kontaktów</translation>
-<translation id="3583454905526475291">Nie można uruchomić aplikacji</translation>
 <translation id="3587482841069643663">Wszystkie</translation>
 <translation id="3590487821116122040">Dane witryn, które Chrome uznaje za nieistotne (np. witryny, które rzadko odwiedzasz lub które nie mają zapisanych ustawień)</translation>
 <translation id="3599863153486145794">Usuwa historię ze wszystkich urządzeń, na których jesteś zalogowany. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +340,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
-<translation id="42981349822642051">Rozwiń</translation>
 <translation id="4307992518367153382">Podstawowe</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -429,6 +427,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE" />?</translation>
 <translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
+<translation id="519793908071017925">Użyj Chrome Home</translation>
 <translation id="5199929503336119739">Profil do pracy</translation>
 <translation id="5209320130288484488">Nie znaleziono urządzeń</translation>
 <translation id="5210286577605176222">Przejdź do poprzedniej karty</translation>
@@ -524,6 +523,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
 <translation id="5956665950594638604">Otwórz Centrum pomocy Chrome w nowej karcie</translation>
 <translation id="5958275228015807058">Znajdź pliki i strony w Pobranych plikach</translation>
+<translation id="5958994127112619898">Uprość stronę</translation>
 <translation id="5962718611393537961">Kliknij, by zwinąć</translation>
 <translation id="6000066717592683814">Zachowaj Google</translation>
 <translation id="6023914116273780353">Spersonalizowane</translation>
@@ -595,6 +595,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6583199322650523874">Dodaj bieżącą stronę do zakładek</translation>
 <translation id="6600954340915313787">Skopiowana do Chrome</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
+<translation id="6619166911218440149">Poznaj Chrome Home</translation>
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
@@ -705,6 +706,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7607552448134703340">Wpisz, czego szukasz</translation>
 <translation id="7612619742409846846">Jesteś zalogowany w Google jako</translation>
 <translation id="7619072057915878432">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z siecią.</translation>
+<translation id="7620146066550602128">Wypróbuj <ph name="BEGIN_LINK" />łatwiejszy sposób przeglądania internetu<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Skorzystaj z pomocy<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />skanuj ponownie<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Witamy w Chrome</translation>
 <translation id="7638584964844754484">Nieprawidłowe hasło</translation>
@@ -797,7 +799,6 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8523928698583292556">Usuń zapisane hasło</translation>
 <translation id="854522910157234410">Otwórz tę stronę</translation>
 <translation id="8562452229998620586">Tutaj pojawią się zapisane hasła.</translation>
-<translation id="856481929701340285">Wersja na komputer</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>
 <translation id="857509777403223202">Wkrótce pojawi się więcej artykułów. Życzymy miłego wieczoru.</translation>

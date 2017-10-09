@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C-apparaat</translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
 <translation id="3510164367642747937">Muisaanwijzer markeren</translation>
-<translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3573179567135747900">Teruggaan naar '<ph name="FROM_LOCALE" />' (opnieuw starten vereist)</translation>
 <translation id="3582792037806681688">Toegang tot meerdere accounts is niet toegestaan voor een gebruiker in deze sessie</translation>
 <translation id="3595596368722241419">Batterij is vol</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: activeren...</translation>
+<translation id="6284232397434400372">Resolutie gewijzigd</translation>
 <translation id="6297287540776456956">Gebruik de stylus om een gebied te selecteren</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is gedraaid naar <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Overlay voor toetsenbord</translation>
@@ -232,10 +232,10 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
 <translation id="7067196344162293536">Automatisch draaien</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
-<translation id="7135556860107312402">Meldingen toestaan van het volgende:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
+<translation id="726276584504105859">Sleep hier naartoe om het scherm te splitsen</translation>
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7377169924702866686">Caps Lock is ingeschakeld.</translation>
@@ -248,6 +248,7 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="7562368315689366235">Emoji-palet</translation>
 <translation id="7569509451529460200">Braille en ChromeVox zijn ingeschakeld</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (eigenaar)</translation>
 <translation id="7647488630410863958">Ontgrendel het apparaat om je meldingen weer te geven</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Annuleren</translation>

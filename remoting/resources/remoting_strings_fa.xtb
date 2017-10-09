@@ -74,6 +74,7 @@
 <translation id="2509394361235492552">متصل به <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏توجه: برای اطمینان از اینکه همه میان‌برهای صفحه‌کلید در دسترس هستند، می‌توانید کنترل دسک‌تاپ از راه دور Chrome را روی «بازکردن به عنوان پنجره» پیکربندی کنید.</translation>
 <translation id="2540992418118313681">می‌خواهید این رایانه را برای کاربر دیگر جهت مشاهده و کنترل به اشتراک بگذارید؟</translation>
+<translation id="2579271889603567289">میزبان خراب شد یا راه‌اندازی نشد.</translation>
 <translation id="2599300881200251572">‏این سرویس اتصالات ورودی از کلاینت‌های کنترل دسک‌تاپ از راه دور Chrome را فعال می‌کند.</translation>
 <translation id="2647232381348739934">‏سرویس کار با Chrome</translation>
 <translation id="2676780859508944670">در حال انجام...</translation>
@@ -174,6 +175,7 @@ Chrome
 <translation id="4736223761657662401">سابقه اتصال</translation>
 <translation id="4741792197137897469">‏احراز هویت انجام نشد. لطفاً دوباره وارد سیستم Chrome شوید.</translation>
 <translation id="477305884757156764">برنامه بیش از حد کند است.</translation>
+<translation id="4784508858340177375">‏سرور X خراب شد یا راه‌اندازی نشد.</translation>
 <translation id="4795786176190567663">مجوز انجام این عمل را ندارید.</translation>
 <translation id="4798680868612952294">گزینه‌های موشواره</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
@@ -248,6 +250,7 @@ Chrome
 <translation id="6572345186230665992">‏برای Mac‏ (OS X Mavericks نسخه ۱۰.۹ و بالاتر)</translation>
 <translation id="6583902294974160967">پشتیبانی</translation>
 <translation id="6612717000975622067">‏ارسال Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">هم‌رسانی</translation>
 <translation id="6668065415969892472">پین شما به‌روز شد.</translation>
 <translation id="6681800064886881394">‏حق نسخه‌برداری ۲۰۱۳ Google Inc. کلیه حقوق محفوظ است.</translation>
 <translation id="6705482892455291412">وقتی کد را وارد می‌کنند، از شما درخواست می‌شود اتصال را بپذیرید و جلسه اشتراک‌گذاری را شروع کنید.</translation>

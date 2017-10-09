@@ -169,7 +169,6 @@
 <translation id="225207911366869382">Este valor está obsoleto para esta política.</translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
 <translation id="2270484714375784793">Número do telefone</translation>
-<translation id="2282872951544483773">Experiências não disponíveis</translation>
 <translation id="2292556288342944218">O seu acesso à Internet está bloqueado</translation>
 <translation id="230155334948463882">Novo cartão?</translation>
 <translation id="2316887270356262533">Libera menos de 1 MB. O carregamento de alguns sites pode ficar mais lento no seu próximo acesso.</translation>
@@ -367,7 +366,6 @@
 <translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3630155396527302611">Se ele já estiver listado como um programa que tem permissão para acessar a rede, tente
       removê-lo da lista e adicioná-lo novamente.</translation>
-<translation id="3648607100222897006">Estes recursos experimentais podem ser alterados, cancelados ou desaparecer a qualquer momento. Não oferecemos qualquer garantia sobre o que possa acontecer ao ativar algum desses experimentos: seu navegador pode inclusive entrar em combustão espontânea. Brincadeiras à parte, o navegador pode excluir todos seus dados ou comprometer sua segurança e privacidade de maneira inesperada. Experimentos ativados serão habilitados para todos os usuários do navegador, portanto tenha cautela ao prosseguir.</translation>
 <translation id="3650584904733503804">Validação bem-sucedida</translation>
 <translation id="3655670868607891010">Caso veja esta página com frequência, tente <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisão</translation>
@@ -414,7 +412,6 @@
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 página da Web por perto}one{# página da Web por perto}other{# páginas da Web por perto}}</translation>
 <translation id="4030383055268325496">&amp;Desfazer adicionar</translation>
-<translation id="404928562651467259">AVISO</translation>
 <translation id="4058922952496707368">Chave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067947977115446013">Adicione um Endereço Válido</translation>
 <translation id="4072486802667267160">Ocorreu um erro ao processar seu pedido. Tente novamente.</translation>
@@ -450,7 +447,6 @@
 <translation id="4269787794583293679">Sem nome de usuário</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
 <translation id="4280429058323657511">, validade <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4300246636397505754">Sugestões para pais</translation>
 <translation id="4304224509867189079">Fazer login</translation>
 <translation id="4312866146174492540">Bloquear (padrão)</translation>
 <translation id="4325863107915753736">Falha ao encontrar artigo</translation>
@@ -565,7 +561,6 @@
     <ph name="LIST_ITEM" />Clique em <ph name="BEGIN_BOLD" />Aplicar<ph name="END_BOLD" /> e depois em <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />Visite a <ph name="BEGIN_LEARN_MORE_LINK" />Central de ajuda do Google Chrome<ph name="END_LEARN_MORE_LINK" /> para saber mais sobre como remover software permanentemente do seu computador
     <ph name="END_LIST" /></translation>
-<translation id="5297526204711817721">Sua conexão com este site não é particular. Para sair do modo de RV a qualquer momento, remova o fone de ouvido e pressione "Voltar".</translation>
 <translation id="5299298092464848405">Política de análise de erros</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
 <translation id="5308689395849655368">O relatório de erros está desativado.</translation>
@@ -638,10 +633,10 @@
 <translation id="5866257070973731571">Adicione um Número de Telefone</translation>
 <translation id="5869405914158311789">Não é possível acessar esse site</translation>
 <translation id="5869522115854928033">Senhas salvas</translation>
-<translation id="5872918882028971132">Sugestões para pais</translation>
 <translation id="5893752035575986141">Cartões de crédito são aceitos.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em uso}one{# em uso}other{# em uso}}</translation>
+<translation id="5939518447894949180">Redefinir</translation>
 <translation id="5959728338436674663">Enviar automaticamente <ph name="BEGIN_WHITEPAPER_LINK" />algumas informações do sistema e conteúdos de página<ph name="END_WHITEPAPER_LINK" /> ao Google para ajudar a detectar sites e apps perigosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">Edite as Informações de Contato</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
@@ -659,7 +654,6 @@
 <translation id="6047233362582046994">Se você conhece os riscos para sua segurança, pode <ph name="BEGIN_LINK" />visitar este site<ph name="END_LINK" /> antes de os apps prejudiciais serem removidos.</translation>
 <translation id="6047927260846328439">Este conteúdo pode tentar enganar você para que instale um software ou revele informações pessoais. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Não é possível acessar <ph name="SITE" /> no momento, porque o site usa bloqueio de certificados. Como os ataques e erros de rede são geralmente temporários, esta pagina provavelmente funcionará mais tarde.</translation>
-<translation id="6060685159320643512">Tome cuidado, esses experimentos podem morder</translation>
 <translation id="6080696365213338172">Você acessou conteúdo usando um certificado fornecido pelo administrador. Os dados fornecidos a <ph name="DOMAIN" /> podem ser interceptados por seu administrador.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nenhuma}=1{1 senha (sincronizada)}one{# senha (sincronizada)}other{# senhas (sincronizadas)}}</translation>
 <translation id="6146055958333702838">Verifique todos os cabos e reinicie todos os roteadores, modens ou outros
@@ -695,7 +689,6 @@
 <translation id="6355080345576803305">Modificação de sessão pública</translation>
 <translation id="6358450015545214790">O que são essas informações?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}one{# outra sugestão}other{# outras sugestões}}</translation>
-<translation id="6387478394221739770">Interessado em novos recursos interessantes do Google Chrome? Veja nosso Canal Beta em chrome.com/beta.</translation>
 <translation id="6397451950548600259">Algum software no seu computador está impedindo o Google Chrome de se conectar com segurança à Web</translation>
 <translation id="6404511346730675251">Editar favorito</translation>
 <translation id="6410264514553301377">Digite a data de validade e o CVC do <ph name="CREDIT_CARD" /></translation>
@@ -741,7 +734,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Falha ao carregar dados de regiões</translation>
 <translation id="6825578344716086703">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado com um algoritmo de assinatura fraco (como SHA-1). Isso significa que as credenciais de segurança apresentadas pelo servidor podem ter sido forjadas, e talvez o servidor não seja o esperado (talvez você esteja se comunicando com um invasor).</translation>
-<translation id="6830728435402077660">Não seguro</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="6874604403660855544">&amp;Refazer adicionar</translation>
@@ -843,7 +835,6 @@
 <translation id="7667346355482952095">O token da política retornado está vazio ou não corresponde ao token atual</translation>
 <translation id="7668654391829183341">Dispositivo desconhecido</translation>
 <translation id="7669271284792375604">Invasores nesse site podem tentar enganar você para que instale programas que prejudicam sua experiência de navegação (por exemplo, alterando sua página inicial ou mostrando mais anúncios nos sites que você visita).</translation>
-<translation id="7674629440242451245">Interessado em novos recursos interessantes do Google Chrome? Veja nosso Canal Dev em chrome.com/dev.</translation>
 <translation id="7682287625158474539">Entrega</translation>
 <translation id="7699293099605015246">Os artigos não estão disponíveis no momento</translation>
 <translation id="7701040980221191251">Nenhum</translation>
@@ -955,6 +946,7 @@
 <translation id="8620436878122366504">Seus responsáveis ainda não o aprovaram</translation>
 <translation id="8647750283161643317">Redefinir tudo para o padrão</translation>
 <translation id="8660471606262461360">Do Google Payments</translation>
+<translation id="8688672835843460752">Disponível</translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN" /> não está criptografada.</translation>
 <translation id="8718314106902482036">Pagamento não concluído</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
@@ -977,7 +969,6 @@
 <translation id="8874824191258364635">Informe um número de cartão válido</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
-<translation id="889901481107108152">Esta experiência não está disponível na sua plataforma.</translation>
 <translation id="8903921497873541725">Aumentar zoom</translation>
 <translation id="8931333241327730545">Deseja salvar este cartão na sua Conta do Google?</translation>
 <translation id="8932102934695377596">Seu relógio está atrasado</translation>

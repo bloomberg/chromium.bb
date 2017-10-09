@@ -26,6 +26,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1628000112320670027">Gaukite pagalbos dėl „Chrome“</translation>
 <translation id="163860049029591106">Darbo su „Chrome“ OS pradžia</translation>
 <translation id="1653828314016431939">Gerai – dabar paleisti iš naujo</translation>
+<translation id="1674870198290878346">Atidaryti nuorodą „Chrome“ inko&amp;gnito lange</translation>
 <translation id="1682634494516646069">„Google Chrome“ negali skaityti ir rašyti į duomenų katalogą:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -63,6 +64,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
 <translation id="2586406160782125153">Atlikus šį veiksmą bus ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">„Chrome“ logotipas</translation>
+<translation id="2652691236519827073">Atidaryti nuorodą naujame „Chrome“ &amp;skirtuke</translation>
 <translation id="2664962310688259219">„Chrome“ OS atvirojo šaltinio licencijos</translation>
 <translation id="2665296953892887393">Padėkite tobulinti „Google Chrome“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chrome“.</translation>
@@ -100,11 +102,12 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3780814664026482060">„Chrome“ – „<ph name="PAGE_TITLE" />“</translation>
 <translation id="3784527566857328444">Pašalinti iš „Chrome“...</translation>
-<translation id="3847841918622877581">„Google Chrome“ gali naudoti žiniatinklio paslaugas naršymo kokybei pagerinti.</translation>
 <translation id="386202838227397562">Uždarykite visus „Google Chrome“ langus ir bandykite dar kartą.</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
+<translation id="3873044882194371212">Atidaryti nuorodą „Chrome“ inko&amp;gnito lange</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
 <translation id="4028693306634653894">Greičiau pasiekite „Chrome“</translation>
+<translation id="4031074602479304239">„Chrome“ neleidžia šiai svetainei nukreipti jūsų į</translation>
 <translation id="4042449298237264661">Šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma „Windows XP“ ir „Windows Vista“.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
@@ -134,6 +137,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4794050651896644714">Išsaugoti išsamią informaciją „Chrome“</translation>
 <translation id="4804732725083176494">Prisijungimo prie „Chrome“ funkciją išjungė šio įrenginio administratorius.</translation>
 <translation id="4891791193823137474">Paleisti „Google Chrome“ fone</translation>
+<translation id="4895437082222824641">Atidaryti nuorodą naujame „Chrome“ &amp;skirtuke</translation>
 <translation id="4921569541910214635">Bendrinate kompiuterį? Dabar galite nustatyti „Chrome“ kaip tik norite.</translation>
 <translation id="4953650215774548573">Nustatyti „Google Chrome“ kaip numatytąją naršyklę</translation>
 <translation id="495931528404527476">Naudojant „Chrome“</translation>
@@ -159,6 +163,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 „Google Chrome“ negali atkurti nustatymų.</translation>
 <translation id="5453904507266736060">Paleisti „Google Chrome“ fone</translation>
 <translation id="5495581687705680288">Į „Google Chrome“ įkelti moduliai</translation>
+<translation id="5524843473235508879">Peradresavimas užblokuotas.</translation>
 <translation id="556024056938947818">„Google Chrome“ bando rodyti slaptažodžius.</translation>
 <translation id="5563479599352954471">Paieška vienu palietimu</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
@@ -218,7 +223,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7339898014177206373">Naujas langas</translation>
 <translation id="7369650938475876456">Naudokite „Chrome“ sugeneruotą sudėtingą slaptažodį</translation>
 <translation id="7398801000654795464">Buvote prisijungę prie „Chrome“ kaip <ph name="USER_EMAIL_ADDRESS" />. Prisijungdami vėl naudokite tą pačią paskyrą.</translation>
-<translation id="7400722733683201933">Apie „Google Chrome“</translation>
 <translation id="7408085963519505752">„Chrome“ OS sąlygos</translation>
 <translation id="7419046106786626209">„Chrome“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>

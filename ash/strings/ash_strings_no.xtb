@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3294437725009624529">Gjest</translation>
-<translation id="332587331255250389">Bytt batteriet</translation>
+<translation id="332587331255250389">Bytt ut batteriet</translation>
 <translation id="3364721542077212959">Pekepennverktøy</translation>
 <translation id="3368922792935385530">Tilkoblet</translation>
 <translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
-<translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3582792037806681688">Multipålogging har blitt deaktivert for en bruker i denne økten.</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiveres …</translation>
+<translation id="6284232397434400372">Oppløsningen er endret</translation>
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastaturoverlegg</translation>
@@ -232,10 +232,10 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
-<translation id="7135556860107312402">Tillat varsler fra følgende:</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
+<translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
@@ -248,6 +248,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
 <translation id="7647488630410863958">Lås opp enheten for å se varslene dine</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

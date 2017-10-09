@@ -7,7 +7,7 @@
 <translation id="1445572445564823378">Ekstensi ini memperlambat <ph name="PRODUCT_NAME" />. Anda harus menonaktifkannya agar dapat memulihkan kinerja <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1468038450257740950">WebGL tidak didukung.</translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON" />'.</translation>
-<translation id="1803557475693955505">Tidak dapat memuat laman latar belakang '<ph name="BACKGROUND_PAGE" />'.</translation>
+<translation id="1803557475693955505">Tidak dapat memuat halaman latar belakang '<ph name="BACKGROUND_PAGE" />'.</translation>
 <translation id="2159915644201199628">Tidak dapat mendekode gambar: '<ph name="IMAGE_NAME" />'</translation>
 <translation id="2350172092385603347">Lokalisasi digunakan, tetapi default_locale tidak ditentukan dalam manifes.</translation>
 <translation id="2753617847762399167">jalur ilegal (mutlak atau relatif dengan '..'): '<ph name="IMAGE_PATH" />'</translation>
@@ -20,10 +20,10 @@
 <translation id="3369521687965833290">Tidak dapat membuka paket ekstensi. Untuk membuka paket ekstensi dengan aman, harus tersedia jalur ke direktori profil Anda yang mulai dengan sebuah huruf drive dan tidak berisi junction point, mount point, atau tautan simbolik. Tidak ada jalur yang seperti itu untuk profil Anda.</translation>
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME" /> dari vendor <ph name="VENDOR_ID" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3624204664103857160">Tidak dapat memuat laman peluncur '<ph name="PAGE" />'.</translation>
-<translation id="388442998277590542">Tidak dapat memuat laman opsi '<ph name="OPTIONS_PAGE" />'.</translation>
+<translation id="3624204664103857160">Tidak dapat memuat halaman peluncur '<ph name="PAGE" />'.</translation>
+<translation id="388442998277590542">Tidak dapat memuat halaman opsi '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">Administrator perangkat ini mewajibkan <ph name="EXTENSION_NAME" /> untuk menjalankan versi minimum <ph name="EXTENSION_VERSION" />. Ekstensi tidak dapat diaktifkan sampai diperbarui ke versi tersebut (atau yang lebih tinggi).</translation>
-<translation id="4233778200880751280">Tidak dapat memuat laman tentang '<ph name="ABOUT_PAGE" />'.</translation>
+<translation id="4233778200880751280">Tidak dapat memuat halaman tentang '<ph name="ABOUT_PAGE" />'.</translation>
 <translation id="4811956658694082538">Tidak dapat memasang paket karena proses utilitas mogok. Mulai ulang Chrome dan coba lagi.</translation>
 <translation id="5026754133087629784">Tampilan web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>

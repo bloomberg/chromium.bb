@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">Основни положения</translation>
 <translation id="2386793615875593361">1 избрана</translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
+<translation id="2529021024822217800">Отваряне на всички</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
 <translation id="2593774076813182497">Стр. не може да се отпечата.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">Адрес 2</translation>
 <translation id="3329904751041170572">Не можа да се установи връзка със сървъра.</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
-<translation id="3387752218061326363">Показва се историята от устройствата, на които сте влезли в профила си. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Изск. прозорци са разр.</translation>
 <translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">Гласово търсене</translation>
 <translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="681368974849482173">Елементът е създаден</translation>
+<translation id="6871663519944855400">Отваряне в режим „инкогнито“</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
 <translation id="6945221475159498467">Изберете</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">Синхронизиране със</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
 <translation id="7108338896283013870">Скриване</translation>
-<translation id="7131892264600713844">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Име и фамилия</translation>
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
 <translation id="7159472599653637159">Мобилен сайт</translation>

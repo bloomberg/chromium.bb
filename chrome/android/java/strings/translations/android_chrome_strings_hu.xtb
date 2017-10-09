@@ -48,7 +48,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1389236224998445076">Megtakarított adatmennyiség:</translation>
 <translation id="1389974829397082527">Itt nincsenek könyvjelzők</translation>
 <translation id="1397811292916898096">Keresés a(z) <ph name="PRODUCT_NAME" /> keresőmotorral</translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome-javaslat</translation>
 <translation id="1404122904123200417">Beágyazva itt: <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Nincs nyomon követés”</translation>
 <translation id="1407135791313364759">Összes megnyitása</translation>
@@ -138,7 +137,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2268044343513325586">Pontosítás</translation>
 <translation id="2283599456633275070">Utazás</translation>
 <translation id="2286841657746966508">Számlázási cím</translation>
-<translation id="2301209717432756327">Hozzáadva a kezdőképernyőhöz.</translation>
 <translation id="2315043854645842844">Az ügyféloldali tanúsítványválasztást az operációs rendszer nem támogatja.</translation>
 <translation id="2321958826496381788">Húzza a csúszkát, amíg kényelmesen nem tudja olvasni a szöveget; legalább ekkorának kell lennie, miután duplán koppint a bekezdésre.</translation>
 <translation id="2323763861024343754">Webhely tárhelye</translation>
@@ -259,7 +257,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="3549657413697417275">Keresés az előzményekben</translation>
 <translation id="3552151358455404883">A Chrome-szinkronizálást és a személyre szabást a <ph name="BEGIN_LINK1" />Beállításokban<ph name="END_LINK1" /> kezelheti</translation>
 <translation id="3557336313807607643">Hozzáadás a névjegyekhez</translation>
-<translation id="3583454905526475291">Sikertelen indítás</translation>
 <translation id="3587482841069643663">Mind</translation>
 <translation id="3590487821116122040">A Chrome által nem fontosnak ítélt webhelytárhely (például a mentett beállítások nélküli vagy ritkán megnyitott webhelyek)</translation>
 <translation id="3599863153486145794">Törli az előzményeket valamennyi bejelentkezett eszközről. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
@@ -341,7 +338,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4269820728363426813">Link másolása</translation>
 <translation id="4275663329226226506">Média</translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
-<translation id="42981349822642051">Részletes nézet</translation>
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="4351244548802238354">Párbeszédablak bezárása</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -524,6 +520,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
 <translation id="5956665950594638604">A Chrome súgójának megnyitása új lapon</translation>
 <translation id="5958275228015807058">A fájlokat és oldalakat a Letöltések között találhatja meg</translation>
+<translation id="5958994127112619898">Oldal leegyszerűsítése</translation>
 <translation id="5962718611393537961">Koppintson az összecsukáshoz</translation>
 <translation id="6000066717592683814">A Google megtartása</translation>
 <translation id="6023914116273780353">Személyre szabott</translation>
@@ -797,7 +794,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="8523928698583292556">Tárolt jelszó törlése</translation>
 <translation id="854522910157234410">Az oldal megnyitása</translation>
 <translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
-<translation id="856481929701340285">Asztali webhely kérése</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> óta</translation>
 <translation id="8571213806525832805">Az elmúlt négy hétből</translation>
 <translation id="857509777403223202">Hamarosan további cikkek jelennek meg. Kellemes estét kívánunk!</translation>

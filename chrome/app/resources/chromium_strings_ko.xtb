@@ -13,6 +13,7 @@
 <translation id="1396446129537741364">Chromium이 비밀번호를 표시하려고 합니다.</translation>
 <translation id="1403254041219632970">Chromium 향후 버전에서는 더 이상 Mac OS X 10.6, 10.7, 10.8을 지원하지 않습니다.</translation>
 <translation id="1414495520565016063">Chromium에 로그인했습니다.</translation>
+<translation id="1440917365206527807">Chromium에서 이 사이트가 사용자를 다음 주소로 리디렉션하지 못하도록 차단했습니다.</translation>
 <translation id="1444754455097148408">Chromium 오픈소스 라이선스</translation>
 <translation id="1502360822835740515">Chromium을 기본 브라우저로 사용</translation>
 <translation id="151962892725702025">내 도메인에서 동기화를 사용할 수 없으므로 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
@@ -64,6 +65,7 @@
 <translation id="3103660991484857065">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="3130323860337406239">Chromium이 마이크를 사용 중입니다.</translation>
 <translation id="3155163173539279776">Chromium 다시 시작</translation>
+<translation id="3179665906251668410">Chromium 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="3190315855212034486">Chromium이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="3256316712990552818">Chromium에 복사됨</translation>
 <translation id="3258596308407688501">Chromium에서 데이터 디렉토리를 읽고 쓸 수 없습니다.
@@ -79,6 +81,7 @@
 <translation id="3549345495227188780">Chromium OS 시작하기</translation>
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="358997566136285270">Chromium 로고</translation>
+<translation id="3713809861844741608">새 Chromium 탭에서 링크 열기(&amp;T)</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3762167353400286894">현재 Chromium OS에서 사용 중인 언어</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
@@ -131,6 +134,7 @@
 <translation id="5466153949126434691">Chromium이 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chromium이 다시 시작되며 계속 작업할 수 있습니다.</translation>
 <translation id="5479196819031988440">Chromium OS에서 이 페이지를 열 수 없음</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
+<translation id="5524843473235508879">리디렉션이 차단되었습니다.</translation>
 <translation id="5563479599352954471">터치 한 번으로 검색</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
 <translation id="5634636535844844681">Chromium은 Windows 7 이상 버전에서 사용할 수 있습니다.</translation>
@@ -178,11 +182,11 @@
 <translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="6944967875980567883">Chromium에 로드된 모듈</translation>
+<translation id="6964305034639999644">Chromium 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
 <translation id="705851970750939768">Chromium 업데이트</translation>
 <translation id="7066436765290594559">Chromium OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="707471633328071618">Google Payments(Chromium에 복사됨)</translation>
-<translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="7162152143154757523">Chromium에서 제공하는 더욱 지능적인 맞춤법 검사 기능은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내는 방식을 사용하므로 사용자가 Google 검색에서 사용하는 것과 동일한 맞춤법 검사 기술을 사용할 수 있습니다.</translation>
 <translation id="7205698830395646142">Chromium 메뉴에서 숨기기</translation>
 <translation id="7223968959479464213">작업 관리자 - Chromium</translation>
@@ -257,6 +261,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9022552996538154597">Chromium에 로그인</translation>
 <translation id="9036189287518468038">Chromium 앱 런처</translation>
 <translation id="9089354809943900324">Chromium이 이전 버전임</translation>
+<translation id="91086099826398415">새 Chromium 탭에서 링크 열기(&amp;T)</translation>
 <translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" />의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 Chromium 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK" />Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK" />에서 관리될 수 있습니다.</translation>
 <translation id="9190841055450128916">Chromium(mDNS-In)</translation>

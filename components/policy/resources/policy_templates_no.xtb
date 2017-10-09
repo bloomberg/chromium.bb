@@ -642,7 +642,7 @@
 <translation id="3322771899429619102">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenBlockedForUrls», overstyrer det disse unntakene.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
-<translation id="332771718998993005">Fastslå navnet som er annonsert som en destinasjon for <ph name="PRODUCT_NAME" />.
+<translation id="332771718998993005">Finn ut hvilket navn som er annonsert som en destinasjon for <ph name="PRODUCT_NAME" />.
 
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
@@ -1330,6 +1330,7 @@
           Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere den store musepekeren. Brukerens valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt eller brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren når påloggingsskjermen vises for første gang. Brukere kan aktivere eller deaktivere den store musepekeren når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
+<translation id="5932767795525445337">Disse reglene kan også brukes til å feste Android-apper.</translation>
 <translation id="5936622343001856595">Tvinger søkene i Google Nettsøk til å gjennomføres med Sikkert Søk aktivert, og hindrer brukere fra å endre denne innstillingen.
 
       Hvis du aktiverer denne innstillingen, er Sikkert Søk i Google Søk alltid aktivert.
@@ -1382,7 +1383,6 @@
 <translation id="6111936128861357925">Tillat dinosaurspill-påskeegget</translation>
 <translation id="6114416803310251055">avskrevet</translation>
 <translation id="6133088669883929098">Tillat alle nettsteder å bruke nøkkelgenerering</translation>
-<translation id="6139485614509308022">Hvis innstillingen «OffHours» er angitt, ignoreres de spesifiserte enhetsinnstillingene (og standardverdiene for disse innstillingene brukes i stedet) under de definerte tidsintervallene. Enhetsinnstillingene gjøres gjeldende på nytt av Chrome hver gang perioden for «OffHours» begynner og slutter. Brukeren blir varslet og tvunget til å logge av når «OffHours»-perioden slutter og enhetsinnstillingene blir endret (dvs. når brukeren ikke er logget på med en tillatt konto).</translation>
 <translation id="6145799962557135888">Gjør at du kan angi en liste over nettadressemønstre som angir hvilke nettsteder som får kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis denne er angitt, eller fra brukerens egen konfigurasjoner hvis den nevnte retningslinjen ikke er angitt.</translation>

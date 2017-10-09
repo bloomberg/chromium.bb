@@ -1291,6 +1291,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando o cursor grande. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
           Se esta política não for definida, o cursor grande é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o cursor grande a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+<translation id="5932767795525445337">Também é possível utilizar esta política para fixar aplicações Android.</translation>
 <translation id="5936622343001856595">Força a execução de consultas na Pesquisa Web do Google através da Pesquisa Segura definida como ativada e impede os utilizadores de alterar esta definição.
 
       Se ativar esta definição, a Pesquisa Segura na Pesquisa do Google estará sempre ativa.
@@ -1343,7 +1344,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6111936128861357925">Permitir o jogo do ovo da Páscoa do dinossauro</translation>
 <translation id="6114416803310251055">obsoleta</translation>
 <translation id="6133088669883929098">Permitir que todos os sites utilizem a geração de chaves</translation>
-<translation id="6139485614509308022">Se a política "OffHours" estiver definida, as políticas do dispositivo especificadas são ignoradas (utilize as predefinições destas políticas) durante os intervalos de tempo definidos. O Chrome volta a aplicar as políticas do dispositivo em todos os eventos quando começa ou termina o período "OffHours". O utilizador é notificado e obrigado a terminar sessão quando o período "OffHours" termina e as definições da política do dispositivo são alteradas (por exemplo, quando o utilizador tem sessão iniciada com uma conta não autorizada).</translation>
 <translation id="6145799962557135888">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="614662973812186053">Esta política também controla a recolha de dados de utilização e de diagnóstico do Android.</translation>
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>

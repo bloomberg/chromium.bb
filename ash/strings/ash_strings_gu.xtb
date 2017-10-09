@@ -96,6 +96,7 @@
 <translation id="315116470104423982">મોબાઇલ ડેટા</translation>
 <translation id="3236488194889173876">કોઈ મોબાઇલ નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="3294437725009624529">અતિથિ</translation>
+<translation id="332587331255250389">કૃપા કરીને બૅટરી બદલો</translation>
 <translation id="3364721542077212959">કલમના સાધનો</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="3371140690572404006">USB-C ઉપકરણ (જમણી બાજુનું આગળનું પોર્ટ)</translation>
@@ -103,7 +104,6 @@
 <translation id="3445925074670675829">USB-C ઉપકરણ</translation>
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
-<translation id="3547954654003013442">પ્રોક્સી સેટિંગ્સ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
 <translation id="3582792037806681688">આ સત્રમાં કોઈ વપરાશકર્તા માટે બહુવિધ સાઇન-ઇન નામંજૂર કરવામાં આવેલ છે</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
@@ -194,6 +194,7 @@
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: સક્રિય કરી રહ્યું છે...</translation>
+<translation id="6284232397434400372">રિઝોલ્યુશન બદલાયું</translation>
 <translation id="6297287540776456956">કોઈ પ્રદેશ પસંદ કરવા માટે કલમનો ઉપયોગ કરો</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ને <ph name="ROTATION" /> પર ફેરવવામાં આવ્યું હતું</translation>
 <translation id="632744581670418035">કીબોર્ડ ઓવરલે</translation>
@@ -231,10 +232,10 @@
 <translation id="7066646422045619941">આ નેટવર્ક તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>
 <translation id="7067196344162293536">સ્વતઃ ફેરવો</translation>
 <translation id="7098389117866926363">USB-C ઉપકરણ (પાછળની બાજુએ ડાબું પોર્ટ)</translation>
-<translation id="7135556860107312402">નીચેના પરથી સૂચનાઓને મંજૂરી આપો:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
+<translation id="726276584504105859">વિભાજિત સ્ક્રીનનો ઉપયોગ કરવા માટે અહીં ખેંચો</translation>
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7377169924702866686">Caps Lock ચાલુ છે.</translation>
@@ -247,6 +248,7 @@
 <translation id="7562368315689366235">ઇમોજી પૅલેટ</translation>
 <translation id="7569509451529460200">બ્રેઇલ અને ChromeVox સક્ષમ કર્યાં</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (માલિક)</translation>
 <translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ઉપકરણને અનલૉક કરો</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>

@@ -1296,6 +1296,7 @@
           Dacă această politică este configurată, utilizatorii o pot ignora temporar, activând sau dezactivând cursorul mare. Totuși, alegerea utilizatorului nu este definitivă și se revine la setările prestabilite de fiecare dată când este afișat din nou ecranul de conectare sau când utilizatorul este inactiv pe ecranul de conectare timp de un minut.
 
           Dacă această politică nu este configurată, cursorul mare este dezactivat la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze cursorul mare, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
+<translation id="5932767795525445337">Această politică poate fi folosită și pentru a fixa aplicațiile Android.</translation>
 <translation id="5936622343001856595">Forțează activarea Căutării sigure pentru interogările de pe Căutarea Google pe web și nu permite utilizatorilor să modifice această setare.
 
       Dacă activați această setare, Căutarea sigură din Căutarea Google este întotdeauna activă.
@@ -1348,7 +1349,6 @@
 <translation id="6111936128861357925">Permite jocul ascuns cu dinozaurul</translation>
 <translation id="6114416803310251055">învechit</translation>
 <translation id="6133088669883929098">Permite tuturor site-urilor să folosească generarea cheilor</translation>
-<translation id="6139485614509308022">Dacă politica „OffHours” este configurată, politicile privind dispozitivele specificate sunt ignorate (se folosesc setările prestabilite ale acestor politici) în intervalele de timp definite. Politicile privind dispozitivele sunt aplicate din nou de Chrome la fiecare eveniment când perioada setată prin „OffHours” începe sau se încheie. Utilizatorul va fi notificat și forțat să se deconecteze când perioada setată prin „OffHours” se încheie și setările politicii privind dispozitivele sunt modificate (de ex., când utilizatorul nu este conectat cu un cont permis).</translation>
 <translation id="6145799962557135888">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula JavaScript. Dacă această politică este lăsată nesetată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="614662973812186053">Această politică controlează și culegerea datelor Android privind utilizarea și diagnosticarea.</translation>
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>

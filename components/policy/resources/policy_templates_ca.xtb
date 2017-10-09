@@ -1273,6 +1273,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Si s'estableix aquesta política, els usuaris podran anular-la temporalment si activen o desactiven el cursor gran. No obstant això, l'elecció de l'usuari no és permanent i l'estat predeterminat es restablirà quan la pantalla d'inici de sessió es torni a mostrar o si l'usuari resta inactiu a la pantalla d'inici de sessió durant un minut.
 
           Si no s'estableix aquesta política, el cursor gran es desactivarà quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris podran activar o desactivar el cursor gran en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
+<translation id="5932767795525445337">Aquesta política també es pot utilitzar per fixar les aplicacions per a Android.</translation>
 <translation id="5936622343001856595">Força que les consultes de Cerca web de Google es facin amb l'opció SafeSearch activada i impedeix que els usuaris canviïn aquest paràmetre.
 
 Si activeu aquest paràmetre, SafeSearch de Cerca de Google sempre estarà activa.
@@ -1325,7 +1326,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
-<translation id="6139485614509308022">Si es defineix la política "OffHours", s'ignoraran les polítiques específiques del dispositiu (s'utilitza la configuració predeterminada d'aquestes polítiques) durant els intervals de temps definits. Chrome tornarà a aplicar les polítiques del dispositiu en cada esdeveniment quan el període "OffHours" s'iniciï o finalitzi. L'usuari rebrà una notificació i se'l forçarà a tancar la sessió quan finalitzi el temps establert a "OffHours" i es modifiqui la configuració de la política del dispositiu (per exemple, quan un usuari iniciï la sessió amb un compte no permès).</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="614662973812186053">Aquesta política també controla la recopilació de dades d'ús i de diagnòstic d'Android.</translation>
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>

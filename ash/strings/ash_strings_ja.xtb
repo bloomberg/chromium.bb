@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
-<translation id="3547954654003013442">プロキシ設定</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
 <translation id="3582792037806681688">このセッションで 1 人のユーザーに対するマルチ ログインは禁止されています。</translation>
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 有効にしています...</translation>
+<translation id="6284232397434400372">解像度が変更されました</translation>
 <translation id="6297287540776456956">タッチペンを使って部分を選択してください</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
 <translation id="632744581670418035">キーボード オーバーレイ</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
-<translation id="7135556860107312402">次の通知を許可:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
+<translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7377169924702866686">CapsLock 
@@ -249,6 +249,7 @@
 <translation id="7562368315689366235">絵文字パレット</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>

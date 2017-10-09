@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Chrome'i puhul abi hankimine</translation>
 <translation id="163860049029591106">Alustamine Chrome OS-iga</translation>
 <translation id="1653828314016431939">OK – taaskäivita kohe</translation>
+<translation id="1674870198290878346">Ava link Chrome'i inko&amp;gnito aknas</translation>
 <translation id="1682634494516646069">Google Chrome ei saa andmekataloogi lugeda ega sellesse kirjutada:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -61,6 +62,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
 <translation id="2586406160782125153">See kustutab sellest seadmest teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome'i logo</translation>
+<translation id="2652691236519827073">Ava link Chrome'i uuel &amp;vahelehel</translation>
 <translation id="2664962310688259219">Chrome OS-i avatud lähtekoodi litsentsid</translation>
 <translation id="2665296953892887393">Aidake Google Chrome'i täiustada, saates Googl'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">See laiendus muutis seda, milline leht kuvatakse Chrome'i käivitamisel.</translation>
@@ -98,11 +100,12 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3738139272394829648">Puudutage otsimiseks</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Eemalda Chrome'ist</translation>
-<translation id="3847841918622877581">Google Chrome võib teie sirvimiskogemuse täiustamiseks kasutada veebiteenuseid.</translation>
 <translation id="386202838227397562">Sulgege kõik Google Chrome'i aknad ja proovige uuesti.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Ava link Chrome'i inko&amp;gnito aknas</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="4028693306634653894">Chrome'i kiirem avamine</translation>
+<translation id="4031074602479304239">Chrome peatas saidil teie ümbersuunamise:</translation>
 <translation id="4042449298237264661">Arvuti ei saa enam Google Chrome'i värskendusi, kuna Windows XP-d ja Windows Vistat ei toetata enam.</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="4053720452172726777">Google Chrome'i kohandamine ja juhtimine</translation>
@@ -131,6 +134,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4794050651896644714">Salvesta üksikasjad Chrome'i</translation>
 <translation id="4804732725083176494">Selle seadme administraator on Chrome'i sisselogimise keelanud.</translation>
 <translation id="4891791193823137474">Luba Google Chrome'i töötamine taustal</translation>
+<translation id="4895437082222824641">Ava link Chrome'i uuel &amp;vahelehel</translation>
 <translation id="4921569541910214635">Kas jagage arvutit? Saate nüüd seadistada Chrome'i just nii, nagu teile meeldib.</translation>
 <translation id="4953650215774548573">Määra Google Chrome vaikebrauseriks</translation>
 <translation id="495931528404527476">Chrome'is</translation>
@@ -154,6 +158,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5430073640787465221">Teie eelistuste fail on rikutud või kehtetu. Google Chrome ei saa teie seadeid taastada.</translation>
 <translation id="5453904507266736060">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="5495581687705680288">Google Chrome'i laaditud moodulid</translation>
+<translation id="5524843473235508879">Ümbersuunamine blokeeriti.</translation>
 <translation id="556024056938947818">Google Chrome püüab näidata paroole.</translation>
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -213,7 +218,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="7369650938475876456">Kasutage Chrome'i loodud tugevat parooli</translation>
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
-<translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="7408085963519505752">Chrome OS-i tingimused</translation>
 <translation id="7419046106786626209">Google OS ei saanud teie andmeid sünkroonida, sest sünkroonimine pole teie domeenil saadaval.</translation>
 <translation id="7437998757836447326">Chrome'ist väljalogimine</translation>

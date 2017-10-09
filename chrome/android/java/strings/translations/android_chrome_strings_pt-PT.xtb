@@ -37,6 +37,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
 <translation id="1303671224831497365">Não foram encontrados dispositivos Bluetooth</translation>
+<translation id="1320663236730331991">Deslize rapidamente para cima de forma a aceder facilmente a sites e artigos populares, às transferências e a muito mais</translation>
 <translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="1332501820983677155">Atalhos das funcionalidades do Google Chrome</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
@@ -48,7 +49,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1389236224998445076">Dados guardados</translation>
 <translation id="1389974829397082527">Nenhum marcador aqui</translation>
 <translation id="1397811292916898096">Pesquisar com o <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> sugestões do Chrome</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Não Monitorizar"</translation>
 <translation id="1407135791313364759">Abrir tudo</translation>
@@ -138,7 +138,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2283599456633275070">Viagens</translation>
 <translation id="2286841657746966508">Endereço de facturação</translation>
-<translation id="2301209717432756327">Adicionado ao ecrã principal.</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="2323763861024343754">Armazenamento do site</translation>
@@ -231,6 +230,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3259831549858767975">Reduzir o tamanho de todos os itens na página</translation>
 <translation id="3269093882174072735">Carregar imagem</translation>
 <translation id="3269956123044984603">Para obter os separadores dos seus outros dispositivos, ative a opção "Sincronizar automaticamente os dados" nas definições da conta do Android.</translation>
+<translation id="3274105979672092244">Está a utilizar o Chrome Home</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
 <translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
@@ -259,7 +259,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3549657413697417275">Pesquisar no histórico</translation>
 <translation id="3552151358455404883">Gerir a Sincronização do Chrome e a personalização nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Adicionar aos contactos</translation>
-<translation id="3583454905526475291">Impossív. iniciar aplicação</translation>
 <translation id="3587482841069643663">Tudo</translation>
 <translation id="3590487821116122040">Armazenamento do site que o Chrome não considera importante (por exemplo, sites sem definições guardadas ou aos quais não acede com frequência)</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos com sessão iniciada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +340,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4275663329226226506">Multimédia</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
-<translation id="42981349822642051">Expandir</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
 <translation id="4378154925671717803">Telefone</translation>
@@ -429,6 +427,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE" /> deste site da próxima vez?</translation>
 <translation id="5168917394043976756">Abrir a gaveta de navegação</translation>
 <translation id="5184329579814168207">Abrir no Chrome</translation>
+<translation id="519793908071017925">Utilizar o Chrome Home</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
 <translation id="5209320130288484488">Não foram encontrados aparelhos</translation>
 <translation id="5210286577605176222">Ir para o separador anterior</translation>
@@ -524,6 +523,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5942872142862698679">A utilizar o Google para pesquisa</translation>
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
+<translation id="5958994127112619898">Simplificar a página</translation>
 <translation id="5962718611393537961">Toque para reduzir</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
 <translation id="6023914116273780353">Personalizado</translation>
@@ -595,6 +595,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6583199322650523874">Adicionar a página atual aos marcadores</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
+<translation id="6619166911218440149">Apresentação do Chrome Home</translation>
 <translation id="6627583120233659107">Editar pasta</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
@@ -705,6 +706,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7607552448134703340">Escrever o que procura</translation>
 <translation id="7612619742409846846">Iniciou sessão no Google como</translation>
 <translation id="7619072057915878432">A transferência de <ph name="FILE_NAME" /> falhou devido a falhas de rede.</translation>
+<translation id="7620146066550602128">Experimente uma <ph name="BEGIN_LINK" />forma mais fácil de navegar<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obter ajuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />voltar a procurar<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
@@ -797,7 +799,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8523928698583292556">Eliminar palavra-passe armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
-<translation id="856481929701340285">Pedir site p/ computador</translation>
 <translation id="8569404424186215731">desde <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas 4 semanas</translation>
 <translation id="857509777403223202">Serão apresentados mais artigos em breve. Desfrute do seu serão!</translation>

@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
 <translation id="1403254041219632970">Наступні версії Chromium не підтримуватимуть Mac OS X версій 10.6, 10.7 і 10.8.</translation>
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
+<translation id="1440917365206527807">Chromium заблокував переспрямування з цієї сторінки</translation>
 <translation id="1444754455097148408">Ліцензії Chromium із відкритим кодом</translation>
 <translation id="1502360822835740515">Як зробити Chromium веб-переглядачем за умовчанням</translation>
 <translation id="151962892725702025">ОС Chromium не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">Програмі встановлення не вдалося видобути архів. Завантажте Chromium ще раз.</translation>
 <translation id="3130323860337406239">Chromium використовує ваш мікрофон.</translation>
 <translation id="3155163173539279776">Перезапустити Chromium</translation>
+<translation id="3179665906251668410">Відкрити посилання в аноні&amp;мному вікні Chromium</translation>
 <translation id="3190315855212034486">Помилка. Chromium аварійно завершив роботу. Перезапустити зараз?</translation>
 <translation id="3256316712990552818">Скопійовано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не може читати та писати дані у свій каталог даних:
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">Початок роботи з ОС Chromium</translation>
 <translation id="3582788516608077514">Оновлення Chromium...</translation>
 <translation id="358997566136285270">Логотип Chromium</translation>
+<translation id="3713809861844741608">Відкрити посилання в новій &amp;вкладці Chromium</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3762167353400286894">Для ОС Chromium вибрано цю мову</translation>
 <translation id="378917192836375108">Chromium дозволяє натиснути номер телефону в Інтернеті та зателефонувати за ним через Skype.</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">Chromium оновлюється автоматично, щоб у вас завжди була найновіша версія. Щойно це завантаження завершиться, Chromium перезапуститься й ви зможете продовжувати роботу.</translation>
 <translation id="5479196819031988440">Неможливо відкрити цю сторінку в ОС Chromium.</translation>
 <translation id="549669000822060376">Зачекайте, доки Chromium установить найновіші оновлення системи.</translation>
+<translation id="5524843473235508879">Переспрямування заблоковано.</translation>
 <translation id="5563479599352954471">Пошук одним дотиком</translation>
 <translation id="5620765574781326016">Дізнавайтеся про теми на веб-сайтах, залишаючись на сторінці.</translation>
 <translation id="5634636535844844681">Для роботи Chromium потрібно мати ОС Windows 7 або новішої версії.</translation>
@@ -176,11 +180,11 @@
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
 <translation id="6893813176749746474">Chromium оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="6944967875980567883">Модулі, завантажені в Chromium</translation>
+<translation id="6964305034639999644">Відкрити посилання в аноні&amp;мному вікні Chromium</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="705851970750939768">Оновити Chromium</translation>
 <translation id="7066436765290594559">ОС Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="707471633328071618">Google Payments (скопійовано в Chromium)</translation>
-<translation id="7138853919861947730">Chromium може використовувати веб-служби для покращення умов перегляду.</translation>
 <translation id="7162152143154757523">Chromium може точніше перевіряти правопис, надсилаючи текст, який ви вводите у веб-переглядачі, на сервери Google. Це дозволяє використовувати ту саму технологію перевірки правопису, що й у Пошуку Google.</translation>
 <translation id="7205698830395646142">Сховати в меню Chromium</translation>
 <translation id="7223968959479464213">Диспетчер завдань – Chromium</translation>
@@ -255,6 +259,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="9022552996538154597">Вхід у Chromium</translation>
 <translation id="9036189287518468038">Панель запуску програм Chromium</translation>
 <translation id="9089354809943900324">Версія Chromium застаріла</translation>
+<translation id="91086099826398415">Відкрити посилання в новій &amp;вкладці Chromium</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="918373042641772655">Якщо від’єднати користувача <ph name="USERNAME" />, вашу історію, закладки, налаштування й інші дані Chromium, збережені на цьому пристрої, буде видалено. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="GOOGLE_DASHBOARD_LINK" />Інформаційній панелі Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

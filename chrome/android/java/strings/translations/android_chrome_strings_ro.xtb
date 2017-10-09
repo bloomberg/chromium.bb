@@ -48,7 +48,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1389236224998445076">Date economisite:</translation>
 <translation id="1389974829397082527">Dosarul nu conține marcaje</translation>
 <translation id="1397811292916898096">Caută folosind <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> sugestii Chrome</translation>
 <translation id="1404122904123200417">Încorporat în <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Nu urmări”</translation>
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
@@ -138,7 +137,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2268044343513325586">Rafinează</translation>
 <translation id="2283599456633275070">Călătorii</translation>
 <translation id="2286841657746966508">Adresa de facturare</translation>
-<translation id="2301209717432756327">S-a adăugat pe ecranul de pornire.</translation>
 <translation id="2315043854645842844">Selectarea certificatelor pe partea de client nu este acceptată de sistemul de operare.</translation>
 <translation id="2321958826496381788">Trage cursorul până poți citi textul cu ușurință. Textul trebuie să fie cel puțin la fel de mare ca acesta după o atingere dublă pe un paragraf.</translation>
 <translation id="2323763861024343754">Stocarea site-urilor</translation>
@@ -259,7 +257,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="3549657413697417275">Căutați în istoricul dvs.</translation>
 <translation id="3552151358455404883">Gestionează Sincronizarea Chrome și personalizarea în <ph name="BEGIN_LINK1" />Setări<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Adaugă în Agendă</translation>
-<translation id="3583454905526475291">Aplicația nu poate fi lansată</translation>
 <translation id="3587482841069643663">Toate</translation>
 <translation id="3590487821116122040">Stocare a site-urilor pe care Chrome nu o consideră importantă (de ex., site-uri care nu au setări salvate sau pe care nu le accesezi frecvent)</translation>
 <translation id="3599863153486145794">Șterge istoricul de pe toate dispozitivele conectate. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +338,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4269820728363426813">Copiați adresa linkului</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Se permite</translation>
-<translation id="42981349822642051">Extinde</translation>
 <translation id="4307992518367153382">Elemente de bază</translation>
 <translation id="4351244548802238354">Închide caseta de dialog</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -524,6 +520,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5942872142862698679">Pentru căutare se folosește Google</translation>
 <translation id="5956665950594638604">Deschide Centrul de ajutor Chrome într-o filă nouă</translation>
 <translation id="5958275228015807058">Găsește fișierele și paginile în Descărcări</translation>
+<translation id="5958994127112619898">Simplifică pagina</translation>
 <translation id="5962718611393537961">Atinge pentru a restrânge</translation>
 <translation id="6000066717592683814">Păstrează Google</translation>
 <translation id="6023914116273780353">Personalizate</translation>
@@ -797,7 +794,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8523928698583292556">Șterge parola stocată</translation>
 <translation id="854522910157234410">Deschide această pagină</translation>
 <translation id="8562452229998620586">Parolele salvate vor fi afișate aici.</translation>
-<translation id="856481929701340285">Versiune site desktop</translation>
 <translation id="8569404424186215731">începând cu <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ultimele 4 săptămâni</translation>
 <translation id="857509777403223202">În curând vor apărea mai multe articole. O seară plăcută!</translation>

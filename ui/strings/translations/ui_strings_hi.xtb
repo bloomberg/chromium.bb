@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिन पहले}one{# दिन पहले}other{# दिन पहले}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
-<translation id="1190609913194133056">सूचना केंद्र</translation>
 <translation id="1243314992276662751">अपलोड करें</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">सुझाए गए ऐप्लिकेशन</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(खाली)</translation>
 <translation id="219905428774326614">लॉन्चर, सभी ऐप्लिकेशन</translation>
 <translation id="2289052229480071835">अपनी स्क्रीन पर स्पर्श लक्ष्य पर टैप करें.</translation>
+<translation id="2295140143284145483">सर्वे</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">सूचना को विस्तृत करें</translation>
 <translation id="2497284189126895209">सभी फ़ाइलें</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 घंटा}one{# घंटे}other{# घंटे}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">सभी ऐप्स</translation>
+<translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> में से <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6022924867608035986">खोज बॉक्स का लेख मिटाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6119846243427417423">सक्रिय करें</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">अल्पविराम</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 सेकंड पहले}one{# सेकंड पहले}other{# सेकंड पहले}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 सेकंड पहले}one{# सेकंड पहले}other{# सेकंड पहले}}</translation>
+<translation id="6567071839949112727">पहले वाले पर क्लिक करें</translation>
 <translation id="6612467943526193239">कैलिब्रेशन से बाहर निकलने के लिए Esc दबाएं.</translation>
 <translation id="6620110761915583480">फ़ाइल सहेजें</translation>
 <translation id="6699343763173986273">मीडिया अगला ट्रैक</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">सबसे अधिक संभावना है</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
+<translation id="7319740667687257810">लॉन्चर, आंशिक दृश्य</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>

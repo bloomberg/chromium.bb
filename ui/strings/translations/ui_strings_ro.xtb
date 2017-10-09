@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Acum o zi}few{Acum # zile}other{Acum # de zile}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Acum 1 minut}few{Acum # minute}other{Acum # de minute}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min.}few{# min.}other{# min.}}</translation>
-<translation id="1190609913194133056">Centrul pentru notificări</translation>
 <translation id="1243314992276662751">Încărcați</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APLICAȚII RECOMANDATE</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(gol)</translation>
 <translation id="219905428774326614">Lansator, toate aplicațiile</translation>
 <translation id="2289052229480071835">Atinge țintele de atingere de pe ecran.</translation>
+<translation id="2295140143284145483">Sondaj</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Extinde notificarea</translation>
 <translation id="2497284189126895209">Toate fișierele</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{o oră}few{# ore}other{# de ore}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Toate aplicațiile</translation>
+<translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> din <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Șterge textul din caseta de căutare</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6119846243427417423">activează</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Virgulă</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Acum o sec.}few{Acum # sec}other{Acum # sec}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Acum 1 secundă}few{Acum # secunde}other{Acum # de secunde}}</translation>
+<translation id="6567071839949112727">dă clic pe predecesor</translation>
 <translation id="6612467943526193239">Pentru a ieși din calibrare, apasă pe Esc.</translation>
 <translation id="6620110761915583480">Salvează fișierul</translation>
 <translation id="6699343763173986273">Melodia următoare din conținutul media</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">CEL MAI PROBABIL DE ACCESAT</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Un min. rămas}few{# min. rămase}other{# min. rămase}}</translation>
+<translation id="7319740667687257810">Lansator, afișare parțială</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Acum un min.}few{Acum # min.}other{Acum # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Un minut rămas}few{# minute rămase}other{# de minute rămase}}</translation>

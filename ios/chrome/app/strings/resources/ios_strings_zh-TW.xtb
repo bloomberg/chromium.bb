@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
+<translation id="2529021024822217800">全部開啟</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
 <translation id="2584132361465095047">新增帳戶…</translation>
 <translation id="2593774076813182497">這個頁面無法列印。</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">地址 2</translation>
 <translation id="3329904751041170572">無法連上伺服器。</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
-<translation id="3387752218061326363">目前顯示的歷史紀錄來源包括你已登入帳戶的所有裝置。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
 <translation id="3414292259312108062">Chrome 會將這組密碼儲存在您的 <ph name="BEGIN_LINK" />Google 儲存的密碼<ph name="END_LINK" />中，並為您自動填入這組密碼，即使您記不住也沒關係。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> 分鐘</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">語音搜尋</translation>
 <translation id="6807889908376551050">全部顯示...</translation>
 <translation id="681368974849482173">項目已建立</translation>
+<translation id="6871663519944855400">以無痕模式開啟</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="6903907808598579934">開啟同步處理功能</translation>
 <translation id="6945221475159498467">選取</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">同步處理</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
 <translation id="7108338896283013870">隱藏</translation>
-<translation id="7131892264600713844">目前顯示這個裝置的歷史紀錄。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">完整名稱</translation>
 <translation id="7136892417564438900">無法使用相機</translation>
 <translation id="7159472599653637159">切換為行動版網站</translation>

@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium 即將顯示密碼。</translation>
 <translation id="1403254041219632970">日後發佈的 Chromium 版本將不再支援 Mac OS X 10.6、10.7 或 10.8。</translation>
 <translation id="1414495520565016063">你已登入 Chromium！</translation>
+<translation id="1440917365206527807">Chromium 已禁止這個網站將你導向至</translation>
 <translation id="1444754455097148408">Chromium 開放原始碼授權</translation>
 <translation id="1502360822835740515">將 Chromium 設為預設瀏覽器</translation>
 <translation id="151962892725702025">你的網域無法使用「同步功能」，因此 Chromium 作業系統無法同步處理你的資料。</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">安裝程式無法解壓縮封存檔案，請重新下載 Chromium。</translation>
 <translation id="3130323860337406239">Chromium 正在使用你的麥克風。</translation>
 <translation id="3155163173539279776">重新啟動 Chromium</translation>
+<translation id="3179665906251668410">在 Chromium 無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="3190315855212034486">Chromium 當機了，要立即重新啟動嗎？</translation>
 <translation id="3256316712990552818">已複製到 Chromium</translation>
 <translation id="3258596308407688501">Chromium 無法讀取及寫入資料目錄：
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">開始使用 Chromium 作業系統</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 標誌</translation>
+<translation id="3713809861844741608">在新的 Chromium 分頁中開啟連結(&amp;T)</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3762167353400286894">Chromium 作業系統的介面文字已設為這種語言</translation>
 <translation id="378917192836375108">透過 Chromium，你只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">Chromium 會自動更新，隨時讓你使用最新版本。完成這項下載作業後，Chromium 會重新啟動，自動為你進行更新。</translation>
 <translation id="5479196819031988440">Chromium 作業系統無法開啟這個網頁。</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
+<translation id="5524843473235508879">已禁止重新導向。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
@@ -176,11 +180,11 @@
 <translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但你至少超過 30 天沒有使用 Chromium 了。</translation>
 <translation id="6944967875980567883">已載入 Chromium 的模組</translation>
+<translation id="6964305034639999644">在 Chromium 無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="6970811910055250180">正在更新裝置...</translation>
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7066436765290594559">Chromium 作業系統無法同步處理你的資料，請更新你的同步通關密語。</translation>
 <translation id="707471633328071618">Google Payments (已複製到 Chromium)</translation>
-<translation id="7138853919861947730">Chromium 透過網路服務改善瀏覽品質。</translation>
 <translation id="7162152143154757523">Chromium 可將您在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為您提供更精確的拼字檢查功能。</translation>
 <translation id="7205698830395646142">在 Chromium 選單中隱藏</translation>
 <translation id="7223968959479464213">工作管理員 - Chromium</translation>
@@ -255,6 +259,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="9022552996538154597">登入 Chromium</translation>
 <translation id="9036189287518468038">Chromium 應用程式啟動器</translation>
 <translation id="9089354809943900324">Chromium 版本過舊</translation>
+<translation id="91086099826398415">在新的 Chromium 分頁中開啟連結(&amp;T)</translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>
 <translation id="918373042641772655">解除與 <ph name="USERNAME" /> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chromium 資料。不過，這不會清除 Google 帳戶中儲存的資料，你可以在 <ph name="GOOGLE_DASHBOARD_LINK" />Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK" />管理這些資料。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

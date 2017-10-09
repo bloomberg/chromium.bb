@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{۱ روز قبل}one{# روز قبل}other{# روز قبل}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
-<translation id="1190609913194133056">مرکز اعلان</translation>
 <translation id="1243314992276662751">بارگذاری</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">برنامه‌های توصیه‌شده</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(خالی)</translation>
 <translation id="219905428774326614">راه‌انداز، همه برنامه‌ها</translation>
 <translation id="2289052229480071835">روی اهداف لمسی در صفحه‌تان ضربه بزنید.</translation>
+<translation id="2295140143284145483">نظرسنجی</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ترابایت/ثانیه</translation>
 <translation id="24452542372838207">بزرگ کردن اعلان</translation>
 <translation id="2497284189126895209">همه فایل‌ها</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{۱ ساعت}one{# ساعت}other{# ساعت}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">همه برنامه‌ها</translation>
+<translation id="6012623610530968780">صفحه <ph name="SELECTED_PAGE" /> از <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">پاک کردن نوشتار کادر جستجو</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6119846243427417423">فعالسازی</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">کاما</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
+<translation id="6567071839949112727">کلیک کردن روی نسخه اولیه</translation>
 <translation id="6612467943526193239">‏برای خروج از کالیبراسیون، کلید Esc را فشار دهید.</translation>
 <translation id="6620110761915583480">ذخیره کردن فایل</translation>
 <translation id="6699343763173986273">آهنگ بعدی رسانه</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">به احتمال خیلی زیاد</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
+<translation id="7319740667687257810">راه‌انداز، نمای جزئی</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>

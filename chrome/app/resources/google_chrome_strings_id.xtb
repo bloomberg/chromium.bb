@@ -24,8 +24,9 @@
 <translation id="1628000112320670027">Dapatkan bantuan Chrome</translation>
 <translation id="163860049029591106">Memulai dengan Chrome OS</translation>
 <translation id="1653828314016431939">Oke - Mulai ulang sekarang</translation>
+<translation id="1674870198290878346">Buka Link di Jendela Sa&amp;maran Chrome</translation>
 <translation id="1682634494516646069">Google Chrome tidak dapat membaca dan menulis ke direktori datanya: <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1698376642261615901">Google Chrome adalah browser web yang menjalankan laman dan aplikasi web secepat kilat. Cepat, stabil, dan mudah digunakan. Jelajahi web secara lebih aman dengan perlindungan terhadap software perusak dan phishing yang disertakan dalam Google Chrome.</translation>
+<translation id="1698376642261615901">Google Chrome adalah browser web yang menjalankan halaman dan aplikasi web secepat kilat. Cepat, stabil, dan mudah digunakan. Jelajahi web secara lebih aman dengan perlindungan terhadap software perusak dan phishing yang disertakan dalam Google Chrome.</translation>
 <translation id="1718131156967340976">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="1759301979429102118">Detail dari kontak dapat membantu Anda mengisi formulir lebih cepat di Chrome.</translation>
@@ -59,9 +60,10 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
 <translation id="2586406160782125153">Tindakan ini akan menghapus data browsing dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
+<translation id="2652691236519827073">Buka Link di &amp;tab Chrome Baru</translation>
 <translation id="2664962310688259219">Lisensi sumber terbuka Chrome OS</translation>
 <translation id="2665296953892887393">Bantu Google Chrome jadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK" /> ke Google</translation>
-<translation id="2689103672227170538">Ekstensi ini telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chrome.</translation>
+<translation id="2689103672227170538">Ekstensi ini telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome bukan browser default.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
@@ -92,15 +94,16 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="3622797965165704966">Kini, menggunakan Chrome dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
 <translation id="3718181793972440140">Tindakan ini akan menghapus 1 item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
-<translation id="3735758079232443276">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chrome.</translation>
+<translation id="3735758079232443276">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chrome.</translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Hapus Dari Chrome...</translation>
-<translation id="3847841918622877581">Google Chrome dapat menggunakan layanan web guna meningkatkan pengalaman menjelajahi Anda.</translation>
 <translation id="386202838227397562">Tutup semua jendela Google Chrome, lalu coba lagi.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Buka link di jendela sa&amp;maran Chrome</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
 <translation id="4028693306634653894">Akses Chrome lebih cepat</translation>
+<translation id="4031074602479304239">Chrome menghentikan situs ini agar tidak mengarahkan Anda ke</translation>
 <translation id="4042449298237264661">Komputer ini tidak akan menerima pembaruan Google Chrome lagi karena Windows XP dan Windows Vista sudah tidak didukung.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kontrol Google Chrome</translation>
@@ -129,6 +132,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4794050651896644714">Simpan detail di Chrome</translation>
 <translation id="4804732725083176494">Login ke Chrome dinonaktifkan oleh administrator perangkat ini.</translation>
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
+<translation id="4895437082222824641">Buka link di &amp;tab Chrome baru</translation>
 <translation id="4921569541910214635">Membagikan komputer? Kini Anda dapat menyiapkan Chrome seperti yang Anda inginkan.</translation>
 <translation id="4953650215774548573">Setel Google Chrome sebagai browser default Anda</translation>
 <translation id="495931528404527476">Di Chrome</translation>
@@ -139,22 +143,23 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5132929315877954718">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome ditampilkan dalam bahasa ini</translation>
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
-<translation id="5193136243808726294">Google Chrome OS tidak dapat membuka laman ini.</translation>
+<translation id="5193136243808726294">Google Chrome OS tidak dapat membuka halaman ini.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (disalin ke Chrome)</translation>
 <translation id="5251420635869119124">Tamu dapat menggunakan Chrome tanpa meninggalkan apa pun.</translation>
 <translation id="5253588388888612165">Jika Anda membagikan komputer ini dengan <ph name="PROFILE_NAME" />, tambahkan diri Anda ke Chrome untuk menjelajah secara terpisah. Jika tidak, putuskan dari Akun Google-nya.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome akan dimulai ulang dalam 1 detik.}other{Google Chrome akan dimulai ulang dalam # detik.}}</translation>
 <translation id="5334545119300433702">Modul ini biasanya konflik dengan Google Chrome.</translation>
-<translation id="5386244825306882791">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome atau menelusuri dari Omnibox.</translation>
+<translation id="5386244825306882791">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau menelusuri dari Omnibox.</translation>
 <translation id="5430073640787465221">File preferensi Anda rusak atau tidak valid. Google Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="5453904507266736060">Jalankan Google Chrome di Latar Belakang</translation>
 <translation id="5495581687705680288">Modul dimuat ke dalam Google Chrome</translation>
+<translation id="5524843473235508879">Pengalihan diblokir.</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="5563479599352954471">Telusuri dengan satu sentuhan</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome memerlukan izin akses ke mikrofon untuk situs ini.</translation>
-<translation id="5620765574781326016">Pelajari tentang topik di situs web tanpa meninggalkan laman.</translation>
+<translation id="5620765574781326016">Pelajari tentang topik di situs web tanpa meninggalkan halaman.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="573759479754913123">Tentang Chrome OS</translation>
@@ -209,7 +214,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="7369650938475876456">Gunakan sandi kuat yang dibuat oleh Chrome</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
-<translation id="7400722733683201933">Tentang Google Chrome</translation>
 <translation id="7408085963519505752">Persyaratan Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="7437998757836447326">Keluar dari Chrome</translation>
@@ -258,12 +262,12 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
-<translation id="8679801911857917785">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome.</translation>
+<translation id="8679801911857917785">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="8796108026289707191">Mulai ulang Google Chrome sekarang.</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
-<translation id="884296878221830158">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome atau mengeklik tombol Beranda.</translation>
+<translation id="884296878221830158">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau mengeklik tombol Beranda.</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
 <translation id="8914504000324227558">Luncurkan Ulang Chrome</translation>

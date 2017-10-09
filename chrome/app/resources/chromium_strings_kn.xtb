@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="1403254041219632970">Chromium ನ ಪೂರ್ಣ ಆವೃತ್ತಿಗಳು Mac OS X 10.6, 10.7 ಅಥವಾ 10.8 ರಲ್ಲಿ ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="1414495520565016063">ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ!</translation>
+<translation id="1440917365206527807">ನೀವು ಈ ಸೈಟ್‌ಗೆ ಹೋಗದಂತೆ Chromium ನಿಮ್ಮನ್ನು ತಡೆದಿದೆ</translation>
 <translation id="1444754455097148408">Chromium ಮುಕ್ತ ಮೂಲ ಪರವಾನಗಿಗಳು</translation>
 <translation id="1502360822835740515">Chromium ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿಸಿ</translation>
 <translation id="151962892725702025">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium OS ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">ಆರ್ಕೈವ್ ಅನ್ನು ಸಂಕ್ಷೇಪ ಮಾಡದಿರಲು ಸ್ಥಾಪಕ ವಿಫಲಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="3130323860337406239">Chromium ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="3155163173539279776">Chromium ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
+<translation id="3179665906251668410">Chromium ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3190315855212034486">ಓಹ್! Chromium ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
 <translation id="3256316712990552818">Chromium ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3258596308407688501">Chromium ಗೆ ಇದರ ಡೇಟಾ ಡೈರೆಕ್ಟರಿಯನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ ಮತ್ತು ಬರೆಯಲಾಗುವುದಿಲ್ಲ: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -75,6 +77,7 @@
 <translation id="3549345495227188780">Chromium OS ನೊಂದಿಗೆ ಪ್ರಾರಂಭಗೊಂಡಿದೆ</translation>
 <translation id="3582788516608077514">Chromium ಅನ್ನು ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="358997566136285270">Chromium ಲೋಗೋ</translation>
+<translation id="3713809861844741608">ಹೊಸ Chromium &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3738139272394829648">ಹುಡುಕಲು ಸ್ಪರ್ಶಿಸು</translation>
 <translation id="3762167353400286894">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="378917192836375108">Chromium ನೀವು ವೆಬ್‌ನಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಅವಕಾಶ ಮಾಡುತ್ತದೆ ಮತ್ತು Skype ನೊಂದಿಗೆ ಕರೆ ಮಾಡುತ್ತದೆ!</translation>
@@ -127,6 +130,7 @@
 <translation id="5466153949126434691">Chromium ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನವೀಕರಿಸುತ್ತದೆ ಈ ಮೂಲಕ ನೀವು ಯಾವಾಗಲೂ ತಾಜಾ ಆವೃತ್ತಿಯುನ್ನು ಹೊಂದಿರುತ್ತೀರಿ. ಈ ಡೌನ್‌ಲೋಡ್‌ ಪೂರ್ಣಗೊಂಡಾಗ, Chromium ಮರುಪ್ರಾರಂಭಿಸುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಮಾರ್ಗದಲ್ಲಿ ನೀವು ಇರಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="5479196819031988440">Chromium OS ಗೆ ಈ ಪುಟ ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="549669000822060376">ದಯವಿಟ್ಟು ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chromium ಸ್ಥಾಪಿಸುವಾಗ ಕಾಯಿರಿ.</translation>
+<translation id="5524843473235508879">ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="5563479599352954471">ಒಂದು ಸ್ಪರ್ಶದಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="5620765574781326016">ಪುಟವನ್ನು ಉಳಿಸದೆ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ವಿಷಯಗಳ ಕುರಿತು ತಿಳಿಯಿರಿ.</translation>
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
@@ -172,11 +176,11 @@
 <translation id="6883876366448858277">Google ಹುಡುಕಾಟಕ್ಕೆ ಪದ ಮತ್ತು ಅದರ ಕುರಿತು ಸಂದರ್ಭವನ್ನು ಕಳುಹಿಸುತ್ತದೆ. ಈ ಮೂಲಕ ವಿವರಗಳು, ಚಿತ್ರಗಳು ಮತ್ತು ಇತರ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳನ್ನು ನೀಡುತ್ತದೆ.</translation>
 <translation id="6893813176749746474">Chromium ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ, ಆದರೆ ನೀವು ಕನಿಷ್ಠ 30 ದಿನಗಳವರೆಗಾದರೂ ಇದನ್ನು ಬಳಸಿರಲಿಕ್ಕಿಲ್ಲ.</translation>
 <translation id="6944967875980567883">ಮಾಡ್ಯೂಲ್‌ಗಳನ್ನು Chromium ನಲ್ಲಿ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="6964305034639999644">Chromium ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="6970811910055250180">ನಿಮ್ಮ ಸಾಧನವನ್ನು ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="705851970750939768">Chromium ನವೀಕರಿಸಿ</translation>
 <translation id="7066436765290594559">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
 <translation id="707471633328071618">Google Payments (Chromium ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
-<translation id="7138853919861947730">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು Chromium ವೆಬ್ ಸೇವೆಗಳನ್ನು ಬಳಸಬಹುದು.</translation>
 <translation id="7162152143154757523">Google ಹುಡುಕಾಟ ಬಳಸುವ ಪದ ಪರೀಕ್ಷಕ ತಂತ್ರಜ್ಞಾನವನ್ನು ಬಳಸಲು ನಿಮಗೆ ಅನುಮತಿ ನೀಡಲು, ಬ್ರೌಸರ್‌ನಲ್ಲಿ ನೀವು ಟೈಪ್ ಮಾಡುವುದನ್ನು Google ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವ ಮೂಲಕ Chromium ಒಳ್ಳೆಯ ಪದ ಪರೀಕ್ಷವನ್ನು ಒದಗಿಸಬಹುದಾಗಿದೆ.</translation>
 <translation id="7205698830395646142">Chromium ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="7223968959479464213">ಕಾರ್ಯನಿರ್ವಾಹಕ - Chromium</translation>
@@ -249,6 +253,7 @@
 <translation id="9022552996538154597">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
 <translation id="9036189287518468038">Chromium ಅಪ್ಲಿಕೇಶನ್‌ ಲಾಂಚರ್‌</translation>
 <translation id="9089354809943900324">Chromium ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
+<translation id="91086099826398415">ಹೊಸ Chromium &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> ಅವರ ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸುವುದರಿಂದ ನಿಮ್ಮ ಇತಿಹಾಸ, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಇತರ Chromium ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ ಮತ್ತು <ph name="GOOGLE_DASHBOARD_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ<ph name="END_GOOGLE_DASHBOARD_LINK" /> ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

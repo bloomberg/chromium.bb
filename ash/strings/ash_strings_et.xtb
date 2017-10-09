@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
 <translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
-<translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
 <translation id="3582792037806681688">Selle seanssi kasutaja jaoks on mitmele kontole sisselogimine keelatud</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Ekraanil kuvatava klaviatuuri kuvamine</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiveerimine ...</translation>
+<translation id="6284232397434400372">Eraldusvõimet muudeti</translation>
 <translation id="6297287540776456956">Valige piirkond elektronpliiatsiga</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> vahetati valikule <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Klaviatuuri ülekate</translation>
@@ -232,10 +232,10 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
 <translation id="7067196344162293536">Automaatne pööramine</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
-<translation id="7135556860107312402">Luba märguanded järgmistest kohtadest:</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
+<translation id="726276584504105859">Jagatud ekraani kasutamiseks lohistage siia</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
 <translation id="735745346212279324">VPN-i ühendus on katkestatud</translation>
 <translation id="7377169924702866686">Suurtähelukk on sisse lülitatud.</translation>
@@ -248,6 +248,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7562368315689366235">Emotikonide palett</translation>
 <translation id="7569509451529460200">Punktkiri ja ChromeVox on lubatud</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (omanik)</translation>
 <translation id="7647488630410863958">Märguannete vaatamiseks avage seade</translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7658239707568436148">Tühista</translation>

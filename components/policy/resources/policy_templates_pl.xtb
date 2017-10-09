@@ -1274,6 +1274,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Gdy ją ustawisz, użytkownicy mogą ją chwilowo zastąpić, włączając lub wyłączając duży kursor. Wybór użytkownika nie jest jednak trwały i wartość domyślna jest przywracana po ponownym wyświetleniu ekranu logowania lub wtedy, gdy użytkownik przez minutę będzie nieaktywny na tym ekranie.
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania duży kursor jest wyłączony. Użytkownicy mogą go w każdej chwili włączyć lub wyłączyć i jego stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
+<translation id="5932767795525445337">Ta zasada może też służyć do przypinania aplikacji na Androida.</translation>
 <translation id="5936622343001856595">Wymusza realizację zapytań do wyszukiwarki Google z aktywnym filtrem SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia.
 
       Jeśli ta opcja zostanie włączona, filtr SafeSearch w wyszukiwarce Google będzie zawsze aktywny.
@@ -1326,7 +1327,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
-<translation id="6139485614509308022">Jeśli zasada „OffHours” jest ustawiona, to określone zasady dotyczące urządzeń są ignorowane (używane są ustawienia domyślne tych zasad) w konkretnych okresach. Zasady dotyczące urządzeń są ponownie stosowane przez Chrome za każdym razem, gdy zaczyna lub kończy się okres „OffHours”. Użytkownik otrzymuje powiadomienie i następuje wymuszone wylogowanie, gdy zakończenie okresu „OffHours” i zasady dotyczące urządzeń zmienią się (tzn. gdy użytkownik jest zalogowany na konto, które nie ma uprawnień).</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="614662973812186053">Ta zasada kontroluje też zbieranie danych o użytkowaniu i danych diagnostycznych Androida.</translation>
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>

@@ -74,6 +74,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2509394361235492552">Ansluten till <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
 <translation id="2540992418118313681">Vill du dela den här datorn så att en annan användare kan visa och styra den?</translation>
+<translation id="2579271889603567289">Värden kraschade eller gick inte att starta.</translation>
 <translation id="2599300881200251572">Med den här tjänsten aktiveras inkommande anslutningar från Chrome Remote Desktop-klienter.</translation>
 <translation id="2647232381348739934">Tjänsten Chromoting</translation>
 <translation id="2676780859508944670">Arbetar ...</translation>
@@ -176,6 +177,7 @@ dator</translation>
 <translation id="4736223761657662401">Anslutningshistorik</translation>
 <translation id="4741792197137897469">Autentiseringen misslyckades. Logga in i Chrome igen.</translation>
 <translation id="477305884757156764">Appen är för långsam.</translation>
+<translation id="4784508858340177375">X-servern kraschade eller gick inte att starta.</translation>
 <translation id="4795786176190567663">Du har inte behörighet att utföra den åtgärden.</translation>
 <translation id="4798680868612952294">Musalternativ</translation>
 <translation id="4804818685124855865">Koppla från</translation>
@@ -250,6 +252,7 @@ dator</translation>
 <translation id="6572345186230665992">För Mac (OS X Mavericks 10.9 och senare)</translation>
 <translation id="6583902294974160967">Support</translation>
 <translation id="6612717000975622067">Skicka Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">Dela</translation>
 <translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
 <translation id="6681800064886881394">Upphovsrätt 2013 Google Inc. Med ensamrätt.</translation>
 <translation id="6705482892455291412">När den andra parten har angett koden blir du ombedd att godkänna anslutningen och börja delningssessionen.</translation>

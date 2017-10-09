@@ -79,6 +79,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2381405137052800939">Basisinstellingen</translation>
 <translation id="2386793615875593361">1 geselecteerd</translation>
 <translation id="2435457462613246316">Wachtwoord weergeven</translation>
+<translation id="2529021024822217800">Alles openen</translation>
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
 <translation id="2584132361465095047">Account toevoegen…</translation>
 <translation id="2593774076813182497">Kan pagina niet afdrukken.</translation>
@@ -128,7 +129,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Kan geen verbinding maken met de server.</translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
-<translation id="3387752218061326363">Geschiedenis van je ingelogde apparaten wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-ups toegestaan</translation>
 <translation id="3414292259312108062">Chrome slaat dit op in je <ph name="BEGIN_LINK" />door Google opgeslagen wachtwoorden<ph name="END_LINK" /> en vult dit automatisch voor je aan, zodat je je wachtwoord niet zelf hoeft te onthouden.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
@@ -312,6 +312,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6797885426782475225">Gesproken zoekopdracht</translation>
 <translation id="6807889908376551050">Alles weergeven...</translation>
 <translation id="681368974849482173">Item gemaakt</translation>
+<translation id="6871663519944855400">Openen in incognitomodus</translation>
 <translation id="6896758677409633944">Kopieer</translation>
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
@@ -321,7 +322,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7031882061095297553">Synchroniseren met</translation>
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
 <translation id="7108338896283013870">Verbergen</translation>
-<translation id="7131892264600713844">Geschiedenis van dit apparaat wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Volledige naam</translation>
 <translation id="7136892417564438900">Camera is niet beschikbaar</translation>
 <translation id="7159472599653637159">Mobiele site opvragen</translation>

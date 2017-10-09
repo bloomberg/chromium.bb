@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Λήψη βοήθειας σχετικά με το Chrome</translation>
 <translation id="163860049029591106">Έναρξη χρήσης του Chrome OS</translation>
 <translation id="1653828314016431939">OK - Επανεκκίνηση τώρα</translation>
+<translation id="1674870198290878346">Άνοιγμα Συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="1682634494516646069">Το Google Chrome δεν έχει δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -61,6 +62,7 @@
 <translation id="2580411288591421699">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="2586406160782125153">Με αυτήν την ενέργεια θα διαγραφούν τα δεδομένα περιήγησης από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Λογότυπο Chrome</translation>
+<translation id="2652691236519827073">Άνοιγμα Συνδέσμου σε Νέα καρτέ&amp;λα Chrome</translation>
 <translation id="2664962310688259219">Άδειες λογισμικού ανοικτού κώδικα του Chrome OS</translation>
 <translation id="2665296953892887393">Βοηθήστε μας να κάνουμε το Google Chrome καλύτερο, αποστέλλωντας αναφορές σφαλμάτων και <ph name="UMA_LINK" /> στην Google</translation>
 <translation id="2689103672227170538">Αυτή η επέκταση άλλαξε τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
@@ -98,11 +100,12 @@
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Κατάργηση από το Chrome…</translation>
-<translation id="3847841918622877581">Το Google Chrome μπορεί να χρησιμοποιήσει υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας.</translation>
 <translation id="386202838227397562">Κλείστε όλα τα παράθυρα του Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Άνοιγμα συνδέσμου σε παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="3889417619312448367">Κατάργηση εγκατάστασης Google Chrome</translation>
 <translation id="4028693306634653894">Μεταβείτε ταχύτερα στο Chrome</translation>
+<translation id="4031074602479304239">Το Chrome διέκοψε την ανακατεύθυνσή σας από αυτόν τον ιστότοπο στο</translation>
 <translation id="4042449298237264661">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις Google Chrome, επειδή δεν υποστηρίζονται πλέον τα Windows XP και Windows Vista.</translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="4053720452172726777">Προσαρμογή και έλεγχος του Google Chrome</translation>
@@ -131,6 +134,7 @@
 <translation id="4794050651896644714">Αποθήκευση λεπτομερειών στο Chrome</translation>
 <translation id="4804732725083176494">Η σύνδεση στο Chrome είναι απενεργοποιημένη από τον διαχειριστή αυτής της συσκευής.</translation>
 <translation id="4891791193823137474">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
+<translation id="4895437082222824641">Άνοιγμα συνδέσμου σε νέα καρτέ&amp;λα Chrome</translation>
 <translation id="4921569541910214635">Μοιράζεστε έναν υπολογιστή; Τώρα μπορείτε να ρυθμίσετε το Chrome όπως ακριβώς σας αρέσει.</translation>
 <translation id="4953650215774548573">Ορίστε το Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="495931528404527476">Στο Chrome</translation>
@@ -154,6 +158,7 @@
 <translation id="5430073640787465221">Το αρχείο προτιμήσεών σας είναι κατεστραμμένο ή μη έγκυρο.Το Google Chrome δεν μπορεί να ανακτήσει τις ρυθμίσεις σας.</translation>
 <translation id="5453904507266736060">Να επιτρέπεται στο Google Chrome να εκτελείται στο παρασκήνιο</translation>
 <translation id="5495581687705680288">Στο Google Chrome φορτώθηκαν λειτουργικές μονάδες</translation>
+<translation id="5524843473235508879">Η ανακατεύθυνση αποκλείστηκε.</translation>
 <translation id="556024056938947818">Το Google Chrome επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="5563479599352954471">Αναζήτηση με ένα μόνο άγγιγμα</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -213,7 +218,6 @@
 <translation id="7339898014177206373">Νέο παράθυρο</translation>
 <translation id="7369650938475876456">Χρησιμοποιήστε έναν δυνατό κωδικό πρόσβασης που έχει δημιουργηθεί από το Chrome</translation>
 <translation id="7398801000654795464">Συνδεθήκατε στο Chrome ως <ph name="USER_EMAIL_ADDRESS" />. Χρησιμοποιήστε τον ίδιο λογαριασμό για να συνδεθείτε ξανά.</translation>
-<translation id="7400722733683201933">Πληροφορίες για το Google Chrome</translation>
 <translation id="7408085963519505752">Όροι Chrome OS</translation>
 <translation id="7419046106786626209">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας, επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
 <translation id="7437998757836447326">Αποσύνδεση από το Chrome</translation>

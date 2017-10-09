@@ -72,6 +72,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
 <translation id="2540992418118313681">Ali želite ta računalnik deliti z drugimi, tako da bo imel drug uporabnik do njega dostop in ga bo lahko nadziral?</translation>
+<translation id="2579271889603567289">Gostitelj se je zrušil ali ga ni bilo mogoče zagnati.</translation>
 <translation id="2599300881200251572">Ta storitev omogoča dohodne povezave iz odjemalcev za Oddaljeno namizje za Chrome.</translation>
 <translation id="2647232381348739934">Storitev Oddaljeno povezovanje s Chromom</translation>
 <translation id="2676780859508944670">Obdelava …</translation>
@@ -170,6 +171,7 @@ PC</translation>
 <translation id="4736223761657662401">Zgodovina povezav</translation>
 <translation id="4741792197137897469">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Chrome.</translation>
 <translation id="477305884757156764">Ta aplikacija je prepočasna.</translation>
+<translation id="4784508858340177375">Strežnik X se je zrušil ali ga ni bilo mogoče zagnati.</translation>
 <translation id="4795786176190567663">Nimate dovoljenja za izvedbo tega dejanja.</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="4808503597364150972">Vnesite kodo PIN za gostitelja <ph name="HOSTNAME" />.</translation>
@@ -236,6 +238,7 @@ PC</translation>
 <translation id="6570205395680337606">Ponastavite aplikacijo. Delo, ki ga niste shranili, bo izgubljeno.</translation>
 <translation id="6572345186230665992">Za Mac OS (OS X Mavericks 10.9 in novejši)</translation>
 <translation id="6612717000975622067">Pošlji Ctrl + Alt + Del</translation>
+<translation id="6654753848497929428">Skupna raba</translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Vse pravice pridržane.</translation>
 <translation id="6705482892455291412">Ko uporabnik vnese kodo, boste pozvani, da sprejmete povezavo in začnete sejo skupne rabe.</translation>

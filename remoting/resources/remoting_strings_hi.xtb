@@ -74,6 +74,7 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> से कनेक्‍ट है</translation>
 <translation id="2512228156274966424">ध्यान दें: सभी कीबोर्ड शॉर्टकट की उपलब्धता सुनिश्चित करने के लिए, आप Chrome रिमोट डेस्कटॉप को ‘विंडो के रूप में खोलें’ पर कॉन्फ़िगर कर सकते हैं.</translation>
 <translation id="2540992418118313681">क्‍या आप किसी अन्‍य उपयोगकर्ता द्वारा देखने और नियंत्रित करने के लिए इस कंप्‍यूटर को साझा करना चाहते हैं?</translation>
+<translation id="2579271889603567289">होस्ट बंद हो गया या चालू नहीं हो पाया.</translation>
 <translation id="2599300881200251572">यह सेवा Chrome दूरस्थ डेस्कटॉप क्लाइंट के इनकमिंग कनेक्शन सक्षम करती है.</translation>
 <translation id="2647232381348739934">Chromoting सेवा</translation>
 <translation id="2676780859508944670">कार्य कर रहा है…</translation>
@@ -174,6 +175,7 @@
 <translation id="4736223761657662401">कनेक्शन इतिहास</translation>
 <translation id="4741792197137897469">प्रमाणीकरण विफल रहा. कृपया Chrome में पुन: प्रवेश करें.</translation>
 <translation id="477305884757156764">ऐप्लिकेशन बहुत धीमा है.</translation>
+<translation id="4784508858340177375">X सर्वर बंद हो गया या चालू नहीं हो पाया.</translation>
 <translation id="4795786176190567663">आपको यह कार्यवाही करने की अनुमति नहीं है.</translation>
 <translation id="4798680868612952294">माउस के विकल्प</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
@@ -248,6 +250,7 @@
 <translation id="6572345186230665992">Mac के लिए (OS X Mavericks 10.9 और बाद वाले वर्शन)</translation>
 <translation id="6583902294974160967">सहायता</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del भेजें</translation>
+<translation id="6654753848497929428">शेयर करें</translation>
 <translation id="6668065415969892472">आपका पिन अपडेट कर दिया गया है.</translation>
 <translation id="6681800064886881394">कॉपीराइट 2013 Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="6705482892455291412">कोड डालने के बाद, आपको कनेक्शन स्वीकार करने और साझाकरण सत्र प्रारंभ करने के लिए संकेत दिया जाएगा.</translation>

@@ -48,7 +48,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1389236224998445076">Išsaugota duomenų:</translation>
 <translation id="1389974829397082527">Čia žymių nėra</translation>
 <translation id="1397811292916898096">Paieška su „<ph name="PRODUCT_NAME" />“</translation>
-<translation id="1402229579576898974">„Chrome“ pasiūlymų: <ph name="NUMBER_OF_SUGGESTIONS" /></translation>
 <translation id="1404122904123200417">Įterpta į <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Funkcija „Nestebėti“</translation>
 <translation id="1407135791313364759">Atidaryti viską</translation>
@@ -138,7 +137,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2268044343513325586">Patikslinti</translation>
 <translation id="2283599456633275070">Kelionės</translation>
 <translation id="2286841657746966508">Atsiskaitymo adresas</translation>
-<translation id="2301209717432756327">Pridėta prie pagrindinio ekrano.</translation>
 <translation id="2315043854645842844">Kliento pasirinkto sertifikato nepalaiko operacinė sistema.</translation>
 <translation id="2321958826496381788">Vilkite šliaužiklį, kol bus patogu skaityti šį tekstą. Du kartus palietus pastraipą, tekstas turėtų būti mažiausiai tokio dydžio.</translation>
 <translation id="2323763861024343754">Svetainės saugykla</translation>
@@ -259,7 +257,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="3549657413697417275">Ieškokite savo istorijoje</translation>
 <translation id="3552151358455404883">Tvarkykite „Chrome“ sinchronizavimo ir suasmeninimo funkcijas skiltyje <ph name="BEGIN_LINK1" />„Nustatymai“<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Pridėti prie kontaktų</translation>
-<translation id="3583454905526475291">Nepavyko paleisti programos</translation>
 <translation id="3587482841069643663">Visi</translation>
 <translation id="3590487821116122040">Svetainės saugykla, kurios „Chrome“ nelaiko svarbia (pvz., svetainės be išsaugotų nustatymų arba tos, kuriose retai lankotės)</translation>
 <translation id="3599863153486145794">Išvaloma visų įrenginių, prie kurių prisijungta, istorija. „Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +338,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="4275663329226226506">Medija</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
-<translation id="42981349822642051">Išskleisti</translation>
 <translation id="4307992518367153382">Pagrindai</translation>
 <translation id="4351244548802238354">Uždaryti dialogo langą</translation>
 <translation id="4378154925671717803">Telefonas</translation>
@@ -524,6 +520,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5942872142862698679">Atliekant paiešką naudojama „Google“</translation>
 <translation id="5956665950594638604">Atidaryti „Chrome“ pagalb. centrą naujame skirtuke</translation>
 <translation id="5958275228015807058">Suraskite failus ir puslapius „Atsisiuntimų“ skiltyje</translation>
+<translation id="5958994127112619898">Supaprastinti puslapį</translation>
 <translation id="5962718611393537961">Palieskite ir sutraukite</translation>
 <translation id="6000066717592683814">Palikti „Google“</translation>
 <translation id="6023914116273780353">Suasmeninta</translation>
@@ -797,7 +794,6 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8523928698583292556">Ištrinti išsaugotą slaptažodį</translation>
 <translation id="854522910157234410">Atidaryti šį puslapį</translation>
 <translation id="8562452229998620586">Čia bus rodomi išsaugoti slaptažodžiai.</translation>
-<translation id="856481929701340285">Užkl. svet. kompiuteriui</translation>
 <translation id="8569404424186215731">nuo <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Pastarosios 4 savaitės</translation>
 <translation id="857509777403223202">Netrukus bus rodoma daugiau straipsnių. Gero vakaro!</translation>

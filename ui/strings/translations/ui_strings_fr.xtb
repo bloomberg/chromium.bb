@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Il y a 1 jour}one{Il y a # jour}other{Il y a # jours}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Il y a une minute}one{Il y a # minute}other{Il y a # minutes}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}one{# m}other{# m}}</translation>
-<translation id="1190609913194133056">Centre de notification</translation>
 <translation id="1243314992276662751">Importer</translation>
 <translation id="1293699935367580298">Échap</translation>
 <translation id="1306549533752902673">APPLICATIONS RECOMMANDÉES</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(vide)</translation>
 <translation id="219905428774326614">Lanceur d'applications, toutes les applications</translation>
 <translation id="2289052229480071835">Appuyez sur les cibles tactiles affichées à l'écran.</translation>
+<translation id="2295140143284145483">Enquête</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> To/s</translation>
 <translation id="24452542372838207">Développer la notification</translation>
 <translation id="2497284189126895209">Tous les fichiers</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 heure}one{# heure}other{# heures}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Toutes les applications</translation>
+<translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> sur <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6119846243427417423">activer</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Virgule</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Il y a 1 s}one{Il y a # s}other{Il y a # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Il y a une seconde}one{Il y a # seconde}other{Il y a # secondes}}</translation>
+<translation id="6567071839949112727">cliquer sur l'ancêtre</translation>
 <translation id="6612467943526193239">Pour quitter le mode Étalonnage, appuyez sur Échap.</translation>
 <translation id="6620110761915583480">Enregistrer le fichier</translation>
 <translation id="6699343763173986273">Contenu multimédia : titre suivant</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">CLIC PROBABLE</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restante}one{# min restante}other{# min restantes}}</translation>
+<translation id="7319740667687257810">Lanceur d'applications, vue partielle</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Il y a 1 min}one{Il y a # min}other{Il y a # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute restante}one{# minute restante}other{# minutes restantes}}</translation>

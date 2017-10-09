@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Chrome में सहायता प्राप्त करें</translation>
 <translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
 <translation id="1653828314016431939">ठीक - अब पुन: प्रारंभ करें</translation>
+<translation id="1674870198290878346">Chrome गु&amp;प्त विंडो में लिंक खोलें</translation>
 <translation id="1682634494516646069">Google Chrome अपनी डेटा निर्देशिका को पढ़ और उस पर लिख नहीं सकता :\n\n<ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome एक ऐसा वेब ब्राउज़र है, जो वेब पेज और ऐप्स  को बिजली की गति से चलाता है. यह तेज़, स्थिर, और उपयोग में आसान है. Google Chrome में अंतर्निहित मैलवेयर और फ़िशिंग सुरक्षा के साथ अधिक सुरक्षित रूप से वेब ब्राउज़ करें.</translation>
 <translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> चुनें</translation>
@@ -59,6 +60,7 @@
 <translation id="2580411288591421699">Google Chrome के उस वर्शन के समान वर्शन को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और फिर से प्रयास करें.</translation>
 <translation id="2586406160782125153">ऐसा करने से इस डिवाइस से आपका ब्राउज़िंग डेटा हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
+<translation id="2652691236519827073">नए Chrome &amp;टैब में लिंक खोलें</translation>
 <translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="2689103672227170538">इस एक्सटेंशन ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
@@ -96,11 +98,12 @@
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome से नि‍कालें...</translation>
-<translation id="3847841918622877581">Google Chrome आपके ब्राउज़िंग अनुभव को बेहतर बनाने के लिए वेब सेवाओं का उपयोग कर सकता है.</translation>
 <translation id="386202838227397562">कृपया सभी Google Chrome विंडो बंद करें और फिर से प्रयास करें.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Chrome गु&amp;प्त विंडो में लिंक खोलें</translation>
 <translation id="3889417619312448367">Google Chrome को विस्थापित करें</translation>
 <translation id="4028693306634653894">Chrome पर तेज़ी से पहुंचें</translation>
+<translation id="4031074602479304239">Chrome ने इस साइट को रोक दिया ताकि वह आपको दूसरे वेबलिंक पर नहीं ले जाए</translation>
 <translation id="4042449298237264661">यह कंप्‍यूटर अब Google Chrome के अपडेट प्राप्‍त नहीं करेगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं है.</translation>
 <translation id="4050175100176540509">महत्‍वपूर्ण सुरक्षा सुधार और नई सुविधाएं नवीनतम वर्शन में उपलब्‍ध हैं.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइज़ करें और नियंत्रित करें</translation>
@@ -129,6 +132,7 @@
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
 <translation id="4804732725083176494">Chrome में साइन इन करने की सुविधा इस डिवाइस के व्‍यवस्‍थापक ने बंद कर दी है.</translation>
 <translation id="4891791193823137474">Google Chrome को पृष्ठभूमि में चलने दें</translation>
+<translation id="4895437082222824641">नए Chrome &amp;टैब में लिंक खोलें</translation>
 <translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
 <translation id="4953650215774548573">Google Chrome को अपने डिफ़ॉल्ट ब्राउज़र के रूप में सेट करना</translation>
 <translation id="495931528404527476">Chrome में</translation>
@@ -152,6 +156,7 @@
 <translation id="5430073640787465221">आपकी प्राथमिकताएं फ़ाइल दूषित या अमान्‍य है. Google Chrome आपकी सेटिंग पुनर्प्राप्त करने में असमर्थ है.</translation>
 <translation id="5453904507266736060">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="5495581687705680288">Google Chrome में लोड किए गए मॉड्यूल</translation>
+<translation id="5524843473235508879">दूसरे वेबलिंक पर भेजना ब्लॉक किया हुआ है.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
 <translation id="5563479599352954471">एकल स्पर्श से खोजें</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -211,7 +216,6 @@
 <translation id="7339898014177206373">नई विंडो</translation>
 <translation id="7369650938475876456">Chrome की ओर से जनरेट किए गए सशक्त पासवर्ड का उपयोग करें</translation>
 <translation id="7398801000654795464">आप Chrome में <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश थे. पुन: प्रवेश करने के लिए कृपया उसी खाते का उपयोग करें.</translation>
-<translation id="7400722733683201933">Google Chrome के बारे में</translation>
 <translation id="7408085963519505752">Chrome OS शर्तें</translation>
 <translation id="7419046106786626209">Chrome OS आपका डेटा समन्वयित नहीं कर सका क्योंकि आपके डोमेन के लिए समन्वयन उपलब्ध नहीं है.</translation>
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>

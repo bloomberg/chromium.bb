@@ -169,7 +169,6 @@
 <translation id="225207911366869382">這個政策值已遭汰換。</translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
 <translation id="2270484714375784793">電話號碼</translation>
-<translation id="2282872951544483773">無法使用的實驗性功能</translation>
 <translation id="2292556288342944218">您的網際網路存取權遭到封鎖</translation>
 <translation id="230155334948463882">新信用卡？</translation>
 <translation id="2316887270356262533">釋出不到 1 MB。下次造訪部分網站時，載入速度可能會變慢。</translation>
@@ -308,6 +307,7 @@
 <translation id="3282497668470633863">新增持卡人姓名</translation>
 <translation id="3286538390144397061">立即重新啟動</translation>
 <translation id="3287510313208355388">上線時進行下載</translation>
+<translation id="3293642807462928945">進一步瞭解 <ph name="POLICY_NAME" /> 政策</translation>
 <translation id="3303855915957856445">找不到相符的搜尋結果</translation>
 <translation id="3305707030755673451">您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="3320021301628644560">新增帳單地址</translation>
@@ -366,7 +366,6 @@
 <translation id="3623476034248543066">顯示政策值</translation>
 <translation id="3630155396527302611">如果程式已列在允許存取網路的清單中，建議您
       從清單中將其移除，然後再重新加入。</translation>
-<translation id="3648607100222897006">這些實驗性功能隨時都有可能變動、中斷或消失。我們完全無法保證啟用這些實驗性功能會導致何種後果，你的瀏覽器說不定會突然自己燒掉。當然這只是玩笑話，不過你的瀏覽器可能真的會刪除你的所有資料，或是意外洩漏你的安全性和隱私權設定。只要你啟用了任何實驗性功能，這個瀏覽器的所有使用者都會啟用該功能。使用時請務必小心謹慎。</translation>
 <translation id="3650584904733503804">驗證成功</translation>
 <translation id="3655670868607891010">如果你經常看到這個頁面，請參考這些說明：<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修訂版本</translation>
@@ -382,6 +381,7 @@
 <translation id="3714780639079136834">開啟行動數據或 Wi-Fi</translation>
 <translation id="3715597595485130451">連線至 Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />檢查 Proxy、防火牆和 DNS 設定<ph name="END_LINK" /></translation>
+<translation id="372429172604983730">可能造成這個錯誤的應用程式包括防毒軟體、防火牆、網路篩選或 Proxy 軟體。</translation>
 <translation id="3736520371357197498">如果你瞭解安全性風險，也可以選擇在危險程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> 傳送的憑證受到干擾，造成 Chromium 無法處理，因此你目前無法造訪該網站。網路錯誤和攻擊通常是暫時性狀態，因此這個網頁可能稍後就會恢復正常運作。</translation>
@@ -412,7 +412,6 @@
 <translation id="3987940399970879459">不到 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 個網頁}other{附近有 # 個網頁}}</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
-<translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY" />」：<ph name="ERROR" /></translation>
 <translation id="4067947977115446013">新增有效的地址</translation>
 <translation id="4072486802667267160">處理你的訂單時發生錯誤，請再試一次。</translation>
@@ -448,7 +447,6 @@
 <translation id="4269787794583293679">(沒有使用者名稱)</translation>
 <translation id="4275830172053184480">重新啟動裝置</translation>
 <translation id="4280429058323657511">，到期日：<ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4300246636397505754">家長建議</translation>
 <translation id="4304224509867189079">登入</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
 <translation id="4325863107915753736">找不到文章</translation>
@@ -563,7 +561,6 @@
     <ph name="LIST_ITEM" />依序按一下 [套用]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /> 和 [確定]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />
     <ph name="LIST_ITEM" />前往 <ph name="BEGIN_LEARN_MORE_LINK" />Chrome 說明中心<ph name="END_LEARN_MORE_LINK" />瞭解如何將該軟體從你的電腦上永久移除
     <ph name="END_LIST" /></translation>
-<translation id="5297526204711817721">你與這個網站之間的連線不是私人連線。你隨時可以摘下頭戴式裝置，然後按下返回鍵退出 VR 模式。</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5308689395849655368">當機報告功能已停用。</translation>
@@ -636,10 +633,10 @@
 <translation id="5866257070973731571">新增電話號碼</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
-<translation id="5872918882028971132">家長建議</translation>
 <translation id="5893752035575986141">接受簽帳金融卡。</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (已同步)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{目前使用 1 個 Cookie}other{目前使用 # 個 Cookie}}</translation>
+<translation id="5939518447894949180">重設</translation>
 <translation id="5959728338436674663">自動傳送部分<ph name="BEGIN_WHITEPAPER_LINK" />系統資訊和網頁內容<ph name="END_WHITEPAPER_LINK" />給 Google，協助偵測危險的應用程式和網站。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
 <translation id="5967867314010545767">從紀錄中移除</translation>
@@ -657,7 +654,6 @@
 <translation id="6047233362582046994">如果你瞭解安全性風險，也可以選擇在有害應用程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個網站<ph name="END_LINK" />。</translation>
 <translation id="6047927260846328439">這項內容可能會試圖誘使你安裝軟體或提供個人資訊。<ph name="BEGIN_LINK" />仍要顯示<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">目前無法造訪 <ph name="SITE" />，因為這個網站使用憑證鎖定功能。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。</translation>
-<translation id="6060685159320643512">請注意，這些實驗性功能可能對電腦有害</translation>
 <translation id="6080696365213338172">你使用了管理員提供的憑證存取內容，因此管理員可攔截你傳送至「<ph name="DOMAIN" />」的資料。</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{無}=1{1 組密碼 (保持同步)}other{# 組密碼 (保持同步)}}</translation>
 <translation id="6146055958333702838">檢查您的網路線是否穩固連接。重新啟動您可能正在使用的任何路由器、
@@ -693,7 +689,6 @@
 <translation id="6355080345576803305">公開工作階段覆寫</translation>
 <translation id="6358450015545214790">我需要進一步資訊</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
-<translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
 <translation id="6397451950548600259">你的電腦上有軟體阻止 Chrome 建立安全的網路連線</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6410264514553301377">輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼</translation>
@@ -739,7 +734,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">無法載入地區資料</translation>
 <translation id="6825578344716086703">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證是以防護力薄弱的簽章演算法 (例如 SHA-1) 進行簽署。這代表伺服器提供的安全性憑證可能遭到偽造，而且這個伺服器可能並不是你的目標伺服器 (你的連線對象可能是攻擊者的電腦)。</translation>
-<translation id="6830728435402077660">不安全</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6839929833149231406">區</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
@@ -841,7 +835,6 @@
 <translation id="7667346355482952095">傳回的政策憑證沒有任何內容，或是與目前的憑證不符</translation>
 <translation id="7668654391829183341">不明的裝置</translation>
 <translation id="7669271284792375604">攻擊者可能會試圖透過這個網站誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。</translation>
-<translation id="7674629440242451245">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/dev 安裝開發人員版。</translation>
 <translation id="7682287625158474539">寄送地址</translation>
 <translation id="7699293099605015246">目前無法顯示文章</translation>
 <translation id="7701040980221191251">無</translation>
@@ -952,6 +945,7 @@
 <translation id="8620436878122366504">你的家長尚未核准這個網站</translation>
 <translation id="8647750283161643317">全部重設為預設值</translation>
 <translation id="8660471606262461360">來自 Google Payments</translation>
+<translation id="8688672835843460752">可用空間</translation>
 <translation id="8703575177326907206">你到 <ph name="DOMAIN" /> 的連線未加密。</translation>
 <translation id="8718314106902482036">未完成付款程序</translation>
 <translation id="8725066075913043281">再試一次</translation>
@@ -974,7 +968,6 @@
 <translation id="8874824191258364635">請輸入有效的信用卡號碼</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
-<translation id="889901481107108152">很抱歉，這項實驗功能無法支援你的平台。</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="8931333241327730545">您要將這張卡片的資訊儲存到您的 Google 帳戶嗎？</translation>
 <translation id="8932102934695377596">你的時鐘時間過慢</translation>

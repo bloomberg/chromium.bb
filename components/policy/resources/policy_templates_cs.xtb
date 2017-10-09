@@ -1335,6 +1335,7 @@ Pokud je zásada nastavena na hodnotu false, bude při zobrazení přihlašovac�
 Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat aktivací nebo deaktivací velkého kurzoru. Volba uživatele nicméně nebude trvalá a po opětovném zobrazení přihlašovací obrazovky nebo nečinnosti uživatele na přihlašovací obrazovce po dobu jedné minuty se obnoví původní nastavení.
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky velký kurzor deaktivován. Uživatelé budou moci velký kurzor kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
+<translation id="5932767795525445337">Tuto zásadu lze využít také k připnutí aplikací pro Android.</translation>
 <translation id="5936622343001856595">Vynutí, aby se při použití Vyhledávání Google vždy aktivovalo Bezpečné vyhledávání, a zabrání uživatelům toto nastavení změnit.
 
       Pokud toto nastavení aktivujete, bude Bezpečné vyhledávání při použití Vyhledávání Google vždy aktivní.
@@ -1387,7 +1388,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6111936128861357925">Povolit hru s dinosaurem</translation>
 <translation id="6114416803310251055">zastaralé</translation>
 <translation id="6133088669883929098">Povolit všem webům generovat klíče</translation>
-<translation id="6139485614509308022">Pokud je nastavena zásada OffHours, jsou v zadaných časových intervalech ignorovány určené zásady zařízení (použije se jejich výchozí nastavení). Na začátku a konci každého intervalu zadaného v zásadě OffHours prohlížeč Chrome znovu použije zásady zařízení. Pokud se na konci intervalu OffHours zásady zařízení změní a účet, pomocí kterého je uživatel přihlášen, již nebude povolen, bude o tom uživatel informován a bude se muset odhlásit.</translation>
 <translation id="6145799962557135888">Umožňuje nastavit seznam vzorů adres URL stránek, kterým je povoleno spouštět JavaScript.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultJavaScriptSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>

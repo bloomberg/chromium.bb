@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">获取有关 Chrome 的帮助</translation>
 <translation id="163860049029591106">Chrome 操作系统使用入门</translation>
 <translation id="1653828314016431939">确定 - 立即重新启动</translation>
+<translation id="1674870198290878346">在 Chrome 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="1682634494516646069">Google Chrome 无法对其数据目录 <ph name="USER_DATA_DIRECTORY" /> 执行读写操作</translation>
 <translation id="1698376642261615901">Google Chrome 浏览器是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更安全地浏览网页。</translation>
 <translation id="1718131156967340976">选择 <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
@@ -59,6 +60,7 @@
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="2586406160782125153">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
+<translation id="2652691236519827073">在 Chrome 新标签页中打开链接(&amp;T)</translation>
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
@@ -96,11 +98,12 @@
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">从Chrome中移除…</translation>
-<translation id="3847841918622877581">Google Chrome 浏览器可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="386202838227397562">请关闭所有 Google Chrome 浏览器窗口，然后重试。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">在 Chrome 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
 <translation id="4028693306634653894">更快地访问 Chrome</translation>
+<translation id="4031074602479304239">Chrome 已阻止此网站将您重定向至</translation>
 <translation id="4042449298237264661">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 不再受支持。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
@@ -130,6 +133,7 @@
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="4804732725083176494">此设备的管理员已禁止登录 Chrome。</translation>
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
+<translation id="4895437082222824641">在 Chrome 新标签页中打开链接(&amp;T)</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
@@ -151,6 +155,7 @@
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
 <translation id="5453904507266736060">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="5495581687705680288">模块已加载到 Google Chrome 浏览器中</translation>
+<translation id="5524843473235508879">已阻止重定向。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -210,7 +215,6 @@
 <translation id="7339898014177206373">打开新的窗口</translation>
 <translation id="7369650938475876456">使用由 Chrome 生成的安全系数高的密码</translation>
 <translation id="7398801000654795464">您之前登录 Chrome 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
-<translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="7408085963519505752">Chrome操作系统条款</translation>
 <translation id="7419046106786626209">由于您的网域停用了同步功能，Chrome操作系统无法同步您的数据。</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>

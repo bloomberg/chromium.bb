@@ -79,6 +79,7 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="2381405137052800939">Mambo ya Msingi</translation>
 <translation id="2386793615875593361">1 iliyochaguliwa</translation>
 <translation id="2435457462613246316">Onyesha nenosiri</translation>
+<translation id="2529021024822217800">Fungua Zote</translation>
 <translation id="2572712655377361602">Sera ya kifaa imezuia idhini ya kufikia picha zako</translation>
 <translation id="2584132361465095047">Ongeza Akaunti...</translation>
 <translation id="2593774076813182497">Ukurasa huu hauwezi kuchapishwa.</translation>
@@ -128,7 +129,6 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="3324193307694657476">Anwani ya 2</translation>
 <translation id="3329904751041170572">Haikuweza kuunganisha kwenye seva.</translation>
 <translation id="3335947283844343239">Fungua Tena Kichupo Kilichofugwa</translation>
-<translation id="3387752218061326363">Inaonyesha historia kutoka vifaa vyako ulivyotumia kuingia katika akaunti. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Ibukizi zimeruhusiwa</translation>
 <translation id="3414292259312108062">Chrome itahifadhi hili katika <ph name="BEGIN_LINK" />manenosiri yako yaliyohifadhiwa na Google<ph name="END_LINK" /> na kukujazia kiotomatiki ili usihitaji kulikumbuka.</translation>
 <translation id="3445288400492335833">Dakika <ph name="MINUTES" /></translation>
@@ -312,6 +312,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6797885426782475225">Kutafuta kwa Kutamka</translation>
 <translation id="6807889908376551050">Onyesha Zote...</translation>
 <translation id="681368974849482173">Umeunda kipengee</translation>
+<translation id="6871663519944855400">Fungua katika dirisha fiche</translation>
 <translation id="6896758677409633944">Nakili</translation>
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6945221475159498467">Chagua</translation>
@@ -321,7 +322,6 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7031882061095297553">Sawazisha kwenye</translation>
 <translation id="7062545763355031412">Kubali na ubadilishe akaunti</translation>
 <translation id="7108338896283013870">Ficha</translation>
-<translation id="7131892264600713844">Inaonyesha historia kutoka kwenye kifaa hiki. <ph name="BEGIN_LINK" />Pata maelezo zaidi.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Jina Kamili</translation>
 <translation id="7136892417564438900">Kamera haipatikani</translation>
 <translation id="7159472599653637159">Omba Tovuti ya Kifaa cha Mkononi</translation>

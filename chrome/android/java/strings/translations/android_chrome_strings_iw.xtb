@@ -37,6 +37,7 @@
 <translation id="1291207594882862231">‏נקה את ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="1303671224831497365">‏לא נמצאו התקני Bluetooth</translation>
+<translation id="1320663236730331991">החלקה כלפי מעלה מאפשרת לך לגשת בקלות אל אתרים ומאמרים פופולריים, הורדות ועוד</translation>
 <translation id="1326317727527857210">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, היכנס ל-Chrome.</translation>
 <translation id="1332501820983677155">‏מקשי קיצור לתכונות של Google Chrome‏</translation>
 <translation id="1369915414381695676">האתר <ph name="SITE_NAME" /> נוסף</translation>
@@ -48,7 +49,6 @@
 <translation id="1389236224998445076">נתונים שנשמרו:</translation>
 <translation id="1389974829397082527">אין כאן סימניות</translation>
 <translation id="1397811292916898096">חיפוש באמצעות <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974">‏<ph name="NUMBER_OF_SUGGESTIONS" /> הצעות מ-Chrome</translation>
 <translation id="1404122904123200417">מוטבע ב-<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">'ללא מעקב'</translation>
 <translation id="1407135791313364759">פתח הכל</translation>
@@ -138,7 +138,6 @@
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2283599456633275070">נסיעות</translation>
 <translation id="2286841657746966508">כתובת לחיוב</translation>
-<translation id="2301209717432756327">נוסף למסך דף הבית.</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
 <translation id="2323763861024343754">נתוני אתר מאוחסנים</translation>
@@ -231,6 +230,7 @@
 <translation id="3259831549858767975">הקטן את כל מה שמופיע בדף</translation>
 <translation id="3269093882174072735">טען תמונה</translation>
 <translation id="3269956123044984603">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
+<translation id="3274105979672092244">‏Chrome Home פעיל</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3295602654194328831">הסתר פרטים</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
@@ -259,7 +259,6 @@
 <translation id="3549657413697417275">חפש בהיסטוריה שלך</translation>
 <translation id="3552151358455404883">‏נהל את סנכרון Chrome וההתאמה האישית ב<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">הוסף לאנשי הקשר</translation>
-<translation id="3583454905526475291">לא ניתן להפעיל את היישום</translation>
 <translation id="3587482841069643663">הכל</translation>
 <translation id="3590487821116122040">‏נתוני אתר מאוחסנים ש-Chrome לא מחשיב כחשובים (לדוגמה, אתרים ללא הגדרות שמורות או כאלה שאינך מבקר בהם לעתים קרובות)</translation>
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -300,7 +299,7 @@
 <translation id="393697183122708255">חיפוש קולי מופעל לא זמין</translation>
 <translation id="3946611741043634542">‏אם תמשיך, משמעות הדבר היא שאתה מסכים <ph name="BEGIN_LINK1" />לתנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="3950820424414687140">כניסה</translation>
-<translation id="395206256282351086">הצעות למונחי חיפוש ואתרים הושבתו</translation>
+<translation id="395206256282351086">ההצעות למונחי חיפוש ואתרים הושבתו</translation>
 <translation id="395922942268463099">דפים המעודכנים על בסיס קבוע</translation>
 <translation id="3967822245660637423">ההורדה הושלמה</translation>
 <translation id="397583555483684758">הסנכרון הפסיק לפעול</translation>
@@ -341,7 +340,6 @@
 <translation id="4269820728363426813">העתק כתובת של קישור</translation>
 <translation id="4275663329226226506">מדיה</translation>
 <translation id="4278390842282768270">מותר</translation>
-<translation id="42981349822642051">הרחב</translation>
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
 <translation id="4378154925671717803">טלפון</translation>
@@ -429,6 +427,7 @@
 <translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE" /> מאתר זה?</translation>
 <translation id="5168917394043976756">פתח את חלונית ההזזה לניווט</translation>
 <translation id="5184329579814168207">‏פתח ב-Chrome</translation>
+<translation id="519793908071017925">‏הפעלה של Chrome Home</translation>
 <translation id="5199929503336119739">פרופיל עבודה</translation>
 <translation id="5209320130288484488">לא נמצאו מכשירים</translation>
 <translation id="5210286577605176222">חזור לכרטיסייה הקודמת</translation>
@@ -524,6 +523,7 @@
 <translation id="5942872142862698679">‏שימוש ב-Google לחיפוש</translation>
 <translation id="5956665950594638604">‏פתח את מרכז העזרה של Chrome בכרטיסייה חדשה</translation>
 <translation id="5958275228015807058">מצא את הקבצים והדפים שלך ב'הורדות'</translation>
+<translation id="5958994127112619898">דף פשוט יותר</translation>
 <translation id="5962718611393537961">הקש כדי לכווץ</translation>
 <translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
 <translation id="6023914116273780353">מותאמות אישית</translation>
@@ -595,6 +595,7 @@
 <translation id="6583199322650523874">סמן את הדף הנוכחי בסימנייה</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
 <translation id="6612358246767739896">תוכן מוגן</translation>
+<translation id="6619166911218440149">‏אנחנו משיקים את Chrome Home</translation>
 <translation id="6627583120233659107">ערוך תיקיה</translation>
 <translation id="6643016212128521049">נקה</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> נוסף}two{‏<ph name="CONTACT_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> נוספים}many{‏<ph name="CONTACT_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> נוספים}other{‏<ph name="CONTACT_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> נוספים}}</translation>
@@ -705,6 +706,7 @@
 <translation id="7607552448134703340">יש להזין את הטקסט הרצוי לחיפוש</translation>
 <translation id="7612619742409846846">‏מחובר ל-Google בשם</translation>
 <translation id="7619072057915878432">הורדת <ph name="FILE_NAME" /> נכשלה עקב כשלים ברשת.</translation>
+<translation id="7620146066550602128">יש <ph name="BEGIN_LINK" />דרך קלה יותר לגלוש באינטרנט<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />קבל עזרה<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />חפש שוב<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
 <translation id="7638584964844754484">ביטוי סיסמה שגוי</translation>
@@ -797,7 +799,6 @@
 <translation id="8523928698583292556">מחק את הסיסמה השמורה</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
-<translation id="856481929701340285">בקש אתר לשולחן העבודה</translation>
 <translation id="8569404424186215731">מאז <ph name="DATE" /></translation>
 <translation id="8571213806525832805">מארבעת השבועות האחרונים</translation>
 <translation id="857509777403223202">בקרוב יופיעו מאמרים נוספים. שיהיה לך ערב נפלא!</translation>

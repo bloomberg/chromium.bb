@@ -26,6 +26,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1628000112320670027">Hulp bij Chrome</translation>
 <translation id="163860049029591106">Aan de slag met Chrome OS</translation>
 <translation id="1653828314016431939">OK - nu opnieuw starten</translation>
+<translation id="1674870198290878346">Link openen in een Chrome-inco&amp;gnitovenster</translation>
 <translation id="1682634494516646069">Chrome kan niet lezen van en schrijven naar de gegevensdirectory:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -63,6 +64,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
 <translation id="2586406160782125153">Hiermee worden je browsergegevens verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
+<translation id="2652691236519827073">Link openen op een nieuw Chrome-&amp;tabblad</translation>
 <translation id="2664962310688259219">Open-sourcelicenties van Chrome OS</translation>
 <translation id="2665296953892887393">Help ons Google Chrome te verbeteren door crashrapporten en <ph name="UMA_LINK" /> naar Google te verzenden</translation>
 <translation id="2689103672227170538">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
@@ -100,11 +102,12 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Verwijderen uit Chrome…</translation>
-<translation id="3847841918622877581">Google Chrome kan webservices gebruiken om je internetervaring te verbeteren.</translation>
 <translation id="386202838227397562">Sluit alle Google Chrome-vensters en probeer het opnieuw.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Link openen in een Chrome-inco&amp;gnitovenster</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
 <translation id="4028693306634653894">Chrome sneller openen</translation>
+<translation id="4031074602479304239">Chrome heeft voorkomen dat deze site je omleidde naar</translation>
 <translation id="4042449298237264661">Deze computer ontvangt geen Google Chrome-updates meer, omdat Windows XP en Windows Vista niet meer worden ondersteund.</translation>
 <translation id="4050175100176540509">Er zijn belangrijke beveiligingsverbeteringen en nieuwe functies beschikbaar in de nieuwste versie.</translation>
 <translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
@@ -133,6 +136,7 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="4794050651896644714">Details opslaan in Chrome</translation>
 <translation id="4804732725083176494">Inloggen bij Chrome is uitgeschakeld door de beheerder van dit apparaat.</translation>
 <translation id="4891791193823137474">Google Chrome op de achtergrond laten uitvoeren</translation>
+<translation id="4895437082222824641">Link openen op een nieuw Chrome-&amp;tabblad</translation>
 <translation id="4921569541910214635">Deel je een computer? Je kunt Chrome nu precies instellen zoals jij dat wilt.</translation>
 <translation id="4953650215774548573">Google Chrome instellen als je standaardbrowser</translation>
 <translation id="495931528404527476">In Chrome</translation>
@@ -156,6 +160,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5430073640787465221">Je bestand met voorkeuren is beschadigd of ongeldig. Google Chrome kan je instellingen niet herstellen.</translation>
 <translation id="5453904507266736060">Google Chrome op de achtergrond laten uitvoeren</translation>
 <translation id="5495581687705680288">Modules die in Google Chrome zijn geladen</translation>
+<translation id="5524843473235508879">Omleiding geblokkeerd.</translation>
 <translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="5563479599352954471">Zoeken met een aanraking</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -215,7 +220,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="7369650938475876456">Een sterk wachtwoord gebruiken dat is gegenereerd door Chrome</translation>
 <translation id="7398801000654795464">Je bent ingelogd bij Chrome als <ph name="USER_EMAIL_ADDRESS" />. Gebruik hetzelfde account om opnieuw in te loggen.</translation>
-<translation id="7400722733683201933">Over Google Chrome</translation>
 <translation id="7408085963519505752">Voorwaarden van Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="7437998757836447326">Uitloggen bij Chrome</translation>

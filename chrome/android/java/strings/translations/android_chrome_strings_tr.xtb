@@ -48,7 +48,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1389236224998445076">Tasarruf edilen veri miktarı:</translation>
 <translation id="1389974829397082527">Burada yer işareti yok</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> ile ara</translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome önerisi</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> sitesinde yerleşik</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1407135791313364759">Tümünü aç</translation>
@@ -138,7 +137,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2268044343513325586">Hassaslaştır</translation>
 <translation id="2283599456633275070">Seyahat</translation>
 <translation id="2286841657746966508">Fatura adresi</translation>
-<translation id="2301209717432756327">Ana ekrana eklendi.</translation>
 <translation id="2315043854645842844">İstemci tarafı sertifika seçimi, işletim sistemi tarafından desteklenmiyor.</translation>
 <translation id="2321958826496381788">Bu yazıyı rahatça okuyana kadar kaydırma çubuğunu sürükleyin. Bir paragrafa iki kez hafifçe dokunduğunuzda metin en az bunun kadar büyük görünmelidir.</translation>
 <translation id="2323763861024343754">Site depolama alanı</translation>
@@ -259,7 +257,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="3549657413697417275">Geçmişinizde arayın</translation>
 <translation id="3552151358455404883">Chrome Senkronizasyonu'nu ve kişiselleştirmeyi <ph name="BEGIN_LINK1" />Ayarlar<ph name="END_LINK1" /> bölümünden yönetin</translation>
 <translation id="3557336313807607643">Kişilere ekle</translation>
-<translation id="3583454905526475291">Uygulama başlatılamadı</translation>
 <translation id="3587482841069643663">Tümü</translation>
 <translation id="3590487821116122040">Chrome'un önemli olmadığını düşündüğü site depolama alanı (ör. kayıtlı ayarları bulunmayan veya sık ziyaret etmediğiniz siteler)</translation>
 <translation id="3599863153486145794">Oturumunuzun açık olduğu tüm cihazlarda geçmişi temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
@@ -341,7 +338,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4275663329226226506">Medya</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
-<translation id="42981349822642051">Genişlet</translation>
 <translation id="4307992518367153382">Temel Bilgiler</translation>
 <translation id="4351244548802238354">İletişim kutusunu kapat</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -524,6 +520,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5942872142862698679">Arama için Google kullanılıyor</translation>
 <translation id="5956665950594638604">Chrome Yardım Merkezi'ni yeni bir sekmede açar</translation>
 <translation id="5958275228015807058">Dosyalarınızı ve sayfalarınızı İndirilenler bölümünde bulabilirsiniz</translation>
+<translation id="5958994127112619898">Sayfayı sadeleştir</translation>
 <translation id="5962718611393537961">Daraltmak için dokunun</translation>
 <translation id="6000066717592683814">Google kalsın</translation>
 <translation id="6023914116273780353">Kişiselleştirilmiş</translation>
@@ -797,7 +794,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8523928698583292556">Kayıtlı şifreyi sil</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
-<translation id="856481929701340285">Masaüstü sitesi iste</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> tarihinden bu yana</translation>
 <translation id="8571213806525832805">Son 4 hafta</translation>
 <translation id="857509777403223202">Yakında daha fazla seçenek gösterilecek. Güzel bir akşam geçirmenizi dileriz.</translation>

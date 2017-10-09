@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Před 1 dnem}few{Před # dny}many{Před # dne}other{Před # dny}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{před minutou}few{před # minutami}many{před # minuty}other{před # minutami}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
-<translation id="1190609913194133056">Centrum oznámení</translation>
 <translation id="1243314992276662751">Nahrát</translation>
 <translation id="1293699935367580298">Klávesa Esc</translation>
 <translation id="1306549533752902673">DOPORUČENÉ APLIKACE</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(prázdné)</translation>
 <translation id="219905428774326614">Spouštěč, všechny aplikace</translation>
 <translation id="2289052229480071835">Klepněte na cíle klepnutí na obrazovce.</translation>
+<translation id="2295140143284145483">Průzkum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Rozbalit oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodin}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Všechny aplikace</translation>
+<translation id="6012623610530968780">Stránka <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Vymazat text z vyhledávacího pole</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6119846243427417423">aktivovat</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Čárka</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Před 1 s}few{Před # s}many{Před # s}other{Před # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{před sekundou}few{před # sekundami}many{před # sekundy}other{před # sekundami}}</translation>
+<translation id="6567071839949112727">kliknutí na nadřazený prvek</translation>
 <translation id="6612467943526193239">Kalibraci ukončíte stisknutím klávesy Esc.</translation>
 <translation id="6620110761915583480">Uložit soubor</translation>
 <translation id="6699343763173986273">Média – další skladba</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">NEJPRAVDĚPODOBNĚJŠÍ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Zbývá 1 min}few{Zbývají # min}many{Zbývá # min}other{Zbývá # min}}</translation>
+<translation id="7319740667687257810">Spouštěč, částečné zobrazení</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Před 1 min}few{Před # min}many{Před # min}other{Před # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zbývá 1 minuta}few{Zbývají # minuty}many{Zbývá # minuty}other{Zbývá # minut}}</translation>

@@ -79,6 +79,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2381405137052800939">Básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
+<translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
 <translation id="2584132361465095047">Añadir cuenta…</translation>
 <translation id="2593774076813182497">Esta página no se puede imprimir.</translation>
@@ -128,7 +129,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="3324193307694657476">Dirección 2</translation>
 <translation id="3329904751041170572">No se ha podido establecer conexión con el servidor.</translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
-<translation id="3387752218061326363">Mostrando historial de dispositivos en los que has iniciado sesión. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-ups permitidos</translation>
 <translation id="3414292259312108062">Chrome almacenará esta contraseña en las <ph name="BEGIN_LINK" />contraseñas guardadas de Google<ph name="END_LINK" /> y utilizará la función Autocompletar para que no tengas que memorizarla.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6797885426782475225">Búsqueda por voz</translation>
 <translation id="6807889908376551050">Mostrar todo...</translation>
 <translation id="681368974849482173">Elemento creado</translation>
+<translation id="6871663519944855400">Abrir en modo incógnito</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
@@ -321,7 +322,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7108338896283013870">Ocultar</translation>
-<translation id="7131892264600713844">Mostrando historial de este dispositivo. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
 <translation id="7136892417564438900">La cámara no está disponible</translation>
 <translation id="7159472599653637159">Solicitar sitio web móvil</translation>

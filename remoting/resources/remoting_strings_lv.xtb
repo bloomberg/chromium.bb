@@ -74,6 +74,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="2509394361235492552">Izveidots savienojums ar “<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome attālo darbvirsmu varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="2540992418118313681">Vai vēlaties koplietot šo datoru ar citu lietotāju, lai viņš varētu skatīt un pārvaldīt tajā esošo saturu?</translation>
+<translation id="2579271889603567289">Saimniekdators avarēja, vai neizdevās to palaist.</translation>
 <translation id="2599300881200251572">Izmantojot šo pakalpojumu, tiek iespējota ienākošo savienojumu izveide no Chrome attālās darbvirsmas klientiem.</translation>
 <translation id="2647232381348739934">Chrome saites pakalpojums</translation>
 <translation id="2676780859508944670">Notiek apstrāde...</translation>
@@ -174,6 +175,7 @@ dators</translation>
 <translation id="4736223761657662401">Savienojumu vēsture</translation>
 <translation id="4741792197137897469">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties pārlūkā Chrome.</translation>
 <translation id="477305884757156764">Lietojumprogramma ir pārāk lēna.</translation>
+<translation id="4784508858340177375">Serveris X avarēja, vai neizdevās to palaist.</translation>
 <translation id="4795786176190567663">Jums nav atļauju, lai veiktu šo darbību.</translation>
 <translation id="4798680868612952294">Peles opcijas</translation>
 <translation id="4804818685124855865">Atvienot</translation>
@@ -248,6 +250,7 @@ dators</translation>
 <translation id="6572345186230665992">Operētājsistēmai Mac (OS X Mavericks 10.9 un jaunākas versijas)</translation>
 <translation id="6583902294974160967">Atbalsts</translation>
 <translation id="6612717000975622067">Sūtīt Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">Koplietot</translation>
 <translation id="6668065415969892472">Jūsu PIN ir atjaunināts.</translation>
 <translation id="6681800064886881394">Autortiesības © 2013 Google Inc. Visas tiesības paturētas.</translation>
 <translation id="6705482892455291412">Tiklīdz tiks ievadīts kods, jūs tiksiet aicināts apstiprināt savienojumu un sākt kopīgot sesiju.</translation>

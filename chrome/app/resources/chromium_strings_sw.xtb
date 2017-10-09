@@ -13,6 +13,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1396446129537741364">Chromium inajaribu kuonyesha manenosiri.</translation>
 <translation id="1403254041219632970">Matoleo ya siku za usoni ya Chromium hayatatumia tena Mac OS X 10.6, 10.7, au 10.8.</translation>
 <translation id="1414495520565016063">Umeingia kwenye Chromium!</translation>
+<translation id="1440917365206527807">Chromium imezuia tovuti hii kukuelekeza kwenye</translation>
 <translation id="1444754455097148408">Leseni za programu huria kwenye Chromium</translation>
 <translation id="1502360822835740515">Fanya Chromium iwe kivinjari chako chaguo-msingi</translation>
 <translation id="151962892725702025">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu Usawazishaji haupatikani kwa kikoa chako.</translation>
@@ -64,6 +65,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3103660991484857065">Kisakinishi kilishindwa kufinyuza kumbukumbu. Tafadhali pakua Chromium tena.</translation>
 <translation id="3130323860337406239">Chromium inatumia maikrofoni yako.</translation>
 <translation id="3155163173539279776">Zindua upya Chromium</translation>
+<translation id="3179665906251668410">Fungua Kiungo katika Dirisha Fiche la Chromium</translation>
 <translation id="3190315855212034486">Lo! Chromium imevurugika. Unataka kuzindua upya sasa?</translation>
 <translation id="3256316712990552818">Imenakiliwa kwenye Chromium</translation>
 <translation id="3258596308407688501">Chromium haiwezi kusoma na kuandika kwenye saraka yake ya data:
@@ -79,6 +81,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3549345495227188780">Anza kutumia Chromium OS</translation>
 <translation id="3582788516608077514">Inasasisha Chromium...</translation>
 <translation id="358997566136285270">Nembo ya Chromium</translation>
+<translation id="3713809861844741608">Fungua kiungo katika kichupo kipya cha Chromium</translation>
 <translation id="3738139272394829648">Gusa ili Utafute</translation>
 <translation id="3762167353400286894">Mfumo wa Uendeshaji wa Chromium unaonyeshwa katika lugha hii</translation>
 <translation id="378917192836375108">Chromium hukuruhusu kubofya nambari ya simu kwenye wavuti na kuipiga kwa Skype.</translation>
@@ -131,6 +134,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="5466153949126434691">Chromium husasisha kiotomatiki ili uwe na toleo jipya zaidi wakati wowote. Upakuaji huu unapokamilika, Chromium itajizima na kuwaka tena na utaanza kutumia.</translation>
 <translation id="5479196819031988440">Mfumo wa Uendeshaji wa Chromium hauwezi kufungua ukurasa huu.</translation>
 <translation id="549669000822060376">Tafadhali subiri Chromium inaposakinisha sasisho mpya ya mfumo.</translation>
+<translation id="5524843473235508879">Imezuia shughuli ya kuelekeza kwingine.</translation>
 <translation id="5563479599352954471">Tafuta kwa mguso mmoja tu</translation>
 <translation id="5620765574781326016">Pata maelezo kuhusu mada zilizo kwenye tovuti bila kuondoka kwenye ukurasa.</translation>
 <translation id="5634636535844844681">Chromium inahitaji Windows 7 au toleo jipya zaidi.</translation>
@@ -178,11 +182,11 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="6883876366448858277">hutuma neno na muktadha wake kwenye Tafuta na Google, kurejesha ufafanuzi, picha, na matokeo mengine ya utafutaji.</translation>
 <translation id="6893813176749746474">Chromium imesasishwa, lakini hujaitumia angalau kwa siku 30.</translation>
 <translation id="6944967875980567883">Vipengee vilivyopakiwa kwenye Chromium</translation>
+<translation id="6964305034639999644">Fungua kiungo katika dirisha fiche la Chromium</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
 <translation id="705851970750939768">Sasisha Chromium</translation>
 <translation id="7066436765290594559">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako. Tafadhali sasisha kauli ya siri unayotumia kusawazisha.</translation>
 <translation id="707471633328071618">Google Payments (imenakiliwa kwenye Chromium)</translation>
-<translation id="7138853919861947730">Huenda Chromium ikatumia huduma za wavuti kuboresha utumizi wako wa kuvinjari.</translation>
 <translation id="7162152143154757523">Chromium inaweza kutoa ukaguzi bora wa tahajia kwa kutuma unachocharaza katika kivinjari hadi kwenye seva za Google, ikikuruhusu kutumia teknolojia hiyo hiyo ya kukagua tahajia inayotumiwa na utafutaji wa Google.</translation>
 <translation id="7205698830395646142">Ficha katika Menyu ya Chromium</translation>
 <translation id="7223968959479464213">Kidhibiti cha Shughuli - Chromium</translation>
@@ -256,6 +260,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chromium kama vile alamisho, histor
 <translation id="9022552996538154597">Ingia kwenye Chromium</translation>
 <translation id="9036189287518468038">Kizinduzi cha Programu ya Chromium</translation>
 <translation id="9089354809943900324">Chromium imepitwa na wakati</translation>
+<translation id="91086099826398415">Fungua Kiungo katika kichupo kipya cha Chromium</translation>
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
 <translation id="918373042641772655">Kuondoa <ph name="USERNAME" /> kutafuta historia, alamisho, mipangilio, na data zako nyingine kwenye Chromium zilizohifadhiwa kwenye kifaa hiki. Data iliyohifadhiwa katika Akaunti ya Google haitafutwa na inaweza kudhibitiwa kwenye <ph name="GOOGLE_DASHBOARD_LINK" />Dashibodi ya Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

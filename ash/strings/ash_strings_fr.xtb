@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3473479545200714844">Loupe</translation>
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
-<translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
 <translation id="3582792037806681688">La connexion multicompte a été désactivée pour un utilisateur de cette session.</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
+<translation id="6284232397434400372">Résolution modifiée</translation>
 <translation id="6297287540776456956">Utiliser le stylet pour sélectionner une zone</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>
 <translation id="632744581670418035">Clavier en superposition</translation>
@@ -232,10 +232,10 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7067196344162293536">Rotation automatique</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
-<translation id="7135556860107312402">Autoriser les notifications des éléments suivants :</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micro arrière</translation>
+<translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>
@@ -248,6 +248,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7562368315689366235">Palette d'emoji</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7658239707568436148">Annuler</translation>

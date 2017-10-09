@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Prenos podatkov v mobilnih omrežjih</translation>
 <translation id="3236488194889173876">Mobilno omrežje ni na voljo</translation>
 <translation id="3294437725009624529">Gost</translation>
-<translation id="332587331255250389">Zamenjajte akumulator</translation>
+<translation id="332587331255250389">Zamenjajte baterijo</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
 <translation id="3368922792935385530">Povezano</translation>
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Naprava USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Označitev miškinega kazalca</translation>
-<translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
 <translation id="3582792037806681688">V tej seji uporabniku ni dovoljena uporaba prijave z več računi</translation>
 <translation id="3595596368722241419">Baterija je polna</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiviranje ...</translation>
+<translation id="6284232397434400372">Ločljivost je bila spremenjena</translation>
 <translation id="6297287540776456956">S pisalom izberite območje</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> – zasuk na <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Prekrivna tipkovnica</translation>
@@ -232,10 +232,10 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7067196344162293536">Samodejno sukanje</translation>
 <translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
-<translation id="7135556860107312402">Omogočanje obvestil teh aplikacij:</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
+<translation id="726276584504105859">Povlecite sem za razdeljeni zaslon</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
 <translation id="7377169924702866686">Tipka Caps Lock je vklopljena.</translation>
@@ -248,6 +248,7 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="7562368315689366235">Paleta znakov »emoji«</translation>
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (lastnik)</translation>
 <translation id="7647488630410863958">Če si želite ogledati obvestila, odklenite napravo</translation>
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7658239707568436148">Prekliči</translation>

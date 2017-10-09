@@ -79,6 +79,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2381405137052800939">Paramètres de base</translation>
 <translation id="2386793615875593361">1 photo sélectionnée</translation>
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
+<translation id="2529021024822217800">Tout ouvrir</translation>
 <translation id="2572712655377361602">Les règles relatives aux appareils ont bloqué l'accès à vos photos.</translation>
 <translation id="2584132361465095047">Ajouter un compte…</translation>
 <translation id="2593774076813182497">Impression impossible.</translation>
@@ -128,7 +129,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
-<translation id="3387752218061326363">Affichage de l'historique des appareils auxquels vous êtes connecté. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Pop-up autorisés</translation>
 <translation id="3414292259312108062">Chrome stocke ce mot de passe dans les <ph name="BEGIN_LINK" />mots de passe Google enregistrés<ph name="END_LINK" />. Il sera renseigné automatiquement afin que vous n'ayez pas à le retenir.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6797885426782475225">Recherche vocale</translation>
 <translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
+<translation id="6871663519944855400">Ouvrir en mode navigation privée</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
@@ -321,7 +322,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7108338896283013870">Masquer</translation>
-<translation id="7131892264600713844">Affichage de l'historique de cet appareil. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nom complet</translation>
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
