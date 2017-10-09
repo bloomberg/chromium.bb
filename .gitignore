@@ -235,9 +235,6 @@ vs-chromium-project.txt
 /sync/sync.xml
 /sync_testserver.log
 /testserver.log
-/tools/luci-go/linux64/isolate
-/tools/luci-go/mac64/isolate
-/tools/luci-go/win64/isolate.exe
 # See third_party/.gitignore for entries covering src/third_party.
 /tools/.bisect-builds-cache.json
 /tools/distcc
