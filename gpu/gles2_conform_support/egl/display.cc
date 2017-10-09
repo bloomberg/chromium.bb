@@ -214,7 +214,8 @@ EGLSurface Display::CreateWindowSurface(ThreadState* ts,
     return result;
   }
   scoped_refptr<gl::GLSurface> gl_surface;
-  gl_surface = gl::init::CreateViewGLSurface(win);
+  gl_surface =
+      gl::init::CreateViewGLSurface(static_cast<gfx::AcceleratedWidget>(win));
   if (!gl_surface)
     return ts->ReturnError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
   surfaces_.emplace_back(new Surface(gl_surface.get(), config));
